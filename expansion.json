@@ -1,0 +1,182 @@
+{
+  "settings": {
+    "rating_review_days": [7, 14],
+    "bailout_chance": 0.25,
+    "distress_price_ratio": 0.25,
+    "regime_days": [7, 14],
+    "news_strength_weights": {
+      "bystander": 0.25,
+      "weak": 0.4,
+      "strong": 0.25,
+      "very strong": 0.1
+    },
+    "news_move_ranges": {
+      "bystander": [0.0, 0.005],
+      "weak": [0.01, 0.03],
+      "strong": [0.04, 0.09],
+      "very strong": [0.1, 0.18]
+    },
+    "sector_links": {
+      "energy": {"airlines": -0.18, "utilities": -0.12, "consumer": -0.08},
+      "utilities": {"tech": 0.1, "industrials": 0.12},
+      "materials": {"industrials": 0.16, "tech": 0.08},
+      "agriculture": {"consumer": 0.12, "commodities": 0.18},
+      "finance": {"tech": 0.08, "consumer": 0.1, "industrials": 0.08}
+    }
+  },
+  "sectors": [
+    {"id": "utilities", "name": "Utilities", "icon": "🔌"},
+    {"id": "industrials", "name": "Industrials", "icon": "🏭"},
+    {"id": "telecom", "name": "Telecommunications", "icon": "📡"},
+    {"id": "materials", "name": "Materials", "icon": "⛏️"},
+    {"id": "agriculture", "name": "Agriculture", "icon": "🌾"},
+    {"id": "commodities", "name": "Commodities", "icon": "🛢️"}
+  ],
+  "companies": [
+    {
+      "ticker": "MEMR", "name": "MemoryWorks", "sector": "tech", "beta": 1.45, "vol": 0.48,
+      "sens": 1.2, "depth": 18000, "rating": "BBB", "margin": 0.16, "traits": ["earnings"],
+      "desc": "Manufactures high-bandwidth memory and storage components for cloud servers and AI accelerators."
+    },
+    {
+      "ticker": "CYBR", "name": "Northstar Cyber", "sector": "tech", "beta": 1.1, "vol": 0.38,
+      "sens": 0.9, "depth": 18000, "rating": "A", "margin": 0.2, "traits": ["earnings"],
+      "desc": "Sells identity security, threat monitoring, and incident response subscriptions to large organizations."
+    },
+    {
+      "ticker": "NUCL", "name": "Nucleus Power", "sector": "energy", "beta": 0.8, "vol": 0.32,
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.14, "traits": ["earnings"],
+      "desc": "Develops modular nuclear reactors and long-term power contracts for industrial customers."
+    },
+    {
+      "ticker": "HYDR", "name": "Hydra Electrolysis", "sector": "energy", "beta": 1.25, "vol": 0.55,
+      "sens": 1.2, "depth": 16000, "rating": "BB", "margin": 0.08, "traits": ["earnings"],
+      "desc": "Builds electrolyzers that produce low-carbon hydrogen for shipping, steel, and heavy transport."
+    },
+    {
+      "ticker": "ONCX", "name": "OncoNova Labs", "sector": "pharma", "beta": 1.4, "vol": 0.72,
+      "sens": 1.5, "depth": 15000, "rating": "BB", "margin": -0.08, "traits": ["earnings"],
+      "desc": "A research biotech testing precision oncology medicines in early and mid-stage clinical trials."
+    },
+    {
+      "ticker": "DRON", "name": "Aerial Defense Systems", "sector": "defense", "beta": 0.85, "vol": 0.36,
+      "sens": 1.1, "depth": 17000, "rating": "BBB", "margin": 0.12, "traits": ["earnings"],
+      "desc": "Supplies autonomous surveillance aircraft and counter-drone systems under government contracts."
+    },
+    {
+      "ticker": "AERO", "name": "AeroLease Partners", "sector": "airlines", "beta": 1.0, "vol": 0.32,
+      "sens": 0.9, "depth": 17000, "rating": "A", "margin": 0.13, "traits": ["earnings"],
+      "desc": "Owns and leases passenger aircraft to carriers, with income tied to fleet utilization and travel demand."
+    },
+    {
+      "ticker": "HOMR", "name": "Hearth & Home", "sector": "consumer", "beta": 0.85, "vol": 0.24,
+      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.11, "traits": ["earnings"],
+      "desc": "Designs affordable furniture and household goods sold through stores and a direct-to-consumer website."
+    },
+    {
+      "ticker": "CRED", "name": "Crescent Credit", "sector": "finance", "beta": 1.2, "vol": 0.42,
+      "sens": 1.1, "depth": 18000, "rating": "BB", "margin": 0.18, "traits": ["earnings"],
+      "desc": "Provides small-business loans and payment processing, with returns sensitive to defaults and interest rates."
+    },
+    {
+      "ticker": "PUPZ", "name": "PupZoom Media", "sector": "meme", "beta": 2.0, "vol": 0.95,
+      "sens": 1.6, "depth": 12000, "rating": "B", "margin": 0.02, "traits": [],
+      "desc": "Turns viral pet videos into creator subscriptions, branded toys, and short-lived online trends."
+    },
+    {
+      "ticker": "GRID", "name": "GridNode Electric", "sector": "utilities", "beta": 0.55, "vol": 0.2,
+      "sens": 0.8, "depth": 22000, "rating": "A", "margin": 0.15, "traits": ["earnings"],
+      "desc": "Operates transmission lines, substations, and grid-balancing services for fast-growing power regions."
+    },
+    {
+      "ticker": "WIND", "name": "Windward Renewables", "sector": "utilities", "beta": 0.8, "vol": 0.29,
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.1, "traits": ["earnings"],
+      "desc": "Owns onshore wind farms and sells renewable electricity under long-term utility agreements."
+    },
+    {
+      "ticker": "ROBO", "name": "RoboForge Automation", "sector": "industrials", "beta": 1.25, "vol": 0.4,
+      "sens": 1.1, "depth": 18000, "rating": "BBB", "margin": 0.13, "traits": ["earnings"],
+      "desc": "Builds factory robots and machine-vision systems that automate electronics and vehicle assembly."
+    },
+    {
+      "ticker": "FRET", "name": "FreightLoop Logistics", "sector": "industrials", "beta": 1.05, "vol": 0.34,
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.09, "traits": ["earnings"],
+      "desc": "Coordinates rail, warehouse, and trucking capacity for manufacturers and large retailers."
+    },
+    {
+      "ticker": "TWRX", "name": "TowerX Networks", "sector": "telecom", "beta": 0.8, "vol": 0.25,
+      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.17, "traits": ["earnings"],
+      "desc": "Leases wireless towers and small-cell sites to mobile carriers under recurring multi-year contracts."
+    },
+    {
+      "ticker": "FIBR", "name": "FiberSpan", "sector": "telecom", "beta": 0.9, "vol": 0.28,
+      "sens": 0.9, "depth": 17000, "rating": "BBB", "margin": 0.12, "traits": ["earnings"],
+      "desc": "Builds regional fiber-optic networks and sells high-capacity connections to businesses and data centers."
+    },
+    {
+      "ticker": "SAND", "name": "StoneBridge Materials", "sector": "materials", "beta": 1.0, "vol": 0.33,
+      "sens": 0.9, "depth": 18000, "rating": "BBB", "margin": 0.1, "traits": ["earnings"],
+      "desc": "Quarries aggregates and produces cement used in roads, housing, and infrastructure projects."
+    },
+    {
+      "ticker": "LITH", "name": "Lithic Materials", "sector": "materials", "beta": 1.45, "vol": 0.62,
+      "sens": 1.2, "depth": 15000, "rating": "BB", "margin": 0.05, "traits": ["earnings"],
+      "desc": "Processes lithium compounds for battery makers and electric-vehicle supply chains."
+    },
+    {
+      "ticker": "GRAI", "name": "Prairie Grain Co-op", "sector": "agriculture", "beta": 0.65, "vol": 0.28,
+      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.08, "traits": ["earnings"],
+      "desc": "Stores, grades, and exports grain from a network of farms, elevators, and river terminals."
+    },
+    {
+      "ticker": "FERT", "name": "Fieldstone AgTech", "sector": "agriculture", "beta": 0.95, "vol": 0.38,
+      "sens": 1.0, "depth": 17000, "rating": "BBB", "margin": 0.11, "traits": ["earnings"],
+      "desc": "Produces crop nutrients and precision-farming software for commercial growers."
+    },
+    {
+      "ticker": "CRUDE", "name": "Crude Oil Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.45, "vol": 0.48,
+      "sens": 1.0, "depth": 20000, "rating": "A", "margin": 0.0, "traits": [],
+      "desc": "A play-money spot-price proxy for benchmark crude oil, driven by supply, inventories, and transport demand."
+    },
+    {
+      "ticker": "NATG", "name": "Natural Gas Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.35, "vol": 0.72,
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.0, "traits": [],
+      "desc": "A play-money natural-gas price proxy responding to storage, weather, and power-generation demand."
+    },
+    {
+      "ticker": "WHEAT", "name": "Wheat Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.15, "vol": 0.35,
+      "sens": 1.0, "depth": 18000, "rating": "A", "margin": 0.0, "traits": [],
+      "desc": "A play-money wheat price proxy influenced by harvest size, weather, and export flows."
+    },
+    {
+      "ticker": "COPR", "name": "Copper Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.8, "vol": 0.42,
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.0, "traits": [],
+      "desc": "A play-money copper price proxy tied to construction, grid investment, and electronics demand."
+    },
+    {
+      "ticker": "GOLD", "name": "Gold Spot", "sector": "commodities", "asset_type": "commodity", "beta": -0.1, "vol": 0.2,
+      "sens": 0.7, "depth": 22000, "rating": "AA", "margin": 0.0, "traits": [],
+      "desc": "A play-money gold price proxy that tends to attract demand during uncertainty and currency stress."
+    }
+  ],
+  "templates": [
+    {
+      "id": "solar_supply_disruption", "scope": "company", "ticker": "SLRG", "sector": "energy",
+      "up": ["SolarGrid secures a major grid-storage contract", "SolarGrid supply deal eases chipmakers' power costs"],
+      "down": ["SolarGrid panel shipment delay threatens chip supply", "Grid component shortage disrupts SolarGrid deliveries"],
+      "betas": {"self": 1.0, "tech": 0.25}, "sev": [0.1, 0.3], "strength": "strong", "weight": 0.8, "rumor": true, "chunks": 4
+    },
+    {
+      "id": "commodity_supply", "scope": "sector", "sector": "commodities",
+      "up": ["Commodity inventories tighten across key markets", "Export bottlenecks lift raw-material prices"],
+      "down": ["New supply floods commodity markets", "Demand outlook weakens for raw materials"],
+      "betas": {"self": 1.0, "materials": 0.3, "agriculture": 0.2}, "sev": [0.1, 0.25], "strength": "strong", "weight": 0.8, "rumor": true, "chunks": 5
+    },
+    {
+      "id": "credit_stress", "scope": "sector", "sector": "finance",
+      "up": ["Loan losses rise across regional lenders", "Funding stress hits small-business banks"],
+      "down": ["Delinquencies fall and credit quality improves", "Lenders report stronger-than-expected reserves"],
+      "betas": {"self": 1.0, "consumer": -0.2, "industrials": -0.15}, "sev": [0.08, 0.22], "strength": "strong", "weight": 0.7, "rumor": true, "chunks": 5
+    }
+  ]
+}

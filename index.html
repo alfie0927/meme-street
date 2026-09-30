@@ -1,0 +1,175 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meme Street</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--line:#30363d;--txt:#e6edf3;--mut:#8b949e;--up:#3fb950;--dn:#f85149;--acc:#58a6ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:18px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+header b{font-size:18px}.stat small{display:block;color:var(--mut);font-size:11px}
+main{display:grid;grid-template-columns:1fr 340px;gap:12px;padding:12px}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:12px}
+h3{margin:0 0 8px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+table{width:100%;border-collapse:collapse}td,th{padding:5px 6px;text-align:right;border-bottom:1px solid #21262d;white-space:nowrap}
+td:first-child,th:first-child,td:nth-child(2),th:nth-child(2){text-align:left}th{color:var(--mut);font-weight:500;font-size:12px}
+.company-cell{white-space:normal;min-width:190px;max-width:280px}.company-desc{display:block;color:var(--mut);font-size:11px;line-height:1.35;white-space:normal;max-width:260px}
+.selected-row{background:#58a6ff14}.detail-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.detail-head h2{font-size:18px;margin:0 0 4px}.detail-sub{color:var(--mut);font-size:12px}.periods button.active{background:var(--acc);color:#000}.price-chart{width:100%;height:auto;aspect-ratio:960/300;display:block;margin-top:10px;background:#0d111733}.chart-wrap{position:relative;touch-action:none;user-select:none}.chart-wrap svg{cursor:grab}.chart-wrap.dragging svg{cursor:grabbing}.chart-controls{display:flex;gap:6px;align-items:center;margin-top:6px}.chart-controls .mut{font-size:11px}.finance-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-top:12px}.finance-grid div{border-left:2px solid var(--line);padding-left:8px}.finance-grid small{display:block;color:var(--mut);font-size:11px}.finance-grid strong{display:block;font-size:14px;margin-top:3px}.event-row{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid #21262d}.event-row small{color:var(--mut)}
+body.stock-page main{display:block;max-width:1120px;margin:0 auto;padding:18px}body.stock-page main>section>.card:first-child,body.stock-page main>aside{display:none}body.stock-page #stock-detail{padding:18px}.detail-back{display:none;color:var(--acc);text-decoration:none;font-size:13px;margin-bottom:12px}.stock-page .detail-back{display:inline-block}.detail-price{font-size:26px;font-weight:700;margin-top:10px}.detail-move{font-size:14px;font-weight:500;margin-left:8px}.detail-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:14px 0}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
+button{background:#21262d;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:4px 9px;cursor:pointer}
+button:hover{background:#30363d}.buy{border-color:var(--up);color:var(--up)}.sell{border-color:var(--dn);color:var(--dn)}
+.chip.on{background:var(--acc);color:#000;border-color:var(--acc)}
+.bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center}
+.news div{padding:5px 0;border-bottom:1px solid #21262d;font-size:13px}
+.k-rumor{color:#d29922}.k-breaking{color:var(--acc)}.k-confirm{color:var(--up)}.k-correction{color:var(--dn)}.k-ipo{color:#bc8cff}.k-season{color:#f0883e}
+#login{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:9}
+#login div{background:var(--card);padding:24px;border-radius:10px;border:1px solid var(--line);width:320px}
+input{width:100%;padding:8px;margin:10px 0;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:6px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);padding:8px 14px;border-radius:6px;background:#21262d;border:1px solid var(--line);opacity:0;transition:.2s;z-index:10}
+.flashU{background:#3fb95022}.flashD{background:#f8514922}
+</style></head><body>
+<div id="login"><div><h2 style="margin:0">Meme Street</h2><p class="mut">Trade with memebucks (MB). Read the news, trade fast, beat the other players.</p>
+<input id="nm" maxlength="16" placeholder="Pick a trader name"><button class="buy" style="width:100%;padding:8px" onclick="join()">Enter market</button><p id="lerr" class="dn"></p></div></div>
+<header><b>Meme Street</b>
+<div class="stat"><small>Meme Street Index</small><span id="index">100.000</span><small id="indexChg" class="mut">+0.0% 1d</small></div>
+<div class="stat"><small>Cash</small><span id="cash">-</span></div>
+<div class="stat"><small>Equity</small><span id="eq">-</span></div>
+<div class="stat"><small>P&amp;L (all time)</small><span id="pnl">-</span></div>
+<div class="stat"><small>Season return</small><span id="ret">-</span></div>
+<div class="stat"><small>Rank</small><span id="rank">-</span></div>
+<div class="stat"><small>Season <span id="sn"></span> ends in</small><span id="left">-</span></div></header>
+<main><section>
+<div class="card" id="market-card"><div class="bar"><span class="mut">Buy size (of cash):</span><span id="bchips"></span><span class="mut">Sell size (of position):</span><span id="schips"></span></div>
+<div class="bar" id="secs"></div>
+<table><thead><tr><th>Ticker</th><th>Company</th><th>Price</th><th>1d</th><th>Trend</th><th>Held</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="card" id="stock-detail"><a class="detail-back" href="/">&larr; Back to market</a><div id="detail-content" class="mut">Select a listing to inspect its chart and financials.</div></div>
+</section><aside>
+<div class="card"><h3>News wire</h3><div class="news" id="news"></div></div>
+<div class="card"><h3>Upcoming events</h3><div id="upcoming"></div></div>
+<div class="card"><h3>Leaderboard</h3><table id="board"></table></div>
+</aside></main><div id="toast"></div>
+<script>
+let ws,token=localStorage.ms_token,buyPct=.25,sellPct=1,sector='all',prev={},last=null;
+const stockPage=/^\/stock\/[^/]+\/?$/.test(location.pathname);
+let selectedTicker=stockPage?decodeURIComponent(location.pathname.split('/').filter(Boolean).pop()).toUpperCase():null;
+let chartPeriod='day',chartCandles=[],historyRequested=false,lastHistoryAt=0;
+let chartZoomCount=null,chartOffset=0,dragStartX=null,dragStartOffset=0;
+if(stockPage)document.body.classList.add('stock-page');
+const $=id=>document.getElementById(id),f=(x,d=2)=>Number(x).toFixed(d),pc=x=>(x>=0?'+':'')+f(x*100,1)+'%';
+const money=x=>Number(x||0).toLocaleString(undefined,{maximumFractionDigits:0});
+function unitScale(valueB){const v=Number(valueB||0);return Math.abs(v)>=1?{v,u:'B'}:{v:v*1000,u:'M'}}
+function capText(valueB){const value=Number(valueB||0);if(Math.abs(value)>=1000)return (value/1000).toFixed(1)+'T MB';const{v,u}=unitScale(value);return v.toFixed(1)+u+' MB'}
+function sharesText(valueB){const{v,u}=unitScale(valueB);return v.toFixed(1)+u}
+function priceText(value,unit='MB/share'){const n=Number(value).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});return n+' '+(unit&&unit!=='MB/share'?unit:'MB')}
+function toast(m,ok){const t=$('toast');t.textContent=m;t.style.borderColor=ok?'#3fb950':'#f85149';t.style.opacity=1;clearTimeout(t._h);t._h=setTimeout(()=>t.style.opacity=0,2200)}
+async function join(){const r=await fetch('/api/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:$('nm').value})});const j=await r.json();
+ if(j.token){localStorage.ms_token=token=j.token;connect()}else $('lerr').textContent=j.error||'Error'}
+function connect(){$('login').style.display='none';ws=new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws?token='+token);
+ ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.type==='state'){last=m;render(m)}else if(m.type==='history'){if(m.ticker===selectedTicker&&m.period===chartPeriod){chartCandles=m.candles||[];drawDetail(last)}}else if(m.type==='result')toast(m.msg,m.ok);else if(m.type==='error'){localStorage.removeItem('ms_token');$('login').style.display='flex'}};
+ ws.onclose=()=>{if(localStorage.ms_token)setTimeout(connect,2000)}}
+function trade(t,side){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'trade',ticker:t,side,pct:side==='buy'?buyPct:sellPct}))}
+function requestHistory(){if(ws&&ws.readyState===1&&selectedTicker){historyRequested=true;lastHistoryAt=Date.now();ws.send(JSON.stringify({type:'history',ticker:selectedTicker,period:chartPeriod}))}}
+function selectStock(t){if(!stockPage){location.href='/stock/'+encodeURIComponent(t);return}selectedTicker=t;chartCandles=[];historyRequested=false;chartZoomCount=null;chartOffset=0;requestHistory();render(last)}
+function selectPeriod(p){chartPeriod=p;chartCandles=[];historyRequested=false;chartZoomCount=null;chartOffset=0;requestHistory();drawDetail(last)}
+function chips(id,arr,cur,fn){const target=$(id);if(target)target.innerHTML=arr.map(p=>`<button class="chip ${p===cur?'on':''}" onclick="${fn}(${p})">${p*100}%</button>`).join(' ')}
+function setB(p){buyPct=p;drawChips()}function setS(p){sellPct=p;drawChips()}function setSec(s){sector=s;render(last)}
+function drawChips(){chips('bchips',[.1,.25,.5,1],buyPct,'setB');chips('schips',[.25,.5,1],sellPct,'setS');chips('detail-bchips',[.1,.25,.5,1],buyPct,'setB');chips('detail-schips',[.25,.5,1],sellPct,'setS')}
+function spark(a){const mn=Math.min(...a),mx=Math.max(...a),r=(mx-mn)||1e-9,w=90,h=24;
+ const pts=a.map((v,i)=>`${(i/(a.length-1||1)*w).toFixed(1)},${(h-(v-mn)/r*h).toFixed(1)}`).join(' ');
+ return `<svg width="${w}" height="${h}"><polyline fill="none" stroke="${a[a.length-1]>=a[0]?'#3fb950':'#f85149'}" stroke-width="1.5" points="${pts}"/></svg>`}
+function visibleCandles(all){
+ if(!all.length)return [];
+ const total=all.length,count=Math.max(5,Math.min(chartZoomCount||total,total));
+ const maxOffset=Math.max(0,total-count);
+ chartOffset=Math.max(0,Math.min(maxOffset,chartOffset));
+ return all.slice(total-count-chartOffset,total-chartOffset);
+}
+function zoomBy(factor){
+ const total=chartCandles.length||1;
+ chartZoomCount=Math.max(5,Math.min(total,Math.round((chartZoomCount||total)*factor)));
+ drawDetail(last);
+}
+function zoomIn(){zoomBy(0.7)}
+function zoomOut(){zoomBy(1.45)}
+function resetZoom(){chartZoomCount=null;chartOffset=0;drawDetail(last)}
+function chartWheel(ev){ev.preventDefault();zoomBy(ev.deltaY<0?0.85:1.18)}
+function chartDragStart(ev){dragStartX=ev.clientX;dragStartOffset=chartOffset;$('chart-wrap')?.classList.add('dragging')}
+function chartDragMove(ev){
+ if(dragStartX===null)return;
+ const total=chartCandles.length||1,count=Math.max(5,Math.min(chartZoomCount||total,total));
+ const svgEl=$('chart-wrap')?.querySelector('svg'),scale=svgEl?svgEl.getBoundingClientRect().width/CHART.w:1;
+ const perCandlePx=(CHART.w-CHART.padL-CHART.padR)*scale/count,dx=ev.clientX-dragStartX;
+ chartOffset=dragStartOffset+Math.round(dx/perCandlePx);
+ chartOffset=Math.max(0,Math.min(Math.max(0,total-count),chartOffset));
+ drawDetail(last);
+}
+function chartDragEnd(){dragStartX=null;$('chart-wrap')?.classList.remove('dragging')}
+const CHART={w:960,h:300,padL:8,padR:92,padT:14,padB:26};
+function axisLabel(c,last){
+ if(c.t===undefined)return '';
+ if(chartPeriod==='day'){const d=new Date(c.t*1000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+ const days=Math.round((last.t-c.t)/1800);
+ if(chartPeriod==='year')return days<7?'this wk':'-'+Math.round(days/7)+'w';
+ return days===0?'today':'-'+days+'d';
+}
+function candleChart(candles,unit,livePrice){
+ if(!candles.length)return '<p class="mut">Collecting prices for this range.</p>';
+ const{w,h,padL,padR,padT,padB}=CHART,innerW=w-padL-padR,innerH=h-padT-padB;
+ let lo=Infinity,hi=-Infinity;candles.forEach(c=>{lo=Math.min(lo,c.l);hi=Math.max(hi,c.h)});
+ if(livePrice){lo=Math.min(lo,livePrice);hi=Math.max(hi,livePrice)}
+ const pad=(hi-lo)*0.06||hi*0.002||1e-6;lo-=pad;hi+=pad;
+ const span=hi-lo,n=candles.length,slot=innerW/n,bodyW=Math.max(1.5,Math.min(18,slot*0.65));
+ const y=v=>padT+innerH-(v-lo)/span*innerH,axisX=w-padR;
+ let svg=`<svg class="price-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${chartPeriod} candlestick price history">`;
+ for(let i=0;i<=4;i++){const v=lo+span*i/4,yy=y(v).toFixed(1);
+  svg+=`<line x1="${padL}" y1="${yy}" x2="${axisX}" y2="${yy}" stroke="#21262d"/><text x="${axisX+6}" y="${(+yy+4).toFixed(1)}" fill="#8b949e" font-size="11">${priceText(v,unit)}</text>`}
+ svg+=`<line x1="${axisX}" y1="${padT}" x2="${axisX}" y2="${h-padB}" stroke="#30363d"/><line x1="${padL}" y1="${h-padB}" x2="${axisX}" y2="${h-padB}" stroke="#30363d"/>`;
+ const every=Math.max(1,Math.ceil(n/8)),last=candles[n-1];
+ candles.forEach((c,i)=>{
+  const cx=padL+slot*i+slot/2,up=c.c>=c.o,color=up?'#3fb950':'#f85149';
+  const yO=y(c.o),yC=y(c.c),top=Math.min(yO,yC),bh=Math.max(1,Math.abs(yC-yO));
+  svg+=`<line x1="${cx.toFixed(1)}" y1="${y(c.h).toFixed(1)}" x2="${cx.toFixed(1)}" y2="${y(c.l).toFixed(1)}" stroke="${color}" stroke-width="1.2"/>`;
+  svg+=`<rect x="${(cx-bodyW/2).toFixed(1)}" y="${top.toFixed(1)}" width="${bodyW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${color}"><title>${axisLabel(c,last)}  O ${f(c.o)}  H ${f(c.h)}  L ${f(c.l)}  C ${f(c.c)}</title></rect>`;
+  if((n-1-i)%every===0)svg+=`<text x="${cx.toFixed(1)}" y="${h-8}" fill="#8b949e" font-size="11" text-anchor="middle">${axisLabel(c,last)}</text>`;
+ });
+ if(livePrice){const yy=y(livePrice).toFixed(1);
+  svg+=`<line x1="${padL}" y1="${yy}" x2="${axisX}" y2="${yy}" stroke="#58a6ff" stroke-dasharray="4 4"/><rect x="${axisX+1}" y="${(yy-9).toFixed(1)}" width="${padR-2}" height="18" rx="3" fill="#58a6ff"/><text x="${axisX+6}" y="${(+yy+4).toFixed(1)}" fill="#0d1117" font-size="11" font-weight="600">${priceText(livePrice,unit)}</text>`}
+ svg+='</svg>';
+ return svg;
+}
+function drawDetail(m){
+ if(!m)return;
+ const stock=m.stocks.find(x=>x.ticker===selectedTicker);
+ if(!stock){$('detail-content').innerHTML=stockPage?`<p>${selectedTicker||'This listing'} is not currently traded.</p>`:'Select a listing to inspect its chart and financials.';return}
+ const periods=[['day','Day'],['week','Week'],['month','Month'],['year','Year']];
+ const sector=m.sectors.find(x=>x.id===stock.sector),fin=stock.financials;
+ const candles=chartCandles.length?chartCandles:(stock.spark||[]).map(v=>({o:v,h:v,l:v,c:v}));
+ if(chartCandles.length){const lc=chartCandles[chartCandles.length-1];lc.c=stock.price;lc.h=Math.max(lc.h,stock.price);lc.l=Math.min(lc.l,stock.price)}
+ const windowed=visibleCandles(candles);
+ const typeLabel=stock.asset_type==='equity'?'Equity':stock.asset_type==='fund'?'Fund':'Commodity';
+ const facts=stock.asset_type==='equity'?`<div><small>Market cap</small><strong>${capText(fin.market_cap)}</strong></div><div><small>Price</small><strong>${priceText(stock.price,stock.price_unit)}</strong></div><div><small>Shares out.</small><strong>${sharesText(fin.shares_outstanding)}</strong></div><div><small>EPS</small><strong>${fin.eps===null?'N/A':f(fin.eps,2)+' MB'}</strong></div><div><small>Revenue (annual)</small><strong>${capText(fin.revenue)}</strong></div><div><small>Net income</small><strong class="${fin.net_income>=0?'up':'dn'}">${capText(fin.net_income)}</strong></div><div><small>Cash</small><strong>${capText(fin.cash)}</strong></div><div><small>Debt</small><strong>${capText(fin.debt)}</strong></div><div><small>Net margin</small><strong>${pc(fin.margin)}</strong></div><div><small>Dividend yield</small><strong>${pc(fin.dividend_yield)}</strong></div><div><small>P/E</small><strong>${fin.pe===null?'N/A':f(fin.pe,1)}</strong></div>`:stock.asset_type==='fund'?`<div><small>Assets (modelled)</small><strong>${capText(fin.market_cap)}</strong></div><div><small>Price</small><strong>${priceText(stock.price,stock.price_unit)}</strong></div><div><small>Distribution yield</small><strong>${pc(fin.dividend_yield)}</strong></div><div><small>Game pool liquidity</small><strong>${money(stock.pool)} tokens</strong></div>`:`<div><small>Reference quote</small><strong>${priceText(stock.price,stock.price_unit)}</strong></div><div><small>Game pool liquidity</small><strong>${money(stock.pool)} tokens</strong></div><div><small>Annual volatility</small><strong>${(stock.vol*100).toFixed(1)}%</strong></div>`;
+ const chartControls=`<div class="chart-wrap" id="chart-wrap" onwheel="chartWheel(event)" onmousedown="chartDragStart(event)" onmousemove="chartDragMove(event)" onmouseup="chartDragEnd()" onmouseleave="chartDragEnd()">${candleChart(windowed,stock.price_unit,stock.price)}</div><div class="chart-controls"><button onclick="zoomIn()">+ Zoom in</button><button onclick="zoomOut()">− Zoom out</button><button onclick="resetZoom()">Reset zoom</button><span class="mut">Showing ${windowed.length} of ${candles.length} candles · scroll or drag the chart to zoom/pan</span></div>`;
+ $('detail-content').innerHTML=`<div class="detail-head"><div><h2>${stock.name} <span class="mut">${stock.ticker}</span></h2><div class="detail-sub">${typeLabel} · ${sector?.name||stock.sector} · ${stock.asset_type==='equity'?stock.rating+' bank rating · ':''}Beta ${f(stock.beta,2)} · ${(stock.vol*100).toFixed(1)}% annual volatility</div><div class="detail-price">${priceText(stock.price,stock.price_unit)} <span class="detail-move ${stock.chg>=0?'up':'dn'}">${pc(stock.chg)} 1d</span></div><p>${stock.desc}</p><small class="mut">Illustrative real-market archetype; estimates are modelled, not live or issuer-reported data.</small><div class="detail-actions"><span class="mut">Buy %</span><span id="detail-bchips"></span><span class="mut">Sell %</span><span id="detail-schips"></span><button class="buy" onclick="trade('${stock.ticker}','buy')">Buy</button><button class="sell" onclick="trade('${stock.ticker}','sell')">Sell</button></div></div><div class="periods">${periods.map(([key,label])=>`<button class="chip ${chartPeriod===key?'active':''}" onclick="selectPeriod('${key}')">${label}</button>`).join(' ')}</div></div>${chartControls}<div class="finance-grid">${facts}<div><small>Sector index</small><strong>${sector?.value?f(sector.value,2):'N/A'}</strong></div></div>`;
+ drawChips();
+}
+function drawUpcoming(m){$('upcoming').innerHTML=m.upcoming.map(e=>{const hours=Math.floor(e.in_seconds/75),days=Math.floor(hours/24),rest=hours%24;return `<div class="event-row"><span><strong>${e.kind}</strong><br><small>${e.ticker?e.ticker+' · ':''}${e.name}</small></span><span class="mut">${days}d ${rest}h</span></div>`}).join('')||'<span class="mut">No scheduled events</span>'}
+function drawNews(m){if(!m)return;$('news').innerHTML=m.news.map(n=>`<div class="k-${n.kind}">${n.text}${n.tickers.length?` <span class="mut">[${n.tickers.join(', ')}]</span>`:''}</div>`).join('')||'<span class="mut">No recent news</span>'}
+function render(m){
+ $('index').textContent=f(m.index.value,3);$('indexChg').textContent=pc(m.index.chg)+' 1d';$('indexChg').className=m.index.chg>=0?'up':'dn';
+ $('cash').textContent=f(m.cash)+' MB';$('eq').textContent=f(m.equity)+' MB';$('pnl').textContent=(m.pnl>=0?'+':'')+f(m.pnl)+' MB';$('pnl').className=m.pnl>=0?'up':'dn';$('ret').textContent=pc(m.ret);$('ret').className=m.ret>=0?'up':'dn';
+ $('rank').textContent='#'+m.rank+' / '+m.players;$('sn').textContent=m.season;
+ const s=m.season_left;$('left').textContent=Math.floor(s/60)+'m '+String(s%60).padStart(2,'0')+'s';
+ $('secs').innerHTML=`<button class="chip ${sector==='all'?'on':''}" onclick="setSec('all')">All</button>`+m.sectors.map(x=>`<button class="chip ${sector===x.id?'on':''}" onclick="setSec('${x.id}')">${x.icon} ${x.name}</button>`).join('');
+ if(stockPage&&!m.stocks.some(x=>x.ticker===selectedTicker)){drawDetail(m);return}
+ if(stockPage&&selectedTicker&&(!historyRequested||Date.now()-lastHistoryAt>5000))requestHistory();
+ if(!selectedTicker||!m.stocks.some(x=>x.ticker===selectedTicker)){selectedTicker=m.stocks[0]?.ticker||null;chartCandles=[];requestHistory()}
+ const held={};m.holdings.forEach(h=>held[h.ticker]=h.value);
+ $('rows').innerHTML=m.stocks.filter(x=>sector==='all'||x.sector===sector).map(x=>{
+  const fl=prev[x.ticker]===undefined?'':x.price>prev[x.ticker]?'flashU':x.price<prev[x.ticker]?'flashD':'';prev[x.ticker]=x.price;
+    return `<tr class="${x.ticker===selectedTicker?'selected-row':''}" onclick="selectStock('${x.ticker}')"><td><b>${x.ticker}</b></td><td class="company-cell"><strong>${x.name}</strong><small class="company-desc">${x.desc}</small></td><td class="${fl}">${priceText(x.price,x.price_unit)}</td>
+  <td class="${x.chg>=0?'up':'dn'}">${pc(x.chg)}</td><td>${spark(x.spark)}</td><td>${held[x.ticker]?f(held[x.ticker]):'-'}</td>
+  <td><button class="buy" onclick="event.stopPropagation();trade('${x.ticker}','buy')">Buy</button> <button class="sell" onclick="event.stopPropagation();trade('${x.ticker}','sell')">Sell</button></td></tr>`}).join('');
+ drawDetail(m);drawUpcoming(m);drawNews(m);
+ $('board').innerHTML='<tr><th>#</th><th>Trader</th><th>Return</th><th>Score</th></tr>'+m.board.map((r,i)=>`<tr><td>${i+1}</td><td>${r.name}${r.bot?' 🤖':''}</td><td class="${r.ret>=0?'up':'dn'}">${pc(r.ret)}</td><td>${r.score}</td></tr>`).join('')}
+drawChips();if(token)connect();
+</script></body></html>

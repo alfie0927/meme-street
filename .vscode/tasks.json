@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Meme Street Profile Engine",
+			"type": "shell",
+			"command": ".\\.venv\\Scripts\\python.exe",
+			"args": [
+				"-m",
+				"uvicorn",
+				"server:app",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"8002"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

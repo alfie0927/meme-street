@@ -1,0 +1,97 @@
+{
+ "sectors": [
+  {
+   "id": "space",
+   "name": "Space",
+   "icon": "🛰️"
+  }
+ ],
+ "companies": [
+  {
+   "ticker": "ORBT",
+   "name": "OrbitWorks",
+   "sector": "space",
+    "beta": 1.80,
+    "vol": 0.75,
+   "sens": 1.4,
+   "depth": 15000,
+        "traits": [
+            "earnings"
+        ],
+   "desc": "Reusable rockets."
+  },
+  {
+   "ticker": "LNAR",
+   "name": "Lunar Mining Co",
+   "sector": "space",
+    "beta": 2.00,
+    "vol": 0.95,
+   "sens": 1.5,
+   "depth": 12000,
+        "traits": [],
+   "desc": "Mining the moon."
+  },
+  {
+   "ticker": "SATC",
+   "name": "SatCom Global",
+   "sector": "space",
+    "beta": 1.05,
+    "vol": 0.35,
+   "sens": 1.0,
+   "depth": 15000,
+   "traits": [
+    "earnings"
+   ],
+   "desc": "Satellite internet."
+  }
+ ],
+ "templates": [
+  {
+   "id": "launch_result",
+   "scope": "company",
+   "up": [
+    "{name} nails a launch",
+    "{name} secures a government contract"
+   ],
+   "down": [
+    "{name} rocket explodes on pad",
+    "{name} launch delayed indefinitely"
+   ],
+   "betas": {
+    "self": 1.0,
+    "space": 0.2
+   },
+   "sev": [
+    0.1,
+    0.3
+   ],
+   "weight": 1,
+   "rumor": false,
+   "chunks": 4,
+   "sector": "space"
+  },
+  {
+   "id": "solar_storm",
+   "scope": "market",
+   "up": [
+    "Solar activity calms, satellites safe",
+    "Space weather forecast clear"
+   ],
+   "down": [
+    "Solar storm threatens satellites",
+    "Geomagnetic storm disrupts comms"
+   ],
+   "betas": {
+    "space": 1.0,
+    "tech": 0.2
+   },
+   "sev": [
+    0.06,
+    0.2
+   ],
+   "weight": 0.5,
+   "rumor": true,
+   "chunks": 6
+  }
+ ]
+}

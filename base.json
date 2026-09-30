@@ -1,0 +1,526 @@
+{
+ "settings": {
+  "event_mean_seconds": 120,
+  "event_duration_scale": 12,
+  "rumor_prob": 0.6,
+  "rumor_credibility": 0.75,
+  "rumor_delay_seconds": [45, 90],
+  "earnings_initial_seconds": [1800, 5400],
+  "earnings_interval_seconds": [3600, 10800],
+  "bot_action_probability": 0.01,
+  "season_seconds": 3600,
+  "bots": 8,
+  "house_seed": 50000,
+  "signup_bonus": 1000,
+  "bot_cash": 1000
+ },
+ "sectors": [
+  {
+   "id": "tech",
+   "name": "Technology",
+   "icon": "💻"
+  },
+  {
+   "id": "energy",
+   "name": "Energy",
+   "icon": "⛽"
+  },
+  {
+   "id": "pharma",
+   "name": "Pharma",
+   "icon": "💊"
+  },
+  {
+   "id": "defense",
+   "name": "Defense",
+   "icon": "🛡️"
+  },
+  {
+   "id": "airlines",
+   "name": "Airlines",
+   "icon": "✈️"
+  },
+  {
+   "id": "consumer",
+   "name": "Consumer",
+   "icon": "🛒"
+  },
+  {
+   "id": "finance",
+   "name": "Finance",
+   "icon": "🏦"
+  },
+  {
+   "id": "safe",
+   "name": "Safe Havens",
+   "icon": "🪙"
+  },
+  {
+   "id": "meme",
+   "name": "Meme",
+   "icon": "🚀"
+  }
+ ],
+ "companies": [
+  {
+   "ticker": "NVXA",
+   "name": "Novaxis Chips",
+   "sector": "tech",
+    "beta": 1.35,
+    "vol": 0.42,
+   "sens": 1.2,
+   "depth": 20000,
+  "dependencies": {"SLRG": 0.35},
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Designs high-performance processors and memory for data centers, personal computers, and connected devices."
+  },
+  {
+   "ticker": "CLDR",
+   "name": "CloudRail",
+   "sector": "tech",
+    "beta": 1.15,
+    "vol": 0.34,
+   "sens": 1.0,
+   "depth": 20000,
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Provides cloud hosting, data storage, and software tools for businesses moving their operations online."
+  },
+  {
+   "ticker": "BYTE",
+   "name": "ByteForge AI",
+   "sector": "tech",
+    "beta": 1.65,
+    "vol": 0.58,
+   "sens": 1.3,
+   "depth": 20000,
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Builds AI model software and the specialized computing systems used to train and run it."
+  },
+  {
+   "ticker": "SLRG",
+   "name": "SolarGrid",
+   "sector": "energy",
+    "beta": 1.20,
+    "vol": 0.42,
+   "sens": 1.0,
+   "depth": 20000,
+   "traits": [],
+    "desc": "Develops utility-scale solar farms and battery projects that sell electricity to regional power grids."
+  },
+  {
+   "ticker": "OILX",
+   "name": "Ostrava Oil",
+   "sector": "energy",
+    "beta": 0.95,
+    "vol": 0.35,
+   "sens": 1.0,
+   "depth": 20000,
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Explores for crude oil and natural gas, then operates pipelines and refineries serving industrial customers."
+  },
+  {
+   "ticker": "HLXB",
+   "name": "Helix Biolabs",
+   "sector": "pharma",
+    "beta": 1.35,
+    "vol": 0.65,
+   "sens": 1.3,
+   "depth": 20000,
+  "traits": [],
+    "desc": "A clinical-stage biotech developing targeted treatments for rare diseases and immune disorders."
+  },
+  {
+   "ticker": "CURA",
+   "name": "CuraGen",
+   "sector": "pharma",
+    "beta": 0.85,
+    "vol": 0.38,
+   "sens": 1.0,
+   "depth": 20000,
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Develops and manufactures established prescription medicines, including specialty and generic treatments."
+  },
+  {
+   "ticker": "AEGX",
+   "name": "Aegis Dynamics",
+   "sector": "defense",
+    "beta": 0.65,
+    "vol": 0.24,
+   "sens": 1.0,
+   "depth": 20000,
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Supplies radar, secure communications, and maintenance systems to defense and aerospace agencies."
+  },
+  {
+   "ticker": "SKYJ",
+   "name": "SkyJet Airways",
+   "sector": "airlines",
+    "beta": 1.25,
+    "vol": 0.45,
+   "sens": 1.1,
+   "depth": 20000,
+  "dependencies": {"OILX": -0.2, "CRUDE": -0.12},
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Runs a regional and international airline network, with revenue tied to travel demand and fuel costs."
+  },
+  {
+   "ticker": "MUNC",
+   "name": "Munchly Foods",
+   "sector": "consumer",
+    "beta": 0.55,
+    "vol": 0.19,
+   "sens": 0.6,
+   "depth": 20000,
+   "traits": [],
+    "desc": "Makes packaged foods and household staples sold through grocery stores and everyday retailers."
+  },
+  {
+   "ticker": "ZIPD",
+   "name": "ZipDrop Delivery",
+   "sector": "consumer",
+    "beta": 1.35,
+    "vol": 0.50,
+   "sens": 0.9,
+   "depth": 20000,
+   "traits": [
+    "earnings"
+   ],
+    "desc": "Operates a last-mile delivery platform connecting local shops, restaurants, and online customers."
+  },
+  {
+   "ticker": "BNKR",
+   "name": "Bankr Holdings",
+   "sector": "finance",
+    "beta": 1.10,
+    "vol": 0.32,
+   "sens": 1.0,
+   "depth": 20000,
+   "traits": [
+    "earnings"
+   ],
+    "desc": "A diversified commercial bank earning income from customer deposits, lending, and payment services."
+  },
+  {
+   "ticker": "BOND",
+   "name": "Steady Bonds",
+   "sector": "safe",
+    "beta": -0.05,
+    "vol": 0.05,
+   "sens": 0.1,
+   "depth": 40000,
+   "traits": [],
+    "desc": "A short-duration government bond fund designed to hold value when riskier assets are unsettled."
+  },
+  {
+   "ticker": "GLDN",
+   "name": "Golden Reserve",
+   "sector": "safe",
+    "beta": 0.10,
+    "vol": 0.16,
+   "sens": 0.5,
+   "depth": 30000,
+   "traits": [],
+    "desc": "A gold-backed trust whose shares track bullion prices and investor demand for a defensive asset."
+  },
+  {
+   "ticker": "DOGO",
+   "name": "DOGO Inc",
+   "sector": "meme",
+    "beta": 2.30,
+    "vol": 1.05,
+   "sens": 1.5,
+   "depth": 12000,
+  "traits": [],
+    "desc": "A viral pet brand monetizing social-media attention through merchandise, licensing, and community events."
+  },
+  {
+   "ticker": "MOON",
+   "name": "Moon Rockets",
+   "sector": "meme",
+    "beta": 1.85,
+    "vol": 0.90,
+   "sens": 1.4,
+   "depth": 12000,
+  "traits": [],
+    "desc": "A speculative launch startup chasing commercial rocket contracts and low-cost small-satellite missions."
+  }
+ ],
+ "templates": [
+  {
+   "id": "war",
+   "scope": "market",
+   "up": [
+    "Ceasefire collapses as conflict escalates",
+    "Regional conflict widens, markets brace"
+   ],
+   "down": [
+    "Peace deal signed, tensions ease",
+    "Ceasefire holds, risk appetite returns"
+   ],
+   "betas": {
+    "defense": 0.8,
+    "GLDN": 0.5,
+    "energy": 0.4,
+    "airlines": -0.8,
+    "tech": -0.3,
+    "consumer": -0.2
+   },
+   "sev": [
+    0.05,
+    0.2
+   ],
+   "weight": 1,
+   "rumor": true,
+   "chunks": 6
+  },
+  {
+   "id": "energy_shock",
+   "scope": "market",
+   "up": [
+    "Oil surges after supply cut",
+    "Pipeline outage sends crude higher"
+   ],
+   "down": [
+    "Oil slumps on oversupply",
+    "Energy prices tumble as demand cools"
+   ],
+   "betas": {
+    "energy": 1.0,
+    "airlines": -0.6,
+    "consumer": -0.2
+   },
+   "sev": [
+    0.05,
+    0.18
+   ],
+   "weight": 1,
+   "rumor": true,
+   "chunks": 6
+  },
+  {
+   "id": "supply_chain",
+   "scope": "market",
+   "up": [
+    "Port strike ends, supply chains recover",
+    "Shipping backlog clears"
+   ],
+   "down": [
+    "Supply chain shock hits global shipping",
+    "Factory shutdowns disrupt component supply"
+   ],
+   "betas": {
+    "tech": 1.0,
+    "consumer": 0.5,
+    "airlines": 0.3
+   },
+   "sev": [
+    0.05,
+    0.18
+   ],
+   "weight": 1,
+   "rumor": true,
+   "chunks": 6
+  },
+  {
+   "id": "rates",
+   "scope": "market",
+   "up": [
+    "Central bank signals rate cuts",
+    "Inflation cools, rate cuts priced in"
+   ],
+   "down": [
+    "Central bank surprises with rate hike",
+    "Hot inflation print spooks bond market"
+   ],
+   "betas": {
+    "tech": 0.6,
+    "meme": 0.9,
+    "finance": 0.4,
+    "BOND": 0.3
+   },
+   "sev": [
+    0.04,
+    0.15
+   ],
+   "weight": 1,
+   "rumor": true,
+   "chunks": 6
+  },
+  {
+   "id": "pandemic",
+   "scope": "market",
+   "up": [
+    "Outbreak fears fade, travel rebounds",
+    "Vaccine rollout accelerates"
+   ],
+   "down": [
+    "New outbreak triggers travel restrictions",
+    "Health emergency declared, borders tighten"
+   ],
+   "betas": {
+    "airlines": 1.0,
+    "consumer": 0.3,
+    "pharma": -0.8,
+    "tech": -0.2
+   },
+   "sev": [
+    0.08,
+    0.25
+   ],
+   "weight": 0.3,
+   "rumor": true,
+   "chunks": 6
+  },
+  {
+   "id": "meme_frenzy",
+   "scope": "market",
+   "up": [
+    "Social media frenzy sends meme stocks soaring",
+    "Retail traders pile into meme names"
+   ],
+   "down": [
+    "Influencer dumps, meme stocks crash",
+    "Meme mania fades as retail exits"
+   ],
+   "betas": {
+    "meme": 1.5,
+    "tech": 0.2
+   },
+   "sev": [
+    0.08,
+    0.3
+   ],
+   "weight": 0.8,
+   "rumor": false,
+   "chunks": 4
+  },
+  {
+   "id": "pharma_trial",
+   "scope": "company",
+   "up": [
+    "{name} announces breakthrough trial results",
+    "{name} wins fast-track approval"
+   ],
+   "down": [
+    "{name} trial fails, program scrapped",
+    "{name} hit by safety recall"
+   ],
+   "betas": {
+    "self": 1.0,
+    "pharma": 0.15
+   },
+   "sev": [
+    0.1,
+    0.3
+   ],
+   "weight": 1,
+   "rumor": true,
+   "chunks": 3,
+   "sector": "pharma"
+  },
+  {
+   "id": "viral_hype",
+   "scope": "company",
+   "up": [
+    "{name} goes viral, orders explode",
+    "{name} trending everywhere"
+   ],
+   "down": [
+    "{name} caught in scandal",
+    "{name} faces boycott"
+   ],
+   "betas": {
+    "self": 1.0,
+    "meme": 0.1
+   },
+   "sev": [
+    0.08,
+    0.25
+   ],
+   "weight": 0.8,
+   "rumor": false,
+   "chunks": 4
+  },
+  {
+   "id": "tech_breakthrough",
+   "scope": "sector",
+   "up": [
+    "{sector}: major breakthrough lifts the industry",
+    "{sector}: record demand reported"
+   ],
+   "down": [
+    "{sector}: regulators open sweeping probe",
+    "{sector}: weak guidance spooks investors"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "sev": [
+    0.05,
+    0.15
+   ],
+   "weight": 0.8,
+   "rumor": true,
+   "chunks": 6,
+   "sector": "tech"
+  },
+  {
+   "id": "regulation",
+   "scope": "sector",
+   "up": [
+    "{sector}: friendly new rules announced",
+    "{sector}: subsidies approved"
+   ],
+   "down": [
+    "{sector}: tough new regulation announced",
+    "{sector}: new tax proposed"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "sev": [
+    0.04,
+    0.14
+   ],
+   "weight": 1,
+   "rumor": true,
+   "chunks": 6
+  },
+  {
+   "id": "earnings",
+   "scope": "company",
+   "up": [
+    "{name} beats earnings expectations",
+    "{name} raises full-year guidance"
+   ],
+   "down": [
+    "{name} misses earnings badly",
+    "{name} cuts guidance"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "sev": [
+    0.06,
+    0.2
+   ],
+   "weight": 0,
+   "rumor": false,
+   "chunks": 3
+  }
+ ]
+}
