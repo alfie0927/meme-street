@@ -176,7 +176,7 @@
       "id": "credit_stress", "scope": "sector", "sector": "finance",
       "up": ["Loan losses rise across regional lenders", "Funding stress hits small-business banks"],
       "down": ["Delinquencies fall and credit quality improves", "Lenders report stronger-than-expected reserves"],
-      "betas": {"self": 1.0, "consumer": -0.2, "industrials": -0.15}, "sev": [0.08, 0.22], "strength": "strong", "weight": 0.7, "rumor": true, "chunks": 5
+      "betas": {"self": -1.0, "consumer": -0.2, "industrials": -0.15}, "sev": [0.08, 0.22], "strength": "strong", "weight": 0.7, "rumor": true, "chunks": 5
     }
   ]
 }

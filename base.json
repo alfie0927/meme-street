@@ -4,13 +4,23 @@
   "event_duration_scale": 12,
   "rumor_prob": 0.6,
   "rumor_credibility": 0.75,
-  "rumor_delay_seconds": [45, 90],
-  "earnings_initial_seconds": [1800, 5400],
-  "earnings_interval_seconds": [3600, 10800],
+  "rumor_delay_seconds": [
+   45,
+   90
+  ],
+  "earnings_initial_seconds": [
+   1800,
+   5400
+  ],
+  "earnings_interval_seconds": [
+   3600,
+   10800
+  ],
   "bot_action_probability": 0.01,
   "season_seconds": 3600,
   "bots": 8,
   "house_seed": 50000,
+  "mean_reversion_halflife_days": 90,
   "signup_bonus": 1000,
   "bot_cash": 1000
  },
@@ -66,197 +76,202 @@
    "ticker": "NVXA",
    "name": "Novaxis Chips",
    "sector": "tech",
-    "beta": 1.35,
-    "vol": 0.42,
+   "beta": 1.35,
+   "vol": 0.42,
    "sens": 1.2,
    "depth": 20000,
-  "dependencies": {"SLRG": 0.35},
+   "dependencies": {
+    "SLRG": 0.35
+   },
    "traits": [
     "earnings"
    ],
-    "desc": "Designs high-performance processors and memory for data centers, personal computers, and connected devices."
+   "desc": "Designs high-performance processors and memory for data centers, personal computers, and connected devices."
   },
   {
    "ticker": "CLDR",
    "name": "CloudRail",
    "sector": "tech",
-    "beta": 1.15,
-    "vol": 0.34,
+   "beta": 1.15,
+   "vol": 0.34,
    "sens": 1.0,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-    "desc": "Provides cloud hosting, data storage, and software tools for businesses moving their operations online."
+   "desc": "Provides cloud hosting, data storage, and software tools for businesses moving their operations online."
   },
   {
    "ticker": "BYTE",
    "name": "ByteForge AI",
    "sector": "tech",
-    "beta": 1.65,
-    "vol": 0.58,
+   "beta": 1.65,
+   "vol": 0.58,
    "sens": 1.3,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-    "desc": "Builds AI model software and the specialized computing systems used to train and run it."
+   "desc": "Builds AI model software and the specialized computing systems used to train and run it."
   },
   {
    "ticker": "SLRG",
    "name": "SolarGrid",
    "sector": "energy",
-    "beta": 1.20,
-    "vol": 0.42,
+   "beta": 1.2,
+   "vol": 0.42,
    "sens": 1.0,
    "depth": 20000,
    "traits": [],
-    "desc": "Develops utility-scale solar farms and battery projects that sell electricity to regional power grids."
+   "desc": "Develops utility-scale solar farms and battery projects that sell electricity to regional power grids."
   },
   {
    "ticker": "OILX",
    "name": "Ostrava Oil",
    "sector": "energy",
-    "beta": 0.95,
-    "vol": 0.35,
+   "beta": 0.95,
+   "vol": 0.35,
    "sens": 1.0,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-    "desc": "Explores for crude oil and natural gas, then operates pipelines and refineries serving industrial customers."
+   "desc": "Explores for crude oil and natural gas, then operates pipelines and refineries serving industrial customers."
   },
   {
    "ticker": "HLXB",
    "name": "Helix Biolabs",
    "sector": "pharma",
-    "beta": 1.35,
-    "vol": 0.65,
+   "beta": 1.35,
+   "vol": 0.65,
    "sens": 1.3,
    "depth": 20000,
-  "traits": [],
-    "desc": "A clinical-stage biotech developing targeted treatments for rare diseases and immune disorders."
+   "traits": [],
+   "desc": "A clinical-stage biotech developing targeted treatments for rare diseases and immune disorders."
   },
   {
    "ticker": "CURA",
    "name": "CuraGen",
    "sector": "pharma",
-    "beta": 0.85,
-    "vol": 0.38,
+   "beta": 0.85,
+   "vol": 0.38,
    "sens": 1.0,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-    "desc": "Develops and manufactures established prescription medicines, including specialty and generic treatments."
+   "desc": "Develops and manufactures established prescription medicines, including specialty and generic treatments."
   },
   {
    "ticker": "AEGX",
    "name": "Aegis Dynamics",
    "sector": "defense",
-    "beta": 0.65,
-    "vol": 0.24,
+   "beta": 0.65,
+   "vol": 0.24,
    "sens": 1.0,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-    "desc": "Supplies radar, secure communications, and maintenance systems to defense and aerospace agencies."
+   "desc": "Supplies radar, secure communications, and maintenance systems to defense and aerospace agencies."
   },
   {
    "ticker": "SKYJ",
    "name": "SkyJet Airways",
    "sector": "airlines",
-    "beta": 1.25,
-    "vol": 0.45,
+   "beta": 1.25,
+   "vol": 0.45,
    "sens": 1.1,
    "depth": 20000,
-  "dependencies": {"OILX": -0.2, "CRUDE": -0.12},
+   "dependencies": {
+    "OILX": -0.2,
+    "CRUDE": -0.12
+   },
    "traits": [
     "earnings"
    ],
-    "desc": "Runs a regional and international airline network, with revenue tied to travel demand and fuel costs."
+   "desc": "Runs a regional and international airline network, with revenue tied to travel demand and fuel costs."
   },
   {
    "ticker": "MUNC",
    "name": "Munchly Foods",
    "sector": "consumer",
-    "beta": 0.55,
-    "vol": 0.19,
+   "beta": 0.55,
+   "vol": 0.19,
    "sens": 0.6,
    "depth": 20000,
    "traits": [],
-    "desc": "Makes packaged foods and household staples sold through grocery stores and everyday retailers."
+   "desc": "Makes packaged foods and household staples sold through grocery stores and everyday retailers."
   },
   {
    "ticker": "ZIPD",
    "name": "ZipDrop Delivery",
    "sector": "consumer",
-    "beta": 1.35,
-    "vol": 0.50,
+   "beta": 1.35,
+   "vol": 0.5,
    "sens": 0.9,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-    "desc": "Operates a last-mile delivery platform connecting local shops, restaurants, and online customers."
+   "desc": "Operates a last-mile delivery platform connecting local shops, restaurants, and online customers."
   },
   {
    "ticker": "BNKR",
    "name": "Bankr Holdings",
    "sector": "finance",
-    "beta": 1.10,
-    "vol": 0.32,
+   "beta": 1.1,
+   "vol": 0.32,
    "sens": 1.0,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-    "desc": "A diversified commercial bank earning income from customer deposits, lending, and payment services."
+   "desc": "A diversified commercial bank earning income from customer deposits, lending, and payment services."
   },
   {
    "ticker": "BOND",
    "name": "Steady Bonds",
    "sector": "safe",
-    "beta": -0.05,
-    "vol": 0.05,
+   "beta": -0.05,
+   "vol": 0.05,
    "sens": 0.1,
    "depth": 40000,
    "traits": [],
-    "desc": "A short-duration government bond fund designed to hold value when riskier assets are unsettled."
+   "desc": "A short-duration government bond fund designed to hold value when riskier assets are unsettled."
   },
   {
    "ticker": "GLDN",
    "name": "Golden Reserve",
    "sector": "safe",
-    "beta": 0.10,
-    "vol": 0.16,
+   "beta": 0.1,
+   "vol": 0.16,
    "sens": 0.5,
    "depth": 30000,
    "traits": [],
-    "desc": "A gold-backed trust whose shares track bullion prices and investor demand for a defensive asset."
+   "desc": "A gold-backed trust whose shares track bullion prices and investor demand for a defensive asset."
   },
   {
    "ticker": "DOGO",
    "name": "DOGO Inc",
    "sector": "meme",
-    "beta": 2.30,
-    "vol": 1.05,
+   "beta": 2.3,
+   "vol": 1.05,
    "sens": 1.5,
    "depth": 12000,
-  "traits": [],
-    "desc": "A viral pet brand monetizing social-media attention through merchandise, licensing, and community events."
+   "traits": [],
+   "desc": "A viral pet brand monetizing social-media attention through merchandise, licensing, and community events."
   },
   {
    "ticker": "MOON",
    "name": "Moon Rockets",
    "sector": "meme",
-    "beta": 1.85,
-    "vol": 0.90,
+   "beta": 1.85,
+   "vol": 0.9,
    "sens": 1.4,
    "depth": 12000,
-  "traits": [],
-    "desc": "A speculative launch startup chasing commercial rocket contracts and low-cost small-satellite missions."
+   "traits": [],
+   "desc": "A speculative launch startup chasing commercial rocket contracts and low-cost small-satellite missions."
   }
  ],
  "templates": [
@@ -277,7 +292,9 @@
     "energy": 0.4,
     "airlines": -0.8,
     "tech": -0.3,
-    "consumer": -0.2
+    "consumer": -0.2,
+    "GOLD": 0.6,
+    "CRUDE": 0.5
    },
    "sev": [
     0.05,
@@ -285,7 +302,8 @@
    ],
    "weight": 1,
    "rumor": true,
-   "chunks": 6
+   "chunks": 6,
+   "index_bias": -0.6
   },
   {
    "id": "energy_shock",
@@ -301,7 +319,9 @@
    "betas": {
     "energy": 1.0,
     "airlines": -0.6,
-    "consumer": -0.2
+    "consumer": -0.2,
+    "CRUDE": 1.0,
+    "NATG": 0.5
    },
    "sev": [
     0.05,
@@ -309,7 +329,8 @@
    ],
    "weight": 1,
    "rumor": true,
-   "chunks": 6
+   "chunks": 6,
+   "index_bias": -0.4
   },
   {
    "id": "supply_chain",
@@ -406,7 +427,8 @@
    ],
    "weight": 0.8,
    "rumor": false,
-   "chunks": 4
+   "chunks": 4,
+   "index_bias": 0.1
   },
   {
    "id": "pharma_trial",

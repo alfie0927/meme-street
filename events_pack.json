@@ -1,0 +1,325 @@
+{
+ "templates": [
+  {
+   "id": "travel_demand",
+   "scope": "sector",
+   "sector": "airlines",
+   "up": [
+    "Record bookings lift {sector}",
+    "Holiday travel demand smashes forecasts"
+   ],
+   "down": [
+    "Air traffic control strike grounds {sector}",
+    "Travel demand cools as fares climb"
+   ],
+   "betas": {
+    "self": 1.0,
+    "consumer": 0.1
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "defense_budget",
+   "scope": "sector",
+   "sector": "defense",
+   "up": [
+    "Governments approve record defense budgets",
+    "NATO members pledge higher military spending"
+   ],
+   "down": [
+    "Defense budgets cut in austerity push",
+    "Arms procurement programs delayed"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "defense_contract",
+   "scope": "company",
+   "sector": "defense",
+   "up": [
+    "{name} wins multi-year government contract",
+    "{name} lands major export order"
+   ],
+   "down": [
+    "{name} loses key contract bid",
+    "Auditors flag cost overruns at {name}"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "consumer_spending",
+   "scope": "sector",
+   "sector": "consumer",
+   "up": [
+    "Retail sales beat forecasts",
+    "Consumer confidence hits a two-year high"
+   ],
+   "down": [
+    "Consumer confidence slumps",
+    "Shoppers cut back as prices bite"
+   ],
+   "betas": {
+    "self": 1.0,
+    "finance": 0.15,
+    "meme": 0.2
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "meme_squeeze",
+   "scope": "company",
+   "sector": "meme",
+   "up": [
+    "{name} short squeeze sends shares flying",
+    "Online traders pile into {name}"
+   ],
+   "down": [
+    "{name} faces trading halt rumors",
+    "Top influencer turns on {name}"
+   ],
+   "betas": {
+    "self": 1.3
+   },
+   "weight": 0.8,
+   "rumor": false
+  },
+  {
+   "id": "power_demand",
+   "scope": "sector",
+   "sector": "utilities",
+   "up": [
+    "Heatwave drives record power demand",
+    "Data-center boom lifts electricity demand"
+   ],
+   "down": [
+    "Regulators freeze utility rate increases",
+    "Mild weather slashes power demand"
+   ],
+   "betas": {
+    "self": 1.0,
+    "NATG": 0.4
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "telecom_spectrum",
+   "scope": "sector",
+   "sector": "telecom",
+   "up": [
+    "Spectrum auction ends cheaper than expected",
+    "5G upgrade cycle accelerates"
+   ],
+   "down": [
+    "Nationwide network outage sparks fines",
+    "Price war erupts among carriers"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "infrastructure",
+   "scope": "sector",
+   "sector": "materials",
+   "up": [
+    "Infrastructure bill boosts building-material demand",
+    "Construction permits jump sharply"
+   ],
+   "down": [
+    "Construction slowdown hits materials demand",
+    "Infrastructure spending bill stalls"
+   ],
+   "betas": {
+    "self": 1.0,
+    "industrials": 0.3,
+    "COPR": 0.4
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "harvest",
+   "scope": "sector",
+   "sector": "agriculture",
+   "up": [
+    "Drought fears lift crop prices",
+    "Export demand for grain surges"
+   ],
+   "down": [
+    "Bumper harvest sends crop prices lower",
+    "Grain export ban hits farm incomes"
+   ],
+   "betas": {
+    "self": 1.0,
+    "WHEAT": 1.0,
+    "consumer": -0.15
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "factory_orders",
+   "scope": "sector",
+   "sector": "industrials",
+   "up": [
+    "Factory orders surge",
+    "Manufacturing activity hits a multi-year high"
+   ],
+   "down": [
+    "Manufacturing activity contracts",
+    "Freight volumes slump"
+   ],
+   "betas": {
+    "self": 1.0,
+    "materials": 0.3,
+    "COPR": 0.3
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "flight_to_safety",
+   "scope": "market",
+   "up": [
+    "Investors flee to safe havens as markets wobble",
+    "Risk-off mood sweeps trading floors"
+   ],
+   "down": [
+    "Risk-on rally drains safe-haven demand",
+    "Investors dump havens for growth stocks"
+   ],
+   "betas": {
+    "safe": 1.0,
+    "GOLD": 0.8,
+    "meme": -0.6,
+    "tech": -0.3
+   },
+   "weight": 0.8,
+   "rumor": true,
+   "index_bias": -0.5
+  },
+  {
+   "id": "drug_approval",
+   "scope": "company",
+   "sector": "pharma",
+   "up": [
+    "Regulator approves {name}'s lead drug",
+    "{name} wins fast-track designation"
+   ],
+   "down": [
+    "Regulator rejects {name}'s lead drug",
+    "Safety scare halts {name} trial"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "tech_customer",
+   "scope": "company",
+   "sector": "tech",
+   "up": [
+    "{name} lands a flagship AI customer",
+    "{name} unveils a hit new product"
+   ],
+   "down": [
+    "{name} hit by major data breach",
+    "{name} loses its largest customer"
+   ],
+   "betas": {
+    "self": 1.0,
+    "tech": 0.1
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "bank_results",
+   "scope": "company",
+   "sector": "finance",
+   "up": [
+    "{name} posts record trading revenue",
+    "{name} raises its dividend"
+   ],
+   "down": [
+    "{name} faces fraud probe",
+    "{name} sets aside big loan-loss reserves"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "gold_demand",
+   "scope": "sector",
+   "sector": "safe",
+   "up": [
+    "Central banks step up gold buying",
+    "Inflation scare boosts demand for havens"
+   ],
+   "down": [
+    "Central banks sell gold reserves",
+    "Strong currency dents haven demand"
+   ],
+   "betas": {
+    "self": 1.0,
+    "GOLD": 1.0
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "telecom_contract",
+   "scope": "company",
+   "sector": "telecom",
+   "up": [
+    "{name} wins nationwide network contract",
+    "{name} subscriber growth tops forecasts"
+   ],
+   "down": [
+    "{name} fined over network outage",
+    "{name} loses a major wholesale customer"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.6,
+   "rumor": true
+  },
+  {
+   "id": "utility_rates",
+   "scope": "company",
+   "sector": "utilities",
+   "up": [
+    "{name} wins approval for rate increase",
+    "{name} signs long-term data-center supply deal"
+   ],
+   "down": [
+    "{name} faces huge storm-damage bill",
+    "Regulator orders {name} to refund customers"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.6,
+   "rumor": true
+  }
+ ]
+}

@@ -152,7 +152,7 @@ class Engine:
 
     # ---------- content ----------
     def _content_files(self):
-        state_path = os.path.abspath(self.state_file) if self.state_file else None
+        state_path = os.path.abspath(self.state_file or "state.json")
         return [f for f in glob.glob(self.content_glob) if os.path.abspath(f) != state_path]
 
     def _sig(self):
@@ -367,8 +367,14 @@ class Engine:
             if tk in self.stocks and r:
                 self._pending[tk] = (1 + self._pending.get(tk, 0.0)) * (1 + r) - 1
 
+    def _vol_scale(self):
+        return float(self.settings.get("volatility_scale", 1.0))
+
+    def _daily_sigma(self, s):
+        return s.vol * self._vol_scale() / math.sqrt(TRADING_DAYS_PER_YEAR)
+
     def _random_market_moves(self):
-        annual_scale = math.sqrt(TRADING_DAYS_PER_YEAR * MARKET_DAY_SECONDS)
+        annual_scale = math.sqrt(TRADING_DAYS_PER_YEAR * MARKET_DAY_SECONDS) / self._vol_scale()
         market_shock = random.gauss(0.0, 1.0)
         sector_shocks = {sector: random.gauss(0.0, 1.0) for sector in self.sectors}
         returns = {}
@@ -384,24 +390,25 @@ class Engine:
     def _mean_revert(self):
         # Pulls the exogenous fair value back toward the reference price. Player price impact is
         # not reverted, so buying and later selling costs only fees and slippage.
-        halflife_days = float(self.settings.get("mean_reversion_halflife_days", 7.0))
+        halflife_days = float(self.settings.get("mean_reversion_halflife_days", 90.0))
         if halflife_days <= 0:
             return
         rate = 1 - 0.5 ** (1.0 / (halflife_days * MARKET_DAY_SECONDS))
-        self._queue({tk: rate * (s.initial_price / s.fair - 1)
+        # geometric pull, symmetric in log price: 0.8x and 1.25x the reference are pulled equally hard
+        self._queue({tk: (s.initial_price / s.fair) ** rate - 1
                      for tk, s in self.stocks.items() if s.fair > 0})
 
     def _event_returns(self, betas, index_move, impact, strength):
         """Full move per ticker for a positive event; a negative event is the mirror image."""
-        strength_limits = {"bystander": 0.1, "weak": 0.35, "strong": 0.65, "very strong": 1.0}
+        strength_limits = self.settings.get("event_strength_limits", {
+            "bystander": 0.1, "weak": 0.35, "strong": 0.65, "very strong": 1.0})
         out = {}
         for tk, s in self.stocks.items():
             crowd = min(2.0, max(0.5, s.T / s.base))
             vol_scale = min(1.8, max(0.5, math.sqrt(s.vol / 0.30)))
             market_return = s.beta * index_move * vol_scale
             catalyst_return = impact * betas.get(tk, 0.0) * s.sens * crowd * vol_scale
-            daily_limit = (s.vol / math.sqrt(TRADING_DAYS_PER_YEAR)
-                           * strength_limits.get(strength, 0.35)
+            daily_limit = (self._daily_sigma(s) * strength_limits.get(strength, 0.35)
                            * max(0.5, min(2.0, abs(s.beta))))
             r = max(-daily_limit, min(daily_limit, market_return + catalyst_return))
             if r:
@@ -507,8 +514,9 @@ class Engine:
             stock.next_rating_review = self.now + random.uniform(*self._review_days()) * MARKET_DAY_SECONDS
             index = ratings.index(stock.rating) if stock.rating in ratings else ratings.index("BBB")
             probability = random.random()
+            # symmetric for profitable companies so a scheduled review carries no expected move
             direction = -1 if stock.margin < 0 and probability < 0.65 else (
-                1 if probability < 0.2 else -1 if probability < 0.3 else 0)
+                1 if probability < 0.15 else -1 if probability < 0.3 else 0)
             next_index = max(0, min(len(ratings) - 1, index + direction))
             if next_index == index:
                 self.news("rating", f"Bank analysts maintain {stock.name} at {stock.rating}.",
@@ -531,7 +539,7 @@ class Engine:
             self.regime = "Recession"
         else:
             self.regime = random.choices(
-                ["Expansion", "Boom", "Bubble", "Recession"], weights=[0.42, 0.25, 0.12, 0.21])[0]
+                ["Expansion", "Boom", "Bubble", "Recession"], weights=[0.44, 0.22, 0.12, 0.22])[0]
         window = self.settings.get("regime_days", [7, 14])
         self.next_regime_change = self.now + random.uniform(*window) * MARKET_DAY_SECONDS
         if self.regime == "Boom":
@@ -570,13 +578,14 @@ class Engine:
         self._queue(pending)
         self._queue(self._dependency_returns(pending))
         pending, self._pending = self._pending, {}
+        cap = float(self.settings.get("daily_move_cap", 0.15))
         for tk, r in pending.items():
             s = self.stocks[tk]
             # daily move envelope on the exogenous fair value (player trades are not clamped)
-            daily_sigma = s.vol / math.sqrt(TRADING_DAYS_PER_YEAR)
-            limit = min(0.15, daily_sigma * (1.5 + 0.75 * min(abs(s.beta), 2.0)))
             target = s.fair * (1 + max(-MAX_TICK_MOVE, min(MAX_TICK_MOVE, r)))
-            target = max(s.fair_open * (1 - limit), min(s.fair_open * (1 + limit), target))
+            if cap > 0:
+                limit = min(cap, self._daily_sigma(s) * (1.5 + 0.75 * min(abs(s.beta), 2.0)))
+                target = max(s.fair_open * (1 - limit), min(s.fair_open * (1 + limit), target))
             s.move(target / s.fair - 1)
 
     def _check_distress(self):
@@ -597,8 +606,10 @@ class Engine:
                 self.news("bailout", f"Emergency bank facility rescues {stock.name}.",
                           [ticker], 1, "very strong")
                 continue
-            # Bankruptcy: holders are cashed out at the pool's current price (no fee), the
-            # remaining pool liquidity returns to the house reserve.
+            # Bankruptcy: the price is cut by the haircut, holders are cashed out at that price
+            # (no fee) and the remaining pool liquidity returns to the house reserve. Without the
+            # haircut, buying a distressed stock would be a free bet on the bailout.
+            stock.move(-float(self.settings.get("bankruptcy_haircut", 0.5)))
             for player in self.players.values():
                 sh = player.hold.pop(ticker, 0.0)
                 if sh > 0:
