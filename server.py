@@ -15,6 +15,19 @@ clients = {}
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
 
 
+sending = set()
+
+
+async def _send(ws, text):
+    """Send with a deadline; runs as its own task so a stuck client can never stall the game loop."""
+    try:
+        await asyncio.wait_for(ws.send_text(text), timeout=3)
+    except Exception:
+        clients.pop(ws, None)
+    finally:
+        sending.discard(ws)
+
+
 async def game_loop():
     n = 0
     while True:
@@ -24,17 +37,11 @@ async def game_loop():
             n += 1
             if n % 30 == 0:
                 engine.save()
-            dead = []
             for ws, tok in list(clients.items()):
                 p = engine.by_token.get(tok)
-                if not p:
-                    continue
-                try:
-                    await ws.send_text(json.dumps(engine.state_for(p)))
-                except Exception:
-                    dead.append(ws)
-            for ws in dead:
-                clients.pop(ws, None)
+                if p and ws not in sending:  # a client still receiving the last update just skips this one
+                    sending.add(ws)
+                    asyncio.create_task(_send(ws, json.dumps(engine.state_for(p))))
         except Exception:
             logger.exception("tick error")
         await asyncio.sleep(max(0.05, 1.0 - (time.time() - t0)))
@@ -72,20 +79,47 @@ async def ws_endpoint(ws: WebSocket, token: str = ""):
         await ws.close()
         return
     clients[ws] = token
+    last_query = 0.0
     try:
         while True:
-            m = json.loads(await ws.receive_text())
-            if m.get("type") == "trade":
-                try:
-                    ok, msg = engine.trade(p, str(m.get("ticker")), str(m.get("side")), float(m.get("pct", 0)))
-                except Exception:
-                    logger.exception("trade failed")
-                    ok, msg = False, "Trade error"
-                await ws.send_text(json.dumps({"type": "result", "ok": ok, "msg": msg}))
-            elif m.get("type") == "history":
-                result = engine.history_for(str(m.get("ticker", "")), str(m.get("period", "week")))
-                await ws.send_text(json.dumps(result))
-    except WebSocketDisconnect:
+            raw = await ws.receive_text()
+            try:
+                if len(raw) > 2000:
+                    continue
+                m = json.loads(raw)
+                if not isinstance(m, dict):
+                    continue
+                kind = m.get("type")
+                if kind == "trade":
+                    try:
+                        raw_amount = m.get("amount")
+                        amount = None if raw_amount in (None, "") else float(raw_amount)
+                        ok, msg = engine.trade(p, str(m.get("ticker")), str(m.get("side")),
+                                               float(m.get("pct") or 0), amount)
+                    except (ValueError, TypeError):
+                        ok, msg = False, "Bad trade request"
+                    except Exception:
+                        logger.exception("trade failed")
+                        ok, msg = False, "Trade error"
+                    await ws.send_text(json.dumps({"type": "result", "ok": ok, "msg": msg}))
+                elif kind in ("history", "company"):
+                    now = time.time()
+                    if now - last_query < 0.2:  # history/company lookups are heavier than trades
+                        continue
+                    last_query = now
+                    ticker = str(m.get("ticker", ""))
+                    result = (engine.history_for(ticker, str(m.get("period", "30s"))) if kind == "history"
+                              else engine.company_for(ticker))
+                    await ws.send_text(json.dumps(result))
+            except WebSocketDisconnect:
+                raise
+            except RuntimeError:
+                raise
+            except (ValueError, TypeError, AttributeError) as e:
+                logger.debug("ignored malformed websocket message: %r", e)
+            except Exception:
+                logger.exception("websocket message failed")
+    except (WebSocketDisconnect, RuntimeError):
         pass
     finally:
         clients.pop(ws, None)
@@ -138,11 +172,16 @@ async def admin_withdraw(t: Transfer, x_admin_key: str = Header("")):
 
 @app.get("/")
 async def index():
-    return FileResponse(os.path.join(BASE, "index.html"))
+    return FileResponse(os.path.join(BASE, "index.html"), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/holdings")
+async def holdings_page():
+    return FileResponse(os.path.join(BASE, "index.html"), headers={"Cache-Control": "no-store"})
 
 
 @app.get("/stock/{ticker}")
 async def stock_page(ticker: str):
-    return FileResponse(os.path.join(BASE, "index.html"))
+    return FileResponse(os.path.join(BASE, "index.html"), headers={"Cache-Control": "no-store"})
 
 

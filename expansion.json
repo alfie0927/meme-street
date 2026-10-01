@@ -154,7 +154,7 @@
       "desc": "A play-money copper price proxy tied to construction, grid investment, and electronics demand."
     },
     {
-      "ticker": "GOLD", "name": "Gold Spot", "sector": "commodities", "asset_type": "commodity", "beta": -0.1, "vol": 0.2,
+      "ticker": "GOLD", "name": "Gold Spot", "sector": "commodities", "asset_type": "commodity", "beta": -0.3, "vol": 0.2,
       "sens": 0.7, "depth": 22000, "rating": "AA", "margin": 0.0, "traits": [],
       "desc": "A play-money gold price proxy that tends to attract demand during uncertainty and currency stress."
     }
@@ -173,7 +173,7 @@
       "betas": {"self": 1.0, "materials": 0.3, "agriculture": 0.2}, "sev": [0.1, 0.25], "strength": "strong", "weight": 0.8, "rumor": true, "chunks": 5
     },
     {
-      "id": "credit_stress", "scope": "sector", "sector": "finance",
+      "id": "credit_stress", "good": "down", "scope": "sector", "sector": "finance",
       "up": ["Loan losses rise across regional lenders", "Funding stress hits small-business banks"],
       "down": ["Delinquencies fall and credit quality improves", "Lenders report stronger-than-expected reserves"],
       "betas": {"self": -1.0, "consumer": -0.2, "industrials": -0.15}, "sev": [0.08, 0.22], "strength": "strong", "weight": 0.7, "rumor": true, "chunks": 5
