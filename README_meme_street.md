@@ -29,7 +29,7 @@ Start the game as above, then in a second terminal run `python share.py` (the fi
 ## Add content while the game runs
 1. Copy `space_pack.json.disabled` to `space_pack.json` in the project root.
 2. Within a second the engine reloads: a new Space sector, 3 IPOs and 2 new event types appear.
-3. New companies are funded from the fee treasury first, then by trimming every pool pro rata, so the token total never changes.
+3. A new listing costs the house nothing: stocks hold no tokens, so the token total never changes.
 
 Content packs are root-level `.json` files. The generated `state.json` is excluded from content loading.
 
@@ -41,12 +41,12 @@ The market clock treats 30 minutes as one simulated trading day. Stock and index
 Click a ticker to open `/stock/TICKER` for a dedicated detail page. Saved pre-profile positions are automatically rescaled to the reference quote while preserving their AMM liquidation value and the token supply.
 
 ## Economics (checked by `python sim.py [hours] [seed]`)
-- Currency is memebucks (MB). Every token is in exactly one place: player cash, a stock pool, the house reserve, or collected fees. `total_tokens() == minted` at all times; only deposits/withdrawals (`Engine.credit` / `Engine.debit`) and house capital injections change `minted`.
-- Only trades move tokens. News, noise, regime shifts, bailouts and mean reversion change a pool's share count, not its tokens, so they never create or destroy money.
-- The house earns the 0.5% fee on each side of every trade. It also seeds each pool's liquidity; `house_stats()` splits house P&L into fees and liquidity P&L. Players' combined P&L is the mirror image of the house's.
+- Currency is memebucks (MB). Every token is in exactly one place: player cash, the house reserve, or collected fees. `total_tokens() == minted` at all times; only deposits/withdrawals (`Engine.credit` / `Engine.debit`) and house capital injections change `minted`.
+- Only trades move tokens. News, noise, regime shifts, bailouts and mean reversion change prices, never tokens, so they never create or destroy money.
+- The house earns the 0.5% fee on each side of every trade. `house_stats()` splits house P&L into fees and liquidity P&L. Players' combined P&L is the mirror image of the house's.
 - Nothing is predictable from public information: news direction is a coin flip, breaking news moves prices instantly, rumors move prices by their expected value (the confirmation/correction moves the rest), and dependency/sector spillovers land in the same tick as their cause. Mean reversion acts on each stock's exogenous fair value, never on player price impact.
 - A Day (what used to be a season) is a leaderboard period of one real day, midnight to midnight UTC; balances carry over. Day return = equity / (equity at the start of the day + deposits) - 1. See HOW_IT_WORKS.md for how the game works today (this file is older).
-- Bankruptcy cashes holders out at the pool's last price (no fee); the remaining pool returns to the house reserve.
+- Bankruptcy cashes holders out at the stock's last price (no fee), paid from the house reserve.
 - `signup_bonus` (base.json) is a test credit; set it to 0 before real money is involved.
 - Price shocks carry no built-in direction: regime shifts balance up and down, credit reviews of profitable companies are equally likely to upgrade or downgrade, mean reversion pulls symmetrically in log price, and bankruptcy applies `bankruptcy_haircut` before paying holders so distressed stocks are not a free bet on a bailout.
 - Tuning knobs (settings): `volatility_scale`, `event_strength_limits`, `daily_move_cap` (0 disables), `mean_reversion_halflife_days`, `news_move_ranges`, `event_mean_seconds`. Check any change with `tune.py`; keep `liqPnL` well under `fees` and the `value`/`hodl` columns near zero.

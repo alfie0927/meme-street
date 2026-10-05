@@ -25,12 +25,12 @@ logger = logging.getLogger(__name__)
 
 # Economics
 # ---------
-# Every token sits in exactly one place: a player's cash, a stock pool (T), the house reserve,
-# or collected fees. Only trades move tokens, and only deposits/withdrawals and house capital
-# injections change the total (`minted`). News, noise and mean reversion move prices by
-# changing a pool's share count (S) instead of its tokens, so they never create money. Player
-# gains are paid by other players (or by the house's pool liquidity when the house is on the
-# other side), and the house earns FEE on every trade.
+# Every token sits in exactly one place: a player's cash, the house reserve, or collected fees.
+# Only trades move tokens, and only deposits/withdrawals and house capital injections change the
+# total (`minted`). News, noise and mean reversion change prices, never tokens, so they never
+# create money. The house is the other side of every trade and pays every winner from its
+# reserve, and it earns FEE on every trade. (Stocks used to hold seed "pool" tokens; they backed
+# nothing and were removed, see `_retire_pools`.)
 
 
 RATINGS = ["D", "C", "CC", "CCC", "B", "BB", "BBB", "A", "AA", "AAA"]
@@ -96,14 +96,13 @@ def _clamp(x, lo, hi):
 
 
 class Stock:
-    def __init__(self, cfg, tokens):
+    def __init__(self, cfg, weight):
         self.ticker = cfg["ticker"]
         self.split_factor = 1.0   # product of the stock splits that happened in older games (there are no new ones)
         self.share_adj = 1.0      # product of all buybacks and offerings (1.02 means 2% more shares)
         self.offering = None      # a declared share offering waiting to settle: {"t", "pct"}
         self.update(cfg)
-        self.T = float(tokens)    # liquidity the house seeded for this listing; trades never touch it
-        self.base = float(tokens)
+        self.base = float(weight)  # the stock's size (`depth` in the content): its weight in indices and the short-fee yardstick; holds no tokens
         self.fair = self.fair_open = self.initial_price  # the market price: trades never move it
         self.hist = deque(maxlen=MARKET_DAY_SECONDS + 1)
         self.candles = deque(maxlen=2 * MARKET_DAY_SECONDS // INTRADAY_CANDLE_SECONDS)
@@ -232,6 +231,7 @@ class Engine(SocialMixin, AccountsMixin):
         self._curve_t = 0.0
         self.recovered_events = 0
         self._retired_bots = 0                      # how many house-funded bots a save from an older version had (they are removed on load)
+        self._retired_pools = 0.0                   # seed tokens an older save had inside its stocks (they are retired on load)
         self.now = time.time()
         self.sectors, self.templates, self.settings = {}, {}, {}
         self.derived_specs = {}                    # indices, ETFs and leveraged products from the content packs
@@ -270,7 +270,7 @@ class Engine(SocialMixin, AccountsMixin):
         self.history = []
         self.house = 0.0          # house reserve: funds new listings, receives delisted pools
         self.fees = 0.0           # fee revenue
-        self.house_capital = 0.0  # tokens the house has put in (pool seeds and the reserve)
+        self.house_capital = 0.0  # tokens the house has put in (the starting reserve and every top-up)
         self.minted = 0.0
         self.season_no = 1
         self.board = []
@@ -317,7 +317,7 @@ class Engine(SocialMixin, AccountsMixin):
             for _ in range(int(self.settings.get("moonshot_initial", 4))):
                 self._list_moonshot(initial=True)
             self._assign_personas()
-        if self.recovered_events or self._retired_bots:
+        if self.recovered_events or self._retired_bots or self._retired_pools:
             self.save()                            # checkpoint straight away so the replayed events are not replayed again
         self._sync_index_asset()
         self.index_prev = {tk: s.price for tk, s in self.stocks.items()}
@@ -521,12 +521,7 @@ class Engine(SocialMixin, AccountsMixin):
         return rows, stress
 
     def _list(self, cfg, initial):
-        depth = float(cfg.get("depth", 20000))
-        take = 0.0 if initial else min(max(self.house, 0.0), depth)
-        self.house -= take
-        if depth > take:
-            self._mint_house(depth - take)
-        s = Stock(cfg, depth)
+        s = Stock(cfg, float(cfg.get("depth", 20000)))
         reports = s.asset_type == "equity" and s.revenue > 0
         if reports:
             s.earn_slot = self._pick_earnings_slot()
@@ -1189,10 +1184,9 @@ class Engine(SocialMixin, AccountsMixin):
         for tk, s in self.stocks.items():
             if s.asset_type == "index" or s.base <= 0:
                 continue
-            crowd = min(2.0, max(0.5, s.T / s.base))
             vol_scale = min(1.8, max(0.5, math.sqrt(s.vol / 0.30)))
             market_return = s.beta * index_move * vol_scale
-            catalyst_return = impact * betas.get(tk, 0.0) * s.sens * crowd * vol_scale
+            catalyst_return = impact * betas.get(tk, 0.0) * s.sens * vol_scale
             daily_limit = (self._daily_sigma(s) * strength_limits.get(strength, 0.35)
                            * max(0.5, min(2.0, abs(s.beta))))
             r = max(-daily_limit, min(daily_limit, market_return + catalyst_return))
@@ -2029,7 +2023,7 @@ class Engine(SocialMixin, AccountsMixin):
                     [ticker], 1, "very strong")
                 continue
             # Bankruptcy: holders are cashed out at a fraction of the price (no fee), shorts close at that price,
-            # the remaining pool liquidity returns to the house reserve and the ticker is delisted for good.
+            # and the ticker is delisted for good.
             stock.move(-(1 - payout))
             for player in self.players.values():
                 sh = player.hold.pop(ticker, 0.0)
@@ -2049,8 +2043,7 @@ class Engine(SocialMixin, AccountsMixin):
                     self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=cd, house=-cd,
                                notional=abs(cd), shortfall=short)
             self._paper_delist(ticker, stock.price)
-            self.house += stock.T
-            self._emit("delist", None, ticker, house=stock.T)
+            self._emit("delist", None, ticker, house=0.0)
             self._archive_stock(stock, "bankruptcy", stock.price)
             self.delisted.append(ticker)
             self.stocks.pop(ticker)
@@ -2446,6 +2439,17 @@ class Engine(SocialMixin, AccountsMixin):
             self.by_token.pop(p.token, None)
         self._retired_bots = len(bots)
         logger.info("removed %d bots; %.2f MB went back to the house reserve", len(bots), returned)
+
+    def _retire_pools(self, saved_stocks):
+        """A save from an older version has seed tokens inside every stock (the `T` of the old liquidity pool). They
+        backed nothing (every payout comes from the house reserve), so they are retired: the tokens are taken out of
+        `minted` and out of the house capital, and the reserve, the fees and every player's money stay exactly as they
+        were. Runs once, while loading; the clean save is written straight after."""
+        pools = sum(float(v.get("T", 0.0)) for v in saved_stocks.values())
+        if pools:
+            self.minted -= pools
+            self._retired_pools = pools
+            logger.info("retired %.2f MB of seed tokens that stocks used to hold (the house reserve is unchanged)", pools)
 
     def reset_to_day_one(self):
         """Start the game over (admin only; the server backs everything up first). Every player goes
@@ -2847,8 +2851,7 @@ class Engine(SocialMixin, AccountsMixin):
 
     # ---------- accounting / persistence ----------
     def total_tokens(self):
-        return (self.house + self.fees + sum(s.T for s in self.stocks.values())
-                + sum(p.cash for p in self.players.values()))
+        return self.house + self.fees + sum(p.cash for p in self.players.values())
 
     def _sample_series(self):
         """Every 10 seconds, note house and player money so the admin page can draw charts."""
@@ -3000,7 +3003,7 @@ class Engine(SocialMixin, AccountsMixin):
                 "liquidity_pnl": house_pnl - self.fees,
                 "players_pnl": players_pnl, "player_deposits": human_in, "player_equity": human_equity,
                 "player_cash": sum(p.cash for p in humans), "house_capital": self.house_capital,
-                "house_reserve": self.house, "pool_tokens": sum(s.T for s in self.stocks.values()),
+                "house_reserve": self.house,
                 "minted": self.minted, "invariant_drift": self.total_tokens() - self.minted,
                 "borrow_fees": self.borrow_fees, "short_shortfall": self.short_shortfall,
                 "short_interest": sum(self.short_interest_map().values()),
@@ -3050,7 +3053,7 @@ class Engine(SocialMixin, AccountsMixin):
              "used_news": list(self.used_news), "threads": self.threads,
              "delisted": self.delisted, "season_no": self.season_no,
              "season_end": self.season_end, "history": self.history,
-             "stocks": {t: {"T": s.T, "base": s.base, "fair": s.fair, "fair_open": s.fair_open,
+             "stocks": {t: {"base": s.base, "fair": s.fair, "fair_open": s.fair_open,
                             "daily_hist": list(s.daily_hist), "candles": list(s.candles),
                             "safety": s.safety, "pending": s.pending, "log": list(s.log),
                             "reports": list(s.reports), "trend": s.trend, "mood": s.mood,
@@ -3116,8 +3119,7 @@ class Engine(SocialMixin, AccountsMixin):
             return
         if kind == "delist":
             stock = self.stocks.pop(tk, None)
-            if stock is not None:
-                self.house += ev["house_delta"]
+            if stock is not None:          # (an event from the time stocks held seed tokens carries them in house_delta: they were retired on load)
                 self.delisted.append(tk)
                 self.index_prev.pop(tk, None)
             return
@@ -3304,10 +3306,9 @@ class Engine(SocialMixin, AccountsMixin):
             house = float(d.get("house", d.get("treasury", 0.0)))
             for t, v in saved_stocks.items():
                 if t not in self.stocks:
-                    house += float(v.get("T", 0.0))  # listing removed from content: liquidity returns
                     continue
                 s = self.stocks[t]
-                s.T, s.base = v["T"], v["base"]
+                s.base = v["base"]
                 history_scale = 1.0
                 if schema < 7 and v.get("S"):
                     s.fair = v["T"] / v["S"]  # before v7 the pool price was the market price
@@ -3400,6 +3401,7 @@ class Engine(SocialMixin, AccountsMixin):
                     s.next_rating_review = self._next_review()
                 self._record(s)
             self.minted = float(d["minted"])
+            self._retire_pools(saved_stocks)
             self.fees = float(d.get("fees", 0.0))
             self.borrow_fees = float(d.get("borrow_fees", 0.0))
             self.short_shortfall = float(d.get("short_shortfall", 0.0))
@@ -3407,14 +3409,10 @@ class Engine(SocialMixin, AccountsMixin):
             self.mkt_volm = float(d.get("mkt_volm", 1.0))
             self.trades_total = int(d.get("trades_total", 0))
             self.margin_log.extend(d.get("margin_log", []))
-            # listings added to content since the save are funded from the house reserve
             for t, s in self.stocks.items():
                 if t not in saved_stocks and t not in self.derived:
                     s.listed_at = self.now            # added to the content since the save: new to this game
-            new_reserves = sum(s.T for t, s in self.stocks.items() if t not in saved_stocks)
-            take = min(max(house, 0.0), new_reserves)
-            self.house = house - take
-            self.minted += new_reserves - take
+            self.house = house
             self.players.clear()
             self.by_token.clear()
             retiring = []                                  # house-funded bots from an older save: settled and removed below
@@ -3452,7 +3450,10 @@ class Engine(SocialMixin, AccountsMixin):
                 self.players[p.token] = p
                 self.by_token[p.token] = p
             human_in = sum(p.deposited for p in self.players.values() if p not in retiring)
-            self.house_capital = float(d.get("house_capital", self.minted - human_in)) + new_reserves - take
+            if "house_capital" in d:
+                self.house_capital = float(d["house_capital"]) - self._retired_pools
+            else:
+                self.house_capital = self.minted - human_in
             self.recapitalized = float(d.get("recapitalized", 0.0))
             self.index_level = float(d.get("index_level", 100.0))
             self.index_hist.clear()
