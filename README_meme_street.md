@@ -23,6 +23,9 @@ python -m venv .venv
 ```
 Open http://127.0.0.1:8000 in two browser tabs to try two players.
 
+## Let other people play from your computer
+Start the game as above, then in a second terminal run `python share.py` (the first time, `python share.py --install`). It prints a public `https://….trycloudflare.com` link to send to testers; it works while that window stays open and the game is running. Details, and what to set first (an `ADMIN_KEY`), are in `HOW_IT_WORKS.md`, section 1. For a bigger crowd, `python launch.py --gateways 4` runs the game plus four processes that hold the connections (`HOW_IT_WORKS.md`, section 12).
+
 ## Add content while the game runs
 1. Copy `space_pack.json.disabled` to `space_pack.json` in the project root.
 2. Within a second the engine reloads: a new Space sector, 3 IPOs and 2 new event types appear.
@@ -42,7 +45,7 @@ Click a ticker to open `/stock/TICKER` for a dedicated detail page. Saved pre-pr
 - Only trades move tokens. News, noise, regime shifts, bailouts and mean reversion change a pool's share count, not its tokens, so they never create or destroy money.
 - The house earns the 0.5% fee on each side of every trade. It also seeds each pool's liquidity and runs the bots; `house_stats()` splits house P&L into fees, liquidity P&L and bot P&L. Players' combined P&L is the mirror image of the house's.
 - Nothing is predictable from public information: news direction is a coin flip, breaking news moves prices instantly, rumors move prices by their expected value (the confirmation/correction moves the rest), and dependency/sector spillovers land in the same tick as their cause. Mean reversion acts on each stock's exogenous fair value, never on player price impact.
-- Seasons are leaderboard periods only; balances carry over. Season return = equity / (equity at season start + deposits) - 1.
+- A Day (what used to be a season) is a leaderboard period of one real day, midnight to midnight UTC; balances carry over. Day return = equity / (equity at the start of the day + deposits) - 1. See HOW_IT_WORKS.md for how the game works today (this file is older).
 - Bankruptcy cashes holders out at the pool's last price (no fee); the remaining pool returns to the house reserve.
 - `signup_bonus` (base.json) is a test credit; set it to 0 before real money is involved.
 - Price shocks carry no built-in direction: regime shifts balance up and down, credit reviews of profitable companies are equally likely to upgrade or downgrade, mean reversion pulls symmetrically in log price, and bankruptcy applies `bankruptcy_haircut` before paying holders so distressed stocks are not a free bet on a bailout.

@@ -1,0 +1,153 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meme Street Admin</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--line:#30363d;--txt:#e6edf3;--mut:#8b949e;--up:#3fb950;--dn:#f85149;--acc:#58a6ff;--warn:#d29922}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+header b{font-size:18px}a{color:var(--acc);text-decoration:none}.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}.warn{color:var(--warn)}
+main{max-width:1200px;margin:0 auto;padding:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.card small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.card strong{display:block;font-size:18px;margin-top:3px}
+.card em{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+h3{margin:0 0 8px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+table{width:100%;border-collapse:collapse}td,th{padding:5px 6px;text-align:right;border-bottom:1px solid #21262d;white-space:nowrap}
+td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:12px}
+tr.pick{cursor:pointer}tr.pick:hover{background:#1c2430}
+svg{width:100%;height:auto;display:block}
+.msgrow{display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #21262d;font-size:13px}.msgrow span.t{flex:1;word-break:break-word}.msgrow small{color:var(--mut)}
+button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:5px 10px}button{cursor:pointer}button:hover{background:#30363d}
+#login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
+#login input{width:100%;margin:10px 0}
+.alerts div{padding:6px 10px;border-left:3px solid var(--warn);background:#d2992214;margin-bottom:6px;border-radius:0 6px 6px 0}
+.alerts div.bad{border-color:var(--dn);background:#f8514914}.alerts div.ok{border-color:var(--up);background:#3fb95014}
+.bar{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:6px}.bar div{flex:1;text-align:center;font-size:10px;color:var(--mut)}
+.bar i{display:block;margin:0 auto 2px;border-radius:3px 3px 0 0;min-height:1px}
+</style></head><body>
+<div id="login"><h2 style="margin:0">Admin</h2><p class="mut">Enter the admin key (the <code>ADMIN_KEY</code> the server was started with). It stays in this browser tab only.</p>
+<input id="key" type="password" placeholder="Admin key" autocomplete="off"><button id="go" style="width:100%">Open dashboard</button><p id="err" class="dn"></p></div>
+<div id="app" style="display:none">
+<header><b>Meme Street Admin</b><a href="/">Market</a><span id="stamp" class="mut"></span><span style="flex:1"></span><button id="out">Lock</button></header>
+<main>
+<div class="alerts" id="alerts"></div>
+<div class="cards" id="cards"></div>
+<div class="grid2"><div class="card"><h3>House reserve and fees (MB)</h3><div id="ch1"></div></div>
+<div class="card"><h3>Players' combined P&amp;L (MB, humans)</h3><div id="ch2"></div></div></div>
+<div class="card" style="margin-top:12px"><h3>House risk: what players' positions could cost the house</h3><div id="risk"></div></div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Human players by all-time return</h3><div id="dist"></div></div>
+<div class="card"><h3>Recent margin calls</h3><div id="calls"></div></div></div>
+<div class="card" style="margin-top:12px"><h3>Top winners (humans, by all-time P&amp;L). Click a row for their trades</h3><div id="winners"></div></div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Chat moderation: latest messages</h3><div id="chatlog" class="mut">Loading…</div></div>
+<div class="card"><h3>Reported messages and mutes</h3><div id="reports" class="mut">Loading…</div></div></div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Appeals from muted players</h3><div id="appeals" class="mut">Loading…</div></div>
+<div class="card"><h3>Moderator log (newest first)</h3><div id="modlog" class="mut">Loading…</div></div></div>
+<div class="card" style="margin-top:12px"><h3>Accounts</h3><div id="accts" class="mut">Loading…</div>
+<div class="msgrow" style="margin-top:8px"><input id="rp-name" placeholder="Player name" maxlength="16"><button id="rp-go">Reset password</button><span id="rp-out" class="t"></span></div>
+<p class="mut" style="font-size:12px">A reset ends all of that player's logins and shows a temporary password once. Tell it to them privately; they should change it on their profile page. Addresses are stored only as salted tags, so you can see which accounts share one, not what it is.</p></div>
+<div class="card" style="margin-top:12px"><h3>Email and mail</h3><div id="mailbox" class="mut">Loading…</div>
+<div class="msgrow" style="margin-top:8px"><input id="em-name" placeholder="Player name" maxlength="16"><button id="em-verify">Mark email verified</button><button id="em-clear">Remove email</button><span id="em-out" class="t"></span></div>
+<p class="mut" style="font-size:12px">Email addresses make passwords recoverable and stop one person running many accounts (each address belongs to one account). Set the <code>email_mode</code> setting to off, optional or required. With no SMTP server configured (see <code>mailer.py</code>) nothing is sent: the message, code included, appears in the list above so you can hand a code to a tester yourself.</p></div>
+<div class="card" style="margin-top:12px"><h3>Start the game over</h3>
+<p class="mut" style="font-size:12px">Back to Day 1: every player and bot gets the starting balance again, positions are closed, orders cancelled, trade history, medals and achievements cleared. Prices, charts, accounts and passwords stay. The old save and ledger are copied into the <code>backups</code> folder first.</p>
+<div class="msgrow"><input id="reset-word" placeholder="Type RESET" maxlength="5"><button id="reset-go">Reset the game to Day 1</button><span id="reset-out" class="t"></span></div></div>
+<div class="card" style="margin-top:12px" id="detailcard"><h3 id="dtitle">Player detail</h3><div id="detail" class="mut">Pick a player above.</div></div>
+</main></div>
+<script>
+const $=id=>document.getElementById(id),f=(x,d=2)=>Number(x).toFixed(d);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mb=x=>Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
+const sgn=(x,d=0)=>(x>=0?'+':'-')+Math.abs(x).toLocaleString(undefined,{maximumFractionDigits:d});
+const ago=t=>{const s=Math.max(0,Date.now()/1000-t);return s<90?Math.round(s)+'s ago':s<5400?Math.round(s/60)+'m ago':Math.round(s/3600)+'h ago'};
+let key=null,timer=null,picked=null;try{key=sessionStorage.admin_key||null}catch(e){}
+async function api(path,body){const r=await fetch(path,{method:body===undefined?'GET':'POST',headers:Object.assign({'X-Admin-Key':key},body===undefined?{}:{'Content-Type':'application/json'}),body:body===undefined?undefined:JSON.stringify(body)});if(r.status===403)throw new Error('forbidden');if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+function line(series,fields,fmt){
+ const W=560,H=190,pl=52,pr=8,pt=10,pb=22;if(series.length<2)return '<p class="mut">Collecting data…</p>';
+ const xs=series.map(p=>p.t),x0=xs[0],x1=xs[xs.length-1]||x0+1;let lo=Infinity,hi=-Infinity;
+ fields.forEach(([k])=>series.forEach(p=>{lo=Math.min(lo,p[k]);hi=Math.max(hi,p[k])}));if(hi-lo<1e-9){hi+=1;lo-=1}const pad=(hi-lo)*.08;lo-=pad;hi+=pad;
+ const X=t=>pl+(t-x0)/(x1-x0||1)*(W-pl-pr),Y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pt-pb);
+ let s=`<svg viewBox="0 0 ${W} ${H}">`;
+ for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3,y=Y(v);s+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#21262d"/><text x="${pl-6}" y="${y+4}" fill="#8b949e" font-size="10" text-anchor="end">${fmt(v)}</text>`}
+ s+=`<text x="${pl}" y="${H-6}" fill="#8b949e" font-size="10">${new Date(x0*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</text><text x="${W-pr}" y="${H-6}" fill="#8b949e" font-size="10" text-anchor="end">${new Date(x1*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</text>`;
+ fields.forEach(([k,col,name],i)=>{s+=`<polyline fill="none" stroke="${col}" stroke-width="1.6" points="${series.map(p=>X(p.t).toFixed(1)+','+Y(p[k]).toFixed(1)).join(' ')}"/><text x="${pl+8+i*130}" y="${pt+8}" fill="${col}" font-size="10">${name}</text>`});
+ return s+'</svg>'}
+function render(o){
+ const s=o.stats;$('stamp').textContent='updated '+new Date().toLocaleTimeString();
+ const al=[];
+ if(Math.abs(s.invariant_drift)>1e-6)al.push(['bad','Token invariant drift is '+s.invariant_drift.toExponential(2)+': money is being created or destroyed.']);
+ if(s.house_reserve<0)al.push(['bad','The house reserve is negative ('+mb(s.house_reserve)+' MB): players have won more than the reserve holds.']);
+ const r=s.risk;
+ if(r&&r.stress_loss>s.house_reserve)al.push(['warn','If every stock moved three of its daily sigmas against the house at once it would lose '+mb(r.stress_loss)+' MB, more than the reserve of '+mb(s.house_reserve)+' MB (the reserve is topped up automatically when it falls below '+mb(r.floor)+' MB).']);
+ if(r&&r.exposure[0]&&r.stress_loss>0&&r.exposure[0].loss>0.5*r.stress_loss&&r.exposure[0].loss>1000)al.push(['warn','Most of the risk to the house is in one stock: players are net '+(r.exposure[0].net>0?'long ':'short ')+mb(Math.abs(r.exposure[0].net))+' MB of '+r.exposure[0].ticker+'.']);
+ if(s.short_shortfall>0)al.push(['warn','Gapped shorts have cost the house '+f(s.short_shortfall)+' MB so far.']);
+ const top=o.winners[0];if(top&&top.ret>0.5&&top.trades>=20)al.push(['warn',top.name+' is up '+f(top.ret*100,0)+'% over '+top.trades+' trades: check their trade log for an edge.']);
+ if(!al.length)al.push(['ok','No alerts: money is conserved and the house reserve is positive.']);
+ $('alerts').innerHTML=al.map(a=>`<div class="${a[0]}">${esc(a[1])}</div>`).join('');
+ $('risk').innerHTML=r?`<p class="mut" style="font-size:12px">Players hold these positions; the house is the other side. A stock held net long hurts the house when it rises, one held net short when it falls. <b>Stress loss</b> = every stock moves three of its own daily sigmas against the house at once. The reserve is topped up to ${f(r.floor,0)} MB when it falls below that floor (topped up so far: ${f(r.recapitalized,0)} MB); this changes no payout and no price.</p><p>Reserve <b>${mb(r.reserve)}</b> MB · stress loss <b class="${r.stress_loss>r.reserve?'dn':''}">${mb(r.stress_loss)}</b> MB</p>`+(r.exposure.length?`<table><tr><th>Stock</th><th>Players net (MB)</th><th>3 daily sigmas</th><th>Cost to the house</th></tr>${r.exposure.map(x=>`<tr><td>${esc(x.ticker)} <span class="mut">${esc(x.name)}</span></td><td class="${x.net>=0?'up':'dn'}">${x.net>=0?'long ':'short '}${mb(Math.abs(x.net))}</td><td>${f(x.move*100,1)}%</td><td>${mb(x.loss)}</td></tr>`).join('')}</table>`:'<p class="mut">No open positions.</p>'):'';
+ const card=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
+ $('cards').innerHTML=card('House reserve',mb(s.house_reserve)+' MB','seed '+mb(s.house_capital)+' MB in total',s.house_reserve<0?'dn':'')
+  +card('Fees collected',mb(s.fees)+' MB','of which borrow '+f(s.borrow_fees,0)+' MB')
+  +card('House P&L',sgn(s.house_pnl)+' MB','fees '+mb(s.fees)+' · liquidity '+sgn(s.liquidity_pnl)+' · bots '+sgn(s.bots_pnl),s.house_pnl>=0?'up':'dn')
+  +card('Humans P&L',sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB deposited',s.players_pnl>=0?'up':'dn')
+  +card('Players',s.humans+' humans',o.online+' online · '+o.bots+' bots')
+  +card('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' per minute (last 5 min)')
+  +card('Short interest',mb(s.short_interest)+' MB','shortfall '+f(s.short_shortfall)+' MB',s.short_shortfall>0?'warn':'')
+  +card('Margin calls',o.margin_calls,'total since start')
+  +card('Token drift',Math.abs(s.invariant_drift)<1e-6?'0':s.invariant_drift.toExponential(1),'should stay below 1e-6',Math.abs(s.invariant_drift)<1e-6?'up':'dn')
+  +(o.perf?card('Game tick time',f(o.perf.tick_ms,1)+' ms','slowest of the last 2 min: '+f(o.perf.tick_max_ms,0)+' ms',o.perf.tick_max_ms>500?'warn':'')
+  +card('Late ticks',o.perf.late_ticks,'ticks that took over a second',o.perf.late_ticks>2?'warn':'up')
+  +card('Sending updates',f(o.perf.send_ms,2)+' ms','per tick, on the event loop')
+  +card('Gateways',o.perf.gateways||0,o.perf.gateways?'processes holding the players connections':'one process (no gateways)')
+  +card('Saving state',f(o.perf.last_save_ms,0)+' ms','last snapshot (every 30 s)',o.perf.last_save_ms>800?'warn':''):'');
+ $('ch1').innerHTML=line(o.series,[['house','#58a6ff','house reserve'],['fees','#3fb950','fees']],v=>mb(v));
+ $('ch2').innerHTML=line(o.series,[['humans_pnl','#d29922','humans P&L'],['bots_pnl','#bc8cff','bots P&L']],v=>sgn(v));
+ const mx=Math.max(1,...o.dist.map(b=>b.count));
+ $('dist').innerHTML=`<div class="bar">${o.dist.map(b=>`<div><i style="height:${Math.round(b.count/mx*90)}px;background:${b.hi<=0?'#f85149':'#3fb950'}"></i>${b.count}<br>${esc(b.label)}</div>`).join('')}</div>`;
+ $('calls').innerHTML=o.margin_log.length?`<table><tr><th>When</th><th>Player</th><th>Closed</th><th>House loss</th></tr>${o.margin_log.map(c=>`<tr><td>${ago(c.t)}</td><td>${esc(c.player)}</td><td>${esc(c.tickers.join(', '))}</td><td class="${c.shortfall>0?'dn':'mut'}">${f(c.shortfall)} MB</td></tr>`).join('')}</table>`:'<span class="mut">None yet.</span>';
+ $('winners').innerHTML=`<table><tr><th>Player</th><th>Equity</th><th>P&amp;L</th><th>Return</th><th>Trades</th><th>Open</th><th>Margin calls</th></tr>${o.winners.map(w=>`<tr class="pick" data-n="${esc(w.name)}"><td>${esc(w.name)}</td><td>${mb(w.equity)}</td><td class="${w.pnl>=0?'up':'dn'}">${sgn(w.pnl)}</td><td class="${w.ret>=0?'up':'dn'}">${sgn(w.ret*100,1)}%</td><td>${w.trades}</td><td>${w.positions}</td><td>${w.margin_calls}</td></tr>`).join('')||'<tr><td class="mut">No human players yet.</td></tr>'}</table>`;
+ if(picked)loadPlayer(picked,true)}
+async function loadPlayer(name,quiet){
+ picked=name;try{const p=await api('/api/admin/player/'+encodeURIComponent(name));
+  $('dtitle').textContent='Player detail: '+p.name;
+  const h=p.holdings.map(x=>`<tr><td>${esc(x.ticker)}</td><td>${esc(x.side)}</td><td>${f(x.shares,4)}</td><td>${f(x.avg)}</td><td>${f(x.price)}</td><td class="${x.pnl>=0?'up':'dn'}">${sgn(x.pnl,2)}</td></tr>`).join('');
+  const t=p.log.slice().reverse().map(x=>`<tr><td>${new Date(x.t*1000).toLocaleTimeString()}</td><td>${esc(x.k)}</td><td>${esc(x.tk)}</td><td>${f(x.sh,4)}</td><td>${f(x.px)}</td><td>${f(x.mb)}</td><td>${f(x.fee,3)}</td></tr>`).join('');
+  $('detail').innerHTML=`<p>Cash ${f(p.cash)} MB · equity ${f(p.equity)} MB · deposited ${f(p.deposited)} MB · P&amp;L <span class="${p.pnl>=0?'up':'dn'}">${sgn(p.pnl,2)}</span> · dividends ${f(p.divs)} · borrow fees ${f(p.borrow)}</p>
+   <h3>Open positions</h3><table><tr><th>Ticker</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>P/L</th></tr>${h||'<tr><td class="mut">None</td></tr>'}</table>
+   <h3 style="margin-top:12px">Last ${p.log.length} trades (newest first)</h3><table><tr><th>Time</th><th>Type</th><th>Ticker</th><th>Shares</th><th>Price</th><th>MB</th><th>Fee</th></tr>${t||'<tr><td class="mut">None</td></tr>'}</table>`;
+ }catch(e){if(!quiet)$('detail').textContent='Could not load: '+e.message}}
+$('winners').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
+function renderChat(c){
+ const row=m=>`<div class="msgrow"><small>${ago(m.t)}</small><span class="t"><b>${esc(m.name)}</b>${m.channel!=='global'?' <small>['+esc(m.channel)+']</small>':''}: ${esc(m.text)}</span><button data-del="${m.id}">Delete</button><button data-mute="${esc(m.name)}" data-s="600">Mute 10m</button><button data-mute="${esc(m.name)}" data-s="3600">1h</button></div>`;
+ $('chatlog').innerHTML=c.messages.length?c.messages.slice(0,40).map(row).join(''):'<span class="mut">No messages yet.</span>';
+ const byMsg=new Map();for(const r of c.reports){const g=byMsg.get(r.id)||{...r,by:[]};g.by.push(r.by);byMsg.set(r.id,g)}
+ const rep=byMsg.size?[...byMsg.values()].slice(0,20).map(r=>`<div class="msgrow"><small>${ago(r.t)}</small><span class="t"><b>${esc(r.name)}</b>: ${esc(r.text)} <small>(${r.by.length} report${r.by.length===1?'':'s'}: ${r.by.map(esc).join(', ')})</small></span><button data-del="${r.id}">Delete</button><button data-mute="${esc(r.name)}" data-s="3600">Mute 1h</button></div>`).join(''):'<span class="mut">No reports. Three different players reporting a message removes it and mutes its author automatically.</span>';
+ const ap=(c.appeals||[]).length?c.appeals.map(a=>`<div class="msgrow"><small>${ago(a.t)}</small><span class="t"><b>${esc(a.name)}</b>: ${esc(a.text)} <small>[${esc(a.status)}]</small></span>${a.status==='open'?`<button data-appeal="${a.id}" data-decision="lift">Lift mute</button><button data-appeal="${a.id}" data-decision="deny">Keep mute</button>`:''}</div>`).join(''):'<span class="mut">No appeals.</span>';
+ $('appeals').innerHTML=ap;
+ $('modlog').innerHTML=(c.mod_log||[]).length?c.mod_log.map(l=>`<div class="msgrow"><small>${ago(l.t)}</small><span class="t"><b>${esc(l.actor)}</b> ${esc(l.action)} <b>${esc(l.name)}</b> <small>${esc(l.detail)}</small></span></div>`).join(''):'<span class="mut">Nothing yet.</span>';
+ const muted=c.muted.length?'<p>Muted: '+c.muted.map(m=>`${esc(m.name)} (${Math.ceil(m.left/60)}m left) <button data-mute="${esc(m.name)}" data-s="0">Unmute</button>`).join(', ')+'</p>':'<p class="mut">Nobody is muted.</p>';
+ $('reports').innerHTML=rep+muted+`<p class="mut">${c.tournaments.map(t=>esc(t.id)+': '+t.entrants+' entered').join(' · ')||'no tournaments running'}</p>`}
+$('app').addEventListener('click',async e=>{
+ const d=e.target.closest('[data-del]'),m=e.target.closest('[data-mute]'),ap=e.target.closest('[data-appeal]');
+ try{if(ap){await api('/api/admin/appeal',{id:Number(ap.dataset.appeal),decision:ap.dataset.decision})}
+  else if(d){await api('/api/admin/chat/delete',{id:Number(d.dataset.del)})}
+  else if(m){await api('/api/admin/mute',{name:m.dataset.mute,seconds:Number(m.dataset.s)})}
+  else return;renderChat(await api('/api/admin/chat'))}catch(err){$('stamp').textContent='error: '+err.message}});
+$('reset-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset',{confirm:$('reset-word').value.trim()});$('reset-out').textContent=r.msg;$('reset-word').value='';tick()}catch(e){$('reset-out').textContent='not reset: '+e.message}});
+function renderAccounts(a){
+ const g=a.shared_address.length?a.shared_address.map(x=>`<div class="msgrow"><span class="t"><b>${x.accounts} accounts</b> share an address: ${x.names.map(esc).join(', ')}</span></div>`).join(''):'<span class="mut">No accounts share an address.</span>';
+ $('accts').innerHTML=`<p><b>${a.accounts}</b> player accounts: ${a.with_password} with a password, ${a.legacy} without (old accounts tied to one browser). ${a.sessions} logged-in devices. Email: <b>${a.email_verified}</b> verified, ${a.with_email} with an address (mode: <b>${esc(a.email_mode)}</b>).</p>`+g}
+function renderMail(m){
+ const st=m.status,head=st.configured?`<p>Mail is sent through <b>${esc(st.host||'a test transport')}</b> as ${esc(st.sender)}: ${st.sent} sent, ${st.failed} failed, ${st.queued} waiting.</p>`:'<p class="dn"><b>No mail server is set (console mode).</b> Messages are not sent; they are listed here with their codes. Set SMTP_HOST, SMTP_USER, SMTP_PASSWORD and MAIL_FROM before real players rely on email.</p>';
+ const rows=m.recent.length?m.recent.slice(0,15).map(x=>`<div class="msgrow"><span class="t">${new Date(x.t*1000).toLocaleTimeString()} ${esc(x.state)} to ${esc(x.to)}: ${esc(x.subject)}${x.error?' ('+esc(x.error)+')':''}${x.body?'<br><span class="mut">'+esc(x.body).replace(/[\r\n]+/g,' ')+'</span>':''}</span></div>`).join(''):'<span class="mut">No mail yet.</span>';
+ $('mailbox').innerHTML=head+rows}
+async function emailAct(action){try{const r=await api('/api/admin/email',{name:$('em-name').value.trim(),action});$('em-out').textContent=r.msg;tick()}catch(e){$('em-out').textContent='failed: '+e.message}}
+$('em-verify').addEventListener('click',()=>emailAct('verify'));$('em-clear').addEventListener('click',()=>emailAct('clear'));
+$('rp-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset_password',{name:$('rp-name').value.trim()});$('rp-out').innerHTML=esc(r.msg)+': <b>'+esc(r.password)+'</b>';tick()}catch(e){$('rp-out').textContent='failed: '+e.message}});
+async function tick(){try{render(await api('/api/admin/overview'));renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'))}catch(e){if(e.message==='forbidden'){lock('That key was not accepted.')}else{$('stamp').textContent='error: '+e.message}}}
+function lock(msg){clearInterval(timer);try{sessionStorage.removeItem('admin_key')}catch(e){}key=null;$('app').style.display='none';$('login').style.display='block';$('err').textContent=msg||''}
+function open_(){$('login').style.display='none';$('app').style.display='block';tick();clearInterval(timer);timer=setInterval(tick,5000)}
+$('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};
+$('key').onkeydown=e=>{if(e.key==='Enter')$('go').click()};$('out').onclick=()=>lock('');
+if(key)open_();
+</script></body></html>

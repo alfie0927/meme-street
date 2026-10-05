@@ -4,3 +4,12 @@ __pycache__/
 state.json
 state.json.tmp
 *.log
+ledger.db
+ledger.db-wal
+ledger.db-shm
+state.charts.json
+state.charts.json.tmp
+backups/
+tools/
+share_url.txt
+sim_results/

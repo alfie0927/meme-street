@@ -1,0 +1,16 @@
+name: tests
+
+# Runs the fast test suite on every push and pull request. The slow checks (RUN_SLOW=1) and the many-seed
+# edge check (`python edge.py 40 2 <fresh seed>`) are run by hand before changing prices, news or fees.
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover tests -v

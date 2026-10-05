@@ -1,0 +1,37 @@
+# Caddy is the web server in front of the game. It gets the https certificate for your domain by itself (and renews it),
+# redirects www to the bare domain, and passes everything to the gateways on port 8000. Websockets just work.
+# setup_server.sh replaces YOURDOMAIN with the domain you give it.
+
+YOURDOMAIN {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "DENY"
+		-Server
+	}
+
+	# --- Optional: put the admin page behind a second password. The admin key alone has no limit on wrong guesses
+	# (ROADMAP A10), so this is worth doing before real players arrive. Make a password hash with
+	#     caddy hash-password
+	# then remove the leading # from the block below and paste the hash. Your browser will ask for the name and
+	# password once, then the admin page asks for the admin key as usual.
+	#
+	# @admin path /admin /admin/* /api/admin/*
+	# basic_auth @admin {
+	#	owner PASTE_THE_HASH_HERE
+	# }
+
+	reverse_proxy 127.0.0.1:8000 {
+		# The gateway trusts these two headers (it needs the visitor's real address for the sign-up and login limits),
+		# so a visitor must never be able to send his own. Caddy sets X-Forwarded-For itself; this removes the other.
+		header_up -CF-Connecting-IP
+		header_up X-Forwarded-For {remote_host}
+	}
+}
+
+www.YOURDOMAIN {
+	redir https://YOURDOMAIN{uri} permanent
+}

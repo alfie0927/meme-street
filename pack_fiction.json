@@ -1,0 +1,1649 @@
+{
+ "sectors": [
+  {
+   "id": "portals",
+   "name": "Teleportation",
+   "icon": "🌀"
+  },
+  {
+   "id": "weather",
+   "name": "Weather Engineering",
+   "icon": "⛈️"
+  },
+  {
+   "id": "chrono",
+   "name": "Time Technology",
+   "icon": "⏳"
+  },
+  {
+   "id": "dreams",
+   "name": "Dreams & Memory",
+   "icon": "💤"
+  },
+  {
+   "id": "creatures",
+   "name": "Dragons & Creatures",
+   "icon": "🐉"
+  },
+  {
+   "id": "ocean",
+   "name": "Deep Ocean Cities",
+   "icon": "🐙"
+  },
+  {
+   "id": "antigrav",
+   "name": "Antigravity",
+   "icon": "🛸"
+  },
+  {
+   "id": "alchemy",
+   "name": "Alchemy & Enchanted Goods",
+   "icon": "⚗️"
+  }
+ ],
+ "companies": [
+  {
+   "ticker": "PHSJ",
+   "name": "PhaseJump Logistics",
+   "sector": "portals",
+   "beta": 1.66,
+   "vol": 0.73,
+   "sens": 1.42,
+   "depth": 13000,
+   "traits": [],
+   "desc": "Ships cargo between cities through short-range teleport gates in under a minute.",
+   "dependencies": {
+    "QNTR": 0.25
+   }
+  },
+  {
+   "ticker": "GTWY",
+   "name": "Gateway Transit",
+   "sector": "portals",
+   "beta": 1.7,
+   "vol": 0.52,
+   "sens": 1.07,
+   "depth": 13000,
+   "traits": [],
+   "desc": "Runs public teleport stations that have replaced commuter trains in the biggest cities.",
+   "dependencies": {
+    "QNTR": 0.2
+   }
+  },
+  {
+   "ticker": "QNTR",
+   "name": "Quantum Relay Networks",
+   "sector": "portals",
+   "beta": 1.3,
+   "vol": 0.7,
+   "sens": 1.28,
+   "depth": 13000,
+   "traits": [],
+   "desc": "Builds the entanglement relays that keep teleport gates in sync across the world."
+  },
+  {
+   "ticker": "BMLN",
+   "name": "Beamline Couriers",
+   "sector": "portals",
+   "beta": 1.4,
+   "vol": 0.56,
+   "sens": 1.19,
+   "depth": 13000,
+   "traits": [],
+   "desc": "Same-hour parcel delivery in miniature teleport pods, door to door.",
+   "dependencies": {
+    "QNTR": 0.15,
+    "PHSJ": 0.1
+   }
+  },
+  {
+   "ticker": "PRTL",
+   "name": "Portal Hospitality",
+   "sector": "portals",
+   "beta": 1.38,
+   "vol": 0.67,
+   "sens": 1.07,
+   "depth": 13000,
+   "traits": [],
+   "desc": "Hotels built around gates, so guests can wake up in a different country every morning.",
+   "dependencies": {
+    "GTWY": 0.15
+   }
+  },
+  {
+   "ticker": "VNSH",
+   "name": "Vanish Waste Systems",
+   "sector": "portals",
+   "beta": 1.46,
+   "vol": 0.55,
+   "sens": 1.36,
+   "depth": 13000,
+   "traits": [],
+   "desc": "Teleports household and factory rubbish into a sealed vault instead of a landfill.",
+   "dependencies": {
+    "QNTR": 0.1
+   }
+  },
+  {
+   "ticker": "CLSD",
+   "name": "CloudSeed Co",
+   "sector": "weather",
+   "beta": 0.99,
+   "vol": 0.31,
+   "sens": 1.36,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Sells rain on demand to farms and reservoirs by seeding clouds."
+  },
+  {
+   "ticker": "STRM",
+   "name": "StormShield Systems",
+   "sector": "weather",
+   "beta": 0.79,
+   "vol": 0.32,
+   "sens": 1.07,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Steers hurricanes away from coastlines with giant ocean-cooling rigs.",
+   "dependencies": {
+    "CLSD": 0.1
+   }
+  },
+  {
+   "ticker": "SNWL",
+   "name": "SnowLine Resorts",
+   "sector": "weather",
+   "beta": 0.96,
+   "vol": 0.39,
+   "sens": 1.09,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Makes guaranteed snow for ski resorts and winter festivals.",
+   "dependencies": {
+    "CLSD": 0.15
+   }
+  },
+  {
+   "ticker": "SUNB",
+   "name": "SunBank Energy",
+   "sector": "weather",
+   "beta": 0.81,
+   "vol": 0.38,
+   "sens": 1.32,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Stores sunshine in orbiting mirrors and beams it down to solar farms on cloudy days."
+  },
+  {
+   "ticker": "FOGX",
+   "name": "FogWorks",
+   "sector": "weather",
+   "beta": 1.06,
+   "vol": 0.35,
+   "sens": 1.34,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Builds mist machines that cool whole cities during heat waves."
+  },
+  {
+   "ticker": "GALE",
+   "name": "GaleForce Turbines",
+   "sector": "weather",
+   "beta": 0.75,
+   "vol": 0.4,
+   "sens": 1.01,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Seeds steady winds over offshore turbine fields so the blades never stop.",
+   "dependencies": {
+    "SUNB": 0.05
+   }
+  },
+  {
+   "ticker": "CHRN",
+   "name": "Chronos Labs",
+   "sector": "chrono",
+   "beta": 1.25,
+   "vol": 0.73,
+   "sens": 0.93,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Sells small time-dilation chambers that give workers an extra hour every day."
+  },
+  {
+   "ticker": "RWND",
+   "name": "Rewind Recovery",
+   "sector": "chrono",
+   "beta": 1.3,
+   "vol": 0.73,
+   "sens": 1.36,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Reverses rust and spoilage so old food and old machines work like new.",
+   "dependencies": {
+    "CHRN": 0.15
+   }
+  },
+  {
+   "ticker": "TMVT",
+   "name": "TimeVault Storage",
+   "sector": "chrono",
+   "beta": 1.59,
+   "vol": 0.62,
+   "sens": 1.48,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Keeps valuables in slow-time vaults where decades pass like days.",
+   "dependencies": {
+    "CHRN": 0.15
+   }
+  },
+  {
+   "ticker": "PSTL",
+   "name": "PastLens Archives",
+   "sector": "chrono",
+   "beta": 1.74,
+   "vol": 0.77,
+   "sens": 1.08,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Lets historians and courts look back at real events through temporal lenses."
+  },
+  {
+   "ticker": "EPCH",
+   "name": "Epoch Insurance",
+   "sector": "chrono",
+   "beta": 1.3,
+   "vol": 0.79,
+   "sens": 1.41,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Insures businesses against paradoxes and time-travel accidents.",
+   "dependencies": {
+    "CHRN": 0.1
+   }
+  },
+  {
+   "ticker": "SKIP",
+   "name": "SkipAhead Travel",
+   "sector": "chrono",
+   "beta": 1.52,
+   "vol": 0.59,
+   "sens": 0.93,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Sells fast-forward trips: passengers skip the journey and arrive instantly."
+  },
+  {
+   "ticker": "DRMW",
+   "name": "DreamWeave Studios",
+   "sector": "dreams",
+   "beta": 0.94,
+   "vol": 0.55,
+   "sens": 1.15,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Records dreams and sells them as immersive entertainment.",
+   "dependencies": {
+    "MMBK": 0.1,
+    "SLPN": 0.1
+   }
+  },
+  {
+   "ticker": "MMBK",
+   "name": "MemoryBank Trust",
+   "sector": "dreams",
+   "beta": 1.23,
+   "vol": 0.5,
+   "sens": 0.95,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Stores customers' favourite memories in vaults and lends them out for a fee."
+  },
+  {
+   "ticker": "SLPN",
+   "name": "SleepNation Beds",
+   "sector": "dreams",
+   "beta": 1.15,
+   "vol": 0.46,
+   "sens": 1.47,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Smart beds that steer you into the dream of your choice."
+  },
+  {
+   "ticker": "NGHT",
+   "name": "NightShift Learning",
+   "sector": "dreams",
+   "beta": 1.25,
+   "vol": 0.45,
+   "sens": 1.0,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Teaches languages and job skills while customers sleep.",
+   "dependencies": {
+    "SLPN": 0.15
+   }
+  },
+  {
+   "ticker": "LCDL",
+   "name": "LucidLoop Therapy",
+   "sector": "dreams",
+   "beta": 1.01,
+   "vol": 0.39,
+   "sens": 1.26,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Dream-therapy clinics that treat anxiety and nightmares.",
+   "dependencies": {
+    "ERSE": 0.1
+   }
+  },
+  {
+   "ticker": "ERSE",
+   "name": "EraseEase Clinics",
+   "sector": "dreams",
+   "beta": 1.2,
+   "vol": 0.44,
+   "sens": 1.31,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Helps people safely forget bad memories, and sells memory refresh packages."
+  },
+  {
+   "ticker": "EMBR",
+   "name": "Ember Dragon Ranches",
+   "sector": "creatures",
+   "beta": 0.92,
+   "vol": 0.37,
+   "sens": 1.41,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Breeds and trains dragons for heavy lifting, fireworks shows and furnace heat."
+  },
+  {
+   "ticker": "GRFN",
+   "name": "Griffin Air Freight",
+   "sector": "creatures",
+   "beta": 0.97,
+   "vol": 0.37,
+   "sens": 1.31,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Cargo and passenger flights on trained griffins over mountain routes.",
+   "dependencies": {
+    "EMBR": 0.1
+   }
+  },
+  {
+   "ticker": "UNCR",
+   "name": "UniCorn Dairy",
+   "sector": "creatures",
+   "beta": 0.89,
+   "vol": 0.4,
+   "sens": 1.05,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Premium milk and cheese from herds of unicorns."
+  },
+  {
+   "ticker": "KRKN",
+   "name": "Kraken Rescue",
+   "sector": "creatures",
+   "beta": 1.17,
+   "vol": 0.43,
+   "sens": 1.3,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Salvage and rescue at sea with tame sea monsters.",
+   "dependencies": {
+    "EMBR": 0.05
+   }
+  },
+  {
+   "ticker": "PHNX",
+   "name": "Phoenix Heat & Power",
+   "sector": "creatures",
+   "beta": 0.88,
+   "vol": 0.46,
+   "sens": 1.15,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Warms towns with phoenix nests that renew themselves every day."
+  },
+  {
+   "ticker": "YETI",
+   "name": "Yeti Frost Foods",
+   "sector": "creatures",
+   "beta": 0.92,
+   "vol": 0.33,
+   "sens": 1.02,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Frozen foods harvested from high mountains with the help of yeti partners."
+  },
+  {
+   "ticker": "ABYS",
+   "name": "Abyssal Habitats",
+   "sector": "ocean",
+   "beta": 1.19,
+   "vol": 0.42,
+   "sens": 1.47,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Builds apartment towers on the sea floor of the continental shelf.",
+   "dependencies": {
+    "TRNC": 0.1
+   }
+  },
+  {
+   "ticker": "KELP",
+   "name": "KelpWorks Farms",
+   "sector": "ocean",
+   "beta": 0.93,
+   "vol": 0.38,
+   "sens": 1.0,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Farms giant kelp forests for food, fuel and fabric."
+  },
+  {
+   "ticker": "TRNC",
+   "name": "Trench Mining Corp",
+   "sector": "ocean",
+   "beta": 1.03,
+   "vol": 0.32,
+   "sens": 1.05,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Mines the deepest ocean trenches for rare metals."
+  },
+  {
+   "ticker": "PRLG",
+   "name": "PearlGate Tourism",
+   "sector": "ocean",
+   "beta": 0.92,
+   "vol": 0.41,
+   "sens": 0.94,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Submarine cruise ships and glass-tunnel resorts under the waves.",
+   "dependencies": {
+    "ABYS": 0.1
+   }
+  },
+  {
+   "ticker": "TIDL",
+   "name": "TidalCore Power",
+   "sector": "ocean",
+   "beta": 1.14,
+   "vol": 0.28,
+   "sens": 1.21,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Power plants driven by deep ocean currents.",
+   "dependencies": {
+    "SBMR": 0.05
+   }
+  },
+  {
+   "ticker": "SBMR",
+   "name": "Sub-Mariner Transit",
+   "sector": "ocean",
+   "beta": 1.16,
+   "vol": 0.35,
+   "sens": 1.5,
+   "depth": 16000,
+   "traits": [],
+   "desc": "Express tunnels along the ocean floor between continents."
+  },
+  {
+   "ticker": "LEVT",
+   "name": "LevitateX",
+   "sector": "antigrav",
+   "beta": 1.63,
+   "vol": 0.74,
+   "sens": 0.97,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Makes hover-cars, hover-bikes and hover-boards."
+  },
+  {
+   "ticker": "HVRL",
+   "name": "HoverRail Systems",
+   "sector": "antigrav",
+   "beta": 1.94,
+   "vol": 0.74,
+   "sens": 1.24,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Builds floating high-speed rail lines that skim an inch above the ground.",
+   "dependencies": {
+    "LEVT": 0.15,
+    "GRVN": 0.1
+   }
+  },
+  {
+   "ticker": "AIRY",
+   "name": "AirSkiff Taxis",
+   "sector": "antigrav",
+   "beta": 1.52,
+   "vol": 0.62,
+   "sens": 0.93,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Hover taxis you hail by app, flying at rooftop height.",
+   "dependencies": {
+    "LEVT": 0.2
+   }
+  },
+  {
+   "ticker": "GRVN",
+   "name": "GravCell Energy",
+   "sector": "antigrav",
+   "beta": 1.86,
+   "vol": 0.73,
+   "sens": 1.04,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Gravity batteries that store power by lifting and dropping giant weights."
+  },
+  {
+   "ticker": "LFTR",
+   "name": "LiftRight Construction",
+   "sector": "antigrav",
+   "beta": 1.87,
+   "vol": 0.75,
+   "sens": 1.11,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Antigravity cranes that raise skyscraper parts with no scaffolding.",
+   "dependencies": {
+    "GRVN": 0.1
+   }
+  },
+  {
+   "ticker": "FLTR",
+   "name": "FloatFreight Lines",
+   "sector": "antigrav",
+   "beta": 1.67,
+   "vol": 0.82,
+   "sens": 0.92,
+   "depth": 12000,
+   "traits": [],
+   "desc": "Heavy cargo barges that float ten metres above the road.",
+   "dependencies": {
+    "LEVT": 0.1
+   }
+  },
+  {
+   "ticker": "GLDM",
+   "name": "GoldMaker Labs",
+   "sector": "alchemy",
+   "beta": 0.81,
+   "vol": 0.38,
+   "sens": 0.96,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Turns lead into gold, slowly and at great expense."
+  },
+  {
+   "ticker": "ELXR",
+   "name": "Elixir Wellness",
+   "sector": "alchemy",
+   "beta": 0.89,
+   "vol": 0.37,
+   "sens": 1.49,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Brews potions that speed up healing and sells them through pharmacies."
+  },
+  {
+   "ticker": "RUNE",
+   "name": "RuneWorks Security",
+   "sector": "alchemy",
+   "beta": 1.24,
+   "vol": 0.41,
+   "sens": 0.95,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Enchanted locks and rune alarms that no thief has ever bypassed."
+  },
+  {
+   "ticker": "STNS",
+   "name": "StoneSage Materials",
+   "sector": "alchemy",
+   "beta": 1.02,
+   "vol": 0.32,
+   "sens": 1.05,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Produces enchanted alloys that never rust, bend or break.",
+   "dependencies": {
+    "GLDM": 0.15
+   }
+  },
+  {
+   "ticker": "ENCH",
+   "name": "EnchantCo Textiles",
+   "sector": "alchemy",
+   "beta": 0.95,
+   "vol": 0.37,
+   "sens": 1.1,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Self-repairing clothes and carpets woven with charmed thread.",
+   "dependencies": {
+    "STNS": 0.1
+   }
+  },
+  {
+   "ticker": "WAND",
+   "name": "Wandwright Tools",
+   "sector": "alchemy",
+   "beta": 1.06,
+   "vol": 0.33,
+   "sens": 1.23,
+   "depth": 15000,
+   "traits": [],
+   "desc": "Precision wands for surgeons, chip designers and stage magicians.",
+   "dependencies": {
+    "RUNE": 0.05
+   }
+  }
+ ],
+ "templates": [
+  {
+   "id": "tp_gates",
+   "scope": "sector",
+   "sector": "portals",
+   "up": [
+    "Teleport gates clear their safety review in three more countries",
+    "Commuters abandon cars as gate fares fall again",
+    "Record parcels cross the world by gate in a single night"
+   ],
+   "down": [
+    "A gate misfire strands hundreds of passengers for hours",
+    "Regulators order inspections of every public teleport gate",
+    "Airlines and railways win a ruling limiting gate routes"
+   ],
+   "betas": {
+    "self": 1.0,
+    "airlines": -0.15,
+    "industrials": 0.1
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "tp_regs",
+   "scope": "sector",
+   "sector": "portals",
+   "up": [
+    "Customs agencies agree on one passport check for all gates",
+    "Gate network power costs drop after a grid upgrade"
+   ],
+   "down": [
+    "Customs officials halt gate freight over smuggling fears",
+    "Brownout in a major city knocks out a gate network"
+   ],
+   "betas": {
+    "self": 1.0,
+    "utilities": 0.1
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "tp_company",
+   "scope": "company",
+   "sector": "portals",
+   "up": [
+    "{name} opens a gate between two continents",
+    "{name} signs a gate-freight deal with a global retailer",
+    "Gate traffic at {name} hits a new record"
+   ],
+   "down": [
+    "{name} suspends a gate line after a calibration fault",
+    "{name} faces a lawsuit over a lost shipment",
+    "{name} loses its licence on a busy route"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "wx_season",
+   "scope": "sector",
+   "sector": "weather",
+   "up": [
+    "Drought-hit regions order record amounts of made-to-order rain",
+    "Cities sign cooling contracts ahead of a hot summer",
+    "Storm-steering rigs pass their toughest hurricane test"
+   ],
+   "down": [
+    "A seeded storm overshoots and floods farmland",
+    "Neighbouring countries protest over stolen rain clouds",
+    "Insurers refuse cover after a weather-control accident"
+   ],
+   "betas": {
+    "self": 1.0,
+    "agriculture": 0.2,
+    "utilities": 0.1
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "wx_policy",
+   "scope": "sector",
+   "sector": "weather",
+   "up": [
+    "An international treaty sets clear rules for cloud seeding",
+    "Governments fund coastal storm shields"
+   ],
+   "down": [
+    "Lawmakers propose a ban on weather modification over cities",
+    "Court rules weather firms liable for storm damage"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "wx_company",
+   "scope": "company",
+   "sector": "weather",
+   "up": [
+    "{name} delivers a perfect snowfall for the winter games",
+    "{name} wins a national drought-relief contract",
+    "{name} unveils a bigger, cheaper cloud rig"
+   ],
+   "down": [
+    "{name}'s rain arrives a week late and a county over",
+    "{name} hit by claims after an unplanned storm",
+    "A prototype rig from {name} fails at sea"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "ct_breakthrough",
+   "scope": "sector",
+   "sector": "chrono",
+   "up": [
+    "Physicists confirm safe time dilation at room temperature",
+    "Time vaults pass their first thousand-year audit",
+    "Demand for extra-hour chambers outstrips supply"
+   ],
+   "down": [
+    "A time chamber ages its first customer ten years overnight",
+    "Regulators demand paradox insurance for every time device",
+    "A rival lab claims time dilation is impossible to scale"
+   ],
+   "betas": {
+    "self": 1.0,
+    "tech": 0.15
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "ct_markets",
+   "scope": "sector",
+   "sector": "chrono",
+   "up": [
+    "Investors pour money into patient, long-horizon time funds",
+    "Courts accept temporal lens evidence for the first time"
+   ],
+   "down": [
+    "Courts throw out temporal lens evidence as unreliable",
+    "Time-travel tourism banned after a near-miss"
+   ],
+   "betas": {
+    "self": 1.0,
+    "finance": 0.1
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "ct_company",
+   "scope": "company",
+   "sector": "chrono",
+   "up": [
+    "{name} lands a record customer for its slow-time vaults",
+    "{name} shows off a smaller, cheaper time chamber",
+    "{name} reports zero paradoxes this quarter"
+   ],
+   "down": [
+    "{name} recalls devices after a clock drift scare",
+    "{name} admits a vault ran ten minutes fast",
+    "{name} faces claims after a delayed delivery by decades"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "dr_sleep",
+   "scope": "sector",
+   "sector": "dreams",
+   "up": [
+    "Sleep-learning courses become a bestseller for busy workers",
+    "Dream streaming passes ten million subscribers",
+    "Clinical trial shows dream therapy cuts anxiety in half"
+   ],
+   "down": [
+    "Customers complain of repeating dreams after an update",
+    "Watchdog warns that memory storage could be hacked",
+    "Studio strike halts production of new dream releases"
+   ],
+   "betas": {
+    "self": 1.0,
+    "media": 0.15,
+    "healthcare": 0.1
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "dr_privacy",
+   "scope": "sector",
+   "sector": "dreams",
+   "up": [
+    "Privacy rules for stored memories are clear and industry-friendly",
+    "Memory lending is cleared by regulators"
+   ],
+   "down": [
+    "A leak of private dreams shakes customer trust",
+    "Lawmakers move to ban selling other people's memories"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "dr_company",
+   "scope": "company",
+   "sector": "dreams",
+   "up": [
+    "{name} launches a dream that tops the charts",
+    "{name} signs a hospital network for its therapy clinics",
+    "{name} adds a million sleepers to its beds"
+   ],
+   "down": [
+    "{name} pulls a dream after viewers report headaches",
+    "{name} sued over a memory that was not erased",
+    "{name} faces a recall of faulty smart beds"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "cr_herds",
+   "scope": "sector",
+   "sector": "creatures",
+   "up": [
+    "Hatchery season produces a record number of healthy dragons",
+    "Flight regulators approve a new griffin air corridor",
+    "Demand for unicorn dairy beats forecasts"
+   ],
+   "down": [
+    "A dragon escapes and closes a motorway for a day",
+    "Animal welfare groups push for tighter creature rules",
+    "A harsh winter hits the herds and the feed supply"
+   ],
+   "betas": {
+    "self": 1.0,
+    "agriculture": 0.15,
+    "airlines": 0.05
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "cr_trade",
+   "scope": "sector",
+   "sector": "creatures",
+   "up": [
+    "Tourists flock to dragon ranches and griffin tours",
+    "Creature insurance premiums fall after a safe year"
+   ],
+   "down": [
+    "Insurers raise creature premiums after a bad summer",
+    "A kraken sighting closes busy shipping lanes"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "cr_company",
+   "scope": "company",
+   "sector": "creatures",
+   "up": [
+    "{name} unveils a new breed with record strength",
+    "{name} wins a national cargo-by-air contract",
+    "{name} announces a successful hatching season"
+   ],
+   "down": [
+    "{name} loses a prize animal to a rival ranch",
+    "{name} fined after a creature broke loose",
+    "{name} halts flights during a feed shortage"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "oc_cities",
+   "scope": "sector",
+   "sector": "ocean",
+   "up": [
+    "Three new undersea districts open to residents",
+    "Kelp fuel overtakes expensive oil in its first big contract",
+    "Ocean-floor tunnels cut intercontinental trips to an hour"
+   ],
+   "down": [
+    "A pressure leak forces the evacuation of an undersea tower",
+    "Environmental groups sue to stop trench mining",
+    "Insurers raise rates on deep-water construction"
+   ],
+   "betas": {
+    "self": 1.0,
+    "materials": 0.2,
+    "energy": 0.1
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "oc_policy",
+   "scope": "sector",
+   "sector": "ocean",
+   "up": [
+    "Coastal nations agree on rules for undersea property",
+    "Ocean-current power wins long-term subsidies"
+   ],
+   "down": [
+    "A dispute over seabed borders stalls new projects",
+    "Storm damage knocks out an undersea power cable"
+   ],
+   "betas": {
+    "self": 1.0,
+    "utilities": 0.1
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "oc_company",
+   "scope": "company",
+   "sector": "ocean",
+   "up": [
+    "{name} completes the world's deepest habitat",
+    "{name} lands a government contract for ocean-floor works",
+    "{name} reports a full house at its newest resort"
+   ],
+   "down": [
+    "{name} delayed by a leak in a flagship project",
+    "{name} halts a mine after protests",
+    "{name}'s submarine fleet grounded for safety checks"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "ag_transport",
+   "scope": "sector",
+   "sector": "antigrav",
+   "up": [
+    "Hover-car sales double as cities open rooftop lanes",
+    "A floating rail line sets a new speed record",
+    "Gravity batteries win their first utility contract"
+   ],
+   "down": [
+    "Hover-car recall after a lift module fails in the rain",
+    "Regulators ground hover taxis over safety audits",
+    "Aviation authorities limit hover traffic near airports"
+   ],
+   "betas": {
+    "self": 1.0,
+    "autos": -0.1,
+    "tech": 0.1
+   },
+   "weight": 0.8,
+   "rumor": true
+  },
+  {
+   "id": "ag_tech",
+   "scope": "sector",
+   "sector": "antigrav",
+   "up": [
+    "A cheaper lift plate halves the cost of hover vehicles",
+    "Cities approve elevated hover lanes"
+   ],
+   "down": [
+    "Lift plate shortage slows production across the industry",
+    "A hover accident prompts calls for pilot licences"
+   ],
+   "betas": {
+    "self": 1.0,
+    "materials": 0.15
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "ag_company",
+   "scope": "company",
+   "sector": "antigrav",
+   "up": [
+    "{name} unveils a model that floats a full metre higher",
+    "{name} wins a contract to lift a stadium roof",
+    "{name} posts its first profitable quarter"
+   ],
+   "down": [
+    "{name} grounds its fleet after a lift module fault",
+    "{name} burns through cash on delayed prototypes",
+    "A crash during a demo hurts {name}"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "al_labs",
+   "scope": "sector",
+   "sector": "alchemy",
+   "up": [
+    "Alchemists announce cheaper gold from common metals",
+    "Enchanted alloys win their first aircraft contract",
+    "Self-repairing fabrics hit the shelves of every big retailer"
+   ],
+   "down": [
+    "Gold price slump hits makers of transmuted gold",
+    "Safety board warns that charmed alloys can turn brittle at night",
+    "A potion recall raises doubts about quality control"
+   ],
+   "betas": {
+    "self": 1.0,
+    "materials": 0.2,
+    "pharma": 0.05
+   },
+   "weight": 0.7,
+   "rumor": true
+  },
+  {
+   "id": "al_market",
+   "scope": "sector",
+   "sector": "alchemy",
+   "up": [
+    "Customs relax import rules for enchanted goods",
+    "Potion makers win approval for new health claims"
+   ],
+   "down": [
+    "Regulators demand proof that enchanted goods do what they claim",
+    "A fake-rune scandal rattles buyers"
+   ],
+   "betas": {
+    "self": 1.0,
+    "consumer": 0.1
+   },
+   "weight": 0.5,
+   "rumor": true
+  },
+  {
+   "id": "al_company",
+   "scope": "company",
+   "sector": "alchemy",
+   "up": [
+    "{name} unveils a flawless batch of its signature product",
+    "{name} signs a government security contract",
+    "{name} reports record orders"
+   ],
+   "down": [
+    "{name} recalls a batch after a spell wore off early",
+    "{name} admits one product failed its enchantment test",
+    "{name} loses a major retail partner"
+   ],
+   "betas": {
+    "self": 1.0
+   },
+   "weight": 0.7,
+   "rumor": true
+  }
+ ],
+ "profiles": {
+  "PHSJ": {
+   "initial_price": 61.55,
+   "market_cap": 46.1,
+   "shares_outstanding": 0.749,
+   "revenue": 8.59,
+   "margin": 0.122,
+   "cash": 2.15,
+   "debt": 6.53,
+   "dividend_yield": 0.0025
+  },
+  "GTWY": {
+   "initial_price": 22.26,
+   "market_cap": 14.7,
+   "shares_outstanding": 0.66,
+   "revenue": 2.63,
+   "margin": 0.169,
+   "cash": 0.73,
+   "debt": 1.87,
+   "dividend_yield": 0.0012
+  },
+  "QNTR": {
+   "initial_price": 88.15,
+   "market_cap": 35.6,
+   "shares_outstanding": 0.404,
+   "revenue": 6.88,
+   "margin": 0.222,
+   "cash": 2.75,
+   "debt": 3.31,
+   "dividend_yield": 0.0094
+  },
+  "BMLN": {
+   "initial_price": 29.19,
+   "market_cap": 10.1,
+   "shares_outstanding": 0.346,
+   "revenue": 1.97,
+   "margin": 0.055,
+   "cash": 0.35,
+   "debt": 0.51,
+   "dividend_yield": 0.0003
+  },
+  "PRTL": {
+   "initial_price": 190.02,
+   "market_cap": 66.4,
+   "shares_outstanding": 0.349,
+   "revenue": 11.42,
+   "margin": 0.149,
+   "cash": 3.02,
+   "debt": 6.97,
+   "dividend_yield": 0.0038
+  },
+  "VNSH": {
+   "initial_price": 38.35,
+   "market_cap": 68.2,
+   "shares_outstanding": 1.778,
+   "revenue": 11.48,
+   "margin": 0.095,
+   "cash": 5.56,
+   "debt": 8.73,
+   "dividend_yield": 0.0055
+  },
+  "CLSD": {
+   "initial_price": 9.08,
+   "market_cap": 40.9,
+   "shares_outstanding": 4.504,
+   "revenue": 20.54,
+   "margin": 0.188,
+   "cash": 2.94,
+   "debt": 14.8,
+   "dividend_yield": 0.0046
+  },
+  "STRM": {
+   "initial_price": 17.38,
+   "market_cap": 256.5,
+   "shares_outstanding": 14.758,
+   "revenue": 139.18,
+   "margin": 0.077,
+   "cash": 30.19,
+   "debt": 77.98,
+   "dividend_yield": 0.0113
+  },
+  "SNWL": {
+   "initial_price": 30.06,
+   "market_cap": 133.8,
+   "shares_outstanding": 4.451,
+   "revenue": 67.38,
+   "margin": 0.087,
+   "cash": 16.09,
+   "debt": 52.01,
+   "dividend_yield": 0.0012
+  },
+  "SUNB": {
+   "initial_price": 37.74,
+   "market_cap": 223.4,
+   "shares_outstanding": 5.919,
+   "revenue": 83.76,
+   "margin": 0.042,
+   "cash": 9.24,
+   "debt": 66.44,
+   "dividend_yield": 0.0046
+  },
+  "FOGX": {
+   "initial_price": 157.72,
+   "market_cap": 14.9,
+   "shares_outstanding": 0.094,
+   "revenue": 7.15,
+   "margin": 0.079,
+   "cash": 1.96,
+   "debt": 4.4,
+   "dividend_yield": 0.0096
+  },
+  "GALE": {
+   "initial_price": 193.74,
+   "market_cap": 13.8,
+   "shares_outstanding": 0.071,
+   "revenue": 6.78,
+   "margin": 0.044,
+   "cash": 0.9,
+   "debt": 5.37,
+   "dividend_yield": 0.0061
+  },
+  "CHRN": {
+   "initial_price": 100.21,
+   "market_cap": 16.9,
+   "shares_outstanding": 0.169,
+   "revenue": 2.35,
+   "margin": 0.259,
+   "cash": 0.88,
+   "debt": 0.85,
+   "dividend_yield": 0.0001
+  },
+  "RWND": {
+   "initial_price": 15.73,
+   "market_cap": 18.2,
+   "shares_outstanding": 1.157,
+   "revenue": 1.9,
+   "margin": 0.062,
+   "cash": 0.82,
+   "debt": 0.36,
+   "dividend_yield": 0.0013
+  },
+  "TMVT": {
+   "initial_price": 42.29,
+   "market_cap": 44.3,
+   "shares_outstanding": 1.048,
+   "revenue": 6.92,
+   "margin": 0.286,
+   "cash": 3.21,
+   "debt": 1.2,
+   "dividend_yield": 0.0032
+  },
+  "PSTL": {
+   "initial_price": 12.55,
+   "market_cap": 283.1,
+   "shares_outstanding": 22.558,
+   "revenue": 33.99,
+   "margin": 0.141,
+   "cash": 16.57,
+   "debt": 8.09,
+   "dividend_yield": 0.0023
+  },
+  "EPCH": {
+   "initial_price": 21.15,
+   "market_cap": 50.9,
+   "shares_outstanding": 2.407,
+   "revenue": 7.71,
+   "margin": 0.072,
+   "cash": 4.32,
+   "debt": 0.88,
+   "dividend_yield": 0.0025
+  },
+  "SKIP": {
+   "initial_price": 36.47,
+   "market_cap": 97.1,
+   "shares_outstanding": 2.662,
+   "revenue": 10.28,
+   "margin": 0.184,
+   "cash": 3.72,
+   "debt": 3.05,
+   "dividend_yield": 0.004
+  },
+  "DRMW": {
+   "initial_price": 103.55,
+   "market_cap": 182.4,
+   "shares_outstanding": 1.761,
+   "revenue": 44.08,
+   "margin": 0.165,
+   "cash": 17.03,
+   "debt": 8.97,
+   "dividend_yield": 0.0004
+  },
+  "MMBK": {
+   "initial_price": 9.16,
+   "market_cap": 18.6,
+   "shares_outstanding": 2.031,
+   "revenue": 4.19,
+   "margin": 0.157,
+   "cash": 1.31,
+   "debt": 0.86,
+   "dividend_yield": 0.0056
+  },
+  "SLPN": {
+   "initial_price": 37.88,
+   "market_cap": 295.3,
+   "shares_outstanding": 7.796,
+   "revenue": 64.8,
+   "margin": 0.105,
+   "cash": 13.03,
+   "debt": 27.94,
+   "dividend_yield": 0.0095
+  },
+  "NGHT": {
+   "initial_price": 74.2,
+   "market_cap": 16.9,
+   "shares_outstanding": 0.228,
+   "revenue": 4.39,
+   "margin": 0.113,
+   "cash": 1.51,
+   "debt": 2.01,
+   "dividend_yield": 0.0057
+  },
+  "LCDL": {
+   "initial_price": 94.14,
+   "market_cap": 38.8,
+   "shares_outstanding": 0.412,
+   "revenue": 9.1,
+   "margin": 0.086,
+   "cash": 2.12,
+   "debt": 2.35,
+   "dividend_yield": 0.0015
+  },
+  "ERSE": {
+   "initial_price": 194.72,
+   "market_cap": 19.5,
+   "shares_outstanding": 0.1,
+   "revenue": 4.99,
+   "margin": 0.167,
+   "cash": 1.88,
+   "debt": 0.78,
+   "dividend_yield": 0.0004
+  },
+  "EMBR": {
+   "initial_price": 65.65,
+   "market_cap": 23.0,
+   "shares_outstanding": 0.35,
+   "revenue": 12.62,
+   "margin": 0.079,
+   "cash": 1.05,
+   "debt": 4.06,
+   "dividend_yield": 0.0153
+  },
+  "GRFN": {
+   "initial_price": 22.29,
+   "market_cap": 72.6,
+   "shares_outstanding": 3.257,
+   "revenue": 36.08,
+   "margin": 0.072,
+   "cash": 3.21,
+   "debt": 21.91,
+   "dividend_yield": 0.0138
+  },
+  "UNCR": {
+   "initial_price": 41.4,
+   "market_cap": 13.2,
+   "shares_outstanding": 0.319,
+   "revenue": 6.27,
+   "margin": 0.075,
+   "cash": 1.21,
+   "debt": 2.95,
+   "dividend_yield": 0.0154
+  },
+  "KRKN": {
+   "initial_price": 40.55,
+   "market_cap": 226.3,
+   "shares_outstanding": 5.581,
+   "revenue": 122.65,
+   "margin": 0.062,
+   "cash": 10.31,
+   "debt": 44.84,
+   "dividend_yield": 0.0078
+  },
+  "PHNX": {
+   "initial_price": 38.5,
+   "market_cap": 182.5,
+   "shares_outstanding": 4.74,
+   "revenue": 114.25,
+   "margin": 0.093,
+   "cash": 22.6,
+   "debt": 47.91,
+   "dividend_yield": 0.0063
+  },
+  "YETI": {
+   "initial_price": 180.18,
+   "market_cap": 26.5,
+   "shares_outstanding": 0.147,
+   "revenue": 14.01,
+   "margin": 0.062,
+   "cash": 2.33,
+   "debt": 8.44,
+   "dividend_yield": 0.0053
+  },
+  "ABYS": {
+   "initial_price": 123.14,
+   "market_cap": 33.0,
+   "shares_outstanding": 0.268,
+   "revenue": 11.58,
+   "margin": 0.152,
+   "cash": 3.05,
+   "debt": 9.37,
+   "dividend_yield": 0.0126
+  },
+  "KELP": {
+   "initial_price": 13.89,
+   "market_cap": 45.6,
+   "shares_outstanding": 3.283,
+   "revenue": 16.75,
+   "margin": 0.072,
+   "cash": 2.02,
+   "debt": 10.02,
+   "dividend_yield": 0.0063
+  },
+  "TRNC": {
+   "initial_price": 28.08,
+   "market_cap": 10.6,
+   "shares_outstanding": 0.377,
+   "revenue": 4.46,
+   "margin": 0.066,
+   "cash": 0.91,
+   "debt": 3.95,
+   "dividend_yield": 0.0039
+  },
+  "PRLG": {
+   "initial_price": 118.62,
+   "market_cap": 23.5,
+   "shares_outstanding": 0.198,
+   "revenue": 9.62,
+   "margin": 0.057,
+   "cash": 1.12,
+   "debt": 5.89,
+   "dividend_yield": 0.0123
+  },
+  "TIDL": {
+   "initial_price": 77.2,
+   "market_cap": 62.7,
+   "shares_outstanding": 0.812,
+   "revenue": 28.22,
+   "margin": 0.15,
+   "cash": 5.76,
+   "debt": 14.18,
+   "dividend_yield": 0.0128
+  },
+  "SBMR": {
+   "initial_price": 92.54,
+   "market_cap": 8.3,
+   "shares_outstanding": 0.09,
+   "revenue": 3.11,
+   "margin": 0.047,
+   "cash": 0.69,
+   "debt": 1.79,
+   "dividend_yield": 0.0142
+  },
+  "LEVT": {
+   "initial_price": 23.53,
+   "market_cap": 70.1,
+   "shares_outstanding": 2.979,
+   "revenue": 11.34,
+   "margin": 0.026,
+   "cash": 2.89,
+   "debt": 6.53,
+   "dividend_yield": 0.0
+  },
+  "HVRL": {
+   "initial_price": 28.26,
+   "market_cap": 77.5,
+   "shares_outstanding": 2.742,
+   "revenue": 18.72,
+   "margin": -0.117,
+   "cash": 5.81,
+   "debt": 11.09,
+   "dividend_yield": 0.0
+  },
+  "AIRY": {
+   "initial_price": 11.83,
+   "market_cap": 74.2,
+   "shares_outstanding": 6.272,
+   "revenue": 13.07,
+   "margin": 0.163,
+   "cash": 3.12,
+   "debt": 6.67,
+   "dividend_yield": 0.0
+  },
+  "GRVN": {
+   "initial_price": 94.39,
+   "market_cap": 208.1,
+   "shares_outstanding": 2.205,
+   "revenue": 50.19,
+   "margin": 0.051,
+   "cash": 28.18,
+   "debt": 22.43,
+   "dividend_yield": 0.0
+  },
+  "LFTR": {
+   "initial_price": 26.29,
+   "market_cap": 13.0,
+   "shares_outstanding": 0.494,
+   "revenue": 2.51,
+   "margin": 0.168,
+   "cash": 1.48,
+   "debt": 1.32,
+   "dividend_yield": 0.0
+  },
+  "FLTR": {
+   "initial_price": 24.86,
+   "market_cap": 37.6,
+   "shares_outstanding": 1.512,
+   "revenue": 8.91,
+   "margin": -0.064,
+   "cash": 4.45,
+   "debt": 4.3,
+   "dividend_yield": 0.0
+  },
+  "GLDM": {
+   "initial_price": 8.29,
+   "market_cap": 233.2,
+   "shares_outstanding": 28.13,
+   "revenue": 71.93,
+   "margin": 0.136,
+   "cash": 14.73,
+   "debt": 26.7,
+   "dividend_yield": 0.0139
+  },
+  "ELXR": {
+   "initial_price": 15.49,
+   "market_cap": 42.4,
+   "shares_outstanding": 2.737,
+   "revenue": 12.17,
+   "margin": 0.199,
+   "cash": 1.7,
+   "debt": 6.87,
+   "dividend_yield": 0.0066
+  },
+  "RUNE": {
+   "initial_price": 217.81,
+   "market_cap": 27.4,
+   "shares_outstanding": 0.126,
+   "revenue": 7.62,
+   "margin": 0.118,
+   "cash": 2.23,
+   "debt": 2.15,
+   "dividend_yield": 0.0121
+  },
+  "STNS": {
+   "initial_price": 53.98,
+   "market_cap": 12.6,
+   "shares_outstanding": 0.233,
+   "revenue": 3.92,
+   "margin": 0.119,
+   "cash": 1.14,
+   "debt": 1.63,
+   "dividend_yield": 0.0163
+  },
+  "ENCH": {
+   "initial_price": 18.58,
+   "market_cap": 44.0,
+   "shares_outstanding": 2.368,
+   "revenue": 16.45,
+   "margin": 0.17,
+   "cash": 3.03,
+   "debt": 5.82,
+   "dividend_yield": 0.0208
+  },
+  "WAND": {
+   "initial_price": 53.68,
+   "market_cap": 275.2,
+   "shares_outstanding": 5.127,
+   "revenue": 76.93,
+   "margin": 0.096,
+   "cash": 16.14,
+   "debt": 41.08,
+   "dividend_yield": 0.0265
+  }
+ },
+ "derived": [
+  {
+   "ticker": "FRNT",
+   "name": "Frontier Industries ETF",
+   "kind": "basket",
+   "members": [
+    "PHSJ",
+    "GTWY",
+    "CLSD",
+    "STRM",
+    "CHRN",
+    "TMVT",
+    "DRMW",
+    "MMBK",
+    "EMBR",
+    "GRFN",
+    "ABYS",
+    "KELP",
+    "LEVT",
+    "HVRL",
+    "GLDM",
+    "STNS"
+   ],
+   "desc": "Equal-weighted basket of the imaginary industries: teleport gates, weather engineering, time technology, dream and memory banks, creatures, deep-ocean cities, antigravity and alchemy."
+  }
+ ]
+}

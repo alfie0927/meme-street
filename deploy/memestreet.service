@@ -1,0 +1,28 @@
+# The Meme Street game server: the market, the trades, the accounts and the saves. One process, listening only on this
+# machine (port 8001); the gateways (memestreet-gateway.service) are what the internet talks to.
+[Unit]
+Description=Meme Street game server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=memestreet
+Group=memestreet
+WorkingDirectory=/opt/memestreet
+EnvironmentFile=/etc/memestreet.env
+ExecStart=/opt/memestreet/.venv/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8001 --log-level warning
+Restart=always
+RestartSec=3
+# On a stop the game saves itself (state.json) before it exits: give it time.
+TimeoutStopSec=60
+KillSignal=SIGTERM
+LimitNOFILE=65536
+# The game may only write inside its own folder.
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/memestreet
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,25 @@
+# The gateways: processes that hold the players' connections and pass everything else to the game server (gateway.py).
+# Caddy (the web server that does https) sends the internet's traffic to port 8000 here. GATEWAYS (in /etc/memestreet.env)
+# is how many of them to run: one per processor core is a good number, 2 for a small server.
+[Unit]
+Description=Meme Street gateways
+After=memestreet.service
+Wants=memestreet.service
+
+[Service]
+User=memestreet
+Group=memestreet
+WorkingDirectory=/opt/memestreet
+EnvironmentFile=/etc/memestreet.env
+ExecStart=/opt/memestreet/.venv/bin/python -m uvicorn gateway:app --host 127.0.0.1 --port 8000 --workers ${GATEWAYS} --log-level warning
+Restart=always
+RestartSec=3
+LimitNOFILE=65536
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/memestreet
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
