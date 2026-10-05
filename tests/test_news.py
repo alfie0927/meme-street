@@ -43,11 +43,11 @@ class PersonaTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
             random.seed(81)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.tick(now=e.now)
             e._change_ceo(e.stocks["NVXA"], "Zed Newcomer")
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertEqual(f.stocks["NVXA"].persona, e.stocks["NVXA"].persona)
             page = f.company_for("NVXA")["persona"]
             self.assertEqual(page["ceo"], "Zed Newcomer")

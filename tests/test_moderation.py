@@ -235,7 +235,7 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(41)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.now = (int(e.now // DAY) + 1) * DAY + 100
             e.tick(now=e.now)
             e.settings["chat_min_trades"] = 0
@@ -246,7 +246,7 @@ class PersistenceTests(unittest.TestCase):
                 e.report_chat(r, mid)
             e.appeal(bad, "Please reconsider this mute")
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             b2 = next(p for p in f.players.values() if p.name == "persist")
             self.assertEqual(b2.strikes, 1)
             self.assertEqual([a["status"] for a in f.appeals], ["open"])

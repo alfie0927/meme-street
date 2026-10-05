@@ -154,18 +154,18 @@ class EngineGraphTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as d:
             path = os.path.join(d, "state.json")
             random.seed(85)
-            a = engine.Engine(state_file=path, bots=False)
+            a = engine.Engine(state_file=path)
             a.relations.customers_of["OILX"].discard("SKYJ")        # make the saved graph recognisably different
             a.relations.suppliers_of["SKYJ"].discard("OILX")
             a.tick(now=a.now)
             a.save()
-            b = engine.Engine(state_file=path, bots=False)
+            b = engine.Engine(state_file=path)
             self.assertNotIn("SKYJ", b.relations.customers("OILX"))     # loaded from the save, not rebuilt
             self.assertIn("NVXA", b.relations.customers("NNCF"))
             state = json.load(open(path, encoding="utf-8"))
             state.pop("relations")                                  # a save from before the graph existed
             json.dump(state, open(path, "w", encoding="utf-8"))
-            c = engine.Engine(state_file=path, bots=False)
+            c = engine.Engine(state_file=path)
             self.assertIn("SKYJ", c.relations.customers("OILX"))    # built from the companies, not loaded
 
     def test_players_never_see_suppliers_customers_or_rivals(self):

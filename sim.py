@@ -414,7 +414,7 @@ def run(hours=6.0, seed=1, settings=None, quiet=False, copies=None, detail=False
     hourly_moves.sort()
     q = lambda arr, f: arr[min(len(arr) - 1, int(f * len(arr)))] if arr else 0.0
     m = {"drift": drift, "fees": st["fees"], "house_pnl": st["house_pnl"],
-         "liquidity_pnl": st["liquidity_pnl"], "bots_pnl": st["bots_pnl"],
+         "liquidity_pnl": st["liquidity_pnl"],
          "season_top": sum(r[-1] for r in seasons) / len(seasons) if seasons else 0.0,
          "season_median": sum(r[len(r) // 2] for r in seasons) / len(seasons) if seasons else 0.0,
          "move_1h_median": q(hourly_moves, 0.5), "move_1h_p90": q(hourly_moves, 0.9),

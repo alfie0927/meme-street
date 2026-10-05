@@ -34,7 +34,7 @@ def workers():
 def run(args):
     seed, hours, settings = args
     random.seed(seed)
-    e = engine.Engine(state_file=None, bots=False)
+    e = engine.Engine(state_file=None)
     e.settings.update(settings)
     t0 = time.time()
     init = {tk: s.initial_price for tk, s in e.stocks.items()}

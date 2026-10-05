@@ -14,7 +14,7 @@ import accounts
 
 def new_engine(path, seed=1):
     random.seed(seed)
-    e = engine.Engine(state_file=path, bots=False)
+    e = engine.Engine(state_file=path)
     e.settings.update(premarket_seconds=0, aftermarket_seconds=0)
     return e
 
@@ -49,7 +49,7 @@ class ContentFilesTests(unittest.TestCase):
         self.assertEqual(self.files_for("my.json"), ["base.json", "pack.json"])
 
     def test_rewriting_the_chart_file_does_not_change_the_content_signature(self):
-        e = engine.Engine(state_file=None, bots=False)
+        e = engine.Engine(state_file=None)
         before = e._sig()
         charts = os.path.abspath("state.charts.json")
         self.assertNotIn(charts, [os.path.abspath(f) for f, _ in before])

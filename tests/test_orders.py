@@ -92,10 +92,6 @@ class PlacingTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("6 open orders", msg)
 
-    def test_bots_cannot_place_orders(self):
-        e = make_engine(7)
-        bot = engine.Player("robot", bot=True)
-        self.assertFalse(e.place_order(bot, TK, "limit_buy", e.stocks[TK].price * 0.9, pct=0.1)[0])
 
 
 class TriggerTests(unittest.TestCase):
@@ -303,7 +299,7 @@ class CancelAndPersistTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(43)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             p = join(e, "saver")
             s = e.stocks[TK]
             e.place_order(p, TK, "limit_buy", s.price * 0.9, pct=0.25)
@@ -312,7 +308,7 @@ class CancelAndPersistTests(unittest.TestCase):
             e.place_bracket(p, "NVXA", e.stocks["NVXA"].price * 1.1, e.stocks["NVXA"].price * 0.9)
             ids = [o["id"] for o in p.orders]
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             q = next(x for x in f.players.values() if x.name == "saver")
             self.assertEqual([o["id"] for o in q.orders], ids)
             self.assertEqual(q.orders[0]["trigger"], p.orders[0]["trigger"])
@@ -324,14 +320,14 @@ class CancelAndPersistTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(44)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             join(e, "old44")
             e.save()
             d = json.load(open(path, encoding="utf-8"))
             for x in d["players"]:
                 x.pop("orders", None)
             json.dump(d, open(path, "w", encoding="utf-8"))
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertTrue(all(p.orders == [] for p in f.players.values()))
 
 
@@ -364,7 +360,7 @@ class NoEdgeTests(unittest.TestCase):
         gains = []
         for k in range(120):
             random.seed(1000 + k)
-            e = engine.Engine(state_file=None, bots=False)
+            e = engine.Engine(state_file=None)
             quiet(e)
             p = join(e, "bracket")
             s = e.stocks["CLDR"]

@@ -403,7 +403,7 @@ class BrowserPages(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(5)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             advance(e, 150)                                    # some candles to show
             s = e.stocks["OILX"]
             s.fair = s.initial_price * 0.1

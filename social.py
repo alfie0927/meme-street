@@ -397,7 +397,7 @@ class SocialMixin:
             if not p or not self.ever_traded(p):
                 continue
             gain = r["equity"] - p.deposited
-            pnl.append({"name": r["name"], "token": r["token"], "bot": r["bot"], "pnl": gain,
+            pnl.append({"name": r["name"], "token": r["token"], "pnl": gain,
                         "ret": gain / p.deposited if p.deposited > 0 else 0.0})
         pnl.sort(key=lambda x: -x["pnl"])
         self.boards = {"pnl": pnl}
@@ -407,10 +407,10 @@ class SocialMixin:
         def trim(rows, keys):
             return [{"rank": i + 1, "me": r["token"] == p.token, **{k: r[k] for k in keys}}
                     for i, r in enumerate(rows[:top])]
-        season = [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"], "bot": r["bot"],
+        season = [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"],
                    "ret": r["ret"], "equity": r["equity"]} for i, r in enumerate(self.board[:top])]
         return {"season": season,
-                "pnl": trim(self.boards["pnl"], ("name", "bot", "pnl", "ret")),
+                "pnl": trim(self.boards["pnl"], ("name", "pnl", "ret")),
                 "mine": {"season": self.rank.get(p.token), "pnl": self.rank_pnl.get(p.token), "dd": p.maxdd},
                 "counts": {"season": len(self.board), "pnl": len(self.boards["pnl"])},
                 "players": len(self.players)}
@@ -506,8 +506,6 @@ class SocialMixin:
         t = next((x for x in self.tournaments if x["id"] == tid), None)
         if t is None:
             return False, "No such contest"
-        if p.bot:
-            return False, "Bots cannot enter"
         gate = self.email_gate(p)
         if gate:
             return False, gate
@@ -591,8 +589,6 @@ class SocialMixin:
             return
         self._holdsnap_t = self.now
         for p in self.players.values():
-            if p.bot:
-                continue
             eq = max(self.equity(p), 1e-9)
             rows = []
             for tk, sh in p.hold.items():
@@ -617,7 +613,7 @@ class SocialMixin:
         if p is None:
             return None
         mine = viewer is not None and viewer.token == p.token
-        out = {"name": p.name, "bot": p.bot, "public": p.public,
+        out = {"name": p.name, "public": p.public,
                "achievements": [{"id": a, "name": ACH_NAMES[a], "t": t}
                                 for a, t in sorted(p.achievements.items(), key=lambda kv: kv[1])],
                "badges": list(p.badges),
@@ -639,7 +635,7 @@ class SocialMixin:
     # ------------------------------------------------------------------------------------------ following
     def follow(self, p, name):
         target = self._find(name)
-        if target is None or target.bot:
+        if target is None:
             return False, "No such player"
         if target.token == p.token:
             return False, "You can't follow yourself"
@@ -665,8 +661,6 @@ class SocialMixin:
         """Returns (ok, message or error text, the message dict). Cleaned, rate limited and subject to mutes."""
         if not self.settings.get("chat_enabled", True):
             return False, "Chat is switched off", None
-        if p.bot:
-            return False, "Bots cannot chat", None
         gate = self._chat_gate(p)
         if gate:
             return False, gate, None
@@ -746,7 +740,7 @@ class SocialMixin:
         self.mod_log.append({"t": self.now, "actor": actor, "action": action, "name": name, "detail": str(detail)[:160]})
 
     def report_chat(self, p, msg_id):
-        gate = self._chat_gate(p) if not p.bot else "Bots cannot report"
+        gate = self._chat_gate(p)
         if gate:
             return False, gate
         msg = next((m for dq in self._all_chat() for m in dq if m["id"] == int(msg_id)), None)
@@ -770,7 +764,7 @@ class SocialMixin:
         self.delete_chat(msg["id"])
         self.pending_deletes.append(msg["id"])
         author = self._find(msg["name"])
-        if author is None or author.bot:
+        if author is None:
             return
         author.strikes += 1
         seconds = self.MUTE_STEPS[min(author.strikes - 1, len(self.MUTE_STEPS) - 1)]
@@ -855,9 +849,8 @@ class SocialMixin:
         self._social_t = self.now
         self._tournament_tick()
         for p in self.players.values():
-            if not p.bot:
-                self._check_achievements(p)
-                self._check_quests(p)
+            self._check_achievements(p)
+            self._check_quests(p)
         self._snapshot_holdings()
 
     def _end_season_social(self):

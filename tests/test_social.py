@@ -486,12 +486,12 @@ class DrawdownAndBoardTests(unittest.TestCase):
         import os as _os
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as d:
             path = _os.path.join(d, "state.json")
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             p = join(e, "keeps_trading")
             e.trade(p, "CLDR", "buy", 0.2)
             e._board()
             e.save()
-            e2 = engine.Engine(state_file=path, bots=False)
+            e2 = engine.Engine(state_file=path)
             e2._board()
             self.assertEqual([r["name"] for r in e2.board], ["keeps_trading"])
             self.assertEqual([r["name"] for r in e2.boards["pnl"]], ["keeps_trading"])
@@ -615,10 +615,8 @@ class ProfileAndFollowTests(unittest.TestCase):
         self.assertFalse(e.unfollow(q, "visible")[0])
         self.assertEqual(e.public_profile("visible", q)["followers"], 0)
 
-    def test_cannot_follow_a_bot_and_follow_list_is_capped(self):
+    def test_cannot_follow_a_name_that_does_not_exist_and_follow_list_is_capped(self):
         e, q = self.e, self.q
-        bot = engine.Player("robot1", bot=True)
-        e._register(bot)
         self.assertFalse(e.follow(q, "robot1")[0])
         for i in range(social.FOLLOW_MAX):
             join(e, f"fol{i}")
@@ -721,11 +719,6 @@ class ChatTests(unittest.TestCase):
         self.assertFalse(ok)
         self.assertIn("off", msg)
 
-    def test_bots_cannot_chat(self):
-        bot = engine.Player("robo", bot=True)
-        self.e._register(bot)
-        self.assertFalse(self.e.post_chat(bot, "beep")[0])
-
     def test_global_messages_reach_everyone(self):
         _, _, m = self.say(self.a, "hi all")
         self.assertIsNone(self.e.chat_audience(m))
@@ -773,7 +766,7 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             state = os.path.join(tmp, "state.json")
             random.seed(21)
-            e = engine.Engine(state_file=state, bots=False)
+            e = engine.Engine(state_file=state)
             e.now = (int(e.now // DAY) + 1) * DAY + 100
             e.tick(now=e.now)
             a, b = join(e, "keeper"), join(e, "friend")
@@ -792,7 +785,7 @@ class PersistenceTests(unittest.TestCase):
             before = (dict(a.achievements), dict(a.counters), a.maxdd, a.peak, list(a.opened))
             e.save()
             random.seed(22)
-            f = engine.Engine(state_file=state, bots=False)
+            f = engine.Engine(state_file=state)
             a2 = next(p for p in f.players.values() if p.name == "keeper")
             b2 = next(p for p in f.players.values() if p.name == "friend")
             self.assertEqual((dict(a2.achievements), dict(a2.counters), a2.maxdd, a2.peak, list(a2.opened)), before)
@@ -809,7 +802,7 @@ class PersistenceTests(unittest.TestCase):
             import json
             state = os.path.join(tmp, "state.json")
             random.seed(23)
-            e = engine.Engine(state_file=state, bots=False)
+            e = engine.Engine(state_file=state)
             e.tick(now=e.now)
             join(e, "oldtimer")
             e.save()
@@ -818,7 +811,7 @@ class PersistenceTests(unittest.TestCase):
             for x in d["players"]:
                 x.pop("social")
             json.dump(d, open(state, "w", encoding="utf-8"))
-            f = engine.Engine(state_file=state, bots=False)
+            f = engine.Engine(state_file=state)
             p = next(x for x in f.players.values() if x.name == "oldtimer")
             self.assertEqual(p.achievements, {})
             f.tick(now=f.now + 1)
@@ -839,7 +832,7 @@ class NoEdgeAndStressTests(unittest.TestCase):
         def play(active):
             # No jump to a fixed time of day: the engine schedules earnings and other events relative to its own
             # start, so two markets created a few seconds apart are only identical if each runs from its own start.
-            e = engine.Engine(state_file=None, bots=False)
+            e = engine.Engine(state_file=None)
             e.tick(now=e.now)
             ps = [join(e, f"u{i}") for i in range(4)]
             prices = []

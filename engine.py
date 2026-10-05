@@ -9,7 +9,7 @@ from ledger import Ledger
 from social import SocialMixin
 from accounts import AccountsMixin, name_problem
 
-START_CASH = 1000.0          # default signup bonus and bot bankroll (test credits)
+START_CASH = 1000.0          # default signup bonus (test credits)
 FEE = 0.001                  # per side (0.1%; a round trip costs about 0.2%), collected as house revenue
 COOLDOWN = 1.0
 MAX_POOL_FRAC = 0.05
@@ -185,7 +185,7 @@ class Stock:
 
 
 class Player:
-    def __init__(self, name, bot=False, strategy=None):
+    def __init__(self, name):
         self.name = name
         self.token = uuid.uuid4().hex
         self.cash = 0.0
@@ -211,15 +211,12 @@ class Player:
         self.email_verified = False
         self.email_pending = None   # an address waiting for its code to be typed in
         self.created = 0.0       # when the account was made
-        self.bot = bot
-        self.strategy = strategy
         self.trades = 0
-        self.seen = set()
         social.init_player(self)   # achievements, quests, following, chat limits (see social.py)
 
 
 class Engine(SocialMixin, AccountsMixin):
-    def __init__(self, content_glob="*.json", state_file="state.json", bots=True, ledger_path=None):
+    def __init__(self, content_glob="*.json", state_file="state.json", ledger_path=None):
         self._init_social()
         self._init_accounts()
         self.content_glob = content_glob
@@ -234,6 +231,7 @@ class Engine(SocialMixin, AccountsMixin):
         self.recapitalized = 0.0                   # what the house reserve has been topped up by (see _reserve_check)
         self._curve_t = 0.0
         self.recovered_events = 0
+        self._retired_bots = 0                      # how many house-funded bots a save from an older version had (they are removed on load)
         self.now = time.time()
         self.sectors, self.templates, self.settings = {}, {}, {}
         self.derived_specs = {}                    # indices, ETFs and leveraged products from the content packs
@@ -269,11 +267,10 @@ class Engine(SocialMixin, AccountsMixin):
         self.borrow_fees = 0.0                     # total borrow fees collected from shorts (part of `fees`)
         self.short_shortfall = 0.0                 # losses the house absorbed when a short could not be paid for
         self._borrow_t = self.now
-        self.hints = deque(maxlen=20)
         self.history = []
         self.house = 0.0          # house reserve: funds new listings, receives delisted pools
         self.fees = 0.0           # fee revenue
-        self.house_capital = 0.0  # tokens the house has put in (pool seeds, reserve, bot bankrolls)
+        self.house_capital = 0.0  # tokens the house has put in (pool seeds and the reserve)
         self.minted = 0.0
         self.season_no = 1
         self.board = []
@@ -320,14 +317,12 @@ class Engine(SocialMixin, AccountsMixin):
             for _ in range(int(self.settings.get("moonshot_initial", 4))):
                 self._list_moonshot(initial=True)
             self._assign_personas()
-        if self.recovered_events:
+        if self.recovered_events or self._retired_bots:
             self.save()                            # checkpoint straight away so the replayed events are not replayed again
         self._sync_index_asset()
         self.index_prev = {tk: s.price for tk, s in self.stocks.items()}
         self.index_hist.clear()
         self.index_hist.append(self.index_level)
-        if bots and not self.by_token_bots():
-            self._add_bots(int(self.settings.get("bots", 8)))
 
     def _assign_personas(self):
         """Every listed company gets a CEO, CFO, flagship product, home city and a supplier, customer and rival
@@ -408,9 +403,6 @@ class Engine(SocialMixin, AccountsMixin):
         if s:
             s.fair = self.index_level
 
-    def by_token_bots(self):
-        return [p for p in self.players.values() if p.bot]
-
     # ---------- content ----------
     def _content_files(self):
         """The content packs: every .json file in the folder except the save and its chart file (which are big, are
@@ -483,7 +475,7 @@ class Engine(SocialMixin, AccountsMixin):
         stress = float(self.settings.get("reserve_stress_frac", 0.5))
         if frac <= 0 and stress <= 0:
             return 0.0
-        equity = sum(self.equity(p) for p in self.players.values() if not p.bot)
+        equity = sum(self.equity(p) for p in self.players.values())
         return max(float(self.settings.get("reserve_floor_min", 0.0)), frac * equity, stress * self._exposure()[1])
 
     def _reserve_check(self):
@@ -710,7 +702,7 @@ class Engine(SocialMixin, AccountsMixin):
         p = Player(name)
         p.created = self.now
         self._register(p)
-        self._emit("join", p, bot=False)
+        self._emit("join", p)
         bonus = float(self.settings.get("signup_bonus", START_CASH))
         if bonus > 0:
             self.credit(p, bonus)
@@ -749,16 +741,6 @@ class Engine(SocialMixin, AccountsMixin):
         self._rebase_peak(p, ratio)
         self._emit("debit", p, cash=-amount, notional=amount)
         return True, f"Withdrew {amount:.2f} MB"
-
-    def _add_bots(self, n):
-        strategies = ["random", "momentum", "contrarian", "news"]
-        bankroll = float(self.settings.get("bot_cash", START_CASH))
-        for i in range(n):
-            st = strategies[i % 4]
-            p = Player(f"bot_{st}_{i // 4 + 1}", bot=True, strategy=st)
-            self._register(p)
-            p.cash = p.deposited = p.season_base = bankroll
-            self._mint_house(bankroll)
 
     # ---------- risk limits (borrowing and margin; there is no cap on the size of a position) ----------
     def short_cap(self, s):
@@ -1319,7 +1301,6 @@ class Engine(SocialMixin, AccountsMixin):
             deferred = None
             self.news("breaking", prefix + text, top, sign, strength)
             self._queue(final)
-        self.hints.append({"id": uuid.uuid4().hex, "t": self.now, "dir": shown, "betas": betas})
         if deferred is None:
             self._after_event(scope, 1 if sign == good_dir else -1, strength, tgt_sector, tgt_stock)
         if follow:
@@ -1798,8 +1779,6 @@ class Engine(SocialMixin, AccountsMixin):
             return
         self._curve_t = self.now
         for p in self.players.values():
-            if p.bot:
-                continue
             eq = self.equity(p)
             p.curve.append([self.now, eq, p.cash])
             if self.ledger is not None:
@@ -2084,9 +2063,10 @@ class Engine(SocialMixin, AccountsMixin):
     # ---------- rare news that moves a stock a lot ----------
     def _catalysts(self):
         """About every 8 minutes one company gets a catalyst: a trial result, an approval, a buyout offer, an audit,
-        a test flight. It moves the price a LOT, whatever the stock's beta. Each catalyst is a fair two-outcome bet
-        (see newsgen.CATALYSTS): the chance of the good outcome times its gain equals the chance of the bad outcome
-        times its loss, so the expected move is exactly zero and there is nothing to gain by guessing."""
+        a test flight. It moves the price a lot, whatever the stock's beta. Every catalyst is a fair bet: the good
+        outcome's chance times its gain equals the bad outcomes' chances times their losses, so the expected move is
+        exactly zero and there is nothing to gain by guessing. A moonshot gets a two-outcome bet (newsgen.CATALYSTS), an
+        ordinary company a three-outcome one in which a big fall is rare (newsgen.CATALYST_TIERS)."""
         if self.now < self.next_catalyst:
             return
         self.next_catalyst = self.now + random.expovariate(1 / float(self.settings.get("catalyst_mean_seconds", 480)))
@@ -2097,23 +2077,41 @@ class Engine(SocialMixin, AccountsMixin):
         s = random.choices(pool, weights=[moon_w if x.moonshot else 1.0 for x in pool])[0]
         kinds = [k for k in newsgen.CATALYSTS if k["sectors"] is None or s.sector in k["sectors"]]
         kind = random.choices(kinds, weights=[k["weight"] for k in kinds])[0]
-        p = kind["p"]
-        lo, hi = kind["up_moon"] if s.moonshot else kind["up"]
-        if s.moonshot:                                             # (a moonshot's upside is trimmed: see the tail notes)
-            shrink = float(self.settings.get("catalyst_moonshot_scale", 0.7))
-            lo, hi = lo * shrink, hi * shrink
-        up = min(random.uniform(lo, hi), 0.95 * (1 - p) / p)       # the loss may never take more than 95%
-        down = -p * up / (1 - p)
-        good = random.random() < p
         ctx = self._persona_ctx(s)
-        options = [t for t in (newsgen.fill(x, ctx) for x in (kind["texts_up"] if good else kind["texts_down"])) if t]
+        if s.moonshot:                                             # a lottery ticket: a good outcome or a collapse
+            p = kind["p"]
+            lo, hi = kind["up_moon"]
+            shrink = float(self.settings.get("catalyst_moonshot_scale", 0.7))   # (a moonshot's upside is trimmed: see the tail notes)
+            lo, hi = lo * shrink, hi * shrink
+            up = min(random.uniform(lo, hi), 0.95 * (1 - p) / p)   # the loss may never take more than 95%
+            down = -p * up / (1 - p)
+            good = random.random() < p
+            texts = kind["texts_up"] if good else kind["texts_down"]
+            r = up if good else down
+        else:
+            r, good, texts = self._ordinary_catalyst(kind)
+        options = [t for t in (newsgen.fill(x, ctx) for x in texts) if t]
         if not options:
             return
-        r = up if good else down
         s.move(r)
         self._update_volatility(s, r)                              # a huge move makes the stock jumpier for a while
         self._queue(self._dependency_returns({s.ticker: r}))       # its suppliers, customers and rivals feel it a little
         self.news("breaking", "BREAKING: " + random.choice(options), [s.ticker], 1 if good else -1, "very strong")
+
+    def _ordinary_catalyst(self, kind):
+        """The outcome of a catalyst for an ordinary company: (move, was it good news, the headlines to pick from). Three
+        outcomes (newsgen.CATALYST_TIERS): the good news, a small setback, and, rarely, a disaster. The disaster and the
+        setback are drawn first and the gain is then worked out so that the expected move is exactly zero."""
+        t = newsgen.CATALYST_TIERS[kind["key"]]
+        bad = random.uniform(*t["bad"])
+        dis = random.uniform(*t["dis"])
+        up = (t["p_bad"] * bad + t["p_dis"] * dis) / t["p_good"]
+        roll = random.random()
+        if roll < t["p_good"]:
+            return up, True, kind["texts_up"]
+        if roll < t["p_good"] + t["p_bad"]:
+            return -bad, False, t["texts_bad"]
+        return -dis, False, t["texts_dis"]
 
     # ---------- industry-wide shocks ----------
     def _sector_shocks(self):
@@ -2239,8 +2237,6 @@ class Engine(SocialMixin, AccountsMixin):
         limit_sell  sells (or shorts) when the price rises to the trigger or above
         stop_loss   closes your position when it moves against you to the trigger (needs a position)
         take_profit closes your position when it moves in your favour to the trigger (needs a position)"""
-        if p.bot:
-            return False, "Bots cannot place orders"
         gate = self.email_gate(p)
         if gate:
             return False, gate
@@ -2371,50 +2367,10 @@ class Engine(SocialMixin, AccountsMixin):
                 else:
                     self._drop_order(p, o, f"{label} in {o['ticker']} could not be carried out and was cancelled: {msg}")
 
-    # ---------- bots ----------
+    # ---------- helpers ----------
     def _ret(self, s, n=60):
         h = s.hist
         return h[-1] / h[-n] - 1 if len(h) >= n else 0.0
-
-    def _bot_act(self, p):
-        stocks = list(self.stocks.values())
-        strat = p.strategy
-        if strat == "random":
-            s = random.choice(stocks)
-            if random.random() < 0.6:
-                self.trade(p, s.ticker, "buy", random.uniform(0.05, 0.2))
-            elif s.ticker in p.hold:
-                self.trade(p, s.ticker, "sell", random.choice([0.5, 1]))
-        elif strat in ("momentum", "contrarian"):
-            ranked = sorted(stocks, key=lambda s: self._ret(s))
-            best, worst = ranked[-1], ranked[0]
-            if strat == "contrarian":
-                best, worst = worst, best
-            if worst.ticker in p.hold:
-                self.trade(p, worst.ticker, "sell", 1)
-            if p.cash > 20:
-                self.trade(p, best.ticker, "buy", 0.25)
-        elif strat == "news":
-            for h in list(self.hints):
-                if h["id"] in p.seen or self.now - h["t"] > 8:
-                    continue
-                p.seen.add(h["id"])
-                eff = {tk: h["dir"] * b for tk, b in h["betas"].items()}
-                for tk, v in eff.items():
-                    if v < -0.3 and tk in p.hold:
-                        self.trade(p, tk, "sell", 1)
-                pos = sorted([tk for tk, v in eff.items() if v > 0.3], key=lambda k: -eff[k])[:2]
-                for tk in pos:
-                    if p.cash > 20:
-                        self.trade(p, tk, "buy", 0.3)
-                break
-            if len(p.seen) > 200:
-                p.seen = {h["id"] for h in self.hints}
-
-    def _bots(self):
-        for p in self.players.values():
-            if p.bot and random.random() < float(self.settings.get("bot_action_probability", 0.01)):
-                self._bot_act(p)
 
     # ---------- season / scoring ----------
     # Seasons are leaderboard periods only. Balances are real and are never reset.
@@ -2441,7 +2397,7 @@ class Engine(SocialMixin, AccountsMixin):
         for p in self.players.values():
             e = self.equity(p)
             self._track_drawdown(p, e)
-            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "bot": p.bot, "token": p.token}
+            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token}
             everyone.append(row)
             if self.traded_today(p):
                 rows.append(row)
@@ -2456,9 +2412,44 @@ class Engine(SocialMixin, AccountsMixin):
         length = float(self.settings.get("season_seconds", 86400))
         return (math.floor(self.now / length) + 1) * length
 
+    def _close_positions_at_market(self, p):
+        """Close every position of a player at the market price, without fees, settling with the house (a long is
+        paid out, a short gets its collateral back plus or minus what the price did). Used by a game reset and when
+        the old house-funded bots are removed."""
+        for tk, sh in list(p.hold.items()):
+            s = self.stocks.get(tk)
+            if s is None:
+                continue
+            if sh > 0:
+                pay = sh * s.price
+                p.cash += pay
+                self.house -= pay
+            else:
+                cd, short = self._short_payout(p, p.cost.get(tk, 0.0), -sh * s.price, 0.0)
+                self.short_shortfall += short
+                p.cash += cd
+                self.house -= cd
+        p.hold, p.cost, p.entry_fee, p.last_trade = {}, {}, {}, {}
+
+    def _retire_bots(self, bots):
+        """A save from an older version has house-funded bots. They are removed: each one's positions are closed at the
+        market price and everything it holds goes back to the house reserve, so no token is created or lost (the bots
+        were funded by the house in the first place). Runs once, after the ledger has been replayed."""
+        returned = 0.0
+        for p in bots:
+            p.orders = []
+            self._close_positions_at_market(p)
+            returned += p.cash
+            self.house += p.cash
+            p.cash = 0.0
+            self.players.pop(p.token, None)
+            self.by_token.pop(p.token, None)
+        self._retired_bots = len(bots)
+        logger.info("removed %d bots; %.2f MB went back to the house reserve", len(bots), returned)
+
     def reset_to_day_one(self):
-        """Start the game over (admin only; the server backs everything up first). Every player, bots included, goes
-        back to the starting balance (`signup_bonus` for people, `bot_cash` for bots) and Day 1: positions are closed at
+        """Start the game over (admin only; the server backs everything up first). Every player goes
+        back to the starting balance (`signup_bonus`) and Day 1: positions are closed at
         the market price without fees, orders are cancelled, the trade history, medals, achievements and the day
         history are cleared, and the money ledger starts again from the new balances. What stays: the market (prices,
         charts, listings, news), accounts (names, passwords, who follows whom, privacy) and the chat moderation record.
@@ -2466,29 +2457,12 @@ class Engine(SocialMixin, AccountsMixin):
         The tokens balance the way they always do: closing a position settles it with the house, and setting a balance
         mints or burns the difference (`minted` moves with it), so nothing is created without being counted."""
         bonus = float(self.settings.get("signup_bonus", START_CASH))
-        bot_bonus = float(self.settings.get("bot_cash", START_CASH))
         for p in self.players.values():
-            for tk, sh in list(p.hold.items()):
-                s = self.stocks.get(tk)
-                if s is None:
-                    continue
-                if sh > 0:
-                    pay = sh * s.price
-                    p.cash += pay
-                    self.house -= pay
-                else:
-                    cd, short = self._short_payout(p, p.cost.get(tk, 0.0), -sh * s.price, 0.0)
-                    self.short_shortfall += short
-                    p.cash += cd
-                    self.house -= cd
-            p.hold, p.cost, p.entry_fee, p.last_trade = {}, {}, {}, {}
-            target = bot_bonus if p.bot else bonus
+            self._close_positions_at_market(p)
+            target = bonus
             delta = target - p.cash
             p.cash = target
-            if p.bot:
-                self._mint_house(delta)                 # a bot's bankroll is house money
-            else:
-                self.minted += delta
+            self.minted += delta
             p.deposited = p.season_base = target
             p.realized, p.divs, p.borrow = {}, {}, {}
             p.fees_paid, p.trades, p.margin_calls = 0.0, 0, 0
@@ -2511,9 +2485,8 @@ class Engine(SocialMixin, AccountsMixin):
         if self.ledger is not None:
             self.ledger.clear()
             for p in self.players.values():
-                if not p.bot:
-                    self._emit("join", p, bot=False)
-                    self._emit("credit", p, cash=p.cash, notional=p.cash)
+                self._emit("join", p)
+                self._emit("credit", p, cash=p.cash, notional=p.cash)
         self._board()
         self._social_t = 0
         self.news("season", f"DAY 1 BEGINS. Everyone starts again with {bonus:,.0f} MB. Good luck.")
@@ -2578,7 +2551,6 @@ class Engine(SocialMixin, AccountsMixin):
         self._paper_tick()
         self._reserve_check()
         self._orders_tick()
-        self._bots()
         self._update_index()
         for s in self.stocks.values():
             if s.asset_type != "index":
@@ -2805,7 +2777,7 @@ class Engine(SocialMixin, AccountsMixin):
 
     def board_view(self):
         return [{"name": r["name"], "equity": round(r["equity"], 2), "ret": round(r["ret"], 4),
-                 "bot": r["bot"]} for r in self.board[:10]]
+                 } for r in self.board[:10]]
 
     def sector_view(self):
         return ([{"id": k, "name": v["name"], "icon": v.get("icon", ""), **self.sector_indices.get(k, {})}
@@ -2883,19 +2855,13 @@ class Engine(SocialMixin, AccountsMixin):
         if self.now - self._series_t < 10:
             return
         self._series_t = self.now
-        humans = bots = 0.0
-        for p in self.players.values():
-            pnl = self.equity(p) - p.deposited
-            if p.bot:
-                bots += pnl
-            else:
-                humans += pnl
+        humans = sum(self.equity(p) - p.deposited for p in self.players.values())
         self.series.append({"t": self.now, "house": self.house, "fees": self.fees, "humans_pnl": humans,
-                            "bots_pnl": bots, "trades": self.trades_total})
+                            "trades": self.trades_total})
 
     def admin_overview(self, online=0):
         """Everything the admin page shows, in one call."""
-        humans = [p for p in self.players.values() if not p.bot]
+        humans = list(self.players.values())
         rows = []
         for p in humans:
             eq = self.equity(p)
@@ -2914,8 +2880,7 @@ class Engine(SocialMixin, AccountsMixin):
             old = next((x for x in series if x["t"] >= last["t"] - 300), series[0])
             span = max(last["t"] - old["t"], 1.0)
             per_min = (last["trades"] - old["trades"]) / span * 60
-        return {"stats": self.house_stats(), "series": series, "online": online,
-                "bots": sum(1 for p in self.players.values() if p.bot), "trades_total": self.trades_total,
+        return {"stats": self.house_stats(), "series": series, "online": online, "trades_total": self.trades_total,
                 "trades_per_min": per_min, "margin_calls": self.margin_calls,
                 "margin_log": list(self.margin_log)[::-1][:20], "dist": dist, "winners": rows[:10]}
 
@@ -3020,21 +2985,19 @@ class Engine(SocialMixin, AccountsMixin):
             holdings.append({"ticker": tk, "side": "long" if sh > 0 else "short", "shares": n,
                              "avg": cost / n if n else 0.0, "price": st.price,
                              "pnl": (value - cost) if sh > 0 else (cost - value)})
-        return {"name": p.name, "bot": p.bot, "cash": p.cash, "equity": eq, "deposited": p.deposited,
+        return {"name": p.name, "cash": p.cash, "equity": eq, "deposited": p.deposited,
                 "pnl": eq - p.deposited, "divs": sum(p.divs.values()), "borrow": sum(p.borrow.values()),
                 "trades": p.trades, "margin_calls": p.margin_calls, "holdings": holdings, "log": list(p.log)}
 
     def house_stats(self):
         """House P&L. Players' combined P&L is the mirror image of the house's (zero-sum)."""
-        humans = [p for p in self.players.values() if not p.bot]
-        bots = [p for p in self.players.values() if p.bot]
+        humans = list(self.players.values())
         human_equity = sum(self.equity(p) for p in humans)
         human_in = sum(p.deposited for p in humans)
-        bots_pnl = sum(self.equity(p) - p.deposited for p in bots)
         players_pnl = human_equity - human_in
         house_pnl = -players_pnl
-        return {"fees": self.fees, "house_pnl": house_pnl, "bots_pnl": bots_pnl,
-                "liquidity_pnl": house_pnl - self.fees - bots_pnl,
+        return {"fees": self.fees, "house_pnl": house_pnl,
+                "liquidity_pnl": house_pnl - self.fees,
                 "players_pnl": players_pnl, "player_deposits": human_in, "player_equity": human_equity,
                 "player_cash": sum(p.cash for p in humans), "house_capital": self.house_capital,
                 "house_reserve": self.house, "pool_tokens": sum(s.T for s in self.stocks.values()),
@@ -3108,7 +3071,7 @@ class Engine(SocialMixin, AccountsMixin):
                           "entry_fee": p.entry_fee, "realized": p.realized, "fees_paid": p.fees_paid, "trades": p.trades,
                           "log": list(p.log), "margin_calls": p.margin_calls,
                           "social": social.dump_player(p),
-                          "bot": p.bot, "strategy": p.strategy} for p in self.players.values()],
+                          } for p in self.players.values()],
              "generated": [dict(x.cfg) for x in self.stocks.values() if x.cfg.get("generated")],
              "relations": self.relations.to_json(), "archive": self.archive,
              "social": self.social_dump(), "accounts": self.accounts_dump()}
@@ -3454,8 +3417,11 @@ class Engine(SocialMixin, AccountsMixin):
             self.minted += new_reserves - take
             self.players.clear()
             self.by_token.clear()
+            retiring = []                                  # house-funded bots from an older save: settled and removed below
             for x in d["players"]:
-                p = Player(x["name"], x["bot"], x["strategy"])
+                p = Player(x["name"])
+                if x.get("bot"):
+                    retiring.append(p)
                 p.token, p.cash = x["token"], x["cash"]
                 p.hold = {ticker: shares for ticker, shares in x["hold"].items() if ticker in self.stocks}
                 p.cost = {tk: float(c) for tk, c in x.get("cost", {}).items() if tk in p.hold}
@@ -3474,7 +3440,7 @@ class Engine(SocialMixin, AccountsMixin):
                 p.email_verified = bool(x.get("email_verified")) and p.email is not None
                 p.email_pending = str(x["email_pending"]) if x.get("email_pending") else None
                 p.created = float(x.get("created", 0.0))
-                if self.ledger is not None and not p.bot:
+                if self.ledger is not None and p not in retiring:
                     p.curve.extend(self.ledger.curve(p.token, 1440))
                 p.log.extend(x.get("log", []))
                 p.margin_calls = int(x.get("margin_calls", 0))
@@ -3485,7 +3451,7 @@ class Engine(SocialMixin, AccountsMixin):
                 social.load_player(p, x.get("social", {}))
                 self.players[p.token] = p
                 self.by_token[p.token] = p
-            human_in = sum(p.deposited for p in self.players.values() if not p.bot)
+            human_in = sum(p.deposited for p in self.players.values() if p not in retiring)
             self.house_capital = float(d.get("house_capital", self.minted - human_in)) + new_reserves - take
             self.recapitalized = float(d.get("recapitalized", 0.0))
             self.index_level = float(d.get("index_level", 100.0))
@@ -3511,6 +3477,8 @@ class Engine(SocialMixin, AccountsMixin):
                 self.recovered_events = self._replay(int(d.get("ledger_seq", self.ledger.last_seq())))
             if d.get("short_model") != 2:
                 self._migrate_short_model()
+            if retiring:
+                self._retire_bots(retiring)
             drift = self.total_tokens() - self.minted
             if abs(drift) > 1e-6:
                 logger.warning("token invariant off by %.6f after loading state", drift)

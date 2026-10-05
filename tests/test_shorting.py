@@ -113,7 +113,7 @@ class OldSaveTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(9)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             p = join(e, "oldshort", extra_cash=9000)
             e.trade(p, "NVXA", "sell", 0.4)
             e.stocks["NVXA"].fair *= 0.9
@@ -126,7 +126,7 @@ class OldSaveTests(unittest.TestCase):
             x["cash"] += 2 * c
             d["house"] -= 2 * c
             json.dump(d, open(path, "w", encoding="utf-8"))
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             p2 = next(q for q in f.players.values() if q.name == "oldshort")
             self.assertAlmostEqual(f.equity(p2), equity, places=4)
             self.assertAlmostEqual(p2.cash, p.cash, places=4)

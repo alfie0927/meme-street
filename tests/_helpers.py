@@ -39,8 +39,8 @@ def _flat_read(self):
                    "sector_shock_mean_seconds": 1e12,                          # ...and no industry shocks...
                    "chat_min_trades": 0,                                       # ...anyone may chat without trading first...
                    "require_password": False,                                  # ...may join with just a name...
-                   "signup_bonus": 1000, "bot_cash": 1000}                     # ...and start with 1,000 MB (the game itself: 10,000)
-    forced = {"signup_bonus": 1000, "bot_cash": 1000}                          # the tests' money is 1,000 MB a head
+                   "signup_bonus": 1000}                                        # ...and start with 1,000 MB (the game itself: 10,000)
+    forced = {"signup_bonus": 1000}                                          # the tests' money is 1,000 MB a head
     return sectors, companies, templates, {**quiet_world, **settings, **forced}, profiles, derived
 
 
@@ -48,9 +48,9 @@ engine.Engine._read = _flat_read
 
 
 def make_engine(seed=1, **settings):
-    """A fresh engine with no save file and no bots, on a fake clock the tests control through `e.now`."""
+    """A fresh engine with no save file, on a fake clock the tests control through `e.now`."""
     random.seed(seed)
-    e = engine.Engine(state_file=None, bots=False)
+    e = engine.Engine(state_file=None)
     e.settings.update(settings)
     e.tick(now=e.now)
     return e
@@ -64,7 +64,7 @@ def fixed_engine(seed=1, **settings):
     clock = engine.time
     engine.time = types.SimpleNamespace(time=lambda: 40 * engine.MARKET_DAY_SECONDS + 100.0)
     try:
-        e = engine.Engine(state_file=None, bots=False)
+        e = engine.Engine(state_file=None)
     finally:
         engine.time = clock
     e.settings.update(settings)
@@ -116,7 +116,7 @@ class IsolatedServer:
         self.gateways = int(os.environ.get("MS_TEST_GATEWAYS", 0)) if gateways is None else int(gateways)
         self.state_file = state_file                  # a saved game to start from (copied in; the original is not touched)
         self.admin_key = admin_key
-        self.settings = {"premarket_seconds": 0, "aftermarket_seconds": 0, "chat_min_trades": 0, "contest_join_seconds": 86400, "require_password": False, "signup_bonus": 1000, "bot_cash": 1000, **(settings or {})}   # flat market unless asked
+        self.settings = {"premarket_seconds": 0, "aftermarket_seconds": 0, "chat_min_trades": 0, "contest_join_seconds": 86400, "require_password": False, "signup_bonus": 1000, **(settings or {})}   # flat market unless asked
         self.proc = None
 
     def __enter__(self):

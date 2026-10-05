@@ -2,7 +2,7 @@
 
 ## Project files
 ```
-engine.py               # market engine: pools, news/events, bots, seasons, scoring, save/load
+engine.py               # market engine: pools, news/events, seasons, scoring, save/load
 sim.py                  # headless economy check with adversarial traders
 tune.py                 # compare settings across seeds (python tune.py configs.json)
 events_pack.json        # sector-specific news events (every sector has its own)
@@ -43,7 +43,7 @@ Click a ticker to open `/stock/TICKER` for a dedicated detail page. Saved pre-pr
 ## Economics (checked by `python sim.py [hours] [seed]`)
 - Currency is memebucks (MB). Every token is in exactly one place: player cash, a stock pool, the house reserve, or collected fees. `total_tokens() == minted` at all times; only deposits/withdrawals (`Engine.credit` / `Engine.debit`) and house capital injections change `minted`.
 - Only trades move tokens. News, noise, regime shifts, bailouts and mean reversion change a pool's share count, not its tokens, so they never create or destroy money.
-- The house earns the 0.5% fee on each side of every trade. It also seeds each pool's liquidity and runs the bots; `house_stats()` splits house P&L into fees, liquidity P&L and bot P&L. Players' combined P&L is the mirror image of the house's.
+- The house earns the 0.5% fee on each side of every trade. It also seeds each pool's liquidity; `house_stats()` splits house P&L into fees and liquidity P&L. Players' combined P&L is the mirror image of the house's.
 - Nothing is predictable from public information: news direction is a coin flip, breaking news moves prices instantly, rumors move prices by their expected value (the confirmation/correction moves the rest), and dependency/sector spillovers land in the same tick as their cause. Mean reversion acts on each stock's exogenous fair value, never on player price impact.
 - A Day (what used to be a season) is a leaderboard period of one real day, midnight to midnight UTC; balances carry over. Day return = equity / (equity at the start of the day + deposits) - 1. See HOW_IT_WORKS.md for how the game works today (this file is older).
 - Bankruptcy cashes holders out at the pool's last price (no fee); the remaining pool returns to the house reserve.

@@ -3,8 +3,8 @@
     python reset_game.py            asks you to type RESET, then does it
     python reset_game.py --yes      does it without asking
 
-It does what the admin page's "Reset the game to Day 1" button does (see HOW_IT_WORKS.md, section 10): every player and
-bot goes back to the starting balance (`signup_bonus`), positions are closed at the market price, orders cancelled, and
+It does what the admin page's "Reset the game to Day 1" button does (see HOW_IT_WORKS.md, section 10): every player
+goes back to the starting balance (`signup_bonus`), positions are closed at the market price, orders cancelled, and
 the trade history, medals and achievements cleared. Prices, charts, accounts and passwords stay. The old save, chart file
 and ledger are copied into backups/reset-<date> first.
 
@@ -46,8 +46,7 @@ def main(argv):
     from engine import Engine                                   # (importing it loads the game, like the server does)
     engine = Engine(ledger_path=os.path.join(BASE, "ledger.db"))
     folder = engine.reset_with_backup(os.path.join(BASE, "backups", time.strftime("reset-%Y%m%d-%H%M%S")))
-    humans = [p for p in engine.players.values() if not p.bot]
-    print(f"Done. It is Day {engine.season_no} again; {len(humans)} player(s) and {len(engine.players) - len(humans)} bots "
+    print(f"Done. It is Day {engine.season_no} again; {len(engine.players)} player(s) "
           f"are on {engine.settings.get('signup_bonus', 0):,.0f} MB. The old game is in {os.path.relpath(folder, BASE)}.")
     if engine.ledger is not None:
         engine.ledger.close()

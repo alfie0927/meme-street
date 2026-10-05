@@ -175,13 +175,13 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(41)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             for i in range(30):
                 join(e, f"keep{i}", extra_cash=99000)
             advance(e, 8)
             self.assertGreater(e.recapitalized, 0)
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertAlmostEqual(f.recapitalized, e.recapitalized, places=6)
             self.assertAlmostEqual(f.house, e.house, places=6)
             self.assertLess(abs(drift(f)), 1e-6)
@@ -191,7 +191,7 @@ class PersistenceTests(unittest.TestCase):
             path = os.path.join(tmp, "state.json")
             ledger = os.path.join(tmp, "ledger.db")
             random.seed(42)
-            e = engine.Engine(state_file=path, bots=False, ledger_path=ledger)
+            e = engine.Engine(state_file=path, ledger_path=ledger)
             e.save()
             for i in range(30):
                 join(e, f"late{i}", extra_cash=99000)
@@ -199,7 +199,7 @@ class PersistenceTests(unittest.TestCase):
             recap, house = e.recapitalized, e.house
             self.assertGreater(recap, 0)
             e.ledger.flush()                                          # a crash: no further save
-            g = engine.Engine(state_file=path, bots=False, ledger_path=ledger)
+            g = engine.Engine(state_file=path, ledger_path=ledger)
             self.assertAlmostEqual(g.recapitalized, recap, places=6)
             self.assertAlmostEqual(g.house, house, places=6)
             self.assertLess(abs(drift(g)), 1e-6)

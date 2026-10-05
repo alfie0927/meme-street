@@ -212,11 +212,6 @@ class RequiredModeTests(unittest.TestCase):
         ok, msg = e.contest_trade(p, tid, "NVXA", "buy", 0.2)                  # the paper account is not gated a second time
         self.assertTrue(ok, msg)
 
-    def test_bots_are_never_gated(self):
-        self.e.settings["email_mode"] = "required"
-        bot = engine.Player("robo", bot=True)
-        self.assertIsNone(self.e.email_gate(bot))
-
     def test_with_no_setting_email_is_off_until_mail_is_set_up_and_a_bad_value_falls_back_to_that(self):
         self.assertEqual(self.e.email_mode(), "off")
         self.e.default_email_mode = "optional"                    # what the server does once it can really send mail
@@ -284,13 +279,13 @@ class SaveTests(unittest.TestCase):
         import tempfile
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             a, err = e.register("alice", accounts.hash_password(GOOD))
             b, err = e.register("bob", accounts.hash_password(GOOD))
             self.assertTrue(e.email_confirm(a, e.email_begin(a, "alice@example.com")[2])[0])
             code = e.email_begin(b, "bob@example.com")[2]
             e.save()
-            e2 = engine.Engine(state_file=path, bots=False)
+            e2 = engine.Engine(state_file=path)
             a2, b2 = e2.by_token[a.token], e2.by_token[b.token]
             self.assertEqual((a2.email, a2.email_verified), ("alice@example.com", True))
             self.assertEqual((b2.email, b2.email_verified, b2.email_pending), (None, False, "bob@example.com"))
@@ -302,7 +297,7 @@ class SaveTests(unittest.TestCase):
         import tempfile
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             join(e, "oldtimer")
             e.save()
             with open(path, encoding="utf-8") as fh:
@@ -313,7 +308,7 @@ class SaveTests(unittest.TestCase):
             data["accounts"].pop("mail_codes", None)
             with open(path, "w", encoding="utf-8") as fh:
                 json.dump(data, fh)
-            e2 = engine.Engine(state_file=path, bots=False)
+            e2 = engine.Engine(state_file=path)
             p = next(x for x in e2.players.values() if x.name == "oldtimer")
             self.assertEqual((p.email, p.email_verified, p.email_pending), (None, False, None))
 

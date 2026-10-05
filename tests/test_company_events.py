@@ -58,7 +58,7 @@ class ScheduleTests(unittest.TestCase):
             return sectors, companies, templates, {**base, "company_events_per_quarter": 0}, profiles, derived
         engine.Engine._read = read
         try:
-            off = engine.Engine(state_file=None, bots=False)
+            off = engine.Engine(state_file=None)
         finally:
             engine.Engine._read = original
         self.assertTrue(all(not s.events for s in off.stocks.values()))
@@ -180,16 +180,16 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(41)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             before = {k: [dict(ev) for ev in s.events] for k, s in e.stocks.items() if s.events}
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertEqual({k: s.events for k, s in f.stocks.items() if s.events}, before)
             d = json.load(open(path, encoding="utf-8"))
             for v in d["stocks"].values():
                 v.pop("events", None)
             json.dump(d, open(path, "w", encoding="utf-8"))
-            g = engine.Engine(state_file=path, bots=False)
+            g = engine.Engine(state_file=path)
             self.assertGreater(sum(1 for s in g.stocks.values() if s.events), 100)
 
 

@@ -323,7 +323,7 @@ class ServerTests(unittest.TestCase):
         status, body, _ = http(self.srv, "/api/admin/overview", headers=admin)
         self.assertEqual(status, 200, self.srv.log()[-2500:])
         o = json.loads(body)
-        for key in ("stats", "series", "online", "bots", "trades_total", "trades_per_min", "margin_calls",
+        for key in ("stats", "series", "online", "trades_total", "trades_per_min", "margin_calls",
                     "margin_log", "dist", "winners"):
             self.assertIn(key, o)
         self.assertEqual(len(o["dist"]), 8)

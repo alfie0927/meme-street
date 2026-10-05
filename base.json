@@ -9,13 +9,10 @@
    90
   ],
   "earnings_quarter_days": 63,
-  "bot_action_probability": 0.01,
   "season_seconds": 86400,
-  "bots": 8,
   "house_seed": 50000,
   "mean_reversion_halflife_days": 90,
-  "signup_bonus": 10000,
-  "bot_cash": 10000
+  "signup_bonus": 10000
  },
  "sectors": [
   {

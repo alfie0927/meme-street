@@ -394,6 +394,68 @@ CATALYSTS = [
 
 
 # ----------------------------------------------------------------------------------------------------------
+# What a catalyst does to an ORDINARY company (moonshots keep the two-outcome bets above: they are lottery tickets by
+# design). Three outcomes instead of two, so that a really big fall is rare and only comes from really bad news:
+#   good      (p_good)  the good news; its gain is worked out, not chosen
+#   bad       (p_bad)   a setback: the shares slip a little (`bad`, a few per cent to about 14%)
+#   disaster  (p_dis)   the company is badly hurt: a big fall (`dis`, 30% to 70%), a rare headline of its own
+# The gain is  (p_bad * bad + p_dis * dis) / p_good  for the sizes drawn, so  p_good * gain - p_bad * bad - p_dis * dis = 0
+# and the expected move is exactly zero, as before. About 6 to 8 catalysts in 100 are disasters (it used to be about half
+# of them that fell 25% or more), and the good news gains 10% to 35% instead of 15% to 80%.
+CATALYST_TIERS = {
+    "trial": dict(p_good=0.40, p_bad=0.52, p_dis=0.08, bad=(0.06, 0.14), dis=(0.40, 0.65),
+                  texts_bad=["{name}'s trial shows mixed results: investors ask for more data",
+                             "{name} says its Phase 3 study needs more patients and a longer follow-up",
+                             "Doctors are split over {name}'s trial data and the shares slip"],
+                  texts_dis=["{name}'s lead drug fails its Phase 3 trial and the company ends the programme",
+                             "Patients die in {name}'s trial: regulators order the study stopped",
+                             "{name} scraps its only late-stage drug and warns it may have to raise emergency funds"]),
+    "approval": dict(p_good=0.55, p_bad=0.38, p_dis=0.07, bad=(0.04, 0.10), dis=(0.30, 0.55),
+                     texts_bad=["Regulators ask {name} for more data before ruling on {product}",
+                                "A decision on {product} is pushed back by six months, to the dismay of {name}'s investors",
+                                "{name} gets only a conditional approval for {product}, with tight restrictions"],
+                     texts_dis=["Regulators reject {product} and tell {name} to repeat its studies",
+                                "{name} pulls {product} from the market after a safety review",
+                                "{name} is refused a licence for {product} and its business plan falls apart"]),
+    "buyout": dict(p_good=0.22, p_bad=0.72, p_dis=0.06, bad=(0.03, 0.08), dis=(0.20, 0.40),
+                   texts_bad=["Buyout talks for {name} drag on and the shares drift lower",
+                              "A suitor for {name} cuts its price",
+                              "{name}'s takeover hopes fade as the bidder goes quiet"],
+                   texts_dis=["The bidder for {name} walks away after finding problems in its books",
+                              "A takeover of {name} collapses and the bidder publishes a damaging report on the company",
+                              "{name} loses its buyer and its biggest lender in the same week"]),
+    "audit": dict(p_good=0.60, p_bad=0.34, p_dis=0.06, bad=(0.05, 0.12), dis=(0.40, 0.70),
+                  texts_bad=["{name} restates a quarter's results and pays a fine",
+                             "Auditors flag weak controls at {name}",
+                             "{name} settles with regulators over reporting errors"],
+                  texts_dis=["{name} admits it overstated revenue for years; {cfo} is arrested",
+                             "Regulators freeze {name}'s accounts after finding fabricated sales",
+                             "A whistleblower exposes a massive fraud at {name} and its lenders demand their money back"]),
+    "contract": dict(p_good=0.42, p_bad=0.50, p_dis=0.08, bad=(0.04, 0.10), dis=(0.30, 0.55),
+                     texts_bad=["{name} is edged out of a big bid",
+                                "A contract {name} expected is delayed by a year",
+                                "{name} wins only a fraction of the order it hoped for"],
+                     texts_dis=["{name} loses its biggest customer and announces deep job cuts",
+                                "{name}'s flagship project is cancelled and the company warns of a cash crunch",
+                                "The customer that gave {name} half its revenue drops it for a rival"]),
+    "test": dict(p_good=0.40, p_bad=0.52, p_dis=0.08, bad=(0.05, 0.12), dis=(0.35, 0.60),
+                 texts_bad=["{name}'s prototype misses its targets and the next test slips",
+                            "A test of {name}'s prototype ends in a redesign",
+                            "{name} postpones its big demonstration after a failed rehearsal"],
+                 texts_dis=["{name}'s prototype is destroyed in a test and the programme is suspended",
+                            "A failed test leaves {name} without a product or a plan",
+                            "{name} abandons its prototype after an accident and writes off the whole project"]),
+    "hype": dict(p_good=0.45, p_bad=0.47, p_dis=0.08, bad=(0.04, 0.10), dis=(0.30, 0.55),
+                 texts_bad=["The buzz around {name} fades as users drift away",
+                            "{name} faces a backlash online and loses momentum",
+                            "A hyped launch by {name} disappoints"],
+                 texts_dis=["{name} cancels the launch of {product} after pre-orders collapse: 'there is simply no demand'",
+                            "{name} shelves {product} and writes off the whole project after a disastrous launch",
+                            "A scandal engulfs {name}: partners walk away and its leader resigns"]),
+}
+
+
+# ----------------------------------------------------------------------------------------------------------
 # Industry-wide shocks: rare news that hits a whole sector at once (a ban, a collapse in demand, a probe, a
 # disruptive technology), so an industry can crash while the wider market rises. Each is a fair two-outcome bet like
 # a catalyst: the bad outcome (the "failure", drawn from `bad`) has probability 1 - p and the good one (a relief rally

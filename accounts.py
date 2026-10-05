@@ -72,7 +72,7 @@ def password_problem(password, name=""):
 
 def name_problem(name):
     low = name.lower()
-    if low in RESERVED_NAMES or low.startswith("bot_") or low.startswith("bot "):
+    if low in RESERVED_NAMES:
         return "That name is reserved"
     return None
 
@@ -240,7 +240,7 @@ class AccountsMixin:
                 s["seen"] = self.now
             return p
         p = self.by_token.get(token)
-        if p is not None and p.pw is None and not p.bot:
+        if p is not None and p.pw is None:
             return p
         return None
 
@@ -280,7 +280,7 @@ class AccountsMixin:
 
     def email_gate(self, p):
         """The reason this player may not play yet, or None. Only bites in "required" mode."""
-        if self.email_mode() == "required" and not p.bot and not p.email_verified:
+        if self.email_mode() == "required" and not p.email_verified:
             return "Verify your email address to play: open Profile, enter your email and then the code we send you"
         return None
 
@@ -409,7 +409,7 @@ class AccountsMixin:
 
     def _human_named(self, name):
         low = str(name).strip().lower()
-        return next((x for x in self.players.values() if not x.bot and x.name.lower() == low), None)
+        return next((x for x in self.players.values() if x.name.lower() == low), None)
 
     def recovery_begin(self, name):
         """A forgotten password. Returns (code, address) when a code should be mailed, else None. The caller shows the
@@ -436,11 +436,11 @@ class AccountsMixin:
 
     def _index_emails(self):
         self.email_owner = {canonical_email(p.email): p.token for p in self.players.values()
-                            if p.email and p.email_verified and not p.bot}
+                            if p.email and p.email_verified}
 
     # ---- keeping an eye on duplicate accounts
     def account_stats(self):
-        humans = [p for p in self.players.values() if not p.bot]
+        humans = list(self.players.values())
         by_ip = {}
         for p in humans:
             for tag in p.ips:

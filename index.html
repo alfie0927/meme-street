@@ -791,7 +791,7 @@ $('hist-csv').onclick=async()=>{
 
 // ---------- leaderboards ----------
 let boardTab='season',boardsData=null;
-const nameLink=r=>r.bot?esc(r.name)+' 🤖':`<a href="/player/${encodeURIComponent(r.name)}">${esc(r.name)}</a>`;
+const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${esc(r.name)}</a>`;
 const HINTS={season:'Return since this day began (money paid in does not count). A day lasts 24 hours and ends at midnight UTC; balances carry over.',pnl:'Total profit or loss since you joined, in MB, including everything you have realised or still hold.'};
 function drawBoards(){
  const b=boardsData;if(!b)return;
@@ -929,9 +929,9 @@ function drawPlayer(){
  box.className='';
  const res=d.public||d.me;
  const holdings=d.holdings;
- setHtml(box,`<h2 style="margin:0 0 6px">${esc(d.name)}${d.bot?' 🤖':''}</h2>
+ setHtml(box,`<h2 style="margin:0 0 6px">${esc(d.name)}</h2>
  <div><span class="pill">${d.public?'Public profile':'Private profile'}</span><span class="pill">${d.followers} follower(s)</span>${d.me?'<span class="pill">This is you</span>':''}</div>
- ${!d.me&&!d.bot?`<div class="bar" style="margin-top:10px"><button class="${d.following_them?'sell':'buy'}" id="pl-follow">${d.following_them?'Unfollow':'Follow'}</button></div>`:''}
+ ${!d.me?`<div class="bar" style="margin-top:10px"><button class="${d.following_them?'sell':'buy'}" id="pl-follow">${d.following_them?'Unfollow':'Follow'}</button></div>`:''}
  ${res&&d.season_ret!==undefined?`<div class="finance-grid"><div><small>Day return</small><strong class="${cls(d.season_ret)}">${pc(d.season_ret)}</strong></div><div><small>Return since joining</small><strong class="${cls(d.alltime_ret)}">${pc(d.alltime_ret)}</strong></div><div><small>Day rank</small><strong>#${d.rank??'-'}</strong></div><div><small>Trades today</small><strong>${d.trades}</strong></div></div>`:'<p class="hint">This trader keeps their results private. You can see their medals and achievements.</p>'}
  ${res&&d.season_ret!==undefined?`<h3 class="sp">What they held</h3>${holdings?`<p class="hint">As of ${stamp(holdings.as_of)}, deliberately delayed by ${Math.round(d.holdings_delay/60)} minutes. Shown as a share of their account, never in MB.</p>`+`<table>${tbl(['Ticker','Side','Share of account'],holdings.positions.map(p=>`<tr><td><a href="/stock/${encodeURIComponent(p.ticker)}">${esc(p.ticker)}</a></td><td class="${p.side==='short'?'dn':''}">${p.side==='short'?'SHORT':'Long'}</td><td>${(p.weight*100).toFixed(1)}%</td></tr>`),'Nothing (all cash) at that time.')}</table>`:'<p class="hint">Not available yet: holdings only appear after the delay.</p>'}`:''}
  <h3 class="sp">Medals</h3>${d.badges.length?d.badges.slice().reverse().map(b=>`<span class="pill">${['🥇','🥈','🥉'][b.place-1]||''} ${esc(b.tournament)}${b.tier?' · '+esc(b.tier):''} · ${pc(b.ret)}</span>`).join(''):'<span class="mut">None yet.</span>'}
@@ -945,7 +945,7 @@ function render(){
  if(page==='stock')drawDetail();
  else if(page==='holdings')renderHoldings();
  else if(page==='market'){renderMarket();drawUpcoming();drawNews();
-  setHtml($('board'),'<tr><th>#</th><th>Trader</th><th>Return</th></tr>'+S.board.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}${r.bot?' 🤖':''}</td><td class="${r.ret>=0?'up':'dn'}">${pc(r.ret)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="text-align:left">Nobody has made a trade today.</td></tr>')}
+  setHtml($('board'),'<tr><th>#</th><th>Trader</th><th>Return</th></tr>'+S.board.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="${r.ret>=0?'up':'dn'}">${pc(r.ret)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="text-align:left">Nobody has made a trade today.</td></tr>')}
  drawChips()}
 const refreshers={portfolio:loadPortfolio,leaders:loadBoards,profile:loadMe,social:loadSocial,player:loadPlayer};
 function refreshPage(){if(!S||document.hidden)return;const fn=refreshers[page];if(fn)fn();if(page==='history'&&hEvents.length<=50&&!hLoading)loadHistory(true)}

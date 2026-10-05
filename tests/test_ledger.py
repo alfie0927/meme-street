@@ -13,9 +13,9 @@ from ledger import Ledger
 FEE = engine.FEE
 
 
-def new_engine(tmp, seed=1, bots=False, **settings):
+def new_engine(tmp, seed=1, **settings):
     random.seed(seed)
-    e = engine.Engine(state_file=os.path.join(tmp, "state.json"), bots=bots,
+    e = engine.Engine(state_file=os.path.join(tmp, "state.json"),
                       ledger_path=os.path.join(tmp, "ledger.db"))
     e.settings.update(settings)
     e.tick(now=e.now)
@@ -256,8 +256,8 @@ class EventRecordingTests(unittest.TestCase):
         self.assertIn("delist", kinds)
         self.assertEqual(kinds.count("delist_payout"), 2)
 
-    def test_equity_curve_is_sampled_each_minute_for_humans_only(self):
-        e = new_engine(self.tmp.name, seed=13, bots=True)
+    def test_equity_curve_is_sampled_each_minute(self):
+        e = new_engine(self.tmp.name, seed=13)
         p = join(e, "curved")
         advance(e, 185)
         self.assertGreaterEqual(len(p.curve), 3)
@@ -265,13 +265,11 @@ class EventRecordingTests(unittest.TestCase):
         self.assertTrue(all(len(point) == 3 for point in p.curve))
         e.ledger.flush()
         self.assertEqual(len(e.ledger.curve(p.token)), len(p.curve))
-        bot = next(x for x in e.players.values() if x.bot)
-        self.assertEqual(len(bot.curve), 0)
         e.ledger.close()
 
     def test_without_a_ledger_nothing_breaks(self):
         random.seed(14)
-        e = engine.Engine(state_file=None, bots=False)
+        e = engine.Engine(state_file=None)
         e.tick(now=e.now)
         quiet(e)
         p = join(e, "noledger")
@@ -326,7 +324,7 @@ class CrashRecoveryTests(unittest.TestCase):
         self.assertEqual(a.margin_calls, b.margin_calls)
 
     def test_a_crash_loses_no_trades(self):
-        a = new_engine(self.tmp.name, seed=21, bots=True)
+        a = new_engine(self.tmp.name, seed=21)
         players = [join(a, f"crash{i}") for i in range(6)]
         rng = random.Random(8)
         self.busy_run(a, players, 120, rng)
@@ -334,7 +332,7 @@ class CrashRecoveryTests(unittest.TestCase):
         self.busy_run(a, players, 200, rng, with_events=True)    # 200 more seconds, then the process dies
         a._flush_borrow()
         a.ledger.flush()
-        b = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        b = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         quiet(b)
         self.assertGreater(b.recovered_events, 50)
         self.compare(a, b)
@@ -351,7 +349,7 @@ class CrashRecoveryTests(unittest.TestCase):
         a.ledger.flush()
         lost = sum(a._borrow_acc.values())
         self.assertGreater(lost, 0)
-        b = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        b = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         quiet(b)
         self.assertAlmostEqual(a.by_token[p.token].cash, b.by_token[p.token].cash, delta=lost + 1e-9)
         self.assertLess(lost, 0.05)
@@ -366,7 +364,7 @@ class CrashRecoveryTests(unittest.TestCase):
         late = join(a, "latecomer")
         a.trade(late, "GOLD", "buy", 0.4)
         a.ledger.flush()
-        b = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        b = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         quiet(b)
         q = b.by_token[late.token]
         self.assertEqual(q.name, "latecomer")
@@ -381,10 +379,10 @@ class CrashRecoveryTests(unittest.TestCase):
         a.save()
         a.trade(p, "GOLD", "buy", 0.3)
         a.ledger.flush()
-        b = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        b = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         self.assertGreater(b.recovered_events, 0)
         b.ledger.close()
-        c = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        c = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         self.assertEqual(c.recovered_events, 0, "events must not be applied twice")
         self.assertAlmostEqual(c.by_token[p.token].cash, a.by_token[p.token].cash, places=6)
         self.assertAlmostEqual(c.by_token[p.token].hold["GOLD"], a.by_token[p.token].hold["GOLD"], places=9)
@@ -396,7 +394,7 @@ class CrashRecoveryTests(unittest.TestCase):
         p = join(a, "clean1")
         a.trade(p, "GOLD", "buy", 0.3)
         a.save()
-        b = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        b = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         self.assertEqual(b.recovered_events, 0)
         a.ledger.close()
         b.ledger.close()
@@ -410,7 +408,7 @@ class CrashRecoveryTests(unittest.TestCase):
         state = json.load(open(a.state_file, encoding="utf-8"))
         state.pop("ledger_seq")
         json.dump(state, open(a.state_file, "w", encoding="utf-8"))
-        b = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        b = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         self.assertEqual(b.recovered_events, 0)
         self.assertAlmostEqual(b.by_token[p.token].cash, p.cash, places=6)
         a.ledger.close()
@@ -422,7 +420,7 @@ class CrashRecoveryTests(unittest.TestCase):
         a.trade(p, "GOLD", "buy", 0.3)
         advance(a, 125)
         a.save()
-        b = engine.Engine(state_file=a.state_file, bots=False, ledger_path=a.ledger.path)
+        b = engine.Engine(state_file=a.state_file, ledger_path=a.ledger.path)
         q = b.by_token[p.token]
         self.assertEqual(len(q.curve), len(p.curve))
         self.assertEqual([x["k"] for x in q.log], [x["k"] for x in p.log])

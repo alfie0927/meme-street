@@ -162,12 +162,12 @@ class VolatilityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
             random.seed(74)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.tick(now=e.now)
             e.stocks["NVXA"].volm = 1.7
             e.mkt_volm = 1.3
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertAlmostEqual(f.stocks["NVXA"].volm, 1.7)
             self.assertAlmostEqual(f.mkt_volm, 1.3)
 

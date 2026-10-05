@@ -45,7 +45,7 @@ def run(e, n):
 class WireTests(unittest.TestCase):
     def setUp(self):
         random.seed(41)
-        self.e = engine.Engine(state_file=None, bots=False)
+        self.e = engine.Engine(state_file=None)
         self.e.tick(now=self.e.now)
         self.p = join(self.e, "wired1")
 

@@ -20,7 +20,7 @@ def real_engine(seed, state_file=None, **settings):
     random.seed(seed)
     engine.Engine._read = _helpers._real_read
     try:
-        e = engine.Engine(state_file=state_file, bots=False)
+        e = engine.Engine(state_file=state_file)
     finally:
         engine.Engine._read = _helpers._flat_read
     e.settings.update(settings)
@@ -155,7 +155,7 @@ class MoonshotCycleTests(unittest.TestCase):
             random.seed(1)
             engine.Engine._read = _helpers._real_read
             try:
-                f = engine.Engine(state_file=path, bots=False)
+                f = engine.Engine(state_file=path)
             finally:
                 engine.Engine._read = _helpers._flat_read
             self.assertEqual({s.ticker for s in moonshots(f)}, set(moons))
@@ -390,14 +390,77 @@ class CatalystTests(unittest.TestCase):
             sd = math.sqrt(sum((r - mean) ** 2 for r in rs) / len(rs))
             self.assertLess(abs(mean), 4 * sd / math.sqrt(len(rs)), (len(rs), mean, sd))
 
-    def test_even_calm_stocks_move_a_lot_and_no_stock_loses_more_than_95_percent(self):
+    def test_a_catalyst_moves_even_a_calm_stock_noticeably_but_big_falls_are_rare_and_nothing_loses_95_percent(self):
         e = real_engine(22)
         moves = self.fire(e, 2500)
-        calm = [abs(r) for moon, r, tk in moves if not moon]
+        calm = [r for moon, r, tk in moves if not moon]
         self.assertGreater(len(calm), 300)
-        self.assertGreater(sum(1 for r in calm if r >= 0.15) / len(calm), 0.8)       # a LOT, not a wobble
-        self.assertLess(max(calm), 1.0)
+        self.assertGreater(sum(1 for r in calm if abs(r) >= 0.05) / len(calm), 0.85)      # still news, not a wobble
+        falls = [-r for r in calm if r < 0]
+        big = sum(1 for f in falls if f >= 0.25) / len(calm)
+        self.assertLess(big, 0.12)                                                         # a 25% fall is the rare case (it used to be about half of all catalysts)
+        self.assertGreater(big, 0.03)                                                      # ...but it still happens
+        self.assertLess(sum(1 for f in falls if f >= 0.40) / len(calm), 0.07)
+        self.assertLess(max(r for r in calm), 0.45)                                        # and the good news is no longer +80%
         self.assertGreaterEqual(min(r for _, r, _ in moves), -0.95 - 1e-9)
+
+    def test_every_ordinary_catalyst_is_a_fair_three_outcome_bet_with_a_rare_disaster(self):
+        for k in newsgen.CATALYSTS:
+            t = newsgen.CATALYST_TIERS[k["key"]]
+            self.assertAlmostEqual(t["p_good"] + t["p_bad"] + t["p_dis"], 1.0, places=12, msg=k["key"])
+            self.assertLessEqual(t["p_dis"], 0.10, k["key"])                               # a disaster is rare...
+            self.assertGreaterEqual(t["dis"][0], 0.20, k["key"])                           # ...and big
+            self.assertLessEqual(t["dis"][1], 0.70, k["key"])
+            self.assertLessEqual(t["bad"][1], 0.14, k["key"])                              # a setback is small
+            self.assertLess(t["bad"][1], t["dis"][0], k["key"])
+            for bad in (t["bad"][0], t["bad"][1]):
+                for dis in (t["dis"][0], t["dis"][1]):
+                    up = (t["p_bad"] * bad + t["p_dis"] * dis) / t["p_good"]
+                    self.assertAlmostEqual(t["p_good"] * up - t["p_bad"] * bad - t["p_dis"] * dis, 0.0, places=12, msg=k["key"])
+                    self.assertLess(up, 0.40, k["key"])                                    # the good news gains at most about 40%
+                    self.assertGreater(up, 0.05, k["key"])
+
+    def test_an_ordinary_catalyst_uses_the_three_outcome_texts_and_a_disaster_has_its_own_headlines(self):
+        e = real_engine(26)
+        random.seed(26)
+        seen = {"good": 0, "bad": 0, "disaster": 0}
+        for _ in range(900):
+            kind = random.choice(newsgen.CATALYSTS)
+            r, good, texts = e._ordinary_catalyst(kind)
+            t = newsgen.CATALYST_TIERS[kind["key"]]
+            if good:
+                self.assertGreater(r, 0)
+                self.assertEqual(texts, kind["texts_up"])
+                seen["good"] += 1
+            elif texts is t["texts_bad"]:
+                self.assertTrue(-t["bad"][1] - 1e-12 <= r <= -t["bad"][0] + 1e-12)
+                seen["bad"] += 1
+            else:
+                self.assertIs(texts, t["texts_dis"])
+                self.assertTrue(-t["dis"][1] - 1e-12 <= r <= -t["dis"][0] + 1e-12)
+                seen["disaster"] += 1
+        self.assertGreater(seen["good"], 300)
+        self.assertGreater(seen["bad"], 250)
+        self.assertGreater(seen["disaster"], 30)
+        self.assertLess(seen["disaster"], 110)
+
+    def test_the_tiered_texts_exist_name_the_company_and_the_disasters_are_never_also_setbacks(self):
+        for k in newsgen.CATALYSTS:
+            t = newsgen.CATALYST_TIERS[k["key"]]
+            self.assertGreaterEqual(len(t["texts_bad"]), 3)
+            self.assertGreaterEqual(len(t["texts_dis"]), 3)
+            for text in t["texts_bad"] + t["texts_dis"]:
+                self.assertIn("{name}", text)
+            self.assertFalse(set(t["texts_bad"]) & set(t["texts_dis"]))
+            self.assertFalse(set(t["texts_dis"]) & set(k["texts_down"]), k["key"])           # (the old two-outcome headlines are for moonshots)
+
+    def test_a_moonshot_still_gets_the_old_two_outcome_bet(self):
+        e = real_engine(27)
+        e.settings["catalyst_moonshot_weight"] = 1e12                                     # (every catalyst lands on a moonshot)
+        moves = self.fire(e, 400)
+        falls = [-r for moon, r, _ in moves if moon and r < 0]
+        self.assertGreater(len(falls), 80)
+        self.assertGreater(sum(1 for f in falls if f >= 0.25) / len(falls), 0.5)          # a lottery ticket: its bad outcome is a collapse
 
     def test_moonshots_get_bigger_and_more_frequent_catalysts(self):
         e = real_engine(23)

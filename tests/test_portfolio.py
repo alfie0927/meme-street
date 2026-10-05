@@ -14,7 +14,7 @@ FEE = engine.FEE
 
 def make(tmp, seed=1, ledger=True):
     random.seed(seed)
-    e = engine.Engine(state_file=os.path.join(tmp, "state.json"), bots=False,
+    e = engine.Engine(state_file=os.path.join(tmp, "state.json"),
                       ledger_path=os.path.join(tmp, "ledger.db") if ledger else None)
     e.tick(now=e.now)
     quiet(e)
@@ -123,7 +123,7 @@ class PortfolioTests(unittest.TestCase):
     def test_it_works_without_a_ledger_too(self):
         e = make(self.tmp.name + "-no", 32, ledger=False) if False else None
         random.seed(33)
-        e = engine.Engine(state_file=None, bots=False)
+        e = engine.Engine(state_file=None)
         e.tick(now=e.now)
         quiet(e)
         p = join(e, "noledger2")

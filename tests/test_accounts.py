@@ -48,7 +48,7 @@ class PasswordTests(unittest.TestCase):
         self.assertIsNotNone(accounts.password_problem(None, "alice"))
 
     def test_reserved_names(self):
-        for bad in ("admin", "Moderator", "bot_momentum_1", "House", "memestreet"):
+        for bad in ("admin", "Moderator", "House", "memestreet"):
             self.assertIsNotNone(accounts.name_problem(bad), bad)
         self.assertIsNone(accounts.name_problem("alice"))
         self.assertIsNone(accounts.name_problem("robotics"))
@@ -99,7 +99,6 @@ class EngineAccountTests(unittest.TestCase):
         self.reg("alice")
         self.assertIn("taken", self.e.register("ALICE", self.rec)[1])
         self.assertIn("reserved", self.e.register("admin", self.rec)[1])
-        self.assertIn("reserved", self.e.join("bot_mine")[1])
         self.assertIn("2-16", self.e.register("x", self.rec)[1])
 
     def test_an_address_is_stored_only_as_a_salted_tag(self):
@@ -125,11 +124,6 @@ class EngineAccountTests(unittest.TestCase):
         self.assertIsNone(self.e.player_for(modern.token))
         legacy.pw = self.rec                                           # once they set one, the old token stops working
         self.assertIsNone(self.e.player_for(legacy.token))
-
-    def test_bots_cannot_be_reached_with_their_token(self):
-        bot = engine.Player("robo", bot=True)
-        self.e._register(bot)
-        self.assertIsNone(self.e.player_for(bot.token))
 
     def test_sessions_expire_after_thirty_days_of_not_being_used(self):
         p = self.reg("alice")
@@ -170,18 +164,17 @@ class EngineAccountTests(unittest.TestCase):
         self.assertTrue(accounts.verify_password("a-brand-new-one", p.pw))
         self.assertIsNone(self.e.reset_password("nobody", new))
 
-    def test_password_record_lookup_ignores_case_bots_and_accounts_without_one(self):
+    def test_password_record_lookup_ignores_case_and_accounts_without_one(self):
         p = self.reg("alice")
         join(self.e, "nopass")
         self.assertEqual(self.e.password_record("  Alice "), (p.token, self.rec))
         self.assertEqual(self.e.password_record("nopass"), (None, None))
         self.assertEqual(self.e.password_record("ghost"), (None, None))
 
-    def test_accounts_from_the_same_address_are_flagged_and_bots_are_not(self):
+    def test_accounts_from_the_same_address_are_flagged(self):
         self.reg("twin1", "9.9.9.9")
         self.reg("twin2", "9.9.9.9")
         self.reg("loner", "8.8.8.8")
-        self.e._add_bots(4)
         stats = self.e.account_stats()
         self.assertEqual([g["names"] for g in stats["shared_address"]], [["twin1", "twin2"]])
         self.assertEqual(stats["accounts"], 3)
@@ -206,12 +199,12 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(61)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             rec = accounts.hash_password(GOOD)
             p, _ = e.register("keeper", rec, "5.5.5.5")
             s = e.new_session(p, "5.5.5.5")
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             p2 = next(x for x in f.players.values() if x.name == "keeper")
             self.assertEqual(p2.pw, rec)
             self.assertEqual(p2.ips, p.ips)
@@ -227,7 +220,7 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(62)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             old = join(e, "oldtimer")
             e.save()
             with open(path, encoding="utf-8") as fh:
@@ -238,7 +231,7 @@ class PersistenceTests(unittest.TestCase):
                     pl.pop(k, None)
             with open(path, "w", encoding="utf-8") as fh:
                 json.dump(d, fh)
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             p = next(x for x in f.players.values() if x.name == "oldtimer")
             self.assertIsNone(p.pw)
             self.assertIs(f.player_for(old.token), p)

@@ -80,9 +80,6 @@ class SetupTests(unittest.TestCase):
         self.assertTrue(e.tournament_join(self.p, tid)[0])
         self.assertFalse(e.tournament_join(self.p, tid)[0])
         self.assertFalse(e.tournament_join(self.q, "marathon-0")[0])
-        bot = engine.Player("botty", bot=True)
-        e._register(bot)
-        self.assertFalse(e.tournament_join(bot, tid)[0])
         e.now = contest(e)["join_until"] + 1
         ok, msg = e.tournament_join(self.q, tid)
         self.assertFalse(ok)
@@ -212,7 +209,7 @@ class NoEffectOnTheRealGameTests(unittest.TestCase):
         clock = engine.time                                          # both worlds start at exactly the same moment
         engine.time = types.SimpleNamespace(time=lambda: 40 * DAY + 100.0)
         try:
-            e = engine.Engine(state_file=None, bots=False)
+            e = engine.Engine(state_file=None)
         finally:
             engine.time = clock
         e.settings["chat_min_trades"] = 0
@@ -355,7 +352,7 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(51)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.now = (int(e.now // DAY) + 1) * DAY + 100
             e.tick(now=e.now)
             e._social_t = 0
@@ -369,7 +366,7 @@ class PersistenceTests(unittest.TestCase):
             a = e._account(contest(e), p.token)
             before = (a.cash, dict(a.hold), dict(a.cost), a.trades, round(e.tournament_return(contest(e), p.token), 9))
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             p2 = next(x for x in f.players.values() if x.name == "saver")
             t2 = next(t for t in f.tournaments if t["id"] == tid)
             a2 = f._account(t2, p2.token)

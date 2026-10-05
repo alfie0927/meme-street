@@ -609,12 +609,12 @@ class MarketContentTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
             random.seed(56)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.tick(now=e.now)
             quiet(e)
             advance(e, 40)
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             for tk in ("MSI", "XTECH", "AIFX", "2LMSI", "2SMSI"):
                 self.assertAlmostEqual(f.stocks[tk].price, e.stocks[tk].price, places=9, msg=tk)
             self.assertEqual(set(f.derived), set(e.derived))
@@ -644,17 +644,17 @@ class NewListingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as d:
             path = os.path.join(d, "state.json")
             random.seed(65)
-            a = engine.Engine(state_file=path, bots=False)
+            a = engine.Engine(state_file=path)
             a.tick(now=a.now)
             a.save()
             state = json.load(open(path, encoding="utf-8"))
             state["stocks"].pop("NVXA")                        # as if NVXA had been added to the content since
             json.dump(state, open(path, "w", encoding="utf-8"))
-            b = engine.Engine(state_file=path, bots=False)
+            b = engine.Engine(state_file=path)
             self.assertEqual(b.stocks["NVXA"].listed_at, b.now)
             self.assertEqual(b.stocks["CLDR"].listed_at, 0.0)
             b.save()
-            c = engine.Engine(state_file=path, bots=False)
+            c = engine.Engine(state_file=path)
             self.assertEqual(c.stocks["NVXA"].listed_at, b.stocks["NVXA"].listed_at)   # remembered across restarts
 
 
@@ -797,7 +797,7 @@ class AdminDataTests(unittest.TestCase):
         self.assertGreaterEqual(len(e.series), 6)
         self.assertLessEqual(len(e.series), 8)
         for point in e.series:
-            for key in ("t", "house", "fees", "humans_pnl", "bots_pnl", "trades"):
+            for key in ("t", "house", "fees", "humans_pnl", "trades"):
                 self.assertIn(key, point)
 
     def test_admin_overview_shape_and_distribution(self):
@@ -831,14 +831,14 @@ class AdminDataTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
             random.seed(36)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.tick(now=e.now)
             p = join(e, "persist1")
             e.trade(p, "GOLD", "buy", 0.2)
             e.margin_log.append({"t": e.now, "player": "persist1", "tickers": ["X"], "shortfall": 1.5})
             e.margin_calls = 4
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             q = f.by_token[p.token]
             self.assertEqual([x["k"] for x in q.log], ["buy"])
             self.assertEqual(f.margin_calls, 4)
@@ -851,7 +851,7 @@ class PersistenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
             random.seed(20)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.tick(now=e.now)
             p = join(e, "keeper")
             e.trade(p, "OILX", "buy", 0.3)
@@ -862,7 +862,7 @@ class PersistenceTests(unittest.TestCase):
             p.borrow["NVXA"] = 0.5
             e.stocks["OILX"].div = {"t": e.now + 100, "amt": 0.4}
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             q = f.by_token[p.token]
             self.assertEqual(q.hold, p.hold)
             self.assertEqual(q.cost, p.cost)
@@ -878,7 +878,7 @@ class PersistenceTests(unittest.TestCase):
     def test_save_is_atomic_and_leaves_no_temp_file(self):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "state.json")
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.save()
             self.assertTrue(os.path.exists(path))
             self.assertFalse(os.path.exists(path + ".tmp"))

@@ -20,8 +20,7 @@ BONUS = 10000.0
 
 def played(seed=1):
     """A game that has been going for a while: trades, a short, an order, medals, a contest entry, a second day."""
-    e = make_engine(seed, signup_bonus=BONUS, bot_cash=BONUS)
-    e._add_bots(4)
+    e = make_engine(seed, signup_bonus=BONUS)
     a, b = join(e, "alpha"), join(e, "bravo")
     e.trade(a, "CLDR", "buy", 0.5)
     e.now += 2
@@ -56,7 +55,7 @@ class ResetTests(unittest.TestCase):
         self.assertTrue(any("DAY 1 BEGINS" in n["text"] for n in e.news_log))
         self.assertFalse(any("SEASON" in n["text"] for n in list(e.news_log)[-3:]))
 
-    def test_everyone_people_and_bots_is_on_the_starting_balance_with_nothing_held(self):
+    def test_everyone_is_on_the_starting_balance_with_nothing_held(self):
         e = self.e
         for p in e.players.values():
             self.assertEqual(p.cash, BONUS, p.name)
@@ -66,7 +65,6 @@ class ResetTests(unittest.TestCase):
             self.assertEqual(p.orders, [])
             self.assertEqual((p.trades, p.margin_calls, p.fees_paid), (0, 0, 0.0))
             self.assertAlmostEqual(e.equity(p), BONUS, places=6)
-        self.assertTrue(any(p.bot for p in e.players.values()))
 
     def test_the_tokens_still_balance(self):
         self.assertLess(abs(drift(self.e)), 1e-6)
@@ -116,13 +114,13 @@ class ResetTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(5)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.settings["signup_bonus"] = BONUS
             p = join(e, "persist")
             e.trade(p, "CLDR", "buy", 0.5)
             e.season_no = 7
             e.reset_to_day_one()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             p2 = next(x for x in f.players.values() if x.name == "persist")
             self.assertEqual(f.season_no, 1)
             self.assertEqual(p2.cash, BONUS)
@@ -133,7 +131,7 @@ class LedgerAfterResetTests(unittest.TestCase):
     def test_the_ledger_starts_again_and_still_explains_every_balance(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             random.seed(6)
-            e = engine.Engine(state_file=os.path.join(tmp, "state.json"), bots=False,
+            e = engine.Engine(state_file=os.path.join(tmp, "state.json"),
                               ledger_path=os.path.join(tmp, "ledger.db"))
             e.settings["signup_bonus"] = BONUS
             p, q = join(e, "ledgera"), join(e, "ledgerb")
@@ -160,7 +158,7 @@ class LedgerAfterResetTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path, ledger = os.path.join(tmp, "state.json"), os.path.join(tmp, "ledger.db")
             random.seed(7)
-            e = engine.Engine(state_file=path, bots=False, ledger_path=ledger)
+            e = engine.Engine(state_file=path, ledger_path=ledger)
             e.settings["signup_bonus"] = BONUS
             p = join(e, "crashy")
             e.trade(p, "CLDR", "buy", 0.5)
@@ -168,7 +166,7 @@ class LedgerAfterResetTests(unittest.TestCase):
             e.now += 2
             e.trade(p, "GOLD", "buy", 0.5)                                 # after the save: only in the ledger
             e.ledger.flush()
-            f = engine.Engine(state_file=path, bots=False, ledger_path=ledger)
+            f = engine.Engine(state_file=path, ledger_path=ledger)
             p2 = next(x for x in f.players.values() if x.name == "crashy")
             self.assertAlmostEqual(p2.cash, p.cash, places=6)
             self.assertIn("GOLD", p2.hold)
@@ -186,12 +184,12 @@ class CommandLineResetTests(unittest.TestCase):
             if os.path.exists(src):
                 shutil.copy(src, tmp)
         with open(os.path.join(tmp, "zz_test_settings.json"), "w", encoding="utf-8") as fh:
-            json.dump({"settings": {"premarket_seconds": 0, "aftermarket_seconds": 0, "signup_bonus": 2500, "bots": 0}}, fh)
+            json.dump({"settings": {"premarket_seconds": 0, "aftermarket_seconds": 0, "signup_bonus": 2500}}, fh)
         random.seed(8)
         cwd = os.getcwd()
         os.chdir(tmp)
         try:
-            e = engine.Engine(state_file=os.path.join(tmp, "state.json"), bots=False, ledger_path=os.path.join(tmp, "ledger.db"))
+            e = engine.Engine(state_file=os.path.join(tmp, "state.json"), ledger_path=os.path.join(tmp, "ledger.db"))
             p, _ = e.join("cmdline")
             e.trade(p, "GOLD", "buy", 0.5)
             e.season_no = 9

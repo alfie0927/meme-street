@@ -26,7 +26,7 @@ def build(seed, **settings):
         return sectors, companies, templates, {**base, **settings}, profiles, derived
     engine.Engine._read = read
     try:
-        return engine.Engine(state_file=None, bots=False)
+        return engine.Engine(state_file=None)
     finally:
         engine.Engine._read = original
 
@@ -166,11 +166,11 @@ class SaveTests(unittest.TestCase):
             random.seed(15)
             _helpers.engine.Engine._read = _helpers._real_read
             try:
-                a = engine.Engine(state_file=path, bots=False)
+                a = engine.Engine(state_file=path)
                 a.settings.update(premarket_seconds=300, aftermarket_seconds=300)
                 a.tick(now=a.now)
                 a.save()
-                b = engine.Engine(state_file=path, bots=False)
+                b = engine.Engine(state_file=path)
                 self.assertEqual({k: s.earn_slot for k, s in a.stocks.items()}, {k: s.earn_slot for k, s in b.stocks.items()})
                 state = json.load(open(path, encoding="utf-8"))
                 for v in state["stocks"].values():
@@ -178,7 +178,7 @@ class SaveTests(unittest.TestCase):
                     if v.get("next_earn"):
                         v["next_earn"] = a.now + 5000 + random.random() * 40000
                 json.dump(state, open(path, "w", encoding="utf-8"))
-                c = engine.Engine(state_file=path, bots=False)
+                c = engine.Engine(state_file=path)
             finally:
                 _helpers.engine.Engine._read = _helpers._flat_read
             times = [s.next_earn for s in c.stocks.values() if s.next_earn]

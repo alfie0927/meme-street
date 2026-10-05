@@ -50,7 +50,7 @@ button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);bo
 <div class="msgrow" style="margin-top:8px"><input id="em-name" placeholder="Player name" maxlength="16"><button id="em-verify">Mark email verified</button><button id="em-clear">Remove email</button><span id="em-out" class="t"></span></div>
 <p class="mut" style="font-size:12px">Email addresses make passwords recoverable and stop one person running many accounts (each address belongs to one account). Set the <code>email_mode</code> setting to off, optional or required. With no SMTP server configured (see <code>mailer.py</code>) nothing is sent: the message, code included, appears in the list above so you can hand a code to a tester yourself.</p></div>
 <div class="card" style="margin-top:12px"><h3>Start the game over</h3>
-<p class="mut" style="font-size:12px">Back to Day 1: every player and bot gets the starting balance again, positions are closed, orders cancelled, trade history, medals and achievements cleared. Prices, charts, accounts and passwords stay. The old save and ledger are copied into the <code>backups</code> folder first.</p>
+<p class="mut" style="font-size:12px">Back to Day 1: every player gets the starting balance again, positions are closed, orders cancelled, trade history, medals and achievements cleared. Prices, charts, accounts and passwords stay. The old save and ledger are copied into the <code>backups</code> folder first.</p>
 <div class="msgrow"><input id="reset-word" placeholder="Type RESET" maxlength="5"><button id="reset-go">Reset the game to Day 1</button><span id="reset-out" class="t"></span></div></div>
 <div class="card" style="margin-top:12px" id="detailcard"><h3 id="dtitle">Player detail</h3><div id="detail" class="mut">Pick a player above.</div></div>
 </main></div>
@@ -88,9 +88,9 @@ function render(o){
  const card=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
  $('cards').innerHTML=card('House reserve',mb(s.house_reserve)+' MB','seed '+mb(s.house_capital)+' MB in total',s.house_reserve<0?'dn':'')
   +card('Fees collected',mb(s.fees)+' MB','of which borrow '+f(s.borrow_fees,0)+' MB')
-  +card('House P&L',sgn(s.house_pnl)+' MB','fees '+mb(s.fees)+' · liquidity '+sgn(s.liquidity_pnl)+' · bots '+sgn(s.bots_pnl),s.house_pnl>=0?'up':'dn')
+  +card('House P&L',sgn(s.house_pnl)+' MB','fees '+mb(s.fees)+' · liquidity '+sgn(s.liquidity_pnl),s.house_pnl>=0?'up':'dn')
   +card('Humans P&L',sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB deposited',s.players_pnl>=0?'up':'dn')
-  +card('Players',s.humans+' humans',o.online+' online · '+o.bots+' bots')
+  +card('Players',s.humans+' humans',o.online+' online')
   +card('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' per minute (last 5 min)')
   +card('Short interest',mb(s.short_interest)+' MB','shortfall '+f(s.short_shortfall)+' MB',s.short_shortfall>0?'warn':'')
   +card('Margin calls',o.margin_calls,'total since start')
@@ -101,7 +101,7 @@ function render(o){
   +card('Gateways',o.perf.gateways||0,o.perf.gateways?'processes holding the players connections':'one process (no gateways)')
   +card('Saving state',f(o.perf.last_save_ms,0)+' ms','last snapshot (every 30 s)',o.perf.last_save_ms>800?'warn':''):'');
  $('ch1').innerHTML=line(o.series,[['house','#58a6ff','house reserve'],['fees','#3fb950','fees']],v=>mb(v));
- $('ch2').innerHTML=line(o.series,[['humans_pnl','#d29922','humans P&L'],['bots_pnl','#bc8cff','bots P&L']],v=>sgn(v));
+ $('ch2').innerHTML=line(o.series,[['humans_pnl','#d29922','players P&L']],v=>sgn(v));
  const mx=Math.max(1,...o.dist.map(b=>b.count));
  $('dist').innerHTML=`<div class="bar">${o.dist.map(b=>`<div><i style="height:${Math.round(b.count/mx*90)}px;background:${b.hi<=0?'#f85149':'#3fb950'}"></i>${b.count}<br>${esc(b.label)}</div>`).join('')}</div>`;
  $('calls').innerHTML=o.margin_log.length?`<table><tr><th>When</th><th>Player</th><th>Closed</th><th>House loss</th></tr>${o.margin_log.map(c=>`<tr><td>${ago(c.t)}</td><td>${esc(c.player)}</td><td>${esc(c.tickers.join(', '))}</td><td class="${c.shortfall>0?'dn':'mut'}">${f(c.shortfall)} MB</td></tr>`).join('')}</table>`:'<span class="mut">None yet.</span>';

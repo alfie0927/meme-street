@@ -35,15 +35,15 @@ class SeasonTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(4)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.season_end = e.now + 1.9 * 86400                              # (a day that started at an odd moment)
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertEqual(f.season_end % 86400, 0)
             self.assertLessEqual(f.season_end - f.now, 86400)
             e.season_end = e.now + 600                                      # an old one-hour season is left alone
             e.save()
-            g = engine.Engine(state_file=path, bots=False)
+            g = engine.Engine(state_file=path)
             self.assertAlmostEqual(g.season_end - e.now, 600, delta=1)
 
     def test_old_runaway_splits_are_undone_when_a_save_loads(self):
@@ -51,7 +51,7 @@ class SeasonTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(9)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             p = join(e, "splitholder")
             e.trade(p, "CLDR", "buy", 0.5)
             advance(e, 130)
@@ -71,7 +71,7 @@ class SeasonTests(unittest.TestCase):
             charts = json.load(open(ch, encoding="utf-8"))
             charts["tf"]["CLDR"] = {k: [[c[0]] + [y / f for y in c[1:]] for c in rows] for k, rows in charts["tf"]["CLDR"].items()}
             json.dump(charts, open(ch, "w", encoding="utf-8"))
-            g = engine.Engine(state_file=path, bots=False)
+            g = engine.Engine(state_file=path)
             s = g.stocks["CLDR"]
             self.assertEqual(s.split_factor, 1.0)
             self.assertAlmostEqual(s.price / price, 1.0, places=6)
@@ -135,7 +135,7 @@ class MigrationTests(unittest.TestCase):
         """A saved game as the old code wrote it: BULL2, BEAR1 and BEAR2 held by two players."""
         path = os.path.join(tmp, "state.json")
         random.seed(11)
-        e = engine.Engine(state_file=path, bots=False)
+        e = engine.Engine(state_file=path)
         a, b = join(e, "longer"), join(e, "shorter")
         for tk, new in (("2LMSI", "BULL2"), ("2SMSI", "BEAR2")):
             e.trade(a, tk, "buy", 0.2)
@@ -175,7 +175,7 @@ class MigrationTests(unittest.TestCase):
             long_before = next(x for x in d["players"] if x["name"] == "longer")
             cash_before = long_before["cash"]
             random.seed(12)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             quiet(e)
             a = next(p for p in e.players.values() if p.name == "longer")
             b = next(p for p in e.players.values() if p.name == "shorter")
@@ -191,7 +191,7 @@ class MigrationTests(unittest.TestCase):
             self.assertIn("BEAR1", e.archive)                                      # and its page can still be opened
             self.assertEqual(e.company_for("BEAR1")["delisted"]["reason"], "withdrawn")
             e.save()
-            again = engine.Engine(state_file=path, bots=False)                     # a second start changes nothing
+            again = engine.Engine(state_file=path)                     # a second start changes nothing
             self.assertLess(abs(drift(again)), 1e-6)
             self.assertIn("BEAR1", again.archive)
 
@@ -295,11 +295,11 @@ class OfferingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(22)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             s = e.stocks["CLDR"]
             s.offering = {"t": e.now + 600, "pct": 0.02}
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertEqual(f.stocks["CLDR"].offering, {"t": s.offering["t"], "pct": 0.02})
             f.now = s.offering["t"] + 1
             shares = f.stocks["CLDR"].shares_outstanding
@@ -366,12 +366,12 @@ class NoSplitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(33)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             e.save()
             d = json.load(open(path, encoding="utf-8"))
             d["stocks"]["NVXA"]["split"] = {"t": e.now - 1, "ratio": 2}
             json.dump(d, open(path, "w", encoding="utf-8"))
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             shares = f.stocks["NVXA"].shares_outstanding
             f.tick(now=f.now + 5)
             self.assertEqual(f.stocks["NVXA"].shares_outstanding, shares)
@@ -416,11 +416,11 @@ class DelistedStockTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = os.path.join(tmp, "state.json")
             random.seed(43)
-            e = engine.Engine(state_file=path, bots=False)
+            e = engine.Engine(state_file=path)
             advance(e, 130)                                                       # (over a minute, so more than one candle)
             self.bankrupt(e, "OILX")
             e.save()
-            f = engine.Engine(state_file=path, bots=False)
+            f = engine.Engine(state_file=path)
             self.assertIn("OILX", f.archive)
             self.assertNotIn("OILX", f.stocks)
             self.assertEqual(f.company_for("OILX")["delisted"]["name"], "Ostrava Oil")
