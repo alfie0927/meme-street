@@ -1887,35 +1887,35 @@
   },
   {
    "ticker": "2LMSI",
-   "name": "2x Long MSI",
+   "name": "2x Long MSI 50",
    "kind": "leveraged",
    "of": "MSI",
    "leverage": 2.0,
-   "desc": "Moves twice as much as the Meme Street Index each second, in the same direction. Resets continuously, so it loses ground in choppy markets."
+   "desc": "Moves twice as much as the MSI 50 each second, in the same direction. Resets continuously, so it loses ground in choppy markets."
   },
   {
    "ticker": "2SMSI",
-   "name": "2x Short MSI",
+   "name": "2x Short MSI 50",
    "kind": "leveraged",
    "of": "MSI",
    "leverage": -2.0,
-   "desc": "Moves twice as much as the Meme Street Index each second, in the opposite direction. Resets continuously, so it decays in choppy markets."
+   "desc": "Moves twice as much as the MSI 50 each second, in the opposite direction. Resets continuously, so it decays in choppy markets."
   },
   {
    "ticker": "3LMSI",
-   "name": "3x Long MSI",
+   "name": "3x Long MSI 50",
    "kind": "leveraged",
    "of": "MSI",
    "leverage": 3.0,
-   "desc": "Moves three times as much as the Meme Street Index each second, in the same direction. Resets continuously, so it loses ground quickly in choppy markets."
+   "desc": "Moves three times as much as the MSI 50 each second, in the same direction. Resets continuously, so it loses ground quickly in choppy markets."
   },
   {
    "ticker": "3SMSI",
-   "name": "3x Short MSI",
+   "name": "3x Short MSI 50",
    "kind": "leveraged",
    "of": "MSI",
    "leverage": -3.0,
-   "desc": "Moves three times as much as the Meme Street Index each second, in the opposite direction. Resets continuously, so it decays quickly in choppy markets."
+   "desc": "Moves three times as much as the MSI 50 each second, in the opposite direction. Resets continuously, so it decays quickly in choppy markets."
   }
  ]
 }

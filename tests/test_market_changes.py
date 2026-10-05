@@ -103,7 +103,7 @@ class LeveragedProductTests(unittest.TestCase):
             self.assertEqual(s.spec["leverage"], lev)
             self.assertEqual(s.spec["of"], "MSI")
         self.assertEqual([s.name for s in (e.stocks["2LMSI"], e.stocks["2SMSI"], e.stocks["3LMSI"], e.stocks["3SMSI"])],
-                         ["2x Long MSI", "2x Short MSI", "3x Long MSI", "3x Short MSI"])
+                         ["2x Long MSI 50", "2x Short MSI 50", "3x Long MSI 50", "3x Short MSI 50"])
         for gone in ("BULL2", "BEAR1", "BEAR2"):
             self.assertNotIn(gone, e.stocks)
 

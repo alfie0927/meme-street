@@ -124,7 +124,7 @@ class LimitTests(unittest.TestCase):
         s = e.stocks["MOON"]
         ok, msg = e.trade(p, "MOON", "buy", 1.0)
         self.assertTrue(ok, msg)
-        self.assertGreater(p.hold["MOON"] * s.price, s.base)   # far more than the stock's seed liquidity
+        self.assertGreater(p.hold["MOON"] * s.price, s.base)   # far more than the stock's size
         self.assertLess(abs(drift(e)), 1e-6)
 
     def test_a_short_is_limited_by_margin_not_by_a_position_cap(self):

@@ -88,7 +88,7 @@ function render(o){
  const card=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
  $('cards').innerHTML=card('House reserve',mb(s.house_reserve)+' MB','capital put in: '+mb(s.house_capital)+' MB',s.house_reserve<0?'dn':'')
   +card('Fees collected',mb(s.fees)+' MB','of which borrow '+f(s.borrow_fees,0)+' MB')
-  +card('House P&L',sgn(s.house_pnl)+' MB','fees '+mb(s.fees)+' · liquidity '+sgn(s.liquidity_pnl),s.house_pnl>=0?'up':'dn')
+  +card('House P&L',sgn(s.house_pnl)+' MB','fees '+mb(s.fees)+' · trading result '+sgn(s.liquidity_pnl),s.house_pnl>=0?'up':'dn')
   +card('Humans P&L',sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB deposited',s.players_pnl>=0?'up':'dn')
   +card('Players',s.humans+' humans',o.online+' online')
   +card('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' per minute (last 5 min)')

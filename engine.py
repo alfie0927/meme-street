@@ -232,6 +232,7 @@ class Engine(SocialMixin, AccountsMixin):
         self.recovered_events = 0
         self._retired_bots = 0                      # how many house-funded bots a save from an older version had (they are removed on load)
         self._retired_pools = 0.0                   # seed tokens an older save had inside its stocks (they are retired on load)
+        self.index_members = []                    # the companies the MSI 50 follows right now (see `_rank_index_members`)
         self.now = time.time()
         self.sectors, self.templates, self.settings = {}, {}, {}
         self.derived_specs = {}                    # indices, ETFs and leveraged products from the content packs
@@ -323,6 +324,8 @@ class Engine(SocialMixin, AccountsMixin):
         self.index_prev = {tk: s.price for tk, s in self.stocks.items()}
         self.index_hist.clear()
         self.index_hist.append(self.index_level)
+        if not self.index_members:
+            self._rank_index_members()
 
     def _assign_personas(self):
         """Every listed company gets a CEO, CFO, flagship product, home city and a supplier, customer and rival
@@ -350,9 +353,9 @@ class Engine(SocialMixin, AccountsMixin):
         They have no company behind them: their price is computed from their constituents' returns every tick
         (see `_update_index_level`), so nothing can move them directly and they carry no news, ratings or dividends."""
         if "MSI" not in self.stocks:
-            cfg = {"ticker": "MSI", "name": "Meme Street Index", "sector": "index", "asset_type": "index",
+            cfg = {"ticker": "MSI", "name": "MSI 50", "sector": "index", "asset_type": "index",
                    "beta": 1.0, "vol": 0.2, "initial_price": 100.0,
-                   "desc": "Tracks the weighted basket of every stock on Meme Street, so you can trade the whole market in one position."}
+                   "desc": "Tracks the 50 largest companies on Meme Street, weighted by market value, so you can trade the main market in one position."}
             self.stocks["MSI"] = Stock(cfg, 0.0)
             self.stocks["MSI"].spec = {"kind": "market"}
         self.derived["MSI"] = {"kind": "market"}
@@ -2585,6 +2588,19 @@ class Engine(SocialMixin, AccountsMixin):
             stock.day_open = stock.day_high = stock.day_low = stock.price
             stock.fair_open = stock.fair
         self.market_day = current_day
+        self._rank_index_members()
+
+    def _rank_index_members(self):
+        """Who the MSI 50 follows: the `index_size` (50) companies with the largest market value (shares x price) right
+        now. Moonshots are left out (tiny and extremely volatile), and so are funds, commodities and every other index.
+        It is re-ranked every game day and straight away when a member is delisted, so there are never fewer than 50
+        (unless fewer exist). Which companies are in is decided by prices that are already known, and a company's
+        weight in a tick is its market value at the start of that tick, so nothing in it predicts the next move."""
+        size = int(self.settings.get("index_size", 50))
+        ranked = sorted(((s.shares_outstanding * s.price, tk) for tk, s in self.stocks.items()
+                         if s.asset_type == "equity" and not s.moonshot and s.shares_outstanding > 0),
+                        key=lambda x: (-x[0], x[1]))
+        self.index_members = [tk for _, tk in ranked[:size]]
 
     def _update_index_level(self):
         """Move the market index and every derived asset by the returns of their constituents this tick."""
@@ -2595,10 +2611,14 @@ class Engine(SocialMixin, AccountsMixin):
         rets = {tk: st.price / self.index_prev.get(tk, st.price) / (1 - self._div_today.get(tk, 0.0)) - 1
                 for tk, st in equities}
         self._div_today = {}
-        total_weight = sum(st.base for _, st in equities)
+        if not self.index_members or any(tk not in self.stocks for tk in self.index_members):
+            self._rank_index_members()           # (a member was delisted, or this is an older save)
+        weights = {tk: self.stocks[tk].shares_outstanding * self.index_prev.get(tk, self.stocks[tk].price)
+                   for tk in self.index_members}
+        total_weight = sum(weights.values())
         market = 0.0
         if total_weight:
-            market = sum(st.base * rets[tk] for tk, st in equities) / total_weight
+            market = sum(w * rets[tk] for tk, w in weights.items()) / total_weight
             self.index_level *= max(0.001, 1 + market)
         dret = {"MSI": market}
         for tk, spec in self.derived.items():
@@ -2711,7 +2731,8 @@ class Engine(SocialMixin, AccountsMixin):
         if not spec:
             return None
         if spec["kind"] == "market":
-            return "Every listed stock, weighted by company size"
+            return (f"The {len(self.index_members)} largest companies, weighted by market value "
+                    "(re-ranked every game day; moonshots, funds and commodities are not in it)")
         if spec["kind"] == "sector":
             return "All " + self.sectors.get(spec["sector"], {}).get("name", spec["sector"]) + " stocks, weighted by company size"
         if spec["kind"] == "basket":
@@ -3043,7 +3064,7 @@ class Engine(SocialMixin, AccountsMixin):
             self.ledger.flush()
             seq = self.ledger.last_seq()           # this snapshot already contains every event up to here
         d = {"schema": 7, "ledger_seq": seq, "house": self.house, "fees": self.fees, "house_capital": self.house_capital,
-             "minted": self.minted, "index_level": self.index_level,
+             "minted": self.minted, "index_level": self.index_level, "index_members": list(self.index_members),
              "short_model": 2, "borrow_fees": self.borrow_fees, "short_shortfall": self.short_shortfall,
              "margin_calls": self.margin_calls, "trades_total": self.trades_total,
              "margin_log": list(self.margin_log), "mkt_volm": self.mkt_volm,
@@ -3456,6 +3477,7 @@ class Engine(SocialMixin, AccountsMixin):
                 self.house_capital = self.minted - human_in
             self.recapitalized = float(d.get("recapitalized", 0.0))
             self.index_level = float(d.get("index_level", 100.0))
+            self.index_members = [t for t in d.get("index_members", []) if t in self.stocks]
             self.index_hist.clear()
             self.index_hist.extend(d.get("index_hist", [self.index_level]))
             self.market_day = int(d.get("market_day", self.market_day))
