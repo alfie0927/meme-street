@@ -626,5 +626,68 @@ class BrowserPages(unittest.TestCase):
         return d, errors
 
 
+@unittest.skipUnless(find_browser(), "no Edge/Chrome installed")
+class BrowserPhone(unittest.TestCase):
+    """The game on a phone (390 x 844, touch): nothing is wider than the screen, the market is one card per stock with
+    its price, change and Buy button on screen, the header stays small and pinned, the chart's labels are readable, and
+    the laptop layout is untouched."""
+
+    PAGES = ["/", "/holdings", "/portfolio", "/history", "/leaders", "/social", "/profile", "/stock/NVXA", "/stock/MSI"]
+
+    def test_phone_layout(self):
+        with IsolatedServer() as srv:
+            d, errors = asyncio.run(self._phone(srv.url))
+        d.verdict(self, errors)
+
+    async def _phone(self, base):
+        proc, pg, _ = await open_page(390, 844, debug_port=9353, mobile=True, scale=2)
+        d = Driver(pg)
+        try:
+            await d.join(base, "phone")
+            await d.check("table is full", "document.querySelectorAll('#rows tr').length", lambda n: n > 100, wait=8)
+            await d.check("the header is compact and pinned: it stays at the top while the page scrolls",
+                          "(()=>{window.scrollTo(0,1500);const r=document.querySelector('.topbar').getBoundingClientRect();return [Math.round(r.top),Math.round(r.height)]})()",
+                          lambda v: v[0] == 0 and v[1] < 110)
+            await pg.js("window.scrollTo(0,0)")
+            await d.check("the menu is one scrollable row, not two", "document.getElementById('nav').getBoundingClientRect().height", lambda h: h < 50)
+            await d.check("every field is big enough that the phone does not zoom in on it",
+                          "['q','msort'].every(i=>getComputedStyle(document.getElementById(i)).fontSize==='16px')")
+            await d.check("a stock is one card: ticker, price, change and the Buy button are all on screen",
+                          "(()=>{const t=document.querySelector('#rows tr[data-k=NVXA]');return ['.tk','.px','.chg','.buy'].every(s=>{const r=t.querySelector(s).getBoundingClientRect();return r.width>0&&r.left>=0&&r.right<=innerWidth})})()")
+            await d.check("the column headings that sort on a laptop are replaced by a sort box",
+                          "getComputedStyle(document.querySelector('#market-card thead')).display==='none'&&getComputedStyle(document.getElementById('msort')).display!=='none'")
+            await pg.js("(()=>{const m=document.getElementById('msort');m.value='chg:-1';m.dispatchEvent(new Event('change'))})()")
+            await d.check("the sort box sorts by the biggest gainers",
+                          "(()=>{const v=[...document.querySelectorAll('#rows tr')].filter(r=>r.style.display!=='none').slice(0,6).map(r=>parseFloat(r.querySelector('.chg').textContent));return v.every((x,i)=>i===0||v[i-1]>=x)})()",
+                          wait=8)
+            await d.check("the news wire is open above the market and the other side panels are folded",
+                          "(()=>{const c=[...document.querySelectorAll('aside .card')];return c.length===3&&!c[0].classList.contains('shut')&&c[1].classList.contains('shut')&&c[2].classList.contains('shut')&&c[0].getBoundingClientRect().top<document.getElementById('market-card').getBoundingClientRect().top})()")
+            await pg.js("document.querySelectorAll('aside .card h3')[1].click()")
+            await d.check("tapping a heading opens a panel", "!document.querySelectorAll('aside .card')[1].classList.contains('shut')")
+            await pg.js("(()=>{const i=document.querySelector('.amt-input');i.value='120';i.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#rows tr[data-k=NVXA] button[data-act=buy]').click()})()")
+            await asyncio.sleep(2)
+            for path in self.PAGES:
+                await pg.goto(base + path, 3)
+                await d.check(f"{path}: nothing is wider than the screen",
+                              "[document.documentElement.scrollWidth, innerWidth]", lambda v: v[0] <= v[1] + 1)
+            await pg.goto(base + "/holdings", 3)
+            await d.check("a holding is a card with its figures and Buy/Sell inside the screen",
+                          "(()=>{const t=document.querySelector('#hold-rows tr');if(!t)return false;return [...t.querySelectorAll('td,button')].every(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1})})()", wait=6)
+            await pg.goto(base + "/stock/NVXA", 4)
+            await d.check("the chart is drawn for a phone: its labels are at least 9 px tall on screen",
+                          "(()=>{const s=document.querySelector('.price-chart');return s.viewBox.baseVal.width===400&&s.getBoundingClientRect().width/400*11>=9})()", wait=6)
+            # the laptop layout is unchanged
+            await pg.cmd("Emulation.setDeviceMetricsOverride", width=1400, height=1000, deviceScaleFactor=1, mobile=False)
+            await pg.goto(base + "/", 3)
+            await d.check("on a laptop the table keeps its headings and the sort box is hidden",
+                          "getComputedStyle(document.querySelector('#market-card thead')).display!=='none'&&getComputedStyle(document.getElementById('msort')).display==='none'")
+            await d.check("on a laptop the whole header is pinned and the side panels are not folded",
+                          "getComputedStyle(document.querySelector('header')).position==='sticky'&&!document.querySelector('aside .card.fold')")
+        finally:
+            errors = list(pg.errors)
+            proc.terminate()
+        return d, errors
+
+
 if __name__ == "__main__":
     unittest.main()

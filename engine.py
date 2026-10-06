@@ -355,7 +355,7 @@ class Engine(SocialMixin, AccountsMixin):
         if "MSI" not in self.stocks:
             cfg = {"ticker": "MSI", "name": "MSI 50", "sector": "index", "asset_type": "index",
                    "beta": 1.0, "vol": 0.2, "initial_price": 100.0,
-                   "desc": "Tracks the 50 largest companies on Meme Street, weighted by market value, so you can trade the main market in one position."}
+                   "desc": "Follows the 50 largest companies on Meme Street, so you can trade the main market in one position."}
             self.stocks["MSI"] = Stock(cfg, 0.0)
             self.stocks["MSI"].spec = {"kind": "market"}
         self.derived["MSI"] = {"kind": "market"}
@@ -2731,8 +2731,8 @@ class Engine(SocialMixin, AccountsMixin):
         if not spec:
             return None
         if spec["kind"] == "market":
-            return (f"The {len(self.index_members)} largest companies, weighted by market value "
-                    "(re-ranked every game day; moonshots, funds and commodities are not in it)")
+            return (f"Weighted by market value: the {len(self.index_members)} largest companies, re-ranked every game day "
+                    "(moonshots, funds and commodities are not in it)")
         if spec["kind"] == "sector":
             return "All " + self.sectors.get(spec["sector"], {}).get("name", spec["sector"]) + " stocks, weighted by company size"
         if spec["kind"] == "basket":

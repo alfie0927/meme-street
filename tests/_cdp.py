@@ -101,7 +101,7 @@ class _Browser(subprocess.Popen):
             time.sleep(0.5)
 
 
-async def open_page(width=1400, height=1000, debug_port=9333):
+async def open_page(width=1400, height=1000, debug_port=9333, mobile=False, scale=1):
     browser = find_browser()
     if not browser:
         raise RuntimeError("no Edge/Chrome found")
@@ -126,5 +126,7 @@ async def open_page(width=1400, height=1000, debug_port=9333):
     asyncio.create_task(page.pump())
     for domain in ("Runtime", "Page"):
         await page.cmd(domain + ".enable")
-    await page.cmd("Emulation.setDeviceMetricsOverride", width=width, height=height, deviceScaleFactor=1, mobile=False)
+    await page.cmd("Emulation.setDeviceMetricsOverride", width=width, height=height, deviceScaleFactor=scale, mobile=mobile)
+    if mobile:
+        await page.cmd("Emulation.setTouchEmulationEnabled", enabled=True)
     return proc, page, profile

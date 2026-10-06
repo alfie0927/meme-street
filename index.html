@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a0e14">
 <title>Meme Street</title>
 <style>
 :root{--bg:#0a0e14;--card:#111822;--card2:#161f2c;--line:#212c3b;--line2:#18212d;--txt:#e8eef6;--mut:#8493a8;--up:#34d27b;--dn:#ff5f6d;--acc:#5aa2ff;--avg:#e8b84a;--upbg:#34d27b1f;--dnbg:#ff5f6d1f;--r:12px}
@@ -24,7 +24,7 @@ nav{display:flex;flex-wrap:wrap;gap:2px}nav a{padding:6px 12px;border-radius:999
 #session-banner{display:none;padding:9px 18px;font-size:13px;border-bottom:1px solid var(--line)}
 #session-banner.pre{background:#ffc65c14;color:#ffd990}#session-banner.after{background:#c3a3ff14;color:#d8c4ff}
 main{display:grid;grid-template-columns:1fr 340px;gap:14px;padding:14px 18px}
-@media(max-width:900px){main{grid-template-columns:1fr;padding:10px}}
+@media(max-width:900px){main{grid-template-columns:minmax(0,1fr);padding:10px}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:0 8px 24px #0004}
 h3{margin:0 0 8px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
 h3.sp{margin-top:20px}
@@ -92,7 +92,7 @@ button:hover{background:#243044}button:active{transform:translateY(1px)}button:d
 input,select{font:inherit;width:100%;padding:9px 10px;margin:10px 0;background:#0a0e14;border:1px solid var(--line);color:var(--txt);border-radius:8px}
 input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px #5aa2ff22}
 .bar input,.bar select{width:auto;margin:0;padding:6px 10px}
-#q{width:260px}
+#q{width:260px}#msort{display:none}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:9px 16px;border-radius:10px;background:#1a2331;border:1px solid var(--line);opacity:0;transition:.2s;z-index:10;pointer-events:none;max-width:90vw;box-shadow:0 6px 20px #0008}
 .flashU{color:var(--up)}.flashD{color:var(--dn)}
 #notes{position:fixed;top:128px;right:14px;display:flex;flex-direction:column;gap:6px;z-index:10;pointer-events:none;max-width:320px}
@@ -116,7 +116,90 @@ input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3
 .hint{font-size:12px;color:var(--mut);margin:4px 0 10px;line-height:1.5}
 .pill{display:inline-block;padding:2px 9px;border-radius:999px;border:1px solid var(--line);font-size:11px;margin-right:4px;color:var(--mut)}
 .hold-act{display:flex;gap:6px;justify-content:flex-end}
-@media(max-width:760px){.spk-col,#rows .spk,.held-col,#rows .held{display:none}.nm{max-width:130px}.stat{min-width:84px}}
+@media(max-width:760px){.nm{max-width:130px}}
+/* ---- phones: everything below applies only on narrow screens; the laptop layout above is unchanged ---- */
+@media(max-width:760px){
+ body{padding-bottom:env(safe-area-inset-bottom);-webkit-text-size-adjust:100%}
+ header{display:contents}
+ .topbar{position:sticky;top:0;z-index:6;background:#0a0e14f2;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 12px 6px;gap:4px 8px}
+ .brand{order:1;font-size:17px}.topbar .spacer{order:2}#session{order:3}#conn{order:3}
+ nav{order:4;flex:0 0 100%;flex-wrap:nowrap;overflow-x:auto;margin:0 -12px;padding:0 12px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ nav::-webkit-scrollbar{display:none}
+ nav a{flex:none;padding:7px 13px}
+ .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 12px}
+ .stat{min-width:0;padding:5px 9px}.stat small{font-size:9.5px}.stat span{font-size:14px}
+ .stat:last-child{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline}
+ #session-banner{padding:8px 12px;font-size:12.5px}
+ main,body:not(.page-market) main{padding:8px}
+ .card{padding:12px;margin-bottom:10px;border-radius:12px}
+ input,select{font-size:16px}
+ button{min-height:34px}.chip{min-height:30px;padding:5px 12px}
+ #login>div{width:min(340px,92vw);padding:20px}
+ #notes{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));left:10px;right:10px;max-width:none}
+ #toast{bottom:calc(14px + env(safe-area-inset-bottom))}
+ /* news wire, upcoming events and the leaderboard sit above the (very long) table, folded: tap a heading to open it */
+ aside{order:-1}
+ aside .card.fold{margin-bottom:8px;padding:10px 12px}
+ aside .card.fold h3{margin:0;cursor:pointer;display:flex;justify-content:space-between;align-items:center;min-height:24px}
+ aside .card.fold h3::after{content:"\25BE";font-size:13px}
+ aside .card.fold.shut h3::after{content:"\25B8"}
+ aside .card.fold:not(.shut)>h3{margin-bottom:8px}
+ aside .card.fold.shut>:not(h3){display:none}
+ aside .news{max-height:210px;overflow-y:auto}
+ /* the market: one card per stock, nothing wider than the screen */
+ #q{width:100%;flex:1 1 100%}
+ #msort{display:block;flex:1 1 0;min-width:0}
+ #count{font-size:12px}
+ #secs-wrap{margin:0 -12px 10px}
+ #secs{flex-wrap:nowrap;overflow-x:auto;max-height:none;padding:0 12px;scrollbar-width:none}
+ #secs::-webkit-scrollbar{display:none}
+ #secs button{flex:none}
+ #secs-toggle{display:none}
+ .ticket{padding:8px 10px;gap:6px 8px}.amt-input{width:150px}
+ #market-card thead{display:none}
+ #market-card table,#market-card tbody{display:block}
+ #rows tr[data-k]{display:grid;grid-template-columns:34px minmax(0,1fr) auto;grid-template-areas:"s t p" "s c a";gap:4px 8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line2)}
+ #rows td{padding:0;border:0;text-align:left}
+ #rows td.star{grid-area:s;align-self:center;width:auto;font-size:20px}
+ #rows td:nth-child(2){grid-area:t;min-width:0}
+ #rows td.px{grid-area:p;text-align:right;font-size:15.5px}
+ #rows td.chg{grid-area:c}
+ #rows td:last-child{grid-area:a;justify-self:end}
+ #rows .spk,#rows .held,.spk-col,.held-col{display:none}
+ .tick-main{display:flex;flex-direction:column;overflow:hidden}
+ .nm{margin-left:0;max-width:100%;display:block;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+ .hold-act button{min-width:58px;min-height:36px}
+ /* holdings and the portfolio's open positions: one card per position, with a label on each figure */
+ #holdings-card>table,#hold-rows,#portfolio-card>table:not(#pf-real),#pf-pos{display:block}
+ #holdings-card thead,#portfolio-card>table:not(#pf-real) thead{display:none}
+ #hold-rows tr,#pf-pos tr{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;padding:12px 2px;border-bottom:1px solid var(--line2)}
+ #hold-rows td,#pf-pos td{display:flex;justify-content:space-between;align-items:center;padding:0;border:0;text-align:right;font-size:13px}
+ #hold-rows td::before,#pf-pos td::before{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
+ #hold-rows td:nth-child(1),#hold-rows td:nth-child(10),#pf-pos td:nth-child(1){grid-column:1/-1;text-align:left}
+ #hold-rows td:nth-child(2)::before,#pf-pos td:nth-child(2)::before{content:"Side"}
+ #hold-rows td:nth-child(3)::before,#pf-pos td:nth-child(3)::before{content:"Shares"}
+ #hold-rows td:nth-child(4)::before,#pf-pos td:nth-child(4)::before{content:"Avg entry"}
+ #hold-rows td:nth-child(5)::before,#pf-pos td:nth-child(5)::before{content:"Price"}
+ #hold-rows td:nth-child(6)::before,#pf-pos td:nth-child(6)::before{content:"Value"}
+ #hold-rows td:nth-child(7)::before{content:"Dividends"}
+ #pf-pos td:nth-child(7)::before{content:"Unrealised"}
+ #hold-rows td:nth-child(8)::before{content:"P/L"}
+ #pf-pos td:nth-child(8)::before{content:"Realised"}
+ #hold-rows td:nth-child(9)::before{content:"P/L %"}
+ #hold-rows .hold-act{width:100%}#hold-rows .hold-act button{flex:1;min-height:40px}
+ /* the long tables that stay tables (history, orders, closed trades) scroll sideways inside their card */
+ #history-card table,#hold-orders table,#portfolio-card .two table,#pf-real,#follow-list,#cp-pos{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+ #portfolio-card td:only-child,#history-card td:only-child{white-space:normal}
+ /* a stock's own page */
+ .detail-head h2{font-size:20px}.detail-price{font-size:26px}
+ .periods{max-width:none;justify-content:flex-start}
+ .price-chart{aspect-ratio:auto}
+ .finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .position{gap:10px 18px}
+ .bar{gap:6px}
+ .chatlog{height:46vh}
+}
+
 </style><link rel="icon" type="image/png" href="/brand/memestreet_logo_peaks.png">
 </head><body class="page-market">
 <div id="login"><div><h2 style="margin:0">Meme Street</h2><p class="mut">Trade with memebucks (MB). Read the news, trade fast, beat the other players.</p>
@@ -149,7 +232,7 @@ input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3
 </div></header>
 <div id="session-banner"></div>
 <main><section>
-<div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Search ticker, company or industry" aria-label="Search stocks"><span class="mut" id="count"></span></div>
+<div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Search ticker, company or industry" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option></select></div>
 <div class="ticket"><span class="lab">Buy size</span><span id="bchips"></span><span class="lab">Sell size</span><span id="schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="Amount in MB"></div>
 <div id="secs-wrap"><div id="secs"></div><button class="chip" id="secs-toggle" aria-expanded="false"></button></div>
 <table><thead><tr><th class="star-h"></th><th data-sort="ticker">Ticker <span data-sort="name" style="font-weight:500">&middot; Company</span></th><th data-sort="price">Price</th><th data-sort="chg">30m</th><th class="spk-col">Trend</th><th class="held-col" data-sort="held">Held</th><th></th></tr></thead><tbody id="rows"></tbody></table>
@@ -219,6 +302,8 @@ else if(mt=path.match(/^\/stock\/([^/]+)$/)){page='stock';pageArg=decodeURICompo
 else if(mt=path.match(/^\/player\/([^/]+)$/)){page='player';pageArg=decodeURIComponent(mt[1])}
 document.body.className='page-'+page;
 document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.page===page||(page==='player'&&a.dataset.page==='leaders')));
+if(matchMedia('(max-width:760px)').matches){const cur=document.querySelector('#nav a.on');if(cur)cur.scrollIntoView({inline:'center',block:'nearest'});
+ document.querySelectorAll('aside .card').forEach((c,i)=>{c.classList.add('fold');if(i)c.classList.add('shut');c.querySelector('h3').addEventListener('click',()=>c.classList.toggle('shut'))})}
 let ws=null,token=null,reconnectT=null,backoff=1000,S=null,lastSeq=0,syncAt=0;
 try{token=localStorage.ms_token||null}catch(e){}
 let buyPct=.25,sellPct=1;
@@ -487,6 +572,7 @@ function renderMarket(){
   sortDirty=false;lastOrderT=now}
  document.querySelectorAll('#market-card [data-sort]').forEach(th=>{const on=th.dataset.sort===view.sort;th.classList.toggle('sorted',on);th.classList.toggle('asc',on&&view.dir>0);th.classList.toggle('desc',on&&view.dir<0)});
  setText($('count'),shown+' of '+S.stocks.length+' shown');
+ {const ms=$('msort'),want=view.sort+':'+view.dir;if(ms.value!==want)ms.value=want}
  $('no-match').style.display=shown?'none':'block';
  const key=view.sector+'|'+view.watch+'|'+view.secsOpen+'|'+watch.size+'|'+S.sectors.map(s=>s.id).join(',');
  const secs=$('secs');if(secs._k!==key){secs._k=key;
@@ -497,6 +583,7 @@ function renderMarket(){
   secs.innerHTML=chip('watch','★ Watchlist'+(watch.size?' ('+watch.size+')':''),view.watch)+chip('all','All',view.sector==='all')+list.map(([id,label])=>chip(id,label,view.sector===id)).join('');
   const tg=$('secs-toggle');tg.textContent=view.secsOpen?'▴ Show less':'▾ All industries ('+S.sectors.length+')';tg.setAttribute('aria-expanded',view.secsOpen?'true':'false')}}
 $('secs-toggle').addEventListener('click',()=>{view.secsOpen=!view.secsOpen;saveView();if(S){$('secs')._k='';renderMarket()}});
+$('msort').addEventListener('change',()=>{const[k,d]=$('msort').value.split(':');view.sort=k;view.dir=Number(d);saveView();sortDirty=true;if(S)renderMarket()});
 
 // ---------- holdings page ----------
 const holdEls={};
@@ -528,7 +615,8 @@ $('hold-rows').addEventListener('click',e=>{
 // ---------- candlestick chart ----------
 // The newest candle sits at the middle and everything shifts left as candles arrive. Candles start thick and
 // thin out as more are created. Zoom and pan are free: you can zoom out well past the data.
-const CH={w:960,h:330,padL:8,padR:96,padT:14,padB:28};
+const NARROW=matchMedia('(max-width:760px)').matches;
+const CH=NARROW?{w:400,h:330,padL:6,padR:80,padT:12,padB:26}:{w:960,h:330,padL:8,padR:96,padT:14,padB:28};
 const plotW=()=>CH.w-CH.padL-CH.padR;
 const baseSlot=n=>Math.max(7,Math.min(80,plotW()*.5/Math.max(n,3)));
 const clampZoom=(z,n)=>{const b=baseSlot(n);return Math.max(1.2/b,Math.min(160/b,z))};
