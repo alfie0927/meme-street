@@ -174,6 +174,8 @@ See §16 for what the tests cover and when to run which one.
 | `bots.py` | Many-bot, many-seed study on top of `sim.py`: 100 bots for each strategy that makes random choices, the moonshot-sniper study, how much each strategy traded and the result per unit traded (§17.7). Saves to `sim_results/` |
 | `edge.py` | Many-seed edge check on top of `sim.py`: mean, standard error and t-statistic per strategy; fails on any significant edge. |
 | `probe.py` | Engine-only drift probe: do below-reference stocks beat the rest? Used to locate a hidden edge by switching mechanisms off. |
+| `catalyst_probe.py` | Engine-only: what a stock does in the 5 minutes after a 25% move in 2 minutes (what `catalyst_follow` bets on), ordinary companies and moonshots apart, with the standard error taken across seeds (§17.9). |
+| `index_probe.py` | Engine-only: does the MSI 50, the average company, `AIFX` or the leveraged products drift over a 2-hour game? (§17.9) |
 | `tune.py` | Runs `sim.py` across several setting overrides and seeds in parallel and prints a comparison table. |
 | `state.json` | The save file: a snapshot of the game, written every 30 seconds (generated, git-ignored). The chart candles, most of its size, live in `state.charts.json` beside it, rewritten every five minutes (§13). |
 | `reset_game.py` | The command-line version of the admin **Reset** button: back up, then start the game over at Day 1 (stop the server first). |
@@ -1675,6 +1677,39 @@ Ordinary companies' catalysts became three-outcome bets with a rare disaster (§
 - **The result per unit traded** stays at about -0.1% for the strategies that trade the most (`news_chaser` -0.092%, `short_seller` -0.100%, `big_size` -0.100%, `bracket_trader` -0.095%, `vol_chaser` -0.099%): the 0.1% fee and nothing else.
 - **The house:** average fees 57,520 MB, average house P&L +15,947 MB, maximum token drift 2.2e-07.
 - The distribution of moves is in §7.13 (a fall of 40% or more in an ordinary company went from about one an hour to one every five hours).
+
+### 17.9 The big overnight check on the MSI 50 and everything else (2026-10-06)
+After the MSI 50 (§9) went in, the first 72-market edge checks showed a few readings above two standard errors (`catalyst_follow` +12%, t +2.6; `moon_hodl` +7.6%, t +2.1), so three much bigger studies were run. All results are in `sim_results/`.
+
+**1. Every strategy, 300 fresh markets x 2 hours** (`python bots.py all 300 2 70000`, in two files because a background command may run only two hours: `bots_all_70000.json` has 182 markets and `bots_all_70182.json` has 118; the combined table is `bots_all_300_seeds_report.txt`, made with `python bots.py report all <both files>`; 100 bots for every random strategy, one copy of each fixed-rule strategy). **No strategy has an edge.**
+- The only readings above two standard errors that are positive: `bear2_hodl` +1.82% (t +2.0) and `bear3_hodl` +2.77% (t +2.0). They are the mirror image of `bull2_hodl` -2.20% (t -2.4), `bull3_hodl` -3.18% (t -2.3) and `etf_hodl` -1.36% (t -2.3): one fact, that the index happened to fall in these markets, counted five times (the products are all the same market). Test 3 shows the index does not drift.
+- `catalyst_follow` fell from t +2.6 to **+0.79% (t +0.4)** with the bigger sample, `catalyst_fade` is -3.03% (t -1.8), `moon_hodl` +2.25% (t +1.6) and `moon_sniper` (100 bots) -0.94% (t -0.4). The earlier readings were luck: `moon_hodl` has also been -3.8% (t -2.2) in the dense-moonshot study (§17.7), so its sign flips from study to study.
+- The strategies that trade a lot all lose **about -0.10% per unit traded: the fee and nothing else** (`news_chaser` -0.105%, `short_seller` -0.102%, `vol_chaser` -0.110%, `bracket_trader` -0.110%, `trend_follower` -0.089%). `mood_oracle` -0.05% (t -0.6) and `relation_oracle` -5.77% (t -13.7), which loses its fees, show the hidden mood and hidden company links are not a leak. House: average fees 56,713 MB, average house P&L +75,588 MB, maximum token drift 2.2e-07.
+
+**2. After a catalyst-sized move** (`python catalyst_probe.py 200 2 60000`, 200 markets, `catalyst_probe_60000.txt`). Every time a company's price was 25% above or below its price two minutes earlier, the probe recorded its next five minutes (bankruptcies valued at the price holders are paid):
+
+| After a 25%+ move in 2 minutes | events | next 5 minutes | t |
+|---|---|---|---|
+| moonshot, up | 4,928 | -0.11% | -0.3 |
+| moonshot, down | 3,313 | -0.65% | -0.9 |
+| ordinary company, up | 128 | +0.28% | +0.7 |
+| ordinary company, down | 124 | +0.05% | +0.2 |
+
+All are zero within the error: **there is nothing to gain by following or fading a big move**. (The first version of the probe showed moonshots rising by +1.4% to +3.2% afterwards, t +3.4 to +5.5. That was the probe's own bug: a bankrupt moonshot (-97%) was valued at its price from the tick before, while a rescued one (+145%) was counted in full. It now values a delisted stock at the final price, `archive[ticker]["final_price"]`.)
+
+**3. Does the index drift?** (`python index_probe.py 250 2 80000`, 250 markets of 2 hours with no traders, `index_probe_80000.txt`):
+
+| series | mean return in 2 h | std err | t |
+|---|---|---|---|
+| MSI 50 | +0.41% | 0.57% | +0.7 |
+| the average ordinary company | +0.09% | 0.45% | +0.2 |
+| `AIFX` ETF | +0.60% | 0.75% | +0.8 |
+| 2x Long (`2LMSI`) | +0.80% | 1.17% | +0.7 |
+| 2x Short (`2SMSI`) | -0.94% | 1.09% | -0.9 |
+
+No drift, so the MSI 50's weighting and re-ranking give nobody an edge. The negative index readings in the strategy table were luck.
+
+**How to read these tables.** A study measures 36 strategies, so one or two will show |t| of 2 by chance, and strategies that hold the same assets (the index products; `moon_hodl` and `moon_sniper`) share one market and are not independent evidence. A real edge shows up the same way in every sample and grows with the sample (an edge of +1% with a standard error of 0.5% would have a t of +5 or more with 300 markets). Moonshot returns are extremely skewed (a few huge winners, a median near zero), so a t-statistic on them is looser than it looks; that is why the dense-moonshot study (§17.7) is the better judge, and it has the opposite sign.
 
 ---
 
