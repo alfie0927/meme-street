@@ -12,7 +12,7 @@ import unittest
 from _helpers import advance, drift, engine, join, make_engine, quiet
 
 FEE = engine.FEE
-QUARTER = 63 * engine.MARKET_DAY_SECONDS
+QUARTER = engine.TRADING_DAYS_PER_YEAR / 4 * engine.MARKET_DAY_SECONDS
 
 
 def pump(e, seconds=2):
@@ -305,10 +305,15 @@ class DividendAndEarningsTests(unittest.TestCase):
         self.assertLessEqual(max(times), QUARTER + 5)
         self.assertGreater(max(times) - min(times), 0.5 * QUARTER, "reports are bunched together")      # (see test_calendar.py)
 
-    def test_a_quarter_is_63_game_days_of_31_5_hours(self):
+    def test_a_year_is_365_game_days_and_a_quarter_is_91_25_of_them_45_6_hours(self):
         e = make_engine(9)
-        self.assertEqual(e._quarter_seconds(), 63 * 1800)
-        self.assertEqual(e._quarter_seconds() / 3600, 31.5)
+        self.assertEqual(engine.TRADING_DAYS_PER_YEAR, 365)
+        self.assertEqual(e._quarter_seconds(), 91.25 * 1800)
+        self.assertEqual(e._quarter_seconds() / 3600, 45.625)
+        self.assertEqual(engine.TRADING_DAYS_PER_YEAR * 1800 / 3600, 182.5)                 # a game year in real hours
+        # a volatility of 42% a year is 42% / sqrt(365) a game day: the year length is what spreads it
+        s = e.stocks["NVXA"]
+        self.assertAlmostEqual(e._daily_sigma(s), s.vol / (365 ** 0.5))
 
     def test_next_report_is_a_quarter_later_give_or_take_a_few_game_days(self):
         e = make_engine(10)

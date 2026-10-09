@@ -190,7 +190,7 @@ See §16 for what the tests cover and when to run which one.
 
 - **1 tick = 1 real second.** The server loop calls `engine.tick()` every second.
 - **1 game day = 1,800 ticks = 30 real minutes** (`MARKET_DAY_SECONDS`). So the "30m" change shown next to prices (and the index) means one game day.
-- **1 game year = 252 game days** (`TRADING_DAYS_PER_YEAR`), which is 126 real hours.
+- **1 game year = 365 game days** (`TRADING_DAYS_PER_YEAR`), which is 182.5 real hours (7 days 14½ hours). It was 252 (a real trading year) until 2026-10-09; the market never closes, so a calendar year is the natural length, and everything that is "per year" is worked out from this one number: the quarter, and how a stock's yearly volatility becomes a daily and a per-second one.
 - **1 day = 86,400 s = one real day, midnight to midnight UTC** (`season_seconds`). This is the period of the leaderboard, the daily quests and the daily contest, so all three begin and end together. (Before it was called a *season* and lasted an hour.) The game's own 30-minute "game day" above is a different thing: it is the market's unit of time.
 
 Everything shown to players is in **real time**: chart candle sizes, news and filing timestamps, and the countdowns in "Upcoming events". A countdown reads "4 hrs, 12 minutes, 9 seconds" (units that are zero at the front are left out), never "252m 09s".
@@ -202,18 +202,18 @@ Everything shown to players is in **real time**: chart candle sizes, news and fi
 | 1 tick | | 1 second |
 | 1 game day | 1 day | **30 minutes** |
 | 1 day (leaderboard period) | 48 game days | 24 hours, UTC midnight to midnight |
-| **1 quarter** (one earnings period) | **63 game days** (a quarter of a 252-day year) | **31.5 hours** |
-| 1 game year | 252 game days (4 quarters) | 126 hours (5.25 days) |
+| **1 quarter** (one earnings period) | **91.25 game days** (a quarter of a 365-day year) | **45.6 hours** (45 h 37 min) |
+| 1 game year | 365 game days (4 quarters) | 182.5 hours (7.6 days) |
 
-A company therefore reports earnings about once every 31.5 real hours, and pays a dividend with each report. Between two reports, a stock lives through roughly 63 game days of news, stories and price moves.
+A company therefore reports earnings about once every 45.6 real hours (a day and 21 hours), and pays a dividend with each report. Between two reports, a stock lives through roughly 91 game days of news, stories and price moves. (The quarter was 63 game days, 31.5 hours, before the year was set to 365 days: reports came a day and a quarter apart, which felt too often.)
 
 **One 30-minute cycle, minute by minute.** Every game day is 30 real minutes, and it is split into three **sessions** on the real clock, the same for everyone and repeating all day: **pre-market for the first 5 minutes (:00 to :05 and :30 to :35), the regular session for the next 20 (:05 to :25 and :35 to :55) and after-hours for the last 5 (:25 to :30 and :55 to :00)**, then straight back to pre-market. Trading is never refused. What changes is how busy the market is: quiet and thin before and after, a burst and a jump at the open (§6.8). The page shows the session in the header ("Pre-market · opens in 3 minutes, 12 seconds"), a tooltip on that chip with the cycle's clock times in your own time zone, and an amber (pre-market) or purple (after-hours) banner while the market is thin.
 
 Annualised volatility `σ` (each company's `vol`) converts to:
-- daily: `σ_d = σ / √252`
-- per tick: `σ_tick = σ / √(252 × 1800)`
+- daily: `σ_d = σ / √365`
+- per tick: `σ_tick = σ / √(365 × 1800)`
 
-Example, NVXA (`vol` 0.42): `σ_d` = 2.65% per game day and `σ_tick` = 0.062% per second.
+Example, NVXA (`vol` 0.42): `σ_d` = 2.20% per game day and `σ_tick` = 0.052% per second. **A longer year means calmer days:** with 252 days the same 42% was 2.65% a day, so every price now moves about 17% less per game day (the square root of 252/365 is 0.83) while its stated yearly volatility is unchanged. The size caps that depend on a daily move (news impacts, the soft daily limit, margin) shrink with it.
 
 ---
 
@@ -369,7 +369,7 @@ A three-factor model, drawn fresh each tick:
 σ_sector = 0.08
 σ_idio   = √max(σ² − σ_market² − σ_sector², 0.005²)
 
-r = (σ_market·Z_market + σ_sector·Z_sector + σ_idio·Z_idio) × volatility_scale / √(252 × 1800)
+r = (σ_market·Z_market + σ_sector·Z_sector + σ_idio·Z_idio) × volatility_scale / √(365 × 1800)
      × (volatility multiplier, §6.7) × (session factor, §6.8)
 ```
 `Z_market` is shared by all stocks this tick, `Z_sector` by the stocks in one sector, and `Z_idio` is per stock. The result is clamped to ±1% per tick for ordinary stocks (five typical seconds of noise, with a floor of 1%, so the clamp grows with the volatility of a moonshot).
@@ -557,7 +557,7 @@ Ordinary stocks were unchanged by this when it was done (their 99th percentile w
 - **Two-company stories** (§7.11): mean gap `cross_mean_seconds` = 240 s.
 - **Catalysts** (§7.13): rare news that moves one stock a lot, mean gap `catalyst_mean_seconds` = 480 s across the whole market.
 - **Industry-wide shocks** (§7.14): news that moves a whole sector at once, mean gap `sector_shock_mean_seconds` = 600 s.
-- **Earnings:** every equity with revenue reports **once a quarter**: 63 game days, which is **31.5 real hours** (§7.7). The first report is a random time within the first quarter, so companies report on different days. "Upcoming events" shows the countdowns, in days and hours.
+- **Earnings:** every equity with revenue reports **once a quarter**: 91.25 game days, which is **45.6 real hours** (§7.7). The first report is a random time within the first quarter, so companies report on different days. "Upcoming events" shows the countdowns, in days and hours.
 - **Bank reviews:** each equity is reviewed every `rating_review_seconds` = 600–1,500 s. They are not scheduled publicly.
 - **Follow-ups and switch-ups** to remembered stories (§7.4): 2-8 minutes after the original.
 - **Regime shifts:** every 7–14 game days (3.5–7 real hours).
@@ -626,11 +626,11 @@ Financials (revenue, net margin, cash, debt) now **evolve** and are saved. They 
 4. If the company had no stories pending, the headline simply doesn't say what drove it, and the numbers barely move.
 
 #### When companies report (the quarter)
-**In plain English:** a "quarter" in this game is 63 game days, which is **31.5 real hours**. Every company with revenue reports once per quarter, **only before the open or after the close**, and the reports are spread out so there are always a few every game day and one is always coming up.
+**In plain English:** a "quarter" in this game is 91.25 game days, which is **45.6 real hours**. Every company with revenue reports once per quarter, **only before the open or after the close**, and the reports are spread out so there are always a few every game day and one is always coming up.
 
 - **Only in pre-market or after-hours.** A report is scheduled into the first 5 minutes of a 30-minute cycle (pre-market) or the last 5 (after-hours), at a random second, never in the regular session. Which of the two is a coin toss for each report. (A flat market with no sessions, or a demo with a quarter shorter than a game day, has no such windows.) §6.8 describes the cycle.
-- **Spread, not bunched.** With about 150 reporting companies on a 63-game-day quarter there are about 2.4 reports per game day. The first reports are placed by **best-candidate sampling**: for each company a dozen random times in the coming quarter are tried and the one farthest from every report already on the calendar is taken, so there are no long dry stretches and no pile-ups ("Upcoming events" always has something near). A company listed later gets a slot the same way, in a quiet part of the calendar. (Real companies bunch their reports into a few weeks; the game deliberately does not.)
-- **A quarter apart, give or take a few days.** After a report the next one is a quarter after its nominal slot **plus or minus up to 4 game days** (about 2 real hours; `earnings_jitter_days`), then moved into the next pre-market or after-hours window. The slots drift a little each quarter but stay spread out, so the gap between two reports of the same company is 31.5 hours give or take a couple.
+- **Spread, not bunched.** With about 150 reporting companies on a 91-game-day quarter there are about 1.7 reports per game day. The first reports are placed by **best-candidate sampling**: for each company a dozen random times in the coming quarter are tried and the one farthest from every report already on the calendar is taken, so there are no long dry stretches and no pile-ups ("Upcoming events" always has something near). A company listed later gets a slot the same way, in a quiet part of the calendar. (Real companies bunch their reports into a few weeks; the game deliberately does not.)
+- **A quarter apart, give or take a few days.** After a report the next one is a quarter after its nominal slot **plus or minus up to 4 game days** (about 2 real hours; `earnings_jitter_days`), then moved into the next pre-market or after-hours window. The slots drift a little each quarter but stay spread out, so the gap between two reports of the same company is 45.6 hours give or take a couple.
 - **Restarts and old saves.** The nominal slot is saved. A save from before this calendar has its upcoming reports moved into windows; a report that would have fallen due while the server was down is given a fresh slot instead of all firing at once.
 - **Many stories per quarter.** Company stories arrive about every 100 seconds across the whole market, so each company collects roughly 30 of them per quarter. They all stay "pending" until the report, which applies them together. The headline names the **three biggest** and counts the rest ("Driven by a supply-chain disruption; new management; a major contract win and 24 smaller developments."). The company's earnings history on its stock page lists up to six, and says how many more there were.
 - **Why long quarters don't make prices jump at the report:** each story already moved the price when it broke, and its effect on the numbers was scaled to match that move. The report mostly confirms prices; only the small unannounced part (margin and revenue noise) moves the price. The calendar is public (the "Upcoming events" list), and a report's reaction has no expected move, so knowing when one is due is no edge (the simulator's `earnings_runup` checks this).
@@ -1240,7 +1240,7 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 | `news_move_ranges` | see §7.5 | raw impact before the clamp |
 | `event_strength_limits` | 0.1/0.35/0.65/1.0 | event size cap, as a multiple of daily σ (the real size control) |
 | `rumor_prob` / `rumor_credibility` / `rumor_delay_seconds` | 0.6 / 0.75 / 45–90 | rumour frequency, accuracy, time until confirmation |
-| `earnings_quarter_days` | 63 | length of a fiscal quarter in game days (63 = 31.5 real hours); every report and dividend is one quarter apart, give or take `earnings_jitter_days` (a quarter shorter than a game day is a demo: no windows, no jitter beyond 15%) |
+| `earnings_quarter_days` | not set (a quarter of `TRADING_DAYS_PER_YEAR`: 91.25 = 45.6 real hours) | length of a fiscal quarter in game days; set it to override the year-derived default; every report and dividend is one quarter apart, give or take `earnings_jitter_days` (a quarter shorter than a game day is a demo: no windows, no jitter beyond 15%) |
 | `earnings_jitter_days` | 4 | how many game days (2 real hours per 4) a report may drift from exactly one quarter after the last (§7.7) |
 | `relation_spillover` | 1.0 | scales how much a company's suppliers, customers and rivals move it (§7.15); 0 switches it off |
 | `premarket_seconds` / `aftermarket_seconds` | 300 / 300 | length of pre-market and after-hours at the start and end of each 30-minute cycle (§6.8); both `0` switches the sessions off |
@@ -1379,7 +1379,7 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 - **Shorting:** opening and covering works and keeps money conserved; proceeds stay locked (withdrawals blocked); you can't short beyond your margin; covering part keeps the average price; **a margin call triggers exactly when equity falls below the maintenance level** (tested on calm, medium and wild stocks, never before and never late); a gap past the call leaves cash at zero and the house's shortfall is counted; shorts in a bankrupt stock close without negative cash.
 - **Borrow fee:** the fee charged over a minute matches the formula to within 2%, goes to the house, and money stays conserved.
 - **Dividends:** on the ex-date a long holder is paid, a short holder pays, the price drops by exactly the dividend, and money stays conserved.
-- **Earnings:** a quarter is 63 game days = 31.5 hours; first reports are spread across the quarter; the next report is a quarter after the last give or take the jitter (and exactly a quarter with none); the headline names at most three stories and counts the rest; a report declares a dividend that follows the margin and is suspended for a loss.
+- **Earnings:** a quarter is 91.25 game days = 45.6 hours (a quarter of the 365-day game year); first reports are spread across the quarter; the next report is a quarter after the last give or take the jitter (and exactly a quarter with none); the headline names at most three stories and counts the rest; a report declares a dividend that follows the margin and is suspended for a loss.
 - **News:** across 3,000 ticks of very busy news (hundreds of headlines) **no headline is ever repeated**; follow-ups (UPDATE) and reversals (REVERSAL) both appear; both branches use **the same strength** with scales 0.8 and 1.2 (so their expected move is zero; this is the check that would have caught the edge bug found in §6.2); the headline-direction scaling cancels exactly for every mood; **the hidden mood is never sent to players** and macro headlines never name the regime; news never targets the index directly.
 - **The soft daily limit:** the damping factor is 1.0 at the day's start and 0.5 at the limit; it is identical above and below the open; an up move and a down move are shrunk by exactly the same amount; there is no protection from further falls near the lower limit (the old reflecting wall); a zero cap switches it off; and 60 shocks in a row are held to a few limits instead of running away.
 - **Admin data:** every kind of trade (buy, sell, short, cover) is logged with its fee; only the last 100 are kept; a margin call is logged for the player and the house with the house's loss; the house series is sampled every 10 seconds; the overview has the right shape and the return distribution counts every human; player detail is case-insensitive and unknown players return nothing; trade and margin logs survive a restart.
@@ -1439,7 +1439,7 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 - A 20-client, 15-second stress run.
 - A small edge check (12 seeds × 1 hour): no strategy may earn a clearly positive mean (t above 3). It is deliberately loose because 12 seeds are noisy.
 - A **paired** check on 24 seeds: switching the daily limit off must not make the dip-buying `value` strategy significantly worse (before the soft limit it did, by 2.7%, t −3.2).
-- The same with a 2-game-day quarter, so every company reports several times and the earnings and dividend path is covered by the simulator (a normal 2-hour simulation sees almost no reports now that a quarter is 31.5 hours).
+- The same with a 2-game-day quarter, so every company reports several times and the earnings and dividend path is covered by the simulator (a normal 2-hour simulation sees almost no reports now that a quarter is 45.6 hours).
 
 The **real** edge check is still `python edge.py 40 2 <a first seed you haven't used>` (about 7 minutes; see §1). Run it before shipping any change to prices, news, fees, limits or dividends.
 

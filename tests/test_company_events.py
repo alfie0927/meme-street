@@ -11,7 +11,7 @@ from _helpers import advance, drift, engine, join, make_engine, quiet
 
 import newsgen
 
-QUARTER = 63 * engine.MARKET_DAY_SECONDS
+QUARTER = engine.TRADING_DAYS_PER_YEAR / 4 * engine.MARKET_DAY_SECONDS
 
 
 class ScheduleTests(unittest.TestCase):

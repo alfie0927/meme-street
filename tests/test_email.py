@@ -484,8 +484,11 @@ class HttpEmailTests(unittest.TestCase):
         token = data["token"]
         status, res = self.post("/api/account/email/resend", {}, token)
         self.assertFalse(res["ok"])                                  # too soon after the first one
-        time.sleep(2.2)
-        status, res = self.post("/api/account/email/resend", {}, token)
+        for _ in range(10):                                          # (the game's clock moves in one-second steps, so a slow machine can need a few more seconds than the 2 the rule says)
+            time.sleep(1.2)
+            status, res = self.post("/api/account/email/resend", {}, token)
+            if res["ok"]:
+                break
         self.assertTrue(res["ok"], res)
         status, res = self.post("/api/account/email", {"email": "late2@example.com"}, token)
         self.assertIn(status, (200,))

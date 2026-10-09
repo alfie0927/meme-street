@@ -13,7 +13,7 @@ import _helpers
 from _helpers import advance, drift, engine, join, make_engine, quiet
 
 DAY = engine.MARKET_DAY_SECONDS
-QUARTER = 63 * DAY
+QUARTER = engine.TRADING_DAYS_PER_YEAR / 4 * DAY
 
 
 def build(seed, **settings):
@@ -55,7 +55,7 @@ class SpreadTests(unittest.TestCase):
         gaps = [b - a for a, b in zip(slots, slots[1:])]
         mean_gap = QUARTER / n
         self.assertLess(max(gaps), 6 * mean_gap, "reports are bunched into a few weeks")      # no long dry stretch
-        per_day = n / 63
+        per_day = n / (engine.TRADING_DAYS_PER_YEAR / 4)
         self.assertGreater(per_day, 1.5)                                                       # a few every game day
         # and the first report of the lot is not far off
         self.assertLess(slots[0], 6 * mean_gap)

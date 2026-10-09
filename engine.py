@@ -14,7 +14,7 @@ FEE = 0.001                  # per side (0.1%; a round trip costs about 0.2%), c
 COOLDOWN = 1.0
 MAX_POOL_FRAC = 0.05
 MARKET_DAY_SECONDS = 1800
-TRADING_DAYS_PER_YEAR = 252
+TRADING_DAYS_PER_YEAR = 365   # the market never closes, so a game year is 365 game days (182.5 real hours); a quarter is a quarter of it
 INTRADAY_CANDLE_SECONDS = 60
 # real-time candle sizes in seconds, keyed by the labels the chart offers
 TIMEFRAMES = {"30s": 30, "1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "2h": 7200,
@@ -548,7 +548,7 @@ class Engine(SocialMixin, AccountsMixin):
             self._sync_relations()                 # its suppliers, customers and rivals, and theirs in turn
 
     def _quarter_seconds(self):
-        """One fiscal quarter in real seconds: a quarter is a quarter of a 252-day game year (63 game days)."""
+        """One fiscal quarter in real seconds: a quarter of the 365-day game year (91.25 game days, 45.6 real hours)."""
         return float(self.settings.get("earnings_quarter_days", TRADING_DAYS_PER_YEAR / 4)) * MARKET_DAY_SECONDS
 
     def _pick_earnings_slot(self):
