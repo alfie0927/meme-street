@@ -105,7 +105,7 @@ class IsolatedServer:
     """Runs the real FastAPI app in a subprocess from a temporary copy of the project, so tests never read or
     overwrite the real state.json. Usage:  with IsolatedServer() as srv: srv.url, srv.port"""
 
-    FILES = ["engine.py", "newsgen.py", "memestreet_logo_peaks.png", "relations.py", "contest.py", "accounts.py", "mailer.py", "netutil.py", "wsconn.py", "pages.py", "gateway.py", "ledger.py", "social.py", "server.py", "index.html", "admin.html", "pack_growth.json", "pack_fiction.json", "base.json", "expansion.json", "events_pack.json",
+    FILES = ["engine.py", "newsgen.py", "memestreet_logo_peaks.png", "relations.py", "contest.py", "accounts.py", "mailer.py", "netutil.py", "wsconn.py", "pages.py", "gateway.py", "ledger.py", "social.py", "server.py", "index.html", "about.html", "admin.html", "pack_growth.json", "pack_fiction.json", "base.json", "expansion.json", "events_pack.json",
              "market_profiles.json"]
 
     def __init__(self, admin_key="testkey", settings=None, state_file=None, gateways=None):

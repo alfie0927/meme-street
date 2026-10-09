@@ -123,7 +123,7 @@ class Core:
         elif kind == "bc":
             wanted = None if m.get("aud") is None else set(m["aud"])
             for page in list(self.pages.values()):
-                if wanted is None or page.pk in wanted:
+                if (wanted is None or page.pk in wanted) and not (m.get("mo") and page.pk == "guest"):
                     page.push(m["x"])
         elif kind == "hangup":
             page = self.pages.get(m["c"])

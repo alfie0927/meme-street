@@ -534,14 +534,17 @@ class BrowserPages(unittest.TestCase):
                           lambda t: "at least 8" in t, wait=8)
             await pg.js(fill % (name, "correct-horse-battery", "correct-horse-battery"))
             await pg.js("document.getElementById('joinbtn').click()")
-            await d.check("registering enters the market", "document.getElementById('login').style.display", "none", wait=10)
+            await d.check("registering enters the market (the account exists and the page is no longer the visitor view)",
+                          "!document.body.classList.contains('guest')&&!!localStorage.getItem('ms_token')&&document.getElementById('login').style.display==='none'", wait=15)
             await d.check("the page is live", "document.querySelectorAll('#rows tr').length", lambda n: n > 100, wait=10)
             await pg.goto(base + "/profile", 3)
             await d.check("the profile says the account is protected", "document.getElementById('acct-note').innerText",
                           lambda t: "protected by a password" in t, wait=10)
             await pg.js("document.getElementById('acct-out').click()")
             await asyncio.sleep(2.5)
-            await d.check("logging out shows the sign-in box again", "document.getElementById('login').style.display", "flex", wait=8)
+            await d.check("logging out lands on the market as a visitor", "document.body.classList.contains('guest')", wait=8)
+            await pg.js("document.getElementById('g-login').click()")
+            await d.check("and the Sign in button shows the sign-in box again", "document.getElementById('login').style.display", "flex", wait=4)
             await d.check("and forgets the token", "localStorage.getItem('ms_token')", None)
             await d.check("a returning visitor opens on Log in", "document.querySelector('#auth-tabs .on').dataset.mode", "login")
             await pg.js("document.querySelector('#auth-tabs [data-mode=login]').click()")
@@ -607,7 +610,9 @@ class BrowserPages(unittest.TestCase):
                           lambda t: "Email verified" in t, wait=10)
             await pg.js("document.getElementById('acct-out').click()")
             await asyncio.sleep(2.5)
-            await d.check("logged out", "document.getElementById('login').style.display", "flex", wait=8)
+            await d.check("logged out: back on the market as a visitor", "document.body.classList.contains('guest')", wait=8)
+            await pg.js("document.getElementById('g-login').click()")
+            await d.check("the Sign in button opens the box", "document.getElementById('login').style.display", "flex", wait=4)
             await pg.js("document.querySelector('#auth-tabs [data-mode=login]').click()")
             await d.check("the login tab offers a way back in", "document.getElementById('forgot-link').style.display", "block")
             await pg.js("(()=>{document.getElementById('nm').value='%s';document.getElementById('forgot').click()})()" % name)
@@ -683,6 +688,61 @@ class BrowserPhone(unittest.TestCase):
                           "getComputedStyle(document.querySelector('#market-card thead')).display!=='none'&&getComputedStyle(document.getElementById('msort')).display==='none'")
             await d.check("on a laptop the whole header is pinned and the side panels are not folded",
                           "getComputedStyle(document.querySelector('header')).position==='sticky'&&!document.querySelector('aside .card.fold')")
+        finally:
+            errors = list(pg.errors)
+            proc.terminate()
+        return d, errors
+
+
+@unittest.skipUnless(find_browser(), "no Edge/Chrome installed")
+class BrowserGuest(unittest.TestCase):
+    """A visitor who is not signed in sees the live market and a stock's page, is asked to sign in for anything else, and
+    becomes a normal player on the same page the moment they sign up."""
+
+    def test_visitors_can_watch_and_are_asked_to_sign_in(self):
+        with IsolatedServer() as srv:
+            d, errors = asyncio.run(self._guest(srv.url))
+        d.verdict(self, errors)
+
+    async def _guest(self, base):
+        proc, pg, _ = await open_page(debug_port=9354)
+        d = Driver(pg)
+        shown = lambda sel: f"(()=>{{const e=document.querySelector('{sel}');return !!e&&getComputedStyle(e).display!=='none'}})()"
+        try:
+            await pg.goto(base + "/", 3)
+            await d.check("no sign-in box in the way: the market is just there", "getComputedStyle(document.getElementById('login')).display", "none")
+            await d.check("it is the visitor view", "document.body.classList.contains('guest')")
+            await d.check("the live table is full", "document.querySelectorAll('#rows tr').length", lambda n: n > 100, wait=8)
+            await d.check("a welcome card says what this is", shown("#guest-hero"))
+            await d.check("there are no buy/sell controls to tap", "[...document.querySelectorAll('.ticket,#rows .hold-act')].every(e=>getComputedStyle(e).display==='none')")
+            await d.check("the menu offers only the market", "[...document.querySelectorAll('#nav a')].filter(a=>getComputedStyle(a).display!=='none').length", 1)
+            await d.check("their own money is not shown", "getComputedStyle(document.getElementById('cash').closest('.stat')).display", "none")
+            await d.check("prices are moving (live)", "(()=>{const a=document.querySelector('#rows tr[data-k=NVXA] .px').textContent;return new Promise(r=>setTimeout(()=>r(a),6000)).then(a=>a.length>0)})()")
+            await pg.js("document.querySelector('#rows tr[data-k=NVXA] .tick-cell').click()")
+            await asyncio.sleep(3)
+            await d.check("a stock's page opens with its live price", "document.getElementById('d-price').textContent.length", lambda n: n > 3, wait=6)
+            await d.check("its tab title names the stock", "document.title", lambda t: "NVXA" in t and "Meme Street" in t)
+            await d.check("the trade controls are replaced by a sign-up prompt", f"{shown('#d-cta')}&&!{shown('.detail-actions')}")
+            await d.check("its chart arrives for a visitor", "document.querySelectorAll('.price-chart rect').length", lambda n: n > 0, wait=8)
+            await pg.js("document.getElementById('d-signup').click()")
+            await d.check("asking to trade opens the sign-in box with a reason and a way back",
+                          f"{shown('#login')}&&document.getElementById('login-why').textContent.includes('trade')&&{shown('#login-close')}")
+            await pg.js("document.getElementById('login-close').click()")
+            await d.check("'keep watching' closes it", f"!{shown('#login')}")
+            await pg.goto(base + "/holdings", 2)
+            await d.check("a page that needs an account shows a sign-in box that cannot be dismissed", f"{shown('#login')}&&!{shown('#login-close')}")
+            await pg.goto(base + "/#join", 3)
+            await d.check("the /about page's button opens the sign-up box", f"{shown('#login')}")
+            await pg.js("document.getElementById('nm').value='visitor'+Math.floor(Math.random()*9999)")
+            await pg.js("document.getElementById('joinbtn').click()")
+            await asyncio.sleep(3)
+            await d.check("signing up turns the same page into the player view", "!document.body.classList.contains('guest')")
+            await d.check("now there are buy buttons", f"{shown('#rows tr[data-k=NVXA] .buy')}")
+            await d.check("and the player's own money", "document.getElementById('cash').textContent", lambda t: "1000" in t.replace(",", "") or "1,000" in t, wait=6)
+            await d.check("and the welcome card is gone", f"!{shown('#guest-hero')}")
+            await pg.goto(base + "/about", 2)
+            await d.check("the about page is a real page", "document.title", lambda t: "Meme Street" in t)
+            await d.check("with a way to create an account", "!!document.querySelector('a[href=\"/#join\"]')")
         finally:
             errors = list(pg.errors)
             proc.terminate()

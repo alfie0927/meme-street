@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 # nothing and were removed, see `_retire_pools`.)
 
 
+GUEST_KEY = "guest"   # the connection key every logged-out visitor shares (see Engine.guest_for)
 RATINGS = ["D", "C", "CC", "CCC", "B", "BB", "BBB", "A", "AA", "AAA"]
 # Leveraged products that were renamed (old saves and ledgers still use the old tickers) or withdrawn
 from netutil import TICKER_RENAMES  # noqa: E402  (a product that was renamed: old links and old saves still work)
@@ -211,6 +212,7 @@ class Player:
         self.email_pending = None   # an address waiting for its code to be typed in
         self.created = 0.0       # when the account was made
         self.trades = 0
+        self.guest = False       # True only for the one hidden, read-only visitor (Engine.guest)
         social.init_player(self)   # achievements, quests, following, chat limits (see social.py)
 
 
@@ -218,6 +220,8 @@ class Engine(SocialMixin, AccountsMixin):
     def __init__(self, content_glob="*.json", state_file="state.json", ledger_path=None):
         self._init_social()
         self._init_accounts()
+        self.guest = Player("guest")             # what a logged-out visitor's page is attached to: never in `players` or `by_token`,
+        self.guest.token, self.guest.guest = GUEST_KEY, True    # has no money, cannot trade or chat, and cannot be logged in as
         self.content_glob = content_glob
         self.state_file = state_file
         self.ledger = Ledger(ledger_path) if ledger_path else None   # append-only money log (see ledger.py)
@@ -709,6 +713,11 @@ class Engine(SocialMixin, AccountsMixin):
     def _register(self, p):
         self.players[p.token] = p
         self.by_token[p.token] = p
+
+    def guest_for(self, token):
+        """The hidden read-only visitor for a logged-out page's connection (token `GUEST_KEY`), or None. Only the websocket
+        uses it: it is deliberately not part of `player_for`, so no request to the ordinary pages can ever act as the guest."""
+        return self.guest if token == GUEST_KEY else None
 
     def credit(self, p, amount):
         """Tokens enter the game (purchase of memebucks, signup credit)."""
@@ -2829,7 +2838,7 @@ class Engine(SocialMixin, AccountsMixin):
         never change, so that the per-tick updates can be small."""
         d = self.state_for(p)
         d.update({"type": "init", "t": self.now, "seq": self.wire_seq, "static_v": self.static_v,
-                  "chat": self.chat_history(p)})
+                  "chat": [] if p.guest else self.chat_history(p)})
         return d
 
     NEWS_WINDOW = 5    # seconds of headlines repeated in each tick, so a skipped tick loses nothing
@@ -2883,7 +2892,30 @@ class Engine(SocialMixin, AccountsMixin):
         self.series.append({"t": self.now, "house": self.house, "fees": self.fees, "humans_pnl": humans,
                             "trades": self.trades_total})
 
-    def admin_overview(self, online=0):
+    def funnel_stats(self):
+        """Where players come from and how far they get, from what the game already keeps: sign-ups per day, how many have
+        an email and a verified one, how many ever traded, who was seen in the last day and week (a session's last-seen
+        time, which is updated about hourly, so accounts with no session are never counted), and how the fees are spread
+        (a few heavy traders usually pay most of them)."""
+        players = list(self.players.values())
+        day = 86400.0
+        today = int(self.now // day)
+        signups = [{"day": (today - d) * day, "n": sum(1 for p in players if p.created and int(p.created // day) == today - d)}
+                   for d in range(13, -1, -1)]
+        seen = {}
+        for s in self.sessions.values():
+            seen[s["p"]] = max(seen.get(s["p"], 0.0), s["seen"])
+        fees = sorted((p.fees_paid for p in players if p.fees_paid > 0), reverse=True)
+        total = sum(fees)
+        top = max(1, math.ceil(len(fees) * 0.1)) if fees else 0
+        return {"players": len(players), "with_email": sum(1 for p in players if p.email),
+                "verified": sum(1 for p in players if p.email_verified), "traded": sum(1 for p in players if self.ever_traded(p)),
+                "seen_24h": sum(1 for p in players if self.now - seen.get(p.token, 0.0) < day),
+                "seen_7d": sum(1 for p in players if self.now - seen.get(p.token, 0.0) < 7 * day),
+                "signups": signups, "fees_total": total, "payers": len(fees),
+                "fees_per_payer": total / len(fees) if fees else 0.0, "top10_share": sum(fees[:top]) / total if total else 0.0}
+
+    def admin_overview(self, online=0, guests=0):
         """Everything the admin page shows, in one call."""
         humans = list(self.players.values())
         rows = []
@@ -2904,7 +2936,8 @@ class Engine(SocialMixin, AccountsMixin):
             old = next((x for x in series if x["t"] >= last["t"] - 300), series[0])
             span = max(last["t"] - old["t"], 1.0)
             per_min = (last["trades"] - old["trades"]) / span * 60
-        return {"stats": self.house_stats(), "series": series, "online": online, "trades_total": self.trades_total,
+        return {"stats": self.house_stats(), "series": series, "online": online, "guests": guests, "funnel": self.funnel_stats(),
+                "trades_total": self.trades_total,
                 "trades_per_min": per_min, "margin_calls": self.margin_calls,
                 "margin_log": list(self.margin_log)[::-1][:20], "dist": dist, "winners": rows[:10]}
 

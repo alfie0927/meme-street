@@ -1,5 +1,5 @@
 <!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a0e14">
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a0e14"><meta name="description" content="Meme Street is a fictional stock market that never closes: 190+ companies, indices and ETFs, news that moves prices and a daily leaderboard. Watch it live, then trade."><meta property="og:title" content="Meme Street"><meta property="og:description" content="A fictional stock market that never closes. Watch it live, then trade."><meta property="og:image" content="https://memestreet.net/brand/memestreet_header_peaks.png"><meta property="og:type" content="website">
 <title>Meme Street</title>
 <style>
 :root{--bg:#0a0e14;--card:#111822;--card2:#161f2c;--line:#212c3b;--line2:#18212d;--txt:#e8eef6;--mut:#8493a8;--up:#34d27b;--dn:#ff5f6d;--acc:#5aa2ff;--avg:#e8b84a;--upbg:#34d27b1f;--dnbg:#ff5f6d1f;--r:12px}
@@ -93,6 +93,16 @@ input,select{font:inherit;width:100%;padding:9px 10px;margin:10px 0;background:#
 input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px #5aa2ff22}
 .bar input,.bar select{width:auto;margin:0;padding:6px 10px}
 #q{width:260px}#msort{display:none}
+/* logged-out visitors: they can watch the live market and a stock's page, and are asked to sign in to do anything else */
+#guest-actions,#guest-hero{display:none}
+body.guest #guest-actions{display:flex;gap:8px;align-items:center}
+body.guest.page-market #guest-hero{display:block}
+body.guest #nav a:not([data-page=market]){display:none}
+body.guest .stats .stat:nth-child(n+2):nth-child(-n+6){display:none}
+body.guest .ticket,body.guest .hold-act,body.guest .detail-actions,body.guest .orders,body.guest #d-limits,body.guest #d-pos{display:none!important}
+.guest-cta{display:none;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding:10px 12px;margin:10px 0;background:var(--card2);border:1px solid var(--line2);border-radius:10px}
+body.guest .guest-cta{display:flex}
+#guest-hero h2{margin:0 0 6px;font-size:22px;letter-spacing:-.01em}#guest-hero ul{margin:0 0 12px;padding-left:18px}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:9px 16px;border-radius:10px;background:#1a2331;border:1px solid var(--line);opacity:0;transition:.2s;z-index:10;pointer-events:none;max-width:90vw;box-shadow:0 6px 20px #0008}
 .flashU{color:var(--up)}.flashD{color:var(--dn)}
 #notes{position:fixed;top:128px;right:14px;display:flex;flex-direction:column;gap:6px;z-index:10;pointer-events:none;max-width:320px}
@@ -136,6 +146,8 @@ input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3
  button{min-height:34px}.chip{min-height:30px;padding:5px 12px}
  #login>div{width:min(340px,92vw);padding:20px}
  #notes{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));left:10px;right:10px;max-width:none}
+ #guest-actions{display:none!important}
+ body.guest .stats{grid-template-columns:1fr 1.7fr}body.guest .stat:last-child{grid-column:auto}
  #toast{bottom:calc(14px + env(safe-area-inset-bottom))}
  /* news wire, upcoming events and the leaderboard sit above the (very long) table, folded: tap a heading to open it */
  aside{order:-1}
@@ -202,7 +214,7 @@ input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3
 
 </style><link rel="icon" type="image/png" href="/brand/memestreet_logo_peaks.png">
 </head><body class="page-market">
-<div id="login"><div><h2 style="margin:0">Meme Street</h2><p class="mut">Trade with memebucks (MB). Read the news, trade fast, beat the other players.</p>
+<div id="login"><div><h2 style="margin:0">Meme Street</h2><p class="mut">Trade with memebucks (MB). Read the news, trade fast, beat the other players.</p><p id="login-why" class="hint" style="display:none;color:var(--acc)"></p>
 <p id="auth-tabs" style="display:none;margin:0 0 8px"><button class="chip on" data-mode="login">Log in</button> <button class="chip" data-mode="register">Create account</button></p>
 <input id="nm" maxlength="16" placeholder="Pick a trader name" autocomplete="username" style="margin-bottom:8px">
 <input id="pw" type="password" maxlength="128" placeholder="Password" autocomplete="current-password" style="display:none;margin-bottom:8px">
@@ -215,12 +227,12 @@ input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3
 <input id="rec-code" maxlength="12" placeholder="Code from the email" autocomplete="one-time-code" style="margin-bottom:8px">
 <input id="rec-pw" type="password" maxlength="128" placeholder="New password (8+ characters)" autocomplete="new-password" style="margin-bottom:8px">
 <button class="buy" style="width:100%;padding:8px" id="rec-go">Set the new password</button><p id="rec-msg" class="hint"></p></div>
-<p id="auth-hint" class="hint" style="display:none"></p></div></div>
+<p id="auth-hint" class="hint" style="display:none"></p><button id="login-close" style="display:none;width:100%;margin-top:8px">Keep watching the market</button></div></div>
 <header>
 <div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a>
 <nav id="nav"><a href="/" data-page="market">Market</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a></nav>
 <div class="spacer"></div>
-<div id="session"><span id="mkt">Market</span></div><span id="conn"></span></div>
+<div id="session"><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
 <div class="stats">
 <div class="stat"><small>MSI 50<small id="indexChg" class="mut">+0.0% 30m</small></small><span id="index">100.000</span></div>
 <div class="stat"><small>Cash</small><span id="cash">-</span></div>
@@ -232,6 +244,7 @@ input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3
 </div></header>
 <div id="session-banner"></div>
 <main><section>
+<div class="card" id="guest-hero"><h2>Meme Street</h2><p class="about" style="margin:0 0 10px">A fictional stock market that never closes: 190+ companies, indices and ETFs, news that moves prices, and a daily leaderboard. You are watching it live. Create an account to trade.</p><ul class="hint"><li>Prices follow stories, not players: nobody's trade, ours included, moves a price.</li><li>Read the wire, trade fast, and short a stock if you think it will fall.</li><li>The house charges 0.1% on each trade. Nothing else is built in.</li></ul><div class="bar"><button class="buy" id="gh-join">Create an account</button><button id="gh-login">Sign in</button><a href="/about">How it works</a></div></div>
 <div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Search ticker, company or industry" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option></select></div>
 <div class="ticket"><span class="lab">Buy size</span><span id="bchips"></span><span class="lab">Sell size</span><span id="schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="Amount in MB"></div>
 <div id="secs-wrap"><div id="secs"></div><button class="chip" id="secs-toggle" aria-expanded="false"></button></div>
@@ -304,7 +317,7 @@ document.body.className='page-'+page;
 document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.page===page||(page==='player'&&a.dataset.page==='leaders')));
 if(matchMedia('(max-width:760px)').matches){const cur=document.querySelector('#nav a.on');if(cur)cur.scrollIntoView({inline:'center',block:'nearest'});
  document.querySelectorAll('aside .card').forEach((c,i)=>{c.classList.add('fold');if(i)c.classList.add('shut');c.querySelector('h3').addEventListener('click',()=>c.classList.toggle('shut'))})}
-let ws=null,token=null,reconnectT=null,backoff=1000,S=null,lastSeq=0,syncAt=0;
+let ws=null,token=null,reconnectT=null,backoff=1000,S=null,lastSeq=0,syncAt=0,guest=false,noGuest=false;
 try{token=localStorage.ms_token||null}catch(e){}
 let buyPct=.25,sellPct=1;
 const view=Object.assign({sort:'ticker',dir:1,q:'',sector:'all',watch:false,secsOpen:false},lsGet('ms_view',{}));
@@ -351,7 +364,13 @@ async function api(p,opt){
  let j=null;try{j=await r.json()}catch(e){}
  if(r.status===404)return{notfound:true};
  return j}
-function logout(){try{localStorage.removeItem('ms_token')}catch(e){}token=null;S=null;$('login').style.display='flex'}
+function logout(){try{localStorage.removeItem('ms_token')}catch(e){}token=null;S=null;
+ if(ws){ws.onclose=ws.onmessage=ws.onopen=null;try{ws.close()}catch(e){}ws=null}
+ connect()}   // (the market and stock pages carry on as a logged-out visitor; the other pages ask for a sign-in)
+function openSignin(mode,why){
+ if(mode)authMode=mode;drawAuth();
+ const w=$('login-why');w.textContent=why||'';w.style.display=why?'block':'none';
+ $('login-close').style.display=guest?'block':'none';$('login').style.display='flex'}
 async function logoutHere(){try{await api('/api/logout',{method:'POST',body:{}})}catch(e){}logout();location.href='/'}
 
 // ---------- connection and the update protocol ----------
@@ -401,13 +420,20 @@ $('rec-go').onclick=async()=>{
  const j=await postJson('/api/account/recover',{name:$('nm').value,code:$('rec-code').value,password:$('rec-pw').value});
  if(j.token){token=j.token;try{localStorage.ms_token=token}catch(e){}lsSet('ms_seen_login',true);$('rec-pw').value=$('rec-code').value='';authMode='login';drawAuth();connect()}
  else $('rec-msg').textContent=j.error||'Error'};
+$('g-login').onclick=$('gh-login').onclick=()=>openSignin('login');$('g-join').onclick=$('gh-join').onclick=()=>openSignin('register');
+$('login-close').onclick=()=>{$('login').style.display='none'};
+if(!token&&location.hash==='#join')setTimeout(()=>openSignin('register'),60);   // (the /about page's button)
 $('joinbtn').onclick=join;$('nm').onkeydown=e=>{if(e.key==='Enter')join()};$('pw').onkeydown=$('pw2').onkeydown=e=>{if(e.key==='Enter')join()};
 function connect(){
- if(!token){$('login').style.display='flex';return}
+ if(!token){
+  if((page==='market'||page==='stock')&&!noGuest)guest=true;
+  else{guest=false;document.body.classList.remove('guest');$('login-close').style.display='none';$('login').style.display='flex';return}}
+ else guest=false;
+ document.body.classList.toggle('guest',guest);
  clearTimeout(reconnectT);
  if(ws){ws.onclose=ws.onmessage=ws.onopen=null;try{ws.close()}catch(e){}}
  $('login').style.display='none';
- const sock=ws=new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws?token='+token);
+ const sock=ws=new WebSocket((location.protocol==='https:'?'wss':'ws')+'://'+location.host+'/ws?token='+(token||'guest'));
  sock.onopen=()=>{backoff=1000;$('conn').textContent='';if(selectedTicker){requestHistory();requestCompany()}};
  sock.onmessage=e=>{
   let m;try{m=JSON.parse(e.data)}catch(err){return}
@@ -423,11 +449,12 @@ function connect(){
    else if(t==='chat_delete'){chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}
    else if(t==='chat_history'){chatMsgs=m.msgs||[];drawChat()}
    else if(t==='chat_error')toast(m.msg,false);
-   else if(t==='error'){logout()}
+   else if(t==='error'){if(guest){noGuest=true;guest=false;document.body.classList.remove('guest');sock.onclose=null;$('login').style.display='flex'}else logout()}   // (an older server that has no visitor mode)
   }catch(err){console.error('message error',err)}};
  sock.onclose=()=>{if(sock!==ws)return;$('conn').textContent='Reconnecting…';reconnectT=setTimeout(connect,backoff);backoff=Math.min(backoff*1.7,10000)};
  sock.onerror=()=>{try{sock.close()}catch(e){}}}
-const send=o=>{if(ws&&ws.readyState===1){ws.send(JSON.stringify(o));return true}toast('Not connected',false);return false};
+const send=o=>{if(guest&&!['history','company','sync'].includes(o.type)){openSignin('register','Create an account to do that');return false}
+ if(ws&&ws.readyState===1){ws.send(JSON.stringify(o));return true}toast('Not connected',false);return false};
 function requestSync(){const n=Date.now();if(n-syncAt<2500)return;syncAt=n;if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:'sync'}))}
 function onInit(m){
  m.byT={};for(const r of m.stocks)m.byT[r.ticker]=r;
@@ -461,6 +488,7 @@ function finOf(x){
 // ---------- trading ----------
 const tradeAt={};let amountMB=null;
 function trade(t,side){
+ if(guest){openSignin('register','Create an account to trade');return}
  const now=Date.now();if(now-(tradeAt[t]||0)<300)return;tradeAt[t]=now;
  const msg={type:'trade',ticker:t,side,pct:side==='buy'?buyPct:sellPct};
  if(amountMB!==null){if(!(amountMB>0)){toast('Enter an amount above 0',false);return}msg.amount=amountMB}
@@ -689,6 +717,7 @@ function buildDetail(){
  $('detail-content').className='';
  $('detail-content').innerHTML=`<div class="detail-head"><div><h2><span id="d-name"></span> <span id="d-star" class="star" style="display:inline-block;vertical-align:middle"></span><span id="d-badges"></span></h2><div class="detail-sub" id="d-sub"></div><div class="detail-price"><span id="d-price"></span><span class="detail-move" id="d-move"></span></div></div><div class="periods">${PERIODS.map(p=>`<button class="chip ${p[0]===chartPeriod?'active':''}" data-p="${p[0]}">${p[1]}</button>`).join('')}</div></div>
 <p id="d-desc" class="about"></p><div class="persona" id="d-persona"></div><small class="mut" id="d-note"></small>
+<div class="guest-cta" id="d-cta"><span>You are watching live. Create an account to trade this stock.</span><span><button class="buy" id="d-signup">Create an account</button> <button id="d-signin">Sign in</button></span></div>
 <div class="detail-actions"><span class="mut">Buy %</span><span id="detail-bchips"></span><span class="mut">Sell %</span><span id="detail-schips"></span><span class="mut">or</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB amount" aria-label="Amount in MB"><button class="buy" id="d-buy">Buy</button><button class="sell" id="d-sell">Sell</button></div>
 <div class="limits mut" id="d-limits"></div>
 <details class="orders" id="d-orders"><summary>Orders: buy or sell for you when the price gets there</summary>
@@ -702,6 +731,7 @@ function buildDetail(){
 <div class="finance-grid" id="d-facts"></div>
 <div id="d-reports"></div><div id="d-log"></div>`;
  $('d-buy').onclick=()=>trade(selectedTicker,'buy');$('d-sell').onclick=()=>trade(selectedTicker,'sell');
+ $('d-signup').onclick=()=>openSignin('register','Create an account to trade');$('d-signin').onclick=()=>openSignin('login');
  $('d-star').onclick=()=>{const k=selectedTicker;if(watch.has(k))watch.delete(k);else watch.add(k);saveView();if(S)drawDetail()};
  $('z-in').onclick=()=>zoomAt(1.4,newestX());$('z-out').onclick=()=>zoomAt(1/1.4,newestX());$('z-reset').onclick=resetZoom;
  document.querySelector('.periods').onclick=e=>{const b=e.target.closest('button[data-p]');if(b)selectPeriod(b.dataset.p)};
@@ -775,7 +805,7 @@ function drawDetail(){
  if(builtFor!==selectedTicker){builtFor=selectedTicker;chartCandles=[];company=null;zoom=1;pan=0;buildDetail();requestHistory();requestCompany()}
  const sector=m.sectors.find(x=>x.id===stock.sector),fin=finOf(stock);
  const type=stock.asset_type==='equity'?'Equity':stock.asset_type==='index'?(stock.tracks&&/x the daily moves/.test(stock.tracks)?'Leveraged product':stock.tracks&&/^Equal weights/.test(stock.tracks)?'ETF':'Index'):'Commodity';
- setText($('d-name'),`${iconOf(stock)} ${stock.name} \u00B7 ${stock.ticker}`);
+ setText($('d-name'),`${iconOf(stock)} ${stock.name} \u00B7 ${stock.ticker}`);document.title=`${stock.ticker} \u00B7 ${stock.name} \u2014 Meme Street`;
  const on=watch.has(stock.ticker);setText($('d-star'),on?'★':'☆','star'+(on?' on':''));
  setHtml($('d-badges'),badgesHtml(stock));
  setText($('d-sub'),`${type} · ${stock.asset_type==='index'?'Index & ETF':(sector?.name||stock.sector)} · ${stock.asset_type==='equity'?stock.rating+' bank rating · ':''}Beta ${f(stock.beta,2)} · ${(stock.vol*100).toFixed(1)}% annual volatility`);

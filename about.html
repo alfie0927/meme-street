@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a0e14">
+<title>Meme Street: a fictional stock market that never closes</title>
+<meta name="description" content="Meme Street is a fictional stock market with 190+ stocks, news that moves prices and a daily leaderboard. Prices follow stories, not players. Watch it live.">
+<meta property="og:title" content="Meme Street"><meta property="og:description" content="A fictional stock market that never closes. Watch it live, then trade.">
+<meta property="og:image" content="https://memestreet.net/brand/memestreet_header_peaks.png"><meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="/brand/memestreet_logo_peaks.png">
+<style>
+:root{--bg:#0a0e14;--card:#111822;--card2:#161f2c;--line:#212c3b;--txt:#e8eef6;--mut:#8493a8;--up:#34d27b;--dn:#ff5f6d;--acc:#5aa2ff}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#0a0e14}}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 500px at 70% -10%,#16233a55,transparent),var(--bg);color:var(--txt);font:16px/1.55 Inter,"Segoe UI",system-ui,-apple-system,sans-serif}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:980px;margin:0 auto;padding:0 18px}
+header{display:flex;align-items:center;gap:12px;padding:14px 0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;color:var(--txt)}.brand img{width:30px;height:30px;border-radius:8px}
+.brand:hover{text-decoration:none}.sp{flex:1}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;border:1px solid var(--line);background:#1a2331;color:var(--txt);font-weight:600}
+.btn:hover{text-decoration:none;background:#243044}
+.btn.go{background:#34d27b1f;border-color:#34d27b66;color:var(--up)}.btn.go:hover{background:#34d27b33}
+.hero{padding:44px 0 30px}
+.hero h1{font-size:clamp(30px,6vw,52px);line-height:1.08;letter-spacing:-.03em;margin:0 0 14px}
+.hero p{font-size:clamp(16px,2.4vw,20px);color:#c3cede;max-width:640px;margin:0 0 22px}
+.hero .row{display:flex;flex-wrap:wrap;gap:10px}
+.note{display:inline-block;font-size:13px;color:#ffd990;background:#ffc65c14;border:1px solid #ffc65c55;border-radius:999px;padding:3px 12px;margin-bottom:14px}
+h2{font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;margin:36px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.card h3{margin:0 0 6px;font-size:17px}.card p{margin:0;color:#c3cede;font-size:15px}
+.faq details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:8px}
+.faq summary{cursor:pointer;font-weight:600}.faq p{color:#c3cede;margin:8px 0 0;font-size:15px}
+footer{padding:34px 0 40px;color:var(--mut);font-size:13px}
+</style></head><body><div class="wrap">
+<header><a class="brand" href="/"><img src="/brand/memestreet_logo_peaks.png" alt="" width="30" height="30">Meme Street</a><span class="sp"></span><a href="/" class="btn">Watch live</a></header>
+
+<section class="hero">
+<span class="note">In closed testing: memebucks are play money for now</span>
+<h1>A stock market that never closes, made of companies that do not exist.</h1>
+<p>Meme Street has 190+ invented stocks, indices and ETFs, news that moves prices, and a daily leaderboard. Prices follow stories, not players. Watch the live market, then trade it.</p>
+<div class="row"><a class="btn go" href="/#join">Create an account</a><a class="btn" href="/">Watch the market live</a></div>
+</section>
+
+<h2>How it works</h2>
+<div class="grid">
+<div class="card"><h3>News moves prices</h3><p>Rumours, earnings, product launches, lawsuits, industry-wide shocks and rare big catalysts, written about companies with their own CEOs, products and rivals. Read the wire, then decide.</p></div>
+<div class="card"><h3>Trade anything</h3><p>Buy or short stocks, the MSI 50 index (the 50 biggest companies), sector indices, ETFs, 2x and 3x products and wild little "moonshots". Limit, stop-loss and take-profit orders work for you.</p></div>
+<div class="card"><h3>Fair by design</h3><p>No trade, ours included, moves a price. News has no hidden direction: the expected move of every story is zero. We test this by simulating hundreds of markets with dozens of trading strategies and checking that none of them wins.</p></div>
+<div class="card"><h3>Compete</h3><p>A fresh leaderboard every day, a daily contest everyone enters with the same paper money, quests and achievements. Only the ranks and badges are for show; they never touch your balance.</p></div>
+</div>
+
+<h2>How the house earns</h2>
+<div class="card"><p>The house is on the other side of every trade and charges <b>0.1% on each trade</b>. Nothing else is built in: no hidden spread and no price steering. Buying and holding costs you almost nothing; trading all day costs you the fee each time.</p></div>
+
+<h2>Questions</h2>
+<div class="faq">
+<details><summary>Is it real money?</summary><p>Not yet. Meme Street is in closed testing and memebucks (MB) are play money while we test. This page will change before that does.</p></details>
+<details><summary>Are these real companies?</summary><p>No. Every company, person, product and headline is invented. The numbers behave like a market, but nothing here is investment advice.</p></details>
+<details><summary>Can I lose everything?</summary><p>You can lose your balance, especially by shorting or trading moonshots. Shorting needs the amount held as collateral, and a short that loses too much is closed automatically.</p></details>
+<details><summary>Does it work on my phone?</summary><p>Yes. The game adapts to phone screens, and you can watch the live market without signing in.</p></details>
+</div>
+
+<footer>Meme Street is in testing. Everything on this site is fictional.</footer>
+</div></body></html>

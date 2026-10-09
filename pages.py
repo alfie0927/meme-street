@@ -33,6 +33,11 @@ def add_pages(app, base):
     async def index():
         return page()
 
+    @app.get("/about")
+    async def about_page():
+        """What Meme Street is, for people who have not signed up yet (a plain page: no game connection)."""
+        return FileResponse(os.path.join(base, "about.html"), headers={"Cache-Control": "public, max-age=300"})
+
     @app.get("/stock/{ticker}")
     async def stock_page(ticker: str):
         if ticker in TICKER_RENAMES:                  # an old link to a renamed product (BULL2 is now 2LMSI)

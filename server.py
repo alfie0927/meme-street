@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Header, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
-from engine import Engine
+from engine import GUEST_KEY, Engine
 from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, password_problem, verify_password
 from mailer import Mailer
 from netutil import caller_address
@@ -61,7 +61,7 @@ def tick_step(n, tokens):
     base = dumps(engine.build_wire())
     mes, notes = {}, {}
     for tok in tokens:
-        p = engine.by_token.get(tok)
+        p = engine.by_token.get(tok) or engine.guest_for(tok)
         if p is None:
             continue
         mes[tok] = dumps(engine.me_state(p, notices=False))
@@ -440,13 +440,14 @@ async def logout_everywhere(x_token: str = Header("")):
     return {"ok": True, "msg": f"Logged out of {n} other device(s)" if n else "There were no other devices logged in"}
 
 
-def broadcast(text, audience=None):
-    """Queue a message for every open connection, or only for the tokens in `audience` (a set of player keys)."""
+def broadcast(text, audience=None, members_only=False):
+    """Queue a message for every open connection, or only for the tokens in `audience` (a set of player keys).
+    `members_only` leaves out logged-out visitors (chat is not for them)."""
     for conn in list(clients.values()):
-        if not conn.remote and (audience is None or conn.token in audience):
+        if not conn.remote and (audience is None or conn.token in audience) and not (members_only and conn.token == GUEST_KEY):
             conn.push(text)
     for link in list(gateways.values()):
-        link.broadcast(text, audience)
+        link.broadcast(text, audience, members_only)
 
 
 def do_chat(p, text, channel, share):
@@ -464,6 +465,9 @@ async def handle_message(conn, p, raw):
         if not isinstance(m, dict):
             return
         kind = m.get("type")
+        if p.guest and kind not in ("history", "company", "sync"):      # a logged-out visitor may only look
+            conn.push(dumps({"type": "result", "ok": False, "msg": "Create an account or sign in to do that"}))
+            return
         if kind == "trade":
             try:
                 raw_amount = m.get("amount")
@@ -536,7 +540,7 @@ async def handle_message(conn, p, raw):
             ok, msg, cm, audience = await run(do_chat, p, str(m.get("text", ""))[:600],
                                               str(m.get("channel", "global"))[:60], m.get("share"))
             if ok:
-                broadcast(dumps({"type": "chat", "msg": cm}), audience)
+                broadcast(dumps({"type": "chat", "msg": cm}), audience, members_only=True)
             else:
                 conn.push(dumps({"type": "chat_error", "msg": msg}))
         elif kind == "chat_history":
@@ -545,7 +549,7 @@ async def handle_message(conn, p, raw):
             ok, msg = await run(engine.report_chat, p, int(m.get("id", 0)))
             conn.push(dumps({"type": "result", "ok": ok, "msg": msg}))
             for mid in await run(engine.take_auto_deletes):       # enough reports removed it: tell every page
-                broadcast(dumps({"type": "chat_delete", "id": mid}))
+                broadcast(dumps({"type": "chat_delete", "id": mid}), members_only=True)
         elif kind == "chat_appeal":
             ok, msg = await run(engine.appeal, p, str(m.get("text", ""))[:600])
             conn.push(dumps({"type": "result", "ok": ok, "msg": msg}))
@@ -563,7 +567,7 @@ async def handle_message(conn, p, raw):
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket, token: str = ""):
     await ws.accept()
-    p = engine.player_for(token)
+    p = engine.player_for(token) or engine.guest_for(token)
     if not p:
         await ws.send_text(dumps({"type": "error", "msg": "bad token"}))
         await ws.close()
@@ -678,15 +682,15 @@ class GatewayLink:
             if tok in notes:
                 self.broadcast(dumps({"type": "notice", "msgs": notes[tok]}), {tok})
 
-    def broadcast(self, text, audience):
+    def broadcast(self, text, audience, members_only=False):
         if audience is not None:
             audience = [tok for tok in audience if tok in self.players]
             if not audience:
                 return
-        self.conn.push(dumps({"t": "bc", "x": text, "aud": audience}))
+        self.conn.push(dumps({"t": "bc", "x": text, "aud": audience, "mo": members_only}))
 
     def open(self, cid, token):
-        p = engine.player_for(token)
+        p = engine.player_for(token) or engine.guest_for(token)
         if p is None:
             self.conn.push(dumps({"t": "to", "c": cid, "x": dumps({"type": "error", "msg": "bad token"})}))
             self.conn.push(dumps({"t": "hangup", "c": cid}))
@@ -985,7 +989,8 @@ async def set_public(b: Flag, x_token: str = Header("")):
 async def admin_overview(x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
-    data = await run(engine.admin_overview, online=len(clients))
+    guests = sum(1 for c in clients.values() if c.token == GUEST_KEY)      # logged-out visitors watching the market
+    data = await run(engine.admin_overview, online=len(clients) - guests, guests=guests)
     data["perf"] = {k: (round(v, 2) if isinstance(v, float) else v) for k, v in perf.items() if k != "recent"}
     data["perf"]["gateways"] = len(gateways)
     return data
@@ -1015,7 +1020,7 @@ async def admin_chat_delete(b: MsgId, x_admin_key: str = Header("")):
         return JSONResponse({"error": "forbidden"}, status_code=403)
     n = await run(engine.delete_chat, b.id, "admin")
     if n:
-        broadcast(dumps({"type": "chat_delete", "id": b.id}))
+        broadcast(dumps({"type": "chat_delete", "id": b.id}), members_only=True)
     return {"ok": n > 0, "deleted": n}
 
 
