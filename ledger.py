@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS events (
 );
 CREATE INDEX IF NOT EXISTS events_token ON events (token, seq);
 CREATE INDEX IF NOT EXISTS events_pnl ON events (token, pnl);
+CREATE INDEX IF NOT EXISTS events_t ON events (t);
 CREATE TABLE IF NOT EXISTS curve (
     token TEXT NOT NULL,
     t REAL NOT NULL,
@@ -169,6 +170,38 @@ class Ledger:
     def count(self):
         with self.lock:
             return int(self.db.execute("SELECT COUNT(*) FROM events").fetchone()[0])
+
+    def summary(self, now, days=7):
+        """Activity for the admin page, from the money events: trades, money traded and fees per hour (last 24 hours) and
+        per day (last `days` days, with sign-ups and how many different players traded), the most traded stocks of the last
+        24 hours, and the trades of the last 24 hours by kind. A trade is a buy, sell, short or cover; `volume` is the money
+        traded (each side counted once)."""
+        trades = "kind IN ('buy','sell','short','cover')"
+        day0 = (int(now // 86400) - (days - 1)) * 86400
+        hour0 = (int(now // 3600) - 23) * 3600
+        day_ago = now - 86400
+        with self.lock:
+            q = self.db.execute
+            by_hour = {int(h): (n, v, f) for h, n, v, f in q(
+                f"SELECT CAST(t / 3600 AS INTEGER), COUNT(*), SUM(notional), SUM(fee) FROM events WHERE {trades} AND t >= ? GROUP BY 1", (hour0,))}
+            by_day = {int(d): (n, v, f, p) for d, n, v, f, p in q(
+                f"SELECT CAST(t / 86400 AS INTEGER), COUNT(*), SUM(notional), SUM(fee), COUNT(DISTINCT token) FROM events WHERE {trades} AND t >= ? GROUP BY 1", (day0,))}
+            joins = {int(d): n for d, n in q("SELECT CAST(t / 86400 AS INTEGER), COUNT(*) FROM events WHERE kind = 'join' AND t >= ? GROUP BY 1", (day0,))}
+            tickers = [{"ticker": t, "trades": n, "volume": v or 0.0, "buy_share": (b or 0.0) / v if v else 0.0, "traders": p}
+                       for t, n, v, b, p in q(
+                f"SELECT ticker, COUNT(*), SUM(notional), SUM(CASE WHEN kind IN ('buy','cover') THEN notional ELSE 0 END), COUNT(DISTINCT token) "
+                f"FROM events WHERE {trades} AND t >= ? AND ticker IS NOT NULL GROUP BY ticker ORDER BY SUM(notional) DESC LIMIT 10", (day_ago,))]
+            kinds = {k: n for k, n in q("SELECT kind, COUNT(*) FROM events WHERE t >= ? AND kind IN ('buy','sell','short','cover','margin_call','dividend','delist_payout') GROUP BY kind", (day_ago,))}
+        hours = []
+        for i in range(24):
+            n, v, f = by_hour.get(hour0 // 3600 + i, (0, 0.0, 0.0))
+            hours.append({"t": hour0 + i * 3600, "trades": n, "volume": v or 0.0, "fees": f or 0.0})
+        out_days = []
+        for i in range(days):
+            d = day0 // 86400 + i
+            n, v, f, p = by_day.get(d, (0, 0, 0, 0))
+            out_days.append({"day": d * 86400, "trades": n, "volume": v or 0.0, "fees": f or 0.0, "traders": p, "signups": joins.get(d, 0)})
+        return {"hours": hours, "days": out_days, "tickers": tickers, "kinds": kinds}
 
     def close(self):
         try:

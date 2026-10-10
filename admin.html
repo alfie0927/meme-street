@@ -31,11 +31,20 @@ button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);bo
 <div id="app" style="display:none">
 <header><b>Meme Street Admin</b><a href="/">Market</a><span id="stamp" class="mut"></span><span style="flex:1"></span><button id="out">Lock</button></header>
 <main>
-<div class="alerts" id="alerts"></div>
+<div class="alerts" id="alerts"></div><div class="alerts" id="alerts2"></div>
 <div class="cards" id="cards"></div>
+<h3 style="margin:14px 0 6px">The machine, the game and the market</h3><div class="cards" id="cards2"></div>
+<div class="grid2"><div class="card"><h3>Connected pages and visitors (last 2 hours)</h3><div id="ch3"></div></div>
+<div class="card"><h3>Trades per hour (last 24 hours, your local time)</h3><div id="hours"></div></div></div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>The last 7 days (UTC days)</h3><div id="days"></div></div>
+<div class="card"><h3>Most traded stocks (last 24 hours)</h3><div id="tickers"></div></div></div>
 <div class="grid2"><div class="card"><h3>House reserve and fees (MB)</h3><div id="ch1"></div></div>
 <div class="card"><h3>Players' combined P&amp;L (MB, humans)</h3><div id="ch2"></div></div></div>
 <div class="card" style="margin-top:12px"><h3>Players and fees: how far people get</h3><div id="funnel" class="mut">Loading…</div></div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Biggest players. Click a name for their trades</h3><div id="toplists"></div></div>
+<div class="card"><h3>Biggest open positions</h3><div id="bigpos"></div></div></div>
+<div class="grid2" style="margin-top:12px"><div class="card"><h3>Orders, chat and moderation</h3><div id="ordsoc"></div></div>
+<div class="card"><h3>Admin security: wrong keys</h3><div id="security"></div></div></div>
 <div class="card" style="margin-top:12px"><h3>House risk: what players' positions could cost the house</h3><div id="risk"></div></div>
 <div class="grid2" style="margin-top:12px"><div class="card"><h3>Human players by all-time return</h3><div id="dist"></div></div>
 <div class="card"><h3>Recent margin calls</h3><div id="calls"></div></div></div>
@@ -50,6 +59,7 @@ button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);bo
 <div class="card" style="margin-top:12px"><h3>Email and mail</h3><div id="mailbox" class="mut">Loading…</div>
 <div class="msgrow" style="margin-top:8px"><input id="em-name" placeholder="Player name" maxlength="16"><button id="em-verify">Mark email verified</button><button id="em-clear">Remove email</button><span id="em-out" class="t"></span></div>
 <p class="mut" style="font-size:12px">Email addresses make passwords recoverable and stop one person running many accounts (each address belongs to one account). Set the <code>email_mode</code> setting to off, optional or required. With no SMTP server configured (see <code>mailer.py</code>) nothing is sent: the message, code included, appears in the list above so you can hand a code to a tester yourself.</p></div>
+<div class="card" style="margin-top:12px"><h3>Settings in effect (read only: they live in the content packs; see HOW_IT_WORKS.md section 14)</h3><div id="settings"></div></div>
 <div class="card" style="margin-top:12px"><h3>Start the game over</h3>
 <p class="mut" style="font-size:12px">Back to Day 1: every player gets the starting balance again, positions are closed, orders cancelled, trade history, medals and achievements cleared. Prices, charts, accounts and passwords stay. The old save and ledger are copied into the <code>backups</code> folder first.</p>
 <div class="msgrow"><input id="reset-word" placeholder="Type RESET" maxlength="5"><button id="reset-go">Reset the game to Day 1</button><span id="reset-out" class="t"></span></div></div>
@@ -151,7 +161,55 @@ function renderMail(m){
 async function emailAct(action){try{const r=await api('/api/admin/email',{name:$('em-name').value.trim(),action});$('em-out').textContent=r.msg;tick()}catch(e){$('em-out').textContent='failed: '+e.message}}
 $('em-verify').addEventListener('click',()=>emailAct('verify'));$('em-clear').addEventListener('click',()=>emailAct('clear'));
 $('rp-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset_password',{name:$('rp-name').value.trim()});$('rp-out').innerHTML=esc(r.msg)+': <b>'+esc(r.password)+'</b>';tick()}catch(e){$('rp-out').textContent='failed: '+e.message}});
-async function tick(){try{render(await api('/api/admin/overview'));renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'))}catch(e){if(e.message==='forbidden'){lock('That key was not accepted.')}else{$('stamp').textContent='error: '+e.message}}}
+const hm=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m'};
+const cardf=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
+const small=x=>x==null?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:1});
+function renderInsights(i){
+ const o=i.ops,g=i.game,pos=i.positions,so=i.social,od=i.orders,cn=i.connections,sec=i.security,al=[];
+ if(o.disk_free_pct!=null&&o.disk_free_pct<5)al.push(['bad','The disk is almost full: '+f(o.disk_free_gb,1)+' GB free ('+f(o.disk_free_pct,0)+'%). The game cannot save when it is full.']);
+ else if(o.disk_free_pct!=null&&o.disk_free_pct<15)al.push(['warn','The disk is getting full: '+f(o.disk_free_gb,1)+' GB free ('+f(o.disk_free_pct,0)+'%).']);
+ if(o.saved_ago_s!=null&&o.saved_ago_s>120)al.push(['bad','The game has not saved for '+hm(o.saved_ago_s)+' (it saves every 30 seconds). A crash now would lose that much, apart from what the ledger replays.']);
+ if(o.backup.found&&o.backup.age_s!=null){if(o.backup.age_s>86400)al.push(['bad','The newest backup is '+hm(o.backup.age_s)+' old: the backup job (every 6 hours) is not working.']);else if(o.backup.age_s>8*3600)al.push(['warn','The newest backup is '+hm(o.backup.age_s)+' old (the job runs every 6 hours).'])}
+ if(sec.lockouts_last_hour>0)al.push(['bad','Someone was locked out of the admin interface in the last hour after '+sec.limit+' wrong keys: see Admin security.']);
+ else if(sec.wrong_last_hour>=5)al.push(['warn',sec.wrong_last_hour+' wrong admin keys in the last hour.']);
+ if(so.reported_messages>0)al.push(['warn',so.reported_messages+' reported chat message'+(so.reported_messages===1?'':'s')+' still in the list: see Chat moderation below.']);
+ if(so.appeals_open>0)al.push(['warn',so.appeals_open+' mute appeal'+(so.appeals_open===1?' is':'s are')+' waiting for a decision.']);
+ $('alerts2').innerHTML=al.map(a=>`<div class="${a[0]}">${esc(a[1])}</div>`).join('');
+ const b=o.backup,diskc=o.disk_free_pct!=null&&o.disk_free_pct<15?'warn':'';
+ $('cards2').innerHTML=cardf('Server up for',hm(o.uptime_s),'Python '+esc(o.python)+', CPU used '+hm(o.cpu_seconds)+' in total')
+  +cardf('Memory',o.memory_mb==null?'-':f(o.memory_mb,0)+' MB','this game process')
+  +cardf('Disk free',o.disk_free_gb==null?'-':f(o.disk_free_gb,1)+' GB',o.disk_free_pct==null?'':f(o.disk_free_pct,0)+'% of the disk',diskc)
+  +cardf('Last save',o.saved_ago_s==null?'-':hm(o.saved_ago_s)+' ago','save '+f(o.state_mb,1)+' MB, charts '+f(o.charts_mb,1)+' MB',o.saved_ago_s>120?'dn':'')
+  +cardf('Last backup',b.found?(b.age_s==null?'none yet':hm(b.age_s)+' ago'):'no folder','copies kept: '+b.copies+' ('+esc(b.folder)+')',b.found&&b.age_s>8*3600?'warn':'')
+  +cardf('Ledger',small(i.ledger_events)+' events',f(o.ledger_mb,1)+' MB on disk')
+  +cardf('Connected now',cn.players+' pages',cn.visitors+' visitors watching, '+cn.gateways+' gateways')
+  +cardf('Game day',g.day,'ends in '+hm(g.day_left)+' · session: '+esc(g.session))
+  +cardf('MSI 50',f(g.index,2),(g.index_chg>=0?'+':'')+f(g.index_chg*100,1)+'% over 30 min · '+g.index_members+' members',g.index_chg>=0?'up':'dn')
+  +cardf('Listings',g.listings,g.companies+' companies, '+g.moonshots+' moonshots, '+g.funds_commodities+' funds and commodities, '+g.indices_etfs+' indices and ETFs')
+  +cardf('News in the last hour',g.news_last_hour,Object.entries(g.news_by_kind).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,n])=>esc(k)+' '+n).join(' · ')||'none')
+  +cardf('Next scheduled event',g.next_event?esc(g.next_event.ticker)+' '+esc(g.next_event.kind):'none',g.next_event?'in '+hm(g.next_event.in_seconds):'')
+  +cardf('Delisted so far',g.delisted,'reserve topped up by '+mb(g.reserve_recapitalized)+' MB')
+  +cardf('Open orders',od.open,od.players+' players'+(Object.keys(od.by_kind).length?' · '+Object.entries(od.by_kind).map(([k,n])=>esc(k)+' '+n).join(', '):''))
+  +cardf('Positions',pos.holders+' holders','long '+mb(pos.long_value)+' MB · short '+mb(pos.short_value)+' MB')
+  +cardf('Chat',so.chat_last_hour+' last hour',so.reported_messages+' reported · '+so.muted+' muted · '+so.appeals_open+' appeals',so.reported_messages||so.appeals_open?'warn':'')
+  +cardf('Contests',so.contests_running+' running',so.contest_entrants+' entered');
+ $('ch3').innerHTML=line(cn.series,[['online','#58a6ff','player pages'],['guests','#d29922','visitors']],v=>Math.round(v));
+ const a=i.activity;
+ if(a){
+  const mx=Math.max(1,...a.hours.map(h=>h.trades));
+  $('hours').innerHTML=`<div class="bar">${a.hours.map(h=>`<div title="${new Date(h.t*1000).toLocaleString()}: ${h.trades} trades, ${mb(h.volume)} MB traded, ${f(h.fees,1)} MB fees"><i style="height:${Math.round(h.trades/mx*80)}px;background:#58a6ff"></i>${h.trades||''}<br>${String(new Date(h.t*1000).getHours()).padStart(2,'0')}</div>`).join('')}</div><p class="mut" style="font-size:12px;margin:6px 0 0">${Object.entries(a.kinds).map(([k,n])=>esc(k)+' '+n).join(' · ')||'no trades in the last 24 hours'}</p>`;
+  $('days').innerHTML=`<table><tr><th>Day</th><th>Sign-ups</th><th>Traders</th><th>Trades</th><th>Money traded</th><th>Fees</th></tr>${a.days.slice().reverse().map(d=>`<tr><td>${new Date(d.day*1000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'})}</td><td>${d.signups}</td><td>${d.traders}</td><td>${d.trades}</td><td>${mb(d.volume)} MB</td><td>${f(d.fees,1)} MB</td></tr>`).join('')}</table>`;
+  $('tickers').innerHTML=a.tickers.length?`<table><tr><th>Stock</th><th>Trades</th><th>Money traded</th><th>Buys</th><th>Players</th></tr>${a.tickers.map(t=>`<tr><td>${esc(t.ticker)}</td><td>${t.trades}</td><td>${mb(t.volume)} MB</td><td class="${t.buy_share>=0.5?'up':'dn'}">${f(t.buy_share*100,0)}%</td><td>${t.traders}</td></tr>`).join('')}</table><p class="mut" style="font-size:12px;margin:6px 0 0">"Buys" is the share of the money that was buying or covering; the rest was selling or shorting.</p>`:'<span class="mut">No trades in the last 24 hours.</span>'}
+ const list=(title,rows,fmt)=>`<div style="margin-bottom:10px"><b>${title}</b>${rows.length?`<table>${rows.map(r=>`<tr class="pick" data-n="${esc(r.name)}"><td>${esc(r.name)}</td><td>${fmt(r.value)}</td></tr>`).join('')}</table>`:'<br><span class="mut">nobody yet</span>'}</div>`;
+ $('toplists').innerHTML=list('Richest (equity)',i.players.by_equity,v=>mb(v)+' MB')+list('Most fees paid',i.players.by_fees,v=>f(v,1)+' MB')+list('Most trades today',i.players.by_trades,v=>v)+`<p class="mut" style="margin:0">All players hold ${mb(i.players.total_equity)} MB in total (${mb(i.players.total_cash)} MB of it as cash).</p>`;
+ $('bigpos').innerHTML=pos.biggest.length?`<table><tr><th>Player</th><th>Stock</th><th>Side</th><th>Value</th></tr>${pos.biggest.map(p=>`<tr class="pick" data-n="${esc(p.player)}"><td>${esc(p.player)}</td><td>${esc(p.ticker)}</td><td class="${p.side==='long'?'up':'dn'}">${p.side}</td><td>${mb(p.value)} MB</td></tr>`).join('')}</table>`:'<span class="mut">No open positions.</span>';
+ $('ordsoc').innerHTML=`<p>Open orders: <b>${od.open}</b> from ${od.players} players${Object.keys(od.by_kind).length?' ('+Object.entries(od.by_kind).map(([k,n])=>esc(k)+' '+n).join(', ')+')':''}.</p><p>Chat: <b>${so.chat_last_hour}</b> messages in the last hour (${so.chat_kept} kept), <b>${so.reported_messages}</b> reported, <b>${so.muted}</b> players muted, <b>${so.appeals_open}</b> appeals open.</p><p>Contests: ${so.contests_running} running with ${so.contest_entrants} entries.</p>`;
+ $('security').innerHTML=`<p><b>${sec.wrong_last_hour}</b> wrong key${sec.wrong_last_hour===1?'':'s'} and <b class="${sec.lockouts_last_hour?'dn':''}">${sec.lockouts_last_hour}</b> blocked request${sec.lockouts_last_hour===1?'':'s'} in the last hour. ${sec.limit} wrong keys within ${Math.round(sec.window_s/60)} minutes from one address lock that address out of the admin interface until the oldest has aged out, even with the right key.</p>`+(sec.recent.length?`<table><tr><th>When</th><th>Address</th><th>What</th></tr>${sec.recent.map(x=>`<tr><td>${ago(x.t)}</td><td>${esc(x.addr)}</td><td class="${x.what==='locked out'?'dn':'warn'}">${esc(x.what)}</td></tr>`).join('')}</table>`:'<span class="mut">Nobody has tried a wrong key since the server started.</span>');
+ $('settings').innerHTML=`<table><tr>${Object.entries(i.settings).map(([k,v])=>`<td style="text-align:left"><span class="mut">${esc(k)}</span> <b>${esc(typeof v==='number'?Number(v).toLocaleString(undefined,{maximumFractionDigits:6}):String(v))}</b></td>`).reduce((acc,c,n)=>acc+c+((n+1)%3===0?'</tr><tr>':''),'')}</tr></table>`}
+$('toplists').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
+$('bigpos').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
+let tickN=0;
+async function tick(){try{render(await api('/api/admin/overview'));if(tickN++%4===0)renderInsights(await api('/api/admin/insights'));renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'))}catch(e){if(e.message==='forbidden'){lock('That key was not accepted.')}else{$('stamp').textContent='error: '+e.message}}}
 function lock(msg){clearInterval(timer);try{sessionStorage.removeItem('admin_key')}catch(e){}key=null;$('app').style.display='none';$('login').style.display='block';$('err').textContent=msg||''}
 function open_(){$('login').style.display='none';$('app').style.display='block';tick();clearInterval(timer);timer=setInterval(tick,5000)}
 $('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};

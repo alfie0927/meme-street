@@ -133,6 +133,15 @@ class BrowserSmoke(unittest.TestCase):
             await pg.js("document.getElementById('go').click()")
             await check("admin cards render", "document.querySelectorAll('#cards .card').length", lambda n: n >= 9, wait=10)
             await check("alerts line is shown", "document.getElementById('alerts').innerText", lambda t: len(t) > 10)
+            await check("the deeper panels render: machine, game and market cards", "document.querySelectorAll('#cards2 .card').length", lambda n: n >= 14, wait=12)
+            await check("the machine cards show an uptime and the market's game day", "document.getElementById('cards2').innerText",
+                        lambda t: "SERVER UP FOR" in t.upper() and "GAME DAY" in t.upper() and "MSI 50" in t.upper())
+            await check("seven days of activity are listed", "document.querySelectorAll('#days tr').length", 8, wait=8)
+            await check("24 hourly bars are drawn", "document.querySelectorAll('#hours .bar > div').length", 24, wait=8)
+            await check("the settings in effect are listed", "document.getElementById('settings').innerText",
+                        lambda t: "game_year_days" in t and "365" in t and "quarter_game_days" in t)
+            await check("the admin-security panel says nobody has tried a wrong key, or lists the one the test just made",
+                        "document.getElementById('security').innerText", lambda t: "wrong key" in t.lower(), wait=8)
             await check("charts are drawn after a few samples", "document.querySelectorAll('#ch1 svg, #ch2 svg').length",
                         lambda n: n >= 1, wait=25)
             await check("the smoke player is listed with a trade count",

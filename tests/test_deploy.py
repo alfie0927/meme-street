@@ -91,7 +91,8 @@ class ServiceFileTests(unittest.TestCase):
         if bash is None:
             self.skipTest("no bash on this machine")
         for name in ("setup_server.sh", "backup.sh"):
-            result = subprocess.run([bash, "-n", os.path.join(DEPLOY, name)], capture_output=True, text=True)
+            path = os.path.join(DEPLOY, name).replace("\\", "/")             # (Git's bash cannot read a path with backslashes when it is started from PowerShell)
+            result = subprocess.run([bash, "-n", path], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, name + ": " + result.stderr)
 
     def test_the_backup_copies_the_save_and_makes_a_consistent_copy_of_the_ledger(self):

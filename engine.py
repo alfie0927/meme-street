@@ -234,6 +234,8 @@ class Engine(SocialMixin, AccountsMixin):
         self.recapitalized = 0.0                   # what the house reserve has been topped up by (see _reserve_check)
         self._curve_t = 0.0
         self.recovered_events = 0
+        self.last_saved_at = 0.0                   # when the save file was last written (real time; 0 = not yet)
+        self._insights_t, self._insights_activity = None, None      # the admin page's ledger numbers, kept for a few seconds
         self._retired_bots = 0                      # how many house-funded bots a save from an older version had (they are removed on load)
         self._retired_pools = 0.0                   # seed tokens an older save had inside its stocks (they are retired on load)
         self.index_members = []                    # the companies the MSI 50 follows right now (see `_rank_index_members`)
@@ -2892,6 +2894,68 @@ class Engine(SocialMixin, AccountsMixin):
         self.series.append({"t": self.now, "house": self.house, "fees": self.fees, "humans_pnl": humans,
                             "trades": self.trades_total})
 
+    def admin_insights(self):
+        """The deeper numbers for the admin page, which it asks for every twenty seconds or so: the state of the market and
+        the game, activity over time (from the ledger), who the biggest players and positions are, open orders, chat and
+        moderation, and the settings in effect. Nothing here changes anything."""
+        now = self.now
+        stocks = list(self.stocks.values())
+        count = lambda f: sum(1 for s in stocks if f(s))
+        news_hour = [n for n in self.news_log if n["t"] > now - 3600]
+        kinds = {}
+        for n in news_hour:
+            kinds[n["kind"]] = kinds.get(n["kind"], 0) + 1
+        upcoming = self._upcoming_events()
+        game = {"day": self.season_no, "day_left": max(0, int(self.season_end - now)), "session": self.session().get("phase"),
+                "index": self.pub_index.get("value"), "index_chg": self.pub_index.get("chg"),
+                "listings": len(stocks), "companies": count(lambda s: s.asset_type == "equity" and not s.moonshot),
+                "moonshots": count(lambda s: s.moonshot), "funds_commodities": count(lambda s: s.asset_type in ("fund", "commodity")),
+                "indices_etfs": count(lambda s: s.asset_type == "index"), "delisted": len(self.delisted),
+                "index_members": len(self.index_members), "news_last_hour": len(news_hour), "news_by_kind": kinds,
+                "next_event": upcoming[0] if upcoming else None, "reserve_recapitalized": self.recapitalized}
+        humans = list(self.players.values())
+        order_kinds, with_orders = {}, 0
+        for p in humans:
+            if p.orders:
+                with_orders += 1
+            for o in p.orders:
+                order_kinds[o.get("kind", "?")] = order_kinds.get(o.get("kind", "?"), 0) + 1
+        longs = shorts = 0.0
+        positions, holders = [], 0
+        for p in humans:
+            if p.hold:
+                holders += 1
+            for tk, sh in p.hold.items():
+                s = self.stocks.get(tk)
+                if not s:
+                    continue
+                value = abs(sh) * s.price
+                longs, shorts = (longs + value, shorts) if sh > 0 else (longs, shorts + value)
+                positions.append({"player": p.name, "ticker": tk, "side": "long" if sh > 0 else "short", "value": value})
+        positions.sort(key=lambda x: -x["value"])
+        top = lambda key, n=5: [{"name": p.name, "value": key(p)} for p in sorted(humans, key=lambda p: -key(p))[:n] if key(p) > 0]
+        players = {"by_equity": top(self.equity), "by_fees": top(lambda p: p.fees_paid), "by_trades": top(lambda p: p.trades),
+                   "total_equity": sum(self.equity(p) for p in humans), "total_cash": sum(p.cash for p in humans)}
+        social = {"chat_last_hour": sum(1 for m in self.chat if m["t"] > now - 3600), "chat_kept": len(self.chat),
+                  "reported_messages": len({r["id"] for r in self.chat_reports}),
+                  "muted": sum(1 for t, u in self.muted.items() if u > now), "appeals_open": sum(1 for a in self.appeals if a.get("status") == "open"),
+                  "contests_running": len(self.tournaments), "contest_entrants": sum(len(t.get("entrants", [])) for t in self.tournaments)}
+        keys = ("signup_bonus", "contest_balance", "email_mode", "require_password", "index_size", "earnings_quarter_days", "earnings_jitter_days",
+                "volatility_scale", "reserve_floor_frac", "reserve_stress_frac", "reserve_floor_min", "house_seed", "moonshot_max",
+                "moonshot_mean_seconds", "catalyst_mean_seconds", "event_mean_seconds", "sector_shock_mean_seconds", "premarket_seconds",
+                "aftermarket_seconds", "chat_enabled", "chat_min_trades", "trust_proxy")
+        settings = {k: self.settings.get(k, "(default)") for k in keys}
+        settings["fee_per_side"] = FEE
+        settings["game_year_days"] = TRADING_DAYS_PER_YEAR
+        settings["quarter_game_days"] = self._quarter_seconds() / MARKET_DAY_SECONDS
+        if self._insights_t is None or now - self._insights_t > 25 or self._insights_activity is None:     # (the ledger queries are the heavy part)
+            self._insights_activity = self.ledger.summary(time.time()) if self.ledger is not None else None
+            self._insights_t = now
+        return {"game": game, "orders": {"open": sum(order_kinds.values()), "by_kind": order_kinds, "players": with_orders},
+                "positions": {"holders": holders, "long_value": longs, "short_value": shorts, "biggest": positions[:8]},
+                "players": players, "social": social, "settings": settings, "activity": self._insights_activity,
+                "ledger_events": self.ledger.count() if self.ledger is not None else 0}
+
     def funnel_stats(self):
         """Where players come from and how far they get, from what the game already keeps: sign-ups per day, how many have
         an email and a verified one, how many ever traded, who was seen in the last day and week (a session's last-seen
@@ -3132,7 +3196,8 @@ class Engine(SocialMixin, AccountsMixin):
              "generated": [dict(x.cfg) for x in self.stocks.values() if x.cfg.get("generated")],
              "relations": self.relations.to_json(), "archive": self.archive,
              "social": self.social_dump(), "accounts": self.accounts_dump()}
-        self._write_json(self.state_file, d)
+        if self._write_json(self.state_file, d):
+            self.last_saved_at = time.time()          # (real time: the admin page shows how long ago the game last saved)
         interval = float(self.settings.get("charts_save_seconds", 300))
         if full or self.now - self._charts_saved >= interval:
             ok = self._write_json(self._charts_path(), {"saved_at": self.now,

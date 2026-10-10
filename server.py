@@ -1,4 +1,4 @@
-import asyncio, json, logging, os, secrets, shutil, threading, time
+import asyncio, json, logging, os, secrets, shutil, sys, threading, time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -25,6 +25,11 @@ ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
 # requests can't delay the tick by more than the time one call holds the lock.
 lock = threading.Lock()
 pool = ThreadPoolExecutor(max_workers=8, thread_name_prefix="engine")
+STARTED = time.time()
+online_hist = deque(maxlen=720)        # [time, player pages, visitor pages] every 10 s, for the admin chart (not saved)
+ADMIN_FAIL_LIMIT, ADMIN_FAIL_WINDOW = 10, 600      # this many wrong admin keys from one address in ten minutes locks it out for the rest of the ten minutes
+admin_fails = {}                      # address -> times of its wrong keys
+admin_log = deque(maxlen=40)          # what the admin page shows: when, from where, what happened
 perf = {"tick_ms": 0.0, "tick_max_ms": 0.0, "send_ms": 0.0, "late_ticks": 0, "ticks": 0, "last_save_ms": 0.0,
         "recent": deque(maxlen=120)}
 
@@ -80,6 +85,9 @@ async def game_loop():
             base, mes, notes, ms, saved = await loop.run_in_executor(pool, lambda: locked(tick_step, n, tokens))
             n += 1
             perf["ticks"] += 1
+            if n % 10 == 1:
+                g = sum(1 for c in clients.values() if c.token == GUEST_KEY)
+                online_hist.append({"t": time.time(), "online": len(clients) - g, "guests": g})
             perf["tick_ms"] = ms if perf["tick_ms"] == 0 else 0.9 * perf["tick_ms"] + 0.1 * ms
             perf["recent"].append(ms)
             perf["tick_max_ms"] = max(perf["recent"])
@@ -985,6 +993,101 @@ async def set_public(b: Flag, x_token: str = Header("")):
 
 
 # ------------------------------------------------------------------------------------------ admin
+@app.middleware("http")
+async def guard_admin(request: Request, call_next):
+    """Wrong admin keys are counted per address: ADMIN_FAIL_LIMIT of them in ADMIN_FAIL_WINDOW seconds locks that address out
+    of the admin interface (even with the right key) until the oldest has aged out. Every wrong key and lock-out is listed on
+    the admin page. Only /api/admin/ is affected."""
+    if not request.url.path.startswith("/api/admin/"):
+        return await call_next(request)
+    addr, now = client_ip(request), time.time()
+    q = admin_fails.setdefault(addr, deque())
+    while q and now - q[0] > ADMIN_FAIL_WINDOW:
+        q.popleft()
+    if len(q) >= ADMIN_FAIL_LIMIT:
+        admin_log.append({"t": now, "addr": addr, "what": "locked out", "path": request.url.path})
+        wait = int(ADMIN_FAIL_WINDOW - (now - q[0])) + 1
+        return JSONResponse({"error": f"too many wrong keys: try again in {wait} s"}, status_code=429)
+    response = await call_next(request)
+    if response.status_code == 403:
+        q.append(now)
+        admin_log.append({"t": now, "addr": addr, "what": "wrong key", "path": request.url.path})
+    if not q:
+        admin_fails.pop(addr, None)
+    return response
+
+
+def memory_mb():
+    """How much memory this process uses, or None where that cannot be read."""
+    try:
+        with open("/proc/self/status") as fh:
+            for line in fh:
+                if line.startswith("VmRSS:"):
+                    return int(line.split()[1]) / 1024
+    except OSError:
+        pass
+    try:                                                   # Windows
+        import ctypes
+        from ctypes import wintypes
+
+        class Counters(ctypes.Structure):
+            _fields_ = [("cb", wintypes.DWORD), ("PageFaultCount", wintypes.DWORD), ("PeakWorkingSetSize", ctypes.c_size_t),
+                        ("WorkingSetSize", ctypes.c_size_t), ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                        ("QuotaPagedPoolUsage", ctypes.c_size_t), ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                        ("QuotaNonPagedPoolUsage", ctypes.c_size_t), ("PagefileUsage", ctypes.c_size_t),
+                        ("PeakPagefileUsage", ctypes.c_size_t)]
+        c = Counters()
+        c.cb = ctypes.sizeof(c)
+        ctypes.windll.kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+        if ctypes.windll.psapi.GetProcessMemoryInfo(ctypes.windll.kernel32.GetCurrentProcess(), ctypes.byref(c), c.cb):
+            return c.WorkingSetSize / 1048576
+    except Exception:
+        pass
+    return None
+
+
+def ops_info():
+    """The machine and the files: uptime, memory, free disk, the sizes of the save and the ledger, when the game last saved
+    and when the newest backup was made (the folder the backup job writes to; BACKUP_DIR overrides it)."""
+    size = lambda name: (os.path.getsize(os.path.join(BASE, name)) / 1048576) if os.path.exists(os.path.join(BASE, name)) else 0.0
+    try:
+        disk = shutil.disk_usage(BASE)
+        disk_free_gb, disk_free_pct = disk.free / 1e9, 100.0 * disk.free / disk.total
+    except OSError:
+        disk_free_gb = disk_free_pct = None
+    folder = os.environ.get("BACKUP_DIR", "/var/backups/memestreet")
+    backup = {"folder": folder, "found": os.path.isdir(folder), "age_s": None, "copies": 0}
+    if backup["found"]:
+        subs = [os.path.join(folder, d) for d in os.listdir(folder)]
+        subs = [d for d in subs if os.path.isdir(d)]
+        backup["copies"] = len(subs)
+        if subs:
+            backup["age_s"] = time.time() - max(os.path.getmtime(d) for d in subs)
+    saved = engine.last_saved_at
+    return {"uptime_s": time.time() - STARTED, "memory_mb": memory_mb(), "cpu_seconds": time.process_time(),
+            "disk_free_gb": disk_free_gb, "disk_free_pct": disk_free_pct, "state_mb": size("state.json"),
+            "charts_mb": size("state.charts.json"), "ledger_mb": size("ledger.db"),
+            "saved_ago_s": (time.time() - saved) if saved else None, "backup": backup, "python": sys.version.split()[0]}
+
+
+@app.get("/api/admin/insights")
+async def admin_insights(x_admin_key: str = Header("")):
+    """The deeper numbers for the admin page (see Engine.admin_insights), the machine's state and who has tried a wrong key."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    data = await run(engine.admin_insights)
+    data["ops"] = await run(ops_info)
+    now = time.time()
+    guests = sum(1 for c in clients.values() if c.token == GUEST_KEY)
+    data["connections"] = {"players": len(clients) - guests, "visitors": guests, "gateways": len(gateways),
+                            "series": list(online_hist)}
+    data["security"] = {"limit": ADMIN_FAIL_LIMIT, "window_s": ADMIN_FAIL_WINDOW,
+                         "wrong_last_hour": sum(1 for x in admin_log if x["what"] == "wrong key" and now - x["t"] < 3600),
+                         "lockouts_last_hour": sum(1 for x in admin_log if x["what"] == "locked out" and now - x["t"] < 3600),
+                         "recent": list(admin_log)[::-1][:15]}
+    return data
+
+
 @app.get("/api/admin/overview")
 async def admin_overview(x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):
