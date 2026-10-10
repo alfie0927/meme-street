@@ -14,10 +14,12 @@ Keep this file in step with the code: update it after every change (see "Keeping
 From the project folder, in PowerShell:
 
 ```powershell
-cd "C:\Users\alfie\OneDrive\桌面\stock_market_sim"
+cd "D:\stock_market_sim"                         # (the project has lived on the D: drive since 2026-10-10)
 $env:ADMIN_KEY = "pick-a-long-random-string"     # optional: enables /api/admin/*
 .venv\Scripts\python.exe -m uvicorn server:app --host 127.0.0.1 --port 8000
 ```
+
+Or just run `powershell -File D:\stock_market_sim\start_game.ps1`: it does the same, and keeps the admin key in `admin_key.txt` (made on the first run, never sent to git). `requirements-lock.txt` lists the exact package versions the game was tested with; `pip install -r requirements-lock.txt` rebuilds the environment identically.
 
 Then open:
 - **http://127.0.0.1:8000** for the market. Open a second browser (or a private window) to play as a second player.
