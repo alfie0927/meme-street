@@ -85,6 +85,7 @@ async def game_loop():
             base, mes, notes, ms, saved = await loop.run_in_executor(pool, lambda: locked(tick_step, n, tokens))
             n += 1
             perf["ticks"] += 1
+            perf["last_tick_at"] = time.time()
             if n % 10 == 1:
                 g = sum(1 for c in clients.values() if c.token == GUEST_KEY)
                 online_hist.append({"t": time.time(), "online": len(clients) - g, "guests": g})
@@ -1068,6 +1069,20 @@ def ops_info():
             "disk_free_gb": disk_free_gb, "disk_free_pct": disk_free_pct, "state_mb": size("state.json"),
             "charts_mb": size("state.charts.json"), "ledger_mb": size("ledger.db"),
             "saved_ago_s": (time.time() - saved) if saved else None, "backup": backup, "python": sys.version.split()[0]}
+
+
+@app.get("/api/health")
+async def health():
+    """For an outside uptime monitor: 200 while the game is ticking and saving, 503 when it is stuck. Nothing secret in it."""
+    now = time.time()
+    tick_age = now - perf.get("last_tick_at", STARTED)
+    saved = engine.last_saved_at
+    saved_ago = (now - saved) if saved else None
+    grace = now - STARTED < 180                        # the first save comes after about 30 seconds
+    ok = tick_age < 15 and (saved_ago is not None and saved_ago < 300 or grace)
+    body = {"ok": ok, "tick_age_s": round(tick_age, 1), "saved_ago_s": None if saved_ago is None else round(saved_ago),
+            "uptime_s": round(now - STARTED)}
+    return JSONResponse(body, status_code=200 if ok else 503, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/admin/insights")

@@ -115,10 +115,14 @@ money.
 
 1. Make a free account at an email service (Resend or Brevo are easy), add your domain there and add the DNS records it
    asks for (SPF and DKIM; without them your mail goes to spam).
-2. On the server: `nano /etc/memestreet.env`, remove the `#` from the `SMTP_` and `MAIL_FROM` lines and fill them in
-   (the service shows you the values). Save with Ctrl+O, Enter, Ctrl+X.
-3. Restart: `systemctl restart memestreet memestreet-gateway`.
-4. On your computer make a file `my_settings.json` in the project folder containing
+2. **The easy way:** `powershell -File deploy\set_mail.ps1 -Server root@YOUR.SERVER.IP`. It asks for the SMTP user, the
+   password or API key (typed hidden, and sent to the server inside the ssh connection, never in a command line or a chat)
+   and the from-address (`Meme Street <no-reply@yourdomain.com>`), writes them into `/etc/memestreet.env`, restarts the game
+   and checks that the game now says mail is ready. With Resend the host is `smtp.resend.com` and the user is `resend`.
+   Mail ready turns the game's email setting from off to optional by itself.
+   **By hand instead:** on the server `nano /etc/memestreet.env`, remove the `#` from the `SMTP_` and `MAIL_FROM` lines and
+   fill them in, then `systemctl restart memestreet memestreet-gateway`.
+3. To make a verified address *necessary* (the default is optional), on your computer make a file `my_settings.json` in the project folder containing
    `{"settings": {"email_mode": "optional"}}` (or `"required"` to make a verified address necessary to trade), then
    upload it with `powershell -File deploy\upload.ps1 -Server root@YOUR.SERVER.IP`. Players see the email box at sign-up.
 
@@ -134,6 +138,13 @@ systemctl reload caddy
 ```
 
 Your browser will then ask for the name `owner` and that password before it shows `/admin`.
+
+**On memestreet.net this is done** (2026-10-10): `/admin` and `/api/admin/*` are behind that password, and the admin key was
+replaced at the same time. The new name, password and key are in `live_admin_credentials.txt` in the project folder (a file
+git never sends anywhere). To change them later, make a new hash on the server, replace the hash in `/etc/caddy/Caddyfile`,
+run `caddy validate --config /etc/caddy/Caddyfile` and `systemctl reload caddy`; the admin key is the `ADMIN_KEY` line of
+`/etc/memestreet.env` (then `systemctl restart memestreet memestreet-gateway`). Behind this, the game itself locks an address
+out of the admin interface for ten minutes after ten wrong keys (`HOW_IT_WORKS.md` section 12).
 
 ## Updating the live game
 
@@ -155,6 +166,11 @@ That protects you from mistakes, not from losing the server. Copy them to your c
 scp -r root@YOUR.SERVER.IP:/var/backups/memestreet .\server-backups
 ```
 
+or, better, `powershell -File deploy\pull_backups.ps1 -Server root@YOUR.SERVER.IP`: it copies only the newest backups that are not
+here yet (default: the last day, four copies) into `D:\meme_street_backups`, checks each one arrived whole, and changes nothing on
+the server. Run it every day (it can be set up as a daily Windows scheduled task: Task Scheduler, Create Basic Task, daily,
+action "Start a program", program `powershell`, arguments `-File D:\stock_market_sim\deploy\pull_backups.ps1 -Server root@YOUR.SERVER.IP`).
+
 and switch on the provider's own backups. **Restoring** a backup (the game must be stopped while you copy):
 
 ```bash
@@ -168,8 +184,12 @@ systemctl start memestreet && sleep 5 && systemctl start memestreet-gateway
 
 ## Knowing it is up
 
-Free monitors such as UptimeRobot can check `https://yourdomain.com/gateway/health` every five minutes (the answer contains
-`"ok":true` when the gateways are linked to the game) and email or message you when it fails. Useful commands on the server:
+Free monitors such as UptimeRobot (uptimerobot.com) can check `https://yourdomain.com/api/health` every five minutes and
+email or message you when it fails. That address answers 200 with `{"ok":true,...}` while the game is ticking and saving, and
+503 when it is stuck (no tick for 15 seconds, or no save for five minutes); if the gateways cannot reach the game, or the server
+is down, it fails too. It needs no key and shows nothing private. To set it up: make a free account, **Add new monitor**, type
+*HTTP(s)*, the address above, interval 5 minutes, and choose where the alerts go (your email, or a phone push through its app).
+`/gateway/health` only says whether one gateway is linked to the game. Useful commands on the server:
 
 ```bash
 systemctl status memestreet memestreet-gateway caddy   # are they running?
