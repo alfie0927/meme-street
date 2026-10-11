@@ -44,7 +44,10 @@ END_OF_MAIL_SETTINGS
 systemctl restart memestreet
 sleep 5
 systemctl restart memestreet-gateway
+echo done
 "@
+# (Unix line endings only. PowerShell still adds one Windows line ending after the last line, which is why the last line is a
+# harmless `echo done`: a stray character after a restart command would make the server refuse it.)
 ($script -replace "`r", "") | ssh $Server "bash -s"
 if ($LASTEXITCODE -ne 0) { throw "The server did not accept the settings." }
 

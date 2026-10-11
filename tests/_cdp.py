@@ -37,6 +37,7 @@ def find_browser():
 class Page:
     def __init__(self, ws):
         self.ws, self.n, self.errors, self.waiters = ws, 0, [], {}
+        self.auth = None          # (user, password): answer a page's password challenge with these, like the browser's password box
 
     async def pump(self):
         try:
@@ -44,6 +45,13 @@ class Page:
                 m = json.loads(raw)
                 if "id" in m and m["id"] in self.waiters:
                     self.waiters.pop(m["id"]).set_result(m)
+                elif m.get("method") == "Fetch.requestPaused":
+                    await self.ws.send(json.dumps({"id": 0, "method": "Fetch.continueRequest", "params": {"requestId": m["params"]["requestId"]}}))
+                elif m.get("method") == "Fetch.authRequired":
+                    reply = ({"response": "ProvideCredentials", "username": self.auth[0], "password": self.auth[1]}
+                             if self.auth else {"response": "CancelAuth"})
+                    await self.ws.send(json.dumps({"id": 0, "method": "Fetch.continueWithAuth",
+                                                   "params": {"requestId": m["params"]["requestId"], "authChallengeResponse": reply}}))
                 elif m.get("method") == "Runtime.exceptionThrown":
                     d = m["params"]["exceptionDetails"]
                     self.errors.append(d.get("exception", {}).get("description") or d.get("text"))
@@ -73,6 +81,11 @@ class Page:
         r = await self.cmd("Page.captureScreenshot", format="png")
         with open(path, "wb") as fh:
             fh.write(base64.b64decode(r["data"]))
+
+    async def answer_passwords(self, user, password):
+        """From now on a page's password challenge (HTTP basic authentication) is answered with these."""
+        self.auth = (user, password)
+        await self.cmd("Fetch.enable", handleAuthRequests=True, patterns=[{"urlPattern": "*"}])
 
     async def goto(self, url, wait=1.5):
         await self.cmd("Page.navigate", url=url)
