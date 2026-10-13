@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from engine import GUEST_KEY, Engine
 from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, password_problem, verify_password
 from mailer import Mailer
+from payments import Payments
 from netutil import caller_address
 from pages import add_pages
 from wsconn import Conn
@@ -142,12 +143,13 @@ async def auth_mode():
     """The sign-in box asks this: are passwords required, or is this a name-only game? Is an email address asked for
     ("off", "optional" or "required") and can mail actually be sent (otherwise there is no password recovery)?"""
     return {"passwords": bool(engine.settings.get("require_password", True)), "email": engine.email_mode(),
-            "mail_ready": mailer.configured}
+            "mail_ready": mailer.configured, "min_age": int(engine.settings.get("min_age", 13))}
 
 
 class Register(BaseModel):
     name: str
     password: str
+    birth_year: int = 0
     email: str = ""
 
 
@@ -230,6 +232,9 @@ async def register(j: Register, request: Request):
     problem = password_problem(j.password, j.name)
     if problem:
         return JSONResponse({"error": problem}, status_code=400)
+    problem = engine.birth_year_problem(j.birth_year)               # the age policy: only the year is asked and kept
+    if problem:
+        return JSONResponse({"error": problem}, status_code=400)
     mode = engine.email_mode()
     addr = None
     if mode != "off" and (j.email.strip() or mode == "required"):     # check the address before the account exists
@@ -242,6 +247,7 @@ async def register(j: Register, request: Request):
     p, err = await run(engine.register, j.name, record, ip)
     if not p:
         return JSONResponse({"error": err}, status_code=400)
+    p.birth_year = int(j.birth_year)
     limits.add(("signup", ip), now)
     token = await run(engine.new_session, p, ip)
     out = {"token": token, "name": p.name}
@@ -829,7 +835,7 @@ async def admin_stats(x_admin_key: str = Header("")):
 
 @app.post("/api/admin/credit")
 async def admin_credit(t: Transfer, x_admin_key: str = Header("")):
-    """Credit MB to a player by hand: a stand-in for a purchased package until the checkout exists (ROADMAP.md M3)."""
+    """Credit MB to a player by hand: a correction or a gift (recorded with source `admin`; purchases go through the shop)."""
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
 
@@ -837,7 +843,7 @@ async def admin_credit(t: Transfer, x_admin_key: str = Header("")):
         p = find_player(t.name)
         if not p:
             return None
-        ok, msg = engine.credit(p, t.amount)
+        ok, msg = engine.credit(p, t.amount, source="admin")
         return ok, msg, p.cash, p.name
     got = await run(work)
     if got is None:
@@ -941,6 +947,154 @@ async def history_csv(x_token: str = Header("")):
     text = await run(engine.history_csv, p)
     return Response(text, media_type="text/csv",
                     headers={"Content-Disposition": f'attachment; filename="meme-street-{p.name}.csv"'})
+
+
+# ------------------------------------------------------------------------------------------ the shop (economy.py, payments.py)
+payments = Payments()
+
+
+class Checkout(BaseModel):
+    sku: str
+    adult: bool = False
+
+
+class TestPay(BaseModel):
+    order: str
+    action: str = "pay"
+
+
+class Year(BaseModel):
+    year: int
+
+
+class Cap(BaseModel):
+    cents: int
+
+
+def shop_view(p):
+    out = engine.economy_view(p)
+    out.update({"selling": payments.selling, "mode": payments.mode})
+    return out
+
+
+@app.get("/api/shop")
+async def shop(x_token: str = Header("")):
+    """The shop page: prices, Pro status, the age and spending rules, past purchases and the free restart."""
+    return await with_player(x_token, "shop", shop_view)
+
+
+@app.post("/api/shop/checkout")
+async def shop_checkout(b: Checkout, x_token: str = Header("")):
+    """Start a purchase: make an order, then send the buyer to the payment page (or the test checkout)."""
+    if not payments.selling:
+        return JSONResponse({"error": "The shop is not open yet"}, status_code=400)
+
+    def work(p):
+        order, err = engine.create_order(p, b.sku, payments.mode, b.adult)
+        return order, err
+    res = await with_player(x_token, "checkout", work, interval=1.0)
+    if isinstance(res, JSONResponse):
+        return res
+    order, err = res
+    if not order:
+        return JSONResponse({"error": err}, status_code=400)
+    item = engine._sku(order["sku"])
+    name = f"{order['mb']:,} MB" if order["kind"] == "package" else f"Meme Street Pro, {order['days']} days"
+    url, ref, err = await asyncio.get_running_loop().run_in_executor(pool, payments.checkout, order, name)
+    if not url:
+        await run(lambda: engine.shop_orders[order["id"]].update(status="failed"))
+        return JSONResponse({"error": err}, status_code=502)
+    if ref:
+        await run(lambda: engine.shop_orders[order["id"]].update(provider_ref=ref))
+    return {"url": url, "order": order["id"], "price": item["price"]}
+
+
+@app.get("/api/shop/order/{oid}")
+async def shop_order(oid: str, x_token: str = Header("")):
+    def work(p):
+        o = engine.shop_orders.get(oid)
+        if o is None or o["token"] != p.token:
+            return JSONResponse({"error": "unknown order"}, status_code=404)
+        item = engine._sku(o["sku"]) or {}
+        return {"id": o["id"], "sku": o["sku"], "kind": o["kind"], "mb": o["mb"], "days": o["days"], "status": o["status"],
+                "price": item.get("price"), "mode": payments.mode}
+    return await with_player(x_token, "order", work)
+
+
+@app.post("/api/shop/test_pay")
+async def shop_test_pay(b: TestPay, x_token: str = Header("")):
+    """The pretend checkout (PAYMENTS=test only): the buyer presses Pay or Cancel on our own page."""
+    if payments.mode != "test":
+        return JSONResponse({"error": "not available"}, status_code=404)
+
+    def work(p):
+        o = engine.shop_orders.get(b.order)
+        if o is None or o["token"] != p.token:
+            return JSONResponse({"error": "unknown order"}, status_code=404)
+        if b.action == "cancel":
+            if o["status"] == "pending":
+                o["status"] = "cancelled"
+            return {"ok": True, "msg": "Cancelled: nothing was charged"}
+        ok, msg = engine.complete_order(b.order, provider_ref="test")
+        return {"ok": ok, "msg": msg}
+    res = await with_player(x_token, "testpay", work, interval=0.5)
+    if isinstance(res, dict) and res.get("ok"):
+        await run(engine.save, False)                  # a purchase must survive a crash (the ledger has it too)
+    return res
+
+
+@app.post("/api/shop/stripe/webhook")
+async def stripe_webhook(request: Request):
+    """Stripe tells us a checkout was paid. Only a correctly signed, recent event completes an order, and completing
+    the same order twice does nothing, so Stripe's retries are safe."""
+    if payments.mode != "stripe":
+        return JSONResponse({"error": "not available"}, status_code=404)
+    body = await request.body()
+    event = payments.verify_stripe(body, request.headers.get("stripe-signature", ""))
+    if event is None:
+        return JSONResponse({"error": "bad signature"}, status_code=400)
+    paid = payments.paid_order(event)
+    if paid:
+        oid, ref, amount = paid
+        ok, msg = await run(engine.complete_order, oid, ref, amount)
+        logger.info("stripe webhook: order %s: %s", oid, msg)
+        if ok:
+            await run(engine.save, False)
+    return {"received": True}
+
+
+@app.post("/api/account/birth_year")
+async def set_birth_year(b: Year, x_token: str = Header("")):
+    return acted(await with_player(x_token, "birth_year", engine.set_birth_year, b.year, interval=1.0)) if True else None
+
+
+@app.post("/api/account/spend_cap")
+async def set_spend_cap(b: Cap, x_token: str = Header("")):
+    res = await with_player(x_token, "spend_cap", engine.set_spend_cap, b.cents, interval=1.0)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.post("/api/restart")
+async def claim_restart(x_token: str = Header("")):
+    """The free restart for an account that has run out (economy.py)."""
+    res = await with_player(x_token, "restart", engine.claim_restart, interval=1.0)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.post("/api/close_all")
+async def close_all(x_token: str = Header("")):
+    """Close every open position at the market price (sell the longs, cover the shorts), as ordinary trades."""
+    def work(p):
+        done, failed = 0, []
+        for tk, sh in list(p.hold.items()):
+            p.last_trade.pop(tk, None)                    # (one deliberate click: the per-stock cooldown does not apply)
+            ok, msg = engine.trade(p, tk, "sell" if sh > 0 else "buy", 1.0)
+            if ok:
+                done += 1
+            else:
+                failed.append(f"{tk}: {msg}")
+        return {"ok": not failed, "closed": done, "msg": f"Closed {done} position(s)" + ("; " + "; ".join(failed) if failed else "")}
+    return await with_player(x_token, "close_all", work, interval=1.0)
 
 
 @app.get("/api/me")
@@ -1071,6 +1225,89 @@ def ops_info():
             "saved_ago_s": (time.time() - saved) if saved else None, "backup": backup, "python": sys.version.split()[0]}
 
 
+# ------------------------------------------------------------------------------------------ learning (learning.py)
+class Quiz(BaseModel):
+    lesson: str
+    answers: list
+
+
+class JournalEntry(BaseModel):
+    ticker: str
+    setup: str
+    plan: str = ""
+    stop: float | None = None
+    target: float | None = None
+    note: str = ""
+
+
+class JournalReview(BaseModel):
+    id: str
+    lesson: str = ""
+
+
+@app.get("/api/learn")
+async def learn(x_token: str = Header("")):
+    """The lessons (with which ones the player has passed), the challenges and this week's reward cap."""
+    return await with_player(x_token, "learn", engine.lessons_view)
+
+
+@app.get("/api/learn/lesson/{lesson_id}")
+async def learn_lesson(lesson_id: str):
+    """One lesson's text and quiz questions (never the answers). Public: visitors can read the lessons too."""
+    data = await run(engine.lesson, lesson_id)
+    return data if data else JSONResponse({"error": "unknown lesson"}, status_code=404)
+
+
+@app.post("/api/learn/quiz")
+async def learn_quiz(b: Quiz, x_token: str = Header("")):
+    """Mark a quiz. Passing a lesson for the first time pays its reward (within the weekly cap)."""
+    return await with_player(x_token, "quiz", engine.answer_quiz, b.lesson, b.answers, interval=1.0)
+
+
+@app.get("/api/journal")
+async def journal(x_token: str = Header("")):
+    return await with_player(x_token, "journal", engine.journal_view)
+
+
+@app.post("/api/journal")
+async def journal_add(b: JournalEntry, x_token: str = Header("")):
+    res = await with_player(x_token, "journal_add", engine.add_journal, b.ticker, b.setup, b.plan, b.stop, b.target,
+                            b.note, interval=0.5)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.post("/api/journal/review")
+async def journal_review(b: JournalReview, x_token: str = Header("")):
+    res = await with_player(x_token, "journal_review", engine.review_journal, b.id, b.lesson, interval=0.5)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.post("/api/journal/delete")
+async def journal_delete(b: JournalReview, x_token: str = Header("")):
+    res = await with_player(x_token, "journal_delete", engine.delete_journal, b.id, interval=0.3)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.get("/api/calendar")
+async def calendar():
+    """The economic calendar (market_model.py): upcoming releases and rate decisions with their forecasts, the latest
+    results and the next earnings reports. Public, like the market itself."""
+    return await run(engine.macro_calendar)
+
+
+@app.get("/api/admin/model")
+async def admin_model(x_admin_key: str = Header("")):
+    """What the price model is doing behind the scenes: the regime, the hidden economy and how many listings are trending
+    or in a range. Never shown to players."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    if engine.model is None:
+        return {"on": False}
+    data = await run(engine.model.admin_view, engine.now)
+    data["on"] = True
+    return data
+
+
 @app.get("/api/health")
 async def health():
     """For an outside uptime monitor: 200 while the game is ticking and saving, 503 when it is stuck. Nothing secret in it."""
@@ -1112,6 +1349,28 @@ async def admin_overview(x_admin_key: str = Header("")):
     data["perf"] = {k: (round(v, 2) if isinstance(v, float) else v) for k, v in perf.items() if k != "recent"}
     data["perf"]["gateways"] = len(gateways)
     return data
+
+
+@app.get("/api/admin/shop")
+async def admin_shop(x_admin_key: str = Header("")):
+    """Orders, revenue, Pro members and where the game's MB came from (economy.py)."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    data = await run(engine.economy_stats)
+    data["mode"] = payments.mode
+    return data
+
+
+@app.post("/api/admin/refund")
+async def admin_refund(b: Ident, x_admin_key: str = Header("")):
+    """After refunding a payment at the provider: take back the MB the player still has, or the Pro time."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    ok, msg = await run(engine.refund_order, b.id)
+    logger.info("admin refund %s: %s", b.id, msg)
+    if ok:
+        await run(engine.save, False)
+    return {"ok": ok, "msg": msg}
 
 
 @app.get("/api/admin/player/{name}")

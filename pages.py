@@ -48,5 +48,11 @@ def add_pages(app, base):
     async def player_page(name: str):
         return page()
 
-    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders"):
+    @app.get("/shop/pay")
+    async def shop_pay_page():
+        """The pretend checkout used while the shop is in test mode (payments.py); the page itself asks the server for
+        the order and refuses if the shop is not in test mode."""
+        return FileResponse(os.path.join(base, "shop_pay.html"), headers={"Cache-Control": "no-store"})
+
+    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "journal", "calendar"):
         app.add_api_route("/" + route, lambda: page(), methods=["GET"], include_in_schema=False)

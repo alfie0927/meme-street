@@ -1,6 +1,6 @@
 {
  "settings": {
-  "event_mean_seconds": 120,
+  "event_mean_seconds": 900,
   "event_duration_scale": 12,
   "rumor_prob": 0.6,
   "rumor_credibility": 0.75,
@@ -11,7 +11,37 @@
   "season_seconds": 86400,
   "house_seed": 50000,
   "mean_reversion_halflife_days": 90,
-  "signup_bonus": 10000
+  "market_model": 2,
+  "issue_mean_seconds": 1200,
+  "cross_mean_seconds": 1000000000000,
+  "catalyst_mean_seconds": 1000000000000,
+  "sector_shock_mean_seconds": 1000000000000,
+  "moonshot_mean_seconds": 1000000000000,
+  "moonshot_initial": 0,
+  "offering_mean_seconds": 7200,
+  "daily_turnover": 0.004,
+  "signup_bonus": 1000,
+  "contest_balance": 1000,
+  "min_age": 13,
+  "buy_min_age": 18,
+  "shop_currency": "usd",
+  "shop_packages": [
+    {"sku": "mb100", "mb": 100, "price_cents": 99},
+    {"sku": "mb500", "mb": 500, "price_cents": 399},
+    {"sku": "mb1000", "mb": 1000, "price_cents": 699},
+    {"sku": "mb5000", "mb": 5000, "price_cents": 2499},
+    {"sku": "mb10000", "mb": 10000, "price_cents": 3999}
+  ],
+  "shop_pro": [
+    {"sku": "pro30", "days": 30, "price_cents": 499},
+    {"sku": "pro365", "days": 365, "price_cents": 3999}
+  ],
+  "spend_cap_month_cents": 15000,
+  "purchases_per_day": 3,
+  "restart_below": 50,
+  "restart_days": 7,
+  "challenge_week_cap": 500,
+  "lesson_reward": 20
  },
  "sectors": [
   {

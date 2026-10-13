@@ -121,7 +121,7 @@ class BrowserSmoke(unittest.TestCase):
             # quarterly earnings (an 18-second quarter in this test) show up on the news wire
             await pg.goto(base + "/", 21)
             await check("an earnings headline appeared", "document.getElementById('news').innerText",
-                        lambda t: "EARNINGS:" in t)
+                        lambda t: "EARNINGS" in t)
             # the admin dashboard: locked until the key is entered, then cards, charts and a player's trades
             await pg.goto(base + "/admin", 1.5)
             await check("admin page is locked first", "document.getElementById('app').style.display", "none")
@@ -335,7 +335,7 @@ class BrowserPages(unittest.TestCase):
             await pg.goto(base + "/history", 3)
             await d.check("history lists the trades", "document.getElementById('hist-rows').innerText",
                           lambda t: "Buy" in t and "Short" in t and "GOLD" in t, wait=10)
-            await d.check("history has a deposit row", "document.getElementById('hist-rows').innerText", lambda t: "Deposit" in t)
+            await d.check("history has a deposit row", "document.getElementById('hist-rows').innerText", lambda t: "MB added" in t)
             await pg.js("document.querySelector('#hist-filters [data-k=\"buy,cover\"]').click()")
             await d.check("filter keeps only buys and covers",
                           "[...document.querySelectorAll('#hist-rows tr')].every(r=>/Buy|Cover/.test(r.cells[1].textContent))&&document.querySelectorAll('#hist-rows tr').length>0",
@@ -368,7 +368,7 @@ class BrowserPages(unittest.TestCase):
             await d.check("joining shows my rank", "document.getElementById('tours').innerText",
                           lambda t: "rank 1 of 1" in t, wait=10)
             await d.check("the paper panel opens with the full balance", "document.getElementById('cp-summary').innerText",
-                          lambda t: "10,000.00" in t, wait=10)
+                          lambda t: "1,000.00" in t, wait=10)     # contest_balance in base.json
             await pg.js("(()=>{const s=document.getElementById('cp-ticker');s.value='GOLD';document.getElementById('cp-pct').value='0.5';document.getElementById('cp-buy').click()})()")
             await d.check("a paper buy shows as a paper position", "document.getElementById('cp-pos').innerText",
                           lambda t: "GOLD" in t, wait=10)
@@ -527,7 +527,7 @@ class BrowserPages(unittest.TestCase):
         proc, pg, _ = await open_page(debug_port=9351)
         d = Driver(pg)
         name = "pw" + str(random.randint(1000, 9999))
-        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s')})()")
+        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('by','1990')})()")
         try:
             await pg.goto(base + "/", 3)
             await d.check("the box offers Log in and Create account", "document.getElementById('auth-tabs').style.display", "block", wait=8)
@@ -597,7 +597,7 @@ class BrowserPages(unittest.TestCase):
         d = Driver(pg)
         name = "em" + str(random.randint(1000, 9999))
         addr = name + "@example.com"
-        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('em','%s')})()")
+        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('em','%s');set('by','1990')})()")
         try:
             await pg.goto(base + "/", 3)
             await d.check("the sign-up form asks for an email address", "document.getElementById('em').style.display", "block", wait=8)

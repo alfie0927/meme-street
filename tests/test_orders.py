@@ -366,13 +366,15 @@ class NoEdgeTests(unittest.TestCase):
             s = e.stocks["CLDR"]
             e.trade(p, "CLDR", "buy", 0.5)
             start = e.equity(p)
+            put_in = p.deposited
             e.now += 2
             e.place_bracket(p, "CLDR", s.price * 1.004, s.price * 0.996)
             for _ in range(900):
                 e.tick(now=e.now + 1)
                 if not p.orders:
                     break
-            gains.append(e.equity(p) / start - 1)
+            # (the trading result only: the "Protect a trade" challenge pays MB for the stop, learning.py)
+            gains.append((e.equity(p) - (p.deposited - put_in)) / start - 1)
         mean = sum(gains) / len(gains)
         sd = math.sqrt(sum((g - mean) ** 2 for g in gains) / len(gains))
         self.assertLess(mean, 4 * sd / math.sqrt(len(gains)) + 0.0005)                 # no profit beyond noise

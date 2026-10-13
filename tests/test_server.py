@@ -545,7 +545,7 @@ class ServerTests(unittest.TestCase):
             joined = next(x for x in mine["tournaments"]["active"] if x["id"] == t["id"])
             self.assertTrue(joined["joined"])
             self.assertEqual(joined["mine"]["rank"], 1)
-            self.assertEqual(joined["mine"]["account"]["cash"], 10000.0)
+            self.assertEqual(joined["mine"]["account"]["cash"], 1000.0)          # contest_balance in base.json
             # a paper trade over the socket (the real balance is left alone: see test_contests)
             c.send({"type": "contest_trade", "id": t["id"], "ticker": "GOLD", "side": "buy", "pct": 0.5})
             res = c.recv_until("result")
@@ -557,7 +557,7 @@ class ServerTests(unittest.TestCase):
             after = json.loads(c.get("/api/me")[1])
             acct = next(x for x in after["tournaments"]["active"] if x["id"] == t["id"])["mine"]["account"]
             self.assertEqual([r["ticker"] for r in acct["positions"]], ["GOLD"])
-            self.assertAlmostEqual(acct["cash"], 5000.0, places=2)
+            self.assertAlmostEqual(acct["cash"], 500.0, places=2)
         finally:
             c.close()
 

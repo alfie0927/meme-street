@@ -28,7 +28,22 @@ import types  # noqa: E402
 _OFFSET = (int(time.time() // engine.MARKET_DAY_SECONDS) * engine.MARKET_DAY_SECONDS + 100) - time.time()
 engine.time = types.SimpleNamespace(time=lambda: time.time() + _OFFSET)
 
-_real_read = engine.Engine._read
+_raw_read = engine.Engine._read
+
+
+# base.json turns these down for the new price model (market_model 2); the engine tests run the old market with its news
+NEW_MARKET_NEWS = ("event_mean_seconds", "issue_mean_seconds", "cross_mean_seconds", "catalyst_mean_seconds",
+                   "sector_shock_mean_seconds", "moonshot_mean_seconds", "moonshot_initial", "offering_mean_seconds")
+
+
+def _real_read(self):
+    """The content packs as they are, but with the old market's news and price model (market_model 1): what the tests
+    that want "the real default settings" (test_wild's moonshots and catalysts) were written for."""
+    sectors, companies, templates, settings, profiles, derived = _raw_read(self)
+    settings = {k: v for k, v in settings.items() if k not in NEW_MARKET_NEWS}
+    settings.setdefault("event_mean_seconds", 120)
+    settings["market_model"] = 1
+    return sectors, companies, templates, settings, profiles, derived
 
 
 def _flat_read(self):
@@ -40,7 +55,9 @@ def _flat_read(self):
                    "chat_min_trades": 0,                                       # ...anyone may chat without trading first...
                    "require_password": False,                                  # ...may join with just a name...
                    "signup_bonus": 1000}                                        # ...and start with 1,000 MB (the game itself: 10,000)
-    forced = {"signup_bonus": 1000}                                          # the tests' money is 1,000 MB a head
+    forced = {"signup_bonus": 1000,                                          # the tests' money is 1,000 MB a head,
+              "market_model": 1}                                         # on the old zero-drift market (a test of the new
+    #                                                                          one sets e.settings["market_model"] = 2)
     return sectors, companies, templates, {**quiet_world, **settings, **forced}, profiles, derived
 
 
@@ -105,10 +122,10 @@ class IsolatedServer:
     """Runs the real FastAPI app in a subprocess from a temporary copy of the project, so tests never read or
     overwrite the real state.json. Usage:  with IsolatedServer() as srv: srv.url, srv.port"""
 
-    FILES = ["engine.py", "newsgen.py", "memestreet_logo_peaks.png", "relations.py", "contest.py", "accounts.py", "mailer.py", "netutil.py", "wsconn.py", "pages.py", "gateway.py", "ledger.py", "social.py", "server.py", "index.html", "about.html", "admin.html", "pack_growth.json", "pack_fiction.json", "base.json", "expansion.json", "events_pack.json",
+    FILES = ["engine.py", "newsgen.py", "memestreet_logo_peaks.png", "relations.py", "contest.py", "accounts.py", "mailer.py", "netutil.py", "wsconn.py", "pages.py", "gateway.py", "ledger.py", "social.py", "server.py", "index.html", "about.html", "shop_pay.html", "admin.html", "economy.py", "payments.py", "market_model.py", "learning.py", "lessons.json", "pack_growth.json", "pack_fiction.json", "base.json", "expansion.json", "events_pack.json",
              "market_profiles.json"]
 
-    def __init__(self, admin_key="testkey", settings=None, state_file=None, gateways=None):
+    def __init__(self, admin_key="testkey", settings=None, state_file=None, gateways=None, env=None):
         # With `gateways` (or the environment variable MS_TEST_GATEWAYS) the game runs the way a big deployment does: one
         # game server process and that many gateway processes holding the websockets (see gateway.py). `url` and `port`
         # are then those of the first gateway, so a test cannot tell the difference, and running the whole suite with
@@ -118,6 +135,7 @@ class IsolatedServer:
         self.admin_key = admin_key
         self.settings = {"premarket_seconds": 0, "aftermarket_seconds": 0, "chat_min_trades": 0, "contest_join_seconds": 86400, "require_password": False, "signup_bonus": 1000, **(settings or {})}   # flat market unless asked
         self.proc = None
+        self.extra_env = dict(env or {})               # e.g. {"PAYMENTS": "test"} for the shop tests
 
     def __enter__(self):
         self.dir = tempfile.mkdtemp(prefix="meme_street_test_")
@@ -136,7 +154,7 @@ class IsolatedServer:
         self.core_url = f"http://127.0.0.1:{self.core_port}"
         self.procs = []
         self.log_files = []
-        env = dict(os.environ, ADMIN_KEY=self.admin_key)
+        env = dict(os.environ, ADMIN_KEY=self.admin_key, **self.extra_env)
         self.key = "test-core-key"
         if self.gateways:
             env["CORE_KEY"] = self.key

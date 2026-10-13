@@ -261,7 +261,7 @@ class HttpTests(unittest.TestCase):
         return status, data, hdrs
 
     def register(self, name, password=GOOD):
-        status, data, _ = self.post("/api/register", {"name": name, "password": password})
+        status, data, _ = self.post("/api/register", {"name": name, "password": password, "birth_year": 1990})
         return status, data
 
     def test_the_name_only_join_is_closed_when_passwords_are_required(self):
@@ -376,7 +376,7 @@ class AddressLimitTests(unittest.TestCase):
         with IsolatedServer(settings={"require_password": True, "signups_per_ip_hour": 3}) as srv:
             statuses = []
             for i in range(5):
-                statuses.append(http(srv, "/api/register", "POST", {"name": f"Limit{i}", "password": GOOD})[0])
+                statuses.append(http(srv, "/api/register", "POST", {"name": f"Limit{i}", "password": GOOD, "birth_year": 1990})[0])
             self.assertEqual(statuses, [200, 200, 200, 429, 429])
 
 

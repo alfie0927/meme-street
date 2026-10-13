@@ -87,6 +87,18 @@ starting balance, the lottery listings, the contest, the edge checks and the mon
 Not done at all: payments, the macro economy, technical tools on the chart, lessons, challenges with rewards, a journal,
 classrooms, terms and privacy pages, real email, an uptime monitor, daily automatic backups.
 
+**Built on 2026-10-13, not yet committed (being tested locally first; HOW_IT_WORKS.md §6A, §10.9, §10.10, §11):**
+
+| Track | Done (first version) | Still open |
+|---|---|---|
+| M economy | M1 (1,000 MB start), M2 (MB by source, in the ledger), M3 (orders, test checkout, Stripe Checkout with a signed webhook, admin refunds), M4 (out-of-money banner, close all, free restart below 50 MB once a week), M5 (challenge MB, 500 MB a week), M6 (US$150 a 30 days, own lower limit, raising waits a day, 3 purchases a day) | M3: Stripe is not a merchant of record (VAT and sales tax are yours); Paddle or Lemon Squeezy would be. M7 pricing model, M8 costs, M9 house |
+| B business | B1 prices (100 MB US$0.99 to 10,000 MB US$39.99), B2 Pro pass (US$4.99 a month, US$39.99 a year: chart tools and journal statistics, never MB or rank) | B3-B9 |
+| R rules | R2 age policy (13+ to sign up, 18+ and a confirmation to buy, year of birth only), R5 spending limits | R1 terms and privacy (needed before the shop opens), R3, R4, R6, R7, R8 |
+| P price model | `market_model.py`: P1 drift, P2 phases, P3 ranges and breakouts, P4 support and resistance, P5 trend legs, P6 leverage effect and quiet ranges, P7 volume, P8 capitulation, P11 first version (`realism.py`), P12 old reversion and regime shocks replaced | P8 overreactions, short squeezes and stop runs, P9 more factors, P10 asset classes, P13; strong levels hold a little less often than the target |
+| N news | N1 far fewer headlines, N2 central bank, N3 releases with forecasts, N4 hidden economy, N5 earnings forecasts and post-earnings drift, N6 calendar page | N7 why it moved, N8, N9 daily wrap, N10 |
+| T charts | T1 volume (no crosshair yet), T2 SMA/EMA/RSI free, Bollinger/VWAP/MACD/ATR with Pro, T3 horizontal levels, T4 position size and risk with a bracket | T5-T9 |
+| L learning | L1 curriculum and L2 twelve lessons with quizzes, L3 challenges (9), L4 journal linked to positions with results in MB and R, L5 journal statistics (by setup with Pro), L8 onboarding strip | L6, L7, L9, L10 |
+
 ---
 
 ## 4. The biggest decisions and risks

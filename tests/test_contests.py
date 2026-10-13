@@ -14,7 +14,7 @@ DAY = 86400
 
 
 def fresh(seed=1, **settings):
-    e = make_engine(seed, **settings)
+    e = make_engine(seed, **{"contest_balance": 10000, **settings})   # (the tests were written for a 10,000 MB contest)
     e.now = (int(e.now // DAY) + 1) * DAY + 100          # early in a UTC day
     e.tick(now=e.now)
     e._social_t = 0
@@ -371,7 +371,7 @@ class PersistenceTests(unittest.TestCase):
             t2 = next(t for t in f.tournaments if t["id"] == tid)
             a2 = f._account(t2, p2.token)
             self.assertEqual((a2.cash, dict(a2.hold), dict(a2.cost), a2.trades), before[:4])
-            self.assertEqual(t2["entrants"][p2.token]["base"], 10000.0)
+            self.assertEqual(t2["entrants"][p2.token]["base"], 1000.0)             # (a restarted engine reads base.json)
             self.assertTrue(f.contest_trade(p2, tid, "NVXA", "buy", 0.1)[0])          # and it still trades
 
     def test_a_contest_saved_by_the_old_design_is_dropped_cleanly(self):

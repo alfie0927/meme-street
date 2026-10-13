@@ -401,7 +401,7 @@ class DelistedStockTests(unittest.TestCase):
         h = e.chart_for("NVXA", "1m")
         self.assertTrue(h["delisted"])
         self.assertGreater(len(h["candles"]), 1)
-        self.assertEqual(set(h["candles"][0]), {"t", "o", "h", "l", "c"})
+        self.assertEqual(set(h["candles"][0]), {"t", "o", "h", "l", "c", "v"})
         other = e.chart_for("NVXA", "15m")                                         # a timeframe that was not kept falls back
         self.assertGreater(len(other["candles"]), 1)
 

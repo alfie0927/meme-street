@@ -67,6 +67,35 @@ tr.me td{background:#5aa2ff1c}
 .notice-box{border:1px solid #c3a3ff66;background:#c3a3ff10;border-radius:10px;padding:8px 12px;margin:10px 0;font-size:12.5px;color:#d8c4ff}
 .filing{padding:8px 0;border-bottom:1px solid var(--line2);font-size:13px}.filing small{color:var(--mut);display:block}
 section>.card{display:none}
+.ind-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 8px}.ind-bar .lab{color:var(--mut);font-size:12px}
+.ind-bar .chip small{font-size:9.5px;font-weight:700;letter-spacing:.05em;margin-left:5px;color:#ffd166}.ind-bar .chip.on small{color:#04101f}
+.chart-wrap.drawing svg{cursor:crosshair}
+.lines-list{display:inline-flex;flex-wrap:wrap;gap:6px}.lines-list button{font-size:11.5px;padding:2px 8px;border-radius:999px;color:#c3a3ff;border-color:#c3a3ff66}
+.page-calendar #calendar-card{display:block}
+.cal-kind{font-weight:600}.cal-up{color:var(--up)}.cal-dn{color:var(--dn)}
+.page-learn #learn-card,.page-journal #journal-card{display:block}
+.lesson-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0 14px}
+.lesson-item{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card2);color:var(--txt);text-decoration:none}
+.lesson-item:hover{border-color:var(--acc)}.lesson-item b{display:block;margin:2px 0 4px}.lesson-item small{color:var(--mut);font-size:12px}
+.lesson-item .done{color:var(--up);font-weight:600;font-size:12px;float:right}
+.lesson-body{max-width:72ch;line-height:1.6}.lesson-body h4{margin:18px 0 4px;font-size:15px}.lesson-body p{margin:6px 0;color:#c3cede}
+.lesson-body .tip{border-left:3px solid var(--acc);background:#5aa2ff10;padding:8px 12px;border-radius:6px;margin:12px 0}
+.quiz-q{margin:14px 0;padding:10px 12px;border:1px solid var(--line2);border-radius:10px;background:var(--card2)}
+.quiz-q label{display:block;margin:5px 0;cursor:pointer}.quiz-q input{width:auto;margin:0 8px 0 0}
+.quiz-q .why{font-size:13px;margin-top:6px}.chal{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:9px 0;border-bottom:1px solid var(--line2)}
+.chal small{color:var(--mut)}.chal .bar-out{grid-column:1/3;height:5px;background:var(--line2);border-radius:3px;overflow:hidden}.chal .bar-in{height:100%;background:var(--acc)}
+.chal.done .bar-in{background:var(--up)}
+#learn-banner{display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:9px 18px;font-size:13px;border-bottom:1px solid #5aa2ff44;background:#5aa2ff10}
+.j-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}.j-form input,.j-form select{margin:0}
+.j-form .wide{grid-column:1/-1}
+.page-shop #shop-card{display:block}
+#low-banner{display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:9px 18px;font-size:13px;border-bottom:1px solid #ff5f6d55;background:#ff5f6d12;color:#ffc2c7}
+#low-banner a{color:#ffd990}
+.pro-badge{display:none;margin-left:8px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:#04101f;background:linear-gradient(90deg,#ffd166,#ffb84d);vertical-align:middle}
+.pkg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:8px 0}
+.pkg{display:flex;flex-direction:column;gap:4px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.pkg b{font-size:18px}.pkg .price{font-size:15px;font-weight:650}.pkg small{color:var(--mut);font-size:12px}.pkg button{margin-top:6px}
+.restart-box{border:1px solid var(--line2);border-radius:12px;background:var(--card2);padding:10px 14px;margin:8px 0}
 .page-market #market-card,.page-stock #stock-detail,.page-holdings #holdings-card,.page-portfolio #portfolio-card,.page-history #history-card,.page-leaders #leaders-card,.page-social #social-card,.page-profile #profile-card,.page-player #player-card{display:block}
 body:not(.page-market) main{display:block;max-width:1180px;margin:0 auto;padding:18px}body:not(.page-market) aside{display:none}
 .up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
@@ -220,6 +249,7 @@ body.guest .guest-cta{display:flex}
 <input id="pw" type="password" maxlength="128" placeholder="Password" autocomplete="current-password" style="display:none;margin-bottom:8px">
 <input id="pw2" type="password" maxlength="128" placeholder="Repeat the password" autocomplete="new-password" style="display:none;margin-bottom:8px">
 <input id="em" type="email" maxlength="254" placeholder="Email address" autocomplete="email" style="display:none;margin-bottom:8px">
+<input id="by" type="number" min="1900" max="2100" placeholder="Year you were born" autocomplete="bday-year" style="display:none;margin-bottom:8px">
 <button class="buy" style="width:100%;padding:8px" id="joinbtn">Enter market</button><p id="lerr" class="dn"></p>
 <p id="forgot-link" class="hint" style="display:none"><a href="#" id="forgot">Forgot your password?</a></p>
 <div id="recover" style="display:none"><p class="hint">Type your trader name above. If the account has a verified email address, we send a reset code to it.</p>
@@ -229,8 +259,8 @@ body.guest .guest-cta{display:flex}
 <button class="buy" style="width:100%;padding:8px" id="rec-go">Set the new password</button><p id="rec-msg" class="hint"></p></div>
 <p id="auth-hint" class="hint" style="display:none"></p><button id="login-close" style="display:none;width:100%;margin-top:8px">Keep watching the market</button></div></div>
 <header>
-<div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a>
-<nav id="nav"><a href="/" data-page="market">Market</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a></nav>
+<div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
+<nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/journal" data-page="journal">Journal</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><a href="/shop" data-page="shop">Shop</a></nav>
 <div class="spacer"></div>
 <div id="session"><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
 <div class="stats">
@@ -242,7 +272,7 @@ body.guest .guest-cta{display:flex}
 <div class="stat"><small>Rank</small><span id="rank">-</span></div>
 <div class="stat"><small>Day <span id="sn"></span> ends in</small><span id="left">-</span></div>
 </div></header>
-<div id="session-banner"></div>
+<div id="session-banner"></div><div id="low-banner"></div><div id="learn-banner"></div>
 <main><section>
 <div class="card" id="guest-hero"><h2>Meme Street</h2><p class="about" style="margin:0 0 10px">A fictional stock market that never closes: 190+ companies, indices and ETFs, news that moves prices, and a daily leaderboard. You are watching it live. Create an account to trade.</p><ul class="hint"><li>Prices follow stories, not players: nobody's trade, ours included, moves a price.</li><li>Read the wire, trade fast, and short a stock if you think it will fall.</li><li>Every trade costs 0.1%, like a broker's fee. Memebucks (MB) are a practice currency with no cash value.</li></ul><div class="bar"><button class="buy" id="gh-join">Create an account</button><button id="gh-login">Sign in</button><a href="/about">How it works</a></div></div>
 <div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Search ticker, company or industry" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option></select></div>
@@ -297,10 +327,34 @@ body.guest .guest-cta{display:flex}
 <div class="bar"><button id="acct-others">Log out other devices</button><button id="acct-out">Log out</button></div>
 <h3 class="sp">Privacy</h3><label><input type="checkbox" id="pub-toggle" style="width:auto;margin:0 8px 0 0"> Make my results and (delayed) holdings public</label>
 <p class="hint">Public means other players can open your profile and see your returns and what you held about five minutes ago, as percentages of your account, never sizes. Private means they see only your name, medals and achievements. (If you rank high on a leaderboard you still appear there.)</p></div>
+<div class="card" id="learn-card"><div id="learn-body" class="mut">Loading…</div></div>
+<div class="card" id="journal-card"><h3>Trading journal</h3>
+<p class="about" style="margin-top:0">Write down every trade: the setup, the plan (where the stop and the target are) and, afterwards, what you learned. An entry made before you trade becomes an open trade when you open a position in that stock, and is closed with its result when you close it. After a few dozen trades it shows you which setups work for you.</p>
+<div class="j-form"><input id="j-ticker" list="j-tickers" maxlength="8" placeholder="Ticker, e.g. NVXA" aria-label="Ticker"><datalist id="j-tickers"></datalist>
+<select id="j-setup" aria-label="Setup"></select><input id="j-stop" type="number" step="any" min="0" placeholder="Stop-loss price" aria-label="Stop-loss price"><input id="j-target" type="number" step="any" min="0" placeholder="Target price" aria-label="Target price">
+<input id="j-plan" class="wide" maxlength="400" placeholder="The plan: why this trade, where you are wrong, when you get out" aria-label="Plan"><input id="j-note" class="wide" maxlength="400" placeholder="Notes (optional): how you feel, what else is going on" aria-label="Notes">
+<button class="buy" id="j-save">Save to journal</button></div>
+<div class="finance-grid" id="j-sum"></div><div id="j-pro"></div>
+<h3 class="sp">Entries</h3><table id="j-rows"></table></div>
+<div class="card" id="calendar-card"><h3>Economic calendar</h3>
+<p class="about" style="margin-top:0">The economy behind the market reports on a schedule: weekly jobless claims, monthly consumer prices (CPI), jobs, retail sales and a business survey, quarterly growth (GDP), and eight interest-rate decisions a game year. Each release has a forecast published a few game days ahead. Prices react to the <b>surprise</b>, the gap between the figure and the forecast, not to the figure itself. Hot inflation and strong jobs can mean higher interest rates, which weigh on growth companies and property and help banks. Volatility is usually low just before a release and high just after it.</p>
+<div id="cal-rate" class="notice-box"></div>
+<h3 class="sp">Coming up</h3><table id="cal-up"></table>
+<h3 class="sp">Latest releases</h3><table id="cal-past"></table>
+<h3 class="sp">Next earnings reports</h3><table id="cal-earn"></table></div>
+<div class="card" id="shop-card"><h3>Shop</h3>
+<p class="about" style="margin-top:0">Meme Street is a place to practise trading. Everyone starts with 1,000 MB of practice money. If you run out, or want a bigger account to practise with, you can buy more here. MB have no cash value: they cannot be withdrawn, sold, given away or swapped for anything. Buying MB never lifts your rank, because returns are measured on the money you put in.</p>
+<div id="shop-mode"></div><div id="shop-restart"></div>
+<h3 class="sp">MB packages</h3><div class="pkg-grid" id="shop-pkgs"></div>
+<h3 class="sp">Meme Street Pro</h3><div id="shop-pro"></div>
+<h3 class="sp">Before you buy</h3><div id="shop-rules"></div>
+<h3 class="sp">Your spending limit</h3><div id="shop-cap"></div>
+<h3 class="sp">Where your MB came from</h3><table id="shop-src"></table>
+<h3 class="sp">Your purchases</h3><table id="shop-orders"></table></div>
 <div class="card" id="player-card"><div id="player-body" class="mut">Loading…</div></div>
 </section><aside>
 <div class="card"><h3>News wire</h3><div class="news" id="news"></div></div>
-<div class="card"><h3>Upcoming events</h3><div id="upcoming"></div></div>
+<div class="card"><h3>Upcoming events</h3><div id="upcoming"></div><p style="margin:8px 0 0"><a href="/calendar">Economic calendar &rarr;</a></p></div>
 <div class="card"><h3>Leaderboard</h3><table id="board"></table><p style="margin:8px 0 0"><a href="/leaders">All leaderboards &rarr;</a></p></div>
 </aside></main><div id="toast"></div><div id="notes" aria-live="polite"></div>
 <script>
@@ -310,7 +364,7 @@ const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.p
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const path=location.pathname.replace(/\/+$/,'')||'/';
 let page='market',pageArg=null,mt;
-if(['/holdings','/portfolio','/history','/leaders','/social','/profile'].includes(path))page=path.slice(1);
+if(['/holdings','/portfolio','/history','/leaders','/social','/profile','/shop','/calendar','/learn','/journal'].includes(path))page=path.slice(1);
 else if(mt=path.match(/^\/stock\/([^/]+)$/)){page='stock';pageArg=decodeURIComponent(mt[1]).toUpperCase()}
 else if(mt=path.match(/^\/player\/([^/]+)$/)){page='player';pageArg=decodeURIComponent(mt[1])}
 document.body.className='page-'+page;
@@ -378,23 +432,24 @@ async function logoutHere(){try{await api('/api/logout',{method:'POST',body:{}})
 // headlines, and now and then the slower-changing facts. Ticks are merged into S.
 // Signing in. When the server requires passwords the box has Log in / Create account tabs; when it does not (a
 // closed test game) it is the old name-only box. `/api/auth_mode` says which.
-let authPasswords=false,authMode='login',authEmail='off',mailReady=false;
+let authPasswords=false,authMode='login',authEmail='off',mailReady=false,minAge=13;
 function drawAuth(){
  const rec=authMode==='recover',reg=authMode==='register';
  $('auth-tabs').style.display=authPasswords?'block':'none';
  $('pw').style.display=authPasswords&&!rec?'block':'none';
  $('pw2').style.display=authPasswords&&reg?'block':'none';
  $('em').style.display=authPasswords&&reg&&authEmail!=='off'?'block':'none';
+ $('by').style.display=authPasswords&&reg?'block':'none';
  $('em').placeholder=authEmail==='required'?'Email address (needed to play)':'Email address (optional)';
  $('joinbtn').style.display=rec?'none':'block';
  $('forgot-link').style.display=authPasswords&&authMode==='login'?'block':'none';
  $('recover').style.display=rec?'block':'none';
  $('auth-hint').style.display=authPasswords&&reg?'block':'none';
- setText($('auth-hint'),'Use at least 8 characters. Your password is stored only as a salted hash, so nobody (including the admin) can read it. '+(authEmail!=='off'&&mailReady?'If you forget it, a reset code can be emailed to your verified address.':'If you forget it, an admin can give you a temporary password.'));
+ setText($('auth-hint'),'You need to be '+minAge+' or older; only the year you were born is kept. Use at least 8 characters for the password. Your password is stored only as a salted hash, so nobody (including the admin) can read it. '+(authEmail!=='off'&&mailReady?'If you forget it, a reset code can be emailed to your verified address.':'If you forget it, an admin can give you a temporary password.'));
  $('pw').autocomplete=reg?'new-password':'current-password';
  $('joinbtn').textContent=!authPasswords?'Enter market':reg?'Create account':'Log in';
  document.querySelectorAll('#auth-tabs [data-mode]').forEach(c=>c.classList.toggle('on',c.dataset.mode===authMode))}
-fetch('/api/auth_mode').then(r=>r.json()).then(j=>{authPasswords=!!j.passwords;authEmail=j.email||'off';mailReady=!!j.mail_ready;if(authPasswords&&!lsGet('ms_seen_login',false))authMode='register';drawAuth()}).catch(()=>{});
+fetch('/api/auth_mode').then(r=>r.json()).then(j=>{authPasswords=!!j.passwords;authEmail=j.email||'off';mailReady=!!j.mail_ready;minAge=j.min_age||13;if(authPasswords&&!lsGet('ms_seen_login',false))authMode='register';drawAuth()}).catch(()=>{});
 $('auth-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;authMode=b.dataset.mode;$('lerr').textContent='';drawAuth()});
 async function join(){
  const b=$('joinbtn'),err=$('lerr');err.textContent='';
@@ -403,7 +458,8 @@ async function join(){
   url=authMode==='register'?'/api/register':'/api/login';body.password=$('pw').value;
   if(authMode==='register'){
    if($('pw').value!==$('pw2').value){err.textContent='The two passwords are not the same';return}
-   if(authEmail!=='off')body.email=$('em').value}}
+   if(authEmail!=='off')body.email=$('em').value;
+   body.birth_year=Number($('by').value)||0;if(!body.birth_year){err.textContent='Please give the year you were born';return}}}
  b.disabled=true;
  try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
   if(j.token){token=j.token;try{localStorage.ms_token=token}catch(e){}lsSet('ms_seen_login',true);$('pw').value=$('pw2').value='';
@@ -515,6 +571,13 @@ function renderHeader(){
  setText($('cash'),f(S.cash)+' MB');setText($('eq'),f(S.equity)+' MB');setText($('pnl'),signed(S.pnl)+' MB',S.pnl>=0?'up':'dn');
  setText($('ret'),pc(S.ret),S.ret>=0?'up':'dn');setText($('rank'),S.rank?'#'+S.rank+' / '+S.players:'unranked');setText($('sn'),S.season);
  setText($('left'),dur(S.season_left));
+ const lnb=$('learn-banner'),newbie=!guest&&S.lessons===0&&!lsGet('ms_learn_hide',false)&&page==='market'&&!S.low;
+ if(lnb._on!==newbie){lnb._on=newbie;lnb.style.display=newbie?'flex':'none';
+  if(newbie)lnb.innerHTML='<span><b>New to trading?</b> Start with the first lesson: four minutes, a short quiz, and 20 MB for passing it.</span><span class="bar" style="margin:0"><a href="/learn?l=basics">Start lesson 1</a><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>'}
+ const pb=$('pro-badge'),pro=!!S.pro&&!guest;if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}
+ const lb=$('low-banner'),low=!!S.low&&!guest&&!lowHidden&&page!=='shop';
+ if(lb._on!==low){lb._on=low;lb.style.display=low?'flex':'none';
+  if(low)lb.innerHTML='<span><b>You are nearly out of MB.</b> It happens to every trader while learning. Close your positions, then take the free restart, or top up in the shop.</span><span class="bar" style="margin:0"><button data-shop="closeall">Close all positions</button><a href="/shop">Free restart and shop</a><a href="/learn">Lessons on risk</a><button data-shop="lowhide" aria-label="Hide this message">&times;</button></span>'}
  const mk=S.market||{phase:'open',changes_in:null},ph=mk.phase||'open';
  const left=mk.changes_in===null||mk.changes_in===undefined?null:Math.max(0,Math.round(mk.changes_in-(Date.now()-S.market_at)/1000));
  const tail=left===null?'':ph==='pre'?' · opens in '+dur(left):ph==='open'?' · after-hours in '+dur(left):' · pre-market in '+dur(left);
@@ -661,32 +724,68 @@ function liveCandles(price){
  const c=chartCandles.map(x=>({...x}));
  if(!c.length||!price)return c;
  const secs=secsOf(chartPeriod),bucket=Math.floor(engineNow()/secs)*secs,lc=c[c.length-1];
- if(bucket>lc.t)c.push({t:bucket,o:lc.c,h:Math.max(lc.c,price),l:Math.min(lc.c,price),c:price});
+ if(bucket>lc.t)c.push({t:bucket,o:lc.c,h:Math.max(lc.c,price),l:Math.min(lc.c,price),c:price,v:0});
  else{lc.c=price;lc.h=Math.max(lc.h,price);lc.l=Math.min(lc.l,price)}
  return c}
 function candleSvg(candles,price,avg){
- const{w,h,padL,padR,padT,padB}=CH,pw=plotW(),ph=h-padT-padB,axisX=w-padR,n=candles.length;
+ const{w,padL,padR,padT,padB}=CH,pw=plotW(),axisX=w-padR,n=candles.length;
  if(!n)return '<p class="mut">Collecting prices…</p>';
  clampPan(n);
+ const showRsi=indOn('rsi'),showMacd=indOn('macd'),PH=NARROW?220:250,VH=56,SH=70,GAP=8;
+ const vTop=padT+PH+GAP,rTop=vTop+VH+GAP,mTop=rTop+(showRsi?SH+GAP:0),h=mTop+(showMacd?SH+GAP:0)+padB-GAP;
+ CH.h=h;
  const slot=baseSlot(n)*zoom,x0=newestX(),cx=i=>x0-(n-1-i)*slot,bodyW=Math.max(1,slot*.7);
  const vis=[];for(let i=0;i<n;i++){const x=cx(i);if(x>=padL-slot&&x<=padL+pw+slot)vis.push(i)}
+ const closes=candles.map(c=>c.c);
+ const lines=[];       // [values, colour, label, dash]
+ if(indOn('sma20'))lines.push([smaOf(closes,20),'#e3b341','SMA 20']);
+ if(indOn('sma50'))lines.push([smaOf(closes,50),'#bc8cff','SMA 50']);
+ if(indOn('ema20'))lines.push([emaOf(closes,20),'#39c5cf','EMA 20']);
+ if(indOn('bb')){const m=smaOf(closes,20),sd=sdOf(closes,20,m);lines.push([m.map((v,i)=>v===null?null:v+2*sd[i]),'#8b949e','BB upper','4 3']);lines.push([m.map((v,i)=>v===null?null:v-2*sd[i]),'#8b949e','BB lower','4 3'])}
+ if(indOn('vwap')&&secsOf(chartPeriod)<1800)lines.push([vwapOf(candles),'#f778ba','VWAP']);
  let lo=Infinity,hi=-Infinity;
  for(const i of vis){lo=Math.min(lo,candles[i].l);hi=Math.max(hi,candles[i].h)}
  if(!vis.length){lo=hi=price||candles[n-1].c}
  if(price){lo=Math.min(lo,price);hi=Math.max(hi,price)}
  if(avg){lo=Math.min(lo,avg);hi=Math.max(hi,avg)}
  const padv=(hi-lo)*.08||hi*.002||1e-6;lo-=padv;hi+=padv;
- const span=hi-lo,y=v=>padT+ph-(v-lo)/span*ph;
- let s=`<svg class="price-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${chartPeriod} candlestick price chart"><defs><clipPath id="clip"><rect x="${padL}" y="${padT}" width="${pw}" height="${ph}"/></clipPath></defs>`;
+ const span=hi-lo,y=v=>padT+PH-(v-lo)/span*PH;
+ chartScale={lo,span,padT,PH,h};
+ let s=`<svg class="price-chart" viewBox="0 0 ${w} ${h}" role="img" aria-label="${chartPeriod} candlestick price chart"><defs><clipPath id="clip"><rect x="${padL}" y="${padT}" width="${pw}" height="${PH}"/></clipPath><clipPath id="clipV"><rect x="${padL}" y="${vTop}" width="${pw}" height="${h-vTop}"/></clipPath></defs>`;
  for(let i=0;i<=4;i++){const v=lo+span*i/4,yy=y(v).toFixed(1);
   s+=`<line x1="${padL}" y1="${yy}" x2="${axisX}" y2="${yy}" stroke="#21262d"/><text x="${axisX+6}" y="${(+yy+4).toFixed(1)}" fill="#8b949e" font-size="11">${numText(v,Math.abs(v)<1?4:2)} MB</text>`}
- s+=`<line x1="${axisX}" y1="${padT}" x2="${axisX}" y2="${h-padB}" stroke="#30363d"/><line x1="${padL}" y1="${h-padB}" x2="${axisX}" y2="${h-padB}" stroke="#30363d"/><g clip-path="url(#clip)">`;
+ s+=`<line x1="${axisX}" y1="${padT}" x2="${axisX}" y2="${h-padB}" stroke="#30363d"/><line x1="${padL}" y1="${h-padB}" x2="${axisX}" y2="${h-padB}" stroke="#30363d"/><line x1="${padL}" y1="${vTop-GAP/2}" x2="${axisX}" y2="${vTop-GAP/2}" stroke="#21262d"/><g clip-path="url(#clip)">`;
  const every=Math.max(1,Math.ceil(110/slot));
  for(const i of vis){
   const c=candles[i],x=cx(i),up=c.c>=c.o,col=up?'#3fb950':'#f85149',yO=y(c.o),yC=y(c.c),top=Math.min(yO,yC),bh=Math.max(1,Math.abs(yC-yO));
   s+=`<line x1="${x.toFixed(1)}" y1="${y(c.h).toFixed(1)}" x2="${x.toFixed(1)}" y2="${y(c.l).toFixed(1)}" stroke="${col}" stroke-width="${Math.max(1,Math.min(2,bodyW/8)).toFixed(1)}"/>`;
-  s+=`<rect x="${(x-bodyW/2).toFixed(1)}" y="${top.toFixed(1)}" width="${bodyW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${col}"><title>${axisLabel(c.t)}  O ${f(c.o)}  H ${f(c.h)}  L ${f(c.l)}  C ${f(c.c)}</title></rect>`}
+  s+=`<rect x="${(x-bodyW/2).toFixed(1)}" y="${top.toFixed(1)}" width="${bodyW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${col}"><title>${axisLabel(c.t)}  O ${f(c.o)}  H ${f(c.h)}  L ${f(c.l)}  C ${f(c.c)}  Vol ${volText(c.v)}</title></rect>`}
+ const path=vals=>{let d='',pen=false;for(const i of vis){const v=vals[i];if(v===null||v===undefined||!isFinite(v)){pen=false;continue}d+=(pen?'L':'M')+cx(i).toFixed(1)+' '+y(v).toFixed(1);pen=true}return d};
+ lines.forEach(([vals,col,_,dash])=>{const d=path(vals);if(d)s+=`<path d="${d}" fill="none" stroke="${col}" stroke-width="1.4"${dash?` stroke-dasharray="${dash}"`:''}/>`});
+ for(const lv of myLines()){if(lv<lo||lv>hi)continue;const yy=y(lv).toFixed(1);s+=`<line x1="${padL}" y1="${yy}" x2="${axisX}" y2="${yy}" stroke="#c3a3ff" stroke-width="1.3" stroke-dasharray="6 4"/>`}
  s+='</g>';
+ for(const lv of myLines()){if(lv<lo||lv>hi)continue;const yy=y(lv);s+=`<text x="${padL+4}" y="${(yy-4).toFixed(1)}" fill="#c3a3ff" font-size="10.5">${numText(lv,Math.abs(lv)<1?4:2)}</text>`}
+ if(lines.length)s+=`<text x="${padL+4}" y="${padT+12}" font-size="10.5">${lines.filter(l=>!/lower/.test(l[2])).map(l=>`<tspan fill="${l[1]}">${l[2].replace(' upper','')}  </tspan>`).join('')}</text>`;
+ // volume
+ let vmax=0;for(const i of vis)vmax=Math.max(vmax,candles[i].v||0);
+ s+=`<g clip-path="url(#clipV)">`;
+ if(vmax>0)for(const i of vis){const c=candles[i],vh=(c.v||0)/vmax*(VH-4),x=cx(i);s+=`<rect x="${(x-bodyW/2).toFixed(1)}" y="${(vTop+VH-vh).toFixed(1)}" width="${bodyW.toFixed(1)}" height="${Math.max(0,vh).toFixed(1)}" fill="${c.c>=c.o?'#3fb95066':'#f8514966'}"/>`}
+ s+=`</g><text x="${axisX+6}" y="${vTop+12}" fill="#8b949e" font-size="10.5">Volume</text>${vmax>0?`<text x="${axisX+6}" y="${vTop+26}" fill="#8b949e" font-size="10.5">${volText(vmax)}</text>`:''}`;
+ // RSI
+ if(showRsi){const r=rsiOf(closes),yr=v=>rTop+SH-v/100*SH;
+  s+=`<line x1="${padL}" y1="${yr(70)}" x2="${axisX}" y2="${yr(70)}" stroke="#f8514955" stroke-dasharray="3 3"/><line x1="${padL}" y1="${yr(30)}" x2="${axisX}" y2="${yr(30)}" stroke="#3fb95055" stroke-dasharray="3 3"/><text x="${axisX+6}" y="${rTop+12}" fill="#8b949e" font-size="10.5">RSI 14</text>`;
+  let d='',pen=false;for(const i of vis){const v=r[i];if(v===null){pen=false;continue}d+=(pen?'L':'M')+cx(i).toFixed(1)+' '+yr(v).toFixed(1);pen=true}
+  const last=r[n-1];s+=`<g clip-path="url(#clipV)"><path d="${d}" fill="none" stroke="#58a6ff" stroke-width="1.3"/></g>${last!==null?`<text x="${axisX+6}" y="${rTop+26}" fill="#58a6ff" font-size="10.5">${last.toFixed(0)}</text>`:''}`}
+ // MACD
+ if(showMacd){const e12=emaOf(closes,12),e26=emaOf(closes,26),m=closes.map((_,i)=>e12[i]===null||e26[i]===null?null:e12[i]-e26[i]);
+  const firstM=m.findIndex(v=>v!==null),sig=firstM<0?m.map(()=>null):m.map(()=>null);
+  if(firstM>=0){const ss=emaOf(m.slice(firstM),9);ss.forEach((v,j)=>sig[firstM+j]=v)}
+  let mm=1e-12;for(const i of vis){if(m[i]!==null)mm=Math.max(mm,Math.abs(m[i]));if(sig[i]!==null)mm=Math.max(mm,Math.abs(sig[i]))}
+  const ym=v=>mTop+SH/2-v/mm*(SH/2-3);
+  s+=`<line x1="${padL}" y1="${ym(0)}" x2="${axisX}" y2="${ym(0)}" stroke="#30363d"/><text x="${axisX+6}" y="${mTop+12}" fill="#8b949e" font-size="10.5">MACD</text><g clip-path="url(#clipV)">`;
+  for(const i of vis){if(m[i]===null||sig[i]===null)continue;const hv=m[i]-sig[i],x=cx(i);s+=`<rect x="${(x-bodyW/2).toFixed(1)}" y="${Math.min(ym(0),ym(hv)).toFixed(1)}" width="${bodyW.toFixed(1)}" height="${Math.abs(ym(hv)-ym(0)).toFixed(1)}" fill="${hv>=0?'#3fb95055':'#f8514955'}"/>`}
+  const pth=vals=>{let d='',pen=false;for(const i of vis){const v=vals[i];if(v===null){pen=false;continue}d+=(pen?'L':'M')+cx(i).toFixed(1)+' '+ym(v).toFixed(1);pen=true}return d};
+  s+=`<path d="${pth(m)}" fill="none" stroke="#58a6ff" stroke-width="1.3"/><path d="${pth(sig)}" fill="none" stroke="#f0883e" stroke-width="1.2"/></g>`}
  for(const i of vis){if((n-1-i)%every===0){const x=cx(i);if(x>=padL+20&&x<=padL+pw-20)s+=`<text x="${x.toFixed(1)}" y="${h-9}" fill="#8b949e" font-size="11" text-anchor="middle">${axisLabel(candles[i].t)}</text>`}}
  const liveY=price?y(price):null,avgY=avg?y(avg):null;
  if(avgY!==null){
@@ -704,7 +803,8 @@ function drawChart(){
  const h=S.holdings.find(x=>x.ticker===selectedTicker);
  const candles=chartCandles.length?liveCandles(st.price):[];
  wrap.querySelector('.svgslot').innerHTML=candleSvg(candles,st.price,h?h.avg:0);
- const info=$('chart-info');if(info)info.textContent=`${candles.length} candles · scroll to zoom, drag to pan, zoom out as far as you like`}
+ const info=$('chart-info');if(info)info.textContent=`${candles.length} candles · scroll to zoom, drag to pan, zoom out as far as you like`;
+ drawIndBar();drawRisk()}
 function zoomAt(factor,mx){
  const n=chartCandles.length||1,oldSlot=baseSlot(n)*zoom,nz=clampZoom(zoom*factor,n),newSlot=baseSlot(n)*nz;
  const x0=newestX(),u=(mx-x0)/oldSlot;zoom=nz;pan+=(mx-u*newSlot)-x0;scheduleChart()}
@@ -725,7 +825,12 @@ function buildDetail(){
 <div class="ticket"><span class="lab">Bracket for your position</span><input class="o-in" id="b-tp" type="number" step="any" min="0" placeholder="take profit at" aria-label="Take profit price"><input class="o-in" id="b-sl" type="number" step="any" min="0" placeholder="stop-loss at" aria-label="Stop-loss price"><button id="b-place">Set bracket</button></div>
 <p class="hint">The server carries the order out for you, at the market price at that moment (a fast move can fill you beyond your trigger). Orders cost the same 0.1% fee as any trade and never move a price. A stop-loss or take-profit only closes your position; it never opens a new one. A bracket is a take-profit and a stop-loss that cancel each other.</p>
 <div id="o-list"></div></details>
-<div class="position" id="d-pos" style="display:none"></div>
+<details class="orders" id="d-risk"><summary>Position size and risk: how much to buy for the risk you choose</summary>
+<div class="ticket"><span class="lab">Entry</span><input class="o-in" id="r-entry" type="number" step="any" min="0" placeholder="price now" aria-label="Entry price"><span class="lab">Stop-loss</span><input class="o-in" id="r-stop" type="number" step="any" min="0" placeholder="stop price" aria-label="Stop-loss price"><span class="lab">Risk</span><select id="r-pct" aria-label="Risk per trade"><option value="0.005">0.5%</option><option value="0.01" selected>1%</option><option value="0.02">2%</option></select><span class="lab">of your equity · target</span><select id="r-rr" aria-label="Reward to risk"><option value="1.5">1.5R</option><option value="2" selected>2R</option><option value="3">3R</option></select></div>
+<div id="r-out" class="hint"></div><div class="bar"><button id="r-use" disabled>Fill in the trade and the bracket</button><span class="hint" id="r-atr"></span></div>
+<p class="hint">Professional traders size every position so that being wrong costs a small, fixed share of the account: put the stop where the idea is proved wrong (just past a support or resistance level), then buy only as much as that risk allows. A stop above the entry means a short.</p></details>
+<p class="hint" style="margin:4px 0 10px"><a id="d-journal" href="/journal">Plan this trade in your journal &rarr;</a></p><div class="position" id="d-pos" style="display:none"></div>
+<div class="ind-bar" id="ind-bar"></div>
 <div class="chart-wrap" id="chart-wrap"><div class="svgslot"></div></div>
 <div class="chart-controls"><button id="z-in">+ Zoom in</button><button id="z-out">− Zoom out</button><button id="z-reset">Reset view</button><span class="mut" id="chart-info"></span></div>
 <div class="finance-grid" id="d-facts"></div>
@@ -737,11 +842,12 @@ function buildDetail(){
  document.querySelector('.periods').onclick=e=>{const b=e.target.closest('button[data-p]');if(b)selectPeriod(b.dataset.p)};
  const wrap=$('chart-wrap');
  wrap.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.15:1/1.15,svgX(e))},{passive:false});
- wrap.addEventListener('pointerdown',e=>{dragX=e.clientX;dragPan0=pan;wrap.classList.add('dragging');try{wrap.setPointerCapture(e.pointerId)}catch(err){}});
+ wrap.addEventListener('pointerdown',e=>{if(drawMode&&chartScale){const el=wrap.querySelector('svg');if(el){const r=el.getBoundingClientRect(),yy=(e.clientY-r.top)*chartScale.h/r.height;if(yy>=chartScale.padT&&yy<=chartScale.padT+chartScale.PH){addLine(chartScale.lo+(chartScale.padT+chartScale.PH-yy)/chartScale.PH*chartScale.span);return}}}dragX=e.clientX;dragPan0=pan;wrap.classList.add('dragging');try{wrap.setPointerCapture(e.pointerId)}catch(err){}});
  wrap.addEventListener('pointermove',e=>{if(dragX===null)return;const el=wrap.querySelector('svg');const sc=el?CH.w/el.getBoundingClientRect().width:1;pan=dragPan0+(e.clientX-dragX)*sc;scheduleChart()});
  const end=()=>{dragX=null;wrap.classList.remove('dragging')};
  wrap.addEventListener('pointerup',end);wrap.addEventListener('pointercancel',end);
  wireOrders();
+ drawIndBar();
  drawChips()}
 let delistedView=false;
 function drawDelisted(){
@@ -805,7 +911,7 @@ function drawDetail(){
  if(builtFor!==selectedTicker){builtFor=selectedTicker;chartCandles=[];company=null;zoom=1;pan=0;buildDetail();requestHistory();requestCompany()}
  const sector=m.sectors.find(x=>x.id===stock.sector),fin=finOf(stock);
  const type=stock.asset_type==='equity'?'Equity':stock.asset_type==='index'?(stock.tracks&&/x the daily moves/.test(stock.tracks)?'Leveraged product':stock.tracks&&/^Equal weights/.test(stock.tracks)?'ETF':'Index'):'Commodity';
- setText($('d-name'),`${iconOf(stock)} ${stock.name} \u00B7 ${stock.ticker}`);document.title=`${stock.ticker} \u00B7 ${stock.name} \u2014 Meme Street`;
+ setText($('d-name'),`${iconOf(stock)} ${stock.name} \u00B7 ${stock.ticker}`);const dj=$('d-journal');if(dj)dj.href='/journal?t='+encodeURIComponent(stock.ticker);document.title=`${stock.ticker} \u00B7 ${stock.name} \u2014 Meme Street`;
  const on=watch.has(stock.ticker);setText($('d-star'),on?'★':'☆','star'+(on?' on':''));
  setHtml($('d-badges'),badgesHtml(stock));
  setText($('d-sub'),`${type} · ${stock.asset_type==='index'?'Index & ETF':(sector?.name||stock.sector)} · ${stock.asset_type==='equity'?stock.rating+' bank rating · ':''}Beta ${f(stock.beta,2)} · ${(stock.vol*100).toFixed(1)}% annual volatility`);
@@ -880,8 +986,8 @@ $('pf-pos').addEventListener('click',e=>{const tr=e.target.closest('tr[data-k]')
 async function loadPortfolio(){const d=await api('/api/portfolio');if(d&&!d.slow&&!d.notfound){pfData=d;drawPortfolio()}}
 
 // ---------- history page ----------
-const KIND_LABEL={buy:'Buy',sell:'Sell',short:'Short',cover:'Cover',margin_call:'Margin call',dividend:'Dividend',borrow:'Borrow fee',credit:'Deposit',debit:'Withdrawal',delist_payout:'Delisting payout'};
-const HFILTERS=[['All',''],['Trades','buy,sell,short,cover,margin_call'],['Buys','buy,cover'],['Sells','sell,short'],['Dividends','dividend'],['Deposits','credit,debit,delist_payout']];
+const KIND_LABEL={buy:'Buy',sell:'Sell',short:'Short',cover:'Cover',margin_call:'Margin call',dividend:'Dividend',borrow:'Borrow fee',credit:'MB added',debit:'MB removed',delist_payout:'Delisting payout',purchase:'Purchase'};
+const HFILTERS=[['All',''],['Trades','buy,sell,short,cover,margin_call'],['Buys','buy,cover'],['Sells','sell,short'],['Dividends','dividend'],['MB added','credit,debit,delist_payout,purchase']];
 let hKind='',hEvents=[],hNext=null,hLoading=false;
 function drawHistFilters(){$('hist-filters').innerHTML=HFILTERS.map(([n,k])=>`<button class="chip ${k===hKind?'on':''}" data-k="${k}">${n}</button>`).join('')}
 $('hist-filters').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;hKind=b.dataset.k;drawHistFilters();loadHistory(true)});
@@ -1065,7 +1171,174 @@ function render(){
  else if(page==='market'){renderMarket();drawUpcoming();drawNews();
   setHtml($('board'),'<tr><th>#</th><th>Trader</th><th>Return</th></tr>'+S.board.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="${r.ret>=0?'up':'dn'}">${pc(r.ret)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="text-align:left">Nobody has made a trade today.</td></tr>')}
  drawChips()}
-const refreshers={portfolio:loadPortfolio,leaders:loadBoards,profile:loadMe,social:loadSocial,player:loadPlayer};
+
+// ---------- the shop (economy.py): MB packages, the Pro pass, the age rules, the spending limit, the free restart ----------
+let shopData=null,shopAdult=false,shopWait=0;
+const SRC_LABEL={grant:'Starting balance',purchase:'Bought in the shop',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
+const ORDER_STATUS={paid:'Paid',refunded:'Refunded',expired:'Expired (not paid)',cancelled:'Cancelled',failed:'Failed'};
+async function loadShop(){const d=await api('/api/shop');if(!d||d.slow||d.notfound||d.error)return;shopData=d;drawShop();shopReturn()}
+function shopReturn(){            // back from the payment page: say what happened, then tidy the address bar
+ const q=new URLSearchParams(location.search),paid=q.get('paid'),cancelled=q.get('cancelled');
+ if(cancelled){toast('Payment cancelled: nothing was charged',true,3500);history.replaceState(null,'','/shop');return}
+ if(!paid)return;
+ const o=(shopData.orders||[]).find(x=>x.id===paid);
+ if(o&&o.status==='paid'){toast('Thank you! '+(o.kind==='pro'?'Pro is on.':numText(o.mb,0)+' MB were added.'),true,4500);history.replaceState(null,'','/shop');return}
+ if(++shopWait<=10){setHtml($('shop-mode'),'<div class="notice-box">Waiting for the payment to be confirmed…</div>');setTimeout(loadShop,3000)}
+ else{toast('The payment has not been confirmed yet. If you paid, it will appear here shortly.',false,6000);history.replaceState(null,'','/shop')}}
+function drawShop(){
+ const d=shopData;if(!d)return;const c=d.catalog,can=d.selling&&d.age_ok_to_buy&&shopAdult;
+ setHtml($('shop-mode'),d.mode==='test'?'<div class="notice-box">Test mode: purchases go through a pretend checkout and no money is taken.</div>':!d.selling?'<div class="notice-box">The shop is not open yet. The prices below are what it will charge.</div>':'');
+ const r=d.restart;
+ setHtml($('shop-restart'),`<div class="restart-box"><b>Free restart</b><p class="hint" style="margin:4px 0">If your account falls below ${numText(r.below,0)} MB, you can top your cash back up to the starting balance for nothing, once every ${numText(r.days,0)} days. ${r.eligible?'<b class="up">You can use it now.</b>':r.equity<r.below?esc(r.reason)+(r.next_at?' (from '+stamp(r.next_at)+')':''):''}</p><div class="bar" style="margin:0">${r.eligible?'<button class="buy" data-shop="restart">Restart with fresh MB</button>':''}${r.open_positions&&r.equity<r.below?'<button data-shop="closeall">Close all positions</button>':''}<a href="/learn">Lessons on managing risk</a></div></div>`);
+ const buyBtn=x=>`<button class="buy" data-sku="${esc(x.sku)}" ${can?'':'disabled'}>Buy</button>`;
+ setHtml($('shop-pkgs'),c.packages.map(x=>`<div class="pkg"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${esc(x.per_100)} per 100 MB</small>${buyBtn(x)}</div>`).join(''));
+ setHtml($('shop-pro'),`<p class="hint" style="margin-top:0">Pro is extra tools for learning, never trading power: it adds no MB and gives no leaderboard advantage. Every lesson, challenge and trading feature you need to learn works without it.</p><ul class="hint">${c.pro_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
+  +(d.pro?`<p class="up">Pro is on until ${new Date(d.pro_until*1000).toLocaleDateString()}. Buying again adds to it.</p>`:'')
+  +`<div class="pkg-grid">${c.pro.map(x=>`<div class="pkg"><b>${x.days===365?'1 year':x.days+' days'}</b><span class="price">${esc(x.price)}</span><small>One payment. It does not renew by itself.</small>${buyBtn(x)}</div>`).join('')}</div>`);
+ let rules='';
+ if(!d.birth_year_set)rules=`<p class="hint" style="margin-top:0">Purchases are for people aged ${d.buy_min_age} or over. Tell us the year you were born first: only the year is kept, and only an admin can change it later.</p><div class="bar"><input id="shop-year" type="number" min="1900" max="2100" placeholder="Year you were born" style="width:190px"><button id="shop-year-save">Save</button></div>`;
+ else if(!d.age_ok_to_buy)rules=`<p class="hint" style="margin-top:0">Purchases are for people aged ${d.buy_min_age} or over, so the shop is closed to you. Everything else is free: challenges award MB, and the free restart refills an account that has run out.</p>`;
+ else rules=`<label class="hint" style="display:block;margin:0 0 6px"><input type="checkbox" id="shop-adult" ${shopAdult?'checked':''} style="width:auto;margin:0 8px 0 0">I am ${d.buy_min_age} or over, and the card I pay with is mine or I have the card holder's permission.</label>`;
+ rules+=`<ul class="hint"><li>MB are practice money with no cash value. They cannot be withdrawn, sold, given to other players or exchanged for anything.</li><li>Every payment is one-off: nothing renews automatically.</li><li>At most ${d.purchases_per_day} purchases a day, and no more than your spending limit (below) in any 30 days.</li><li>Losing MB on a trade is part of learning. Before you buy more, look at the free restart above and the lessons on risk.</li></ul>`;
+ setHtml($('shop-rules'),rules);
+ setHtml($('shop-cap'),`<p class="hint" style="margin-top:0">Spent in the last 30 days: <b>${esc(d.spent_30d_text)}</b> of your <b>${esc(d.cap_text)}</b> limit.${d.cap_pending?' Your new limit starts '+stamp(d.cap_pending[1])+'.':''} Lowering the limit works at once; raising it takes 24 hours, so it is never decided in the heat of a loss.</p><div class="bar"><input id="cap-in" type="number" min="0" step="1" placeholder="New limit, whole ${esc(c.currency.toUpperCase())}" style="width:210px"><button id="cap-save">Set limit</button></div>`);
+ const src=Object.entries(d.mb_by_source||{}).filter(([k,v])=>Math.abs(v)>=0.005);
+ setHtml($('shop-src'),src.length?'<tr><th>Source</th><th>MB</th></tr>'+src.map(([k,v])=>`<tr><td>${esc(SRC_LABEL[k]||k)}</td><td class="${v<0?'dn':''}">${numText(v)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">Nothing yet.</td></tr>');
+ setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='pro'?'Pro, '+o.days+' days':numText(o.mb,0)+' MB'}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
+$('shop-card').addEventListener('change',e=>{if(e.target.id==='shop-adult'){shopAdult=e.target.checked;drawShop()}});
+$('shop-card').addEventListener('click',async e=>{
+ const b=e.target.closest('[data-sku]'),hdr={'X-Token':token||''};
+ if(b){b.disabled=true;const r=await postJson('/api/shop/checkout',{sku:b.dataset.sku,adult:shopAdult},hdr);
+  if(r.url){location.href=r.url;return}toast(r.error||'Could not open the payment page',false,4500);b.disabled=false;return}
+ if(e.target.id==='shop-year-save'){const r=await postJson('/api/account/birth_year',{year:Number($('shop-year').value)||0},hdr);toast(r.msg||r.error||'Error',!!r.ok,4000);loadShop()}
+ else if(e.target.id==='cap-save'){const v=Number($('cap-in').value);if($('cap-in').value===''||!(v>=0)){toast('Type the new limit as a whole number',false);return}
+  const r=await postJson('/api/account/spend_cap',{cents:Math.round(v*100)},hdr);toast(r.msg||r.error||'Error',!!r.ok,4500);loadShop()}});
+// the free restart and "close everything", from the out-of-money banner and the shop
+let lowHidden=false;
+document.addEventListener('click',async e=>{
+ const a=e.target.closest('[data-shop]');if(!a)return;const hdr={'X-Token':token||''};
+ if(a.dataset.shop==='lowhide'){lowHidden=true;$('low-banner').style.display='none';$('low-banner')._on=false;return}
+ if(a.dataset.shop==='closeall'&&!confirm('Close every open position at the market price?'))return;
+ a.disabled=true;
+ const r=await postJson(a.dataset.shop==='restart'?'/api/restart':'/api/close_all',{},hdr);
+ toast(r.msg||r.error||'Error',!!r.ok,4500);a.disabled=false;if(page==='shop')loadShop()});
+
+// ---------- chart indicators: moving averages, RSI and volume are free; Bollinger bands, VWAP, MACD and ATR come with Pro ----------
+const IND=[['sma20','SMA 20',0],['sma50','SMA 50',0],['ema20','EMA 20',0],['rsi','RSI 14',0],['bb','Bollinger',1],['vwap','VWAP',1],['macd','MACD',1],['atr','ATR',1]];
+const IND_HELP={sma20:'Simple moving average of the last 20 candles',sma50:'Simple moving average of the last 50 candles',ema20:'Exponential moving average of 20 candles: reacts faster than the SMA',rsi:'Relative strength index (14): above 70 is often called overbought, below 30 oversold',bb:'Bollinger bands: the 20-candle average plus and minus two standard deviations',vwap:'Volume-weighted average price since the game day began (intraday charts only)',macd:'MACD (12, 26, 9): the gap between two moving averages and its signal line',atr:'Average true range (14): how far the price usually moves in one candle; useful for stops'};
+const ind=new Set(lsGet('ms_ind',['sma20']));
+const isPro=()=>!!(S&&S.pro);
+const indOn=k=>ind.has(k)&&(!(IND.find(x=>x[0]===k)||[])[2]||isPro());
+function smaOf(v,n){const o=[];let s=0;for(let i=0;i<v.length;i++){s+=v[i];if(i>=n)s-=v[i-n];o.push(i>=n-1?s/n:null)}return o}
+function emaOf(v,n){const o=[],k=2/(n+1);let e=null;for(let i=0;i<v.length;i++){e=e===null?v[i]:v[i]*k+e*(1-k);o.push(i>=n-1?e:null)}return o}
+function sdOf(v,n,m){return v.map((_,i)=>{if(m[i]===null)return null;let s=0;for(let j=i-n+1;j<=i;j++)s+=(v[j]-m[i])**2;return Math.sqrt(s/n)})}
+function rsiOf(v,n=14){const o=[null];let g=0,l=0;for(let i=1;i<v.length;i++){const d=v[i]-v[i-1],up=Math.max(d,0),dn=Math.max(-d,0);if(i<=n){g+=up/n;l+=dn/n;o.push(i===n?(l?100-100/(1+g/l):100):null)}else{g=(g*(n-1)+up)/n;l=(l*(n-1)+dn)/n;o.push(l?100-100/(1+g/l):100)}}return o}
+function vwapOf(c){const o=[];let pv=0,vv=0,day=null;for(const x of c){const d=Math.floor(x.t/1800);if(d!==day){day=d;pv=0;vv=0}const tp=(x.h+x.l+x.c)/3,v=x.v||0;pv+=tp*v;vv+=v;o.push(vv?pv/vv:tp)}return o}
+function atrOf(c,n=14){let a=null;for(let i=1;i<c.length;i++){const tr=Math.max(c[i].h-c[i].l,Math.abs(c[i].h-c[i-1].c),Math.abs(c[i].l-c[i-1].c));a=a===null?tr:(a*(n-1)+tr)/n}return a}
+function volText(v){v=Number(v||0);return v>=1e9?(v/1e9).toFixed(2)+'B':v>=1e6?(v/1e6).toFixed(2)+'M':v>=1e3?(v/1e3).toFixed(1)+'K':v.toFixed(0)}
+function drawIndBar(){
+ const el=$('ind-bar');if(!el)return;const pro=isPro();
+ const key=[...ind].join()+pro+drawMode+JSON.stringify(myLines());if(el._k===key)return;el._k=key;
+ el.innerHTML='<span class="lab">Indicators</span>'+IND.map(([k,l,p])=>`<button class="chip ${ind.has(k)&&(!p||pro)?'on':''}" data-ind="${k}" title="${esc(IND_HELP[k])}${p&&!pro?' (a Pro tool)':''}">${l}${p?'<small>PRO</small>':''}</button>`).join('')
+  +`<span class="lab" style="margin-left:8px">Levels</span><button class="chip ${drawMode?'on':''}" id="draw-toggle" title="Click the chart to draw a horizontal support or resistance line">${drawMode?'Click the chart…':'Draw a level'}</button><span class="lines-list">${myLines().map((p,i)=>`<button data-unline="${i}" title="Remove this line">${numText(p,Math.abs(p)<1?4:2)} &times;</button>`).join('')}</span>`}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-ind]');
+ if(b){const k=b.dataset.ind,pro=(IND.find(x=>x[0]===k)||[])[2];
+  if(pro&&!isPro()){toast('That is a Pro tool: see the Shop',false,3500);return}
+  if(ind.has(k))ind.delete(k);else ind.add(k);lsSet('ms_ind',[...ind]);drawIndBar();scheduleChart();return}
+ if(e.target.id==='draw-toggle'){drawMode=!drawMode;$('chart-wrap').classList.toggle('drawing',drawMode);drawIndBar();return}
+ const u=e.target.closest('[data-unline]');
+ if(u){const all=lsGet('ms_lines',{}),l=(all[selectedTicker]||[]);l.splice(Number(u.dataset.unline),1);all[selectedTicker]=l;lsSet('ms_lines',all);drawIndBar();scheduleChart()}});
+let drawMode=false,chartScale=null;
+const myLines=()=>(lsGet('ms_lines',{})[selectedTicker]||[]);
+function addLine(price){const all=lsGet('ms_lines',{}),l=all[selectedTicker]||[];l.push(Number(price.toPrecision(6)));all[selectedTicker]=l.slice(-8);lsSet('ms_lines',all);drawMode=false;$('chart-wrap').classList.remove('drawing');drawIndBar();scheduleChart()}
+
+// ---------- position size and risk ----------
+let riskPlan=null;
+function drawRisk(){
+ const out=$('r-out');if(!out||!S)return;const st=S.byT[selectedTicker];if(!st)return;
+ const entry=parseFloat($('r-entry').value)||st.price,stop=parseFloat($('r-stop').value),pct=parseFloat($('r-pct').value),rr=parseFloat($('r-rr').value);
+ if($('r-entry').placeholder!==numText(st.price,Math.abs(st.price)<1?4:2))$('r-entry').placeholder=numText(st.price,Math.abs(st.price)<1?4:2);
+ const atr=indOn('atr')?atrOf(chartCandles):null;setText($('r-atr'),atr?`ATR on this chart: ${numText(atr,Math.abs(atr)<1?4:3)} MB a candle (a stop 1.5-2 ATR away is common)`:'');
+ if(!(stop>0)||stop===entry){riskPlan=null;$('r-use').disabled=true;setHtml(out,'Type a stop-loss price to see the size.');return}
+ const long=stop<entry,perShare=Math.abs(entry-stop),riskMB=S.equity*pct,shares=riskMB/perShare,cost=shares*entry,target=entry+(long?1:-1)*rr*perShare;
+ const tooBig=cost>(long?S.cash:S.equity);
+ riskPlan={long,shares,cost,stop,target};$('r-use').disabled=false;
+ setHtml(out,`${long?'Buy':'Short'} <b>${numText(shares,shares<10?3:1)} shares</b> for about <b>${numText(cost)} MB</b>${tooBig?' <span class="dn">(more than you have: lower the risk or move the stop further away)</span>':''}. If the stop at ${priceText(stop)} is hit you lose about <b>${numText(riskMB)} MB</b> (${(pct*100).toFixed(1)}% of your equity) plus fees; at the ${rr}R target of ${priceText(target)} you make about <b>${numText(riskMB*rr)} MB</b>. The stop is ${(perShare/entry*100).toFixed(2)}% from the entry.`)}
+document.addEventListener('input',e=>{if(['r-entry','r-stop','r-pct','r-rr'].includes(e.target.id))drawRisk()});
+document.addEventListener('change',e=>{if(['r-pct','r-rr'].includes(e.target.id))drawRisk()});
+document.addEventListener('click',e=>{
+ if(e.target.id!=='r-use'||!riskPlan)return;
+ const amt=document.querySelector('.detail-actions .amt-input');if(amt){amt.value=riskPlan.cost.toFixed(2);amt.dispatchEvent(new Event('input',{bubbles:true}))}
+ const d=$('d-orders');if(d)d.open=true;
+ $('b-tp').value=riskPlan.target.toPrecision(6);$('b-sl').value=riskPlan.stop.toPrecision(6);
+ toast(`Filled in: press ${riskPlan.long?'Buy':'Sell'} for ${numText(riskPlan.cost)} MB, then Set bracket`,true,5000)});
+
+// ---------- the economic calendar page ----------
+const CAL_HOW={cpi:'Consumer prices',jobs:'Jobs',claims:'Jobless claims',retail:'Retail sales',pmi:'Business survey',gdp:'GDP',rates:'Rate decision'};
+async function loadCalendar(){
+ let d=null;try{const r=await fetch('/api/calendar');d=await r.json()}catch(e){return}
+ if(!d)return;
+ if(!d.on){setHtml($('cal-up'),'<tr><td class="mut" style="text-align:left">The economic calendar is not running in this game.</td></tr>');return}
+ setHtml($('cal-rate'),`The policy rate set by ${esc(d.bank)} is <b>${Number(d.rate).toFixed(2)}%</b>.`);
+ setHtml($('cal-up'),'<tr><th>When</th><th>Release</th><th>Forecast</th><th></th></tr>'+d.upcoming.map(u=>`<tr><td>${stamp(u.t)}</td><td class="cal-kind">${esc(u.name)}</td><td>${esc(u.forecast)}</td><td class="mut">in ${evShort(u.t-engineNow())}</td></tr>`).join(''));
+ setHtml($('cal-past'),d.past.length?'<tr><th>When</th><th>Release</th><th>Result</th><th>For the market</th></tr>'+d.past.map(p=>{const z=p.market_z||0;return `<tr><td>${stamp(p.t)}</td><td class="cal-kind">${esc(p.name)}</td><td>${esc(p.text)}${p.kind!=='rates'&&p.consensus!==undefined?` <span class="mut">(forecast ${esc(String(p.consensus))}${esc(p.unit||'')})</span>`:''}</td><td class="${z>0.2?'cal-up':z<-0.2?'cal-dn':'mut'}">${z>0.2?'Good news':z<-0.2?'Bad news':'Little surprise'}</td></tr>`}).join(''):'<tr><td class="mut" style="text-align:left">No releases yet.</td></tr>');
+ setHtml($('cal-earn'),(d.earnings||[]).length?'<tr><th>When</th><th>Company</th><th>Forecast EPS</th></tr>'+d.earnings.map(x=>`<tr><td>${stamp(x.at)}</td><td><a href="/stock/${encodeURIComponent(x.ticker)}">${esc(x.ticker)}</a> ${esc(x.name)}</td><td>${x.forecast!==null&&x.forecast!==undefined?Number(x.forecast).toFixed(3):'<span class="mut">published 3 game days ahead</span>'}</td></tr>`).join(''):'')}
+
+// ---------- learn: lessons, quizzes and challenges (learning.py) ----------
+let learnData=null,lessonOpen=null;
+async function loadLearn(){
+ const m=location.pathname.match(/^\/learn\/?$/)&&new URLSearchParams(location.search).get('l');
+ if(m&&(!lessonOpen||lessonOpen.id!==m)){const r=await fetch('/api/learn/lesson/'+encodeURIComponent(m));const d=await r.json().catch(()=>null);if(d&&!d.error){lessonOpen=d;drawLesson()}return}
+ if(m)return;
+ const d=await api('/api/learn');if(!d||d.slow||d.notfound||d.error)return;learnData=d;drawLearn()}
+function drawLearn(){
+ const d=learnData;if(!d)return;const w=d.week;
+ const groups={};d.lessons.forEach(l=>(groups[l.level]=groups[l.level]||[]).push(l));
+ setHtml($('learn-body'),`<h3>Learn to trade</h3><p class="about" style="margin-top:0">Short lessons on how markets move and how traders manage risk, each with a quiz. Passing a quiz the first time earns ${numText(d.lesson_reward,0)} MB, and the challenges pay more for building good habits. You can earn up to ${numText(w.cap,0)} MB a week this way (${numText(w.earned,0)} so far this week).</p>`
+  +Object.entries(groups).map(([g,ls])=>`<h3 class="sp">${esc(g)}</h3><div class="lesson-list">${ls.map(l=>`<a class="lesson-item" href="/learn?l=${encodeURIComponent(l.id)}">${l.passed?'<span class="done">Passed</span>':''}<small>${l.minutes} min · ${l.questions} questions</small><b>${esc(l.title)}</b><small>${esc(l.summary)}</small></a>`).join('')}</div>`).join('')
+  +`<h3 class="sp">Challenges</h3><p class="hint" style="margin-top:0">They reward habits, not luck: protecting trades, keeping a journal and learning from it. Weekly ones start again each Monday (UTC).</p>`
+  +d.challenges.map(c=>`<div class="chal ${c.done?'done':''}"><div><b>${esc(c.title)}</b> <small>${c.period==='week'?'this week':'once'}</small><br><small>${esc(c.how)}</small></div><div>${c.done?'<span class="up">Done</span>':`<span class="mut">${c.n} / ${c.target}</span>`} · <b>+${numText(c.reward,0)} MB</b></div><div class="bar-out"><div class="bar-in" style="width:${Math.round(100*Math.min(1,c.done?1:c.n/c.target))}%"></div></div></div>`).join(''))}
+function lessonBlock(b){if(b.h)return `<h4>${esc(b.h)}</h4>`;if(b.tip)return `<div class="tip">${esc(b.tip)}</div>`;return `<p>${esc(b.p||'')}</p>`}
+function drawLesson(){
+ const L=lessonOpen;
+ setHtml($('learn-body'),`<a href="/learn" style="font-size:13px">&larr; All lessons</a><h3 style="margin-top:10px">${esc(L.title)}</h3><p class="mut" style="margin:0">${esc(L.level)} · ${L.minutes} minutes</p><div class="lesson-body">${L.body.map(lessonBlock).join('')}</div>
+ <h3 class="sp">Quiz</h3><div id="quiz">${L.quiz.map((q,i)=>`<div class="quiz-q" data-q="${i}"><b>${i+1}. ${esc(q.q)}</b>${q.options.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="why"></div></div>`).join('')}</div>
+ <div class="bar"><button class="buy" id="quiz-go">${token?'Check my answers':'Sign in to take the quiz'}</button><span id="quiz-out" class="hint"></span></div>`)}
+$('learn-card').addEventListener('click',async e=>{
+ if(e.target.id!=='quiz-go')return;
+ if(!token){openSignin('register','Create an account to take the quiz');return}
+ const L=lessonOpen,answers=L.quiz.map((_,i)=>{const c=document.querySelector(`input[name=q${i}]:checked`);return c?Number(c.value):-1});
+ if(answers.includes(-1)){setText($('quiz-out'),'Answer every question first');return}
+ const r=await postJson('/api/learn/quiz',{lesson:L.id,answers},{'X-Token':token||''});
+ if(!r.ok){setText($('quiz-out'),r.error||'Error');return}
+ r.marks.forEach((m,i)=>{const box=document.querySelector(`.quiz-q[data-q="${i}"]`);box.style.borderColor=m.right?'#34d27b88':'#ff5f6d88';box.querySelector('.why').innerHTML=(m.right?'<span class="up">Right.</span> ':'<span class="dn">Not quite.</span> ')+esc(m.why)});
+ setText($('quiz-out'),r.passed?(r.first?`Passed: ${r.score} of ${r.of}.`+(r.paid?` +${numText(r.paid,0)} MB`:''):`All ${r.of} right again.`):`${r.score} of ${r.of} right. Read the notes and try again.`)});
+
+// ---------- the trading journal ----------
+let journalData=null;
+async function loadJournal(){const d=await api('/api/journal');if(!d||d.slow||d.notfound||d.error)return;journalData=d;drawJournal()}
+function drawJournal(){
+ const d=journalData;if(!d)return;
+ const sel=$('j-setup');if(!sel.options.length){sel.innerHTML='<option value="">Setup…</option>'+Object.entries(d.setups).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');
+  const t=new URLSearchParams(location.search).get('t');if(t)$('j-ticker').value=t.toUpperCase()}
+ const dl=$('j-tickers');if(S&&!dl.options.length)dl.innerHTML=S.stocks.map(s=>`<option value="${esc(s.ticker)}">${esc(s.name)}</option>`).join('');
+ const sm=d.summary,F=(l,v)=>`<div><small>${l}</small><strong>${v}</strong></div>`;
+ setHtml($('j-sum'),F('Closed trades',sm.closed)+F('Open',sm.open)+F('Ideas (not traded yet)',sm.ideas)+F('Win rate',sm.win_rate===null?'-':Math.round(sm.win_rate*100)+'%')+F('Average result',sm.avg_result===null?'-':signed(sm.avg_result)+' MB'));
+ const ps=d.pro_stats;
+ setHtml($('j-pro'),d.pro?(ps&&ps.by_setup.length?`<h3 class="sp">By setup <span class="pro-badge" style="display:inline-block">PRO</span></h3><p class="hint">Average R is the result divided by the risk your stop allowed (only trades with a stop). ${ps.avg_r!==null?`Overall: <b>${signed(ps.avg_r)}R</b> a trade, best ${signed(ps.best_r)}R, worst ${signed(ps.worst_r)}R; ${Math.round(ps.planned_share*100)}% of closed trades had a stop.`:''}</p><table><tr><th>Setup</th><th>Trades</th><th>Win rate</th><th>Average R</th><th>Total</th></tr>${ps.by_setup.map(b=>`<tr><td>${esc(b.name)}</td><td>${b.n}</td><td>${Math.round(b.win_rate*100)}%</td><td>${b.avg_r===null?'-':signed(b.avg_r)+'R'}</td><td class="${b.total>=0?'up':'dn'}">${signed(b.total)} MB</td></tr>`).join('')}</table>`:'<p class="hint">Your results by setup appear here once you have closed a few journaled trades.</p>'):'<p class="hint">With <a href="/shop">Pro</a> the journal also breaks your results down by setup, in R.</p>');
+ const ST={idea:'Idea',open:'Open',closed:'Closed'};
+ setHtml($('j-rows'),d.entries.length?'<tr><th>When</th><th>Stock</th><th>Setup</th><th>Plan</th><th>Status</th><th>Result</th><th>Lesson learned</th><th></th></tr>'+d.entries.map(e=>`<tr><td>${stamp(e.t)}</td><td><a href="/stock/${encodeURIComponent(e.ticker)}">${esc(e.ticker)}</a>${e.side?' <span class="mut">'+e.side+'</span>':''}</td><td>${esc(d.setups[e.setup]||e.setup)}</td><td>${e.stop?'stop '+numText(e.stop,Math.abs(e.stop)<1?4:2):''}${e.target?' · target '+numText(e.target,Math.abs(e.target)<1?4:2):''}${e.plan?'<br><small class="mut">'+esc(e.plan)+'</small>':''}</td><td>${ST[e.status]||e.status}</td><td>${e.status==='closed'?`<span class="${e.result>=0?'up':'dn'}">${signed(e.result)} MB</span>${e.r!==null&&e.r!==undefined?' · '+signed(e.r)+'R':''}`:''}</td><td>${e.lesson?esc(e.lesson):e.status==='closed'?`<button data-jreview="${e.id}">Add</button>`:''}</td><td><button data-jdel="${e.id}" title="Delete">&times;</button></td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No entries yet. Plan your next trade above.</td></tr>')}
+$('journal-card').addEventListener('click',async e=>{
+ const hdr={'X-Token':token||''};
+ if(e.target.id==='j-save'){const body={ticker:$('j-ticker').value.trim(),setup:$('j-setup').value,plan:$('j-plan').value,note:$('j-note').value,stop:parseFloat($('j-stop').value)||null,target:parseFloat($('j-target').value)||null};
+  const r=await postJson('/api/journal',body,hdr);toast(r.msg||r.error||'Error',!!r.ok,3500);if(r.ok){['j-plan','j-note','j-stop','j-target'].forEach(i=>$(i).value='');loadJournal()}return}
+ const rv=e.target.closest('[data-jreview]');
+ if(rv){const text=prompt('What did you learn from this trade?');if(!text)return;const r=await postJson('/api/journal/review',{id:rv.dataset.jreview,lesson:text},hdr);toast(r.msg||r.error||'Error',!!r.ok);loadJournal();return}
+ const dl=e.target.closest('[data-jdel]');
+ if(dl){if(!confirm('Delete this journal entry?'))return;const r=await postJson('/api/journal/delete',{id:dl.dataset.jdel},hdr);toast(r.msg||r.error||'Error',!!r.ok);loadJournal()}});
+document.addEventListener('click',e=>{if(e.target.id==='learn-hide'){lsSet('ms_learn_hide',true);$('learn-banner').style.display='none';$('learn-banner')._on=false}});
+const refreshers={learn:loadLearn,journal:loadJournal,portfolio:loadPortfolio,leaders:loadBoards,profile:loadMe,social:loadSocial,player:loadPlayer,shop:loadShop,calendar:loadCalendar};
 function refreshPage(){if(!S||document.hidden)return;const fn=refreshers[page];if(fn)fn();if(page==='history'&&hEvents.length<=50&&!hLoading)loadHistory(true)}
 let firstData=false;
 function onFirstData(){

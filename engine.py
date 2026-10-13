@@ -4,6 +4,9 @@ from time import sleep as _sleep               # (a name of its own: the tests r
 
 import newsgen
 import relations
+import economy
+import learning
+import market_model
 import social
 from ledger import Ledger
 from social import SocialMixin
@@ -214,12 +217,16 @@ class Player:
         self.trades = 0
         self.guest = False       # True only for the one hidden, read-only visitor (Engine.guest)
         social.init_player(self)   # achievements, quests, following, chat limits (see social.py)
+        economy.init_player(self)  # birth year, Pro, MB by source, spending cap (see economy.py)
+        learning.init_player(self)  # lessons passed, challenge progress, the trading journal (see learning.py)
 
 
-class Engine(SocialMixin, AccountsMixin):
+class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin):
     def __init__(self, content_glob="*.json", state_file="state.json", ledger_path=None):
         self._init_social()
         self._init_accounts()
+        self._init_economy()
+        self._init_learning()
         self.guest = Player("guest")             # what a logged-out visitor's page is attached to: never in `players` or `by_token`,
         self.guest.token, self.guest.guest = GUEST_KEY, True    # has no money, cannot trade or chat, and cannot be logged in as
         self.content_glob = content_glob
@@ -295,6 +302,10 @@ class Engine(SocialMixin, AccountsMixin):
         self.index_hist = deque(maxlen=MARKET_DAY_SECONDS + 1)
         self.market_day = int(self.now // MARKET_DAY_SECONDS)
         self._pending = {}
+        self.model = None                          # the price model (set below once the settings are read)
+        self._model_saved = None                   # the model's part of the save file, until a model takes it
+        self._model_noise, self._model_volume, self._model_t = {}, {}, None
+        self._vol_sess = 1.0                       # this tick's session factor, for the volume of each candle
         self.regime = "Expansion"
         regime_window = self.settings.get("regime_days", [7, 14])
         self.next_regime_change = self.now + random.uniform(*regime_window) * MARKET_DAY_SECONDS
@@ -314,6 +325,10 @@ class Engine(SocialMixin, AccountsMixin):
         self.next_sector_shock = self.now + random.expovariate(1 / float(self.settings.get('sector_shock_mean_seconds', 600)))
         self.next_moonshot = self.now + random.expovariate(1 / float(self.settings.get('moonshot_mean_seconds', 900)))
         self.next_offering = self.now + random.expovariate(1 / float(self.settings.get('offering_mean_seconds', 1200)))
+        # The learn-to-trade price model (market_model.py): drift, regimes, swings, support and resistance, volume and
+        # the macro calendar. `market_model` 2 turns it on (base.json); 1 is the old zero-drift market.
+        self.model = (market_model.MarketModel(self.settings, rng=random.Random(random.random()), now=self.now)
+                      if self._model_on() else None)
         had_state = bool(self.state_file and os.path.exists(self.state_file))
         self._pre_moonshot_save = False
         self._assign_personas()
@@ -677,6 +692,8 @@ class Engine(SocialMixin, AccountsMixin):
         target = -0.9 if crisis else REGIME_MOOD.get(self.regime, 0.1)
         self.mood += (target - self.mood) * (1 - math.exp(-dt / 150))
         vol_target = 1.5 if crisis else {"Recession": 1.2, "Bubble": 1.15, "Boom": 0.95}.get(self.regime, 1.0)
+        if self.model is not None and not crisis:
+            vol_target = market_model.REGIMES[self.model.regime][1]
         self.mkt_volm += (vol_target - self.mkt_volm) * (1 - math.exp(-dt / 150))
         for k in list(self.sector_mood):
             self.sector_mood[k] *= math.exp(-dt / 400)
@@ -721,8 +738,10 @@ class Engine(SocialMixin, AccountsMixin):
         uses it: it is deliberately not part of `player_for`, so no request to the ordinary pages can ever act as the guest."""
         return self.guest if token == GUEST_KEY else None
 
-    def credit(self, p, amount):
-        """Tokens enter the game (purchase of memebucks, signup credit)."""
+    def credit(self, p, amount, source="grant"):
+        """MB enter an account: the starting balance (`grant`), a challenge reward, the free restart, or an admin
+        correction (`economy.SOURCES`; a purchased package goes through `complete_order` instead). It counts as money put
+        in, so returns and leaderboards are measured on it and buying or earning MB never buys a rank."""
         amount = float(amount)
         if amount <= 0:
             return False, "Amount must be positive"
@@ -732,7 +751,8 @@ class Engine(SocialMixin, AccountsMixin):
         p.season_base += amount
         self.minted += amount
         self._rebase_peak(p, ratio)     # paying in is not performance: keep the drawdown tracker honest
-        self._emit("credit", p, cash=amount, notional=amount)
+        p.mb_by_source[source] = p.mb_by_source.get(source, 0.0) + amount
+        self._emit("credit", p, cash=amount, notional=amount, source=source)
         return True, f"Credited {amount:.2f} MB"
 
     def debit(self, p, amount):
@@ -1015,6 +1035,7 @@ class Engine(SocialMixin, AccountsMixin):
         p.last_trade[ticker] = self.now
         p.trades += 1
         self.trades_total += 1
+        self._learn_after_trade(p, ticker)              # the journal and the "planned trade" challenge (learning.py)
         return True, msg
 
     def _margin_calls(self):
@@ -1085,24 +1106,47 @@ class Engine(SocialMixin, AccountsMixin):
     # ---------- price history ----------
     def _record(self, s):
         price = s.price
+        vol = self._volume(s)
         minute = int(self.now // INTRADAY_CANDLE_SECONDS) * INTRADAY_CANDLE_SECONDS
         c = s.candles[-1] if s.candles else None
         if c and c[0] == minute:
             c[2], c[3], c[4] = max(c[2], price), min(c[3], price), price
+            if len(c) > 5:
+                c[5] += vol
+            else:
+                c.append(vol)
         else:
-            s.candles.append([minute, price, price, price, price])
+            s.candles.append([minute, price, price, price, price, vol])
         s.day_high = max(s.day_high, price)
         s.day_low = min(s.day_low, price)
         for key, secs in TIMEFRAMES.items():
-            self._merge(s.tf[key], int(self.now // secs) * secs, price, price, price, price)
+            self._merge(s.tf[key], int(self.now // secs) * secs, price, price, price, price, vol)
+
+    def _volume(self, s):
+        """Shares traded this second (the share counts are in billions; volume is in single shares), for the volume bars under the chart. Volume
+        follows the size of the move, the session (busy at the open, thin before and after) and the price model (low
+        in ranges, high on breakouts, macro releases and panics; ROADMAP P7). It is a picture of the market's activity:
+        players' own trades never move prices, so they are not in it."""
+        if s.asset_type == "index" or s.shares_outstanding <= 0 or len(s.hist) < 2:
+            return 0.0                           # (no second before this one, e.g. while the game is loading: nothing traded)
+        base = s.shares_outstanding * 1e9 * float(self.settings.get("daily_turnover", 0.004)) / MARKET_DAY_SECONDS
+        sess = max(self._vol_sess, 0.05)
+        prev = s.hist[-2]
+        sig = self._daily_sigma(s) / math.sqrt(MARKET_DAY_SECONDS) * sess
+        z = abs(s.price / prev - 1) / sig if prev > 0 and sig > 0 else 0.0
+        return base * sess * self._model_volume.get(s.ticker, 1.0) * (0.4 + 0.6 * min(z, 6.0))
 
     @staticmethod
-    def _merge(dq, t, o, h, l, c):
+    def _merge(dq, t, o, h, l, c, v=0.0):
         last = dq[-1] if dq else None
         if last and last[0] == t:
             last[2], last[3], last[4] = max(last[2], h), min(last[3], l), c
+            if len(last) > 5:
+                last[5] += v
+            else:
+                last.append(v)
         else:
-            dq.append([t, o, h, l, c])
+            dq.append([t, o, h, l, c, v])
 
     # ---------- market dynamics ----------
     # Exogenous moves are queued into self._pending during a tick and applied together in
@@ -1130,7 +1174,10 @@ class Engine(SocialMixin, AccountsMixin):
             return
         sigma_tick = self._daily_sigma(stock) / math.sqrt(MARKET_DAY_SECONDS) * scale
         m = self._vol_multiplier(stock)
-        stock.volm += k * (abs(applied_return) / sigma_tick - 0.8 * m)   # 0.8 = E|Z| for a standard normal shock
+        # With the new price model a fall raises volatility more than a rise does (the leverage effect, ROADMAP P6);
+        # the weights average 1, so the overall level is unchanged.
+        w = (1.25 if applied_return < 0 else 0.75) if self.model is not None else 1.0
+        stock.volm += k * (w * abs(applied_return) / sigma_tick - 0.8 * m)   # 0.8 = E|Z| for a standard normal shock
         half_life = float(self.settings.get("vol_cluster_decay_days", 1.0)) * MARKET_DAY_SECONDS
         stock.volm = _clamp(1.0 + 0.5 ** (1.0 / half_life) * (stock.volm - 1.0), 0.5, 3.0)
 
@@ -1161,14 +1208,14 @@ class Engine(SocialMixin, AccountsMixin):
             vm = self._vol_multiplier(stock)
             shock = (market_sigma * market_shock + sector_sigma * sector_shocks.get(stock.sector, 0.0)
                      + idio_sigma * random.gauss(0.0, 1.0)) / annual_scale
-            shock *= vm * session                    # known before the shock is drawn, so the mean stays zero
+            shock *= vm * session * self._model_noise.get(stock.ticker, 1.0)   # known before the shock is drawn
             if stock.asset_type == "commodity" and commodity_trend > 0:
                 # OFF by default. A slow drift makes returns predictable: following the last 10 minutes earned
                 # +0.15% per 20 minutes before fees in the edge probe, a momentum edge, so commodities are
                 # pure noise now. Kept as an experiment: `commodity_trend` scales the old drift.
                 stock.trend = stock.trend * 0.998 + random.gauss(0.0, commodity_trend * 0.0015 * stock.vol / annual_scale)
                 shock += stock.trend
-            sig = stock.vol / annual_scale * max(vm * session, 1.0)        # one typical second of this stock's noise
+            sig = stock.vol / annual_scale * max(vm * session * self._model_noise.get(stock.ticker, 1.0), 1.0)   # one typical second
             lim = max(0.01, 5.0 * sig)                                     # 1% for ordinary stocks, more for wild ones
             shock = max(-lim, min(lim, shock))
             if jump_ticks:
@@ -1178,6 +1225,78 @@ class Engine(SocialMixin, AccountsMixin):
                 shock += max(-cap, min(cap, jump))
             returns[stock.ticker] = shock
         self._queue(returns)
+
+    # ---------- the learn-to-trade price model (market_model.py) ----------
+    def _model_on(self):
+        try:
+            return int(self.settings.get("market_model", 1)) >= 2
+        except (TypeError, ValueError):
+            return False
+
+    def _model_restore(self):
+        """Give a new model the state the save file had for it (once), and rebuild its bars from the 5-minute candles."""
+        if self.model is None or not self._model_saved:
+            return
+        self.model.load(self._model_saved, self.now, {tk: s.price for tk, s in self.stocks.items()})
+        self._model_saved = None
+        for tk, s in self.stocks.items():
+            self.model.seed_bars(tk, s.tf.get("5m", ()))
+
+    def _model_step(self):
+        """One second of the price model: its drifts, swings and level reactions are queued like any other move, its
+        noise and volume multipliers are kept for this tick, and its macro releases become headlines."""
+        dt = 1.0 if self._model_t is None else max(0.0, min(5.0, self.now - self._model_t))
+        self._model_t = self.now
+        listings = [s for s in self.stocks.values() if s.asset_type != "index" and s.spec is None and s.fair > 0]
+        rets, noise, volume = self.model.step(self.now, dt, listings)
+        burst = self.model.market_vol(self.now) / market_model.REGIMES[self.model.regime][1]   # before and after releases
+        if burst != 1.0:
+            noise = {tk: v * burst for tk, v in noise.items()}
+        self._model_noise, self._model_volume = noise, volume
+        self._queue(rets)
+        self.regime = market_model.REGIME_STORY[self.model.regime]      # the tone of the headlines follows the phase
+        for ev in self.model.events:
+            self.news(ev["kind"], ev["text"], (), ev["dir"], ev["strength"])
+        self.model.events.clear()
+
+    def _earnings_forecast(self, s):
+        """The analysts' forecast of the next earnings per share (ROADMAP N5), published 3 game days ahead: what the
+        stories already announced imply, plus the analysts' own error. None when there is none yet."""
+        if self.model is None or not s.next_earn or s.shares_outstanding <= 0 or s.next_earn - self.now > 3 * MARKET_DAY_SECONDS:
+            return None
+        fc = self.model.earn_forecast.get(s.ticker)
+        if fc and abs(fc[0] - s.next_earn) < 1:
+            return fc[1]
+        dm = sum(e["dm"] for e in s.pending)
+        dr = sum(e["dr"] for e in s.pending)
+        margin = s.margin + dm * max(abs(s.margin), 0.06)
+        eps = s.revenue * (1 + dr) * margin / s.shares_outstanding * (1 + random.gauss(0.0, 0.01))
+        self.model.earn_forecast[s.ticker] = [s.next_earn, round(eps, 4)]
+        return round(eps, 4)
+
+    def _earnings_vs_forecast(self, s, eps, surprise, text):
+        """With a forecast, the report is judged against it: the price reacts to the surprise, and after a big one it
+        keeps drifting the same way for a few game days (post-earnings drift, a small and well-known effect)."""
+        fc = self.model.earn_forecast.pop(s.ticker, None)
+        if not fc or not fc[1]:
+            return surprise, text
+        miss = (eps - fc[1]) / max(abs(fc[1]), 1e-9)
+        surprise = _clamp(0.8 * miss, -0.08, 0.08)
+        word = "beats" if miss > 0.005 else "misses" if miss < -0.005 else "matches"
+        text = text.replace("EARNINGS: ", f"EARNINGS ({word} the forecast: EPS {eps:.3f} vs {fc[1]:.3f} expected): ", 1)
+        if abs(surprise) > 0.02:
+            self.model.drift_after(s.ticker, 0.15 * surprise, self.now, 3 * MARKET_DAY_SECONDS)
+        return surprise, text
+
+    def macro_calendar(self):
+        """The economic calendar page: upcoming releases with their forecasts and the latest results (ROADMAP N6)."""
+        if self.model is None:
+            return {"upcoming": [], "past": [], "rate": None, "bank": None, "on": False}
+        out = self.model.calendar(self.now)
+        out["on"] = True
+        out["earnings"] = [{"ticker": s.ticker, "name": s.name, "at": s.next_earn, "forecast": self._earnings_forecast(s)}
+                           for s in sorted((x for x in self.stocks.values() if x.next_earn), key=lambda x: x.next_earn)[:12]]
+        return out
 
     def _mean_revert(self):
         # Pulls the exogenous fair value back toward the reference price. Player price impact is
@@ -1624,6 +1743,8 @@ class Engine(SocialMixin, AccountsMixin):
                 s.div = None
                 text += " It suspends its dividend."
             s.dps = new_dps
+        if self.model is not None and eps is not None:
+            surprise, text = self._earnings_vs_forecast(s, eps, surprise, text)
         self.news("earnings", text, [s.ticker], 1 if surprise > 0 else -1 if surprise < 0 else 0, "weak")
         self._queue({s.ticker: surprise})
         s.reports.append({"t": self.now, "revenue": s.revenue, "rev_chg": rev_chg, "margin": s.margin,
@@ -1922,7 +2043,8 @@ class Engine(SocialMixin, AccountsMixin):
             # from its partners and rivals. Measured after the brake, its 5% or so of shrinkage looked like calm and
             # the multiplier slid to its floor (ordinary stocks ran at about 0.6 of their stated volatility); and
             # the spillovers add a little more than the noise the multiplier is measured against.
-            self._update_volatility(s, max(-MAX_TICK_MOVE, min(MAX_TICK_MOVE, own.get(tk, 0.0))), scale)
+            self._update_volatility(s, max(-MAX_TICK_MOVE, min(MAX_TICK_MOVE, own.get(tk, 0.0))),
+                                    scale * self._model_noise.get(tk, 1.0))
 
     def _anchor_volatility(self):
         """Keeps the average volatility multiplier of ordinary stocks at 1, so a stock's stated volatility is its
@@ -2304,6 +2426,7 @@ class Engine(SocialMixin, AccountsMixin):
             order["amount"] = float(amount)
         p.orders.append(order)
         p.orders_dirty = True
+        self._learn_order(p, ticker, kind)
         return True, f"{self.ORDER_KINDS[kind]} placed: {ticker} {'at or below' if cond == 'le' else 'at or above'} {trigger:.4g}"
 
     def place_bracket(self, p, ticker, take_profit, stop_loss):
@@ -2544,9 +2667,18 @@ class Engine(SocialMixin, AccountsMixin):
             self._reload()
         self._pending = {}
         self._update_session()
-        self._mean_revert()
+        if (self.model is not None) != self._model_on():     # switched on or off in the settings
+            self.model = (market_model.MarketModel(self.settings, rng=random.Random(random.random()), now=self.now)
+                          if self._model_on() else None)
+            self._model_noise, self._model_volume, self._model_t = {}, {}, None
+            self._model_restore()
+        if self.model is not None:
+            self._model_step()                  # drift, regimes, swings, levels and macro (replaces the two below)
+        else:
+            self._mean_revert()
         self._random_market_moves()
-        self._advance_regime()
+        if self.model is None:
+            self._advance_regime()
         self._credit_reviews()
         self._mood_step()
         self._events()
@@ -2569,7 +2701,10 @@ class Engine(SocialMixin, AccountsMixin):
         self._paper_tick()
         self._reserve_check()
         self._orders_tick()
+        if int(self.now) % 60 == 0:
+            self._expire_orders()
         self._update_index()
+        self._vol_sess = self._session_mult()
         for s in self.stocks.values():
             if s.asset_type != "index":
                 s.hist.append(s.price)
@@ -2723,16 +2858,15 @@ class Engine(SocialMixin, AccountsMixin):
         if not stock and ticker in self.archive:
             tf = self.archive[ticker]["tf"]
             key = period if period in tf else next((k for k in ("1m", "5m", "30m", "1h", "1d") if k in tf), None)
-            candles = [{"t": c[0], "o": c[1], "h": c[2], "l": c[3], "c": c[4]} for c in tf.get(key, [])]
+            candles = [{"t": c[0], "o": c[1], "h": c[2], "l": c[3], "c": c[4], "v": c[5] if len(c) > 5 else 0.0}
+                       for c in tf.get(key, [])]
             return {"type": "history", "ticker": ticker, "period": period, "candles": candles, "now": self.now,
                     "delisted": True}
         if not stock:
             return {"type": "history", "error": "Unknown or delisted stock"}
         key = period if period in TIMEFRAMES else "30s"  # legacy clients may still ask for day/week/...
-        candles = [{"t": t, "o": o, "h": h, "l": l, "c": c} for t, o, h, l, c in stock.tf[key]]
-        for candle in candles:
-            for k in "ohlc":
-                candle[k] = round(candle[k], 5)
+        candles = [{"t": c[0], "o": round(c[1], 5), "h": round(c[2], 5), "l": round(c[3], 5), "c": round(c[4], 5),
+                    "v": round(c[5]) if len(c) > 5 else 0} for c in stock.tf[key]]
         return {"type": "history", "ticker": ticker, "period": period, "candles": candles,
                 "now": self.now}
 
@@ -2774,8 +2908,13 @@ class Engine(SocialMixin, AccountsMixin):
         events = []
         for stock in self.stocks.values():
             if stock.next_earn:
-                events.append({"ticker": stock.ticker, "name": stock.name, "kind": "Earnings",
-                               "at": stock.next_earn, "in_seconds": max(0, int(stock.next_earn - self.now))})
+                fc = self._earnings_forecast(stock)
+                events.append({"ticker": stock.ticker, "name": stock.name + (f" · forecast EPS {fc:.3f}" if fc is not None else ""),
+                               "kind": "Earnings", "at": stock.next_earn, "in_seconds": max(0, int(stock.next_earn - self.now))})
+        if self.model is not None:
+            for ev in self.model.calendar(self.now)["upcoming"][:6]:
+                events.append({"ticker": "", "name": ev["forecast"], "kind": ev["name"], "macro": ev["kind"],
+                               "at": ev["t"], "in_seconds": max(0, int(ev["t"] - self.now))})
         for stock in self.stocks.values():
             for ev in stock.events:
                 events.append({"ticker": stock.ticker, "name": stock.name, "kind": newsgen.COMPANY_EVENT_KEYS[ev["kind"]]["label"],
@@ -2799,7 +2938,9 @@ class Engine(SocialMixin, AccountsMixin):
                          "borrow": round(p.borrow.get(tk, 0.0), 2),
                          "pct": round(pnl / cost, 4) if cost > 0 else 0})
         out = {"cash": round(p.cash, 2), "equity": round(e, 2), "ret": round(self.season_return(p, e), 4),
-               "pnl": round(e - p.deposited, 2), "holdings": hold, "rank": self.rank.get(p.token)}
+               "pnl": round(e - p.deposited, 2), "holdings": hold, "rank": self.rank.get(p.token),
+               "pro": self.is_pro(p), "low": e < float(self.settings.get("restart_below", 50.0)),
+               "lessons": len(p.lessons_passed)}
         if p.orders or p.orders_dirty:          # sent while there are orders, and once more when the last one goes
             out["orders"] = [self._order_view(o) for o in p.orders]
             p.orders_dirty = False
@@ -3051,7 +3192,7 @@ class Engine(SocialMixin, AccountsMixin):
                 "best": best, "worst": worst, "realized_by_ticker": dict(p.realized)}
 
     HISTORY_KINDS = ("buy", "sell", "short", "cover", "margin_call", "dividend", "borrow", "credit", "debit",
-                     "delist_payout")
+                     "delist_payout", "purchase")
 
     def history_for(self, p, limit=100, before=None, kinds=None):
         """A player's ledger entries, newest first, with paging (`before` is the `seq` of the last one seen)."""
@@ -3167,6 +3308,7 @@ class Engine(SocialMixin, AccountsMixin):
              "margin_log": list(self.margin_log), "mkt_volm": self.mkt_volm,
              "index_hist": list(self.index_hist), "market_day": self.market_day,
              "recapitalized": self.recapitalized, "regime": self.regime, "next_regime_change": self.next_regime_change,
+             "model": self.model.dump() if self.model is not None else None,
              "mood": self.mood, "crisis_until": self.crisis_until, "sector_mood": self.sector_mood,
              "used_news": list(self.used_news), "threads": self.threads,
              "delisted": self.delisted, "season_no": self.season_no,
@@ -3191,11 +3333,12 @@ class Engine(SocialMixin, AccountsMixin):
                           "email": p.email, "email_verified": p.email_verified, "email_pending": p.email_pending,
                           "entry_fee": p.entry_fee, "realized": p.realized, "fees_paid": p.fees_paid, "trades": p.trades,
                           "log": list(p.log), "margin_calls": p.margin_calls,
-                          "social": social.dump_player(p),
+                          "social": social.dump_player(p), "economy": economy.dump_player(p),
+                          "learning": learning.dump_player(p),
                           } for p in self.players.values()],
              "generated": [dict(x.cfg) for x in self.stocks.values() if x.cfg.get("generated")],
              "relations": self.relations.to_json(), "archive": self.archive,
-             "social": self.social_dump(), "accounts": self.accounts_dump()}
+             "social": self.social_dump(), "accounts": self.accounts_dump(), "shop": self.shop_dump()}
         if self._write_json(self.state_file, d):
             self.last_saved_at = time.time()          # (real time: the admin page shows how long ago the game last saved)
         interval = float(self.settings.get("charts_save_seconds", 300))
@@ -3251,6 +3394,23 @@ class Engine(SocialMixin, AccountsMixin):
             p.deposited += cash
             p.season_base = max(0.0, p.season_base + cash)
             self.minted += cash
+            if kind == "credit":
+                src = extra.get("source", "grant")
+                p.mb_by_source[src] = p.mb_by_source.get(src, 0.0) + cash
+        elif kind == "purchase":                              # a paid order: MB and/or Pro time (see economy.py)
+            oid = extra.get("order")
+            o = self.shop_orders.get(oid)
+            if o is None:                                     # ordered and paid after the snapshot: rebuild the order
+                o = {"id": oid, "token": p.token, "name": p.name, "sku": extra.get("sku"),
+                     "kind": "pro" if extra.get("days") else "package", "mb": int(round(cash)),
+                     "days": int(extra.get("days") or 0), "price_cents": int(extra.get("price_cents") or 0),
+                     "currency": self.shop_currency(), "status": "pending", "created": ev["t"], "provider": "replay",
+                     "provider_ref": None}
+                if oid:
+                    self.shop_orders[oid] = o
+            if o["status"] != "paid":
+                o["status"], o["paid_at"] = "paid", ev["t"]
+                self._apply_purchase(p, o, at=ev["t"])
         elif kind in ("buy", "sell", "short", "cover", "margin_call"):
             p.cash += cash
             self.house += house
@@ -3450,7 +3610,9 @@ class Engine(SocialMixin, AccountsMixin):
                             last = s.tf[key][-1][0]
                             for c in s.candles:
                                 if c[0] >= last:
-                                    self._merge(s.tf[key], int(c[0] // secs) * secs, *c[1:])
+                                    # (volume adds up, so a minute already inside the last saved candle adds none)
+                                    b = int(c[0] // secs) * secs
+                                    self._merge(s.tf[key], b, *c[1:5], c[5] if len(c) > 5 and b > last else 0.0)
                     else:  # state from before multi-timeframe candles: rebuild from the minute candles
                         for c in s.candles:
                             self._merge(s.tf[key], int(c[0] // secs) * secs, *c[1:])
@@ -3566,6 +3728,8 @@ class Engine(SocialMixin, AccountsMixin):
                 p.deposited = float(x.get("deposited", START_CASH))
                 p.season_base = float(x.get("season_base", self.equity(p)))
                 social.load_player(p, x.get("social", {}))
+                economy.load_player(p, x.get("economy", {}))
+                learning.load_player(p, x.get("learning", {}))
                 self.players[p.token] = p
                 self.by_token[p.token] = p
             human_in = sum(p.deposited for p in self.players.values() if p not in retiring)
@@ -3594,6 +3758,9 @@ class Engine(SocialMixin, AccountsMixin):
             self.season_end = min(float(self.season_end), self._season_boundary())   # days end at midnight UTC, even in a save made before that
             self.social_load(d.get("social", {}))
             self.accounts_load(d.get("accounts", {}))
+            self.shop_load(d.get("shop", {}))
+            self._model_saved = d.get("model")       # loaded now, or when the model is switched on
+            self._model_restore()
             if self.ledger is not None:
                 self.recovered_events = self._replay(int(d.get("ledger_seq", self.ledger.last_seq())))
             if d.get("short_model") != 2:

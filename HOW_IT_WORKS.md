@@ -6,6 +6,8 @@ This document explains the whole system: what each file does, how prices and tra
 
 Keep this file in step with the code: update it after every change (see "Keeping the docs current" at the end).
 
+> **Change of direction (2026-10-13), and what is built.** The shop, the new price model, the macro calendar, the chart tools and learning now exist (§6A, §10.9, §10.10, §11; uncommitted until tested). The paragraph below is the original note.
+>
 > **Change of direction (2026-10-13).** Meme Street is becoming a site for **learning to trade**: everyone starts with 1,000 MB, more MB is bought in packages (100 to 10,000 MB) and never cashed out, challenges award free MB, and the market is being rebuilt to drift slowly upwards with regimes, scheduled economic data (interest rates, inflation, jobs) and technical structure (support and resistance that holds or breaks). `ROADMAP.md` has the plan. **This file still describes the code as it is today**, which was built for the old plan (a real-money game in which every mechanism is a fair bet and nobody can have an edge). Sections that only matter for that old plan (the house's capital risk, the house-edge discussion in section 15, the fee-based revenue model in section 17.10) say so where they start; they will change or go as the new tracks are built.
 
 ---
@@ -21,12 +23,13 @@ $env:ADMIN_KEY = "pick-a-long-random-string"     # optional: enables /api/admin/
 .venv\Scripts\python.exe -m uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
-Or just run `powershell -File D:\stock_market_sim\start_game.ps1`: it does the same, and keeps the admin key in `admin_key.txt` (made on the first run, never sent to git). `requirements-lock.txt` lists the exact package versions the game was tested with; `pip install -r requirements-lock.txt` rebuilds the environment identically.
+Or just run `powershell -File D:\stock_market_sim\start_game.ps1`: it does the same, keeps the admin key in `admin_key.txt` (made on the first run, never sent to git) and runs the shop in **test mode** (`PAYMENTS=test`, a pretend checkout, §10.9). `-Fresh` starts a new game (the old `state.json`, charts and ledger are moved to `backups\before_fresh_<time>\`; move them back to return to it); `-Payments off` closes the shop (do that before sharing the game with `share.py`, or anyone could give themselves MB). `requirements-lock.txt` lists the exact package versions the game was tested with; `pip install -r requirements-lock.txt` rebuilds the environment identically.
 
 Then open:
 - **http://127.0.0.1:8000** for the market. Open a second browser (or a private window) to play as a second player.
 - **http://127.0.0.1:8000/stock/NVXA** for a stock's page (any ticker works, including `MSI` for the index).
 - **http://127.0.0.1:8000/holdings** for your holdings, **/portfolio** for your equity curve and profit breakdown, **/history** for every trade and payment (with a CSV download), **/leaders** for the two leaderboards, **/social** for chat and following, **/profile** for your quests, the daily contest, achievements and your account, and **/player/NAME** for another trader's profile.
+- **/learn** for the lessons, quizzes and challenges, **/journal** for your trading journal, **/calendar** for the economic calendar and **/shop** for MB packages, Pro, your spending limit and the free restart (§10.9, §10.10, §6A).
 - **http://127.0.0.1:8000/admin** for the admin dashboard (needs `ADMIN_KEY`).
 - **http://127.0.0.1:8000/docs** for FastAPI's automatic API explorer.
 
@@ -555,6 +558,90 @@ Ordinary stocks were unchanged by this when it was done (their 99th percentile w
 
 ---
 
+## 6A. The learn-to-trade price model (`market_model.py`, on since 2026-10-13)
+
+With `market_model` set to 2 (base.json) the market is no longer a fair random walk: it drifts slowly upwards, goes through hidden phases, trends, ranges, reacts at support and resistance and to a scheduled economy. Sections 6.1 (noise), 6.4 (spillovers), 6.5 (the soft daily brake), 6.7 (clustering) and 6.8 (sessions) still apply; **6.2 (mean reversion to a fixed price) and the old regime shocks are replaced**, and the zero-edge reasoning in 6.2, 7 and 17 belongs to the old market. The design rule is now **realism you can learn from, but no free money** (ROADMAP.md section 1). Setting `market_model` to 1 brings the old market back (the test suite's engine tests use it unless they ask for 2).
+
+Each second the engine calls `MarketModel.step(now, dt, listings)` (`Engine._model_step`). It returns, for every company and commodity (never an index or fund, which follow their members), an extra return that is queued like any other move, a **noise multiplier** that scales that second's random shock, and a **volume multiplier**. Everything below is hidden; players see only prices, volume and the macro releases.
+
+### 6A.1 Drift and fair value
+Every listing has an expected return a game year of `rf + beta x erp` (`rf` 1.5%, `erp` 4%: about +5.5% for a beta-1 company; commodities `rf`; moonshots 0), applied as a drift in log price. A game year is 7.6 real days, so this is about +0.03% a real hour: invisible in a session, clear over weeks. Each listing also has a **fair value** that grows at the same rate (plus 60% of the market phase's drift); the price is pulled towards it with a half-life of 120 game days (`anchor_halflife_days`), which keeps prices from wandering off for ever without making the pull worth trading.
+
+### 6A.2 Market phases (regimes)
+| Phase | Drift a game year | Noise | Average length | Next |
+|---|---|---|---|---|
+| bull | +14% | x0.85 | 70 game days | sideways, correction, sometimes bear |
+| sideways | 0% | x0.8 | 40 | bull, correction, bear |
+| correction | -110% (a fast 5-10% fall) | x1.35 | 9 | recovery, sideways, bear |
+| bear | -45% | x1.5 | 45 | recovery |
+| recovery | +50% | x1.1 | 25 | bull, sideways |
+
+Lengths are random (exponential, between 0.3 and 3 times the average). The phases' own drifts are centred so they **add nothing in the long run** (their time-weighted average, +3.2% a year, is taken out), so the long-run return is the drift of 6A.1. The economy shifts the odds of the next phase: hot inflation with tight money makes corrections and bear markets likelier, shrinking growth makes a bear market likelier, strong growth a bull market. The headline tone (§7.3) follows the phase. The admin page shows the phase; players never do.
+
+### 6A.3 Swings: trends, ranges and breakouts
+Each listing is, at any time, in one of three modes, for a random spell of game days:
+- **trend** (8-30 days): a drift of about twice the stock's volatility a game year in one direction, delivered in **legs**: an impulse (2-5 days, 3.5x) then a pullback (1-2.5 days, against the trend at 0.9x). Volume is a little higher in impulses.
+- **range** (10-35 days): the price is pulled back towards the middle of the range (half-life 3 game days), the noise is 0.8x and volume 0.65x. A range always ends in a **breakout**: a burst of 0.8 daily sigmas over 10 minutes, with 1.6x noise and 2.5x volume, upwards 62% of the time in a bull phase, 38% in a falling one. 65% of breakouts start a trend that way.
+- **free**: just the drift and the noise.
+In a sideways phase ranges are likelier.
+
+### 6A.4 Support and resistance
+Every listing keeps its own 5-minute bars (the last 400, rebuilt from the 5-minute candles after a restart) and, every 15 minutes, finds its **levels**: swing highs and lows (a bar higher or lower than the four on each side), grouped when within 0.4% of each other (a group of three is a level touched three times), plus the round numbers just above and below the price (140 and 150 near 145; `round_step`).
+
+When the price comes within a quarter of a daily sigma of a level, that is a **test**, and its outcome is drawn there and then:
+- it **holds** with probability `0.40 + 0.09 x touches (up to 4) + 0.07 if it is a round number + 0.10 if it lines up with the trend (support in an uptrend) - 0.10 if against it - 0.07 x the times it was tested in the last 3 game days`, between 25% and 75%. A hold pushes the price away from the level (0.6 daily sigmas over 4 minutes) on 1.3x volume.
+- otherwise it **breaks**: the approach speeds up, the price goes through, and it follows through (0.8 daily sigmas over 7.5 minutes, 1.25x noise, 2.5x volume) - unless the break is **false** (30%, 40% against the trend): one to four minutes after crossing, the price is pushed back inside on 1.8x volume.
+The same level is not tested again within 20 minutes. Noise can still break a level that was due to hold (it then counts as a break).
+
+### 6A.5 Volatility, volume and panics
+- The engine's clustering (§6.7) now weighs a fall 1.25x and a rise 0.75x, so volatility rises more after falls (the **leverage effect**), and it measures surprises against the model's own multiplier so a quiet range does not drag volatility down for ever.
+- **Volume** (`Engine._volume`): every candle has a sixth number, the shares traded: `shares outstanding x daily_turnover (0.4%) / 1800` a second, times the session factor, the model's volume multiplier, the phase's noise to the power 1.2, and `0.4 + 0.6 x |this second's move in sigmas|`. Indices and funds have none. Players' trades are not in it (they never move prices).
+- **Capitulation**: in a correction or a bear market, once the market (the equal-weighted average of the model's listings) is 14% below its 60-day high, each game day has a 30% chance of a panic low (at most one every 20 game days): a drop of 1.6 market daily sigmas over 4 minutes on 4x volume and 2.2x noise, then a rebound of 1.3 over 15 minutes, a headline ("Panic selling sweeps the market..."), and the phase turns to recovery.
+
+### 6A.6 The economy and the calendar
+A hidden economy moves slowly: **growth** (towards 3.0% in a bull phase, 1.8% sideways, 1.5% in a correction, -1% in a bear market, 2.4% in a recovery), **unemployment** (falls when growth is strong), **inflation** (rises with growth, falls when the real interest rate is high) and the **policy rate**, set by *the Reserve Board*. The bank follows a rule (`taylor`: neutral real rate 0.75% + inflation + half the inflation gap + half the growth gap, in quarter points).
+
+Releases come on a fixed calendar from the clock (the same after a restart; `Economy.KINDS`), 150 s into the game day, the rate decision 1050 s in:
+
+| Release | How often |
+|---|---|
+| Weekly jobless claims | every 7 game days |
+| Business survey (PMI), jobs report, consumer prices (CPI), retail sales | every 30.4 game days (about 15 real hours) |
+| GDP growth | every 91.25 game days |
+| Interest-rate decision | 8 a game year (every 45.6 game days) |
+
+Each has a **forecast** published 3-10 game days ahead (it never changes once published), drawn from the economy at that moment plus forecasters' error. The figure itself is the economy plus measurement noise, so the **surprise** (figure minus forecast, in standard deviations) is what matters. A surprise becomes a *growth* surprise and/or a *rates* surprise (hot CPI and strong jobs push rates; claims are inverted); rate decisions are priced as a probability ("a 0.25-point rise expected (72%)") and the surprise is the decision minus the expected move. The market reacts through each listing's beta (`0.6 x growth - 0.7 x rates`, times 0.55 market daily sigmas) plus its industry's sensitivity (`GROWTH_TILT`, `RATES_TILT`: banks gain on higher rates, property, tech, crypto and utilities lose, defensives hold up when growth disappoints). The move is delivered over two minutes, front-loaded; a quarter of releases **whipsaw** (the first 20 seconds go the wrong way). The market's noise is 0.85x in the five minutes before a release and up to 1.8x just after it. Each release is a `macro` headline ("Consumer prices (CPI): 3.4% a year, above the 3.2% forecast - inflation runs hot").
+
+`GET /api/calendar` and the **Calendar** page show the next releases with their forecasts, the latest results, the policy rate and the next earnings forecasts; the macro releases also appear in *Upcoming events*.
+
+### 6A.7 Earnings against a forecast
+Three game days before a report, analysts publish a **forecast EPS** (`Engine._earnings_forecast`): what the stories announced since the last report imply (§7.7), plus a 1% error. It shows in *Upcoming events* and on the Calendar page. The report then says whether the company beat, matched or missed it, and the price reacts to the miss (`0.8 x (EPS - forecast) / forecast`, at most 8%). After a big surprise (over 2%) the price keeps drifting the same way by 15% of the reaction over three game days (**post-earnings drift**).
+
+### 6A.8 Fewer headlines
+With the new model `base.json` cuts the news: a random event every 15 minutes on average (was 2), a company issue every 20 (was 1.7), offerings every 2 hours; stories about two companies, catalysts, industry-wide shocks and new moonshots are off. Macro releases, earnings, ratings and scheduled company events carry the news.
+
+### 6A.9 Checking it: `realism.py`
+`python realism.py [game_years] [seeds] [stocks] [first_seed]` runs the model on its own (with the engine's three-factor noise and clustering rebuilt in 10-second steps, about 50 times faster than the engine) and reports: the long-run return of a cap-weighted index of the simulated companies, drawdowns and time in each phase; stylised facts (kurtosis of 5-minute returns, autocorrelation of returns and of absolute returns); level statistics (how often strong and weak levels held, how many breaks failed); and simple strategies against holding, costs included (0.1% a side).
+
+Results on 2026-10-13 (4 markets x 2 game years x 40 companies, and 3 x 1 for the level strategies; noisy, see the seeds):
+
+| Check | Result | Target |
+|---|---|---|
+| Market return a game year | +1.5% to +11.5% across runs (about +6.5% on average) | +5% to +10% |
+| 10% drawdowns a game year | 0.9 to 1.6 | about 1 |
+| Kurtosis of 5-minute returns | 14 to 19 | well above 3 |
+| Autocorrelation of returns | -0.01 | near 0 |
+| Autocorrelation of absolute returns | +0.13 | clearly positive |
+| Strong levels held / weak levels held | 52-54% / 41-44% | strong 55-65%, weak below 50% |
+| Breaks that failed | 31-33% | 20-35% |
+| Buy every 1.5-sigma daily drop, short every rise, momentum, 20-day breakout or low | all below holding, most negative after costs | no simple rule beats holding |
+| Trade every level test (bounce, 1 hour, stop) | -0.23% a trade | negative |
+| Only strong levels with the 10-day trend | +0.25% a trade (about 0.15R) | modestly positive |
+
+So the market drifts up with corrections and bear markets, has fat tails and volatility clustering but no free momentum or reversal, and rewards reading levels and the trend a little, not blindly trading them. Strong levels hold slightly less often than the target; raise `hold_base` or `hold_per_touch` (settings key `price_model`, a dict of overrides of `market_model.DEFAULTS`) if you want them clearer, and re-run the check on fresh seeds.
+
+---
+
 ## 7. News, catalysts, narrative, company stories and ratings
 
 ### 7.1 When things happen
@@ -950,6 +1037,61 @@ One global chat on the Social page (private club chats went away with the clubs)
 
 ---
 
+### 10.9 The shop: MB packages, Pro, age rules, spending limits and the free restart (`economy.py`, `payments.py`)
+MB are a game currency: bought, earned or granted, **never paid out** (there is no withdrawal for players). Every MB that enters an account is counted by **source** (`p.mb_by_source`): `grant` (the starting 1,000 MB), `purchase`, `challenge` (lessons and challenges, §10.10), `restart` (the free restart), `refund` (taken back, negative) and `admin`. All of it counts as money put in (`deposited`), so buying or earning MB **never lifts a return or a rank**: the boards measure returns on the money put in. A save from before sources were kept counts everything as `grant`.
+
+**The catalogue** (`shop_packages`, `shop_pro` in base.json; prices in US cents, `shop_currency`):
+
+| Item | Price | Per 100 MB |
+|---|---|---|
+| 100 MB | US$0.99 | US$0.99 |
+| 500 MB | US$3.99 | US$0.80 |
+| 1,000 MB | US$6.99 | US$0.70 |
+| 5,000 MB | US$24.99 | US$0.50 |
+| 10,000 MB | US$39.99 | US$0.40 |
+| **Pro, 30 days** | US$4.99 | |
+| **Pro, 1 year** | US$39.99 | |
+
+**Pro** is the income that does not depend on anyone losing: tools for learning (the Bollinger bands, VWAP, MACD and ATR on the chart, the journal's breakdown by setup and its R statistics, a PRO badge), never MB, trading power or a leaderboard advantage. A pass is a one-off payment; nothing renews by itself; a second pass extends the first.
+
+**A purchase is an order.** `POST /api/shop/checkout {sku, adult}` checks the rules and makes an order (`create_order`); the buyer is sent to the payment page; the order is completed **exactly once** by `complete_order`, which credits the MB or extends Pro and writes a `purchase` event to the money ledger (so a crash cannot lose it; a purchase made after the last snapshot is rebuilt from the ledger, order and all). A retried confirmation does nothing; a wrong amount is refused; an order not paid within a day expires. The admin can **refund** a paid order after refunding the payment at the provider: it takes back the MB the player still has free (never more than the order gave) or the Pro time.
+
+**Payments** (`payments.py`, the `PAYMENTS` environment variable):
+- `off` (the default, and the live site for now): the shop shows its prices and sells nothing.
+- `test`: a pretend checkout page on this site (`/shop/pay`, "Pay (test)") completes the order without money. `start_game.ps1` turns it on locally. **Never on a public site**: anyone could give themselves MB.
+- `stripe`: Stripe Checkout. Needs `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `SITE_URL`. The buyer pays on Stripe's page; Stripe calls `POST /api/shop/stripe/webhook`, and only an event whose `Stripe-Signature` (an HMAC-SHA256 of the timestamp and the body with the webhook secret, at most 5 minutes old) checks out completes an order. The browser is never trusted to say it paid. No extra package is needed.
+
+**Age rules.** Signing up with a password asks for the **year of birth** only (that is all that is kept) and needs `min_age` (13). Buying needs `buy_min_age` (18) **and** a tick in "I am 18 or over, and the card I pay with is mine or I have the card holder's permission". An account without a year (one made before this, or in a name-only game) gives it once on the Shop page; after that only an admin can change it.
+
+**Spending limits.** At most `spend_cap_month_cents` (US$150) in any 30 days, and `purchases_per_day` (3) purchases a day. A player can set a lower limit: lowering works at once, raising waits 24 hours, so it is never decided in the heat of a loss.
+
+**The free restart.** An account whose equity is below `restart_below` (50 MB) and that has no open positions can top its cash back up to the starting balance once every `restart_days` (7) days, for nothing (`POST /api/restart`). When a player is nearly out of MB a red banner offers **Close all positions** (`POST /api/close_all`: every position closed at the market price as ordinary trades), the free restart and the shop, and links to the lessons on risk.
+
+The admin page's **Shop** panel shows the payment mode, revenue (all time and 30 days, and per day), paid orders, buyers, Pro members, refunds, orders waiting for payment, where the players' MB came from and the latest orders with a Refund button.
+
+### 10.10 Learning: lessons, challenges and the journal (`learning.py`, `lessons.json`)
+**Lessons.** Twelve short lessons in three groups (*Start here*: how this market works, candlesticks, trends and moving averages, support and resistance; *Getting better*: ranges and breakouts, risk and position size, stops and brackets, indicators; *Understanding the market*: the economy and data releases, earnings and forecasts, market phases, psychology and the journal). Each has a quiz marked on the server (`POST /api/learn/quiz`): the right answers and the explanations are never sent to the page before the player answers. Passing a quiz (every answer right) the first time pays `lesson_reward` (20 MB). Visitors can read the lessons; the quiz needs an account. A new player sees a blue strip on the market page ("New to trading? Start with the first lesson") until they pass one or hide it.
+
+**Challenges** reward the habits the lessons teach, never volume or luck:
+
+| Challenge | How | When | MB |
+|---|---|---|---|
+| First lesson | pass any lesson's quiz | once | 25 |
+| The basics | pass the four *Start here* lessons | once | 100 |
+| Graduate | pass every lesson | once | 250 |
+| Protect a trade | put a stop-loss (or a bracket) on an open position | once | 25 |
+| Dear diary | write a journal entry with a setup and a stop | once | 25 |
+| Every trade protected | stop-losses on 5 positions | weekly | 60 |
+| Plan the trade, trade the plan | close 3 positions that had a stop-loss, win or lose | weekly | 75 |
+| Keep a journal | 5 journal entries with a stop | weekly | 50 |
+| Learn from it | write what you learned on 3 closed entries | weekly | 40 |
+
+Weeks run Monday to Sunday (UTC). Lessons and challenges together pay at most `challenge_week_cap` (500 MB) a week; beyond that a challenge still completes but pays nothing. A second stop on the same position does not count again.
+
+**The journal** (`/journal`): an entry has a stock, a setup (bounce at support, rejected at resistance, breakout, trend pullback, range trade, macro release, earnings, other), the plan, an optional stop and target, and notes. An entry made with no position is an *idea*; it becomes *open* when the player opens a position in that stock within an hour, and is *closed* when the position is closed, with the **result** (the realised profit on that stock since the entry) and the **R-multiple** (the result divided by the risk the stop allowed: |entry - stop| x shares). Afterwards the player can add what they learned. Everyone sees closed, open and idea counts, the win rate and the average result; **Pro** adds the breakdown by setup (trades, win rate, average R, total) and the overall average, best and worst R. A player keeps their last 300 entries.
+
+---
+
 ## 11. The web pages and charts
 
 ### Pages
@@ -1001,6 +1143,11 @@ The engine keeps real-time candles for 11 timeframes, each updated on every tick
 - A **blue dashed line** marks the live price. If you hold the stock, an **amber dotted line** marks your average entry price and updates with each buy.
 - The current candle updates with the live price; when a new time bucket starts, the page opens a new candle.
 - The "30m" change is the current price vs the price 1,800 s ago (from the minute candles). The trend sparkline is the last 60 one-second prices.
+- **Volume** bars sit under the price (green for a candle that closed up, red for down), scaled to the tallest bar in view; the candle's tooltip gives the volume (§6A.5).
+- **Indicators** (the chips above the chart, remembered in the browser): SMA 20, SMA 50 and EMA 20 lines, an **RSI 14** panel (with 70 and 30 marked) for everyone; **Bollinger bands** (20, 2), **VWAP** (since the start of the game day; intraday charts only), a **MACD** (12, 26, 9) panel and the **ATR** (14, shown in the risk tool) with Pro (§10.9). They are computed in the page from the candles it has.
+- **Draw a level**: click the chip, then click the chart to draw a horizontal line (support or resistance) at that price. Up to eight per stock, kept in the browser, removed with their × chip.
+- **Position size and risk** (a fold-out under the orders): type a stop-loss (and optionally an entry), pick the risk (0.5%, 1% or 2% of equity) and a target (1.5R, 2R, 3R); it says how many shares to buy or short, what that costs, what you lose at the stop and make at the target, and **Fill in the trade and the bracket** puts the amount in the trade box and the stop and target in the bracket (you still press Buy and Set bracket). A stop above the entry means a short.
+- **Plan this trade in your journal** opens the journal with the stock filled in.
 
 ---
 
@@ -1011,10 +1158,24 @@ Player endpoints need the player's **session token** in an `X-Token` header (the
 
 | Endpoint | Who | Purpose |
 |---|---|---|
-| `GET /`, `/stock/{ticker}`, `/holdings`, `/portfolio`, `/history`, `/leaders`, `/social`, `/profile`, `/player/{name}` | anyone | the web page (`Cache-Control: no-store`) |
+| `GET /`, `/stock/{ticker}`, `/holdings`, `/portfolio`, `/history`, `/leaders`, `/social`, `/profile`, `/player/{name}`, `/learn`, `/journal`, `/calendar`, `/shop` | anyone | the web page (`Cache-Control: no-store`) |
+| `GET /shop/pay` | anyone | the pretend checkout page of the test mode (§10.9) |
 | `GET /api/auth_mode` | anyone | `{passwords, email, mail_ready}`: whether accounts need passwords, the `email_mode` (`off`/`optional`/`required`) and whether mail can really be sent (the sign-in box asks this) |
+| `GET /api/calendar` | anyone | the economic calendar (§6A.6): `{on, upcoming: [{t, kind, name, forecast}], past: [releases with actual, consensus, text, growth_z, rates_z, market_z], rate, bank, earnings: [{ticker, name, at, forecast}]}` |
+| `GET /api/learn` | player | the lessons (and which are passed), the challenges with progress and this week's reward cap (§10.10) |
+| `GET /api/learn/lesson/{id}` | anyone | one lesson's text and quiz questions, never the answers |
+| `POST /api/learn/quiz` `{lesson, answers}` | player | mark a quiz → `{passed, first, paid, score, of, marks: [{right, answer, why}]}`; one a second |
+| `GET /api/journal` · `POST /api/journal` `{ticker, setup, plan, stop, target, note}` · `POST /api/journal/review` `{id, lesson}` · `POST /api/journal/delete` `{id}` | player | the trading journal (§10.10): entries, summary and, with Pro, the breakdown by setup |
+| `GET /api/shop` | player | the catalogue with prices, Pro status, the age and spending rules, the last 30 purchases, the free restart's status, MB by source, `selling` and the payment `mode` (§10.9) |
+| `POST /api/shop/checkout` `{sku, adult}` | player | start a purchase → `{url, order, price}` (the payment page, or `/shop/pay?order=` in test mode); 400 with the reason (age, cap, daily limit, shop closed) |
+| `GET /api/shop/order/{id}` · `POST /api/shop/test_pay` `{order, action}` | player | the test checkout (PAYMENTS=test only; 404 otherwise): pay or cancel your own order |
+| `POST /api/shop/stripe/webhook` | Stripe | completes a paid order; only with a valid `Stripe-Signature` (PAYMENTS=stripe only) |
+| `POST /api/account/birth_year` `{year}` · `POST /api/account/spend_cap` `{cents}` | player | give the year of birth once; set your own spending limit |
+| `POST /api/restart` · `POST /api/close_all` | player | the free restart; close every position at the market price |
+| `GET /api/admin/shop` · `POST /api/admin/refund` `{id}` | admin | sales, Pro members, MB by source, the latest orders; mark a paid order refunded |
+| `GET /api/admin/model` | admin | the price model behind the scenes: phase, days left in it, the hidden economy, how many listings trend or range, levels under test |
 | `GET /api/health` | anyone | for an outside uptime monitor: `{ok, tick_age_s, saved_ago_s, uptime_s}`, **200** while the game has ticked in the last 15 seconds and saved in the last five minutes (the first three minutes after a start are forgiven), **503** when it is stuck. No key, nothing private, never rate limited; it works through a gateway, and if the game or the server is down the gateway or Caddy answers with an error, so a monitor sees that too |
-| `POST /api/register` `{name, password, email?}` | anyone | create an account → `{token, name}` (a session token), plus `email_sent`/`email_msg` when an address was given and its code was mailed. 400 with the reason for a weak password, a taken or reserved name, a bad, disposable or already used address (or a missing one in `required` mode); 429 after too many sign-ups from one address |
+| `POST /api/register` `{name, password, birth_year, email?}` | anyone | create an account → `{token, name}` (a session token), plus `email_sent`/`email_msg` when an address was given and its code was mailed. 400 with the reason for a weak password, a taken or reserved name, a bad, disposable or already used address (or a missing one in `required` mode); 429 after too many sign-ups from one address |
 | `POST /api/login` `{name, password}` | anyone | log in → `{token, name}`. 401 "Wrong name or password" (the same for an unknown name); 429 with `Retry-After` after too many failures |
 | `POST /api/join` `{name}` | anyone | the old name-only sign-up, only while `require_password` is off (else 400) |
 | `POST /api/logout` | player | end this session |
@@ -1254,7 +1415,15 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 
 | Setting | Default | Effect |
 |---|---|---|
-| `signup_bonus` | 10000 | MB credited to new players and to everyone on a game reset (the new plan: 1000, `ROADMAP.md` M1) |
+| `signup_bonus` | 1000 | MB credited to new players and to everyone on a game reset (the `grant` source, §10.9) |
+| `market_model` | 2 | 2: the learn-to-trade price model (§6A); 1: the old zero-drift market (§6.2 and the regime shocks) |
+| `price_model` | (none) | a dict overriding `market_model.DEFAULTS`, e.g. `{"erp": 0.035, "hold_base": 0.45}` (§6A) |
+| `daily_turnover` | 0.004 | share of a company's shares traded in a game day, for the volume bars (§6A.5) |
+| `min_age` / `buy_min_age` | 13 / 18 | the age to sign up and the age to buy (§10.9) |
+| `shop_packages` / `shop_pro` / `shop_currency` | see §10.9 / `usd` | the catalogue, prices in cents |
+| `spend_cap_month_cents` / `purchases_per_day` | 15000 / 3 | the spending limits (§10.9) |
+| `restart_below` / `restart_days` | 50 / 7 | the free restart: below this equity, once every this many days (§10.9) |
+| `lesson_reward` / `challenge_week_cap` | 20 / 500 | MB for passing a lesson the first time; most MB from lessons and challenges in a week (§10.10) |
 | `house_seed` | 50000 | starting house reserve (funds new listings) |
 | `season_seconds` | 86400 | length of a day (the old season): the leaderboard period; the day ends at the next multiple of it since the epoch, so 86400 means UTC midnight |
 | `event_mean_seconds` | 120 | average gap between random news events |
@@ -1391,6 +1560,9 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 | `test_msi50.py` | **the MSI 50**: its name everywhere, exactly 50 members that are the biggest companies and only companies (no moonshots, funds, commodities or indices), the return is the market-value-weighted return of the members, a bigger member moves it more, outsiders cannot move it, the leveraged products follow it, re-ranking at a new game day, a delisted member replaced at once, fewer than 50 companies, the members survive a restart and an old save without them, trading it never moves it and the books balance | 13 | about 5 s |
 | `test_admin_insights.py` | **the dashboard's deeper numbers** (15 tests): the ledger's hourly, daily and per-stock summaries (hand-made events with known answers, an empty ledger), the engine's insights (market counts add up, orders, positions, biggest players, chat, settings in effect), the save time, the endpoint's key check and every panel, plausible machine numbers, visitors counted apart, wrong keys counted and listed with their address, ten wrong keys locking an address out (even with the right key, the game itself unaffected) and the same through a gateway | 15 | about 15 s |
 | `test_guest.py` | **visitors and the funnel** (22 tests, the server ones both straight at the game and through a gateway): the hidden guest is not a player and cannot be logged in as, a visitor gets the market, ticks, charts and company pages with no money and no chat, cannot trade, order, chat, report or appeal and changes nothing in the books, never receives chat, is counted apart from players in the admin overview, `/about` and the visitor welcome card are served, the funnel counts sign-ups, traders, emails, fees and who pays them | 22 | about 20 s |
+| `test_economy.py` | **the shop**: MB by source, the catalogue, an order paid once however often it is confirmed, wrong amounts, Pro adding up, refunds, expiry, the age rules, the spending cap and daily limit, the self-set limit (raising waits a day), the free restart, orders and Pro surviving a crash (the ledger replays a purchase), Stripe's signature (wrong secret, changed body, a replay), the Stripe request, the whole flow through a test server, the shop closed when payments are off, sign-up needing a birth year, and a browser buying a package through the test checkout | 23 | about 25 s |
+| `test_market_model.py` | **the price model**: the phases add no long-run drift, the drift by beta, phases change and are bounded, a quiet market follows its drift, levels from swing highs and lows and round numbers, a held support pushes up and a break goes through, strong levels hold more often and repeated tests weaken them, ranges pull to the middle, pulses deliver exactly their move (and whipsaws go the wrong way first), the release calendar (8 rate decisions, 12 CPIs, 52 claims a year), forecasts fixed once published, releases against the forecast, rate decisions in quarter points; in the engine: candles with volume, money conserved, player trades never moving prices, a macro headline and move, earnings against a forecast, the model surviving a save and an old save loading; `/api/calendar` and `/api/admin/model` | 22 | about 5 s |
+| `test_learning.py` | **learning**: the lessons are well formed, the page never gets the answers, a quiz pays once and a wrong answer fails, the basics and graduate challenges, the weekly cap, a stop completing "protect a trade" (once per position) and a closed position counting as planned, a journal idea becoming a trade with its result in MB and R, bad entries refused, the state surviving a save, the endpoints over HTTP, and a browser taking a quiz, writing a journal entry, reading the calendar and using the chart's volume, RSI, a Pro indicator, a drawn level and the risk tool | 11 | about 40 s |
 | `test_revenue_model.py` | the revenue model's arithmetic: nobody pays more than they have, small amounts are fee times money traded, more trading / days / fee always pays more, the player mix adds up, a few heavy traders pay most | 9 | under 1 s |
 | `test_no_pools.py` | **stocks hold no tokens**: the books are cash + reserve + fees, the house capital is only the starting reserve and top-ups, a new listing costs the house nothing, and **a save from the old version with seed tokens inside every stock is converted** (the reserve, fees and players' money are unchanged, minted and house capital drop by the retired tokens, the clean save loads the same again, a crash before the first save is harmless, the game keeps balancing afterwards) | 7 | about 15 s |
 | `test_no_bots.py` | **no bots**: a new game has no players and none appear, the old bot settings do nothing, no board, profile or stat has a bot field, and **a save from the old version with house-funded bots loads cleanly** (the bots are settled and removed, the tokens balance, the humans are untouched, the clean save loads the same again, a crash before the first save is harmless) | 8 | about 30 s |
@@ -1648,7 +1820,7 @@ Fees fell to an average of 28,320 MB (from 102,199) and the house's average P&L 
 Also found on the way: stocks showing 0.0000 MB were the old splits' fault (§6.9), and a rescued stock that kept falling was never looked at again (§6.6); both fixed.
 
 ### 17.6 The rest of the checks
-- **Test suite:** 793 tests (789 run by default, 4 slow ones with `RUN_SLOW=1`). The last full run (12 minutes, after the last change) passed completely. Earlier in this release a full run found one race in the gateway (it closed a page before an error message went out; fixed) and, while the study tools were being written, 21 failures caused by `bots.py` replacing the engine's public-state and leaderboard builders when it was imported (it now does that only inside its worker processes); both are fixed. The server, accounts, email, reset, contest, social, order and browser suites were also run through two gateways (`MS_TEST_GATEWAYS=2`) and passed, and the stress test passes both ways. The edge checks were re-run for this release as the many-bot study (§17.7): no price, news or fee code changed, only the accounts, the server, the sharing tools, the leaderboards and the way content files are found.
+- **Test suite (2026-10-13, the learn-to-trade build):** 849 tests (845 run by default, 4 slow ones with `RUN_SLOW=1`); the last full run (15 minutes) had one failure, a bracket test that counted the new challenge reward as trading profit (fixed and re-run). Before that build: 793 tests (789 run by default). The last full run (12 minutes, after the last change) passed completely. Earlier in this release a full run found one race in the gateway (it closed a page before an error message went out; fixed) and, while the study tools were being written, 21 failures caused by `bots.py` replacing the engine's public-state and leaderboard builders when it was imported (it now does that only inside its worker processes); both are fixed. The server, accounts, email, reset, contest, social, order and browser suites were also run through two gateways (`MS_TEST_GATEWAYS=2`) and passed, and the stress test passes both ways. The edge checks were re-run for this release as the many-bot study (§17.7): no price, news or fee code changed, only the accounts, the server, the sharing tools, the leaderboards and the way content files are found.
 - **Slow checks (`RUN_SLOW=1`):** the 20-client stress run, the 12-seed edge check, the 2-game-day-quarter edge check and the paired daily-limit check all pass (17 minutes).
 - **Stress (`python tests/stress.py 40 30`):** passes: about 22,800 trade replies, 6,000 chat messages and 1,600 social HTTP calls from 40 clients (plus 251 reconnects and malformed input); server tick 37 ms on average (slowest 82 ms); **no late ticks**; longest gap between updates 1.10 s; average tick 7.4 kB with 193 listings; token drift 4.7e-10; no traceback through our code.
 - **Capacity (`tests/capacity.py`, §16):** 100, 200 and 400 ordinary players on a full-size game: 18%, 29% and 51% of one core, a 54-65 ms tick, no more than one late tick.

@@ -1,0 +1,268 @@
+{
+ "note": "The lessons on the Learn page (learning.py). Each has paragraphs ('h' for a heading, 'p' for text, 'tip' for a highlighted tip) and a quiz; 'answer' is the index of the right option and is never sent to the page before the quiz is marked.",
+ "lessons": [
+  {
+   "id": "basics",
+   "title": "How this market works",
+   "level": "Start here",
+   "minutes": 4,
+   "summary": "Memebucks, buying and selling, fees, shorting, and why your trades never move a price.",
+   "body": [
+    {"p": "Meme Street is a practice stock market. Everything you trade is fictional, and you trade with memebucks (MB): practice money with no cash value. Everyone starts with 1,000 MB."},
+    {"h": "Buying and selling"},
+    {"p": "When you buy a stock you own shares; if the price rises you can sell them for more than you paid. Every trade costs a fee of 0.1% of its size, like a broker's commission, so a quick buy and sell costs 0.2% before the price has moved at all."},
+    {"h": "Shorting"},
+    {"p": "If you think a price will fall you can short it: you sell shares you do not own, and buy them back later. If the price falls you buy back cheaper and keep the difference. A short loses when the price rises, and there is no limit to how far a price can rise, so shorts need care. Shorts pay a small borrow fee while they are open, and are closed for you (a margin call) if the loss gets too big for your account."},
+    {"h": "Prices are not moved by players"},
+    {"p": "Here, unlike a real exchange, nobody's trade moves a price: not yours, not a big player's. Prices follow the market itself: the economy, company news, earnings and the way traders as a crowd behave around trends and price levels. That means your skill is in reading the market, never in pushing it."},
+    {"tip": "The market tends to rise slowly over the long run, but it has bad weeks, bad months and long sideways stretches. Learning to survive those is most of the job."}
+   ],
+   "quiz": [
+    {"q": "You buy 100 MB of a stock and sell it straight back at the same price. Roughly what has it cost you?", "options": ["Nothing", "About 0.2 MB in fees", "About 10 MB"], "answer": 1, "why": "0.1% on the way in and 0.1% on the way out: 0.2% of 100 MB."},
+    {"q": "You short a stock at 50 MB and it rises to 60 MB. What has happened?", "options": ["You made money", "You lost money", "Nothing until you sell"], "answer": 1, "why": "A short gains when the price falls and loses when it rises. The loss is already there even before you close it."},
+    {"q": "A player with a huge account buys a lot of a stock. What happens to its price?", "options": ["It rises because of the buying", "Nothing: player trades never move prices here", "It falls"], "answer": 1, "why": "On Meme Street prices are set by the market model, never by players' orders."}
+   ]
+  },
+  {
+   "id": "candles",
+   "title": "Reading a candlestick chart",
+   "level": "Start here",
+   "minutes": 4,
+   "summary": "Open, high, low and close, timeframes, wicks and volume.",
+   "body": [
+    {"p": "Each candle on a chart sums up one slice of time: one minute, five minutes, a game day, and so on (the buttons above the chart). It shows four prices: where the slice opened, the highest and lowest it went, and where it closed."},
+    {"h": "Body and wicks"},
+    {"p": "The thick body runs from the open to the close. Green means it closed higher than it opened, red lower. The thin lines (wicks) show how far the price went beyond the body and came back. A long lower wick means sellers pushed the price down but buyers pushed it back up before the candle closed: often a sign of support."},
+    {"h": "Timeframes"},
+    {"p": "The same stock can look like a mess on a 1-minute chart and a clean trend on a 4-hour chart. Short timeframes are mostly noise. Many traders find the direction on a long timeframe and only use a short one to time an entry."},
+    {"h": "Volume"},
+    {"p": "The bars under the chart show how many shares changed hands in each candle. Volume tells you how much conviction is behind a move: a breakout on high volume is more believable than one on thin volume, and volume usually dries up while a stock drifts sideways."},
+    {"tip": "A game day here lasts 30 minutes and a game year about 7.6 real days, so the 1-day and 4-hour charts show weeks and months of the market's life."}
+   ],
+   "quiz": [
+    {"q": "A candle opens at 10, goes up to 12, down to 9 and closes at 11. What colour is it?", "options": ["Green", "Red"], "answer": 0, "why": "It closed (11) above where it opened (10)."},
+    {"q": "What does a long lower wick usually suggest?", "options": ["Sellers were in control to the end", "The price was pushed down but buyers brought it back", "Volume was zero"], "answer": 1, "why": "The wick shows the low was rejected before the candle closed."},
+    {"q": "A stock breaks above a level on very low volume. How much should you trust the breakout?", "options": ["More than usual", "Less than usual", "Volume does not matter"], "answer": 1, "why": "Real breakouts usually come with a surge in volume; thin ones fail more often."}
+   ]
+  },
+  {
+   "id": "trends",
+   "title": "Trends and moving averages",
+   "level": "Start here",
+   "minutes": 5,
+   "summary": "Higher highs and higher lows, pullbacks, and what a moving average tells you.",
+   "body": [
+    {"p": "An uptrend is a series of higher highs and higher lows: the price rises, pulls back a little, then rises past the last high. A downtrend is the mirror image. Trends do not move in straight lines; they move in legs: a strong move (the impulse) then a smaller move back (the pullback)."},
+    {"h": "Trading with the trend"},
+    {"p": "A common approach is to trade in the direction of the trend and enter on a pullback, not after a big move. Buying after a long green run means buying when the next pullback is likely; buying on a pullback that holds above the last low gives a natural place for a stop."},
+    {"h": "Moving averages"},
+    {"p": "A moving average (MA) is the average closing price of the last N candles, drawn as a line. A simple MA (SMA) weighs every candle equally; an exponential MA (EMA) weighs recent candles more, so it turns sooner. When price stays above a rising 50-candle average the trend is up; pullbacks often pause near the 20-candle average."},
+    {"h": "Trends end"},
+    {"p": "Trends end with warning signs: a new high that is barely higher, a pullback that goes below the previous low, or a huge climactic candle on enormous volume. No trend lasts forever, and on Meme Street a stock spends long stretches with no trend at all."},
+    {"tip": "Turn on SMA 20 and SMA 50 above the chart and look at a few stocks on the 1h chart. Which are trending, and which are going sideways?"}
+   ],
+   "quiz": [
+    {"q": "Which describes an uptrend?", "options": ["Lower highs and lower lows", "Higher highs and higher lows", "The same high again and again"], "answer": 1, "why": "Each rally goes further and each pullback stops higher."},
+    {"q": "Why do many traders buy pullbacks in an uptrend rather than after a long rise?", "options": ["Pullbacks are guaranteed to bounce", "It gives a better price and a clear place for a stop", "Fees are lower on pullbacks"], "answer": 1, "why": "Nothing is guaranteed, but the risk is smaller and better defined."},
+    {"q": "An EMA and an SMA of the same length: which one turns faster when the price changes direction?", "options": ["The EMA", "The SMA"], "answer": 0, "why": "The EMA gives more weight to the most recent candles."}
+   ]
+  },
+  {
+   "id": "levels",
+   "title": "Support and resistance",
+   "level": "Start here",
+   "minutes": 6,
+   "summary": "Why prices react at certain levels, how a level holds or breaks, and false breakouts.",
+   "body": [
+    {"p": "Support is a price where falls have stopped before; resistance is a price where rises have stopped. They form because traders remember them: buyers who missed the last bounce wait at the same price, and sellers who were stuck at the last top sell when they get their money back."},
+    {"h": "Strong and weak levels"},
+    {"p": "A level is stronger when the price has turned there several times, when it is a round number (100, 150, 2.50), and when it lines up with the trend (support in an uptrend). A level that is tested again and again usually gets weaker: each test uses up some of the buyers or sellers waiting there."},
+    {"h": "When the price reaches a level"},
+    {"p": "One of two things happens. The level holds: the price slows, then turns away. Or it breaks: the price pushes through, often with a burst of volume, and keeps going for a while. Neither is certain. On Meme Street a strong level holds a bit more often than not, and a weak one breaks more often than not."},
+    {"h": "False breakouts and retests"},
+    {"p": "Not every break lasts. A false breakout pushes through a level, catches the traders who chased it, then falls back inside: roughly a third of breaks here fail that way. After a real break, the old level often flips: broken resistance becomes support, and the price may come back to test it from the other side."},
+    {"h": "Using a level"},
+    {"p": "Levels are most useful for placing stops. If you buy near support, the place your idea is proven wrong is just below the level, so that is where your stop goes. If the level breaks, you are out with a small loss; if it holds, you have a good trade with a small risk."},
+    {"tip": "Use Draw a level above the chart to mark the levels you see. Then watch what the price does when it gets there."}
+   ],
+   "quiz": [
+    {"q": "Which level is likely to be stronger?", "options": ["A price touched once, a long time ago", "A round number where the price has turned three times, in line with the trend", "Any price the stock is at right now"], "answer": 1, "why": "Several touches, a round number and the trend on its side all make a level stronger."},
+    {"q": "The price breaks above resistance at 50, then falls back to 48 a few minutes later. What is this called?", "options": ["A false breakout", "A dividend", "A retest from above"], "answer": 0, "why": "The break failed and the price fell back inside the old range."},
+    {"q": "You buy at support at 20. Where does a sensible stop-loss go?", "options": ["Far above 20", "Just below the support, where the idea is proven wrong", "There is no need for a stop at support"], "answer": 1, "why": "If the level breaks, your reason for the trade has gone, so that is where you get out."},
+    {"q": "After resistance at 80 breaks and the price runs to 86, it comes back to 80. What might 80 act as now?", "options": ["Resistance again", "Support", "Nothing"], "answer": 1, "why": "Broken resistance often becomes support on a retest."}
+   ]
+  },
+  {
+   "id": "ranges",
+   "title": "Ranges and breakouts",
+   "level": "Getting better",
+   "minutes": 4,
+   "summary": "Sideways markets, trading inside a range, and how ranges end.",
+   "body": [
+    {"p": "Much of the time a stock goes nowhere: it moves sideways between a floor and a ceiling. In a range the price tends to drift back towards the middle, volatility is low and volume dries up."},
+    {"h": "Trading a range"},
+    {"p": "Inside a range some traders buy near the floor and sell near the ceiling, with stops just outside the range. It works while the range lasts, which can be a long time, and fails badly when it ends."},
+    {"h": "How ranges end"},
+    {"p": "Every range ends in a breakout: a fast move out of it, usually on a surge of volume. The breakout often starts a new trend in that direction, though some breakouts fail and the price returns to the range. A quiet, narrowing range (falling volatility) often comes before a big move: the calm before the storm."},
+    {"tip": "In a range, the trade is fading the edges; after a breakout on high volume, the trade is with the break. Knowing which one you are in is the skill."}
+   ],
+   "quiz": [
+    {"q": "In a sideways range, what usually happens to volume?", "options": ["It surges", "It dries up", "It stays exactly the same"], "answer": 1, "why": "With no direction, fewer shares change hands."},
+    {"q": "Where do range traders put their stops?", "options": ["In the middle of the range", "Just outside the range", "They do not use stops"], "answer": 1, "why": "If the price leaves the range, the range trade is wrong."},
+    {"q": "A range has been getting narrower and quieter for a long time. What often comes next?", "options": ["A bigger move", "Even less movement forever", "A dividend"], "answer": 0, "why": "Volatility contracts before it expands."}
+   ]
+  },
+  {
+   "id": "risk",
+   "title": "Risk per trade and position size",
+   "level": "Getting better",
+   "minutes": 6,
+   "summary": "The 1% rule, R-multiples, and why size matters more than entries.",
+   "body": [
+    {"p": "Most new traders lose money not because their ideas are bad but because one or two trades are far too big. Professional traders decide how much they are willing to lose before they decide how much to buy."},
+    {"h": "Risk a small, fixed share"},
+    {"p": "A common rule is to risk no more than 1% of your account on one trade. Risk here means what you lose if your stop is hit, not the size of the position. With 1,000 MB, 1% is 10 MB. If your stop is 5% below your entry, you can buy about 200 MB of the stock: 5% of 200 MB is 10 MB."},
+    {"h": "R-multiples"},
+    {"p": "Measure results in R, the amount you risked. A trade that risked 10 MB and made 20 MB is +2R; one that hit its stop is -1R. If your winners average +2R and your losers -1R, you make money even if you are right only 40% of the time. Thinking in R keeps you focused on the quality of decisions, not the size of single wins."},
+    {"h": "Losing streaks happen"},
+    {"p": "Even a good method has runs of five or ten losers in a row. At 1% a trade, ten losers in a row cost about 10% of the account. At 20% a trade they wipe it out. Small size is what lets you stay in the game long enough for the method to work."},
+    {"tip": "Open Position size and risk on any stock page. Type a stop-loss price and it tells you how much to buy for 1% risk."}
+   ],
+   "quiz": [
+    {"q": "You have 2,000 MB and risk 1% a trade. How much do you lose if the stop is hit?", "options": ["2 MB", "20 MB", "200 MB"], "answer": 1, "why": "1% of 2,000 MB."},
+    {"q": "Your stop is 4% below the entry and you want to risk 10 MB. About how much should you buy?", "options": ["40 MB", "250 MB", "1,000 MB"], "answer": 1, "why": "4% of 250 MB is 10 MB."},
+    {"q": "Winners average +2R and losers -1R. You win 40% of trades. Over many trades, are you making money?", "options": ["Yes", "No"], "answer": 0, "why": "0.4 x 2 - 0.6 x 1 = +0.2R per trade on average."}
+   ]
+  },
+  {
+   "id": "stops",
+   "title": "Stops, targets and brackets",
+   "level": "Getting better",
+   "minutes": 4,
+   "summary": "Where to put a stop, how to set a target, and letting the server watch for you.",
+   "body": [
+    {"p": "A stop-loss closes your position automatically when the price moves against you to a level you chose. Put it where your idea is proven wrong, not at a round amount of MB you are willing to lose. Below support for a long; above resistance for a short."},
+    {"h": "Not too tight"},
+    {"p": "A stop that is too close gets hit by ordinary noise. The average true range (ATR) tells you how far the price usually moves in one candle; a stop one and a half to two ATRs beyond the level gives the trade room to breathe. A wider stop simply means a smaller position for the same risk."},
+    {"h": "Targets"},
+    {"p": "A take-profit closes the position when the price reaches your target: the next resistance for a long, the next support for a short. If the target is less than about twice as far as the stop, the trade is often not worth taking."},
+    {"h": "Brackets"},
+    {"p": "A bracket is a stop-loss and a take-profit together: whichever is hit first closes the trade and cancels the other. Set one as soon as you open a position. The server watches the price for you every second, so you do not have to."},
+    {"tip": "Fast moves can fill a stop beyond its price: if the price gaps through, you get the next price. That is why size is set by risk, with room to spare."}
+   ],
+   "quiz": [
+    {"q": "Where does the stop go on a long trade bought at support?", "options": ["Just above the entry", "Just below the support level", "Exactly 10 MB below the entry, always"], "answer": 1, "why": "The stop belongs where the idea is proven wrong."},
+    {"q": "Your stop keeps getting hit by normal wiggles before the price goes your way. What could help?", "options": ["A wider stop with a smaller position", "No stop at all", "A bigger position"], "answer": 0, "why": "Give the trade room, and keep the risk the same by trading smaller."},
+    {"q": "What does a bracket do?", "options": ["Opens two positions", "Sets a stop and a target; the first one hit cancels the other", "Doubles the fee"], "answer": 1, "why": "One-cancels-the-other: you are out either way."}
+   ]
+  },
+  {
+   "id": "indicators",
+   "title": "Indicators: RSI, MACD and Bollinger bands",
+   "level": "Getting better",
+   "minutes": 5,
+   "summary": "What popular indicators measure, and why they are a second opinion, not a signal.",
+   "body": [
+    {"p": "Indicators are calculations on past prices. They cannot see the future; they summarise what already happened in a way that can be easier to read. Use them to confirm what you see on the chart, not instead of it."},
+    {"h": "RSI"},
+    {"p": "The relative strength index compares recent gains with recent losses on a scale of 0 to 100. Above 70 is often called overbought and below 30 oversold, but in a strong trend the RSI can stay above 70 for a long time. A more useful sign is a divergence: the price makes a new high but the RSI does not, a hint that the trend is tiring."},
+    {"h": "MACD"},
+    {"p": "MACD is the gap between a fast and a slow exponential average, with a signal line (an average of the gap). When it crosses above its signal line, momentum is turning up. It is slow, and in a sideways market it gives many false signals."},
+    {"h": "Bollinger bands"},
+    {"p": "Bollinger bands are drawn two standard deviations above and below a 20-candle average. They widen when the market is volatile and narrow when it is quiet. A squeeze (very narrow bands) often comes before a big move; a touch of a band is not by itself a reason to trade."},
+    {"tip": "Moving averages and RSI are free. Bollinger bands, MACD, VWAP and ATR come with Meme Street Pro."}
+   ],
+   "quiz": [
+    {"q": "The RSI has been above 70 for a while during a strong uptrend. What does that tell you for certain?", "options": ["The price must fall now", "Momentum has been strong; it says nothing certain about what comes next", "The stock is about to be delisted"], "answer": 1, "why": "Overbought can stay overbought in a trend."},
+    {"q": "The price makes a new high but the RSI makes a lower high. What is this?", "options": ["A divergence: momentum is fading", "A dividend", "A false breakout"], "answer": 0, "why": "Price and momentum disagree: a warning, not a signal on its own."},
+    {"q": "Bollinger bands become very narrow. What often follows?", "options": ["A bigger move", "Nothing ever again", "Lower fees"], "answer": 0, "why": "Quiet periods tend to end in expansions of volatility."}
+   ]
+  },
+  {
+   "id": "macro",
+   "title": "The economy, interest rates and data releases",
+   "level": "Understanding the market",
+   "minutes": 6,
+   "summary": "CPI, jobs, GDP and rate decisions: why the surprise matters, not the number.",
+   "body": [
+    {"p": "Behind the market is an economy that grows faster or slower, with inflation and unemployment, and a central bank (the Reserve Board) that sets the interest rate. You never see the economy directly; you see the data it reports, on the Economic calendar."},
+    {"h": "It is the surprise that moves prices"},
+    {"p": "Every release has a forecast published days ahead, and prices already reflect it. When the figure comes out, prices move on the difference between the figure and the forecast. Strong growth that everyone expected changes nothing; a big miss moves everything."},
+    {"h": "Interest rates"},
+    {"p": "Higher interest rates make borrowing dearer and future profits worth less today. They tend to hurt fast-growing companies, property and other rate-sensitive stocks, and help banks. Hot inflation (CPI above forecast) makes higher rates more likely, so it usually weighs on stocks. Strong jobs numbers are good news for the economy but, when inflation is high, can be bad news for stocks because they point to higher rates."},
+    {"h": "Trading around releases"},
+    {"p": "Markets are often quiet just before a big release and jumpy just after it, sometimes moving one way for a few seconds and then turning (a whipsaw). Many traders avoid opening new positions just before a release, or trade smaller around it."},
+    {"tip": "Check the Calendar page before you trade. Note the next rate decision and CPI report, and see what the market expects."}
+   ],
+   "quiz": [
+    {"q": "The forecast for CPI is 3.0% and the figure is 3.0%. What usually happens?", "options": ["A big move, because inflation is high", "Little: it was already expected", "Every stock rises 10%"], "answer": 1, "why": "Prices react to surprises, not to figures that were forecast."},
+    {"q": "CPI comes in well above the forecast. Which group usually suffers most?", "options": ["Banks", "Fast-growing tech and property companies", "Nothing ever reacts to CPI"], "answer": 1, "why": "Hotter inflation means higher rates are likelier, which hurts rate-sensitive stocks most."},
+    {"q": "The Reserve Board raises rates exactly as forecast with a 90% chance. Is that a big surprise?", "options": ["Yes", "No"], "answer": 1, "why": "The market had already priced it in."}
+   ]
+  },
+  {
+   "id": "earnings",
+   "title": "Earnings and forecasts",
+   "level": "Understanding the market",
+   "minutes": 4,
+   "summary": "Reports, the analysts' forecast, beats and misses, and the drift that can follow.",
+   "body": [
+    {"p": "Every company reports its earnings once a quarter (about every 45 real hours here). A few game days before, analysts publish a forecast of the earnings per share (EPS); you can see it in Upcoming events and on the Calendar page."},
+    {"h": "Beats and misses"},
+    {"p": "When the report comes out, the price reacts to how far the actual EPS is from the forecast. A beat (above the forecast) usually lifts the price; a miss pushes it down. The stories in the news since the last report already told you a lot of what is coming: the forecast includes them."},
+    {"h": "After a big surprise"},
+    {"p": "After a big beat or miss, prices sometimes keep drifting the same way for a few game days as the market digests the news. It is a small effect, not a sure thing, and the fee and the noise eat most of it."},
+    {"tip": "Holding a position through a report is a bet on a coin you cannot see. Size it as if it could gap against you."}
+   ],
+   "quiz": [
+    {"q": "A company's EPS is 1.10 against a forecast of 1.00. What is that called?", "options": ["A miss", "A beat", "A split"], "answer": 1, "why": "It came in above the forecast."},
+    {"q": "Why can a stock fall after reporting record profits?", "options": ["Because the record was below what was forecast", "Because records are always bad", "It cannot"], "answer": 0, "why": "The reaction is to the surprise against the forecast."},
+    {"q": "What is the sensible way to hold a position through an earnings report?", "options": ["Bigger than usual, to make the most of it", "Sized so that a gap against you is affordable", "Always without a stop"], "answer": 1, "why": "Reports can gap through stops: size for that."}
+   ]
+  },
+  {
+   "id": "phases",
+   "title": "Market phases: bull, bear and sideways",
+   "level": "Understanding the market",
+   "minutes": 4,
+   "summary": "Why the same strategy works in one phase and fails in another.",
+   "body": [
+    {"p": "The market as a whole moves through phases. In a bull market prices drift up and dips are bought. In a correction the market falls about 10% quickly. In a bear market it falls further for longer, with big swings. Sideways phases can last for game months. Recoveries follow falls."},
+    {"h": "Nobody tells you the phase"},
+    {"p": "You only find out what phase you were in afterwards. While it is happening you have clues: is the MSI 50 above or below its long moving averages, are dips being bought or are rallies being sold, is volatility rising?"},
+    {"h": "Adapt"},
+    {"p": "Buying breakouts works in bull markets and loses in sideways ones. Fading the edges of ranges works in sideways markets and gets run over in trends. Shorting in a bull market fights the slow upward drift. Part of the skill is noticing when your method has stopped working and trading less."},
+    {"h": "Drawdowns"},
+    {"p": "Even holding the whole market means sitting through falls of 10% or 20%. A plan that only works if the market never falls is not a plan."},
+    {"tip": "Over a long time the MSI 50 drifts upwards, by about 5% to 10% a game year. Most short-term traders do worse than simply holding it. Beating it is hard, which is what makes it a good yardstick."}
+   ],
+   "quiz": [
+    {"q": "Which approach usually suffers in a long sideways market?", "options": ["Buying breakouts", "Trading the edges of the range", "Trading less"], "answer": 0, "why": "Most breakouts fail when there is no trend to carry them."},
+    {"q": "Over many game years, what has the MSI 50 tended to do?", "options": ["Fall", "Drift upwards with falls along the way", "Stay exactly flat"], "answer": 1, "why": "A slow upward drift, with corrections and bear markets."},
+    {"q": "What is a good yardstick for your own results?", "options": ["Your best single trade", "Simply holding the MSI 50 over the same time", "The player at the top of today's board"], "answer": 1, "why": "If you cannot beat holding the index, your trading is costing you."}
+   ]
+  },
+  {
+   "id": "psychology",
+   "title": "Trading psychology and the journal",
+   "level": "Understanding the market",
+   "minutes": 5,
+   "summary": "Revenge trading, fear of missing out, overtrading, and why good traders write things down.",
+   "body": [
+    {"p": "The hardest part of trading is not the chart; it is you. A few habits ruin more accounts than bad analysis ever does."},
+    {"h": "Common traps"},
+    {"p": "Revenge trading: after a loss, trading bigger to win it back. Fear of missing out: chasing a stock that has already run, at the worst price. Moving a stop further away so as not to take a loss. Overtrading: trading because you are bored, not because there is a setup. Each one turns small losses into big ones."},
+    {"h": "Rules before the trade"},
+    {"p": "Decide the setup, the entry, the stop, the target and the size before you click. Once the trade is open, the plan is in charge, not your feelings. If the plan says get out, get out."},
+    {"h": "Keep a journal"},
+    {"p": "Write down every trade: the setup, why you took it, the stop and the target, and afterwards what happened and what you learned. After 20 or 30 trades the journal shows you which setups work for you and which mistakes you keep making. The Journal page does the counting for you."},
+    {"tip": "If you lose three trades in a row, stop for the session. The market will still be here tomorrow."}
+   ],
+   "quiz": [
+    {"q": "You have just lost 50 MB. What is revenge trading?", "options": ["Taking a break", "Immediately taking a bigger trade to win it back", "Writing it in your journal"], "answer": 1, "why": "It usually turns one loss into several bigger ones."},
+    {"q": "When should you decide where your stop goes?", "options": ["Before you open the trade", "When the trade is already losing", "Never"], "answer": 0, "why": "Decided calmly, before money is at stake."},
+    {"q": "What is the main point of a trading journal?", "options": ["To show off wins", "To find out which setups and habits work for you", "It has no use"], "answer": 1, "why": "Your own data is the best teacher you have."}
+   ]
+  }
+ ]
+}

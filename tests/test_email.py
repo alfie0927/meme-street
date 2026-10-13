@@ -428,7 +428,7 @@ class HttpEmailTests(unittest.TestCase):
         self.fail("no mail to " + to)
 
     def register(self, name, email, password=GOOD):
-        return self.post("/api/register", {"name": name, "password": password, "email": email})
+        return self.post("/api/register", {"name": name, "password": password, "email": email, "birth_year": 1990})
 
     def socket_trade(self, token):
         from websockets.sync.client import connect
@@ -480,7 +480,7 @@ class HttpEmailTests(unittest.TestCase):
         self.assertIn("already used", data["error"])
 
     def test_a_player_can_add_an_address_later_and_ask_for_another_code(self):
-        status, data = self.post("/api/register", {"name": "EmLate", "password": GOOD, "email": "late@example.com"})
+        status, data = self.post("/api/register", {"name": "EmLate", "password": GOOD, "email": "late@example.com", "birth_year": 1990})
         token = data["token"]
         status, res = self.post("/api/account/email/resend", {}, token)
         self.assertFalse(res["ok"])                                  # too soon after the first one
@@ -545,7 +545,7 @@ class ShareThroughATunnelTests(unittest.TestCase):
     def test_the_limit_counts_each_visitor_separately_and_cannot_be_dodged_by_a_header_from_nowhere(self):
         with IsolatedServer(settings={"require_password": True, "signups_per_ip_hour": 2, "email_mode": "off"}) as srv:
             def reg(name, ip):
-                status, text, _ = http(srv, "/api/register", "POST", {"name": name, "password": GOOD},
+                status, text, _ = http(srv, "/api/register", "POST", {"name": name, "password": GOOD, "birth_year": 1990},
                                        {"CF-Connecting-IP": ip} if ip else {})
                 return status
             self.assertEqual([reg("TunA1", "198.51.100.1"), reg("TunA2", "198.51.100.1"), reg("TunA3", "198.51.100.1")],

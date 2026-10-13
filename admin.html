@@ -40,6 +40,8 @@ button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);bo
 <div class="card"><h3>Most traded stocks (last 24 hours)</h3><div id="tickers"></div></div></div>
 <div class="grid2"><div class="card"><h3>House reserve and fees (MB)</h3><div id="ch1"></div></div>
 <div class="card"><h3>Players' combined P&amp;L (MB, humans)</h3><div id="ch2"></div></div></div>
+<div class="card" style="margin-top:12px"><h3>Shop: sales, Pro and where the MB came from</h3><div id="shop" class="mut">Loading…</div></div>
+<div class="card" style="margin-top:12px"><h3>The price model behind the scenes (never shown to players)</h3><div id="model" class="mut">Loading…</div></div>
 <div class="card" style="margin-top:12px"><h3>Players and fees: how far people get</h3><div id="funnel" class="mut">Loading…</div></div>
 <div class="grid2" style="margin-top:12px"><div class="card"><h3>Biggest players. Click a name for their trades</h3><div id="toplists"></div></div>
 <div class="card"><h3>Biggest open positions</h3><div id="bigpos"></div></div></div>
@@ -209,7 +211,24 @@ function renderInsights(i){
 $('toplists').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
 $('bigpos').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
 let tickN=0;
-async function tick(){try{render(await api('/api/admin/overview'));if(tickN++%4===0)renderInsights(await api('/api/admin/insights'));renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'))}catch(e){if(e.message==='forbidden'){lock('That key was not accepted.')}else{$('stamp').textContent='error: '+e.message}}}
+const REGIME_TEXT={bull:'Bull market: drifting up, calm',sideways:'Sideways: little direction, quiet, ranges are likelier',correction:'Correction: a short, sharp fall',bear:'Bear market: falling, volatile',recovery:'Recovery: rising after a fall'};
+function renderModel(m){
+ if(!m.on){$('model').innerHTML='<p class="mut">The old zero-drift market is running (set <code>market_model</code> to 2 in base.json for the new one).</p>';return}
+ const e=m.economy,md=m.modes||{};
+ $('model').innerHTML=`<div class="cards">${[['Market phase',m.regime,REGIME_TEXT[m.regime]||''],['Phase changes in',m.regime_left_days+' game days','random; players never see the phase'],['Policy rate',f(e.rate,2)+'%','the rule says '+f(e.taylor,2)+'%'],['Inflation',f(e.inflation,2)+'%','hidden; CPI reports it'],['Growth',f(e.growth,2)+'%','hidden; GDP reports it'],['Unemployment',f(e.unemployment,2)+'%','hidden; the jobs report shows it'],['Listings trending',md.trend||0,'in a range: '+(md.range||0)+' · free: '+(md.free||0)],['Levels being tested',m.tests_now,'support or resistance right now']].map(([l,v,x])=>`<div class="card"><small>${l}</small><strong>${esc(v)}</strong><em>${esc(x)}</em></div>`).join('')}</div><p class="mut" style="font-size:12px">See market_model.py and HOW_IT_WORKS.md. The phase, the economy and each listing's swing are drawn at random; the economy only shifts the odds of the next phase.</p>`}
+const SRC={grant:'Starting balances',purchase:'Bought',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
+function renderShop(d){
+ const mode={off:'Off: the shop shows prices and sells nothing',test:'TEST: a pretend checkout, no money is taken. Never use this on the public site.',stripe:'Stripe: real payments'}[d.mode]||d.mode;
+ const max=Math.max(1,...d.revenue_by_day.map(x=>x.cents)),src=Object.entries(d.mb_by_source||{});
+ $('shop').innerHTML=`<p>Payments: <b class="${d.mode==='test'?'warn':''}">${esc(mode)}</b></p>
+ <div class="cards">${[['Revenue (all time)',d.revenue_text],['Revenue (30 days)',d.revenue_30d_text],['Paid orders',d.orders_paid],['Buyers',d.buyers],['Pro members now',d.pro_members],['Refunded',d.refunded],['Waiting for payment',d.pending]].map(([l,v])=>`<div class="card"><small>${l}</small><strong>${esc(v)}</strong></div>`).join('')}</div>
+ ${d.revenue_by_day.length?`<p style="margin:10px 0 4px">Revenue per day (UTC)</p><div style="display:flex;align-items:flex-end;gap:3px;height:54px">${d.revenue_by_day.map(x=>`<div title="${new Date(x.day*1000).toLocaleDateString()}: ${(x.cents/100).toFixed(2)}" style="flex:1;background:#3fb950;min-height:2px;height:${Math.max(2,Math.round(50*x.cents/max))}px"></div>`).join('')}</div>`:''}
+ <div class="grid2" style="margin-top:10px"><div><h3>Where the players' MB came from</h3><table><tr><th>Source</th><th>MB</th></tr>${src.map(([k,v])=>`<tr><td>${esc(SRC[k]||k)}</td><td>${mb(v)}</td></tr>`).join('')||'<tr><td class="mut">Nothing yet.</td></tr>'}</table></div>
+ <div><h3>Latest orders</h3><table><tr><th>When</th><th>Player</th><th>Item</th><th>Price</th><th>Status</th><th></th></tr>${d.recent.map(o=>`<tr><td>${ago(o.at)}</td><td>${esc(o.name)}</td><td>${esc(o.sku)}</td><td>${esc(o.price)}</td><td>${esc(o.status)}${o.provider==='test'?' <span class="mut">(test)</span>':''}</td><td>${o.status==='paid'?`<button data-refund="${esc(o.id)}" title="Use this after giving the money back at the payment provider">Refund</button>`:''}</td></tr>`).join('')||'<tr><td class="mut">No orders yet.</td></tr>'}</table>
+ <p class="mut" style="font-size:12px">Refund here only after refunding the payment at the provider. It takes back the MB the player still has free (never more than the order gave), or the Pro time.</p></div></div>`}
+$('shop').addEventListener('click',async e=>{const b=e.target.closest('[data-refund]');if(!b)return;if(!confirm('Mark order '+b.dataset.refund+' as refunded and take back what it gave?'))return;
+ try{const r=await api('/api/admin/refund',{id:b.dataset.refund});alert(r.msg);renderShop(await api('/api/admin/shop'))}catch(err){alert('failed: '+err.message)}});
+async function tick(){try{render(await api('/api/admin/overview'));if(tickN%4===0){renderShop(await api('/api/admin/shop'));renderModel(await api('/api/admin/model'))}if(tickN++%4===0)renderInsights(await api('/api/admin/insights'));renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'))}catch(e){if(e.message==='forbidden'){lock('That key was not accepted.')}else{$('stamp').textContent='error: '+e.message}}}
 function lock(msg){clearInterval(timer);try{sessionStorage.removeItem('admin_key')}catch(e){}key=null;$('app').style.display='none';$('login').style.display='block';$('err').textContent=msg||''}
 function open_(){$('login').style.display='none';$('app').style.display='block';tick();clearInterval(timer);timer=setInterval(tick,5000)}
 $('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};

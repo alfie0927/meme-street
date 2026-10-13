@@ -9,6 +9,10 @@ sim.py                  # headless economy check with adversarial traders
 tune.py                 # compare settings across seeds (python tune.py configs.json)
 events_pack.json        # sector-specific news events (every sector has its own)
 server.py               # FastAPI + WebSocket server (1 tick per second)
+market_model.py         # the price model: drift, market phases, trends, ranges, support/resistance, volume, the macro calendar
+realism.py              # checks the price model: long-run return, stylised facts, level odds, no free money (python realism.py)
+economy.py, payments.py # the shop (MB packages, Pro), age rules, spending limits, the free restart; test mode and Stripe
+learning.py, lessons.json # lessons with quizzes, challenges that pay MB, the trading journal
 requirements.txt
 index.html              # web interface
 base.json               # sectors, companies, event templates, settings
@@ -49,7 +53,7 @@ Click a ticker to open `/stock/TICKER` for a dedicated detail page. Saved pre-pr
 - Nothing is predictable from public information: news direction is a coin flip, breaking news moves prices instantly, rumors move prices by their expected value (the confirmation/correction moves the rest), and dependency/sector spillovers land in the same tick as their cause. Mean reversion acts on each stock's exogenous fair value, never on player price impact.
 - A Day (what used to be a season) is a leaderboard period of one real day, midnight to midnight UTC; balances carry over. Day return = equity / (equity at the start of the day + deposits) - 1. See HOW_IT_WORKS.md for how the game works today (this file is older).
 - Bankruptcy cashes holders out at the stock's last price (no fee), paid from the house reserve.
-- `signup_bonus` (base.json) is the starting balance (10,000 MB today; 1,000 MB in the new plan).
+- `signup_bonus` (base.json) is the starting balance: 1,000 MB.
 - Price shocks carry no built-in direction: regime shifts balance up and down, credit reviews of profitable companies are equally likely to upgrade or downgrade, mean reversion pulls symmetrically in log price, and bankruptcy applies `bankruptcy_haircut` before paying holders so distressed stocks are not a free bet on a bailout.
 - Tuning knobs (settings): `volatility_scale`, `event_strength_limits`, `daily_move_cap` (0 disables), `mean_reversion_halflife_days`, `news_move_ranges`, `event_mean_seconds`. Check any change with `tune.py`; keep `liqPnL` well under `fees` and the `value`/`hodl` columns near zero.
 
