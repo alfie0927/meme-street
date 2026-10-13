@@ -1,267 +1,322 @@
 # Meme Street roadmap
 
-Goal: a trading game where players buy memebucks (MB) with crypto and trade fictional stocks. The house earns the 0.1% fee on every trade. No strategy based on public information should be able to win reliably, and the game should feel like a living market: prices that follow stories, news that reads like news, and enough variety that a session stays interesting.
+**Goal (new, 2026-10-13):** a website where people **learn to trade by trading** a realistic, fictional stock market. The
+market behaves like a real one: it drifts slowly upwards over time, with corrections, bear phases and long sideways
+stretches; scheduled economic news (interest-rate decisions, inflation, jobs) moves it; and prices respect and break
+support and resistance the way real charts do, so the setups traders are taught actually appear and can be practised.
+Everyone starts with **1,000 MB**. Players who run out, or want more capital, **buy MB packages** (100, 500, 1,000,
+5,000 or 10,000 MB). **Challenges award free MB** for completing them. MB are a game currency: they have no cash value and
+are never paid out.
 
-Companion doc: `HOW_IT_WORKS.md` describes what the code does today. Update it after every change, and check this file before starting any work.
+**What this replaces.** The old plan was a real-money trading game: buy MB with crypto, withdraw winnings, the house as a
+counterparty earning a fee, and every mechanism built as a fair bet so that nobody could have an edge. That plan is
+dropped. Section 2 lists what changes and what happens to the code that was built for it.
+
+Companion doc: `HOW_IT_WORKS.md` describes what the code does **today** (still the old fair-bet market, until the tracks
+below change it). Update it after every change, and check this file before starting any work.
 
 Size key: **S** = under a day, **M** = a few days, **L** = a week or more.
 
 ---
 
-## 1. Where things stand (2026-10-08)
+## 1. The new plan on one page
 
-| Area | State |
+| | |
 |---|---|
-| Economy | Every trade fills at the market price against the house. Token conservation holds (drift about 1e-10). Fees are the house's revenue. No price impact from players. Edge-checked on 35 strategies (the original 10, probes for gaps, reversals, ETFs, leveraged products, volatility and earnings, for the opening jump, moonshots, distress, catalysts, industry shocks and the hidden company links, and one that trades with bracket orders): see section 6 for the latest result. Overnight check (2026-10-06): 300 fresh markets x 36 strategies, a catalyst probe and an index probe found no edge (`HOW_IT_WORKS.md` §17.9). Every mechanism (volatility clustering, trading sessions, the opening jump, major-event limits, indices and ETFs, moonshots, catalysts, company events, orders, social features and the paper contest) was built so its expected effect on a price is exactly zero, and the house reserve is kept in proportion to the money at stake. |
-| Trading | Long and short, % chips plus an MB amount box, average entry price, **on the market page, the stock page and the holdings page**. **No position limits** (removed on request): the only cap is your cash (a short is paid for out of cash as collateral: no margin multiple, no borrow pool), plus borrow fees and margin calls for shorts. **Fee 0.1% per side** (it was 0.5%). **The market never closes**: a 30-minute cycle on the real clock is 5 minutes of thin pre-market, 20 of regular session (a burst of volume and a jump at the open) and 5 of thin after-hours. **Orders**: limit buy/sell, stop-loss, take-profit and one-click brackets, filled at the market price when triggered. **Trading never pauses** (the circuit breakers were removed on request). |
-| Prices | One random-walk "fair" price per stock: three-factor noise scaled by the session, slow mean reversion, news shocks, spillovers, **volatility clustering**, a soft daily limit that **opens up for very strong events**, and distress as a fair rescue-or-bankruptcy bet (a rescue is a doubling, not a ten-fold jump). There are no stock splits any more; share offerings change only the share count. **Moonshots** (tiny, pre-revenue companies with 260-550% volatility that can move hundreds of per cent in a day, go bankrupt easily and keep listing) rare **catalysts** (trial results, approvals, buyouts, audits, tests: a fair bet: the good news gains 10-35%, a setback costs a few per cent, and a rare disaster (6-8% of them, with its own much worse headline) costs 20-70%; a moonshot's is a two-outcome bet up to about +130%) and rare **industry-wide shocks** (a ban, a demand collapse, a probe, a disruptive technology: a fair two-outcome bet that moves every company in a sector together, with no market component, so an industry can crash while the market rises). Hedge assets (gold, bonds) have negative beta. |
-| Listings | **193 listings at the start of a game**: 152 companies and funds in 30 sectors (**eight of them imaginary industries**: teleportation, weather engineering, time technology, dreams and memory, dragons and creatures, deep-ocean cities, antigravity, alchemy), 5 commodities, 32 derived assets (the **MSI 50**, which follows the 50 largest companies by market value and is re-ranked every game day; 21 sector indices, 6 themed ETFs, 4 leveraged/inverse products: 2LMSI, 2SMSI, 3LMSI, 3SMSI) and 4 moonshots, with new moonshots listing every ~15 minutes (**NEW** badge for 30 minutes). Indices and ETFs track total return (dividends included). |
-| Companies | Every company has a CEO, CFO, flagship product and home city; stories name them and they recur (a CEO who resigned is named later). Companies are also linked by **hidden supplier, customer and rival links** that make sense (a drug maker supplies a hospital chain, an oil producer an airline), that players never see, that decide who appears together in two-company stories and that spill a little of each move over to partners and rivals; a new listing is linked in and its partners get the matching link. Revenue, margin, cash, debt and share count evolve at earnings: **quarterly (45.6 real hours: a quarter of a 365-day game year, give or take a few days), spread so there are a few every game day and one is always coming up, and only before the open or after the close**; dividends, buybacks and offerings follow. **Scheduled company events** (guidance updates, investor days, analyst calls, product events) fall between the reports, on the public calendar with no hint of direction. Banks rate stocks from a hidden safety score and the financials, and give a reason for a new price target about 40% of the time. |
-| News | 68 templates, 20 company-story kinds, 4 company-event kinds, 5 two-company story kinds, 7 rare catalyst kinds, 7 industry-wide shock kinds, 8 named sources. Headlines are built from slots (names, products, cities, synonyms), so the same story reads differently each time, and none of them talks about the game's own bookkeeping. A hidden mood tilts good vs bad (move size scaled so the expected move is zero). Stories come back as UPDATE or REVERSAL that quote the original. No headline ever repeats. |
-| Players | **Accounts with passwords** (scrypt hashes, 30-day sessions, login and sign-up limits, a flag for accounts that share an address, admin password resets), **verified email** (a mailed code proves an address, one account per address, throwaway-mail domains refused, a forgotten password is recovered with a mailed code; `email_mode` off / optional / required), **10,000 MB to start**, a read-only **visitor view** (anyone can watch the live market and a stock's page without an account, and `/about` says what the game is), and a **Day** (what was a season) that lasts one real day. **Portfolio page** (equity curve, allocation, realised vs unrealised, best and worst trades), **trade history** with filters and CSV download (delisted stocks keep a page you can open from it), **search, sort and watchlist** on the market, **leaderboards** (day and all-time), **achievements and daily quests**, a **daily contest** (everyone trades the same 10,000 MB of paper money under the real rules; medals only), **public profiles** (private by default; holdings shown only after a delay), following, and a **moderated global chat** (a filter that sees through disguises, a trade-first gate, three reports remove a message and mute its author, appeals, a moderator log). All rewards are cosmetic: no social feature touches money or prices. |
-| Server | The engine runs in worker threads behind one lock, so a slow tick can't freeze the websockets. Clients get one full `init` and then a small `tick` each second (about 5 kB instead of 120 kB), each socket has its own writer so a slow client never blocks anyone, notices and chat are reliable messages. A crash loses nothing: every money event goes to an append-only SQLite ledger and is replayed after the last snapshot. The save keeps the chart candles in their own file so saving a full-size game takes about 140 ms, not 2.4 s. One process carried 400 simulated players at about half a core (`tests/capacity.py`). **Gateways**: `python launch.py --gateways N` runs the game server plus N gateway processes that hold the players' websockets and spread the work of sending updates over several cores (`HOW_IT_WORKS.md` §12). **Live at https://memestreet.net** (a rented Hetzner server, https through Caddy, backups every six hours, `deploy/upload.ps1` updates it with one command). It can still be shared from your own computer with `python share.py`. **Phones**: below 760 px wide the pages become cards, with a compact pinned header and a chart drawn for a small screen. Admin dashboard with alerts, charts, server timings, a house-risk report, chat moderation with appeals, accounts, email and mail, and a reset-to-Day-1 button. |
-| Checks | `sim.py` (36 strategies, one of which cheats by reading the hidden company links), `bots.py` (100 bots per random strategy over many seeds, the moonshot-sniper study), `edge.py`, `paired.py`, `probe.py`, `tune.py`, `catalyst_probe.py` and `index_probe.py` (engine-only checks of what a stock does after a big move and whether the index drifts), and `revenue_model.py` (what a player is worth in fees). A test suite of 793 tests in `tests/` (engine, volatility and sessions, news, wild stocks, industry shocks, company links, the earnings calendar, company events, orders, contests, accounts, email, moderation, house risk, saving, reset, ledger, portfolio, wire protocol, social, server, gateways, browser, stress, capacity and slow checks; the server-side suites can also be run through gateways with `MS_TEST_GATEWAYS=2`) that never touches your save file, and a GitHub workflow that runs it. |
+| **Who it is for** | People who want to learn to trade without risking their own money: beginners, students, people preparing for a real account, classes and trading clubs. |
+| **What they do** | Trade a live market of invented companies, indices, ETFs and commodities with real tools (charts, indicators, drawing, orders, stops, position sizing), follow lessons, complete challenges, keep a journal and see their skill improve. |
+| **How the site earns** | Selling MB packages (100 / 500 / 1,000 / 5,000 / 10,000 MB). Prices are your decision (B1). A second income that does not depend on people losing (classroom seats, a Pro tier) is recommended (B2). |
+| **How the market behaves** | Slow long-run upward drift; regimes (bull, correction, bear, sideways); scheduled macro data and rate decisions with consensus and surprise; fewer, more meaningful headlines; technical structure (support and resistance tested, bounced or broken, false breakouts, retests, trends, volatility squeezes, gaps) and the psychology behind it (overreaction, panic, euphoria, stop runs). |
+| **What it is not** | Not gambling (no cash-out, no prizes with money value), not investment advice, not a broker. |
 
-Not done: wallet- or phone-verified accounts, a managed database server, real money, real email (the live site has none yet: it needs a mail account), legal pages, an outside uptime monitor (the address it checks exists), and automatic daily off-server backups (the copy script exists and has been run once). Tracks I, J and K below list what a public, paid launch still needs.
+**Design rules for the new market** (these replace the old "no strategy may have an edge" rule):
+
+1. **Realism you can learn from.** Behaviour that real markets show should appear, at realistic rates: a support level
+   holds often enough to be worth trading and breaks often enough that a stop is needed.
+2. **No free money.** No simple, unskilled rule (buy everything, buy every dip, always fade, doubling down, shorting
+   everything) may beat a sensible baseline (holding the index) by a wide margin. Skill should show as better
+   *risk-adjusted* results over many trades, never as a guaranteed win. This is checked by a new test suite (P11).
+3. **Players' trades never move prices** (kept from the old plan): the market is the same for everyone, and a big account
+   cannot push it.
+4. **Paying never buys a rank.** Leaderboards measure return on the money put in, or risk-adjusted skill; buying MB gives
+   more capital to practise with, not a better place.
+5. **Honest selling.** Prices in real currency are shown before every purchase, MB are clearly worthless outside the site,
+   there is no pressure to buy at the moment of a loss, and there are spending limits (M6, R5).
+6. **Every MB is accounted for.** The ledger already records every money event; every MB that enters the game will carry
+   its source (starting grant, purchase, challenge reward, refund, admin) (M2).
 
 ---
 
-## 2. The biggest problems right now
+## 2. What changes from the old plan
 
-The earlier lists have been worked through: accounts with passwords and verified email, fixed-balance contests, stronger chat moderation, company events, order types, the house's tail risk, the single-process server (gateways), the live server, the MSI 50 and the phone layout are all done. What is left, ranked by how much it could hurt the game, the house or the business:
-
-| # | Problem | Why it matters | Fix (see track) |
+| Area | Old plan | New plan | What happens to the existing code |
 |---|---|---|---|
-| 1 | **The live site is public but not ready for strangers.** It is safer than a week ago (`/admin` is behind a second password and a new key, wrong keys lock an address out, the dashboard shows disk, saves and backups, and `/api/health` exists, and there are backups on your D: drive), but nothing sends email, there are no terms, privacy policy or age check, nobody is told if the site stops, and 8 people have already signed up. | A forgotten password cannot be recovered, strangers have no rules to agree to, and an outage goes unnoticed. | K2, K3, K4, J1 |
-| 2 | **How the game earns beyond the 0.1% fee is undecided, and the player numbers are assumptions.** A model of what a player is worth now exists (`revenue_model.py`, `HOW_IT_WORKS.md` §17.10: about 7% of a balance in fees, 64% of it from the heaviest 10% of players), and the admin page shows real fees per player, but nobody has played yet. | Every pricing, bonus and marketing decision needs real numbers and your choice of income. | I2, I4 |
+| Money | Buy MB with crypto, withdraw winnings | Buy MB packages, never withdraw | `Engine.credit` becomes the purchase and reward path (M2, M3); cash-out (`debit` as a withdrawal) is dropped, kept only for admin corrections (X9) |
+| Starting balance | 10,000 MB | **1,000 MB** | `signup_bonus` 1000 (M1); the live game is reset when the new economy ships (O11) |
+| How the site earns | 0.1% fee on every trade | MB packages (and optionally classrooms / Pro) | The fee becomes a realistic trading cost, not income (M8); `revenue_model.py` is replaced (M7) |
+| The house | Counterparty with real risk: reserve, floors, top-ups, stress loss | Only bookkeeping: nobody is paid out | Conservation checks stay; capital rules and reserve alarms are retired (M9) |
+| Prices | A fair random walk: expected move zero everywhere, a hidden mood, mean reversion to a fixed reference | Drift, regimes, macro, technical structure (track P) | The price process is rebuilt in its own module (E1, P1-P12) |
+| News | Frequent stories, rare two-outcome catalysts and industry shocks | Fewer headlines; a macro calendar; earnings with consensus | Track N; catalysts and lottery stories retired (X2) |
+| Lottery-like listings | Moonshots: tiny companies, 260-550% volatility, 60% bankruptcy | Not part of a training market | Removed from the default market or moved to an opt-in speculative section (X2) |
+| Competition | Daily paper-money race for medals | Challenges that teach a skill and award MB | The contest code becomes the challenge engine's base (L3, X5) |
+| Checks | `edge.py`: no strategy may beat the house | Realism and "no free money" suite | The strategy simulator is reused with new targets (P11, X3) |
+| Legal | Gambling, money transmission, KYC/AML, securities questions | Consumer law for digital purchases, minors, payments, education claims | Track R; the real-money items are retired (X1) |
 
-Finished items keep their old IDs in the tables below, so completed ones (A1-A5, A7, A8, A9, A13, I1, I6, K1, B1, B2, B3, B4, B5, B7, B8, B11, C1, C3, C4, C11, D1, D2, D3, E2, E3, E4, E5, E9, F1, F2, F3, F4, F5, F7, F8, F9, G1, G2, G3, G4) are simply missing. C2, D4, E8 and G10 are partly done, as noted.
-
----
-
-## 3. Improvement tracks
-
-### A. Economy and risk (do first: everything else builds on it)
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| A6 | Optional price impact for very large trades | Without it, size is free. **This is your decision**: it conflicts with the "player trades never move prices" rule, so it was deliberately left alone. | A tiny square-root impact term above a threshold, restored by fair value (never counted as news). | M |
-| A12 | The house capital rule for real money | **New numbers (`HOW_IT_WORKS.md` §17.7):** 100 players who all buy every new moonshot (1,000,000 MB of capital) cost the house a worst case of -4.4 million MB in one 6-hour market (a standard deviation of 974,000 MB), because winners reinvest; the average is zero. Thinner tails, an automatic reserve top-up (the larger of 10% of the players' equity and half the stress loss) and the admin risk report are in. With real money the floor is not free: someone has to fund it. | Decide the capital the operator is willing to put behind the game, whether the floor fraction should be higher, and whether the stress loss should page you. **Decision (2026-10-09): a big win on a moonshot is how the game is meant to work, so nothing will cap what a player can win.** | S |
-| A10 | Admin dashboard follow-ups | The dashboard now shows the machine (uptime, memory, disk, last save, last backup), the market and game, activity over time from the ledger, the most traded stocks, the biggest players and positions, orders, chat and moderation counts, the settings in effect, and a log of wrong admin keys with a lock-out after ten from one address (`HOW_IT_WORKS.md` §12). Still missing: admin actions (credit, withdraw, freeze a player) with an audit log of every admin action other than moderation, and a player's trades as CSV. | Add the actions and the audit log (J9), a per-player CSV, and a longer history (the live charts are the last two hours and are not saved across a restart). | M |
-| A11 | ETF realism | Indices and ETFs are free to hold: no expense ratio, no creation/redemption, no tracking difference. | Decide whether an expense ratio (a small, known, house-favouring drag) is wanted; if so show it on the stock page. | S |
-| A14 | Fee tiers and promotions | A flat fee treats a 100-trades-a-day player like a once-a-week one, and a launch needs something to give away. | Optional volume discounts, a first-week fee holiday and referral rebates, all as a fee change only (never a price change). Keep a floor, because the fee is also the cushion against any undiscovered edge; re-run `edge.py` after any change. | S |
-| A15 | Reserve alarms and a house-side safety switch | The reserve is topped up automatically, but nothing warns you or slows the house's exposure when a few players are winning big. | Page the admin (phone push or email) when the reserve falls below half its floor or the stress loss passes a limit; an admin switch that stops new moonshot listings and widens the floor. It is a rule about the house, not a limit on any player. | S |
-
-### B. Price movement mechanics
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| B6 | Richer correlations | A single market factor plus sector is simplistic. (Industry-wide shocks, §7.14 of `HOW_IT_WORKS.md`, now let a sector move on its own, but they are one-off news, not a standing factor.) | Add factors: rates sensitivity, oil, dollar, risk-on/off. Give each stock exposures. Use them for hedges (gold vs dollar, bonds vs rates, airlines vs oil) instead of one fixed beta. | L |
-| B9 | Realistic commodity behaviour | Oil, gas and grain have seasons and supply shocks. (The old slow commodity drift was removed: it was a momentum edge, see `HOW_IT_WORKS.md` 6.1.) | Scheduled inventory reports, OPEC-style meetings and weather shocks as *news* (zero expected move, like every other story), not as a drift; tie airlines and utilities to them. Anything that makes a commodity's next move predictable is an edge and must not come back. | M |
-| B10 | Interest rates as a real variable | "Rates" is only a news template today. | A visible policy rate that changes on scheduled dates; affects bonds, banks, growth stocks and gold through the factor model (B6). | L |
-| B12 | A public volatility gauge ("the fear index") | Volatility already clusters (calm stretches and storms), but players cannot see it, so a storm just feels random. | Show a realised-volatility gauge for the MSI 50 in the header and on the market page (calm / normal / stormy, from the last hour). It tells size, not direction, so it gives no edge (check with `edge.py`). Optionally a tradable volatility product later. | S |
-
-### C. News and storytelling
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| C2 | Optional LLM headlines (**not done, needs your decision and an API key**) | Highest variety for the least writing. The slot grammar (C1) already gives thousands of surface forms, so this is now a nice-to-have. | Offline step that pre-generates a few thousand headlines per template and tone, reviewed and loaded as content packs (no live calls in the game loop). It can't be done inside the repo without an LLM service, so it was skipped. | M |
-| C5 | Multi-part arcs with stages | Today follow-ups are one-step. | Arc templates: probe, hearing, ruling; clinical trial phase 1, 2, 3; **mergers and takeovers** (a rumour, a bid at a premium, regulators, approval or collapse; the target is then delisted at the deal price). Players can read the stage and trade the odds; zero expected move at each stage. | L |
-| C6 | Scheduled macro calendar | Central bank dates, jobs reports and earnings seasons give structure. | A calendar page and "Upcoming events" entries, with outcomes drawn at the event. Pair with B10. | M |
-| C7 | Sources with track records | Every rumour has the same 75% credibility. | Named sources (a rumour mill, a respected wire) with a hidden accuracy that the player can learn from their history; keep the average at zero edge. | M |
-| C8 | Analyst consensus and "beat/miss" | Earnings today say "beat" or "missed" with no expectation. | Publish a consensus estimate before each report; the price reacts to the surprise against it. | M |
-| C9 | Headlines that name the cause of a move | "Why is X down?" should be answerable from the wire. | Attach each news item to the move it caused (a small "-1.2%" badge on the headline, filled in after the tick). | S |
-| C10 | News filters and a ticker-specific feed | The wire is one stream of 30 items. | Filter by sector, watchlist and holdings; search; infinite scroll with saved history (the wire isn't saved today). | M |
-| C12 | Index changes as news | A real index announces who joins and who leaves; the MSI 50 re-ranks silently every game day. | A wire item at each re-rank ("Chronos Labs joins the MSI 50; Beamline Couriers leaves"). The price effect stays zero: the re-rank uses prices that are already known and news is only a headline. Check that nothing trades on it. | S |
-| C13 | A daily wrap ("Meme Street Close") | There is no summary of a day: the biggest movers, the story of the day, the index, the best trader. A recap is also the best email and share card. | Write it automatically at the end of each game day from the day's data, show it on the market page and keep an archive. Feeds I7 (email digest) and I8 (the community channel). | S |
-| C14 | Rating changes and price targets as a page | Banks rate stocks and give targets, but only as one-line news. | A page that lists every rating change and target by bank, with each bank's hit rate so far (keep the average at zero edge, as with C7). | S |
-
-### D. Number and variety of stocks
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| D4 | IPO calendar and delisting cycle (partly done) | Moonshots already list every ~15 minutes and bankrupt ones are replaced. Ordinary IPOs and an announced calendar are missing. | Scheduled IPOs of ordinary companies announced days ahead (with a pricing story), an "IPO calendar" page, and more kinds of generated company (small caps, SPAC-like names). | M |
-| D5 | Company personalities | Many stocks read the same. (The hidden supplier / customer / rival links already give each company a place in a web of partners.) | Per-company traits: dividend payer, serial acquirer, meme favourite, cyclical, defensive; each changes which stories it gets and how it reacts. | M |
-| D6 | Options (much later) | The classic next instrument. | Only after the core economy is proven safe; needs a pricing model and strict risk limits. | L |
-| D7 | More listings | 150 companies is plenty to browse, and eight imaginary industries are in. A few real-world themes are still thin. | More content packs (copy `pack_fiction.json`'s or `pack_growth.json`'s shape): international, small caps, more imaginary industries. | S each |
-| D8 | A moonshot index | Moonshots are the most exciting thing in the game, but you have to pick one and most go bust. | A tradable basket (equal weight of the moonshots that are listed, dropping the bankrupt ones at their payout price), with its own page. Like every ETF it is a fair bet. | S |
-| D9 | Sector and size indices beside the MSI 50 | The MSI 50 follows the top of the market; there is nothing for the middle and the bottom. | An "MSI Mid 100" (ranks 51 to 150) and a small-cap basket with the same weighting and re-rank rules, and 2x/inverse products only if people ask. | S |
-
-### E. UI and UX
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| E1 | Chart upgrades | Missing basics for a trading screen. (There are no volume bars on stock charts; the activity chart of the trading cycle that the market page briefly had was removed on request.) | Volume bars (trade counts), crosshair with OHLC readout, line/area toggle, moving averages, compare with the index, drawing of the average line for each lot. | M |
-| E6 | Mobile layout, second step | The phone layout is done (card rows, compact pinned header, readable chart, folded news; `HOW_IT_WORKS.md` §11). Left: trading from the market still means tapping the Buy button on each card, and the game cannot be installed on the home screen. | A pull-up trade ticket (size chips and amount in one sheet), a web app manifest so it installs like an app, and a check on real phones (Safari and Chrome). | S |
-| E7 | Onboarding | New players land in a table with no guidance. | A 3-step first-run tour, a glossary tooltip for "short", "cover", "margin", "beta", and a safe "practice" mode. | S |
-| E8 | Notifications (partly done) | Achievement, quest, contest and margin messages now stack in the corner and are delivered reliably, but they vanish after a few seconds. | A persistent notification list, optional sound, and browser notifications for margin calls and followed stocks. | S |
-| E10 | Accessibility and theme | Colour-only up/down and a single dark theme. | Arrows beside colours, keyboard shortcuts for buy/sell/cover, light theme, reduced-motion option. | S |
-| E11 | Make the stock page richer | Key facts are spread out. | Sections for "why it moved today", next earnings date, rating history with the bank that changed it, and related stocks. | M |
-| E12 | Charts for portfolio and profiles | The equity curve is a plain line. | Drawdown shading, a benchmark line (the index), trade markers on the curve, a longer history than one day. | M |
-| E13 | A market heatmap | The market page is a list of 193 rows; there is no way to see the whole market at a glance. | A page of tiles sized by market value and coloured by the 30-minute change, grouped by sector, click to open a stock. Uses numbers the page already receives. | S |
-| E14 | An MSI 50 page | The index is new and nobody can see what is in it. | A page with the 50 members, their weights, how much each added to today's move, and who joined or left at the last re-rank (pairs with C12). | S |
-| E15 | A screener and movers | Finding a stock means scrolling or searching. | Filters (sector, volatility, P/E, dividend yield, market value, held by me), top gainers and losers, and "most traded by players" (delayed and as shares of the total, never sizes, so it hands nobody a signal). | M |
-| E16 | Price alerts and watchlist alerts | You have to keep the page open to notice a price. | "Tell me when X passes Y" and "tell me about news on my holdings", delivered in the page, by email and by browser push (pairs with E8 and I7). Alerts only report; they never trade. | M |
-| E17 | A "while you were away" summary | Returning players land in the same table as always, with no sign of what happened. | On sign-in: your equity change since the last visit, orders that filled, news on what you hold, quests and the new day. It is the main reason to come back tomorrow. | S |
-| E18 | Sound and touch feedback | Fills, margin calls and big news are silent. | Optional sounds and phone vibration for fills, margin calls and breaking news on your holdings, off by default. | S |
-| E19 | Light theme, languages and number formats | One dark theme and English only, for a game meant to be global. | A light theme (with E10), translated pages (start with Spanish, Portuguese, Turkish and German; the news stays English), and local number formats. | M |
-| E20 | A desktop trading screen | Power users want several charts and a watchlist side by side. | A customisable layout (a few chart panes, watchlist, news, positions) with saved layouts. Much later. | L |
-| E21 | Low-data mode for phones | The game sends about 5 kB a second, which is 18 MB an hour on mobile data. | Pause updates when the tab is hidden, slow them to every few seconds on request, send only the rows that are on screen, and compress the messages (pairs with G10's per-client subscriptions). | S |
-
-### F. Game design and social
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| F6 | Days with themes | A day is just a leaderboard reset. | Themed days or weeks (a bubble, a recession, a rate-hike year) that change regime odds; announced at the start. | M |
-| F7 | Contest formats and prizes | The daily contest is fair (same paper balance for everyone, real rules) but only pays a medal. | A weekly contest, a contest with limited instruments, team entries, and MB prizes only after the legal review (H phase 4). | M |
-| F10 | More quests and achievements | 21 achievements and 8 quest types will be done in a few days. | Weekly quests, hidden achievements, seasonal badges, a profile showcase. | S |
-| F11 | A chat room for each stock | One global chat mixes everything; a stock's own page is where people want to talk about it. | A chat room on each stock page (the same filter, reports and mutes as the global chat), with the most active rooms listed. | M |
-| F12 | Friends and private leagues | A leaderboard of strangers is weak; a league of friends is what makes people come back and invite others. | A league with an invite code, its own day and all-time boards, and an optional paper-money format. Streamers and groups can host one (pairs with I9). | M |
-| F13 | Streaks, levels and titles (cosmetic only) | Quests give a reason to come once a day but nothing builds up over weeks. | Streak counters, levels from trades and quests, profile titles. Never anything that pays MB or changes a price. | S |
-| F14 | Head-to-head challenges | Players cannot challenge a friend. | "Beat me this week": two players (or a player and the index) on the same paper balance, one winner, medals only. | M |
-| F15 | Bring your own bot (API keys) | Players who write trading programs have no way in, and an outside AI cannot connect at all. | Personal API keys with rate limits, a read-only market feed, a paper account and a live account, and a separate "bots" leaderboard so they do not compete with people. | L |
-| F16 | An academy | New players do not know what shorting, margin or an ETF is. | Short lessons linked from the page (with E7's tour), each ending in a paper-trade exercise. | S |
-
-### G. Engineering and operations
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| G5 | Replays and determinism | Hard to reproduce a bug or an exploit. | The ledger already records every money event; add a seeded RNG per session and a replay tool that reconstructs any hour. | M |
-| G6 | Observability | Tick time, send time, disk, memory, last save and last backup are on the admin page with alerts, but nothing tells you when you are not looking, and there are no logs or alerts in production. | Structured logs, metrics export, alerts on invariant drift, late ticks and a negative house reserve. | M |
-| G7 | Config and content tooling | Content is edited by hand in JSON. | A validator for content packs (missing sectors, bad betas, duplicate tickers) and a content-preview command that simulates a pack for an hour. | S |
-| G8 | Fix known rough edges | Small things that add up. | Sparklines reset on restart; the global news wire isn't saved; removing a company from content drops holders' shares; old `rating_review_days` setting still in packs; the "Upcoming events" list shows only earnings; achievement counters since the last snapshot are lost in a crash (money is not). | S |
-| G9 | Run the browser test in CI and add more flows | The GitHub workflow runs the test suite, but the browser test depends on a browser being present. | Install headless Chrome in the workflow; add flows for mobile width. | S |
-| G10 | Scale the game server itself (partly done) | **Gateways are done** (`python launch.py --gateways N`, `HOW_IT_WORKS.md` section 12): the connections and the once-a-second sending run in as many processes as you like, and the game server alone then carries roughly 4,000 ordinary players (one process alone, about 1,600). What is left: the market is still one process with one lock, one core and one SQLite file. | Only when one core stops being enough (the next ceiling, around 4,000 players): move the engine to its own process with a message queue for trades, Postgres instead of SQLite, and per-client subscriptions so only the visible prices are sent. | L |
-| G11 | Ledger housekeeping | The ledger only grows (the admin Reset makes a backup, but there is no scheduled one). | Daily backup, rotation of the equity-curve table, a restore drill, and a command that checks a snapshot against the ledger. | S |
-| G12 | Stop re-checking the content files every tick | Every tick the engine reads the modification time of every content file. In a simulation that is wasted work, and with 14 processes at once it made Windows refuse a read ("insufficient system resources") and crashed a study. | Check at most every few seconds (a `content_reload_seconds` setting), and not at all in `sim.py`. | S |
-| G13 | Keep the game's data out of OneDrive | The project folder lives inside OneDrive, which sometimes holds `state.json` open ("could not replace state.json") and could create conflicted copies of the ledger. | An environment variable (`MS_DATA_DIR`) for where the save, charts, ledger and backups live, with a default outside the synced folder, and a note in the docs. | S |
-| G14 | A faster, steadier test suite | The suite takes 16 to 25 minutes, once got stuck for 50 minutes without saying where, and two full runs a day is a lot of waiting. | A per-test time limit that names the stuck test, the files run in parallel processes, the browser tests marked so they can be skipped, and a quick "smoke" subset (about 2 minutes) for small changes. | M |
-| G15 | Split the two big files | `engine.py` is about 3,600 lines and `index.html` is one 960-line file with very long lines. Changes are slow to review and easy to get wrong. | Split the engine into modules (prices, news, orders, accounts, indices) with the same behaviour, and move the page's CSS and JavaScript into their own files. No behaviour change; the tests are the safety net. | L |
-| G16 | Linting and type checks | Mistakes like a missing variable are only found when a test happens to hit them. | Ruff and a light mypy pass in the CI workflow, fixing what they find once. | S |
-| G17 | Error tracking | An exception in production is only a line in a log file. | Send unhandled exceptions to a tracker (Sentry's free tier or a self-hosted one) and group repeats; tie to K4's alerts. | S |
-
-### H. Launch track (from the earlier roadmap, still valid)
-
-| Phase | What | Done when |
-|---|---|---|
-| 1. Closed play-money test (weeks 1-2) | The game is live at https://memestreet.net with a fresh market (2026-10-06). First finish K1 to K4 and J1 below, then invite 5-10 people (`python share.py` is still there for a game on your own computer), keep `signup_bonus` at 10000. Watch `invariant_drift`, `fees`, `liquidity_pnl`, `players_pnl`, the house-risk panel, the server timings on the admin page and one player topping every day. | 10+ testers, no crashes for 24 hours, nobody wins every day |
-| 2. Hardening (weeks 3-5) | Set `email_mode` to `required` and put real mail (SMTP) behind it before anyone relies on it (done: passwords, sessions, sign-up and login limits, an address-sharing flag, verified email with one account per address, password recovery by email); wallet or phone verification before real money; rate limits on trades and on admin-key guesses (A10); a permanent HTTPS host (the files are in `deploy/`; you buy the domain and rent the server) with searchable logs and daily backups (G11: the six-hourly backup job is in `deploy/`; an off-site copy and a restore drill are not); CI test from `sim.py` (drift under 1e-6); mobile pass (E6). | Done for the email part: a forgotten password is recovered without the admin. Still to do: a permanent host, backups, mobile |
-| 3. Public beta, play money (weeks 5-8) | Open signups; measure daily active players, trades per player and fees per player; re-tune `event_mean_seconds`, `news_move_ranges`; ship content packs regularly; watch chat reports (F8). | Stable retention and a healthy house reserve |
-| 4. Legal gate | Lawyer's opinion, per country, on gambling or skill-gaming licences, money transmission and virtual-asset rules (KYC/AML), whether withdrawable fictional "stocks" raise securities or derivatives issues, terms of service, age limits, and the privacy of public portfolios and chat. | Written sign-off. Do not build payments before this. |
-| 5. Real money | Crypto deposits on `Engine.credit` (after on-chain confirmations); withdrawals on `Engine.debit` (manual approval, daily caps); `signup_bonus` to 0; daily reconciliation (on-chain balance at least player cash plus equity); low caps at launch. | Numbers hold at each cap raise |
-
-### I. Business and growth
-
-The game is meant to make money, so these are about getting players, keeping them and knowing what each one is worth. Nothing here changes a price.
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| I2 | Decide how it earns | Fees are the plan today and nothing else is modelled. | Compare (a) the fee (done), (b) paid-entry contests with a rake (needs the legal sign-off, H phase 4), (c) cosmetic items such as themes, badges and chat colours, (d) a "Pro" subscription (alerts, extra charts, the API of F15), (e) deposit or withdrawal fees. Use the revenue model's numbers (`revenue_model.py`). This is your decision. | S |
-| I3 | A referral programme | Word of mouth is the cheapest way to grow. | Invite links. A reward that cannot be farmed: a cosmetic for both sides after the friend verifies an email and makes a first trade (with real money, never free MB). | M |
-| I4 | Retention and visitor counts (the funnel panel is built) | The admin page now shows sign-ups per day, verified emails, first trades, players seen in the last 24 hours and 7 days, and fees per paying player (counted from the game's own data). Still missing: visitors per day (visitors are only counted while they are connected), cohort retention (back on day 1 / 7 / 30), and a last-seen time finer than the hourly session stamp. | Record each player's first and last visit day, count visitors per day, and add a cohort table. Keep it free of third-party scripts. | S |
-| I5 | Share cards and link previews | A shared link to the site shows a bare address in chat apps. | Preview tags (title, description, image) for stock pages, profiles and the leaderboard, and a "my day" image (return, rank, best trade) that is made to be posted. | M |
-| I7 | Email that brings people back | Email is built for codes only; the live site sends none yet (K2). | A welcome, the daily wrap (C13), margin-call and filled-order notices, a "we miss you" after a week away, with an unsubscribe link that works. | M |
-| I8 | A community channel | Players have nowhere to talk outside the game, and you have nowhere to announce things. | A Discord or Telegram server with a bot that posts the daily winners, the wrap and big breaking stories (a webhook, no player data). | S |
-| I9 | Tools for streamers and groups | One streamer with an audience is worth many ads. | Private leagues with a code (F12), a custom contest they can name, and an overlay page for a stream. | M |
-| I10 | The name and the brand | "Meme Street" is not yet checked for conflicts, and only `memestreet.net` is registered. | A trademark search in your target countries, the `.com` and common variants if free, matching social handles, and a one-page brand kit (logo, colours). Not code. | S |
-
-### J. Trust, rules and player protection
-
-Needed before strangers (and certainly before real money). None of it changes a price.
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| J1 | Terms, privacy policy and an age check | The site has no rules and no age limit. | A terms page, a privacy policy, a risk warning, a "you are 18 or older" box at sign-up, and links in a footer. Have them read by a lawyer before real money. | S |
-| J2 | Block places you cannot serve | Real-money games are restricted in some countries. | With Cloudflare in front (K5) the country of each visitor is known: show a notice and refuse sign-up and deposits from blocked countries. | S |
-| J3 | Responsible play tools | A game people pay into must let them set limits. | Player-set deposit, loss and time limits, a cool-off period, self-exclusion, a session reminder, and a "what I have put in and taken out" page. | M |
-| J4 | Two-step sign-in and identity checks | A password is not enough to guard money. | Authenticator-app codes for sign-in and withdrawals, then identity and sanctions checks through a provider before the first withdrawal (H phase 4 and 5). | L |
-| J5 | A "how we keep it fair" page | Trust is the product when money is involved, and the proof is already in the repository. | A plain page with the no-edge rules, the results of the many-market studies, the house's running profit against its fees, and a download of every stock's price history so anyone can test it. | S |
-| J6 | Provable fairness | Players have to take it on trust that prices are not steered. | Publish a hash of each hour's random seed before it starts and reveal the seed afterwards, so anyone can replay the hour and confirm the prices. Needs G5 (a seeded, replayable engine). | L |
-| J7 | Data rights | Players should be able to take their data or leave. | Download all my data, delete my account (positions closed, history anonymised), and a stated retention period. | M |
-| J8 | Stopping abuse | Fake and duplicate accounts are the usual way a bonus or a contest is cheated. | A captcha on sign-up (Cloudflare Turnstile is free), grouping accounts by device and address with a review list in the admin, and limits that tighten when something looks wrong. | M |
-| J9 | Admin roles and an audit log | Everything in the admin works with one key. | Separate admin and moderator roles, an audit log of every admin action (A10), and a second person's approval for large withdrawals. | M |
-
-### K. Running memestreet.net
-
-The live server is a single rented machine (`deploy/DEPLOY.md`). These make it safe to leave running.
-
-| # | Improvement | Why | How | Size |
-|---|---|---|---|---|
-| K2 | Real email | The live site cannot send mail, so accounts cannot be verified and a forgotten password cannot be recovered. The helper is ready (`deploy/set_mail.ps1`: asks for the key hidden, writes it to the server, restarts, checks); it needs a mail account that only you can make. | Make a Resend account (resend.com, a free plan is enough), add memestreet.net there and put the DNS records it shows into Cloudflare (SPF, DKIM, DMARC), create an API key, then run `powershell -File deploy\set_mail.ps1 -Server root@65.109.233.145`. The game's email setting then turns from off to optional by itself. | S |
-| K3 | Backups somewhere else | The six-hourly backups sit on the server's disk, so one dead disk loses both. `deploy/pull_backups.ps1` now copies the newest ones to your D: drive (four copies are there from 2026-10-11), but only when you run it. | Run it daily (a Windows scheduled task, one line in `deploy/DEPLOY.md`), add the provider's own backups or a Hetzner Storage Box, an alert if the newest copy is old (the dashboard has it for the server's copy), and a restore drill onto a spare machine (G11). | S |
-| K4 | Know when it is down | The dashboard alerts on a full disk, a missing save and an old backup, but only while someone looks at it. `https://memestreet.net/api/health` now answers 200 while the game ticks and saves and 503 when it is stuck, but nothing checks it yet. | Make a free UptimeRobot account (uptimerobot.com), add an HTTP monitor for that address every 5 minutes, and choose where the alerts go (your email, or a phone push). Later: a push for the dashboard's red alerts, and log rotation. | S |
-| K5 | Put Cloudflare in front | The site is "DNS only", so the server's address is public and there is no shield against floods. | Turn the orange cloud on (websockets work), set `TRUST_PROXY`, cache the static files, and use the country header for J2. Test that sign-in, the websocket and the gateway still work. | S |
-| K6 | Safer updates | An update goes straight to the live game and the old version is overwritten. | The upload script runs the quick tests first, keeps the previous release for a one-command rollback, and logs what was sent. | S |
-| K7 | A second copy to try things on | Changes meet real browsers only after they are live. | A small staging server (or a second port on the same one) with its own game, updated first. | S |
-| K8 | Harden the server | Defaults are not enough for a machine that will hold money. | Check SSH is keys only, add fail2ban, rotate `ADMIN_KEY` and `CORE_KEY`, and keep a list of every secret and where it lives. | S |
-| K9 | A capacity plan | Nobody knows when the small server will stop being enough or what the next size costs. | A load test with 1,000 sockets from another machine against the real setup, then a table: players, server size, monthly cost. | M |
-| K10 | A status page and an incident note | Players ask what is happening when the site is slow or down. | A static status page and a short template for telling players what happened. | S |
+Old roadmap IDs are retired. Where `HOW_IT_WORKS.md` still mentions one, this is where it went: A10 → E8 (admin follow-ups),
+A12 → X1 (retired), A14 → M8 (costs), C2 → N10 (LLM headlines), E6 → U1 (phone, second step), F8 → done (chat moderation),
+G10 → E10 (scale), G11 → E11 (ledger housekeeping), I2 → decided (packages; B1, B2), I4 → B4 (funnel), J1 → R1 (terms).
 
 ---
 
-## 4. Suggested order
+## 3. Where things stand (2026-10-13)
 
-| Step | Focus | Items | Why this order |
+What already exists and carries over unchanged: a tick engine (1 tick = 1 second, 30-minute game days in pre-market,
+regular session and after-hours, a 365-day game year), 193 listings in 30 sectors with invented companies (CEOs, products,
+supplier and rival links, evolving financials, quarterly earnings on a calendar, company events), the MSI 50 index, sector
+indices, ETFs and 2x/3x products; long and short trading, limit, stop-loss, take-profit and bracket orders; accounts with
+passwords and email verification (mail not yet switched on), a read-only visitor view and `/about`; portfolio, history
+with CSV, watchlist, leaderboards, achievements and quests, profiles, following and a moderated chat; a phone layout; a
+crash-proof money ledger; gateways for many connections; an admin dashboard (house, machine health, activity, players,
+security); and the live site **https://memestreet.net** (Hetzner, Caddy, admin behind a second password, `/api/health`,
+six-hourly backups pulled to the D: drive by `deploy/pull_backups.ps1`). 793 tests run in a few minutes per file and in
+about 16 minutes all together.
+
+What does **not** fit the new plan yet: the price process (built to have no direction and no structure), the news mix, the
+starting balance, the lottery listings, the contest, the edge checks and the money flow (no purchases).
+
+Not done at all: payments, the macro economy, technical tools on the chart, lessons, challenges with rewards, a journal,
+classrooms, terms and privacy pages, real email, an uptime monitor, daily automatic backups.
+
+---
+
+## 4. The biggest decisions and risks
+
+| # | Decision or risk | Why it matters | Where |
 |---|---|---|---|
-| Now (this week) | **Make the live site safe** | K1, K2, K3, K4, J1 | The site is public. Lock the admin page, send real email, copy the backups elsewhere, get told when it is down, and put terms and an age check in front of strangers. All small. |
-| Next (about 2 weeks) | **Let people in, and see what they do** | H phase 1, I4 (the rest), I2 | Visitors can now watch the market and read `/about`, and the admin page has a funnel and the revenue model exists; next is the closed test with 5-10 people, to replace the model's assumptions with real numbers, and your decision on how the game earns. |
-| Then (weeks 3-5) | **Hardening and retention** | H phase 2, G11, G8, G12, G13, E17, E8, E16, K5, K6 | Backups, safe updates, alerts, and the first reasons to return tomorrow (a "while you were away" summary and price alerts). |
-| Then (weeks 5-8) | **Make prices and news feel alive** | C12, C13, C8, C9, C5, C6, E7, E13, E14 | More to read and see between big stories, plus onboarding and the heatmap and MSI 50 pages. |
-| Then (weeks 8-12) | **Grow the game** | I3, I5, I7, F12, F11, F6, F7, D4, D5, D8, E1 | Referrals, share cards, email, leagues with friends, stock chat rooms, themed days, contests and chart upgrades. |
-| In parallel | **Scale, observe and keep it maintainable** | G6, G10, G5, G9, G14, G15, G16, G17, K9 | Gateways carry the connections already; the rest is needed once there are thousands of players and more than one person editing the code. |
-| Before real money | **Trust and the law** | J2 to J9, I2, A14, A15, then phases 4-5 | Responsible-play tools, two-step sign-in, a fairness page and a lawyer. Do not build payments before this. |
-| Later | **Options and bring-your-own-bot** | D6, F15, E20 | Only once the market and economy are proven. |
+| 1 | **Rebuilding the price process** is the largest and riskiest piece of work. Support and resistance, trends and regimes must appear at believable rates without becoming a money machine, and the drift must be visible over weeks but not over a session. | It is the product. A market that is too random teaches nothing; one that is too regular is exploited in a day. | P1-P12, E1 |
+| 2 | **Selling MB to people who run out.** Without leverage, losing *everything* in a cash account is rare (stocks seldom go to zero; fees and repeated losses drain slowly), so most purchases will be "I want more capital", not "I lost it all". And the better the teaching, the less people lose. | Revenue that depends on losses works against the product's purpose and draws scrutiny when the users are young or vulnerable. | M4, M6, B1, B2, R2-R5 |
+| 3 | **Free MB from challenges** must be worth chasing but must not remove the reason to buy, and must not be farmable with extra accounts. | Too little and challenges feel pointless; too much and nobody buys. | M5, L3, R6 |
+| 4 | **Age and consumer law.** A trading-education site will attract teenagers; selling them currency needs an age policy, clear prices, receipts and a refund rule. | The cheapest mistakes to avoid and the most expensive to fix later. | R1-R4 |
+| 5 | **The live site has 8 accounts on the old rules** (10,000 MB, old market). | They need a clear notice and a reset when the new economy ships. | O11 |
+| 6 | **The name.** "Meme Street" suits a meme-stock game more than a place to learn. | Cheap to change now, expensive later (domain, brand, search). | B9 |
 
 ---
 
-## 5. Open questions
+## 5. Tracks
+
+### M. MB economy and purchases
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| M1 | Everyone starts with 1,000 MB | The new model. | `signup_bonus` 1000 (the tests already use 1,000). Check what 1,000 MB means against share prices (gold is about 2,400 MB a share: fractional shares already work, but the page should show "you can buy 0.4 shares") and against minimum sensible trade sizes. The live game is reset (O11). | S |
+| M2 | Where every MB comes from | Purchases, rewards and grants must be told apart for receipts, refunds, statistics and abuse checks. | A `source` on every credit in the ledger (grant, purchase, challenge, refund, admin) and per-player totals by source; the admin page shows them. | S |
+| M3 | Packages and checkout | The income. | A payment provider's hosted checkout (a *merchant of record* such as Paddle or Lemon Squeezy handles VAT and sales tax worldwide for a solo seller; Stripe Checkout is the alternative), five packages, a signed webhook that credits MB exactly once (never trusting the browser), receipts, a purchase history page, refunds that take back unspent MB, chargebacks that freeze the account. Test mode first. | M |
+| M4 | What happens when an account runs out | The moment a player busts is when the site teaches the most, and when pressure to buy is least fair. | A "your account is out of money" page that shows what happened (biggest losses, risk taken, a link to the risk lessons) and the options: buy a package, or a free restart on a timer (for example 1,000 MB once a week) if you decide to offer one. No purchase pop-up during trading. | S |
+| M5 | Challenge rewards | Free MB for learning. | Rewards are paid by the challenge engine (L3) into the ledger with source `challenge`; one-time and repeatable challenges, daily and weekly caps, rewards only for verified accounts, a weekly budget per active player as a setting, and a check in the pricing model (M7) that rewards do not remove the reason to buy. | S |
+| M6 | Spending safeguards | Selling currency in a game that people can lose needs limits. | A default monthly cap, player-set lower caps, a cool-off after several purchases in a day, a "what I have spent" page with real-currency totals, and a confirmation step that shows the price. | S |
+| M7 | A pricing model | `revenue_model.py` models fee income, which is no longer the income. | Replace it with a model of package sales: share of players who buy, package mix, how often accounts run out (from the market's difficulty and the bust rule), free MB from challenges; output per 1,000 sign-ups and its sensitivity to each assumption. Fill it with real numbers after M3 ships. | S |
+| M8 | Trading costs that teach | Costs are part of trading; they are no longer the site's income. | Decide the cost model: keep 0.1% per side, or a commission plus a bid-ask spread that widens in thin sessions, fast markets and small companies, and slippage on market orders in fast moves (never moving the price). Show costs per trade in the journal. Any change is checked with the realism suite (P11): costs decide whether a pattern pays. | M |
+| M9 | Simplify the house | Nobody is paid out, so the house carries no real risk. | Keep the conservation checks and the ledger; retire the capital rule, the reserve floor and top-ups as a risk control, and the reserve alarms; turn the admin's house-risk panel into "where players are positioned", which is still interesting. | S |
+
+### P. The price model (the core of the new product)
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| P1 | Slow long-run drift | Real markets go up over years; the user asked for it. | Each listing gets an expected return per game year (the index about +6% to +9%, quality companies and defensives lower and steadier, small and speculative ones higher and more volatile, bonds and gold their own); applied as a drift in log price, so a buy-and-hold of the index makes money over many game years and a session shows almost none of it (at 365 game days a game year is 7.6 real days: +8% a game year is about +0.04% a real hour). Mean reversion to a fixed reference price is replaced by reversion to a drifting fair value, or dropped. | M |
+| P2 | Market regimes | Bull markets, corrections, bear markets and long sideways stretches are what make a market feel real, and what technical traders must adapt to. | A hidden regime process (bull, correction, bear, sideways, recovery) with realistic durations and depths in game time (a 10% correction about once a game year, a 20% bear market every few game years, sideways phases of weeks to months), each with its own drift, volatility and correlation; the economy (N4) shifts the odds. Players never see the state, only its effect. | L |
+| P3 | Ranges and sideways markets | "Price moves sideways for extended periods" is a request and a teaching staple. | In a range a stock oscillates between a floor and a ceiling with mean reversion inside it, volume dries up, and the range ends in a breakout whose direction leans with the regime. | M |
+| P4 | Support and resistance | The heart of technical trading: levels are tested, and either hold or break. | Each listing remembers its levels: earlier swing highs and lows, the edges of past ranges, round numbers, the 52-week high and low, and the 50 and 200 game-day averages. When price nears a level the process changes: the approach slows, then the level either holds (a bounce, more likely for a strong level: several earlier touches, high volume there, in line with the trend) or breaks (more likely after repeated tests, on a volume surge, against a weak level). A break can follow through, fail and fall back inside (a false breakout or stop run), or come back to retest the level from the other side (a broken resistance acting as support). The rates are set from real-market statistics and checked by P11. | L |
+| P5 | Trends and swing structure | Trends of higher highs and higher lows, pullbacks and exhaustion are taught everywhere. | Moves come in legs (an impulse, then a pullback), pullbacks often stop near the moving averages or the last broken level, and trends end with a failed new high, a divergence or a climax. | L |
+| P6 | Volatility structure | Squeezes and expansions, opening spikes and quiet middays are real and tradable. | Volatility compression before a move (a narrowing range) and expansion after it, volatility rising when prices fall (the leverage effect), the existing clustering and session pattern, opening gaps and the tendency of small gaps to fill. | M |
+| P7 | Volume | Volume confirms breakouts and marks climaxes; there is none today. | A volume series per listing, linked to volatility, news, level tests and breakouts (high on a true break, low in ranges, a spike at panic lows and euphoric highs), shown under the chart (T1). | M |
+| P8 | Market psychology | Real markets overreact, panic and chase. | News overreactions that partly retrace, "buy the rumour, sell the news" around scheduled events, round-number magnetism, sector herding, capitulation lows with long wicks and huge volume, blow-off tops, short squeezes when short interest is high (the game tracks it), and stop runs just past obvious levels. Each one has a rate and is checked by P11. | L |
+| P9 | Factors and correlations | One market factor plus sectors is too simple for macro to matter. | Factors for the market, interest rates, oil, the dollar and risk-on/off, an exposure to each per listing, and correlations that rise in sell-offs. Macro news (track N) moves the factors. | L |
+| P10 | Asset classes that behave like themselves | Bonds, gold, oil and defensive stocks teach different lessons. | Bonds fall when rates rise (by their duration), gold reacts to real rates and fear, oil to supply news and growth, defensives hold up in bear phases and cyclicals lead in recoveries, small companies move more. | M |
+| P11 | The realism and "no free money" suite | The old edge checks ask "can anyone win?"; the new question is "does it look and act like a market, and is there free money?". | Reuse the strategy simulator (`sim.py`, `bots.py`, `edge.py`) with new targets: (a) stylised facts of real returns (fat tails, volatility clustering, almost no autocorrelation of returns, drawdown and regime statistics); (b) pattern rates within target bands (for example: a strong support holds 55-65% of the time; 20-35% of breakouts fail); (c) strategies measured against holding the index, costs included: no unskilled rule may beat it by more than a set margin, and a disciplined rule-follower (enters at a level, stops below it, sizes by risk) may do modestly better. Runs over hundreds of markets, like the old studies. | L |
+| P12 | Retire what conflicts | The old process was built to have no direction. | The hidden mood, the fixed-reference mean reversion, the daily move envelope, two-outcome catalysts and distress bets are replaced or kept only where they still fit; each removal checked by P11. | M |
+| P13 | A market made for practice | Beginners may want calmer conditions. | Optionally a second, gentler market (lower volatility, clearer levels) for the first lessons, or a difficulty setting per classroom. Later. | M |
+
+### N. Macro, earnings and news
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| N1 | Far fewer headlines | News should be events, not noise; the user asked for less. | Cut random company stories sharply (to a handful per game day across the market), keep scheduled company events and earnings, and let macro drive the big days. | S |
+| N2 | A central bank and interest rates | Rate decisions move everything and are taught everywhere. | A policy rate, meetings on a published calendar (about eight a game year), a market expectation before each one ("hold expected, 30% chance of a cut"), a decision drawn from the hidden economy (N4), and a reaction to the *surprise* through the factors (P9): bonds, banks, growth and real-estate stocks, gold, the dollar. Quiet before, volatile after, sometimes a whipsaw. | L |
+| N3 | Economic data releases | CPI, jobs and growth reports make the market realistic and give traders scheduled events to plan around. | Monthly CPI and jobs reports, quarterly GDP, and a few others (retail sales, business surveys, weekly jobless claims), each with a consensus forecast and an actual figure; the reaction follows the surprise and what it means for rates. | M |
+| N4 | A hidden economy | Data, rates, earnings and regimes should tell one story. | A slowly moving economy (inflation, growth, unemployment, the policy rate) that produces the data, sets the central bank's decisions, tilts company earnings and shifts the regime odds (P2). Players see only the releases. | L |
+| N5 | Earnings with consensus | Every report now says "beat expectations" with no expectation behind it. | A consensus estimate published before each report, actual vs consensus as the surprise, guidance, a reaction to the surprise, and a drift for a few days after big surprises (post-earnings drift). Optionally earnings *seasons* instead of reports spread evenly. | M |
+| N6 | An economic calendar page | Scheduled events are only useful if players can see them coming. | Upcoming releases and earnings with consensus; after the release, the actual, the surprise and how the market reacted. | S |
+| N7 | Every move explained | "Why did it move?" should always have an answer, which is how people learn. | Link each headline to the move it caused, and give each stock page a "why it moved today" line combining news, macro and technical events ("broke resistance at 145 on high volume"). | S |
+| N8 | Company stories, fewer and better | Stories still give companies character. | Keep company events, earnings and a few story kinds; retire two-company stories and catalysts (X2); later, multi-stage stories (a merger: rumour, bid, approval or collapse). | M |
+| N9 | A daily market wrap | A summary of the day is a lesson in itself and the best email. | Auto-written each game day: the index, the macro data, the biggest movers and the technical events behind them. | S |
+| N10 | LLM-written headlines (optional) | Variety for little writing. | Pre-generated offline and reviewed; never live in the game loop. Needs your decision and an API key. | M |
+
+### T. Technical tools and charts
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| T1 | Volume bars and a crosshair | Basics of any trading screen. | Volume under the candles (P7), a crosshair with open, high, low, close and volume. | S |
+| T2 | Indicators | Taught everywhere. | Moving averages (20, 50, 200; simple and exponential), VWAP, Bollinger bands, RSI, MACD, ATR; computed in the page from the candles. | M |
+| T3 | Drawing tools | Marking levels and trendlines is how traders find setups. | Horizontal levels, trendlines, channels, Fibonacci retracements and notes, saved per player and stock, usable on phones. | M |
+| T4 | Risk tools on the chart | Position sizing and a stop are the first habits to teach. | Click to set entry, stop and target; the page shows the risk-reward ratio and the position size for a chosen risk (for example 1% of the account), and places the bracket order (brackets already exist). | M |
+| T5 | Multi-timeframe and comparison | Setups are read across timeframes and against the index. | Linked timeframes, an index or sector overlay, relative strength. | S |
+| T6 | Alerts on levels and indicators | Waiting for a setup should not mean staring at a chart. | Alerts when price crosses a drawn level or an indicator condition is met, in the page and by email (O1). | M |
+| T7 | A setup screener | Finding setups is a skill to practise. | Scans for stocks near support or resistance, breakouts, squeezes, RSI extremes, gaps and new highs or lows. | M |
+| T8 | Replay mode | Practising on the past, bar by bar, is the best teaching tool there is. | Pick a stock and a past period, step through it bar by bar and trade it in a separate practice account (the contest's paper-account code is a base); needs a longer price history (T9) and a deterministic engine (E5). | L |
+| T9 | Longer price history | Technical work needs months of daily bars; charts keep the last 500 candles per timeframe. | Keep daily candles for many game years, and minute candles for longer than now, in a compact store. | M |
+
+### L. Learning: lessons, challenges and the journal
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| L1 | A curriculum | What to teach, in what order. | Levels: basics (orders, long and short), risk (stops, sizing, R multiples), market structure (trends and ranges), support and resistance, breakouts and false breakouts, volume, indicators, chart patterns, macro (rates, inflation, jobs), earnings, psychology (fear of missing out, revenge trading), a trading plan and a journal. | S |
+| L2 | Lessons | Short, interactive and tied to the live market. | One page per topic, with examples taken from the game's own recent charts ("NVXA bounced off support here yesterday"), ending in a challenge. | L |
+| L3 | A challenge engine | Challenges teach by doing and pay free MB (M5). | Challenges defined in a content file: an objective checked from the ledger, orders and positions (execution: "a stop on every trade today"; risk: "risk at most 1% per trade for ten trades"; setups: "buy within 1% of a marked support and exit at 1R or more"; macro: "trade the CPI reaction"; consistency: "a positive week with a drawdown under 5%"), a time window, prerequisites, a reward and caps. Built on the existing quests and achievements code; each challenge tested against ways to game it. | L |
+| L4 | A trade journal | Reviewing trades is how traders improve. | Every trade logged with the setup tag, a note, the chart at entry and exit, the R multiple, the best and worst point while open; statistics by setup; a weekly review. | M |
+| L5 | A skill profile | Progress should be visible as skill, not just balance. | Win rate, average R, expectancy, profit factor, largest drawdown, risk discipline (stops used, risk per trade), over time and by setup. | M |
+| L6 | Spot-the-setup exercises | Pattern recognition is practised quickly with feedback. | Show a past chart ("support or resistance?", "break or bounce?"), reveal what happened next; small capped MB rewards. | M |
+| L7 | A coach | Feedback after a trade turns mistakes into lessons. | Rule-based remarks first ("you bought into resistance with no stop"); an LLM coach later if you want one (needs an API key). | M |
+| L8 | Onboarding | New players need a first good trade, with a stop. | A short first-run path: what MB are, the market, a first trade with a stop, the journal. | S |
+| L9 | A glossary | Words like "short", "R", "VWAP" stop beginners. | Tooltips and a glossary page. | S |
+| L10 | Content tooling | Lessons and challenges will be written often. | A validator for the lesson and challenge files and a preview command. | S |
+
+### S. Classrooms, community and competition
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| S1 | Classrooms | Teachers, schools and trading clubs are the natural buyers of a teaching site (and an income that does not depend on losses, B2). | A teacher account, a class with a join code, assigned lessons and challenges, a class leaderboard and a progress dashboard, optionally a class's own market. | L |
+| S2 | Leaderboards that reward skill | Raw returns reward luck and size; the old risk-adjusted board was removed on request when the goal was different. | Rank by return on money put in (purchases cannot buy rank; the existing return formula already counts credits as money put in), plus a risk-adjusted or consistency board and leagues by level. Your decision. | S |
+| S3 | Challenge weeks instead of the daily race | The daily paper-money race was a contest for medals. | Weekly themed events with the same starting balance for everyone and a skill objective; reuses the contest's paper-account code (X5). | M |
+| S4 | Sharing ideas | Explaining a trade is learning too. | Share a trade idea (a chart with levels and a plan) with followers, delayed; a discussion room per stock. | M |
+| S5 | Streaks, levels and titles | Long-term motivation. | Tied to lessons and challenges, never to balance. | S |
+
+### U. Interface
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| U1 | Phone, second step | Trading on a phone still means the Buy button on each card. | A pull-up trade ticket with the risk tools (T4), an installable web app, a check on real phones. | M |
+| U2 | Notifications | Messages vanish after a few seconds. | A persistent list, sounds, browser notifications for fills, alerts and challenge results. | S |
+| U3 | A "while you were away" summary | Coming back should show what happened. | Equity change, filled orders, macro releases and news on holdings, challenges finished. | S |
+| U4 | A desktop trading screen | Technical traders want several charts. | Saved layouts with chart panes, watchlist, calendar, positions. | L |
+| U5 | Accessibility, light theme, languages | Wider reach. | Arrows beside colours, keyboard shortcuts, a light theme, translations of the interface and lessons. | M |
+| U6 | Market overview pages | Seeing the whole market is a skill. | A heatmap, an MSI 50 page, a stock page with the "why it moved" line, levels and the calendar. | M |
+| U7 | Low-data mode | 18 MB an hour on mobile data. | Pause when hidden, send only visible rows, compress. | S |
+
+### E. Engineering
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| E1 | The price process as its own module | Track P rewrites the core; today it is spread through a 3,600-line `engine.py`. | Move price generation (noise, regimes, levels, news reactions) behind one interface with its own tests, keeping the rest of the engine as it is. First step of the P track. | L |
+| E2 | Split the big files | `engine.py` and `index.html` are hard to change safely. | Modules for prices, news, orders, accounts, indices; the page's CSS and JavaScript in their own files. | L |
+| E5 | Determinism and replay | Calibration (P11), replay mode (T8) and bug reports need repeatable markets. | A seeded random stream per market and a tool that replays any period. | M |
+| E6 | Observability | Alerts only while someone looks at the dashboard. | Structured logs, metrics, alerts for drift, late ticks and errors. | M |
+| E7 | Content tooling | Packs are edited by hand. | A validator and a preview for content packs. | S |
+| E8 | Admin follow-ups | Admin actions are limited. | Credit, refund, freeze a player, an audit log of every admin action, per-player CSV, longer chart history. Needed for purchases and refunds. | M |
+| E9 | Rough edges | Small things that add up. | Sparklines reset on restart, the news wire is not saved, the content files are checked every tick (an every-few-seconds check is enough), achievement counters since the last snapshot are lost in a crash. | S |
+| E10 | Scale the game server | Gateways carry connections; the market is one process. | Only when needed (around 4,000 players): engine in its own process, Postgres, per-client subscriptions. | L |
+| E11 | Ledger housekeeping | The ledger only grows. | Rotation of the equity-curve table, a restore drill, a snapshot-versus-ledger check. | S |
+| E12 | A faster test suite and CI that passes | 16 minutes locally; the GitHub run fails. | Parallel runs, per-test time limits, a quick subset; fix the failing GitHub run (its summary page lists the failures) and run the browser tests there. | M |
+| E13 | Lint, types and error tracking | Mistakes are found only when a test hits them. | Ruff, a light mypy pass, an error tracker. | S |
+
+### O. Running memestreet.net
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| O1 | Real email | Passwords cannot be recovered; challenge and purchase receipts need email. | A Resend account and its DNS records, then `deploy/set_mail.ps1` (ready). | S |
+| O2 | Daily backups off the server | `deploy/pull_backups.ps1` exists but only runs when started. | A daily Windows scheduled task (one line in `deploy/DEPLOY.md`), and the provider's own backups. | S |
+| O3 | An uptime monitor | Nobody is told if the site stops. | UptimeRobot on `https://memestreet.net/api/health` (ready). | S |
+| O4 | Cloudflare in front | Shield and country information. | Proxy on, `TRUST_PROXY`, static caching. | S |
+| O5 | Safer updates and a staging copy | Updates go straight to the live game. | Tests before upload, a one-command rollback, a staging site. | M |
+| O6 | Harden the server | Payments raise the stakes. | SSH keys only, fail2ban, rotated keys, a list of secrets and where they live. | S |
+| O7 | Payment webhooks that never lose a purchase | A missed webhook is a customer who paid and got nothing. | Signed, idempotent, logged, retried; a daily reconciliation against the provider (pairs with M3). | S |
+| O8 | Capacity and status | Know the limits; tell players about outages. | A load test, a cost table, a status page. | M |
+| O11 | Reset the live game for the new rules | 8 accounts are on 10,000 MB and the old market. | Announce, back up, reset everyone to 1,000 MB when M1 and the new market ship (the admin reset already exists). | S |
+
+### R. Rules, legal and player protection
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| R1 | Terms, privacy and disclaimers | No rules exist yet, and 8 people have signed up. | Terms (MB have no cash value, cannot be cashed out or transferred; purchase and refund terms), a privacy policy, and an education disclaimer (fictional companies, not investment advice), linked from every page and accepted at sign-up. | S |
+| R2 | An age policy | Trading education attracts teenagers; selling them currency needs rules. | A minimum age (for example 13 to use the site and 18, or parental consent, to buy), an age question at sign-up and at checkout, and a privacy approach for young users (UK Children's Code, US COPPA if under 13 is allowed: easier not to). Your decision. | S |
+| R3 | Consumer rules for digital purchases | Required where you sell. | Prices with tax shown before buying, receipts, the EU and UK right to withdraw (waived with consent when MB are delivered at once), a refund policy; a merchant of record (M3) takes most of this on. | S |
+| R4 | A short legal check | Much smaller than the old question, but still worth an hour of a lawyer's time. | Confirm that selling a game currency that can never be cashed out, with skill-based play and MB-only rewards, is not gambling where you sell; and what an education site may say in adverts. | S |
+| R5 | Responsible spending | People who lose may chase losses with money. | Spending caps and cool-offs (M6), no purchase prompts at a loss, a spending history, a clear note that buying MB does not make anyone a better trader. | S |
+| R6 | Abuse and duplicate accounts | Free MB invite farming. | A captcha at sign-up, grouping accounts by address and device, rewards only for verified accounts. | M |
+| R7 | Data rights | Players should be able to leave. | Download my data, delete my account. | M |
+| R8 | A "how this market works" page | Transparency builds trust, and explaining the simulation teaches too. | What drives prices (drift, regimes, macro, levels, psychology), what is random, and that player trades never move prices. | S |
+
+### B. Business and growth
+
+| # | Improvement | Why | How | Size |
+|---|---|---|---|---|
+| B1 | Package prices | The income. | Decide the price of each package (with a better rate for bigger ones), a first-purchase offer if wanted, regional pricing. Your decision. | S |
+| B2 | Income that does not depend on losses | Package sales fall as teaching improves. | Classroom seats (S1) and/or a Pro tier (replay, advanced indicators, journal analytics, more alerts). Your decision. | S |
+| B3 | A landing page and lessons people can find | A teaching site grows through search and shared lessons. | Public lesson pages, a landing page that says what it is (not "free", not "get rich"), share cards. | M |
+| B4 | A funnel with purchases | The admin funnel counts sign-ups and trades only. | Add first purchase, buyers per 1,000 sign-ups, average spend per buyer, out-of-money to purchase rate, refunds, cohorts by week. | S |
+| B5 | Referrals | Word of mouth. | Invite links with a capped MB reward for both after the friend verifies and completes a first lesson. | M |
+| B6 | Email that teaches | Bringing people back with value. | Welcome path, weekly review, the daily wrap, challenge and purchase receipts, an unsubscribe link. | M |
+| B7 | Community | Somewhere to talk and announce. | A Discord with the daily wrap and challenge results. | S |
+| B8 | Teachers and creators | Each brings a group. | Classrooms (S1) with a free trial, a creator programme. | M |
+| B9 | Name and brand | "Meme Street" was chosen for a meme-stock game. | Decide whether to keep it for a teaching site; check trademarks and domains either way. Your decision. | S |
+
+### X. Retire from the old plan
+
+| # | What | How | Size |
+|---|---|---|---|
+| X1 | The real-money plan | Dropped: crypto deposits and withdrawals, KYC and identity checks, the house capital rule, reserve alarms, provably fair seeds, the gambling licence question, country blocking for real money. Nothing to remove in code except the comments that still describe it. | S |
+| X2 | Moonshots and two-outcome catalysts | Lottery tickets do not teach trading. Remove from the default market (or move to an opt-in speculative section); retire catalysts and industry-wide two-outcome shocks once the macro engine (N2-N4) gives the market its big days. | M |
+| X3 | The "no edge" rule and its tools | Replaced by the realism and "no free money" suite (P11). Until P11 exists the old checks still guard the old market. | S |
+| X4 | `revenue_model.py` | Superseded by the pricing model (M7); kept until then. | S |
+| X5 | The daily paper-money contest | Becomes challenge weeks (S3). | S |
+| X6 | The 10,000 MB start | 1,000 MB (M1). | S |
+| X7 | 3x products and very risky instruments | Keep for advanced players with clear warnings, or remove. Your decision. | S |
+| X8 | The house-risk panel as a capital tool | Becomes a positioning view (M9). | S |
+| X9 | Admin "withdraw" | No cash-out: keep only as an admin correction, renamed. | S |
+
+---
+
+## 6. Suggested order
+
+| Phase | Focus | Items | Done when |
+|---|---|---|---|
+| 0. Now (this week) | **Decide, protect, stop building on the old model** | Your decisions (B1 prices, B2, R2 age, M4 the out-of-money rule, X7, B9 name), O1 email, O2 daily backups, O3 monitor, R1 terms and privacy | The live site has rules, mail and a monitor; the open questions in section 7 are answered |
+| 1. Market, version 1 (2-4 weeks) | **A market that drifts, cycles and reacts to the economy** | E1, P1, P2, P3, P12, N1, N4, N2, N3, N5, N6, P7, P11 (first targets), T1, T2 | The realism suite passes; the market goes up over game years with corrections, bears and ranges; rate decisions, CPI and jobs reports move it; you are happy with how it feels |
+| 2. Technical structure (3-6 weeks) | **Levels, trends, squeezes and psychology** | P4, P5, P6, P8, P9, P10, T3, T4, T5, T7, N7, N9 | Support and resistance tests, breakouts, false breakouts and retests appear at target rates, and no simple rule prints money |
+| 3. The learning loop (2-4 weeks) | **1,000 MB, lessons, challenges with rewards, a journal** | M1, O11, M2, M5, L1, L2 (first ten lessons), L3, L4, L5, L8, L9, S3 | A new player can learn, practise, complete challenges, earn MB and review their trades |
+| 4. Paid MB (2-3 weeks) | **Packages, safely** | R2-R5, M3, M4, M6, O7, E8, B4, M7 | A first small group can buy packages; receipts, refunds and limits work; the funnel shows buyers |
+| 5. Grow | **Classrooms, replay, search** | S1, T8, T9, E5, B2, B3, B5, B6, U1-U4, L6, L7 | Teachers run classes; lessons bring visitors |
+| Alongside | **Engineering and operations** | E2, E6, E9-E13, O4-O8, U7 | |
+
+---
+
+## 7. Open questions (your decisions)
 
 | Question | Options | What would decide it |
 |---|---|---|
-| The house is the counterparty to every trade. Is that acceptable, with no position limits? | Keep (current: the house carries the risk and earns fees; the tails are thinner and the reserve is topped up automatically; big moonshot wins are part of the game); add small impact for big trades (A6); hedge house exposure. | The edge-check results (section 6), the house-risk panel, `recapitalized` and `short_shortfall` in the closed test. |
-| How much real capital does 1 MB represent? | Set the starting reserve (`house_seed`) and the reserve floor from that (stocks no longer hold seed tokens: `depth` is only a size). | Phase 4 legal advice and a risk budget. |
-| Fee level | 0.1% per side now (it was 0.5%, which made a round trip cost 1%); keep, or 0.05%-0.3%; maybe lower fees for high volume. The fee is also the cushion against any small undiscovered edge, so re-run the edge check after any change. | Trade count vs fee revenue in the beta. |
-| Keep the hidden mood? | Keep; make it a tradable "sentiment" signal later; drop it. | Tested: the `mood_oracle` strategy, which reads the hidden mood directly, has no edge, so the mood gives no price edge. Keep it, and re-run after any news change. (The per-stock volatility number that used to hint at the regime is no longer sent to the page.) |
-| Is a 45.6-hour quarter (a quarter of a 365-day game year) the right pace? | Keep (realistic, rare reports feel like events); shorten with `earnings_quarter_days` for a faster game; add mid-quarter events (C11). | Playtester feedback on how often anything scheduled happens. |
-| Is the 5 / 20 / 5-minute cycle the right rhythm? | Keep; change `premarket_seconds` and `aftermarket_seconds`; set both to 0 for a flat market. | Whether players enjoy the burst and the jump at the open, or find the quiet stretches dull. |
-| Should public portfolios stay private by default? And should private players appear on the leaderboards? | Keep private by default (current) and leaderboards open to everyone who ranks (current); hide private players from the boards; make results public by default and holdings opt-in. | Playtester feedback and the legal review of showing player data. |
-| How often should a whole industry crash? | Keep (one shock every ~10 minutes, 7 kinds, failures 4-13%, a typical company moving about 7%); make them rarer or milder (`sector_shock_mean_seconds`, `sector_shock_size`); give each sector its own standing factor (B6). | Playtester feedback: do sector crashes feel like events or like noise? |
-| How wild should moonshots be? | Keep (260-550% volatility, 60% bankruptcy and a ×2.45 rescue, a 3× looser daily brake, 4 to 8 at a time; a big win on one is how the game should work); make them rarer or tamer. | Playtester feedback and how often the house reserve swings. |
-| How should contests pay out? | Cosmetic only (current: a medal for a paper-money contest); MB prizes funded from fees after the legal review (F7). | The legal gate and whether people care about medals. |
-| How real should fundamentals be? | Light (current), or P/E-driven valuation with sector norms. | Playtester feedback: "did prices and news feel connected?" |
-| Should email be required? | `off` (current, until a mail service is set up), `optional` (asked for, never needed); `required` (needed to trade, enter contests and chat). Needs a real mail service first (`HOW_IT_WORKS.md` §10.6). | Closed-test feedback on how much the extra step costs sign-ups, and the number of duplicate accounts the admin page flags. |
-| Should the house have a built-in edge beyond the fee (the idea: 1% of what players trade)? | No (recommended): keep prices fair and the edge in the open. Measured edge today: 0.107% of everything traded (the 0.1% fee plus borrow cost). 1% of turnover would be a 1% fee per side, ten times today's, and active traders would lose everything in hours; a hidden price drift is not direction-blind (shorts would win) and is hard to defend with real money. Options: raise the fee a little (0.15%-0.3%), add a spread on leveraged products, add withdrawal or deposit fees, and cap the house's exposure to moonshots (A12). | Revenue per player and trades per player in the closed test, and the house-risk panel (the study found a standard deviation of 430,000-974,000 MB per market for 100 coordinated moonshot players against a few thousand MB of fees). |
-| Is 10,000 MB the right starting stake? | Keep; change `signup_bonus` and `contest_balance` together (the reserve floor scales with it). | How fast players run out of money or get bored of small numbers. |
-| Should prices drift upwards, as real markets do? | Not now (you decided against it). If it comes back: (1) prices drift up and every position pays an equal holding cost, so a buy-and-holder still averages zero (fair, mostly cosmetic); (2) hidden bull and bear phases that average zero, so there are real rallies and crashes but nothing to predict (needs an `edge.py` check that nobody can guess the phase); (3) a drift the house pays for, which is a standing cost that grows with player money. A real upward drift with a house that pays winners always means buy-and-hold wins. | Whether the market feels too flat in the closed test, and the revenue model (`revenue_model.py`). |
-| How does Meme Street earn beyond the fee? | Nothing else (today); paid-entry contests with a rake (legal gate); cosmetics; a Pro subscription; deposit or withdrawal fees (I2). | The revenue model (`revenue_model.py`: about 7% of a balance in fees, 64% of it from the heaviest 10% of players, on assumptions) replaced by real numbers from the closed test, and the legal advice. |
-| Which countries first? | One or two where the legal route is clearest; everywhere that is not blocked (J2). | The lawyer's opinion (H phase 4). |
-| Should the MSI 50 stay at 50 members and re-rank every game day? | Keep; change `index_size`; re-rank daily or weekly (a slower re-rank is closer to a real index, a faster one tracks growth sooner). | Whether players find the changing membership confusing once E14 and C12 show it. |
+| What do the packages cost? | For example 100 MB for a small amount up to 10,000 MB with a better rate; one currency or regional prices. | What comparable learning apps charge, and how fast 1,000 MB runs out in the new market (M7). |
+| What happens when an account runs out? | Only buying more; a free restart on a timer (for example once a week); a free restart after finishing a risk lesson. | Whether the site should earn from losses or from wanting more capital (section 4, risk 2). |
+| Should there be a second income? | Classroom seats; a Pro tier; neither. | Interest from teachers and clubs; what the packages bring in. |
+| What is the minimum age, and the age to buy? | 13 to use and 18 to buy; 16 and 18; 18 for everything. | The audience you want, and the privacy rules for young users. |
+| How many free MB can challenges give? | A weekly budget per active player (for example 200-500 MB), one-time rewards for first lessons. | The pricing model (M7) and how often people buy. |
+| How fast should the market grow? | About +8% per game year for the index (with a 365-day game year that is about +36% per real month); slower; or a longer game year so the drift is gentler in real time. | Whether "slowly upwards" should be visible within a week of play or only over months. |
+| Costs: a flat fee or commission plus spread? | Keep 0.1% per side; a realistic commission and spread; spreads that widen in fast or thin markets. | Teaching value versus simplicity (M8). |
+| Keep 3x products, shorting and very risky instruments? | Keep everything for advanced levels; unlock by level; remove 3x. | How advanced the audience is (X7). |
+| Leaderboards: what do they rank? | Return on money put in (purchases cannot buy rank); a risk-adjusted board (removed earlier on request); consistency; leagues by level. | Whether you want to reward skill over luck. |
+| Keep the name "Meme Street"? | Keep; rename for a teaching audience. | Who you want to reach (B9). |
+| Moonshots? | Remove; keep as an opt-in speculative section. | Whether lottery-like stocks belong in a training market (X2). |
+| An AI coach? | Rule-based only; an LLM coach (an API cost per player). | The cost per player and what it adds (L7). |
 
 ---
 
-## 6. Checking any economy change
+## 8. Checking a market change
 
-Any change to prices, news, fees, trading or risk rules must pass these before it ships. Start with the test suite (about ten minutes), which also guards the money-conservation rule, the limits and the "social features never move a price" rule:
+Until the realism suite (P11) exists, changes to the *old* market are still checked the old way (the test suite, then
+`edge.py`, `paired.py`, `probe.py`; `HOW_IT_WORKS.md` section 17 has the method and the last results). For the new
+market:
 
-```bash
-.venv\Scripts\python.exe -m unittest discover tests -v
-```
-
-Then the strategy checks:
-
-```bash
-.venv\Scripts\python.exe sim.py 6 1                      # one detailed run: invariant drift, strategy returns, house P&L
-.venv\Scripts\python.exe edge.py 40 2 100                # the real test: 40 seeds, mean/std error/t per strategy (about 20 minutes with 35 strategies)
-.venv\Scripts\python.exe paired.py 40 2 1000 strategies=value,hodl base: no_limit:daily_move_cap=0   # same seeds, one setting changed: which mechanism pays a strategy?
-.venv\Scripts\python.exe probe.py 60 3 news_followups=false   # engine-only drift probe
-.venv\Scripts\python.exe tune.py configs.json 6 6 101    # compare settings on fresh seeds
-```
-
-- `invariant_drift` stays about 1e-10, and the house reserve doesn't trend negative.
-- `edge.py` flags no strategy (none with a positive mean beyond 2 standard errors) on 40 seeds that haven't been used for tuning. Use a new first seed each time; one seed is noise. With 35 strategies, about one in twenty checks flags one by chance: re-run the flagged strategy on fresh seeds before believing it.
-- Some probes need a setting to see enough events in a two-hour run: `earnings_runup` needs `earnings_quarter_days=0.05`, `gap_long`/`gap_short` and `open_follow`/`open_fade` need the default sessions (they do nothing with `premarket_seconds=0,aftermarket_seconds=0`), and `moon_hodl`, `distress_*`, `catalyst_*` and `industry_*` need the default moonshot, catalyst and industry-shock settings (switch them off with `moonshot_initial=0,moonshot_mean_seconds=1e12`, `catalyst_mean_seconds=1e12` and `sector_shock_mean_seconds=1e12` to compare).
-- Configs on the same seeds share market paths, so confirm any conclusion on a fresh starting seed.
-- If a strategy looks profitable, find the cause with `paired.py` (switch one mechanism off at a time on the same seeds) before changing anything: that is how the daily-limit edge was found.
-- Update `HOW_IT_WORKS.md` and tick items here.
-
-**Latest results (2026-10-03):** see the end of section 17 in `HOW_IT_WORKS.md` for the numbers of the last run.
+1. The test suite (`python -m unittest discover tests`), which guards money conservation, the ledger and the rule that
+   player trades never move prices.
+2. The realism suite (P11): stylised facts, pattern rates within their target bands, and the "no free money" strategy
+   comparison against holding the index, costs included, on markets never used for tuning.
+3. A look at the charts by a person: does it look like a market a trader would recognise?
+4. Update `HOW_IT_WORKS.md` and this file.

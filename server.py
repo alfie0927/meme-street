@@ -829,7 +829,7 @@ async def admin_stats(x_admin_key: str = Header("")):
 
 @app.post("/api/admin/credit")
 async def admin_credit(t: Transfer, x_admin_key: str = Header("")):
-    """Stand-in for a confirmed memebuck purchase until the crypto payment flow exists."""
+    """Credit MB to a player by hand: a stand-in for a purchased package until the checkout exists (ROADMAP.md M3)."""
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
 

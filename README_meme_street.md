@@ -1,5 +1,7 @@
 # Meme Street: setup and one-week plan
 
+> **This is an old file.** Meme Street is now being turned into a site for learning to trade (1,000 MB to start, MB packages for sale and never cashed out, challenges that award MB, a market with drift, economic data and technical structure). The plan is in `ROADMAP.md`; how the code works today is in `HOW_IT_WORKS.md`. The setup steps below still work; the plan and the "not included" note at the end are from the first week and are out of date.
+
 ## Project files
 ```
 engine.py               # market engine: pools, news/events, seasons, scoring, save/load
@@ -47,7 +49,7 @@ Click a ticker to open `/stock/TICKER` for a dedicated detail page. Saved pre-pr
 - Nothing is predictable from public information: news direction is a coin flip, breaking news moves prices instantly, rumors move prices by their expected value (the confirmation/correction moves the rest), and dependency/sector spillovers land in the same tick as their cause. Mean reversion acts on each stock's exogenous fair value, never on player price impact.
 - A Day (what used to be a season) is a leaderboard period of one real day, midnight to midnight UTC; balances carry over. Day return = equity / (equity at the start of the day + deposits) - 1. See HOW_IT_WORKS.md for how the game works today (this file is older).
 - Bankruptcy cashes holders out at the stock's last price (no fee), paid from the house reserve.
-- `signup_bonus` (base.json) is a test credit; set it to 0 before real money is involved.
+- `signup_bonus` (base.json) is the starting balance (10,000 MB today; 1,000 MB in the new plan).
 - Price shocks carry no built-in direction: regime shifts balance up and down, credit reviews of profitable companies are equally likely to upgrade or downgrade, mean reversion pulls symmetrically in log price, and bankruptcy applies `bankruptcy_haircut` before paying holders so distressed stocks are not a free bet on a bailout.
 - Tuning knobs (settings): `volatility_scale`, `event_strength_limits`, `daily_move_cap` (0 disables), `mean_reversion_halflife_days`, `news_move_ranges`, `event_mean_seconds`. Check any change with `tune.py`; keep `liqPnL` well under `fees` and the `value`/`hodl` columns near zero.
 
@@ -68,4 +70,4 @@ Send the key in the `X-Admin-Key` header.
 | 7 | Closed beta with play money, collect feedback, fix | 10+ testers, no crashes for 24h |
 
 ## Not included (deliberately)
-- The Solana vault for real tokens. Build and audit that only after the play-money version is fun and a lawyer has reviewed it.
+- Any way to cash MB out. The old idea of a crypto vault for real tokens was dropped on 2026-10-13: MB are a game currency, bought in packages and never paid out (`ROADMAP.md`).

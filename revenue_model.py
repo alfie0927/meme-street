@@ -1,5 +1,8 @@
 """What is a player worth? A small, honest model of the fee income.
 
+SUPERSEDED (2026-10-13): the site will earn from MB packages, not from the trading fee (ROADMAP.md, M7 replaces this
+model with one of package sales). Kept for reference and for its tests until then.
+
 Usage:  python revenue_model.py [fee=0.001] [balance=10000] [signups=1000] [mb_value=0] [assumptions.json] [--md]
 
 The game earns the fee on every trade (0.1% per side), and nothing else is built in. In a fair market a player's money

@@ -209,12 +209,13 @@ journalctl -u caddy -n 50                              # certificate problems sh
 | Sign-up works but the codes never arrive | No mail service set up (Step 6), or its DNS records are missing. The codes also show on the admin page under "Email and mail". |
 | You are locked out of the server | Use the provider's web console (every provider has one) to log in and fix `/etc/ssh` or the firewall. |
 
-## Before real players, and before real money
+## Before real players, and before selling MB
 
 - Keep `ADMIN_KEY` and `CORE_KEY` secret; never put them in the code or send them in chat.
 - Do Step 7 and set up a mail service. Decide on `email_mode` (`HOW_IT_WORKS.md` section 10.6).
-- Read `ROADMAP.md`: the legal review (phase 4) comes before any real money, and terms of service and a privacy policy
-  should be on the site before the public arrives.
-- The house reserve and its risk (`ROADMAP.md` A12) are a capital decision for real money.
+- Read `ROADMAP.md`: terms of service, a privacy policy and an age policy (R1, R2) should be on the site before the
+  public arrives, and the consumer rules for selling MB packages (R3, R4) before the first sale. MB are never cashed out,
+  so the old questions about real-money payouts no longer apply.
+- Selling packages adds a payment provider and its webhook (`ROADMAP.md` M3, O7): keep its secret with the others.
 - One machine is a single point of failure. That is fine for a test; a paid product needs the provider backups, an
-  uptime monitor and, later, the larger set-up in `ROADMAP.md` G10.
+  uptime monitor and, later, the larger set-up in `ROADMAP.md` E10.

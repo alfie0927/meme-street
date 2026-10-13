@@ -6,6 +6,8 @@ This document explains the whole system: what each file does, how prices and tra
 
 Keep this file in step with the code: update it after every change (see "Keeping the docs current" at the end).
 
+> **Change of direction (2026-10-13).** Meme Street is becoming a site for **learning to trade**: everyone starts with 1,000 MB, more MB is bought in packages (100 to 10,000 MB) and never cashed out, challenges award free MB, and the market is being rebuilt to drift slowly upwards with regimes, scheduled economic data (interest rates, inflation, jobs) and technical structure (support and resistance that holds or breaks). `ROADMAP.md` has the plan. **This file still describes the code as it is today**, which was built for the old plan (a real-money game in which every mechanism is a fair bet and nobody can have an edge). Sections that only matter for that old plan (the house's capital risk, the house-edge discussion in section 15, the fee-based revenue model in section 17.10) say so where they start; they will change or go as the new tracks are built.
+
 ---
 
 ## 1. Running it
@@ -175,7 +177,7 @@ See §16 for what the tests cover and when to run which one.
 | `sim.py` | Headless simulation with 36 scripted "human" strategies (shorting, big size, a mood-reading oracle, and probes for the opening jump, reversals, ETFs, leveraged products, volatility, earnings, trends, moonshots, distress, catalysts, industry shocks and bracket orders); reports returns, house P&L, invariant. |
 | `admin.html` | The admin dashboard page, served at `/admin` (§12): house money and risk, server timings, chat moderation with appeals, accounts, email and mail, and the reset button. |
 | `about.html` | The public "what is Meme Street" page, served at `/about` (no game connection; §11). |
-| `revenue_model.py` | A small model of what a player pays in fees, with the assumptions written out (§17.10). |
+| `revenue_model.py` | A small model of what a player pays in fees, with the assumptions written out (§17.10). Superseded by the new plan (the site earns from MB packages; `ROADMAP.md` M7 replaces it). |
 | `paired.py` | Paired comparison: runs the same seeds under different settings and prints the difference with a standard error. The tool that found the daily-limit edge (§6.5). |
 | `bots.py` | Many-bot, many-seed study on top of `sim.py`: 100 bots for each strategy that makes random choices, the moonshot-sniper study, how much each strategy traded and the result per unit traded (§17.7). Saves to `sim_results/` |
 | `edge.py` | Many-seed edge check on top of `sim.py`: mean, standard error and t-statistic per strategy; fails on any significant edge. |
@@ -333,7 +335,7 @@ player cash  +  house reserve  +  fees  =  minted
 `total_tokens() == minted` is checked by `sim.py` (drift about 1e-10, floating-point rounding) and logged on load.
 
 **What changes `minted`** (money entering or leaving the game):
-- `credit(player, amount)`: a deposit or signup bonus (later: a crypto purchase)
+- `credit(player, amount)`: a deposit or signup bonus (in the new plan: a purchased MB package or a challenge reward; MB are never cashed out)
 - `debit(player, amount)`: a withdrawal (only free cash, not positions)
 - the house putting in capital: the 50,000 MB reserve (`house_seed`) and the **automatic top-up of the reserve** when it falls below its floor (§6.11; recorded as a `recap` event in the ledger and counted in `recapitalized`)
 - a **game reset** (§1): closing positions settles with the house, and setting every balance back to the start mints or burns the difference, so the books still balance
@@ -834,7 +836,7 @@ All 32 derived assets start at 100 MB, have an `asset_type` of `index`, have no 
 
 ### Players
 - An account is a **name and a password** (§10.6). The name is 2-16 letters, numbers, `_-. `, unique ignoring case, and not a reserved word (`admin`, `moderator`, `house`, `memestreet`...). Signing in gives the browser a session token; the account's own internal token never leaves the server (for accounts with a password).
-- New players are credited `signup_bonus`: **10,000 MB** of test money. Set it to 0 before real money.
+- New players are credited `signup_bonus`: **10,000 MB** today. The new plan starts everyone on **1,000 MB** (`ROADMAP.md` M1).
 - `deposited` tracks net money in (signup + deposits − withdrawals). **All-time P&L = equity − deposited.**
 
 ### There are no bots
@@ -956,7 +958,7 @@ The logo in the header (and the tab icon) is `brand/memestreet_logo_peaks.png`, 
 Every page has the same header (index, cash, equity, P&L, day return, rank, the day's countdown, the market status chip) and the same navigation. Nothing on any page shows the market's mood or regime.
 
 - **Visitors (not signed in).** The market (`/`) and a stock's page (`/stock/NVXA`) open without an account: a visitor sees the live prices, charts, the news wire and the stock facts, under a welcome card ("A fictional stock market that never closes... You are watching it live. Create an account to trade.", with Create account, Sign in and How it works). The menu shows only the market and the header only the index and the day timer; the buy and sell controls are replaced by "Create an account to trade this stock". Anything that needs an account opens the sign-in box with the reason, and on these two pages the box has a **Keep watching the market** button; on every other page (holdings, portfolio, history, leaders, social, profile, a player's page) the sign-in box cannot be closed. Signing up or in turns the same page into the player view without a reload. Behind the scenes a visitor is attached to one hidden, read-only "guest" (§12). **The top-10 leaderboard (names and returns) is part of what a visitor sees**, as it is for every player; say so in the privacy policy (ROADMAP J1).
-- **About (`/about`):** a plain page for people who have not signed up: what the game is, how it works (news, what you can trade, why it is fair, the daily leaderboard), how the house earns ("0.1% on each trade, nothing else is built in"), and four questions (is it real money: not yet, memebucks are play money while testing; are the companies real: no; can I lose everything; does it work on a phone). It never says the game is free. Its buttons go to the market and to `/#join`, which opens the sign-up box. Every page also has a description and share tags (title, text, image) so a link looks right in chat apps, and a stock's page sets the tab title to its ticker and name.
+- **About (`/about`):** a plain page for people who have not signed up: what the game is, how it works (news, what you can trade, why it is fair, the daily leaderboard), what trading costs ("0.1% of its size, as a real broker would charge you"), and four questions (is it real money: no, MB are a practice currency with no cash value that is never paid out; are the companies real: no; can I lose everything; does it work on a phone). It never says the game is free. Its buttons go to the market and to `/#join`, which opens the sign-up box. Every page also has a description and share tags (title, text, image) so a link looks right in chat apps, and a stock's page sets the tab title to its ticker and name.
 - **Market (`/`):** a table of every listing, under a sticky header (the index, cash, equity, P&L, day return, rank, and the session chip; §6.8). Above the table:
   - a **search box** (matches ticker, company name and sector; `nvx` finds NVXA, `index` finds the indices and ETFs),
   - the buy/sell **size chips** and the **amount box**,
@@ -1252,7 +1254,7 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 
 | Setting | Default | Effect |
 |---|---|---|
-| `signup_bonus` | 10000 | MB credited to new players and to everyone on a game reset (0 for real money) |
+| `signup_bonus` | 10000 | MB credited to new players and to everyone on a game reset (the new plan: 1000, `ROADMAP.md` M1) |
 | `house_seed` | 50000 | starting house reserve (funds new listings) |
 | `season_seconds` | 86400 | length of a day (the old season): the leaderboard period; the day ends at the next multiple of it since the epoch, so 86400 means UTC midnight |
 | `event_mean_seconds` | 120 | average gap between random news events |
@@ -1328,6 +1330,8 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 ---
 
 ## 15. Things to know
+
+*(The next three points were written for the old real-money plan, in which the house paid winners real money. In the new plan MB are never cashed out, so they describe bookkeeping, not risk; see `ROADMAP.md` M9 and X1.)*
 
 - **The house is the counterparty.** With no price impact, every trade is against the house reserve. Over many players the house earns the fees, but a lucky or skilled player is paid by the house, not by other players. This differs from the goal in `ROADMAP.md` ("player profits come from other players' losses"); decide whether that is acceptable before real money.
 - **No edge is allowed.** News, mean reversion and earnings are built to have zero expected move. Anything that makes prices predictable from public information is a house-funded edge now, with no slippage to stop it.
@@ -1758,6 +1762,8 @@ No drift, so the MSI 50's weighting and re-ranking give nobody an edge. The nega
 **How to read these tables.** A study measures 36 strategies, so one or two will show |t| of 2 by chance, and strategies that hold the same assets (the index products; `moon_hodl` and `moon_sniper`) share one market and are not independent evidence. A real edge shows up the same way in every sample and grows with the sample (an edge of +1% with a standard error of 0.5% would have a t of +5 or more with 300 markets). Moonshot returns are extremely skewed (a few huge winners, a median near zero), so a t-statistic on them is looser than it looks; that is why the dense-moonshot study (§17.7) is the better judge, and it has the opposite sign.
 
 ### 17.10 What is a player worth? (2026-10-09)
+
+*(Superseded on 2026-10-13: the site will earn from MB packages, not from the trading fee. The method below still holds for the fee, but the pricing model that matters now is `ROADMAP.md` M7.)*
 `python revenue_model.py` (the arithmetic is tested in `tests/test_revenue_model.py`) answers the question the roadmap asked: how much does the 0.1% fee bring in per player? **How people play in it is an assumption** (there are no real players yet), written in one table at the top of the file and replaceable from a JSON file; the admin page's new *Players and fees* panel is where the real numbers will come from.
 
 The one rule it rests on: **in a fair market a player's money can only be used up by fees** (the other side of their trades averages zero), so what a player is ever worth to the game is bounded by their balance. A player who trades `trades` times a day with `size` of their balance each pays `r = fee x trades x size` of their balance a day, and `balance x (1 - (1 - r) ^ days)` over `days` days. What they have left when they stop is not income.
