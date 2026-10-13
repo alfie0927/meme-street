@@ -109,6 +109,13 @@ momentum, breakouts and buying 20-day lows all earn less than holding the market
 level test earns about +0.09% a trade (less than holding over a game year); trading only strong levels with the trend
 earns about +0.3% a trade. Strong levels hold 56% of the time, weak ones 42%, a third of breaks fail.
 
+**After company sizes were spread out (2026-10-14)**: small caps now carry 1.3 times the volatility of a large cap (most of it
+their own, not the market's), so stocks move together a little less. Seed 7 over 12 game days: every check in range, with
+the correlation between stocks at 0.19 (it was 0.2 to 0.44 before), earnings days 3.9x, the market's lag-1 autocorrelation
+-0.05 and the close's burst 1.43x. An 8-day run of the same seed read 0.06 for the correlation: with only 8 daily returns per
+stock that number is very noisy, so judge it on 12 days or more. If later runs keep it under 0.2, raise the market factor
+for small caps slightly rather than lowering their volatility.
+
 Known gaps: the close's burst is sometimes flat (0.98-1.5x midday); the daily tails of a few volatile stocks are very fat
 (one seed's pooled kurtosis was 24); `realism.py` is a faster approximation of the engine and its long-run market return
 is noisy (-11% to +11% a game year across four-market runs with different phase mixes: the drift of +5.5% a game year
