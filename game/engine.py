@@ -3321,6 +3321,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                              "avg": cost / n if n else 0.0, "price": st.price,
                              "pnl": (value - cost) if sh > 0 else (cost - value)})
         return {"name": p.name, "cash": p.cash, "equity": eq, "deposited": p.deposited,
+                "pro": self.is_pro(p), "pro_until": p.pro_until if self.is_pro(p) else None,
                 "pnl": eq - p.deposited, "divs": sum(p.divs.values()), "borrow": sum(p.borrow.values()),
                 "trades": p.trades, "margin_calls": p.margin_calls, "holdings": holdings, "log": list(p.log)}
 

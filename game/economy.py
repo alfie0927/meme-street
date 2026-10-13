@@ -34,7 +34,8 @@ DEFAULT_PRO = [
     {"sku": "pro365", "days": 365, "price_cents": 3999},
 ]
 PRO_FEATURES = [
-    "Advanced chart indicators: Bollinger bands, MACD, VWAP and ATR",
+    "32 more chart indicators: Bollinger bands, MACD, Ichimoku, VWAP, ATR, ADX, Stochastic RSI, OBV, pivot points and more "
+    "(17, including every moving average, RSI and the drawing tools, are free)",
     "Full trading-journal statistics: results by setup, R-multiples, best and worst setups",
     "A Pro badge on your profile",
 ]
@@ -264,6 +265,17 @@ class EconomyMixin:
     # ------------------------------------------------------------------ Pro
     def is_pro(self, p):
         return float(getattr(p, "pro_until", 0.0) or 0.0) > self.now
+
+    def admin_pro(self, p, days=0.0, remove=False):
+        """Admin: give a player Pro for `days` more days (added to any Pro they already have, bought or given), or end it
+        now (`remove`, bought time included). Pro is tools only, so no MB move. The server saves straight after."""
+        if remove:
+            had = self.is_pro(p)
+            p.pro_until = min(float(p.pro_until or 0.0), self.now)
+            return True, "Pro ended" if had else "They did not have Pro"
+        p.pro_until = max(self.now, float(p.pro_until or 0.0)) + float(days) * 86400
+        until = datetime.datetime.fromtimestamp(p.pro_until, datetime.timezone.utc)
+        return True, f"Pro until {until:%d %b %Y %H:%M} UTC"
 
     # ------------------------------------------------------------------ the free restart
     def _start_balance(self):

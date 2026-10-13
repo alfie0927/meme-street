@@ -58,6 +58,8 @@ button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);bo
 <div class="card" style="margin-top:12px"><h3>Accounts</h3><div id="accts" class="mut">Loading…</div>
 <div class="msgrow" style="margin-top:8px"><input id="rp-name" placeholder="Player name" maxlength="16"><button id="rp-go">Reset password</button><span id="rp-out" class="t"></span></div>
 <div class="msgrow" style="margin-top:8px"><input id="mb-name" placeholder="Player name" maxlength="16"><input id="mb-amount" type="number" min="0" step="any" placeholder="MB" style="width:110px"><input id="mb-note" placeholder="Note to the player (optional)" maxlength="200"><button id="mb-add">Add MB</button><button id="mb-take">Take back MB</button><span id="mb-out" class="t"></span></div>
+<div class="msgrow" style="margin-top:8px"><input id="pro-name" placeholder="Player name" maxlength="16"><input id="pro-days" type="number" min="1" max="3650" step="1" value="30" style="width:80px" aria-label="Days of Pro"><span class="mut">days</span><input id="pro-note" placeholder="Note to the player (optional)" maxlength="200"><button id="pro-give">Give Pro</button><button id="pro-take">Take Pro away</button><span id="pro-out" class="t"></span></div>
+<p class="mut" style="font-size:12px">Giving Pro adds that many days to any Pro the player already has (bought or given); taking it away ends it now, bought time included. Pro is tools only, so no MB move. The player is told, with your note.</p>
 <p class="mut" style="font-size:12px">Adding MB credits the player's cash (recorded as MB "added by an admin", which counts as money put in, so it never lifts their return or rank) and tells them, with your note. Taking back removes only free cash. At most 1,000,000 MB at a time. A reset ends all of that player's logins and shows a temporary password once. Tell it to them privately; they should change it on their profile page. Addresses are stored only as salted tags, so you can see which accounts share one, not what it is.</p></div>
 <div class="card" style="margin-top:12px"><h3>Email and mail</h3><div id="mailbox" class="mut">Loading…</div>
 <div class="msgrow" style="margin-top:8px"><input id="em-name" placeholder="Player name" maxlength="16"><button id="em-verify">Mark email verified</button><button id="em-clear">Remove email</button><span id="em-out" class="t"></span></div>
@@ -170,6 +172,15 @@ async function mbAct(add){
  $('mb-out').textContent=r.status===403?'That key was not accepted':j.error?j.error:(j.ok?j.msg+'. '+name+' now has '+mb(j.cash)+' MB cash':'Not done: '+j.msg);
  if(j.ok){$('mb-amount').value='';$('mb-note').value='';tick()}}
 $('mb-add').addEventListener('click',()=>mbAct(true));$('mb-take').addEventListener('click',()=>mbAct(false));
+async function proAct(give){
+ const name=$('pro-name').value.trim(),days=parseFloat($('pro-days').value),note=$('pro-note').value.trim();
+ if(!name||(give&&!(days>0))){$('pro-out').textContent='Give a player name'+(give?' and a number of days above 0':'');return}
+ if(!confirm(give?`Give ${name} ${days} days of Pro?`:`Take Pro away from ${name} now?`))return;
+ const r=await fetch('/api/admin/pro',{method:'POST',headers:{'X-Admin-Key':key,'Content-Type':'application/json'},body:JSON.stringify(give?{name,days,note}:{name,remove:true,note})});
+ const j=await r.json().catch(()=>({}));
+ $('pro-out').textContent=r.status===403?'That key was not accepted':j.error?j.error:(j.ok?name+': '+j.msg:'Not done: '+j.msg);
+ if(j.ok){$('pro-note').value='';tick()}}
+$('pro-give').addEventListener('click',()=>proAct(true));$('pro-take').addEventListener('click',()=>proAct(false));
 $('rp-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset_password',{name:$('rp-name').value.trim()});$('rp-out').innerHTML=esc(r.msg)+': <b>'+esc(r.password)+'</b>';tick()}catch(e){$('rp-out').textContent='failed: '+e.message}});
 const hm=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m'};
 const cardf=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;

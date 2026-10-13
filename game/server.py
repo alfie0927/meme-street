@@ -1398,6 +1398,45 @@ async def admin_refund(b: Ident, x_admin_key: str = Header("")):
     return {"ok": ok, "msg": msg}
 
 
+class ProGrant(BaseModel):
+    name: str
+    days: float = 0.0
+    remove: bool = False
+    note: str = ""
+
+
+ADMIN_PRO_DAYS_MAX = 3650             # the most Pro days one admin action can give (ten years; a guard against typos)
+
+
+@app.post("/api/admin/pro")
+async def admin_pro(b: ProGrant, x_admin_key: str = Header("")):
+    """Give a player Pro for a number of days (added to any Pro they have), or take it away (`remove`). The player is
+    told, with the note. Pro is tools only: no MB move, so nothing here touches the ledger; the game saves at once."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    if not b.remove and not (b.days == b.days and 0 < b.days <= ADMIN_PRO_DAYS_MAX):    # (b.days == b.days is False for NaN)
+        return JSONResponse({"error": f"Give a number of days between 0 and {ADMIN_PRO_DAYS_MAX:,}"}, status_code=400)
+
+    def work():
+        p = find_player(b.name)
+        if not p:
+            return None
+        ok, msg = engine.admin_pro(p, b.days, b.remove)
+        note = b.note.strip()[:200]
+        if b.remove:
+            engine._notify(p, "An admin ended your Meme Street Pro" + (f": {note}" if note else "."))
+        else:
+            engine._notify(p, f"An admin gave you {b.days:g} days of Meme Street Pro ({msg})" + (f": {note}" if note else "."))
+        engine.save(full=False)
+        return ok, msg, p.name, engine.is_pro(p), (p.pro_until if engine.is_pro(p) else None)
+    got = await run(work)
+    if got is None:
+        return JSONResponse({"error": "unknown player"}, status_code=404)
+    ok, msg, name, pro, until = got
+    logger.info("admin pro %s %s: %s", name, "remove" if b.remove else f"+{b.days:g} days", msg)
+    return {"ok": ok, "msg": msg, "pro": pro, "pro_until": until}
+
+
 @app.get("/api/admin/player/{name}")
 async def admin_player(name: str, x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):

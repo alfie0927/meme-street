@@ -242,14 +242,15 @@ class LearningBrowserTests(unittest.TestCase):
                           lambda t: bool(t) and "Volume" in t, wait=15)
             await d.check("the stock page says how big the company is", "document.getElementById('d-facts').innerText",
                           lambda t: "Large cap" in t, wait=5)
-            await pg.js("document.querySelector('[data-ind=rsi]').click()")
+            await pg.js("document.getElementById('ind-open').click()")
+            await pg.js("document.querySelector('#ind-list [data-ind=rsi]').click()")
             await d.check("RSI adds a panel", "document.querySelector('#chart-wrap svg').textContent", lambda t: "RSI 14" in t, wait=5)
-            await pg.js("document.querySelector('[data-ind=bb]').click()")
+            await pg.js("document.querySelector('#ind-list [data-ind=bb]').click()")
             await d.check("a Pro indicator says it is Pro", "document.getElementById('toast').textContent", lambda t: "Pro" in t, wait=3)
-            await pg.js("document.getElementById('draw-toggle').click()")
+            await pg.js("document.body.click();document.querySelector('[data-tool=hline]').click()")
             await pg.js("(()=>{const w=document.getElementById('chart-wrap'),r=w.querySelector('svg').getBoundingClientRect();"
                         "w.dispatchEvent(new PointerEvent('pointerdown',{clientX:r.left+r.width/3,clientY:r.top+r.height*0.25,bubbles:true}))})()")
-            await d.check("a level can be drawn", "document.querySelectorAll('[data-unline]').length", 1, wait=4)
+            await d.check("a level can be drawn", "document.querySelectorAll('#chart-wrap [data-dw]').length", 1, wait=4)
             await pg.js("(()=>{const d=document.getElementById('d-risk');d.open=true;const s=document.getElementById('r-stop');"
                         "s.value=String((S.byT.NVXA.price*0.95).toFixed(2));s.dispatchEvent(new Event('input',{bubbles:true}))})()")
             await d.check("the risk tool sizes the trade", "document.getElementById('r-out').innerText",
