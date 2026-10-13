@@ -33,7 +33,8 @@ _raw_read = engine.Engine._read
 
 # base.json turns these down for the new price model (market_model 2); the engine tests run the old market with its news
 NEW_MARKET_NEWS = ("event_mean_seconds", "issue_mean_seconds", "cross_mean_seconds", "catalyst_mean_seconds",
-                   "sector_shock_mean_seconds", "moonshot_mean_seconds", "moonshot_initial", "offering_mean_seconds")
+                   "sector_shock_mean_seconds", "moonshot_mean_seconds", "moonshot_initial", "offering_mean_seconds",
+                   "rumor_prob", "rumor_delay_seconds")
 
 
 def _real_read(self):

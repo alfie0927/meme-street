@@ -581,22 +581,27 @@ Lengths are random (exponential, between 0.3 and 3 times the average). The phase
 ### 6A.3 Swings: trends, ranges and breakouts
 Each listing is, at any time, in one of three modes, for a random spell of game days:
 - **trend** (8-30 days): a drift of about twice the stock's volatility a game year in one direction, delivered in **legs**: an impulse (2-5 days, 3.5x) then a pullback (1-2.5 days, against the trend at 0.9x). Volume is a little higher in impulses.
-- **range** (10-35 days): the price is pulled back towards the middle of the range (half-life 3 game days), the noise is 0.8x and volume 0.65x. A range always ends in a **breakout**: a burst of 0.8 daily sigmas over 10 minutes, with 1.6x noise and 2.5x volume, upwards 62% of the time in a bull phase, 38% in a falling one. 65% of breakouts start a trend that way.
+- **range** (10-35 days): the price is pulled back towards the middle of the range (half-life 3 game days), the noise is 0.8x and volume 0.65x. A range always ends in a **breakout**: a burst of 0.5 daily sigmas (in today's volatility) over 90 seconds, with 1.6x noise and 2.5x volume, upwards 62% of the time in a bull phase, 38% in a falling one. 65% of breakouts start a trend that way.
 - **free**: just the drift and the noise.
 In a sideways phase ranges are likelier.
 
 ### 6A.4 Support and resistance
 Every listing keeps its own 5-minute bars (the last 400, rebuilt from the 5-minute candles after a restart) and, every 15 minutes, finds its **levels**: swing highs and lows (a bar higher or lower than the four on each side), grouped when within 0.4% of each other (a group of three is a level touched three times), plus the round numbers just above and below the price (140 and 150 near 145; `round_step`).
 
-When the price comes within a quarter of a daily sigma of a level, that is a **test**, and its outcome is drawn there and then:
-- it **holds** with probability `0.40 + 0.09 x touches (up to 4) + 0.07 if it is a round number + 0.10 if it lines up with the trend (support in an uptrend) - 0.10 if against it - 0.07 x the times it was tested in the last 3 game days`, between 25% and 75%. A hold pushes the price away from the level (0.6 daily sigmas over 4 minutes) on 1.3x volume.
-- otherwise it **breaks**: the approach speeds up, the price goes through, and it follows through (0.8 daily sigmas over 7.5 minutes, 1.25x noise, 2.5x volume) - unless the break is **false** (30%, 40% against the trend): one to four minutes after crossing, the price is pushed back inside on 1.8x volume.
-The same level is not tested again within 20 minutes. Noise can still break a level that was due to hold (it then counts as a break).
+Only levels where the price has actually turned (at least one swing high or low) are tested; a bare round number is not a level on its own, but it makes a level it coincides with stronger. All sizes below are in **today's volatility** (the stock's daily sigma times its current volatility multiplier, §6A.5), as traders size reactions in ATR. When the price comes within a quarter of that of a level, that is a **test**, and its outcome is drawn there and then:
+- it **holds** with probability `0.40 + 0.09 x touches (up to 4) + 0.07 if it is a round number + 0.10 if it lines up with the trend (support in an uptrend) - 0.10 if against it - 0.07 x the times it was tested in the last 3 game days`, between 25% and 75%. A hold is a quick rejection: the price is pushed away from the level by 0.12 daily sigmas within 40 seconds (a wick on the candle) on 1.3x volume.
+- otherwise it **breaks**: once the price goes through (nothing pushes it there), it follows through (0.45 daily sigmas over 75 seconds, 1.25x noise, 2.5x volume: the stop-loss orders beyond the level, Osler 2003) - unless the break is **false** (30%, 40% against the trend): one to four minutes after crossing, the price is pushed back inside on 1.8x volume.
+The same level is not tested again within 20 minutes. Noise can still go through a level that was due to hold: the test then simply ends, with no push either way. (Slow pushes and pushes on every crossing made one-minute returns trend, which real prices do not: MARKET_REALISM.md section 2.) The pushes are damped in the thin pre-market and after-hours (`activity`), never amplified.
 
 ### 6A.5 Volatility, volume and panics
+- **Stochastic volatility** (`market_model.AR`, the `sv_*` settings): each listing's volatility multiplier is `exp(X - var)`, where X is the sum of three of its own components (half-lives 10 minutes, 2 game days and 15 game days; standard deviations 0.30, 0.35 and 0.35) and two market-wide ones every listing shares (20 minutes and 2 game days; 0.20 and 0.30), so calm and busy spells come at several time scales at once (Corsi's HAR cascade) and stocks get busy together. `var` keeps each stock's average variance at its stated volatility. Each second's move feeds the fast and medium components with the opposite sign (a fall raises volatility).
+- **Fat tails**: company shocks are Student t with 4 degrees of freedom (`engine._student_t4`, scaled to variance 1), capped at 8 sigmas a second; with the volatility above, one-minute returns have tails like real stocks (exponent about 3).
+- **A bigger market factor** (0.21 x beta instead of 0.18, industries 0.10 instead of 0.08), raised further in a correction (x1.35) or a bear market (x1.3), so stocks move together more in sell-offs.
+- **Ticks**: with the new model the quoted price (`Stock.price`) is on a grid: whole cents, or 0.0001 MB below 1 MB; trades fill at the quoted price. `fair` underneath stays continuous.
+- **The daily brake** (§6.5) is 1.5 times wider and grows with today's volatility, so a volatile day can range much further (real stocks have no soft brake).
 - The engine's clustering (§6.7) now weighs a fall 1.25x and a rise 0.75x, so volatility rises more after falls (the **leverage effect**), and it measures surprises against the model's own multiplier so a quiet range does not drag volatility down for ever.
-- **Volume** (`Engine._volume`): every candle has a sixth number, the shares traded: `shares outstanding x daily_turnover (0.4%) / 1800` a second, times the session factor, the model's volume multiplier, the phase's noise to the power 1.2, and `0.4 + 0.6 x |this second's move in sigmas|`. Indices and funds have none. Players' trades are not in it (they never move prices).
-- **Capitulation**: in a correction or a bear market, once the market (the equal-weighted average of the model's listings) is 14% below its 60-day high, each game day has a 30% chance of a panic low (at most one every 20 game days): a drop of 1.6 market daily sigmas over 4 minutes on 4x volume and 2.2x noise, then a rebound of 1.3 over 15 minutes, a headline ("Panic selling sweeps the market..."), and the phase turns to recovery.
+- **Volume** (`Engine._volume`): every candle has a sixth number, the shares traded: `shares outstanding x daily_turnover (0.4%) / 1800` a second, times the session factor, the model's volume multiplier (which includes the stock's own volume mood, half-life a game day; a random factor for each minute; and the volatility components to the power 0.6), the phase's noise to the power 1.2, and `0.4 + 0.6 x |this second's move in sigmas|`. Indices and funds have none. Players' trades are not in it (they never move prices).
+- **Capitulation**: in a correction or a bear market, once the market (the equal-weighted average of the model's listings) is 14% below its 60-day high, each game day has a 30% chance of a panic low (at most one every 20 game days): a drop of 1.6 market daily sigmas over 2 minutes on 4x volume and 2.2x noise, then a rebound of 1.3 over 10 minutes, a headline ("Panic selling sweeps the market..."), and the phase turns to recovery.
 
 ### 6A.6 The economy and the calendar
 A hidden economy moves slowly: **growth** (towards 3.0% in a bull phase, 1.8% sideways, 1.5% in a correction, -1% in a bear market, 2.4% in a recovery), **unemployment** (falls when growth is strong), **inflation** (rises with growth, falls when the real interest rate is high) and the **policy rate**, set by *the Reserve Board*. The bank follows a rule (`taylor`: neutral real rate 0.75% + inflation + half the inflation gap + half the growth gap, in quarter points).
@@ -610,35 +615,33 @@ Releases come on a fixed calendar from the clock (the same after a restart; `Eco
 | GDP growth | every 91.25 game days |
 | Interest-rate decision | 8 a game year (every 45.6 game days) |
 
-Each has a **forecast** published 3-10 game days ahead (it never changes once published), drawn from the economy at that moment plus forecasters' error. The figure itself is the economy plus measurement noise, so the **surprise** (figure minus forecast, in standard deviations) is what matters. A surprise becomes a *growth* surprise and/or a *rates* surprise (hot CPI and strong jobs push rates; claims are inverted); rate decisions are priced as a probability ("a 0.25-point rise expected (72%)") and the surprise is the decision minus the expected move. The market reacts through each listing's beta (`0.6 x growth - 0.7 x rates`, times 0.55 market daily sigmas) plus its industry's sensitivity (`GROWTH_TILT`, `RATES_TILT`: banks gain on higher rates, property, tech, crypto and utilities lose, defensives hold up when growth disappoints). The move is delivered over two minutes, front-loaded; a quarter of releases **whipsaw** (the first 20 seconds go the wrong way). The market's noise is 0.85x in the five minutes before a release and up to 1.8x just after it. Each release is a `macro` headline ("Consumer prices (CPI): 3.4% a year, above the 3.2% forecast - inflation runs hot").
+Each has a **forecast** published 3-10 game days ahead (it never changes once published), drawn from the economy at that moment plus forecasters' error. The figure itself is the economy plus measurement noise, so the **surprise** (figure minus forecast, in standard deviations) is what matters. A surprise becomes a *growth* surprise and/or a *rates* surprise (hot CPI and strong jobs push rates; claims are inverted); rate decisions are priced as a probability ("a 0.25-point rise expected (72%)") and the surprise is the decision minus the expected move. The market reacts through each listing's beta (`0.6 x growth - 0.7 x rates`, times 0.55 market daily sigmas) plus its industry's sensitivity (`GROWTH_TILT`, `RATES_TILT`: banks gain on higher rates, property, tech, crypto and utilities lose, defensives hold up when growth disappoints). Most of the move comes within 45 seconds (real releases are priced in seconds); a quarter of releases **whipsaw** (the first 8 seconds go the wrong way). The market's noise is 0.85x in the five minutes before a release and up to 1.8x just after it. Each release is a `macro` headline ("Consumer prices (CPI): 3.4% a year, above the 3.2% forecast - inflation runs hot").
 
 `GET /api/calendar` and the **Calendar** page show the next releases with their forecasts, the latest results, the policy rate and the next earnings forecasts; the macro releases also appear in *Upcoming events*.
 
 ### 6A.7 Earnings against a forecast
-Three game days before a report, analysts publish a **forecast EPS** (`Engine._earnings_forecast`): what the stories announced since the last report imply (§7.7), plus a 1% error. It shows in *Upcoming events* and on the Calendar page. The report then says whether the company beat, matched or missed it, and the price reacts to the miss (`0.8 x (EPS - forecast) / forecast`, at most 8%). After a big surprise (over 2%) the price keeps drifting the same way by 15% of the reaction over three game days (**post-earnings drift**).
+Three game days before a report, analysts publish a **forecast EPS** (`Engine._earnings_forecast`): what the stories announced since the last report imply (§7.7), plus a 1% error. It shows in *Upcoming events* and on the Calendar page. The report then says whether the company beat, matched or missed it, and the price reacts to the surprise in units of how big surprises usually are for that company (the 1% forecast error, revenue noise and margin noise), times three daily sigmas, at most five: about 2.5-4 times an ordinary day's move, like real earnings days. After a big surprise (over 2%) the price keeps drifting the same way by 15% of the reaction over three game days (**post-earnings drift**).
 
 ### 6A.8 Fewer headlines
 With the new model `base.json` cuts the news: a random event every 15 minutes on average (was 2), a company issue every 20 (was 1.7), offerings every 2 hours; stories about two companies, catalysts, industry-wide shocks and new moonshots are off. Macro releases, earnings, ratings and scheduled company events carry the news.
 
-### 6A.9 Checking it: `realism.py`
-`python realism.py [game_years] [seeds] [stocks] [first_seed]` runs the model on its own (with the engine's three-factor noise and clustering rebuilt in 10-second steps, about 50 times faster than the engine) and reports: the long-run return of a cap-weighted index of the simulated companies, drawdowns and time in each phase; stylised facts (kurtosis of 5-minute returns, autocorrelation of returns and of absolute returns); level statistics (how often strong and weak levels held, how many breaks failed); and simple strategies against holding, costs included (0.1% a side).
+### 6A.9 Checking it: `chart_check.py`, `realism.py` and MARKET_REALISM.md
+`MARKET_REALISM.md` has the research on how real prices move (with sources), what was wrong with the charts, what was
+changed on 2026-10-13 and the next steps.
 
-Results on 2026-10-13 (4 markets x 2 game years x 40 companies, and 3 x 1 for the level strategies; noisy, see the seeds):
+- `python chart_check.py [game_days] [seed] [--cached]` runs the **real engine** (no players) on a fixed clock and
+  measures one-minute candles against the stylised facts of real stocks: fat tails and the tail exponent, no
+  minute-to-minute direction, volatility memory and the leverage effect, volume against the size of the move and its
+  memory, the intraday U-shape, correlation between stocks, daily tails, gap fills, earnings days and ticks, each with
+  its target. About 20 seconds a game day; results are cached in `sim_results/`.
+- `python realism.py [game_years] [seeds] [stocks] [first_seed]` runs the price model on its own in 10-second steps
+  (with the engine's noise, clustering and daily brake rebuilt), about 50 times faster than the engine, for the long run
+  and the "no free money" strategies (§1 of the ROADMAP's design rules). It is an approximation of the engine.
 
-| Check | Result | Target |
-|---|---|---|
-| Market return a game year | +1.5% to +11.5% across runs (about +6.5% on average) | +5% to +10% |
-| 10% drawdowns a game year | 0.9 to 1.6 | about 1 |
-| Kurtosis of 5-minute returns | 14 to 19 | well above 3 |
-| Autocorrelation of returns | -0.01 | near 0 |
-| Autocorrelation of absolute returns | +0.13 | clearly positive |
-| Strong levels held / weak levels held | 52-54% / 41-44% | strong 55-65%, weak below 50% |
-| Breaks that failed | 31-33% | 20-35% |
-| Buy every 1.5-sigma daily drop, short every rise, momentum, 20-day breakout or low | all below holding, most negative after costs | no simple rule beats holding |
-| Trade every level test (bounce, 1 hour, stop) | -0.23% a trade | negative |
-| Only strong levels with the 10-day trend | +0.25% a trade (about 0.15R) | modestly positive |
-
-So the market drifts up with corrections and bear markets, has fat tails and volatility clustering but no free momentum or reversal, and rewards reading levels and the trend a little, not blindly trading them. Strong levels hold slightly less often than the target; raise `hold_base` or `hold_per_touch` (settings key `price_model`, a dict of overrides of `market_model.DEFAULTS`) if you want them clearer, and re-run the check on fresh seeds.
+The latest results are in MARKET_REALISM.md section 4: every chart check within its target on most seeds (the close's
+burst and one seed's daily tails borderline), and no simple strategy beating holding the market, costs included.
+Rumours are rarer and slower with the new model (25% of stories, confirmed after 3 to 10 minutes; `rumor_prob`,
+`rumor_delay_seconds` in base.json): a rumour confirmed a minute later made one-minute returns trend.
 
 ---
 
@@ -1231,9 +1234,8 @@ Admin endpoints need the `X-Admin-Key` header to match the `ADMIN_KEY` environme
 | Part | What it shows | How to read it |
 |---|---|---|
 | **Alerts** (top) | Plain-language warnings, or a green "No alerts" line | See the rules below |
-| **House reserve** | MB in the reserve, and total house capital | Kept above its floor automatically (§6.11) |
+| **Total MB** | Every MB players have been given or bought: their deposits in total (`total_mb` in `/api/admin/stats`), split into starting MB, bought, rewards (lessons and challenges) and other (free restarts, admin additions and removals, refunds) | Grows with sign-ups, purchases and rewards; trading moves MB between players and the house but never changes it. (It replaced the house reserve and the house P&L cards on 2026-10-13: nothing is paid out, so the house carries no real risk; both numbers are still in the API.) |
 | **Fees collected** | All fees, and how much of that is borrow fees | Grows with activity |
-| **House P&L** | Fees and liquidity, broken down | The house should earn about the fees |
 | **Humans P&L** | Players' combined all-time P&L and how much they deposited | Should be about minus the fees (plus a little luck) |
 | **Players** | How many players, how many are connected, and how many visitors are watching | |
 | **Players and fees** (a panel) | How far people get: signed up, added an email, verified it, made a first trade, seen in the last 24 hours and 7 days; sign-ups per day for 14 days; total fees, fees per paying player, and the share of fees paid by the heaviest 10% | Counted from the game's own data, no tracking code. "Seen" is each login's last-seen time (updated about hourly); accounts with no password login are not counted (§17.10, ROADMAP I4) |
@@ -1261,7 +1263,7 @@ Admin endpoints need the `X-Admin-Key` header to match the `ADMIN_KEY` environme
 | **Email and mail** | Whether an SMTP server is set (a red warning in console mode), sent / failed / waiting counts, the last 15 messages (in console mode with their codes), and **Mark email verified** / **Remove email** boxes | §10.6 |
 | **Gateways** | How many gateway processes are connected (0 = everything in one process) | §12 |
 | **Start the game over** | A box where you type `RESET`, and the button | §1, §10. Backs up first |
-| **Two line charts** | House reserve and fees; players' P&L, sampled every 10 seconds for the last 2 hours | A house reserve that trends down while fees go up means players are winning |
+| **Two line charts** | Total MB and fees; players' P&L, sampled every 10 seconds for the last 2 hours | Total MB steps up with each sign-up, purchase or reward |
 | **Returns bars** | How many human players are in each all-time return band (below -50% ... above +50%) | A long right tail may mean someone found an edge |
 | **Recent margin calls** | When, who, which stocks were closed, and how much the house lost | |
 | **Top winners** | The 10 best human players by P&L: equity, P&L, return, trades, open positions, margin calls | **Click a row** to open that player |
@@ -1272,8 +1274,6 @@ Admin endpoints need the `X-Admin-Key` header to match the `ADMIN_KEY` environme
 | Alert | Raised when |
 |---|---|
 | Red: token drift | the money-conservation check is above 0.000001 |
-| Red: negative reserve | the house reserve is below zero (the automatic top-up normally prevents it) |
-| Amber: stress loss | the stress loss (§6.11) is bigger than the reserve |
 | Amber: one stock is the risk | one stock is more than half the stress loss (and over 1,000 MB) |
 | Amber: shortfall | a gapped short has cost the house anything |
 | Amber: a player is far ahead | the best human is up more than 50% with at least 20 trades (look at their trade log) |

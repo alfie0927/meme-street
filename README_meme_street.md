@@ -11,6 +11,7 @@ events_pack.json        # sector-specific news events (every sector has its own)
 server.py               # FastAPI + WebSocket server (1 tick per second)
 market_model.py         # the price model: drift, market phases, trends, ranges, support/resistance, volume, the macro calendar
 realism.py              # checks the price model: long-run return, stylised facts, level odds, no free money (python realism.py)
+chart_check.py          # measures the real engine's charts against real-market facts (MARKET_REALISM.md has the research)
 economy.py, payments.py # the shop (MB packages, Pro), age rules, spending limits, the free restart; test mode and Stripe
 learning.py, lessons.json # lessons with quizzes, challenges that pay MB, the trading journal
 requirements.txt

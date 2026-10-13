@@ -73,14 +73,50 @@ DEFAULTS = {
     "trend_strength": 2.0,                            # a trend's average drift a game year, in units of the volatility
     "range_halflife_days": 3.0,                       # how strongly a range pulls price back to its middle
     "range_noise": 0.8, "range_volume": 0.65,
-    "breakout_sigmas": 0.8, "breakout_seconds": 600, "breakout_noise": 1.6, "breakout_volume": 2.5,
+    "breakout_sigmas": 0.5, "breakout_seconds": 90, "breakout_noise": 1.6, "breakout_volume": 2.5,
     "level_band_sigmas": 0.25,                        # "near a level": within this many daily sigmas of it
     "hold_base": 0.40, "hold_per_touch": 0.09, "hold_round": 0.07, "hold_trend": 0.10, "hold_repeat": 0.07,
-    "bounce_sigmas": 0.6, "bounce_seconds": 240,
-    "follow_sigmas": 0.8, "follow_seconds": 450, "false_break": 0.3,
+    "bounce_sigmas": 0.12, "bounce_seconds": 40,
+    "follow_sigmas": 0.45, "follow_seconds": 75, "false_break": 0.3,
     "capitulation_drawdown": 0.14, "capitulation_daily_chance": 0.3,
     "release_sigmas": 0.55,                           # a 1-sd surprise moves the market about this many daily sigmas
+    # Stochastic volatility (MARKET_REALISM.md): the log of each listing's volatility is a sum of components with
+    # different half-lives (minutes, a game day, weeks), like the HAR cascade of realised volatility, plus market-wide
+    # components shared by every listing; falls feed the fast and medium ones (the leverage effect).
+    "sv_fast_halflife": 600, "sv_fast_sd": 0.30,
+    "sv_mid_halflife": 2 * 1800, "sv_mid_sd": 0.35,
+    "sv_slow_halflife": 15 * 1800, "sv_slow_sd": 0.35,
+    "sv_mkt_fast_halflife": 1200, "sv_mkt_fast_sd": 0.20,
+    "sv_mkt_mid_halflife": 2 * 1800, "sv_mkt_mid_sd": 0.30,
+    "sv_leverage_fast": 0.008, "sv_leverage_mid": 0.002,
+    "volume_own_halflife": 1800, "volume_own_sd": 0.30, "volume_minute_sd": 0.35, "volume_vol_link": 0.6,
 }
+# How much more the market factor moves in each phase: stocks move together more in sell-offs (Longin and Solnik 2001,
+# Ang and Chen 2002), so the market's share of every stock's noise rises in a correction or a bear market.
+REGIME_MARKET_FACTOR = {"bull": 1.0, "sideways": 0.95, "correction": 1.35, "bear": 1.3, "recovery": 1.1}
+
+
+class AR:
+    """A mean-zero Ornstein-Uhlenbeck component with a half-life and a stationary standard deviation."""
+    __slots__ = ("x",)
+
+    def __init__(self, x=0.0):
+        self.x = x
+
+    def step(self, rng, dt, halflife, sd, push=0.0):
+        a = math.exp(-dt * math.log(2) / halflife)
+        self.x = self.x * a + sd * math.sqrt(max(0.0, 1 - a * a)) * rng.gauss(0.0, 1.0) + push
+        return self.x
+
+
+def sv_var(p, leverage=True):
+    """The stationary variance of a listing's log-volatility (its own components, the market's and the leverage feed),
+    so the multiplier exp(X - var) keeps the average variance at the listing's stated volatility."""
+    v = p["sv_fast_sd"] ** 2 + p["sv_mid_sd"] ** 2 + p["sv_slow_sd"] ** 2 + p["sv_mkt_fast_sd"] ** 2 + p["sv_mkt_mid_sd"] ** 2
+    if leverage:      # a feed of g per standard shock a second adds about g^2 / (2 ln2 / halflife)
+        v += p["sv_leverage_fast"] ** 2 / (2 * math.log(2) / p["sv_fast_halflife"])
+        v += p["sv_leverage_mid"] ** 2 / (2 * math.log(2) / p["sv_mid_halflife"])
+    return v
 
 
 def _stationary_drift():
@@ -127,8 +163,8 @@ class Pulse:
             return 1.0
         base = (1 - math.exp(-t / self.tau)) / (1 - math.exp(-self.dur / self.tau))
         if self.whip:                  # the first reaction is wrong-footed, then the market turns
-            w = min(t, 20.0) / 20.0
-            return base - w * math.exp(-max(0.0, t - 20.0) / 15.0)
+            w = min(t, 8.0) / 8.0
+            return base - w * math.exp(-max(0.0, t - 8.0) / 6.0)
         return base
 
     def dump(self):
@@ -156,6 +192,11 @@ class Swing:
         self.tested = deque(maxlen=12)         # [time, level price] of recent tests
         self.anchor = math.log(max(price, 1e-9))
         self.last_t = now
+        self.sv = (AR(), AR(), AR())            # fast, medium, slow log-volatility
+        self.vol_own = AR()                     # the listing's own volume mood
+        self.vmin, self.vmin_t = 0.0, -1        # this minute's volume noise
+        self.last_price = price
+        self.m = 1.0                            # the volatility multiplier last applied
 
     def dump(self):
         return {"mode": self.mode, "dir": self.dir, "until": self.until, "leg": self.leg, "leg_until": self.leg_until,
@@ -385,6 +426,7 @@ class MarketModel:
         self.economy = Economy(self.rng)
         self.events = []                 # headlines for the engine: {"kind", "text", "dir", "strength"}
         self.mkt = 0.0                   # the market's log level (equal-weighted), for drawdowns
+        self.msv = (AR(), AR())          # market-wide log-volatility: fast and medium
         self.mkt_peak = deque(maxlen=60)  # [day, high] of the last 60 game days
         self.capitulated_at = -1e18
         self.last_release = -1e18
@@ -435,8 +477,16 @@ class MarketModel:
         self.swings.pop(ticker, None)
 
     # ------------------------------------------------------------------ one step
-    def step(self, now, dt, listings):
-        """Returns ({ticker: extra return}, {ticker: noise multiplier}, {ticker: volume multiplier}) for `dt` seconds."""
+    def market_factor(self):
+        """How much the market factor's share of every listing's noise is raised in this phase (correlations rise in
+        sell-offs)."""
+        return REGIME_MARKET_FACTOR.get(self.regime, 1.0)
+
+    def step(self, now, dt, listings, activity=1.0):
+        """Returns ({ticker: extra return}, {ticker: noise multiplier}, {ticker: volume multiplier}) for `dt` seconds.
+        `activity` is how busy trading is right now compared with a normal second (the session factor): the swings'
+        and the levels' pushes are scaled by it, so they do not run as steady drifts through the thin pre-market and
+        after-hours (where they made one-minute returns trend)."""
         dt = max(0.0, float(dt))
         self.t = now
         listings = [x for x in listings if getattr(x, "asset_type", "equity") != "index" and x.price > 0]
@@ -444,6 +494,13 @@ class MarketModel:
         self._economy_step(now, dt, listings)
         self._capitulation_check(now, listings)
         rets, noise, volume = {}, {}, {}
+        p = self.p
+        rng = self.rng
+        mf = self.msv[0].step(rng, dt, p["sv_mkt_fast_halflife"], p["sv_mkt_fast_sd"]) if dt else self.msv[0].x
+        mm = self.msv[1].step(rng, dt, p["sv_mkt_mid_halflife"], p["sv_mkt_mid_sd"]) if dt else self.msv[1].x
+        var = sv_var(p)
+        minute = int(now // 60)
+        act = max(0.0, min(1.0, float(activity)))      # (it damps the pushes in thin trading; it never amplifies them)
         rd = self.regime_drift()
         follow = self.p["anchor_follows_regime"]
         rev = math.log(2) / (self.p["anchor_halflife_days"] * DAY)
@@ -457,11 +514,30 @@ class MarketModel:
             sw.anchor += (mu + follow * beta * rd) * dt / YEAR
             r = base + (sw.anchor - lp) * rev * dt
             n, v = 1.0, 1.0
-            r2, n2, v2 = self._mode_step(x, sw, now, dt, lp, sig_d, rd)
-            r3, n3, v3 = self._level_step(x, sw, now, dt, lp, sig_d)
-            rets[x.ticker] = math.expm1(r + r2 + r3)
-            noise[x.ticker] = n * n2 * n3
-            volume[x.ticker] = v * v2 * v3
+            # Levels and breakouts are sized in today's volatility, not the stock's average (traders size them in ATR):
+            # a fixed size would dwarf the noise in calm spells and turn every reaction into a little trend.
+            sig_now = sig_d * sw.m
+            r2, n2, v2 = self._mode_step(x, sw, now, dt, lp, sig_now, rd)
+            r3, n3, v3 = self._level_step(x, sw, now, dt, lp, sig_now)
+            # stochastic volatility: the last second's move, in units of its expected size, feeds the fast and medium
+            # components with the opposite sign (a fall raises volatility, a rise lowers it a little)
+            if dt and sw.last_price > 0:
+                exp_sd = sig_d / math.sqrt(DAY) * math.sqrt(dt) * max(sw.m, 0.05) * max(act, 0.05)
+                z = max(-6.0, min(6.0, math.log(x.price / sw.last_price) / exp_sd)) if exp_sd > 0 else 0.0
+                f = sw.sv[0].step(rng, dt, p["sv_fast_halflife"], p["sv_fast_sd"], -p["sv_leverage_fast"] * z * math.sqrt(dt))
+                md = sw.sv[1].step(rng, dt, p["sv_mid_halflife"], p["sv_mid_sd"], -p["sv_leverage_mid"] * z * math.sqrt(dt))
+                sl = sw.sv[2].step(rng, dt, p["sv_slow_halflife"], p["sv_slow_sd"])
+                ov = sw.vol_own.step(rng, dt, p["volume_own_halflife"], p["volume_own_sd"])
+            else:
+                f, md, sl, ov = sw.sv[0].x, sw.sv[1].x, sw.sv[2].x, sw.vol_own.x
+            sw.last_price = x.price
+            X = f + md + sl + mf + mm
+            sw.m = math.exp(X - var)
+            if sw.vmin_t != minute:
+                sw.vmin_t, sw.vmin = minute, rng.gauss(0.0, p["volume_minute_sd"])
+            rets[x.ticker] = math.expm1(r + act * (r2 + r3))
+            noise[x.ticker] = n * n2 * n3 * sw.m
+            volume[x.ticker] = v * v2 * v3 * math.exp(p["volume_vol_link"] * (X - var) + ov + sw.vmin)
             self._bar(sw, now, x.price)
         self._pulse_step(now, dt, rets, noise, volume)
         mean = sum(math.log1p(r) for tk, r in rets.items()) / len(rets) if rets else 0.0
@@ -609,8 +685,9 @@ class MarketModel:
         rel = (lp - lvl) * side                           # >0: still on the near side; <0: through the level
         push = p["bounce_sigmas"] * sig_d / p["bounce_seconds"]
         if t["outcome"] == "hold":
-            if rel < -2.5 * band:                         # the noise broke it anyway: treat it as a break
-                t.update(outcome="break", crossed=now, false=False)
+            if rel < -2.5 * band:                         # the noise went through anyway: the test is over
+                t["outcome"] = "pierced"                  # (counted as a break; no follow-through push: pushing every
+                sw.test = None                            # crossing the noise makes turned volatile spells into trends)
                 return 0.0, 1.0, 1.0
             if rel > 2.5 * band or now > t["until"]:
                 sw.test = None
@@ -624,7 +701,7 @@ class MarketModel:
                 sw.test = None
                 return 0.0, 1.0, 1.0
             else:
-                return -side * 0.6 * push * dt, 1.0, 1.4
+                return 0.0, 1.0, 1.4                      # (no push towards the level: that would be momentum)
         since = now - t["crossed"]
         if t.get("false") and since > t.get("fail_after", 120):
             if rel > band or since > t.get("fail_after", 120) + 600:
@@ -640,6 +717,8 @@ class MarketModel:
     def _start_test(self, x, sw, now, lp, band):
         best = None
         for price, strength, rnd in sw.levels:
+            if strength < 1:                                 # a bare round number is not a level until price has turned there
+                continue
             d = lp - math.log(price)
             if 0 < d <= band:
                 side = 1
@@ -692,7 +771,7 @@ class MarketModel:
                 if move:
                     amounts[x.ticker] = move
             whip = self.rng.random() < 0.25
-            self.pulses.append(Pulse(now, 120, 25, amounts, whip=whip, noise=1.0, volume=2.5, kind=kind))
+            self.pulses.append(Pulse(now, 45, 8, amounts, whip=whip, noise=1.0, volume=2.5, kind=kind))   # (real releases are priced in seconds)
             mk = 0.6 * gz - 0.7 * rz
             rec["market_z"] = round(mk, 2)
             strength = "strong" if abs(mk) > 1.2 else "weak" if abs(mk) > 0.4 else "bystander"
@@ -716,9 +795,9 @@ class MarketModel:
         m = 0.18 / math.sqrt(365)
         drop = {x.ticker: -1.6 * m * max(0.3, getattr(x, "beta", 1.0)) for x in listings}
         bounce = {x.ticker: 1.3 * m * max(0.3, getattr(x, "beta", 1.0)) for x in listings}
-        self.pulses.append(Pulse(now, 240, 120, drop, noise=2.2, volume=4.0, kind="capitulation"))
-        self.pulses.append(Pulse(now + 240, 900, 300, bounce, noise=1.6, volume=2.5, kind="rebound"))
-        self.regime, self.regime_until = "recovery", now + 240 + self._regime_length("recovery")
+        self.pulses.append(Pulse(now, 120, 40, drop, noise=2.2, volume=4.0, kind="capitulation"))
+        self.pulses.append(Pulse(now + 120, 600, 150, bounce, noise=1.6, volume=2.5, kind="rebound"))
+        self.regime, self.regime_until = "recovery", now + 120 + self._regime_length("recovery")
         self.events.append({"kind": "macro", "text": "Panic selling sweeps the market as volumes explode",
                             "dir": -1, "strength": "strong"})
 

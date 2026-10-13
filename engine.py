@@ -95,6 +95,12 @@ REGIME_NEWS = {
 }
 
 
+def _student_t4():
+    """A Student t draw with 4 degrees of freedom, scaled to variance 1 (its tails fall like a power law with exponent
+    about 4 per draw; with volatility clustering on top the returns' tails come out near the "cubic law" of real stocks)."""
+    return random.gauss(0.0, 1.0) / math.sqrt(random.gammavariate(2.0, 2.0) / 4.0) / math.sqrt(2.0)
+
+
 def _clamp(x, lo, hi):
     return max(lo, min(hi, x))
 
@@ -102,6 +108,7 @@ def _clamp(x, lo, hi):
 class Stock:
     def __init__(self, cfg, weight):
         self.ticker = cfg["ticker"]
+        self.ticked = False       # quote the price on a tick grid (set by the new price model, market_model.py)
         self.split_factor = 1.0   # product of the stock splits that happened in older games (there are no new ones)
         self.share_adj = 1.0      # product of all buybacks and offerings (1.02 means 2% more shares)
         self.offering = None      # a declared share offering waiting to settle: {"t", "pct"}
@@ -171,14 +178,19 @@ class Stock:
 
     @property
     def price(self):
-        return self.fair
+        """The quoted price. With the new price model it is on a tick grid like a real exchange's: whole cents, or 0.0001 MB
+        below 1 MB (Harris 1991: real prices are discrete). `fair` underneath stays continuous."""
+        if not self.ticked:
+            return self.fair
+        tick = 0.01 if self.fair >= 1.0 else 0.0001
+        return max(tick, round(self.fair / tick) * tick)
 
     def quote_buy(self, cash):
         fee = cash * FEE
-        return (cash - fee) / self.fair, fee
+        return (cash - fee) / self.price, fee
 
     def quote_sell(self, shares):
-        gross = shares * self.fair
+        gross = shares * self.price
         fee = gross * FEE
         return gross - fee, fee
 
@@ -1194,6 +1206,12 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         jump_ticks = self._open_jump_ticks() if self._opening_tick() else 0.0
         market_shock = random.gauss(0.0, 1.0)
         sector_shocks = {sector: random.gauss(0.0, 1.0) for sector in self.sectors}
+        # The new price model (MARKET_REALISM.md): a bigger market factor that grows further in sell-offs (stocks move
+        # together more when the market falls), and fat-tailed company shocks (Student t with 4 degrees of freedom,
+        # scaled to the same variance) so big one-second moves happen about as often as in real prices.
+        new = self.model is not None
+        m_base, s_base = (0.21, 0.10) if new else (0.18, 0.08)
+        m_mult = self.model.market_factor() if new else 1.0
         if jump_ticks:                 # the opening auction: a fresh, independent shock for every stock
             self.gaps_total += 1
             jump_market = random.gauss(0.0, 1.0)
@@ -1202,12 +1220,13 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         for stock in self.stocks.values():
             if stock.asset_type == "index":
                 continue
-            market_sigma = stock.beta * 0.18
-            sector_sigma = 0.08
+            market_sigma = stock.beta * m_base
+            sector_sigma = s_base
             idio_sigma = math.sqrt(max(stock.vol ** 2 - market_sigma ** 2 - sector_sigma ** 2, 0.005 ** 2))
             vm = self._vol_multiplier(stock)
-            shock = (market_sigma * market_shock + sector_sigma * sector_shocks.get(stock.sector, 0.0)
-                     + idio_sigma * random.gauss(0.0, 1.0)) / annual_scale
+            idio = _student_t4() if new else random.gauss(0.0, 1.0)
+            shock = (market_sigma * m_mult * market_shock + sector_sigma * sector_shocks.get(stock.sector, 0.0)
+                     + idio_sigma * idio) / annual_scale
             shock *= vm * session * self._model_noise.get(stock.ticker, 1.0)   # known before the shock is drawn
             if stock.asset_type == "commodity" and commodity_trend > 0:
                 # OFF by default. A slow drift makes returns predictable: following the last 10 minutes earned
@@ -1216,7 +1235,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 stock.trend = stock.trend * 0.998 + random.gauss(0.0, commodity_trend * 0.0015 * stock.vol / annual_scale)
                 shock += stock.trend
             sig = stock.vol / annual_scale * max(vm * session * self._model_noise.get(stock.ticker, 1.0), 1.0)   # one typical second
-            lim = max(0.01, 5.0 * sig)                                     # 1% for ordinary stocks, more for wild ones
+            lim = max(0.01, (8.0 if new else 5.0) * sig)                   # 1% for ordinary stocks, more for wild ones
             shock = max(-lim, min(lim, shock))
             if jump_ticks:
                 jump = (market_sigma * jump_market + sector_sigma * jump_sectors.get(stock.sector, 0.0)
@@ -1248,7 +1267,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         dt = 1.0 if self._model_t is None else max(0.0, min(5.0, self.now - self._model_t))
         self._model_t = self.now
         listings = [s for s in self.stocks.values() if s.asset_type != "index" and s.spec is None and s.fair > 0]
-        rets, noise, volume = self.model.step(self.now, dt, listings)
+        for s in self.stocks.values():
+            s.ticked = True                         # quoted on a tick grid (Stock.price)
+        rets, noise, volume = self.model.step(self.now, dt, listings, activity=self._session_mult())
         burst = self.model.market_vol(self.now) / market_model.REGIMES[self.model.regime][1]   # before and after releases
         if burst != 1.0:
             noise = {tk: v * burst for tk, v in noise.items()}
@@ -1281,7 +1302,12 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if not fc or not fc[1]:
             return surprise, text
         miss = (eps - fc[1]) / max(abs(fc[1]), 1e-9)
-        surprise = _clamp(0.8 * miss, -0.08, 0.08)
+        # The reaction is to the surprise in units of how big surprises usually are for this company (the analysts' 1%
+        # error, revenue noise and margin noise), times about three daily sigmas: real earnings days move a stock about
+        # 2.5 to 4 times as much as an ordinary day (options price S&P 500 reports at about +-5%).
+        usual = math.sqrt(0.01 ** 2 + 0.01 ** 2 + (0.008 / max(abs(s.margin), 0.06)) ** 2)
+        sig = self._daily_sigma(s)
+        surprise = _clamp(3.0 * sig * miss / usual, -5 * sig, 5 * sig)
         word = "beats" if miss > 0.005 else "misses" if miss < -0.005 else "matches"
         text = text.replace("EARNINGS: ", f"EARNINGS ({word} the forecast: EPS {eps:.3f} vs {fc[1]:.3f} expected): ", 1)
         if abs(surprise) > 0.02:
@@ -1679,6 +1705,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self._scale_effect(effect, move)
 
     def _earnings(self):
+        if self.model is not None and int(self.now) % 60 == 0:
+            for s in self.stocks.values():           # forecasts are published 3 game days ahead, page or no page
+                if s.next_earn:
+                    self._earnings_forecast(s)
         for s in self.stocks.values():
             if s.next_earn and self.now >= s.next_earn:
                 self._reschedule_earnings(s)                       # the next quarter
@@ -2083,6 +2113,11 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         further falls near the day's lower limit but not further rises: a reflecting wall that made dips bounce,
         which a dip-buying strategy farmed for about +2.7% over two hours.)"""
         limit = self._daily_sigma(s) * (1.5 + 0.75 * min(abs(s.beta), 2.0))
+        if self.model is not None:
+            # The new price model: real stocks have no soft daily brake (only rare circuit breakers), and a volatile day
+            # is meant to range further, so the limit is wider and grows with today's volatility (MARKET_REALISM.md).
+            limit *= 1.5 * max(1.0, self._model_noise.get(s.ticker, 1.0))
+            cap *= 1.5
         if not s.moonshot:
             limit = min(cap, limit)
         limit *= s.limit_mult                    # moonshots may move hundreds of per cent in a day
@@ -2671,6 +2706,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             self.model = (market_model.MarketModel(self.settings, rng=random.Random(random.random()), now=self.now)
                           if self._model_on() else None)
             self._model_noise, self._model_volume, self._model_t = {}, {}, None
+            if self.model is None:
+                for s in self.stocks.values():
+                    s.ticked = False
             self._model_restore()
         if self.model is not None:
             self._model_step()                  # drift, regimes, swings, levels and macro (replaces the two below)
@@ -3032,7 +3070,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             return
         self._series_t = self.now
         humans = sum(self.equity(p) - p.deposited for p in self.players.values())
-        self.series.append({"t": self.now, "house": self.house, "fees": self.fees, "humans_pnl": humans,
+        total = sum(p.deposited for p in self.players.values())        # every MB players have been given or bought
+        self.series.append({"t": self.now, "house": self.house, "total_mb": total, "fees": self.fees, "humans_pnl": humans,
                             "trades": self.trades_total})
 
     def admin_insights(self):
@@ -3258,7 +3297,12 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         human_in = sum(p.deposited for p in humans)
         players_pnl = human_equity - human_in
         house_pnl = -players_pnl
+        sources = {}
+        for p in humans:
+            for k, v in p.mb_by_source.items():
+                sources[k] = sources.get(k, 0.0) + v
         return {"fees": self.fees, "house_pnl": house_pnl,
+                "total_mb": human_in, "total_mb_by_source": sources,
                 "liquidity_pnl": house_pnl - self.fees,
                 "players_pnl": players_pnl, "player_deposits": human_in, "player_equity": human_equity,
                 "player_cash": sum(p.cash for p in humans), "house_capital": self.house_capital,

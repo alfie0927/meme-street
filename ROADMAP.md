@@ -1,6 +1,8 @@
 # Meme Street roadmap
 
-**Goal (new, 2026-10-13):** a website where people **learn to trade by trading** a realistic, fictional stock market. The
+**Goal (new, 2026-10-13):** an informational game where people **learn to trade, or just trade for fun**, on a
+realistic, fictional stock market. **Technical analysis is the core of it** (section 1A): charts that behave like real
+charts and the tools to read them; news and the economy are background. The
 market behaves like a real one: it drifts slowly upwards over time, with corrections, bear phases and long sideways
 stretches; scheduled economic news (interest-rate decisions, inflation, jobs) moves it; and prices respect and break
 support and resistance the way real charts do, so the setups traders are taught actually appear and can be practised.
@@ -23,10 +25,10 @@ Size key: **S** = under a day, **M** = a few days, **L** = a week or more.
 
 | | |
 |---|---|
-| **Who it is for** | People who want to learn to trade without risking their own money: beginners, students, people preparing for a real account, classes and trading clubs. |
+| **Who it is for** | People who want to learn to trade without risking their own money (beginners, students, people preparing for a real account, classes and trading clubs), and people who just want to trade for fun. |
 | **What they do** | Trade a live market of invented companies, indices, ETFs and commodities with real tools (charts, indicators, drawing, orders, stops, position sizing), follow lessons, complete challenges, keep a journal and see their skill improve. |
 | **How the site earns** | Selling MB packages (100 / 500 / 1,000 / 5,000 / 10,000 MB). Prices are your decision (B1). A second income that does not depend on people losing (classroom seats, a Pro tier) is recommended (B2). |
-| **How the market behaves** | Slow long-run upward drift; regimes (bull, correction, bear, sideways); scheduled macro data and rate decisions with consensus and surprise; fewer, more meaningful headlines; technical structure (support and resistance tested, bounced or broken, false breakouts, retests, trends, volatility squeezes, gaps) and the psychology behind it (overreaction, panic, euphoria, stop runs). |
+| **How the market behaves** | Technical structure first (section 1A): trends, ranges, support and resistance, named chart patterns, volume that confirms, gaps. Around it: slow long-run upward drift; regimes (bull, correction, bear, sideways); scheduled macro data and rate decisions with consensus and surprise; fewer, more meaningful headlines; technical structure (support and resistance tested, bounced or broken, false breakouts, retests, trends, volatility squeezes, gaps) and the psychology behind it (overreaction, panic, euphoria, stop runs). |
 | **What it is not** | Not gambling (no cash-out, no prizes with money value), not investment advice, not a broker. |
 
 **Design rules for the new market** (these replace the old "no strategy may have an edge" rule):
@@ -44,6 +46,109 @@ Size key: **S** = under a day, **M** = a few days, **L** = a week or more.
    there is no pressure to buy at the moment of a loss, and there are spending limits (M6, R5).
 6. **Every MB is accounted for.** The ledger already records every money event; every MB that enters the game will carry
    its source (starting grant, purchase, challenge reward, refund, admin) (M2).
+
+---
+
+## 1A. Technical analysis first (direction set 2026-10-13, after the learn-to-trade build)
+
+**The direction.** Meme Street is an informational game for two kinds of people: those who want to **learn how to
+trade**, and those who just want to **trade for fun**. Both are served best by the same thing: a market whose charts
+behave like real charts, and the tools to read them. **Technical analysis is the core of the product.** News, the
+economy and company stories stay, but as background: they explain some moves and add the occasional jolt, they are
+never the main reason a price moves, and a player who ignores them entirely should still have a full game.
+
+**What that means in practice.**
+
+- **The chart is the main screen.** Most of what a player does should happen on a chart: reading it, drawing on it,
+  placing trades and stops on it, and reviewing trades on it afterwards.
+- **Price structure comes first in the market model.** Most moves should be explainable from the chart (a trend, a
+  range, a level, a pattern, volume) rather than from a headline.
+- **The standard tools are part of the game, not a paid extra.** A learner cannot learn technical analysis without
+  Bollinger bands or MACD, so the paywall moves from *what you can learn* to *convenience and depth* (see TA-B9).
+- **Fun players need no homework.** Lessons, challenges and the journal are offered, never required; a player can open
+  the site and trade straight away, and there are light competitive goals (weekly challenges, leagues) for people who
+  play for fun.
+- **News is turned down further.** Fewer headlines, smaller macro reactions, the news wire made secondary on the page,
+  and "why it moved" explained in technical terms first.
+
+### What exists today, what changes, what is new
+
+The learn-to-trade build (section 3) already has a first version of: drift and market phases, trends in legs, ranges
+and breakouts, support and resistance that hold or break (with false breakouts), volume, a capitulation low, the macro
+calendar, earnings forecasts; on the chart: volume, SMA 20/50, EMA 20, RSI, Bollinger bands, VWAP, MACD and ATR (the last
+four Pro), drawn horizontal levels (kept only in the browser) and a position-size tool; lessons, challenges and a
+journal. The plan below builds on it.
+
+#### A. The market: technical structure (extends track P)
+
+| # | Change | Why | How | Size |
+|---|---|---|---|---|
+| TA-A1 | Calibrate levels to their targets | Strong levels hold 52-54% today against a 55-65% target; the difference between strong and weak levels is what a player learns to read. | Raise the hold odds for strong, aligned levels; make the approach visibly slow down; check with `realism.py` on fresh seeds. | S |
+| TA-A2 | More kinds of level | Traders watch more than swing points and round numbers. | The previous game day's high, low and close, the day's open, gaps, the 52-game-week high and low, and moving averages (20, 50, 200 game days) acting as moving support and resistance, each with its own hold odds. | M |
+| TA-A3 | Chart patterns that real traders name | Double tops and bottoms, head and shoulders, triangles, flags and pennants, wedges, channels and cup-and-handle are the vocabulary of technical analysis. | The model forms them on purpose at realistic rates (a flag after an impulse, a triangle inside a range, a double top at the end of a trend); the outcome is drawn like a level test, so a pattern completes or fails, never with certainty. | L |
+| TA-A4 | Volume that tells the story | Volume confirmation is taught everywhere; today volume follows the move but tells little. | Rising volume into a true breakout and falling volume on a false one, low volume on pullbacks in a trend, climax volume at blow-off tops and panic lows, divergence (price higher, volume lower) before a reversal. | M |
+| TA-A5 | Candles that mean something | Hammers, engulfing candles and dojis are taught first. | Rejection wicks at levels that hold, engulfing candles at reversals, small-bodied candles before breakouts; at realistic rates, and not reliable on their own. | M |
+| TA-A6 | Timeframes that agree | A trend on the 4-hour chart should contain smaller swings on the 5-minute chart, as real charts do. | Nest the swing structure: intraday legs inside multi-day legs inside the market phase; check that the trend on one timeframe is visible on the next. | M |
+| TA-A7 | Gaps | Gaps and gap fills are classic setups. | Opening gaps sized by the overnight move (the after-hours and pre-market sessions already exist), and a realistic share of small gaps that fill during the day. | S |
+| TA-A8 | Momentum indicators that behave | RSI divergences and Bollinger squeezes should appear because the structure produces them, not by design of the indicator. | No change to the indicators themselves: tune the structure (trend exhaustion, quiet ranges before breakouts) and measure how often divergences and squeezes precede reversals and breakouts. | S |
+| TA-A9 | The realism suite for patterns | Every pattern needs a measured rate and outcome, and no simple pattern rule may print money. | Extend `realism.py`: detect each pattern the way a trader would, count how often it completes and how far it runs, compare simple rules ("buy every bull flag") against holding the index, costs included. | M |
+| TA-A10 | Longer history | Technical work needs months of daily bars; the chart keeps 500 candles per timeframe. | Keep daily candles for many game years and minute candles for longer, in a compact store (was T9). | M |
+| TA-A11 | Game-time timeframes | A "1d" candle is 24 real hours today, which is 48 game days; traders think in days. | Offer candles in game time (a game day of 30 minutes, a game week, a game month) next to the real-time ones, and label which is which. | S |
+
+#### B. The tools: charts and trading on the chart (extends track T)
+
+| # | Change | Why | How | Size |
+|---|---|---|---|---|
+| TA-B1 | A crosshair with a readout | Basic to every chart. | Crosshair with the time, open, high, low, close, volume and indicator values under the pointer; works by touch on phones. | S |
+| TA-B2 | Chart types and scales | Traders switch views. | Candles, hollow candles, bars, line and Heikin-Ashi; linear and log scale. | S |
+| TA-B3 | Indicator settings and more indicators | Periods are chosen, not fixed. | Settings per indicator (period, source, colour); add SMA 200, stochastic, OBV, ADX and pivot points; save the set per player. | M |
+| TA-B4 | Full drawing tools, saved to the account | Levels are drawn today only in one browser. | Trendlines, rays, channels, rectangles, Fibonacci retracements and extensions, text notes; edit and delete; saved on the server per player and stock so they follow the player to a phone. | M |
+| TA-B5 | Trade from the chart | Entry, stop and target belong on the chart. | Drag lines for entry, stop and target; the risk-reward ratio and the size for the chosen risk update as you drag; one click places the order and its bracket. Today's position-size box becomes this. | M |
+| TA-B6 | Your trades on the chart | Seeing where you bought and sold is how you learn from it. | Markers for every buy, sell, stop and target on the chart, and the open position's entry, stop and target lines. | S |
+| TA-B7 | Alerts | Waiting for a setup should not mean staring. | Alerts when the price crosses a drawn line or an indicator condition is met; in the page, and by email once mail is on (was T6). | M |
+| TA-B8 | A setup screener | Finding setups is a skill to practise. | Scan the market for stocks near strong support or resistance, breakouts on volume, squeezes, RSI extremes and divergences, gaps, new highs and lows, named patterns (was T7). | M |
+| TA-B9 | Rethink what Pro includes | Gating standard indicators blocks learning, and technical analysis is now the core. | **Recommended:** every standard indicator and drawing tool free; Pro becomes the screener, alerts beyond a few, multi-chart layouts, replay, saved layouts, deeper journal analytics and pattern statistics. Your decision (section 7). | S |
+| TA-B10 | Multi-chart layouts and comparison | Setups are read across timeframes and against the index. | Two or four charts side by side, linked timeframes, an index or sector overlay, relative strength (was T5, U4). | M |
+| TA-B11 | Replay mode | Practising on the past, bar by bar, is the best technical-analysis teacher there is. | Pick a stock and a past period, step through it bar by bar and trade it in a practice account (was T8; needs TA-A10 and E5). | L |
+| TA-B12 | The chart as the home screen | Most players should land on a chart, not a table. | A trading screen: the chart in the middle, a watchlist on one side, the order ticket and positions on the other, the news wire small and folded. The market table stays as the "all stocks" view. | M |
+
+#### C. Learning built around the chart (extends track L)
+
+| # | Change | Why | How | Size |
+|---|---|---|---|---|
+| TA-C1 | A technical-analysis curriculum | Eight of the twelve lessons are technical today; the order and depth should follow the chart. | Levels: reading candles and volume, trend and structure, support and resistance, patterns, indicators, multiple timeframes, risk and trade management, a trading plan. The macro and earnings lessons move to an optional "Context" group. | M |
+| TA-C2 | Lessons on live and past charts | A lesson should show the setup on a real chart from the game. | Each lesson embeds charts from the game's own history ("here is where NVXA's support held twice and broke the third time"), picked by the pattern detectors (TA-A9). | M |
+| TA-C3 | Spot-the-setup exercises | Pattern recognition is learnt by doing, quickly, with feedback. | Show a past chart, ask "mark the support", "bounce or break?", "where does the stop go?", reveal what happened next, score it; small capped MB rewards (was L6). | M |
+| TA-C4 | Technical challenges | Challenges should practise chart skills. | "Trade a breakout that came with rising volume, with a stop below the level", "draw three levels that later held", "close five trades at 2R or better"; checked from the drawings, orders and journal. | M |
+| TA-C5 | A coach that reads the chart | Feedback after a trade turns mistakes into lessons. | Rule-based remarks from the chart context: "you bought into resistance", "your stop was inside normal noise (under one ATR)", "you chased a candle three ATRs from the average" (was L7). | M |
+| TA-C6 | Journal entries with the chart | Reviewing trades is how traders improve. | Attach the chart (with the player's drawings) at entry and exit to every journal entry; tag the setup automatically from the pattern detectors, editable. | M |
+| TA-C7 | A glossary and tooltips | Words like "R", "VWAP", "divergence" stop beginners. | Tooltips on every indicator and tool, a glossary page (was L9). | S |
+
+#### D. Playing for fun (extends track S)
+
+| # | Change | Why | How | Size |
+|---|---|---|---|---|
+| TA-D1 | No homework | Fun players should not be pushed through lessons. | Keep the onboarding strip one click to hide; nothing locked behind lessons; a "just let me trade" path on sign-up. | S |
+| TA-D2 | Weekly competitions and leagues | Light, social goals keep people coming back. | Weekly challenges ranked on return on money put in and on risk-adjusted return, leagues by level, small capped MB prizes (was S3, S5). | M |
+| TA-D3 | Share a chart | Explaining a trade idea is both fun and learning. | Share a chart with drawings in chat or by link (was S4). | M |
+
+#### E. News and the economy: turned down (changes track N)
+
+| # | Change | Why | How | Size |
+|---|---|---|---|---|
+| TA-E1 | Smaller macro reactions | A release should be a bump on the chart, not the story of the day. | Halve the market reaction to a release surprise (`release_sigmas` 0.55 to about 0.3) and the post-release volatility burst; keep the calendar. | S |
+| TA-E2 | Fewer headlines again | The wire still carries ratings, company events and stories. | Fewer rating notes and company events; no follow-ups; earnings, macro releases and the occasional big story only. | S |
+| TA-E3 | The news wire becomes secondary | It takes a third of the market page. | Fold it into a smaller panel (open on request) on the market page and the trading screen. | S |
+| TA-E4 | "Why it moved", technical first | Players should learn to explain moves from the chart. | Each stock page says what happened in chart terms ("broke resistance at 145 on twice the usual volume", "bounced off the 50-day average"), with a headline only when there was one (was N7). | M |
+| TA-E5 | Drop or park the rest | They add news, not chart skill. | Park N8 (better company stories), N9 (a daily wrap: later, and written around the chart), N10 (LLM headlines); keep N5 (earnings forecasts) and N6 (the calendar). | S |
+
+#### F. Housekeeping
+
+| # | Change | Why | How | Size |
+|---|---|---|---|---|
+| TA-F1 | Admin: total MB instead of the house | The house carries no risk now that nothing is paid out. | Done (2026-10-13): the dashboard shows the total MB given or bought (starting, bought, rewards, other) instead of the house reserve, and no house P&L. Still to do: retire the house-risk panel and the reserve top-ups from the dashboard and the engine (M9). | S |
+| TA-F2 | Split the chart code out of `index.html` | The chart is becoming the biggest part of the page. | Move the chart, indicators and drawing tools into their own script file with tests (E2). | M |
+| TA-F3 | A browser test for every tool | Chart tools break silently. | Browser tests that draw, place orders from the chart, and check the indicators against values computed in Python. | M |
 
 ---
 
@@ -289,15 +394,17 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 
 ## 6. Suggested order
 
+Since 2026-10-13 the order follows section 1A: technical analysis first. Phases 0, 1, 3 and 4 of the earlier order are
+largely built (section 3); what remains of them is listed under "Alongside".
+
 | Phase | Focus | Items | Done when |
 |---|---|---|---|
-| 0. Now (this week) | **Decide, protect, stop building on the old model** | Your decisions (B1 prices, B2, R2 age, M4 the out-of-money rule, X7, B9 name), O1 email, O2 daily backups, O3 monitor, R1 terms and privacy | The live site has rules, mail and a monitor; the open questions in section 7 are answered |
-| 1. Market, version 1 (2-4 weeks) | **A market that drifts, cycles and reacts to the economy** | E1, P1, P2, P3, P12, N1, N4, N2, N3, N5, N6, P7, P11 (first targets), T1, T2 | The realism suite passes; the market goes up over game years with corrections, bears and ranges; rate decisions, CPI and jobs reports move it; you are happy with how it feels |
-| 2. Technical structure (3-6 weeks) | **Levels, trends, squeezes and psychology** | P4, P5, P6, P8, P9, P10, T3, T4, T5, T7, N7, N9 | Support and resistance tests, breakouts, false breakouts and retests appear at target rates, and no simple rule prints money |
-| 3. The learning loop (2-4 weeks) | **1,000 MB, lessons, challenges with rewards, a journal** | M1, O11, M2, M5, L1, L2 (first ten lessons), L3, L4, L5, L8, L9, S3 | A new player can learn, practise, complete challenges, earn MB and review their trades |
-| 4. Paid MB (2-3 weeks) | **Packages, safely** | R2-R5, M3, M4, M6, O7, E8, B4, M7 | A first small group can buy packages; receipts, refunds and limits work; the funnel shows buyers |
-| 5. Grow | **Classrooms, replay, search** | S1, T8, T9, E5, B2, B3, B5, B6, U1-U4, L6, L7 | Teachers run classes; lessons bring visitors |
-| Alongside | **Engineering and operations** | E2, E6, E9-E13, O4-O8, U7 | |
+| 1. Chart basics (1-2 weeks) | **A chart a trader is at home on** | TA-B1 crosshair, TA-B2 chart types, TA-B3 indicator settings, TA-B9 the Pro decision, TA-B4 drawing tools saved to the account, TA-B6 trades on the chart, TA-A1 level calibration, TA-E1 to TA-E3 news turned down | A trader can read, draw and mark up any chart, on a laptop or a phone, and the market's levels hit their targets |
+| 2. Structure (3-5 weeks) | **Charts that teach** | TA-A2 more kinds of level, TA-A4 volume, TA-A5 candles, TA-A6 timeframes that agree, TA-A7 gaps, TA-A3 named patterns, TA-A8, TA-A9 the pattern suite, TA-A10 longer history, TA-A11 game-time timeframes | Each pattern appears at its target rate with a realistic success rate, and no simple pattern rule beats holding the index |
+| 3. Trading on the chart (2-3 weeks) | **Plan, place and manage a trade where you see it** | TA-B5 trade from the chart, TA-B7 alerts, TA-B12 the trading screen, TA-E4 why it moved | A player can go from spotting a setup to a sized, bracketed order without leaving the chart |
+| 4. Learning around the chart (3-4 weeks) | **Lessons, exercises and feedback on real charts** | TA-C1 to TA-C7 | The curriculum is technical first, every lesson shows real game charts, and the coach comments on trades |
+| 5. Depth and fun (ongoing) | **Screener, replay, competitions** | TA-B8 screener, TA-B10 layouts, TA-B11 replay, TA-D1 to TA-D3, S1 classrooms | Players can find, rehearse and compete on setups |
+| Alongside | **Rules, money and operations** | R1 terms and privacy (before the shop opens), O1 email, O2 daily backups, O3 monitor, M3 choice of payment provider, M7 pricing model, TA-F1 to TA-F3, E2, E5, E6, E9-E13, O4-O8 | The shop can open safely |
 
 ---
 
@@ -305,6 +412,9 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 
 | Question | Options | What would decide it |
 |---|---|---|
+| What does Pro include, now that technical analysis is the core? | Keep the four advanced indicators Pro-only; **make every standard indicator and drawing tool free and sell convenience and depth (screener, alerts, layouts, replay, pattern statistics)** (recommended); no Pro. | Whether learners can learn the whole subject without paying (TA-B9). |
+| How visible should chart patterns be? | Textbook-clear (easy to learn, easy to exploit); realistic (often messy, often failing); a gentler practice market for beginners (P13). | Teaching value against "no free money" (TA-A3, TA-A9). |
+| Which timeframes should the chart offer? | Real time only (today); game time only; both, clearly labelled. | Whether players think in real hours or in game days (TA-A11). |
 | What do the packages cost? | For example 100 MB for a small amount up to 10,000 MB with a better rate; one currency or regional prices. | What comparable learning apps charge, and how fast 1,000 MB runs out in the new market (M7). |
 | What happens when an account runs out? | Only buying more; a free restart on a timer (for example once a week); a free restart after finishing a risk lesson. | Whether the site should earn from losses or from wanting more capital (section 4, risk 2). |
 | Should there be a second income? | Classroom seats; a Pro tier; neither. | Interest from teachers and clubs; what the packages bring in. |

@@ -59,6 +59,7 @@ def simulate(years, n, seed):
     t = 0.0
     steps = int(years * mm.YEAR / STEP)
     volm = {x.ticker: 1.0 for x in listings}
+    day_open = {x.ticker: x.price for x in listings}
     for i in range(steps):
         t += STEP
         rets, noise, _ = model.step(t, STEP, listings)
@@ -67,17 +68,28 @@ def simulate(years, n, seed):
         sec = {s: rng.gauss(0, 1) for s in sectors}
         root = math.sqrt(STEP)
         for x in listings:
-            ms, ss = x.beta * 0.18, 0.08
+            ms, ss = x.beta * 0.21, 0.10                    # (as the engine with the new model: engine._random_market_moves)
             idio = math.sqrt(max(x.vol ** 2 - ms ** 2 - ss ** 2, 0.005 ** 2))
             vm = volm[x.ticker] * mv * noise.get(x.ticker, 1.0)
-            shock = (ms * m + ss * sec[x.sector] + idio * rng.gauss(0, 1)) / annual_scale * root * vm
+            t4 = rng.gauss(0, 1)     # (ten one-second t draws add up to nearly normal; the fat tails come from the volatility)
+            shock = (ms * model.market_factor() * m + ss * sec[x.sector] + idio * t4) / annual_scale * root * vm
+            cap = 8.0 * x.vol / annual_scale * root * max(vm, 1.0)          # (the engine caps a second at 8 sigmas)
+            shock = max(-cap, min(cap, shock))
+            # the engine's soft daily brake (loosened for the new model): moves shrink once a stock is far from its open
+            sd = x.vol / math.sqrt(365)
+            limit = sd * (1.5 + 0.75 * min(abs(x.beta), 2.0)) * 1.5 * max(1.0, noise.get(x.ticker, 1.0))
+            far = abs(math.log(x.price / day_open.get(x.ticker, x.price)))
+            shock /= 1.0 + (far / limit) ** 4
             r = (1 + rets.get(x.ticker, 0.0)) * (1 + shock) - 1
             # the engine's clustering, with the leverage effect: falls raise volatility more than rises
             sig = x.vol / annual_scale * root
             w = 1.25 if r < 0 else 0.75
-            volm[x.ticker] += 0.01 * STEP * (w * abs(shock) / sig - 0.8 * volm[x.ticker] * mv) / 1.0
+            known = max(mv * noise.get(x.ticker, 1.0), 0.05)       # (surprises are measured against the known multipliers)
+            volm[x.ticker] += 0.01 * STEP * (w * abs(shock) / (sig * known) - 0.8 * volm[x.ticker])
             volm[x.ticker] = max(0.5, min(3.0, 1 + 0.5 ** (STEP / mm.DAY) * (volm[x.ticker] - 1)))
             x.price *= max(0.01, 1 + r)
+        if int(t) % mm.DAY == 0:
+            day_open.update({x.ticker: x.price for x in listings})
         regime_time[model.regime] = regime_time.get(model.regime, 0) + STEP
         if int(t) % mm.BAR == 0:
             for x in listings:

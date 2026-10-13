@@ -2,11 +2,11 @@
  "settings": {
   "event_mean_seconds": 900,
   "event_duration_scale": 12,
-  "rumor_prob": 0.6,
+  "rumor_prob": 0.25,
   "rumor_credibility": 0.75,
   "rumor_delay_seconds": [
-   45,
-   90
+   180,
+   600
   ],
   "season_seconds": 86400,
   "house_seed": 50000,

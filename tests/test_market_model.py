@@ -43,7 +43,7 @@ class RegimeAndDriftTests(unittest.TestCase):
 
     def test_a_quiet_market_with_no_noise_follows_its_drift(self):
         """With no noise and no swings the model's own moves add up to the drift a game year (about +5.5% for beta 1)."""
-        m = mm.MarketModel({"price_model": {"trend_strength": 0.0}}, rng=random.Random(1), now=0.0)
+        m = mm.MarketModel({"price_model": {"trend_strength": 0.0, "release_sigmas": 0.0}}, rng=random.Random(1), now=0.0)
         m.regime, m.regime_until = "sideways", 1e18
         x = listing()
         sw = m.swing(x, 0.0)
@@ -92,7 +92,7 @@ class SwingAndLevelTests(unittest.TestCase):
         self.m.rng = types.SimpleNamespace(random=lambda: 0.999, uniform=lambda a, b: a, gauss=random.gauss)  # it breaks
         r, _, _ = self.m._level_step(x, sw, 0.0, 1.0, math.log(100.0), sig_d)
         self.assertEqual(sw.test["outcome"], "break")
-        self.assertLess(r, 0)
+        self.assertEqual(r, 0.0)                                             # nothing pushes it to the level
         r, n, v = self.m._level_step(x, sw, 5.0, 1.0, math.log(99.8), sig_d)     # through it: the follow-through
         self.assertLess(r, 0)
         self.assertGreater(v, 2.0)
@@ -126,7 +126,7 @@ class SwingAndLevelTests(unittest.TestCase):
             self.assertAlmostEqual(pl.frac(120), 1.0)
             total = sum(pl.frac(t + 1) - pl.frac(t) for t in range(120))
             self.assertAlmostEqual(total, 1.0, places=9)
-        self.assertLess(mm.Pulse(0.0, 120, 25, {}, whip=True).frac(15), 0)      # a whipsaw goes the wrong way first
+        self.assertLess(mm.Pulse(0.0, 45, 8, {}, whip=True).frac(5), 0)         # a whipsaw goes the wrong way first
 
 
 class EconomyTests(unittest.TestCase):
@@ -204,6 +204,21 @@ class EngineTests(unittest.TestCase):
         self.assertGreater(chart["candles"][-1]["v"], 0)
         self.assertEqual(e.chart_for("MSI", "1m")["candles"][-1]["v"], 0)          # an index has no volume of its own
         self.assertLess(abs(drift(e)), 1e-6)
+
+    def test_prices_are_on_a_tick_grid_and_trades_fill_at_the_quoted_price(self):
+        e = self.model_engine(17)
+        for _ in range(30):
+            e.tick(now=e.now + 1)
+        for s in e.stocks.values():
+            tick = 0.01 if s.fair >= 1 else 0.0001
+            self.assertAlmostEqual(s.price / tick, round(s.price / tick), places=6)
+        s = e.stocks["NVXA"]
+        p = join(e, "ticks")
+        cash = p.cash
+        e.trade(p, "NVXA", "buy", 0.5)
+        self.assertAlmostEqual(p.hold["NVXA"], cash * 0.5 * (1 - engine.FEE) / s.price, places=9)
+        self.assertLess(abs(drift(e)), 1e-6)
+        self.assertFalse(make_engine(1).stocks["NVXA"].ticked)          # the old market keeps continuous prices
 
     def test_player_trades_still_never_move_a_price(self):
         e = self.model_engine(12)

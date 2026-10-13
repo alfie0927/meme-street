@@ -44,6 +44,17 @@ class SourcesAndStartTests(unittest.TestCase):
         self.assertEqual(p.deposited, 1070.0)                     # so returns and leaderboards are measured on it
         self.assertLess(abs(drift(e)), 1e-6)
 
+    def test_the_admin_total_is_every_mb_given_or_bought(self):
+        e = make_engine(2)
+        a, b = adult(e, "one"), adult(e, "two")
+        o, _ = e.create_order(b, "mb500", "test", True)
+        e.complete_order(o["id"])
+        e.credit(a, 20, source="challenge")
+        e.trade(a, "NVXA", "buy", 0.5)                            # trading moves MB around but adds none
+        s = e.house_stats()
+        self.assertEqual(s["total_mb"], 2520.0)
+        self.assertEqual(s["total_mb_by_source"], {"grant": 2000.0, "purchase": 500.0, "challenge": 20.0})
+
 
 class ShopTests(unittest.TestCase):
     def setUp(self):
