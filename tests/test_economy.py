@@ -12,7 +12,7 @@ import types
 import unittest
 
 from _cdp import find_browser, open_page
-from _helpers import IsolatedServer, drift, engine, join, make_engine
+from _helpers import IsolatedServer, _raw_read, drift, engine, join, make_engine
 from payments import Payments
 from test_browser import Driver
 from test_gateway import join as http_join
@@ -33,7 +33,11 @@ class SourcesAndStartTests(unittest.TestCase):
         p = join(e, "starter")
         self.assertEqual(p.cash, 1000.0)
         self.assertEqual(p.mb_by_source, {"grant": 1000.0})
-        self.assertEqual(engine.Engine(state_file=None).settings["signup_bonus"], 1000)        # the real content pack too
+        shipped = _raw_read(e)[3]                       # the content packs as shipped (the test worlds force 1,000 anyway)
+        self.assertEqual(shipped["signup_bonus"], 1000)
+        self.assertEqual(shipped["contest_balance"], 1000)
+        self.assertEqual(engine.START_CASH, 1000.0)
+        self.assertEqual(engine.social.CONTEST_BALANCE, 1000.0)
 
     def test_every_credit_carries_its_source_and_counts_as_money_put_in(self):
         e = make_engine(2)

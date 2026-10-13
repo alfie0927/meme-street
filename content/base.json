@@ -41,7 +41,8 @@
   "restart_below": 50,
   "restart_days": 7,
   "challenge_week_cap": 500,
-  "lesson_reward": 20
+  "lesson_reward": 20,
+  "quizzes": false
  },
  "sectors": [
   {

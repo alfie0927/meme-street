@@ -573,7 +573,7 @@ function renderHeader(){
  setText($('left'),dur(S.season_left));
  const lnb=$('learn-banner'),newbie=!guest&&S.lessons===0&&!lsGet('ms_learn_hide',false)&&page==='market'&&!S.low;
  if(lnb._on!==newbie){lnb._on=newbie;lnb.style.display=newbie?'flex':'none';
-  if(newbie)lnb.innerHTML='<span><b>New to trading?</b> Start with the first lesson: four minutes, a short quiz, and 20 MB for passing it.</span><span class="bar" style="margin:0"><a href="/learn?l=basics">Start lesson 1</a><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>'}
+  if(newbie)lnb.innerHTML='<span><b>New to trading?</b> Start with the first lesson: it takes about four minutes.</span><span class="bar" style="margin:0"><a href="/learn?l=basics">Start lesson 1</a><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>'}
  const pb=$('pro-badge'),pro=!!S.pro&&!guest;if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}
  const lb=$('low-banner'),low=!!S.low&&!guest&&!lowHidden&&page!=='shop';
  if(lb._on!==low){lb._on=low;lb.style.display=low?'flex':'none';
@@ -1285,7 +1285,7 @@ async function loadCalendar(){
  setHtml($('cal-past'),d.past.length?'<tr><th>When</th><th>Release</th><th>Result</th><th>For the market</th></tr>'+d.past.map(p=>{const z=p.market_z||0;return `<tr><td>${stamp(p.t)}</td><td class="cal-kind">${esc(p.name)}</td><td>${esc(p.text)}${p.kind!=='rates'&&p.consensus!==undefined?` <span class="mut">(forecast ${esc(String(p.consensus))}${esc(p.unit||'')})</span>`:''}</td><td class="${z>0.2?'cal-up':z<-0.2?'cal-dn':'mut'}">${z>0.2?'Good news':z<-0.2?'Bad news':'Little surprise'}</td></tr>`}).join(''):'<tr><td class="mut" style="text-align:left">No releases yet.</td></tr>');
  setHtml($('cal-earn'),(d.earnings||[]).length?'<tr><th>When</th><th>Company</th><th>Forecast EPS</th></tr>'+d.earnings.map(x=>`<tr><td>${stamp(x.at)}</td><td><a href="/stock/${encodeURIComponent(x.ticker)}">${esc(x.ticker)}</a> ${esc(x.name)}</td><td>${x.forecast!==null&&x.forecast!==undefined?Number(x.forecast).toFixed(3):'<span class="mut">published 3 game days ahead</span>'}</td></tr>`).join(''):'')}
 
-// ---------- learn: lessons, quizzes and challenges (learning.py) ----------
+// ---------- learn: lessons, quizzes (switched off for now: the `quizzes` setting) and challenges (learning.py) ----------
 let learnData=null,lessonOpen=null;
 async function loadLearn(){
  const m=location.pathname.match(/^\/learn\/?$/)&&new URLSearchParams(location.search).get('l');
@@ -1295,16 +1295,16 @@ async function loadLearn(){
 function drawLearn(){
  const d=learnData;if(!d)return;const w=d.week;
  const groups={};d.lessons.forEach(l=>(groups[l.level]=groups[l.level]||[]).push(l));
- setHtml($('learn-body'),`<h3>Learn to trade</h3><p class="about" style="margin-top:0">Short lessons on how markets move and how traders manage risk, each with a quiz. Passing a quiz the first time earns ${numText(d.lesson_reward,0)} MB, and the challenges pay more for building good habits. You can earn up to ${numText(w.cap,0)} MB a week this way (${numText(w.earned,0)} so far this week).</p>`
-  +Object.entries(groups).map(([g,ls])=>`<h3 class="sp">${esc(g)}</h3><div class="lesson-list">${ls.map(l=>`<a class="lesson-item" href="/learn?l=${encodeURIComponent(l.id)}">${l.passed?'<span class="done">Passed</span>':''}<small>${l.minutes} min · ${l.questions} questions</small><b>${esc(l.title)}</b><small>${esc(l.summary)}</small></a>`).join('')}</div>`).join('')
+ setHtml($('learn-body'),`<h3>Learn to trade</h3><p class="about" style="margin-top:0">${d.quizzes?`Short lessons on how markets move and how traders manage risk, each with a quiz. Passing a quiz the first time earns ${numText(d.lesson_reward,0)} MB, and the challenges pay more for building good habits.`:'Short lessons on how markets move and how traders manage risk. The challenges pay MB for building good habits.'} You can earn up to ${numText(w.cap,0)} MB a week this way (${numText(w.earned,0)} so far this week).</p>`
+  +Object.entries(groups).map(([g,ls])=>`<h3 class="sp">${esc(g)}</h3><div class="lesson-list">${ls.map(l=>`<a class="lesson-item" href="/learn?l=${encodeURIComponent(l.id)}">${l.passed?'<span class="done">Passed</span>':''}<small>${l.minutes} min${l.questions?` · ${l.questions} questions`:''}</small><b>${esc(l.title)}</b><small>${esc(l.summary)}</small></a>`).join('')}</div>`).join('')
   +`<h3 class="sp">Challenges</h3><p class="hint" style="margin-top:0">They reward habits, not luck: protecting trades, keeping a journal and learning from it. Weekly ones start again each Monday (UTC).</p>`
   +d.challenges.map(c=>`<div class="chal ${c.done?'done':''}"><div><b>${esc(c.title)}</b> <small>${c.period==='week'?'this week':'once'}</small><br><small>${esc(c.how)}</small></div><div>${c.done?'<span class="up">Done</span>':`<span class="mut">${c.n} / ${c.target}</span>`} · <b>+${numText(c.reward,0)} MB</b></div><div class="bar-out"><div class="bar-in" style="width:${Math.round(100*Math.min(1,c.done?1:c.n/c.target))}%"></div></div></div>`).join(''))}
 function lessonBlock(b){if(b.h)return `<h4>${esc(b.h)}</h4>`;if(b.tip)return `<div class="tip">${esc(b.tip)}</div>`;return `<p>${esc(b.p||'')}</p>`}
 function drawLesson(){
  const L=lessonOpen;
  setHtml($('learn-body'),`<a href="/learn" style="font-size:13px">&larr; All lessons</a><h3 style="margin-top:10px">${esc(L.title)}</h3><p class="mut" style="margin:0">${esc(L.level)} · ${L.minutes} minutes</p><div class="lesson-body">${L.body.map(lessonBlock).join('')}</div>
- <h3 class="sp">Quiz</h3><div id="quiz">${L.quiz.map((q,i)=>`<div class="quiz-q" data-q="${i}"><b>${i+1}. ${esc(q.q)}</b>${q.options.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="why"></div></div>`).join('')}</div>
- <div class="bar"><button class="buy" id="quiz-go">${token?'Check my answers':'Sign in to take the quiz'}</button><span id="quiz-out" class="hint"></span></div>`)}
+ ${L.quiz.length?`<h3 class="sp">Quiz</h3><div id="quiz">${L.quiz.map((q,i)=>`<div class="quiz-q" data-q="${i}"><b>${i+1}. ${esc(q.q)}</b>${q.options.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="why"></div></div>`).join('')}</div>
+ <div class="bar"><button class="buy" id="quiz-go">${token?'Check my answers':'Sign in to take the quiz'}</button><span id="quiz-out" class="hint"></span></div>`:''}`)}
 $('learn-card').addEventListener('click',async e=>{
  if(e.target.id!=='quiz-go')return;
  if(!token){openSignin('register','Create an account to take the quiz');return}

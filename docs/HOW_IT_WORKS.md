@@ -49,7 +49,7 @@ Then open:
 - **http://127.0.0.1:8000** for the market. Open a second browser (or a private window) to play as a second player.
 - **http://127.0.0.1:8000/stock/NVXA** for a stock's page (any ticker works, including `MSI` for the index).
 - **http://127.0.0.1:8000/holdings** for your holdings, **/portfolio** for your equity curve and profit breakdown, **/history** for every trade and payment (with a CSV download), **/leaders** for the two leaderboards, **/social** for chat and following, **/profile** for your quests, the daily contest, achievements and your account, and **/player/NAME** for another trader's profile.
-- **/learn** for the lessons, quizzes and challenges, **/journal** for your trading journal, **/calendar** for the economic calendar and **/shop** for MB packages, Pro, your spending limit and the free restart (§10.9, §10.10, §6A).
+- **/learn** for the lessons and challenges, **/journal** for your trading journal, **/calendar** for the economic calendar and **/shop** for MB packages, Pro, your spending limit and the free restart (§10.9, §10.10, §6A).
 - **http://127.0.0.1:8000/admin** for the admin dashboard (needs `ADMIN_KEY`).
 - **http://127.0.0.1:8000/docs** for FastAPI's automatic API explorer.
 
@@ -144,7 +144,7 @@ last results are kept in §17 as history.
 | `engine.py` | The whole game: prices, trading, orders, volatility, the trading sessions, moonshots, catalysts, industry shocks, scheduled company events, news and narrative, company stories, earnings, offerings, bank ratings, indices and ETFs, days, accounting, save/load and crash recovery. Has no web code. |
 | `market_model.py` | The learn-to-trade price model: drift, market phases, trends, ranges and breakouts, support and resistance, stochastic volatility, volume, the economy and its calendar (§6A). |
 | `economy.py`, `payments.py` | The shop: MB packages, Pro, age rules, spending limits, the free restart, and the payment providers (off, test, Stripe) (§10.9). |
-| `learning.py` | Lessons and quizzes, challenges that pay MB, the trading journal (§10.10). The lessons themselves are in `content/lessons.json`. |
+| `learning.py` | Lessons (their quizzes are switched off for now), challenges that pay MB, the trading journal (§10.10). The lessons themselves are in `content/lessons.json`. |
 | `social.py` | Everything built on top of the players: achievements, daily quests, the daily contest, the day and all-time boards, public profiles, following, and the moderated chat (word filter, reports, auto-mutes, appeals). A mixin of the engine. It never touches real cash or prices (§10). |
 | `contest.py` | The paper-money accounts of the daily contest (§10.4): a `Sandbox` that lets the engine's own trading code run against a throwaway house, so a contest trade follows the real rules exactly but can never touch the real economy. |
 | `accounts.py` | Passwords (scrypt hashes), login sessions, name rules, the sign-up and login limiters, the list of accounts that share an address, **email addresses** (verification codes, one account per address, recovering a password) (§10.6). A mixin of the engine. |
@@ -177,7 +177,7 @@ Every `.json` file here is a content pack: the engine reads them all in name ord
 | `pack_fiction.json` | **Imaginary industries:** 48 companies in 8 invented sectors (teleportation, weather engineering, time technology, dreams and memory, dragons and creatures, deep-ocean cities, antigravity, alchemy), 24 news templates, reference financials and the Frontier Industries ETF (§8). |
 | `events_pack.json` | 17 sector-specific news templates. |
 | `market_profiles.json` | Per-ticker reference price, share count, revenue, margin, cash, debt, dividend yield. |
-| `lessons.json` | The lessons and their quizzes (§10.10). |
+| `lessons.json` | The lessons and their quizzes (the quizzes are switched off for now, §10.10). |
 
 ### The tools (`tools/`)
 
@@ -939,7 +939,7 @@ All 32 derived assets start at 100 MB, have an `asset_type` of `index`, have no 
 
 ### Players
 - An account is a **name and a password** (§10.6). The name is 2-16 letters, numbers, `_-. `, unique ignoring case, and not a reserved word (`admin`, `moderator`, `house`, `memestreet`...). Signing in gives the browser a session token; the account's own internal token never leaves the server (for accounts with a password).
-- New players are credited `signup_bonus`: **10,000 MB** today. The new plan starts everyone on **1,000 MB** (`ROADMAP.md` M1).
+- New players are credited `signup_bonus`: **1,000 MB** (since 2026-10-13; it was 10,000 MB before, and accounts made before then keep what they had).
 - `deposited` tracks net money in (signup + deposits − withdrawals). **All-time P&L = equity − deposited.**
 
 ### There are no bots
@@ -988,7 +988,7 @@ The **Leaders** page has two boards (a short day-return list, with no other colu
 **Drawdown** is the biggest fall from your best level today, measured on `equity ÷ day base` (so paying money in or taking it out is not a gain or a loss: when you deposit, the peak is scaled by the same factor). It resets each day. It is no longer a board of its own (there used to be a "risk-adjusted" board, `day return ÷ max(drawdown, 2%)`, and a "Score" column; both were removed), but it is still tracked: your worst drawdown today is shown on your profile and under the Leaders table.
 
 ### 10.4 The daily contest (fixed-balance paper trading)
-**In plain English:** once a day there is a race that is fair by construction. Everyone who enters gets the **same paper balance** (10,000 MB, `contest_balance`) and trades it at the live prices, under the real rules, in a **separate paper account**. Whoever has the best return at midnight UTC wins a medal. Nobody's real money is involved either way: the paper account can't touch your real balance, the house reserve or any price, and the prizes are cosmetic (medals).
+**In plain English:** once a day there is a race that is fair by construction. Everyone who enters gets the **same paper balance** (1,000 MB, `contest_balance`) and trades it at the live prices, under the real rules, in a **separate paper account**. Whoever has the best return at midnight UTC wins a medal. Nobody's real money is involved either way: the paper account can't touch your real balance, the house reserve or any price, and the prizes are cosmetic (medals).
 
 *(The first version ranked the return of your real account since you joined, in equity leagues. That favoured whoever timed their entry well and could let a rich account crush a new one. A fixed balance for everyone removes both.)*
 
@@ -1086,9 +1086,11 @@ MB are a game currency: bought, earned or granted, **never paid out** (there is 
 The admin page's **Shop** panel shows the payment mode, revenue (all time and 30 days, and per day), paid orders, buyers, Pro members, refunds, orders waiting for payment, where the players' MB came from and the latest orders with a Refund button.
 
 ### 10.10 Learning: lessons, challenges and the journal (`learning.py`, `lessons.json`)
-**Lessons.** Twelve short lessons in three groups (*Start here*: how this market works, candlesticks, trends and moving averages, support and resistance; *Getting better*: ranges and breakouts, risk and position size, stops and brackets, indicators; *Understanding the market*: the economy and data releases, earnings and forecasts, market phases, psychology and the journal). Each has a quiz marked on the server (`POST /api/learn/quiz`): the right answers and the explanations are never sent to the page before the player answers. Passing a quiz (every answer right) the first time pays `lesson_reward` (20 MB). Visitors can read the lessons; the quiz needs an account. A new player sees a blue strip on the market page ("New to trading? Start with the first lesson") until they pass one or hide it.
+**Lessons.** Twelve short lessons in three groups (*Start here*: how this market works, candlesticks, trends and moving averages, support and resistance; *Getting better*: ranges and breakouts, risk and position size, stops and brackets, indicators; *Understanding the market*: the economy and data releases, earnings and forecasts, market phases, psychology and the journal). Anyone can read them, visitors included.
 
-**Challenges** reward the habits the lessons teach, never volume or luck:
+**Quizzes are switched off for now** (2026-10-13, the setting `quizzes: false` in `base.json`). The lessons are plain reading: no quiz, no lesson reward, and the three challenges that are won with quizzes (first lesson, the basics, graduate) are not offered; `POST /api/learn/quiz` answers "Quizzes are switched off for now". The questions are still in `lessons.json` and the code is still there, so `"quizzes": true` brings it all back without a restart. With quizzes on, each lesson has a quiz marked on the server: the right answers and the explanations are never sent to the page before the player answers; passing a quiz (every answer right) the first time pays `lesson_reward` (20 MB), and the quiz needs an account. A new player sees a blue strip on the market page ("New to trading? Start with the first lesson") until they hide it (or, with quizzes on, pass a lesson).
+
+**Challenges** reward the habits the lessons teach, never volume or luck (the first three need quizzes, so they are not offered while quizzes are off):
 
 | Challenge | How | When | MB |
 |---|---|---|---|
@@ -1179,8 +1181,8 @@ Player endpoints need the player's **session token** in an `X-Token` header (the
 | `GET /api/auth_mode` | anyone | `{passwords, email, mail_ready}`: whether accounts need passwords, the `email_mode` (`off`/`optional`/`required`) and whether mail can really be sent (the sign-in box asks this) |
 | `GET /api/calendar` | anyone | the economic calendar (§6A.6): `{on, upcoming: [{t, kind, name, forecast}], past: [releases with actual, consensus, text, growth_z, rates_z, market_z], rate, bank, earnings: [{ticker, name, at, forecast}]}` |
 | `GET /api/learn` | player | the lessons (and which are passed), the challenges with progress and this week's reward cap (§10.10) |
-| `GET /api/learn/lesson/{id}` | anyone | one lesson's text and quiz questions, never the answers |
-| `POST /api/learn/quiz` `{lesson, answers}` | player | mark a quiz → `{passed, first, paid, score, of, marks: [{right, answer, why}]}`; one a second |
+| `GET /api/learn/lesson/{id}` | anyone | one lesson's text and quiz questions, never the answers (no questions while quizzes are off) |
+| `POST /api/learn/quiz` `{lesson, answers}` | player | mark a quiz → `{passed, first, paid, score, of, marks: [{right, answer, why}]}`; one a second. While quizzes are off: `{ok: false}` |
 | `GET /api/journal` · `POST /api/journal` `{ticker, setup, plan, stop, target, note}` · `POST /api/journal/review` `{id, lesson}` · `POST /api/journal/delete` `{id}` | player | the trading journal (§10.10): entries, summary and, with Pro, the breakdown by setup |
 | `GET /api/shop` | player | the catalogue with prices, Pro status, the age and spending rules, the last 30 purchases, the free restart's status, MB by source, `selling` and the payment `mode` (§10.9) |
 | `POST /api/shop/checkout` `{sku, adult}` | player | start a purchase → `{url, order, price}` (the payment page, or `/shop/pay?order=` in test mode); 400 with the reason (age, cap, daily limit, shop closed) |
@@ -1436,7 +1438,8 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 | `shop_packages` / `shop_pro` / `shop_currency` | see §10.9 / `usd` | the catalogue, prices in cents |
 | `spend_cap_month_cents` / `purchases_per_day` | 15000 / 3 | the spending limits (§10.9) |
 | `restart_below` / `restart_days` | 50 / 7 | the free restart: below this equity, once every this many days (§10.9) |
-| `lesson_reward` / `challenge_week_cap` | 20 / 500 | MB for passing a lesson the first time; most MB from lessons and challenges in a week (§10.10) |
+| `quizzes` | false | lesson quizzes, the lesson reward and the challenges won with quizzes; off for now (§10.10) |
+| `lesson_reward` / `challenge_week_cap` | 20 / 500 | MB for passing a lesson the first time (only with quizzes on); most MB from lessons and challenges in a week (§10.10) |
 | `house_seed` | 50000 | starting house reserve (funds new listings) |
 | `season_seconds` | 86400 | length of a day (the old season): the leaderboard period; the day ends at the next multiple of it since the epoch, so 86400 means UTC midnight |
 | `event_mean_seconds` | 120 | average gap between random news events |
@@ -1574,7 +1577,7 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 | `test_guest.py` | **visitors and the funnel** (22 tests, the server ones both straight at the game and through a gateway): the hidden guest is not a player and cannot be logged in as, a visitor gets the market, ticks, charts and company pages with no money and no chat, cannot trade, order, chat, report or appeal and changes nothing in the books, never receives chat, is counted apart from players in the admin overview, `/about` and the visitor welcome card are served, the funnel counts sign-ups, traders, emails, fees and who pays them | 22 | about 20 s |
 | `test_economy.py` | **the shop**: MB by source, the catalogue, an order paid once however often it is confirmed, wrong amounts, Pro adding up, refunds, expiry, the age rules, the spending cap and daily limit, the self-set limit (raising waits a day), the free restart, orders and Pro surviving a crash (the ledger replays a purchase), Stripe's signature (wrong secret, changed body, a replay), the Stripe request, the whole flow through a test server, the shop closed when payments are off, sign-up needing a birth year, and a browser buying a package through the test checkout | 23 | about 25 s |
 | `test_market_model.py` | **the price model**: the phases add no long-run drift, the drift by beta, phases change and are bounded, a quiet market follows its drift, levels from swing highs and lows and round numbers, a held support pushes up and a break goes through, strong levels hold more often and repeated tests weaken them, ranges pull to the middle, pulses deliver exactly their move (and whipsaws go the wrong way first), the release calendar (8 rate decisions, 12 CPIs, 52 claims a year), forecasts fixed once published, releases against the forecast, rate decisions in quarter points; in the engine: candles with volume, money conserved, player trades never moving prices, a macro headline and move, earnings against a forecast, the model surviving a save and an old save loading; `/api/calendar` and `/api/admin/model` | 22 | about 5 s |
-| `test_learning.py` | **learning**: the lessons are well formed, the page never gets the answers, a quiz pays once and a wrong answer fails, the basics and graduate challenges, the weekly cap, a stop completing "protect a trade" (once per position) and a closed position counting as planned, a journal idea becoming a trade with its result in MB and R, bad entries refused, the state surviving a save, the endpoints over HTTP, and a browser taking a quiz, writing a journal entry, reading the calendar and using the chart's volume, RSI, a Pro indicator, a drawn level and the risk tool | 11 | about 40 s |
+| `test_learning.py` | **learning**: the lessons are well formed, the page never gets the answers, a quiz pays once and a wrong answer fails, the basics and graduate challenges, the weekly cap, a stop completing "protect a trade" (once per position) and a closed position counting as planned, a journal idea becoming a trade with its result in MB and R, bad entries refused, the state surviving a save, with quizzes off (what ships): no quiz, no reward and no quiz challenge, the endpoints over HTTP, and a browser reading a lesson with no quiz, writing a journal entry, reading the calendar and using the chart's volume, RSI, a Pro indicator, a drawn level and the risk tool | 14 | about 50 s |
 | `test_no_pools.py` | **stocks hold no tokens**: the books are cash + reserve + fees, the house capital is only the starting reserve and top-ups, a new listing costs the house nothing, and **a save from the old version with seed tokens inside every stock is converted** (the reserve, fees and players' money are unchanged, minted and house capital drop by the retired tokens, the clean save loads the same again, a crash before the first save is harmless, the game keeps balancing afterwards) | 7 | about 15 s |
 | `test_no_bots.py` | **no bots**: a new game has no players and none appear, the old bot settings do nothing, no board, profile or stat has a bot field, and **a save from the old version with house-funded bots loads cleanly** (the bots are settled and removed, the tokens balance, the humans are untouched, the clean save loads the same again, a crash before the first save is harmless) | 8 | about 30 s |
 | `test_reset.py` | **starting over at Day 1**: everyone on the starting balance, nothing held, the market untouched, identity kept, the books balance, the ledger restarts and still explains every balance, a crash right after a reset loses nothing, the admin endpoint (key, the word RESET, the backup), and `reset_game.py` (it backs up, resets, and refuses while the server runs or without the word) | 15 | about 90 s |

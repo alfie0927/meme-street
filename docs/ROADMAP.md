@@ -202,7 +202,7 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 | P price model | `market_model.py`: P1 drift, P2 phases, P3 ranges and breakouts, P4 support and resistance, P5 trend legs, P6 leverage effect and quiet ranges, P7 volume, P8 capitulation, P11 first version (`realism.py`), P12 old reversion and regime shocks replaced | P8 overreactions, short squeezes and stop runs, P9 more factors, P10 asset classes, P13; strong levels hold a little less often than the target |
 | N news | N1 far fewer headlines, N2 central bank, N3 releases with forecasts, N4 hidden economy, N5 earnings forecasts and post-earnings drift, N6 calendar page | N7 why it moved, N8, N9 daily wrap, N10 |
 | T charts | T1 volume (no crosshair yet), T2 SMA/EMA/RSI free, Bollinger/VWAP/MACD/ATR with Pro, T3 horizontal levels, T4 position size and risk with a bracket | T5-T9 |
-| L learning | L1 curriculum and L2 twelve lessons with quizzes, L3 challenges (9), L4 journal linked to positions with results in MB and R, L5 journal statistics (by setup with Pro), L8 onboarding strip | L6, L7, L9, L10 |
+| L learning | L1 curriculum and L2 twelve lessons with quizzes (quizzes switched off for now, 2026-10-13: `quizzes` setting), L3 challenges (9; 6 offered while quizzes are off), L4 journal linked to positions with results in MB and R, L5 journal statistics (by setup with Pro), L8 onboarding strip | L6, L7, L9, L10 |
 
 ---
 

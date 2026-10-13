@@ -1,7 +1,10 @@
 """Learning (ROADMAP.md track L): lessons with quizzes, challenges that award MB, and the trading journal.
 
-* **Lessons** live in `lessons.json`. A lesson's quiz is marked here: the right answers never reach the page before the
-  player has answered. Passing a lesson (every answer right) for the first time is worth `lesson_reward` MB.
+* **Lessons** live in `content/lessons.json`. A lesson's quiz is marked here: the right answers never reach the page
+  before the player has answered. Passing a lesson (every answer right) for the first time is worth `lesson_reward` MB.
+  **Quizzes are switched off for now** (`quizzes: false` in base.json): the lessons are plain reading, there is no
+  quiz, no lesson reward, and the challenges that need quizzes (first lesson, the basics, graduate) are not offered.
+  The questions stay in lessons.json, so `quizzes: true` brings it all back.
 * **Challenges** reward the habits the lessons teach (protecting a trade with a stop, keeping a journal, reviewing
   trades), never volume or luck. Some can be won once, some once a week. Every MB from a lesson or a challenge counts
   as `challenge` MB, and at most `challenge_week_cap` of them are paid in one week (a week runs Monday to Sunday, UTC).
@@ -45,6 +48,7 @@ CHALLENGES = [
     {"id": "week_review", "title": "Learn from it", "how": "Write what you learned on 3 closed journal entries this week.",
      "period": "week", "target": 3, "reward": 40, "counter": "reviews"},
 ]
+QUIZ_COUNTERS = ("lessons", "basics")      # challenges won by passing quizzes (not offered while quizzes are off)
 PLAYER_FIELDS = ("lessons_passed", "chal", "journal", "stop_seen")
 JOURNAL_MAX = 300
 
@@ -85,6 +89,13 @@ class LearningMixin:
         self.lessons = load_lessons(LESSONS_FILE)
         self._lesson_by_id = {x["id"]: x for x in self.lessons}
 
+    def quizzes_on(self):
+        return bool(self.settings.get("quizzes", False))
+
+    def _challenges(self):
+        """The challenges on offer: without quizzes, the ones that are won by passing them are left out."""
+        return CHALLENGES if self.quizzes_on() else [c for c in CHALLENGES if c["counter"] not in QUIZ_COUNTERS]
+
     # ------------------------------------------------------------------ periods and rewards
     def _week_key(self, t=None):
         y, w, _ = datetime.datetime.fromtimestamp(self.now if t is None else t, datetime.timezone.utc).isocalendar()
@@ -114,7 +125,7 @@ class LearningMixin:
     def _bump(self, p, counter, by=1):
         """Count progress on every challenge that uses this counter, and pay the ones that are now complete."""
         week = self._week_key()
-        for c in CHALLENGES:
+        for c in self._challenges():
             if c["counter"] != counter and not (counter == "lessons" and c["counter"] == "basics"):
                 continue
             st = p.chal.setdefault(c["id"], {"n": 0, "key": None, "done": []})
@@ -144,7 +155,7 @@ class LearningMixin:
         cw = self.challenge_week_status(p)
         week = self._week_key()
         chal = []
-        for c in CHALLENGES:
+        for c in self._challenges():
             st = p.chal.get(c["id"], {})
             key = week if c["period"] == "week" else "once"
             done = key in st.get("done", [])
@@ -153,19 +164,24 @@ class LearningMixin:
                 n = self._lesson_progress(p, c)
             chal.append({"id": c["id"], "title": c["title"], "how": c["how"], "period": c["period"],
                          "target": self._target(c), "n": min(n, self._target(c)), "done": done, "reward": c["reward"]})
+        quiz = self.quizzes_on()
         return {"lessons": [{"id": x["id"], "title": x["title"], "level": x.get("level", ""), "minutes": x.get("minutes", 5),
-                             "summary": x.get("summary", ""), "passed": x["id"] in p.lessons_passed,
-                             "questions": len(x.get("quiz", []))} for x in self.lessons],
-                "challenges": chal, "week": cw, "lesson_reward": float(self.settings.get("lesson_reward", 20))}
+                             "summary": x.get("summary", ""), "passed": quiz and x["id"] in p.lessons_passed,
+                             "questions": len(x.get("quiz", [])) if quiz else 0} for x in self.lessons],
+                "challenges": chal, "week": cw, "quizzes": quiz,
+                "lesson_reward": float(self.settings.get("lesson_reward", 20)) if quiz else 0.0}
 
     def lesson(self, lesson_id):
         x = self._lesson_by_id.get(lesson_id)
         if not x:
             return None
+        quiz = x.get("quiz", []) if self.quizzes_on() else []
         return {"id": x["id"], "title": x["title"], "level": x.get("level", ""), "minutes": x.get("minutes", 5),
-                "body": x.get("body", []), "quiz": [{"q": q["q"], "options": q["options"]} for q in x.get("quiz", [])]}
+                "body": x.get("body", []), "quiz": [{"q": q["q"], "options": q["options"]} for q in quiz]}
 
     def answer_quiz(self, p, lesson_id, answers):
+        if not self.quizzes_on():
+            return {"ok": False, "error": "Quizzes are switched off for now"}
         x = self._lesson_by_id.get(lesson_id)
         if not x:
             return {"ok": False, "error": "Unknown lesson"}

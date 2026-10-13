@@ -1,5 +1,6 @@
 """Learning (learning.py, lessons.json): lessons and quizzes, challenges that pay MB within a weekly cap, and the trading
-journal that links entries to positions and fills in the result."""
+journal that links entries to positions and fills in the result. Quizzes ship switched off (`quizzes: false`); the quiz
+tests switch them on, and QuizzesOffTests check what players get today."""
 import asyncio
 import json
 import unittest
@@ -17,8 +18,10 @@ def right_answers(e, lesson_id):
 
 
 class LessonTests(unittest.TestCase):
+    """The quizzes themselves, switched on (they are kept for later)."""
+
     def setUp(self):
-        self.e = make_engine(21)
+        self.e = make_engine(21, quizzes=True)
         self.p = join(self.e, "student")
 
     def test_the_lessons_load_and_every_quiz_is_well_formed(self):
@@ -75,6 +78,38 @@ class LessonTests(unittest.TestCase):
             e.answer_quiz(p, x["id"], right_answers(e, x["id"]))
         self.assertAlmostEqual(p.mb_by_source["challenge"], 60.0)
         self.assertEqual(e.challenge_week_status(p)["left"], 0)
+
+
+class QuizzesOffTests(unittest.TestCase):
+    """What ships: lessons are plain reading, with no quiz, no lesson reward and no challenge that needs a quiz."""
+
+    def setUp(self):
+        self.e = make_engine(23)
+        self.p = join(self.e, "reader")
+
+    def test_the_game_ships_with_quizzes_off(self):
+        self.assertFalse(self.e.settings["quizzes"])                                   # (from base.json)
+        self.assertFalse(self.e.quizzes_on())
+
+    def test_a_lesson_has_no_quiz_and_answers_are_refused_without_paying(self):
+        e, p = self.e, self.p
+        les = e.lesson("basics")
+        self.assertTrue(les["body"])
+        self.assertEqual(les["quiz"], [])
+        r = e.answer_quiz(p, "basics", [q["answer"] for q in e._lesson_by_id["basics"]["quiz"]])
+        self.assertFalse(r["ok"])
+        self.assertEqual(p.cash, 1000.0)
+        self.assertEqual(p.lessons_passed, {})
+
+    def test_the_learn_page_offers_no_quiz_reward_or_quiz_challenge(self):
+        view = self.e.lessons_view(self.p)
+        self.assertFalse(view["quizzes"])
+        self.assertEqual(view["lesson_reward"], 0)
+        self.assertTrue(all(x["questions"] == 0 and not x["passed"] for x in view["lessons"]))
+        ids = {c["id"] for c in view["challenges"]}
+        self.assertTrue(ids)
+        self.assertFalse(ids & {"first_lesson", "basics", "graduate"})
+        self.assertIn("first_stop", ids)
 
 
 class ChallengeAndJournalTests(unittest.TestCase):
@@ -145,18 +180,21 @@ class ChallengeAndJournalTests(unittest.TestCase):
 
 
 class LearningServerTests(unittest.TestCase):
-    def test_lessons_quiz_and_journal_over_http(self):
+    def test_lessons_and_journal_over_http_with_quizzes_off(self):
         with IsolatedServer() as srv:
             a = http_join(srv.url, "HttpStudent")
             h = {"X-Token": a["token"]}
             d = json.loads(http(srv, "/api/learn", headers=h)[1])
             self.assertTrue(d["lessons"] and d["challenges"])
+            self.assertFalse(d["quizzes"])
             les = json.loads(http(srv, "/api/learn/lesson/basics")[1])            # public
+            self.assertTrue(les["body"])
+            self.assertEqual(les["quiz"], [])
             self.assertNotIn("answer", json.dumps(les))
             with open(learning.LESSONS_FILE, encoding="utf-8") as fh:
                 ans = [q["answer"] for q in next(x for x in json.load(fh)["lessons"] if x["id"] == "basics")["quiz"]]
             r = json.loads(http(srv, "/api/learn/quiz", "POST", {"lesson": "basics", "answers": ans}, headers=h)[1])
-            self.assertTrue(r["passed"])
+            self.assertFalse(r["ok"])
             status, text, _ = http(srv, "/api/journal", "POST", {"ticker": "NVXA", "setup": "breakout", "stop": 1.0}, headers=h)
             self.assertTrue(json.loads(text)["ok"], text)
             j = json.loads(http(srv, "/api/journal", headers=h)[1])
@@ -169,13 +207,11 @@ class LearningBrowserTests(unittest.TestCase):
     """The Learn, Journal and Calendar pages and the chart tools, in a real browser."""
 
     def test_the_new_pages_and_chart_tools(self):
-        with open(learning.LESSONS_FILE, encoding="utf-8") as fh:
-            answers = [q["answer"] for q in json.load(fh)["lessons"][0]["quiz"]]
         with IsolatedServer() as srv:
-            d, errors = asyncio.run(self._pages(srv.url, answers))
+            d, errors = asyncio.run(self._pages(srv.url))
         d.verdict(self, errors)
 
-    async def _pages(self, base, answers):
+    async def _pages(self, base):
         proc, pg, _ = await open_page(debug_port=9362)
         d = Driver(pg)
         try:
@@ -185,12 +221,12 @@ class LearningBrowserTests(unittest.TestCase):
             await pg.goto(base + "/learn", 3)
             await d.check("the lessons are listed", "document.querySelectorAll('.lesson-item').length", lambda n: n >= 10, wait=10)
             await d.check("and the challenges", "document.querySelectorAll('.chal').length", lambda n: n >= 5)
+            await d.check("with no quiz mentioned (quizzes are off)", "document.getElementById('learn-body').innerText",
+                          lambda t: "quiz" not in t.lower() and "questions" not in t)
             await pg.goto(base + "/learn?l=basics", 3)
-            await d.check("a lesson opens with its quiz", "document.querySelectorAll('.quiz-q').length", len(answers), wait=10)
-            await pg.js("(()=>{%s;document.getElementById('quiz-go').click()})()" % ";".join(
-                f"document.querySelector('input[name=q{i}][value=\"{a}\"]').checked=true" for i, a in enumerate(answers)))
-            await d.check("the quiz is passed and pays", "document.getElementById('quiz-out').innerText",
-                          lambda t: "Passed" in t and "MB" in t, wait=8)
+            await d.check("a lesson opens to read", "document.querySelector('.lesson-body') && document.querySelector('.lesson-body').innerText.length",
+                          lambda n: bool(n) and n > 200, wait=10)
+            await d.check("without a quiz", "document.querySelectorAll('.quiz-q').length + (document.getElementById('quiz-go') ? 1 : 0)", 0)
             await pg.goto(base + "/journal", 3)
             await d.check("the journal has the setups", "document.getElementById('j-setup').options.length", lambda n: n > 5, wait=10)
             await pg.js("(()=>{document.getElementById('j-ticker').value='NVXA';document.getElementById('j-setup').value='support';"
