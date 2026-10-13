@@ -5,8 +5,6 @@
 ## Project files
 ```
 engine.py               # market engine: pools, news/events, seasons, scoring, save/load
-sim.py                  # headless economy check with adversarial traders
-tune.py                 # compare settings across seeds (python tune.py configs.json)
 events_pack.json        # sector-specific news events (every sector has its own)
 server.py               # FastAPI + WebSocket server (1 tick per second)
 market_model.py         # the price model: drift, market phases, trends, ranges, support/resistance, volume, the macro calendar
@@ -19,7 +17,6 @@ index.html              # web interface
 base.json               # sectors, companies, event templates, settings
 expansion.json          # extra industries, companies, commodities, dependencies
 market_profiles.json    # reference prices, share counts, USD financial estimates
-space_pack.json.disabled # example content pack
 ```
 
 ## Run on Windows
@@ -34,9 +31,9 @@ Open http://127.0.0.1:8000 in two browser tabs to try two players.
 Start the game as above, then in a second terminal run `python share.py` (the first time, `python share.py --install`). It prints a public `https://….trycloudflare.com` link to send to testers; it works while that window stays open and the game is running. Details, and what to set first (an `ADMIN_KEY`), are in `HOW_IT_WORKS.md`, section 1. For a bigger crowd, `python launch.py --gateways 4` runs the game plus four processes that hold the connections (`HOW_IT_WORKS.md`, section 12).
 
 ## Add content while the game runs
-1. Copy `space_pack.json.disabled` to `space_pack.json` in the project root.
-2. Within a second the engine reloads: a new Space sector, 3 IPOs and 2 new event types appear.
-3. A new listing costs the house nothing: stocks hold no tokens, so the token total never changes.
+1. Put a new `.json` file in the project root with any of `sectors`, `companies`, `templates` and `settings` (copy the shape from `pack_fiction.json`).
+2. Within a second the engine reloads it: new sectors, listings and event types appear.
+3. A new listing costs nothing: stocks hold no tokens, so the token total never changes.
 
 Content packs are root-level `.json` files. The generated `state.json` is excluded from content loading.
 
@@ -47,7 +44,7 @@ The market clock treats 30 minutes as one simulated trading day. Stock and index
 
 Click a ticker to open `/stock/TICKER` for a dedicated detail page. Saved pre-profile positions are automatically rescaled to the reference quote while preserving their AMM liquidation value and the token supply.
 
-## Economics (checked by `python sim.py [hours] [seed]`)
+## Economics (the market itself is checked by `python realism.py` and `python chart_check.py`; see MARKET_REALISM.md)
 - Currency is memebucks (MB). Every token is in exactly one place: player cash, the house reserve, or collected fees. `total_tokens() == minted` at all times; only deposits/withdrawals (`Engine.credit` / `Engine.debit`) and house capital injections change `minted`.
 - Only trades move tokens. News, noise, regime shifts, bailouts and mean reversion change prices, never tokens, so they never create or destroy money.
 - The house earns the 0.5% fee on each side of every trade. `house_stats()` splits house P&L into fees and liquidity P&L. Players' combined P&L is the mirror image of the house's.
@@ -56,7 +53,7 @@ Click a ticker to open `/stock/TICKER` for a dedicated detail page. Saved pre-pr
 - Bankruptcy cashes holders out at the stock's last price (no fee), paid from the house reserve.
 - `signup_bonus` (base.json) is the starting balance: 1,000 MB.
 - Price shocks carry no built-in direction: regime shifts balance up and down, credit reviews of profitable companies are equally likely to upgrade or downgrade, mean reversion pulls symmetrically in log price, and bankruptcy applies `bankruptcy_haircut` before paying holders so distressed stocks are not a free bet on a bailout.
-- Tuning knobs (settings): `volatility_scale`, `event_strength_limits`, `daily_move_cap` (0 disables), `mean_reversion_halflife_days`, `news_move_ranges`, `event_mean_seconds`. Check any change with `tune.py`; keep `liqPnL` well under `fees` and the `value`/`hodl` columns near zero.
+- Tuning knobs (settings): `volatility_scale`, `event_strength_limits`, `daily_move_cap` (0 disables), `mean_reversion_halflife_days`, `news_move_ranges`, `event_mean_seconds`. Check any change to the market with `realism.py` and `chart_check.py`.
 
 ## Admin (set `ADMIN_KEY` in the environment; endpoints are disabled without it)
 - `GET /api/admin/stats`: house P&L, fees, player deposits/equity, invariant drift.

@@ -1,7 +1,7 @@
 name: tests
 
 # Runs the fast test suite on every push and pull request. The slow checks (RUN_SLOW=1) and the many-seed
-# edge check (`python edge.py 40 2 <fresh seed>`) are run by hand before changing prices, news or fees.
+# market checks (`python realism.py` and `python chart_check.py`, MARKET_REALISM.md) are run by hand before changing prices.
 on: [push, pull_request]
 
 jobs:

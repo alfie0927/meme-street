@@ -382,8 +382,8 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 |---|---|---|---|
 | X1 | The real-money plan | Dropped: crypto deposits and withdrawals, KYC and identity checks, the house capital rule, reserve alarms, provably fair seeds, the gambling licence question, country blocking for real money. Nothing to remove in code except the comments that still describe it. | S |
 | X2 | Moonshots and two-outcome catalysts | Lottery tickets do not teach trading. Remove from the default market (or move to an opt-in speculative section); retire catalysts and industry-wide two-outcome shocks once the macro engine (N2-N4) gives the market its big days. | M |
-| X3 | The "no edge" rule and its tools | Replaced by the realism and "no free money" suite (P11). Until P11 exists the old checks still guard the old market. | S |
-| X4 | `revenue_model.py` | Superseded by the pricing model (M7); kept until then. | S |
+| X3 | The "no edge" rule and its tools | **Done (2026-10-13):** `sim.py`, `bots.py`, `edge.py`, `paired.py`, `tune.py` and the probes were removed; `realism.py` and `chart_check.py` (MARKET_REALISM.md) replace them. | S |
+| X4 | `revenue_model.py` | **Done (2026-10-13):** removed (it modelled fee income); M7 will model package and Pro sales. | S |
 | X5 | The daily paper-money contest | Becomes challenge weeks (S3). | S |
 | X6 | The 10,000 MB start | 1,000 MB (M1). | S |
 | X7 | 3x products and very risky instruments | Keep for advanced players with clear warnings, or remove. Your decision. | S |
@@ -432,13 +432,14 @@ largely built (section 3); what remains of them is listed under "Alongside".
 
 ## 8. Checking a market change
 
-Until the realism suite (P11) exists, changes to the *old* market are still checked the old way (the test suite, then
-`edge.py`, `paired.py`, `probe.py`; `HOW_IT_WORKS.md` section 17 has the method and the last results). For the new
-market:
+The old market's edge tools (`edge.py`, `paired.py`, `probe.py`) were removed on 2026-10-13 with the zero-edge rule;
+`HOW_IT_WORKS.md` section 17 keeps their last results as history. For the market today:
 
 1. The test suite (`python -m unittest discover tests`), which guards money conservation, the ledger and the rule that
    player trades never move prices.
-2. The realism suite (P11): stylised facts, pattern rates within their target bands, and the "no free money" strategy
+2. `python chart_check.py 12 <seed>` on two or three seeds: the charts against the facts of real prices
+   (MARKET_REALISM.md section 4 has the targets and the last results).
+3. The realism suite (P11, `python realism.py`): stylised facts, pattern rates within their target bands, and the "no free money" strategy
    comparison against holding the index, costs included, on markets never used for tuning.
-3. A look at the charts by a person: does it look like a market a trader would recognise?
-4. Update `HOW_IT_WORKS.md` and this file.
+4. A look at the charts by a person: does it look like a market a trader would recognise?
+5. Update `HOW_IT_WORKS.md` and this file.

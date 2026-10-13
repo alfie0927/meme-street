@@ -1,7 +1,7 @@
 """Engine tests: trading, shorting, limits, borrow fees, margin, dividends, earnings timing, news and saving.
 
 Run all tests:   python -m unittest discover tests -v
-These are fast (about a minute). Slow statistical checks live in test_edge.py (RUN_SLOW=1).
+These are fast (about a minute). Slow checks live in test_slow.py (RUN_SLOW=1).
 """
 import math
 import os
