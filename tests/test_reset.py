@@ -11,7 +11,7 @@ import tempfile
 import time
 import unittest
 
-from _helpers import ROOT, IsolatedServer, advance, drift, engine, free_port, join, make_engine
+from _helpers import IsolatedServer, advance, copy_project, drift, engine, free_port, join, make_engine
 from test_server import Client, http
 
 
@@ -179,28 +179,20 @@ class CommandLineResetTests(unittest.TestCase):
     """`python reset_game.py` does the same from the command line, on a stopped server."""
 
     def make_game(self, tmp):
-        for f in IsolatedServer.FILES + ["reset_game.py"]:
-            src = os.path.join(ROOT, f)
-            if os.path.exists(src):
-                shutil.copy(src, tmp)
-        with open(os.path.join(tmp, "zz_test_settings.json"), "w", encoding="utf-8") as fh:
-            json.dump({"settings": {"premarket_seconds": 0, "aftermarket_seconds": 0, "signup_bonus": 2500}}, fh)
+        copy_project(tmp, {"premarket_seconds": 0, "aftermarket_seconds": 0, "signup_bonus": 2500})
         random.seed(8)
-        cwd = os.getcwd()
-        os.chdir(tmp)
-        try:
-            e = engine.Engine(state_file=os.path.join(tmp, "state.json"), ledger_path=os.path.join(tmp, "ledger.db"))
-            p, _ = e.join("cmdline")
-            e.trade(p, "GOLD", "buy", 0.5)
-            e.season_no = 9
-            e.save()
-            e.ledger.close()
-        finally:
-            os.chdir(cwd)
+        data = os.path.join(tmp, "data")
+        e = engine.Engine(content_glob=os.path.join(tmp, "content", "*.json"), state_file=os.path.join(data, "state.json"),
+                          ledger_path=os.path.join(data, "ledger.db"))
+        p, _ = e.join("cmdline")
+        e.trade(p, "GOLD", "buy", 0.5)
+        e.season_no = 9
+        e.save()
+        e.ledger.close()
 
     def run_script(self, tmp, *args, port=None):
         env = dict(os.environ, PORT=str(port or free_port()))
-        return subprocess.run([sys.executable, "reset_game.py", *args], cwd=tmp, env=env, capture_output=True, text=True,
+        return subprocess.run([sys.executable, os.path.join("tools", "reset_game.py"), *args], cwd=tmp, env=env, capture_output=True, text=True,
                               timeout=120, input="RESET\n")
 
     def test_it_resets_a_stopped_game_and_backs_it_up(self):
@@ -209,10 +201,10 @@ class CommandLineResetTests(unittest.TestCase):
             out = self.run_script(tmp)
             self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
             self.assertIn("Day 1 again", out.stdout)
-            folders = os.listdir(os.path.join(tmp, "backups"))
+            folders = os.listdir(os.path.join(tmp, "data", "backups"))
             self.assertEqual(len(folders), 1)
-            self.assertTrue({"state.json", "ledger.db"} <= set(os.listdir(os.path.join(tmp, "backups", folders[0]))))
-            d = json.load(open(os.path.join(tmp, "state.json"), encoding="utf-8"))
+            self.assertTrue({"state.json", "ledger.db"} <= set(os.listdir(os.path.join(tmp, "data", "backups", folders[0]))))
+            d = json.load(open(os.path.join(tmp, "data", "state.json"), encoding="utf-8"))
             self.assertEqual(d["season_no"], 1)
             me = next(x for x in d["players"] if x["name"] == "cmdline")
             self.assertEqual(me["hold"], {})
@@ -230,12 +222,12 @@ class CommandLineResetTests(unittest.TestCase):
                 listener.close()
             self.assertEqual(out.returncode, 1)
             self.assertIn("Stop it", out.stdout)
-            self.assertFalse(os.path.exists(os.path.join(tmp, "backups")))
-            bad = subprocess.run([sys.executable, "reset_game.py"], cwd=tmp, env=dict(os.environ, PORT=str(free_port())),
+            self.assertFalse(os.path.exists(os.path.join(tmp, "data", "backups")))
+            bad = subprocess.run([sys.executable, os.path.join("tools", "reset_game.py")], cwd=tmp, env=dict(os.environ, PORT=str(free_port())),
                                  capture_output=True, text=True, timeout=120, input="nope\n")
             self.assertEqual(bad.returncode, 1)
             self.assertIn("Not reset", bad.stdout)
-            self.assertFalse(os.path.exists(os.path.join(tmp, "backups")))
+            self.assertFalse(os.path.exists(os.path.join(tmp, "data", "backups")))
 
 
 class AdminEndpointTests(unittest.TestCase):
@@ -253,7 +245,7 @@ class AdminEndpointTests(unittest.TestCase):
                 status, text, _ = http(srv, "/api/admin/reset", "POST", {"confirm": "RESET"}, admin)
                 self.assertEqual(status, 200, text)
                 self.assertIn("backups", json.loads(text)["msg"])
-                backups = os.path.join(srv.dir, "backups")
+                backups = os.path.join(srv.data, "backups")
                 folders = os.listdir(backups)
                 self.assertEqual(len(folders), 1)
                 files = set(os.listdir(os.path.join(backups, folders[0])))

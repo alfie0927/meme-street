@@ -1,6 +1,6 @@
-"""How much do Meme Street's charts move like real ones? (MARKET_REALISM.md has the research and the targets.)
+"""How much do Meme Street's charts move like real ones? (docs/MARKET_REALISM.md has the research and the targets.)
 
-    python chart_check.py [game_days] [seed] [--cached]   (defaults: 8 game days, seed 7; about 20 seconds a game day;
+    python tools/chart_check.py [game_days] [seed] [--cached]   (defaults: 8 game days, seed 7; about 20 seconds a game day;
                                                             --cached re-reads the last run of the same length and seed)
 
 Runs the real engine (the content packs as shipped, the new price model, the trading sessions) with nobody trading,
@@ -17,7 +17,9 @@ import sys
 import time
 import types
 
-import engine
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "game"))   # the game's code
+import engine  # noqa: E402
+import paths  # noqa: E402
 
 MIN = 60
 
@@ -328,14 +330,14 @@ if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     d = float(args[0]) if args else 8
     sd = int(args[1]) if len(args) > 1 else 7
-    cache = f"sim_results/chart_check_{d:g}_{sd}.pickle"
+    cache = os.path.join(paths.DATA, "sim_results", f"chart_check_{d:g}_{sd}.pickle")
     if "--cached" in sys.argv and os.path.exists(cache):
         with open(cache, "rb") as fh:
             e, bars, reports, start = pickle.load(fh)
     else:
         e, bars, reports, start = run(d, sd)
         e = light(e)
-        os.makedirs("sim_results", exist_ok=True)
+        os.makedirs(os.path.dirname(cache), exist_ok=True)
         with open(cache, "wb") as fh:
             pickle.dump((e, bars, reports, start), fh)
     report(e, bars, reports, start, d)

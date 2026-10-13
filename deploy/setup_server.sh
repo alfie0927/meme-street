@@ -20,7 +20,7 @@ if [ "$(id -u)" -ne 0 ]; then
     echo "Run this as root (log in as root, or put sudo in front)."
     exit 1
 fi
-if [ ! -f "$APP/server.py" ]; then
+if [ ! -f "$APP/game/server.py" ]; then
     echo "The game's code is not in $APP yet. Upload it first (deploy/upload.ps1), then run this again."
     exit 1
 fi

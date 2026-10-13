@@ -1,6 +1,6 @@
-"""The realism and "no free money" check for the price model (ROADMAP.md P11).
+"""The realism and "no free money" check for the price model (docs/ROADMAP.md P11).
 
-    python realism.py [game_years] [seeds] [stocks] [first_seed]       (defaults: 2 years, 3 seeds, 40 stocks, seed 101)
+    python tools/realism.py [game_years] [seeds] [stocks] [first_seed]       (defaults: 2 years, 3 seeds, 40 stocks, seed 101)
 
 It runs market_model.py on its own, with the engine's three-factor noise rebuilt here in steps of 10 seconds (far faster
 than the whole engine), on companies drawn from the content packs, and prints:
@@ -17,13 +17,16 @@ The targets are the ROADMAP's; this tool reports, it does not tune. Use fresh se
 """
 import json
 import math
+import os
 import random
 import statistics
 import sys
 import time
 import types
 
-import market_model as mm
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "game"))   # the game's code
+import market_model as mm  # noqa: E402
+import paths  # noqa: E402
 
 FEE = 0.001
 STEP = 10                      # seconds per simulation step
@@ -34,7 +37,7 @@ def companies(n, rng):
     out = []
     for f in ("base.json", "pack_growth.json", "pack_fiction.json", "expansion.json"):
         try:
-            with open(f, encoding="utf-8") as fh:
+            with open(os.path.join(paths.CONTENT, f), encoding="utf-8") as fh:
                 out += [c for c in json.load(fh).get("companies", []) if c.get("asset_type", "equity") == "equity"]
         except OSError:
             pass

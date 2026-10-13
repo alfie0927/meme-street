@@ -20,9 +20,10 @@ def new_engine(path, seed=1):
 
 
 class ContentFilesTests(unittest.TestCase):
-    """Every .json file in the project folder is a content pack, except the save and its chart file. (The chart file is
+    """Every .json file in the content folder is a content pack, except a save and its chart file. (The chart file is
     tens of MB and is rewritten while the game runs; reading it as a pack made each chart save look like a content change
-    and could fail while the file was being replaced.)"""
+    and could fail while the file was being replaced. The save lives in data/, but a state.json put among the packs
+    is still skipped.)"""
 
     def files_for(self, state_name):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as d:
@@ -32,12 +33,7 @@ class ContentFilesTests(unittest.TestCase):
             e = engine.Engine.__new__(engine.Engine)
             e.content_glob = os.path.join(d, "*.json")
             e.state_file = None if state_name is None else os.path.join(d, state_name)
-            cwd = os.getcwd()
-            os.chdir(d)                                   # (the default save name is read relative to the folder)
-            try:
-                return sorted(os.path.basename(f) for f in e._content_files())
-            finally:
-                os.chdir(cwd)
+            return sorted(os.path.basename(f) for f in e._content_files())
 
     def test_the_default_save_and_its_charts_are_not_content(self):
         self.assertEqual(self.files_for("state.json"), ["base.json", "my.charts.json", "my.json", "pack.json"])
@@ -50,9 +46,10 @@ class ContentFilesTests(unittest.TestCase):
 
     def test_rewriting_the_chart_file_does_not_change_the_content_signature(self):
         e = engine.Engine(state_file=None)
-        before = e._sig()
-        charts = os.path.abspath("state.charts.json")
-        self.assertNotIn(charts, [os.path.abspath(f) for f, _ in before])
+        files = [os.path.abspath(f) for f, _ in e._sig()]
+        self.assertIn(os.path.join(os.path.abspath(engine.paths.CONTENT), "base.json"), files)
+        for f in files:                                   # only the packs: the save and the charts are in data/
+            self.assertEqual(os.path.dirname(f), os.path.abspath(engine.paths.CONTENT), f)
 
 
 class ChartFileTests(unittest.TestCase):

@@ -9,7 +9,7 @@ Wants=memestreet.service
 [Service]
 User=memestreet
 Group=memestreet
-WorkingDirectory=/opt/memestreet
+WorkingDirectory=/opt/memestreet/game
 EnvironmentFile=/etc/memestreet.env
 ExecStart=/opt/memestreet/.venv/bin/python -m uvicorn gateway:app --host 127.0.0.1 --port 8000 --workers ${GATEWAYS} --log-level warning
 Restart=always

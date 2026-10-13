@@ -19,7 +19,7 @@ another gateway), and if the core restarts every gateway reconnects by itself.
 
 Settings (environment variables): CORE_URL (default ws://127.0.0.1:8001/internal/gateway), CORE_KEY (the shared secret;
 the core must have the same), TRUST_PROXY=1 (believe X-Forwarded-For from a proxy on another machine).
-Start them with `python launch.py --gateways 4` rather than by hand. Never imports the game server (that builds a game).
+Start them with `python tools/launch.py --gateways 4` rather than by hand. Never imports the game server (that builds a game).
 """
 import asyncio
 import itertools
@@ -41,8 +41,6 @@ from wsconn import Conn
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s gateway: %(message)s")
 logger = logging.getLogger("gateway")
 
-BASE = os.path.dirname(os.path.abspath(__file__))
-os.chdir(BASE)
 CORE_URL = os.environ.get("CORE_URL", "ws://127.0.0.1:8001/internal/gateway")
 CORE_KEY = os.environ.get("CORE_KEY", "")
 TRUST_PROXY = os.environ.get("TRUST_PROXY", "") == "1"
@@ -275,4 +273,4 @@ async def api(request: Request, rest: str):
                     headers={k: v for k, v in res["headers"]})
 
 
-add_pages(app, BASE)
+add_pages(app)

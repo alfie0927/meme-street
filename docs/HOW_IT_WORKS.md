@@ -1,12 +1,12 @@
 # How Meme Street works
 
-This document explains the whole system: what each file does, how prices and trading work, how money flows, how news, earnings and ratings are generated, how the social features and the server protocol work, and what to watch out for. Numbers quoted are the current defaults from the content packs (`base.json`, `expansion.json`, `pack_growth.json`, `pack_fiction.json`) and the constants at the top of `engine.py`.
+This document explains the whole system: what each file does, how prices and trading work, how money flows, how news, earnings and ratings are generated, how the social features and the server protocol work, and what to watch out for. Numbers quoted are the current defaults from the content packs (in `content/`: `base.json`, `expansion.json`, `pack_growth.json`, `pack_fiction.json`) and the constants at the top of `game/engine.py`. File names without a folder are in `game/` (code), `web/` (pages), `content/` (packs) or `tools/` (scripts): §1, "Where things are".
 
 **A guide to the sections.** §1 running it · §2 the files · §3 time · §4 trading · §5 where money lives · §6 how prices move (including volatility, the trading sessions, moonshots and how the tails are kept thin) · §7 news, catalysts, industry-wide shocks, company stories and ratings · §8 listings · §9 indices, ETFs and leveraged products · §10 players, accounts, days, achievements, the daily contest and chat · §11 the web pages · §12 the server, its protocol and gateways (more than one process) · §13 saving and the crash-proof ledger · §14 settings · §15 things to know · §16 tests · §17 the latest economy-check results.
 
 Keep this file in step with the code: update it after every change (see "Keeping the docs current" at the end).
 
-> **Change of direction (2026-10-13), and what is built.** The shop, the new price model, the macro calendar, the chart tools and learning now exist (§6A, §10.9, §10.10, §11; uncommitted until tested). The paragraph below is the original note.
+> **Change of direction (2026-10-13), and what is built.** The shop, the new price model, the macro calendar, the chart tools and learning now exist (§6A, §10.9, §10.10, §11). The paragraph below is the original note.
 >
 > **Change of direction (2026-10-13).** Meme Street is becoming a site for **learning to trade**: everyone starts with 1,000 MB, more MB is bought in packages (100 to 10,000 MB) and never cashed out, challenges award free MB, and the market is being rebuilt to drift slowly upwards with regimes, scheduled economic data (interest rates, inflation, jobs) and technical structure (support and resistance that holds or breaks). `ROADMAP.md` has the plan. **This file still describes the code as it is today**, which was built for the old plan (a real-money game in which every mechanism is a fair bet and nobody can have an edge). Sections that only matter for that old plan (the house's capital risk, the house-edge discussion in section 15, the fee-based revenue model in section 17.10) say so where they start; they will change or go as the new tracks are built.
 
@@ -14,16 +14,36 @@ Keep this file in step with the code: update it after every change (see "Keeping
 
 ## 1. Running it
 
+### Where things are
+The project is split into folders by what things are. `game/paths.py` knows where each one is, so nothing depends on the
+folder the game is started from.
+
+| Folder | What is in it |
+|---|---|
+| `game/` | The Python code the server runs (§2) |
+| `web/` | The pages: `index.html` (the whole player site), `admin.html` (`/admin`), `about.html` (`/about`), `shop_pay.html` (the pretend checkout in test mode, `/shop/pay`) |
+| `content/` | The content packs: every `.json` file here is read at start and reloaded within a second when it changes (settings, sectors, companies, news templates, lessons) |
+| `tools/` | Scripts you run by hand: `launch.py`, `reset_game.py`, `share.py`, `chart_check.py`, `realism.py` |
+| `data/` | What the running game writes, **never in git**: the save (`state.json`, `state.charts.json`), the ledger (`ledger.db`), `backups/`, this computer's admin key (`admin_key.txt`), the last share link and simulation results (`sim_results/`) |
+| `docs/` | This guide, `ROADMAP.md` (the plan), `MARKET_REALISM.md` (the research behind the charts) and `COUNCIL.md` (verdicts from `/council`) |
+| `deploy/` | Putting the game on a rented server (below) |
+| `tests/` | The test suite (§16) |
+| `brand/` | The logo, and a screenshot and video for promotion |
+
+The top folder only holds `start_game.ps1` (start the game), `README.md`, `requirements.txt` and `requirements-lock.txt`.
+
 ### Start the server
 From the project folder, in PowerShell:
 
 ```powershell
 cd "D:\stock_market_sim"                         # (the project has lived on the D: drive since 2026-10-10)
 $env:ADMIN_KEY = "pick-a-long-random-string"     # optional: enables /api/admin/*
-.venv\Scripts\python.exe -m uvicorn server:app --host 127.0.0.1 --port 8000
+.venv\Scripts\python.exe -m uvicorn server:app --app-dir game --host 127.0.0.1 --port 8000
 ```
 
-Or just run `powershell -File D:\stock_market_sim\start_game.ps1`: it does the same, keeps the admin key in `admin_key.txt` (made on the first run, never sent to git) and runs the shop in **test mode** (`PAYMENTS=test`, a pretend checkout, §10.9). `-Fresh` starts a new game (the old `state.json`, charts and ledger are moved to `backups\before_fresh_<time>\`; move them back to return to it); `-Payments off` closes the shop (do that before sharing the game with `share.py`, or anyone could give themselves MB). `requirements-lock.txt` lists the exact package versions the game was tested with; `pip install -r requirements-lock.txt` rebuilds the environment identically.
+(`--app-dir game` tells uvicorn where the code is. Starting it from inside `game\` without that option works as well.)
+
+Or just run `powershell -File D:\stock_market_sim\start_game.ps1`: it does the same, keeps the admin key in `data\admin_key.txt` (made on the first run, never sent to git) and runs the shop in **test mode** (`PAYMENTS=test`, a pretend checkout, §10.9). `-Fresh` starts a new game (the old save, charts and ledger are moved to `data\backups\before_fresh_<time>\`; move them back to return to it); `-Payments off` closes the shop (do that before sharing the game with `tools\share.py`, or anyone could give themselves MB). `requirements-lock.txt` lists the exact package versions the game was tested with; `pip install -r requirements-lock.txt` rebuilds the environment identically.
 
 Then open:
 - **http://127.0.0.1:8000** for the market. Open a second browser (or a private window) to play as a second player.
@@ -37,47 +57,48 @@ Alternatives:
 - **VS Code:** Terminal → Run Task → "Meme Street Profile Engine". It runs the same command on port **8002**, so open http://127.0.0.1:8002.
 - **While editing code:** add `--reload` so the server restarts when a `.py` file changes. Content `.json` files are hot-reloaded by the engine itself without a restart.
 
-Stop the server with Ctrl+C. It saves `state.json` on a clean shutdown and closes the ledger (`ledger.db`, §13). If the server is killed or crashes instead, nothing is lost: the next start loads the last snapshot and replays the ledger (you'll see "recovered N ledger events" in the log).
+Stop the server with Ctrl+C. It saves `data\state.json` on a clean shutdown and closes the ledger (`data\ledger.db`, §13). If the server is killed or crashes instead, nothing is lost: the next start loads the last snapshot and replays the ledger (you'll see "recovered N ledger events" in the log).
 
-**Run only one game server at a time.** Every game server instance reads and writes the same `state.json` and `ledger.db`, so two servers overwrite each other's saves. (Gateways, §12, hold no game and never touch those files; you can run as many as you like next to one game server.) A server also keeps running whatever code it started with: after changing code, stop it and start it again, then hard-refresh the browser (the page is served with `Cache-Control: no-store`, but an already-open tab keeps its old script).
+**Run only one game server at a time.** Every game server instance reads and writes the same `data\state.json` and `data\ledger.db`, so two servers overwrite each other's saves. (Gateways, §12, hold no game and never touch those files; you can run as many as you like next to one game server.) A server also keeps running whatever code it started with: after changing code, stop it and start it again, then hard-refresh the browser (the page is served with `Cache-Control: no-store`, but an already-open tab keeps its old script).
 
 ### Letting other people play (sharing it from your own computer)
 **In plain English:** the game listens only on your own computer (`127.0.0.1`), so `http://127.0.0.1:8000` works for you and nobody else. To give friends or testers a link while the game keeps running on your PC, use a free Cloudflare **quick tunnel**. Your computer makes an outgoing connection to Cloudflare, and Cloudflare gives you a public `https://….trycloudflare.com` address that forwards to your game. Nothing is opened on your router, your home address is not revealed, and the link works from phones and from other countries.
 
 1. **Start the game** the way you always do. Give it a long secret `ADMIN_KEY` (the admin page is on the same address, so anyone with the link can open `/admin`, though without the key it shows nothing), or none at all (no key switches the admin API off).
-2. **First time only:** `python share.py --install`. This downloads Cloudflare's small tunnel program (`cloudflared.exe`) from Cloudflare's own release page on GitHub into a `tools/` folder. (Or install it yourself: `winget install --id Cloudflare.cloudflared`.)
-3. **Every time:** in a second terminal, `python share.py`. After a few seconds it prints a box like `https://quiet-river-1234.trycloudflare.com` (and saves it in `share_url.txt`). Send that link to people. It works as long as that window stays open, your computer is awake (turn off sleep) and the game is running. Ctrl+C stops sharing; the game itself is not affected.
+2. **First time only:** `python tools\share.py --install`. This downloads Cloudflare's small tunnel program (`cloudflared.exe`) from Cloudflare's own release page on GitHub into the `tools\` folder (git ignores it). (Or install it yourself: `winget install --id Cloudflare.cloudflared`.)
+3. **Every time:** in a second terminal, `python tools\share.py`. After a few seconds it prints a box like `https://quiet-river-1234.trycloudflare.com` (and saves it in `data\share_url.txt`). Send that link to people. It works as long as that window stays open, your computer is awake (turn off sleep) and the game is running. Ctrl+C stops sharing; the game itself is not affected.
 
 What to expect:
 - **The link changes every time** you run `share.py`. A permanent address needs a free Cloudflare account and a domain name (a "named tunnel"); that is a hosting job for later.
 - **Your PC does the work.** A few dozen testers is fine on a normal computer (§12, Capacity); the tunnel is free and meant for testing, with no uptime promise.
 - **Each visitor counts separately.** Everyone arrives through the tunnel from your own computer, so the game reads each visitor's real address from the tunnel's `CF-Connecting-IP` header. It only believes that header when the request really comes from this computer (or `trust_proxy` is on, §14), otherwise anyone could fake it. Without that, the "5 sign-ups per address per hour" limit would have applied to all your visitors together (§10.6).
-- **People on the same Wi-Fi** do not need the tunnel: start the game with `--host 0.0.0.0` (`python launch.py --host 0.0.0.0`, or `python -m uvicorn server:app --host 0.0.0.0 --port 8000`), let Python through the Windows firewall when it asks, and open `http://<your PC's address>:8000`. `python share.py --lan` prints that address.
+- **People on the same Wi-Fi** do not need the tunnel: start the game with `--host 0.0.0.0` (`python tools\launch.py --host 0.0.0.0`, or `python -m uvicorn server:app --app-dir game --host 0.0.0.0 --port 8000`), let Python through the Windows firewall when it asks, and open `http://<your PC's address>:8000`. `python tools\share.py --lan` prints that address.
 - `share.py` never starts the game and never reads or writes your save; it only checks that something is listening on port 8000 and then starts the tunnel.
 
 ### Running it on a real server with its own web address
-**In plain English:** the `deploy/` folder takes the game from your computer to a rented server that is on all the time, with a domain name and https. `deploy/DEPLOY.md` is the step-by-step guide (buy a name, rent an Ubuntu 24.04 server, point the name at it, run two commands). What is in the folder:
+**In plain English:** the `deploy/` folder takes the game from your computer to a rented server that is on all the time, with a domain name and https. `deploy/DEPLOY.md` is the step-by-step guide (buy a name, rent an Ubuntu 24.04 server, point the name at it, run two commands). On the server the game lives in `/opt/memestreet` with the same folders (its save in `/opt/memestreet/data`). What is in the folder:
 
 | File | What it does |
 |---|---|
 | `DEPLOY.md` | The guide: costs, choosing a name, the server, DNS, setup, moving your saved game, email, protecting the admin page, updating, backups and restoring, monitoring, troubleshooting |
-| `upload.ps1` | Run on your Windows computer: sends the code (never the saves or the ledger) to the server, and with `-Restart` restarts the game; `-WithGame` moves your saved game once; `-DryRun` shows what would be sent |
+| `upload.ps1` | Run on your Windows computer: sends the code (`game/`, `web/`, `content/`, `tools/`, the logo and `deploy/`; never `data/`) to the server and runs `update_server.sh` there; with `-Restart` the game restarts; `-WithGame` moves your saved game once; `-DryRun` shows what would be sent |
+| `update_server.sh` | Run on the server by `upload.ps1` after every upload: installs changed service files and the backup job, and moves a game from the old one-folder layout (before October 2026) into `data/` (stopping the game for that moment and taking a backup first) |
 | `pull_backups.ps1` | Run on your Windows computer: copies the newest server backups (default the last four, one day) into `D:\meme_street_backups`, checks each arrived whole (a `.complete` marker), and changes nothing on the server (`deploy/DEPLOY.md`, Backups). |
 | `set_mail.ps1` | Run on your Windows computer: asks for the SMTP user, key (typed hidden) and from-address, writes them into the server's `/etc/memestreet.env` over ssh (the key never in a command line), restarts the game and checks the game now says mail is ready. |
 | `setup_server.sh` | Run once on the server as root: installs Python and Caddy, makes the game's user and environment, writes `/etc/memestreet.env` with random keys, installs the services, the firewall (only ssh, http and https), automatic security updates and the backup job |
-| `memestreet.service`, `memestreet-gateway.service` | systemd services: the game server (port 8001, only reachable on the machine, saves when told to stop) and the gateways (port 8000); both restart by themselves and start on boot |
+| `memestreet.service`, `memestreet-gateway.service` | systemd services: the game server (port 8001, only reachable on the machine, saves when told to stop) and the gateways (port 8000); both run in `/opt/memestreet/game`, restart by themselves and start on boot |
 | `Caddyfile` | The web server in front: gets and renews the https certificate, redirects `www`, sends traffic to the gateways, adds security headers, and has an optional password block for `/admin` |
 | `memestreet.env.example` | The settings kept in `/etc/memestreet.env`: the admin key, the gateway key, how many gateways, the mail service |
-| `backup.sh` | Every six hours: copies the save, the charts and a consistent copy of the ledger to `/var/backups/memestreet`, keeping two weeks |
+| `backup.sh` | Every six hours: copies the save, the charts and a consistent copy of the ledger from `/opt/memestreet/data` to `/var/backups/memestreet`, keeping two weeks |
 
-How a visitor's address stays honest behind Caddy: the gateway believes `X-Forwarded-For` and `CF-Connecting-IP` from the machine itself (§10.6), so Caddy removes any `CF-Connecting-IP` the visitor sent and replaces `X-Forwarded-For` with the connection's real address. `tests/test_deploy.py` checks that, that the services and the Caddyfile agree on ports, that every module the server imports is in the upload, and that the scripts have no syntax errors.
+How a visitor's address stays honest behind Caddy: the gateway believes `X-Forwarded-For` and `CF-Connecting-IP` from the machine itself (§10.6), so Caddy removes any `CF-Connecting-IP` the visitor sent and replaces `X-Forwarded-For` with the connection's real address. `tests/test_deploy.py` checks that, that the services and the Caddyfile agree on ports, that every module the server imports is in the upload, that the update script never deletes a save, and that the scripts have no syntax errors.
 
-### Starting it with `launch.py`, and more than one process
-`python launch.py` starts the game in one process on port 8000, the same as the `uvicorn` command above. `python launch.py --gateways 4` starts the **game server** (on `127.0.0.1:8001`, only this computer can reach it) plus **four gateway processes** that listen on port 8000 and hold the players' connections. Players cannot tell the difference. You only need it for a larger crowd (hundreds of players); how it works and what it buys is in §12 ("Gateways"). Options: `--host`, `--port`, `--core-port`. Stop it with Ctrl+C (gateways stop first, then the game, which saves on the way out).
+### Starting it with `tools\launch.py`, and more than one process
+`python tools\launch.py` starts the game in one process on port 8000, the same as the `uvicorn` command above. `python tools\launch.py --gateways 4` starts the **game server** (on `127.0.0.1:8001`, only this computer can reach it) plus **four gateway processes** that listen on port 8000 and hold the players' connections. Players cannot tell the difference. You only need it for a larger crowd (hundreds of players); how it works and what it buys is in §12 ("Gateways"). Options: `--host`, `--port`, `--core-port`. Stop it with Ctrl+C (gateways stop first, then the game, which saves on the way out).
 
-**To start the game over at Day 1**, open the admin page (`/admin`), find **Start the game over**, type `RESET` and press the button. Every player goes back to the starting balance (`signup_bonus`, 10,000 MB), positions are closed at the market price (no fees), orders are cancelled, and the trade history, medals and achievements are cleared. Prices, charts, listings, accounts and passwords stay. The old save and ledger are first copied into a `backups/reset-<date>` folder next to the server, so nothing is lost; every connected page reconnects by itself. (`Engine.reset_to_day_one`, §10.) **Without the admin page** (no `ADMIN_KEY` set, or you prefer the terminal): stop the server, run `python reset_game.py` (it asks you to type `RESET`; `--yes` skips the question) and start the server again. It makes the same backup first and refuses to run while something is listening on port 8000, because a running server would overwrite the result a few seconds later.
+**To start the game over at Day 1**, open the admin page (`/admin`), find **Start the game over**, type `RESET` and press the button. Every player goes back to the starting balance (`signup_bonus`, 1,000 MB), positions are closed at the market price (no fees), orders are cancelled, and the trade history, medals and achievements are cleared. Prices, charts, listings, accounts and passwords stay. The old save and ledger are first copied into a `data/backups/reset-<date>` folder, so nothing is lost; every connected page reconnects by itself. (`Engine.reset_to_day_one`, §10.) **Without the admin page** (no `ADMIN_KEY` set, or you prefer the terminal): stop the server, run `python tools\reset_game.py` (it asks you to type `RESET`; `--yes` skips the question) and start the server again. It makes the same backup first and refuses to run while something is listening on port 8000, because a running server would overwrite the result a few seconds later.
 
-**To throw everything away** (a brand-new market, no accounts), stop the server, delete `state.json`, `state.charts.json` **and** `ledger.db` (plus `ledger.db-wal` and `ledger.db-shm` if they exist), and start it again. (Deleting only `state.json` would make the server replay the old ledger into the new game.)
+**To throw everything away** (a brand-new market, no accounts), stop the server, delete `state.json`, `state.charts.json` **and** `ledger.db` (plus `ledger.db-wal` and `ledger.db-shm` if they exist) from `data\`, and start it again. (Deleting only `state.json` would make the server replay the old ledger into the new game.) `start_game.ps1 -Fresh` does this for you and keeps the old files.
 
 ### First-time setup (only once)
 ```powershell
@@ -95,15 +116,15 @@ Run the whole test suite from the project folder (about ten minutes; nothing to 
 $env:RUN_SLOW = "1"; .venv\Scripts\python.exe -m unittest discover tests -p "test_slow.py" -v   # slow checks
 ```
 
-See §16 for what the tests cover and when to run which one.
+See §16 for what the tests cover and when to run which one. The tests never touch `data\`: a test that needs a running server copies the game into a temporary folder with the same layout and starts it there (`copy_project` in `tests/_helpers.py`).
 
 ### Market checks
 ```powershell
-.venv\Scripts\python.exe chart_check.py 12 7            # the real engine's charts against the facts of real prices (12 game days, seed 7; about 5 minutes)
-.venv\Scripts\python.exe chart_check.py 12 7 --cached   # re-read the last run of that length and seed
-.venv\Scripts\python.exe realism.py 2 3 40 801          # the price model alone: long run, levels, and no free money (2 game years, 3 markets, 40 stocks)
+.venv\Scripts\python.exe tools\chart_check.py 12 7            # the real engine's charts against the facts of real prices (12 game days, seed 7; about 5 minutes)
+.venv\Scripts\python.exe tools\chart_check.py 12 7 --cached   # re-read the last run of that length and seed (cached in data\sim_results\)
+.venv\Scripts\python.exe tools\realism.py 2 3 40 801          # the price model alone: long run, levels, and no free money (2 game years, 3 markets, 40 stocks)
 ```
-`MARKET_REALISM.md` explains both, the research behind their targets, and the latest results (§6A.9).
+`MARKET_REALISM.md` (in `docs/`) explains both, the research behind their targets, and the latest results (§6A.9).
 
 **Removed on 2026-10-13.** The old market had to give nobody an edge, and a set of tools checked that: `sim.py` (108
 scripted traders following 36 strategies on a fake clock), `bots.py` (many-bot studies), `edge.py` (the same on many
@@ -116,47 +137,74 @@ last results are kept in §17 as history.
 
 ## 2. The pieces
 
+### The code (`game/`)
+
 | File | Role |
 |---|---|
-| `engine.py` | The whole game: prices, trading, orders, volatility, the trading sessions, moonshots, catalysts, industry shocks, scheduled company events, news and narrative, company stories, earnings, offerings, bank ratings, indices and ETFs, days, accounting, the house reserve and its risk, save/load and crash recovery. Has no web code. |
+| `engine.py` | The whole game: prices, trading, orders, volatility, the trading sessions, moonshots, catalysts, industry shocks, scheduled company events, news and narrative, company stories, earnings, offerings, bank ratings, indices and ETFs, days, accounting, save/load and crash recovery. Has no web code. |
+| `market_model.py` | The learn-to-trade price model: drift, market phases, trends, ranges and breakouts, support and resistance, stochastic volatility, volume, the economy and its calendar (§6A). |
+| `economy.py`, `payments.py` | The shop: MB packages, Pro, age rules, spending limits, the free restart, and the payment providers (off, test, Stripe) (§10.9). |
+| `learning.py` | Lessons and quizzes, challenges that pay MB, the trading journal (§10.10). The lessons themselves are in `content/lessons.json`. |
 | `social.py` | Everything built on top of the players: achievements, daily quests, the daily contest, the day and all-time boards, public profiles, following, and the moderated chat (word filter, reports, auto-mutes, appeals). A mixin of the engine. It never touches real cash or prices (§10). |
 | `contest.py` | The paper-money accounts of the daily contest (§10.4): a `Sandbox` that lets the engine's own trading code run against a throwaway house, so a contest trade follows the real rules exactly but can never touch the real economy. |
 | `accounts.py` | Passwords (scrypt hashes), login sessions, name rules, the sign-up and login limiters, the list of accounts that share an address, **email addresses** (verification codes, one account per address, recovering a password) (§10.6). A mixin of the engine. |
 | `mailer.py` | Sends the verification and password-reset emails over any SMTP service, on a background thread, with retries; with no mail server set it is in *console mode* and keeps the message for the admin page (§10.6). |
 | `relations.py` | The hidden links between companies: who supplies whom, who buys from whom, who competes (§7.15). Hand-written for the companies that ship with the game, sector rules for newcomers. |
 | `newsgen.py` | The headline writer and the generators: names, products, cities, synonyms, slot filling, the company-story catalogue, the two-company stories (§7.12), the rare catalyst stories (§7.13), the industry-wide shock stories (§7.14) and the moonshot company generator (§6.10). |
-| `ledger.py` | The append-only SQLite log of every money event and each player's equity curve (§13). Created as `ledger.db`. Can copy itself (`backup`) and be emptied (`clear`) for a game reset. |
+| `ledger.py` | The append-only SQLite log of every money event and each player's equity curve (§13). Created as `data/ledger.db`. Can copy itself (`backup`) and be emptied (`clear`) for a game reset. |
 | `server.py` | FastAPI app, the **game server**. Runs the engine in worker threads behind one lock, sends each browser one `init` and then a small `tick` every second over a WebSocket, handles the HTTP endpoints, and (when started with a `CORE_KEY`) accepts gateways (§12). |
 | `gateway.py` | A **gateway**: a process that holds players' websockets and passes everything else to the game server over one link. Run several to spread the work of sending updates over several processor cores (§12, "Gateways"). Holds no game state; never imports `server.py`. |
-| `wsconn.py`, `netutil.py`, `pages.py` | Small pieces shared by the game server and the gateway: one websocket with its writer queue, working out a caller's real address and the renamed-product table, and the page routes (`/`, `/admin`, `/stock/…`, the logo). |
-| `launch.py` | Starts the game: one process, or the game server plus `--gateways N` gateway processes (§1, §12). |
-| `deploy/` | Putting the game on a rented server with a domain name and https: a guide, the upload script, the setup script, the services, the web-server file and the backup job (§1, "Running it on a real server") |
-| `share.py` | Gives other people a link to the game while it runs on your own computer, through a free Cloudflare quick tunnel (§1, "Letting other people play"). Never starts the game or touches the save. |
-| `index.html` | The entire front end: plain HTML, CSS and JS, no build step. One file serves every player page: market, stock, holdings, portfolio, history, leaders, social, profile and player, and the sign-in box (§11). |
+| `wsconn.py`, `netutil.py`, `pages.py` | Small pieces shared by the game server and the gateway: one websocket with its writer queue, working out a caller's real address and the renamed-product table, and the page routes (`/`, `/admin`, `/stock/…`, the logo), which serve the files in `web/` and `brand/`. |
+| `paths.py` | Where every folder is (`web/`, `content/`, `data/`, ...), worked out from its own location. Everything that opens a project file goes through it. |
+
+### The pages (`web/`)
+
+| File | Role |
+|---|---|
+| `index.html` | The entire front end: plain HTML, CSS and JS, no build step. One file serves every player page: market, stock, holdings, portfolio, history, leaders, social, profile and player, learn, journal, calendar, shop, and the sign-in box (§11). |
+| `admin.html` | The admin dashboard page, served at `/admin` (§12): the total MB in the game, the shop, the price model, server timings, chat moderation with appeals, accounts, email and mail, adding or taking back MB, and the reset button. |
+| `about.html` | The public "what is Meme Street" page, served at `/about` (no game connection; §11). |
+| `shop_pay.html` | The pretend checkout used while the shop is in test mode (`/shop/pay`, §10.9). |
+
+### The content (`content/`)
+Every `.json` file here is a content pack: the engine reads them all in name order (a later file's settings win) and reloads them within a second when one changes. To add content while the game runs, put a new `.json` file here (§8).
+
+| File | Role |
+|---|---|
 | `base.json` | Core content pack: settings, 9 sectors, the original companies, 11 event templates. |
 | `expansion.json` | Extra sectors (utilities, industrials, telecom, materials, agriculture, commodities), more companies, risk settings, sector links. |
 | `pack_growth.json` | Growth pack: 68 more companies in 7 new sectors (health services, retail, media, autos, real estate, crypto and fintech, space), 14 more news templates, reference financials and the definitions of the themed ETFs and leveraged products. |
 | `pack_fiction.json` | **Imaginary industries:** 48 companies in 8 invented sectors (teleportation, weather engineering, time technology, dreams and memory, dragons and creatures, deep-ocean cities, antigravity, alchemy), 24 news templates, reference financials and the Frontier Industries ETF (§8). |
 | `events_pack.json` | 17 sector-specific news templates. |
 | `market_profiles.json` | Per-ticker reference price, share count, revenue, margin, cash, debt, dividend yield. |
-| `space_pack.json.disabled` | Example pack. Rename it to `.json` while running to IPO three space companies live. |
-| `tests/` | The automated test suite: engine, server, browser, stress, capacity and slow checks (§16). |
-| `.github/workflows/tests.yml` | Runs the test suite automatically on every push if the project is on GitHub. |
-| `sim.py` | Headless simulation with 36 scripted "human" strategies (shorting, big size, a mood-reading oracle, and probes for the opening jump, reversals, ETFs, leveraged products, volatility, earnings, trends, moonshots, distress, catalysts, industry shocks and bracket orders); reports returns, house P&L, invariant. |
-| `admin.html` | The admin dashboard page, served at `/admin` (§12): house money and risk, server timings, chat moderation with appeals, accounts, email and mail, and the reset button. |
-| `about.html` | The public "what is Meme Street" page, served at `/about` (no game connection; §11). |
-| `revenue_model.py` | A small model of what a player pays in fees, with the assumptions written out (§17.10). Superseded by the new plan (the site earns from MB packages; `ROADMAP.md` M7 replaces it). |
-| `paired.py` | Paired comparison: runs the same seeds under different settings and prints the difference with a standard error. The tool that found the daily-limit edge (§6.5). |
-| `bots.py` | Many-bot, many-seed study on top of `sim.py`: 100 bots for each strategy that makes random choices, the moonshot-sniper study, how much each strategy traded and the result per unit traded (§17.7). Saves to `sim_results/` |
-| `edge.py` | Many-seed edge check on top of `sim.py`: mean, standard error and t-statistic per strategy; fails on any significant edge. |
-| `probe.py` | Engine-only drift probe: do below-reference stocks beat the rest? Used to locate a hidden edge by switching mechanisms off. |
-| `catalyst_probe.py` | Engine-only: what a stock does in the 5 minutes after a 25% move in 2 minutes (what `catalyst_follow` bets on), ordinary companies and moonshots apart, with the standard error taken across seeds (§17.9). |
-| `index_probe.py` | Engine-only: does the MSI 50, the average company, `AIFX` or the leveraged products drift over a 2-hour game? (§17.9) |
-| `tune.py` | Runs `sim.py` across several setting overrides and seeds in parallel and prints a comparison table. |
-| `state.json` | The save file: a snapshot of the game, written every 30 seconds (generated, git-ignored). The chart candles, most of its size, live in `state.charts.json` beside it, rewritten every five minutes (§13). |
+| `lessons.json` | The lessons and their quizzes (§10.10). |
+
+### The tools (`tools/`)
+
+| File | Role |
+|---|---|
+| `launch.py` | Starts the game: one process, or the game server plus `--gateways N` gateway processes (§1, §12). |
 | `reset_game.py` | The command-line version of the admin **Reset** button: back up, then start the game over at Day 1 (stop the server first). |
-| `backups/` | Copies of the save and the ledger made by the admin **Reset** button or `reset_game.py` (generated). |
-| `ledger.db` | The ledger: every money event and every player's equity curve (generated, git-ignored, with `-wal` and `-shm` files beside it while the server runs). |
+| `share.py` | Gives other people a link to the game while it runs on your own computer, through a free Cloudflare quick tunnel (§1, "Letting other people play"). Never starts the game or touches the save. |
+| `chart_check.py` | Runs the real engine with nobody trading and measures its charts against the known facts of real prices (§6A.9, `docs/MARKET_REALISM.md`). |
+| `realism.py` | Runs the price model on its own for game years: the long-run return, levels, and the "no free money" check (§6A.9). |
+
+### What the game writes (`data/`, never in git)
+
+| File | Role |
+|---|---|
+| `state.json` | The save file: a snapshot of the game, written every 30 seconds. The chart candles, most of its size, live in `state.charts.json` beside it, rewritten every five minutes (§13). |
+| `ledger.db` | The ledger: every money event and every player's equity curve (with `-wal` and `-shm` files beside it while the server runs). |
+| `backups/` | Copies of the save and the ledger made by the admin **Reset** button, `reset_game.py` or `start_game.ps1 -Fresh`. |
+| `admin_key.txt`, `share_url.txt`, `sim_results/` | This computer's admin key (made by `start_game.ps1`), the last link from `share.py`, and the market checks' cached runs. |
+
+### Everything else
+
+| File | Role |
+|---|---|
+| `deploy/` | Putting the game on a rented server with a domain name and https: a guide, the upload and update scripts, the setup script, the services, the web-server file and the backup job (§1, "Running it on a real server") |
+| `tests/` | The automated test suite: engine, server, browser, stress, capacity and slow checks (§16). |
+| `.github/workflows/tests.yml` | Runs the test suite automatically on every push (the project is on GitHub). |
 
 ---
 
@@ -582,7 +630,7 @@ Releases come on a fixed calendar from the clock (the same after a restart; `Eco
 
 Each has a **forecast** published 3-10 game days ahead (it never changes once published), drawn from the economy at that moment plus forecasters' error. The figure itself is the economy plus measurement noise, so the **surprise** (figure minus forecast, in standard deviations) is what matters. A surprise becomes a *growth* surprise and/or a *rates* surprise (hot CPI and strong jobs push rates; claims are inverted); rate decisions are priced as a probability ("a 0.25-point rise expected (72%)") and the surprise is the decision minus the expected move. The market reacts through each listing's beta (`0.6 x growth - 0.7 x rates`, times 0.55 market daily sigmas) plus its industry's sensitivity (`GROWTH_TILT`, `RATES_TILT`: banks gain on higher rates, property, tech, crypto and utilities lose, defensives hold up when growth disappoints). Most of the move comes within 45 seconds (real releases are priced in seconds); a quarter of releases **whipsaw** (the first 8 seconds go the wrong way). The market's noise is 0.85x in the five minutes before a release and up to 1.8x just after it. Each release is a `macro` headline ("Consumer prices (CPI): 3.4% a year, above the 3.2% forecast - inflation runs hot").
 
-`GET /api/calendar` and the **Calendar** page show the next releases with their forecasts, the latest results, the policy rate and the next earnings forecasts; the macro releases also appear in *Upcoming events*.
+`GET /api/calendar` and the **Calendar** page show the next releases with their forecasts, the latest results, the policy rate and the next earnings forecasts; the macro releases also appear in *Upcoming events* (the list shows the next 20 events, and always includes the next economic release, even when 20 company events come first).
 
 ### 6A.7 Earnings against a forecast
 Three game days before a report, analysts publish a **forecast EPS** (`Engine._earnings_forecast`): what the stories announced since the last report imply (§7.7), plus a 1% error. It shows in *Upcoming events* and on the Calendar page. The report then says whether the company beat, matched or missed it, and the price reacts to the surprise in units of how big surprises usually are for that company (the 1% forecast error, revenue noise and margin noise), times three daily sigmas, at most five: about 2.5-4 times an ordinary day's move, like real earnings days. After a big surprise (over 2%) the price keeps drifting the same way by 15% of the reaction over three game days (**post-earnings drift**).
@@ -594,12 +642,12 @@ With the new model `base.json` cuts the news: a random event every 15 minutes on
 `MARKET_REALISM.md` has the research on how real prices move (with sources), what was wrong with the charts, what was
 changed on 2026-10-13 and the next steps.
 
-- `python chart_check.py [game_days] [seed] [--cached]` runs the **real engine** (no players) on a fixed clock and
+- `python tools/chart_check.py [game_days] [seed] [--cached]` runs the **real engine** (no players) on a fixed clock and
   measures one-minute candles against the stylised facts of real stocks: fat tails and the tail exponent, no
   minute-to-minute direction, volatility memory and the leverage effect, volume against the size of the move and its
   memory, the intraday U-shape, correlation between stocks, daily tails, gap fills, earnings days and ticks, each with
-  its target. About 20 seconds a game day; results are cached in `sim_results/`.
-- `python realism.py [game_years] [seeds] [stocks] [first_seed]` runs the price model on its own in 10-second steps
+  its target. About 20 seconds a game day; results are cached in `data/sim_results/`.
+- `python tools/realism.py [game_years] [seeds] [stocks] [first_seed]` runs the price model on its own in 10-second steps
   (with the engine's noise, clustering and daily brake rebuilt), about 50 times faster than the engine, for the long run
   and the "no free money" strategies (§1 of the ROADMAP's design rules). It is an approximation of the engine.
 
@@ -813,7 +861,7 @@ The earnings headline also carries a short quote from the CEO or CFO whose tone 
 ## 8. Stocks, content packs and new listings
 
 ### 8.1 Where stocks come from
-All `*.json` files in the project folder (except `state.json`) are **content packs**, merged in alphabetical order. Later files override earlier ones with the same id or ticker. A pack can contain:
+All `*.json` files in `content/` are **content packs**, merged in alphabetical order. Later files override earlier ones with the same id or ticker. A pack can contain:
 - `settings`: any tuning value
 - `sectors`: `{id, name, icon}`
 - `companies`: `{ticker, name, sector, desc, asset_type, beta, vol, sens, depth, rating, margin, traits, dependencies}`
@@ -1174,7 +1222,7 @@ Player endpoints need the player's **session token** in an `X-Token` header (the
 | `GET /api/admin/mail` | admin | whether mail is configured, how many were sent or failed, and the recent messages (in console mode with their codes) |
 | `POST /api/admin/email` `{name, action: verify\|clear}` | admin | mark a player's address verified, or remove it |
 | `POST /api/admin/reset_password` `{name}` | admin | give a player a temporary password (returned once) and end their sessions |
-| `POST /api/admin/reset` `{confirm: "RESET"}` | admin | back up the save and the ledger into `backups/`, then start the game over at Day 1 (§1, §10) |
+| `POST /api/admin/reset` `{confirm: "RESET"}` | admin | back up the save and the ledger into `data/backups/`, then start the game over at Day 1 (§1, §10) |
 | `POST /api/admin/chat/delete` `{id}` | admin | delete a chat message (everyone's screen updates) |
 | `POST /api/admin/mute` `{name, seconds}` | admin | mute a player's chat (`0` lifts it) |
 | `POST /api/admin/credit` `{name, amount, note?}` | admin | add MB to a player (source `admin`, counted as money put in so it never lifts a return or rank); the player gets a message with the note. 400 unless 0 < amount ≤ 1,000,000; 404 for an unknown name (names match whatever the case). The admin page's **Accounts** card has the form (Add MB / Take back MB, with a confirmation) |
@@ -1305,7 +1353,7 @@ browsers ──websocket──▶ gateway (1..N processes) ──one link each�
                          sends the updates                          saves, news (one process)
 ```
 
-**Starting it.** `python launch.py --gateways 4` (§1) starts the game server on `127.0.0.1:8001` and four gateway worker processes sharing port 8000. The launcher makes a random `CORE_KEY` and gives it to both sides; a gateway connects to the game server's `/internal/gateway` websocket and has to present it (without a `CORE_KEY` the game server refuses all gateways, so a normal start exposes nothing). `python launch.py` alone is the old single-process game. The tests can run the whole suite through gateways: `MS_TEST_GATEWAYS=2 python -m unittest discover tests` (§16).
+**Starting it.** `python tools/launch.py --gateways 4` (§1) starts the game server on `127.0.0.1:8001` and four gateway worker processes sharing port 8000. The launcher makes a random `CORE_KEY` and gives it to both sides; a gateway connects to the game server's `/internal/gateway` websocket and has to present it (without a `CORE_KEY` the game server refuses all gateways, so a normal start exposes nothing). `python tools/launch.py` alone is the old single-process game. The tests can run the whole suite through gateways: `MS_TEST_GATEWAYS=2 python -m unittest discover tests` (§16).
 
 **What a gateway does.** It serves the pages (the game, `/admin`, the logo; the same code as the game server, `pages.py`); holds each browser's websocket; applies the once-a-second update; forwards the browser's messages (trade, chat, chart request...) to the game server, which answers over the same link; and passes every ordinary `/api/...` request to the game server, adding the caller's real address (§10.6). A request is run through the game server's own app exactly as if it had arrived directly, so sign-in, portfolio and admin behave identically (and every limit, header and status code is the same). It holds **no game state at all**: restart a gateway at any moment and its pages reconnect through it or another one.
 
@@ -1352,7 +1400,7 @@ browsers ──websocket──▶ gateway (1..N processes) ──one link each�
 
 ## 13. Saving and the crash-proof ledger
 
-**In plain English:** the game is saved in two ways that back each other up. A **snapshot** (`state.json`) is a photo of the whole game every 30 seconds. The **ledger** (`ledger.db`) is a notebook where every change to anyone's money is written down the moment it happens. If the server crashes, the next start loads the last photo and then replays the notebook entries written after it, so **nothing is lost, not even the last second**.
+**In plain English:** the game is saved in two ways that back each other up. A **snapshot** (`data/state.json`) is a photo of the whole game every 30 seconds. The **ledger** (`data/ledger.db`) is a notebook where every change to anyone's money is written down the moment it happens. If the server crashes, the next start loads the last photo and then replays the notebook entries written after it, so **nothing is lost, not even the last second**.
 
 ### The snapshot (`state.json`)
 - **When:** every 30 ticks, on shutdown, and straight after a recovery. It writes `state.json.tmp` and then replaces `state.json`, so a crash mid-write can't leave a half file. A new account, a password change and an admin reset also save at once. **If Windows refuses to swap the file in** ("Access is denied": OneDrive, a virus scanner or a backup tool has it open for a moment, which this project's OneDrive folder invites), the save tries again up to eight times over a few seconds, and if it still can't it logs a warning and tries again at the next save (the chart file in half a minute) instead of raising an error in the game loop. Keeping the game folder out of OneDrive's sync avoids it altogether.
@@ -1363,7 +1411,7 @@ browsers ──websocket──▶ gateway (1..N processes) ──one link each�
 
 ### The ledger (`ledger.py`, `ledger.db`)
 A SQLite file in WAL mode with two tables, flushed once per tick:
-- **`events`** (append-only, never edited or deleted, except by an admin reset, which copies the file to `backups/` first): one row per money event: `join`, `credit`, `debit`, `buy`, `sell`, `short`, `cover`, `margin_call`, `margin`, `dividend`, `borrow` (borrow fees are summed and written every 10 seconds), `delist_payout`, `delist`, `recap` (a top-up of the house reserve). Old ledgers may also hold `split` rows, which are ignored. Each row records the time, player, ticker, shares, price, and the **changes** to the player's cash, the house reserve, fees and the position's cost basis, plus the realised profit on closing trades.
+- **`events`** (append-only, never edited or deleted, except by an admin reset, which copies the file to `data/backups/` first): one row per money event: `join`, `credit`, `debit`, `buy`, `sell`, `short`, `cover`, `margin_call`, `margin`, `dividend`, `borrow` (borrow fees are summed and written every 10 seconds), `delist_payout`, `delist`, `recap` (a top-up of the house reserve). Old ledgers may also hold `split` rows, which are ignored. Each row records the time, player, ticker, shares, price, and the **changes** to the player's cash, the house reserve, fees and the position's cost basis, plus the realised profit on closing trades.
 - **`curve`**: each player's equity and cash once a minute (the equity curve on the portfolio page; the last 1,440 points are reloaded at start).
 
 **Recovery.** On start the engine loads `state.json`, reads `ledger_seq`, and replays every event after it (`Engine._replay`): cash, holdings, cost basis, fees, house reserve, dividends, borrow fees, counters, and players who joined after the snapshot. It then checks the **token invariant** (the books still balance to within a millionth) and saves a fresh snapshot. A test kills an engine in the middle of play and checks that the recovered state matches the live one trade for trade. **Not recovered:** prices, news and the social counters since the last snapshot (up to 30 seconds), and borrow fees charged in the last few seconds before the crash (they are written every 10 seconds): they are cosmetic, random or tiny. Trades, deposits, dividends and payouts are exact.
@@ -1376,7 +1424,7 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 
 ## 14. Settings reference
 
-**How to change a setting.** Settings live in the content packs (`base.json` has the defaults). To change one without editing a shipped file, make a new root-level file such as `my_settings.json` containing only `{"settings": {"email_mode": "required"}}`: packs are merged in alphabetical order and later files win, and the game re-reads packs about once a second, so most changes apply without a restart (a few, such as the ones that decide what exists at the start of a new game, only matter then).
+**How to change a setting.** Settings live in the content packs (`base.json` has the defaults). To change one without editing a shipped file, make a new file in `content/` such as `my_settings.json` containing only `{"settings": {"email_mode": "required"}}`: packs are merged in alphabetical order and later files win, and the game re-reads packs about once a second, so most changes apply without a restart (a few, such as the ones that decide what exists at the start of a new game, only matter then).
 
 | Setting | Default | Effect |
 |---|---|---|
@@ -1482,7 +1530,7 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 - **Sessions use the real clock.** Pre-market, the regular session and after-hours follow the server's clock (UTC, the same for everyone), so a game started at 12:17 begins in the regular session. The page shows the times in your own time zone. A server that is already running keeps the code it started with: restart it to get new sessions, moonshots and catalysts.
 - **Passwords are the login now.** The browser keeps a session token in `localStorage`; losing it just means logging in again. A forgotten password is recovered with a code mailed to the account's verified email (§10.6); an account with no verified email still needs the admin's **Reset password**.
 - **Only one server per save file and ledger.** Two servers would overwrite each other's snapshots and interleave their ledgers.
-- **The ledger is not a backup.** It lives next to `state.json`; copy the save, the chart file and the ledger. Money events since the last snapshot are replayed after a crash, but achievement counters and chat since then are not. The admin **Reset** button makes such a copy for you in `backups/` before it clears anything.
+- **The ledger is not a backup.** It lives next to `state.json` in `data/`; copy the save, the chart file and the ledger. Money events since the last snapshot are replayed after a crash, but achievement counters and chat since then are not. The admin **Reset** button makes such a copy for you in `backups/` before it clears anything.
 - **Chart history is rewritten every five minutes,** so after a crash the newest part of the 30-second charts may have a gap (the one-minute and longer candles are rebuilt).
 
 ---
@@ -1601,12 +1649,9 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 \* The slowest tick is the one that writes the chart file every five minutes (and the first save). Before the chart file was split off the periodic save took 2.1-2.9 s (a 2.4 s freeze every 30 seconds) and the average tick was 270-380 ms; now the save takes about 140 ms. The per-player tick work is small (about 0.1% of a core per player); the fixed cost of a tick is the 54 ms of the engine itself.
 
 ### The slow checks (`RUN_SLOW=1`)
-- A 20-client, 15-second stress run.
-- A small edge check (12 seeds × 1 hour): no strategy may earn a clearly positive mean (t above 3). It is deliberately loose because 12 seeds are noisy.
-- A **paired** check on 24 seeds: switching the daily limit off must not make the dip-buying `value` strategy significantly worse (before the soft limit it did, by 2.7%, t −3.2).
-- The same with a 2-game-day quarter, so every company reports several times and the earnings and dividend path is covered by the simulator (a normal 2-hour simulation sees almost no reports now that a quarter is 45.6 hours).
+- A 20-client, 15-second stress run. (The old edge and paired checks went with the edge tools on 2026-10-13, §1.)
 
-The **real** edge check is still `python edge.py 40 2 <a first seed you haven't used>` (about 7 minutes; see §1). Run it before shipping any change to prices, news, fees, limits or dividends.
+The market's own checks are `python tools/chart_check.py` and `python tools/realism.py` (§1, "Market checks"; §6A.9). Run them before shipping any change to prices, news, fees, limits or dividends.
 
 ### Which check when
 
@@ -1614,10 +1659,10 @@ The **real** edge check is still `python edge.py 40 2 <a first seed you haven't 
 |---|---|
 | anything in the engine | `python -m unittest discover tests` |
 | `server.py` or `index.html` | the same (includes the server and browser tests) |
-| prices, news, fees, margin, dividends, earnings, volatility, sessions, orders, company events, indices, moonshots, distress, catalysts, the house reserve | the tests, then `python edge.py 40 2 <fresh seed>`, then `RUN_SLOW=1` slow checks (and a `paired.py` run for the mechanism you touched, §17) |
+| prices, news, fees, margin, dividends, earnings, volatility, sessions, orders, company events, indices, moonshots, distress, catalysts | the tests, then `python tools/chart_check.py 12 7` and `python tools/realism.py 2 3 40 <fresh seed>` (§6A.9) |
 | anything in `social.py` or `contest.py` | the tests; the "social features never move a price" and "a contest changes nothing outside itself" tests are the ones that matter |
 | `accounts.py`, `mailer.py`, sign-in or the admin reset | the tests (`test_accounts.py`, `test_email.py`, `test_reset.py`, the password and email browser tests) |
-| `server.py`, `gateway.py`, `wsconn.py`, `launch.py` | the tests, then the server suites again through gateways: `$env:MS_TEST_GATEWAYS = "2"; python -m unittest test_server test_accounts test_email test_reset test_contests test_social test_orders test_browser` (from `tests/`), and `python tests/capacity.py 400 40 2` |
+| `server.py`, `gateway.py`, `wsconn.py`, `tools/launch.py` | the tests, then the server suites again through gateways: `$env:MS_TEST_GATEWAYS = "2"; python -m unittest test_server test_accounts test_email test_reset test_contests test_social test_orders test_browser` (from `tests/`), and `python tests/capacity.py 400 40 2` |
 | saving (`save`/`_load_state`) or the server's capacity | `test_save.py`, then `python tests/capacity.py 200 40` with `CAPACITY_STATE` pointing at a copy of a real save |
 | the protocol in `server.py` or the page's merge code | the tests, then `python tests/stress.py 40 30` |
 | before a release | everything above plus `python tests/stress.py 60 60` |

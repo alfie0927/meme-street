@@ -106,7 +106,7 @@ If you want to keep your accounts and prices: **stop the game on your computer**
 powershell -File deploy\upload.ps1 -Server root@YOUR.SERVER.IP -WithGame
 ```
 
-This copies the save, the charts and the ledger, restarts the game on the server with them, and refuses to run while
+This copies the save, the charts and the ledger (from `data\` here to `/opt/memestreet/data` there), restarts the game on the server with them, and refuses to run while
 your own copy is still running. Otherwise the server starts a fresh market (you can use the admin **Reset** button for a
 clean Day 1 at any time). After this, **stop using the copy on your computer**: only one game may own the players'
 money.
@@ -122,7 +122,7 @@ money.
    Mail ready turns the game's email setting from off to optional by itself.
    **By hand instead:** on the server `nano /etc/memestreet.env`, remove the `#` from the `SMTP_` and `MAIL_FROM` lines and
    fill them in, then `systemctl restart memestreet memestreet-gateway`.
-3. To make a verified address *necessary* (the default is optional), on your computer make a file `my_settings.json` in the project folder containing
+3. To make a verified address *necessary* (the default is optional), on your computer make a file `my_settings.json` in the `content` folder containing
    `{"settings": {"email_mode": "optional"}}` (or `"required"` to make a verified address necessary to trade), then
    upload it with `powershell -File deploy\upload.ps1 -Server root@YOUR.SERVER.IP`. Players see the email box at sign-up.
 
@@ -140,11 +140,11 @@ systemctl reload caddy
 Your browser will then ask for the name `owner` and that password before it shows `/admin`.
 
 **On memestreet.net this is done** (2026-10-10): `/admin` and `/api/admin/*` are behind that password, and the admin key was
-replaced at the same time. The new name, password and key are in `live_admin_credentials.txt` in the project folder (a file
-git never sends anywhere). To change them later, make a new hash on the server, replace the hash in `/etc/caddy/Caddyfile`,
+replaced at the same time. The new name, password and key are in `data\live_admin_credentials.txt` (the `data` folder is
+never sent to git). To change them later, make a new hash on the server, replace the hash in `/etc/caddy/Caddyfile`,
 run `caddy validate --config /etc/caddy/Caddyfile` and `systemctl reload caddy`; the admin key is the `ADMIN_KEY` line of
 `/etc/memestreet.env` (then `systemctl restart memestreet memestreet-gateway`). Behind this, the game itself locks an address
-out of the admin interface for ten minutes after ten wrong keys (`HOW_IT_WORKS.md` section 12).
+out of the admin interface for ten minutes after ten wrong keys (`docs/HOW_IT_WORKS.md` section 12).
 
 ## Updating the live game
 
@@ -154,8 +154,15 @@ Whenever you change the code on your computer:
 powershell -File deploy\upload.ps1 -Server root@YOUR.SERVER.IP -Restart
 ```
 
-It sends the changed code and restarts the game. The game saves itself on the way down, players are disconnected for a few
-seconds and reconnect by themselves. Never sent: saves, the ledger and anything else the server owns.
+It sends the code (`game/`, `web/`, `content/`, `tools/`, the logo and `deploy/`), runs `deploy/update_server.sh` on the
+server (it installs changed service files and the backup job) and restarts the game. The game saves itself on the way down,
+players are disconnected for a few seconds and reconnect by themselves. Never sent: `data/` (saves, the ledger, backups)
+and anything else the server owns.
+
+On the server the game is in `/opt/memestreet` with the same folders as here; what it writes is in `/opt/memestreet/data`.
+(Until October 2026 everything sat in `/opt/memestreet` itself. The first upload after the change moved the save, the
+ledger and the reset backups into `data/` and removed the old copies of the code: `update_server.sh` does that by itself on
+any server still in the old layout, with the game stopped for the moment of the move and a backup taken first.)
 
 ## Backups
 
@@ -175,10 +182,10 @@ and switch on the provider's own backups. **Restoring** a backup (the game must 
 
 ```bash
 systemctl stop memestreet-gateway memestreet
-cp /var/backups/memestreet/2026-10-05-0400/state.json /var/backups/memestreet/2026-10-05-0400/state.charts.json /opt/memestreet/
-rm -f /opt/memestreet/ledger.db-wal /opt/memestreet/ledger.db-shm
-cp /var/backups/memestreet/2026-10-05-0400/ledger.db /opt/memestreet/
-chown memestreet:memestreet /opt/memestreet/state*.json /opt/memestreet/ledger.db
+cp /var/backups/memestreet/2026-10-05-0400/state.json /var/backups/memestreet/2026-10-05-0400/state.charts.json /opt/memestreet/data/
+rm -f /opt/memestreet/data/ledger.db-wal /opt/memestreet/data/ledger.db-shm
+cp /var/backups/memestreet/2026-10-05-0400/ledger.db /opt/memestreet/data/
+chown memestreet:memestreet /opt/memestreet/data/state*.json /opt/memestreet/data/ledger.db
 systemctl start memestreet && sleep 5 && systemctl start memestreet-gateway
 ```
 

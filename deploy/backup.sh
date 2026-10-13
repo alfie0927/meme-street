@@ -4,7 +4,8 @@
 # the machine: also download them now and then (see deploy/DEPLOY.md, "Backups"), or turn on the provider's own backups.
 set -euo pipefail
 
-SRC=/opt/memestreet
+SRC=/opt/memestreet/data
+[ -f "$SRC/state.json" ] || SRC=/opt/memestreet          # (before October 2026 the game kept its files in the top folder)
 DEST=/var/backups/memestreet
 STAMP=$(date +%Y-%m-%d-%H%M)
 mkdir -p "$DEST/$STAMP"

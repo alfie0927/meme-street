@@ -7,6 +7,7 @@ import relations
 import economy
 import learning
 import market_model
+import paths
 import social
 from ledger import Ledger
 from social import SocialMixin
@@ -234,7 +235,7 @@ class Player:
 
 
 class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin):
-    def __init__(self, content_glob="*.json", state_file="state.json", ledger_path=None):
+    def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None):
         self._init_social()
         self._init_accounts()
         self._init_economy()
@@ -441,11 +442,14 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     # ---------- content ----------
     def _content_files(self):
-        """The content packs: every .json file in the folder except the save and its chart file (which are big, are
-        rewritten while the game runs and are not content: reading them as packs made every chart save look like a
-        content change, and a read could fail while the file was being replaced)."""
+        """The content packs: every .json file in the content folder except a save and its chart file (which are big,
+        are rewritten while the game runs and are not content: reading them as packs made every chart save look like a
+        content change, and a read could fail while the file was being replaced). The save normally lives in data/, but
+        one called state.json that was put in the content folder is still never read as a pack."""
         skip = set()
-        for name in (self.state_file or "state.json", "state.json"):
+        for name in (self.state_file, os.path.join(os.path.dirname(self.content_glob), "state.json")):
+            if not name:
+                continue
             skip.add(os.path.abspath(name))
             skip.add(os.path.abspath(os.path.splitext(name)[0] + ".charts.json"))
         return [f for f in glob.glob(self.content_glob) if os.path.abspath(f) not in skip]
@@ -2957,7 +2961,13 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             for ev in stock.events:
                 events.append({"ticker": stock.ticker, "name": stock.name, "kind": newsgen.COMPANY_EVENT_KEYS[ev["kind"]]["label"],
                                "at": ev["t"], "in_seconds": max(0, int(ev["t"] - self.now))})
-        return sorted(events, key=lambda event: event["at"])[:20]
+        events.sort(key=lambda event: event["at"])
+        top = events[:20]
+        if not any(u.get("macro") for u in top):          # the next economic release is always listed, even hours away
+            nxt = next((u for u in events if u.get("macro")), None)
+            if nxt:
+                top = top[:19] + [nxt]
+        return top
 
     def me_state(self, p, notices=True):
         """What one player sees about themselves every tick: cash, equity, rank and their positions."""
@@ -3320,6 +3330,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         """Serialise with the fast C encoder (json.dump to a file goes through a slow Python path: 4x slower on a big
         save) and swap the file in atomically."""
         text = json.dumps(obj, separators=(",", ":"))
+        os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)     # (a new game's data/ folder)
         tmp = path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
             f.write(text)

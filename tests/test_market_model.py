@@ -10,6 +10,7 @@ import unittest
 
 from _helpers import IsolatedServer, drift, engine, join, make_engine, quiet
 import market_model as mm  # noqa: E402  (after _helpers, which puts the project on the path)
+import paths  # noqa: E402
 from test_server import http
 
 
@@ -188,7 +189,7 @@ class EngineTests(unittest.TestCase):
     def test_the_model_is_off_in_the_old_market_and_on_with_the_setting(self):
         self.assertIsNone(make_engine(1).model)
         self.assertEqual(engine.Engine(state_file=None).settings.get("market_model"), 1)   # (the test setting)
-        with open("base.json", encoding="utf-8") as fh:
+        with open(os.path.join(paths.CONTENT, "base.json"), encoding="utf-8") as fh:
             self.assertEqual(json.load(fh)["settings"]["market_model"], 2)                 # the game itself
 
     def test_candles_carry_volume_and_money_is_conserved(self):

@@ -9,6 +9,8 @@
 				"-m",
 				"uvicorn",
 				"server:app",
+				"--app-dir",
+				"game",
 				"--host",
 				"127.0.0.1",
 				"--port",

@@ -1,5 +1,5 @@
-"""Shared helpers for the test suite. Importing this module makes `engine` importable from the project root
-and runs from there (the engine reads its content packs from the working directory)."""
+"""Shared helpers for the test suite. Importing this module makes the game's modules (game/) importable and runs from
+the project folder. The engine finds its content packs (content/) and its save folder (data/) through game/paths.py."""
 import os
 import random
 import shutil
@@ -12,7 +12,9 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-sys.path.insert(0, ROOT)
+GAME = os.path.join(ROOT, "game")
+sys.path.insert(0, GAME)
+sys.path.insert(1, os.path.join(ROOT, "tools"))        # (launch.py and share.py are tested too)
 os.chdir(ROOT)
 
 import engine  # noqa: E402
@@ -119,12 +121,31 @@ def free_port():
         return s.getsockname()[1]
 
 
+PROJECT_FOLDERS = ("game", "web", "content", "tools")      # what a copy of the game needs (plus the logo from brand/)
+
+
+def copy_project(dest, settings=None):
+    """Copy the game into `dest` with the same folders (game/, web/, content/, tools/, the logo in brand/), so that it
+    runs there exactly as it does here but with its own empty data/. `settings` are written as one more content pack
+    (content/zz_test_settings.json) that overrides the shipped settings."""
+    skip = shutil.ignore_patterns("__pycache__", "*.pyc", "cloudflared*")
+    for folder in PROJECT_FOLDERS:
+        shutil.copytree(os.path.join(ROOT, folder), os.path.join(dest, folder), ignore=skip, dirs_exist_ok=True)
+    os.makedirs(os.path.join(dest, "brand"), exist_ok=True)
+    for logo in ("memestreet_logo_peaks.png", "memestreet_header_peaks.png"):
+        shutil.copy(os.path.join(ROOT, "brand", logo), os.path.join(dest, "brand"))
+    os.makedirs(os.path.join(dest, "data"), exist_ok=True)
+    if settings:
+        import json
+        with open(os.path.join(dest, "content", "zz_test_settings.json"), "w", encoding="utf-8") as fh:
+            json.dump({"settings": settings}, fh)
+    return dest
+
+
 class IsolatedServer:
     """Runs the real FastAPI app in a subprocess from a temporary copy of the project, so tests never read or
-    overwrite the real state.json. Usage:  with IsolatedServer() as srv: srv.url, srv.port"""
-
-    FILES = ["engine.py", "newsgen.py", "memestreet_logo_peaks.png", "relations.py", "contest.py", "accounts.py", "mailer.py", "netutil.py", "wsconn.py", "pages.py", "gateway.py", "ledger.py", "social.py", "server.py", "index.html", "about.html", "shop_pay.html", "admin.html", "economy.py", "payments.py", "market_model.py", "learning.py", "lessons.json", "pack_growth.json", "pack_fiction.json", "base.json", "expansion.json", "events_pack.json",
-             "market_profiles.json"]
+    overwrite the real save (data/state.json). Usage:  with IsolatedServer() as srv: srv.url, srv.port
+    `srv.dir` is the copy, `srv.code` its game/ folder (where the server is started) and `srv.data` its data/ folder."""
 
     def __init__(self, admin_key="testkey", settings=None, state_file=None, gateways=None, env=None):
         # With `gateways` (or the environment variable MS_TEST_GATEWAYS) the game runs the way a big deployment does: one
@@ -140,17 +161,11 @@ class IsolatedServer:
 
     def __enter__(self):
         self.dir = tempfile.mkdtemp(prefix="meme_street_test_")
-        for f in self.FILES:
-            for folder in (ROOT, os.path.join(ROOT, "brand")):           # (the logo lives in brand/)
-                if os.path.exists(os.path.join(folder, f)):
-                    shutil.copy(os.path.join(folder, f), self.dir)
-                    break
+        copy_project(self.dir, self.settings)      # (settings, e.g. faster earnings, become an extra content pack)
+        self.code = os.path.join(self.dir, "game")
+        self.data = os.path.join(self.dir, "data")
         if self.state_file:
-            shutil.copy(self.state_file, os.path.join(self.dir, "state.json"))
-        if self.settings:  # e.g. faster earnings: written as an extra content pack that overrides settings
-            import json
-            with open(os.path.join(self.dir, "zz_test_settings.json"), "w", encoding="utf-8") as fh:
-                json.dump({"settings": self.settings}, fh)
+            shutil.copy(self.state_file, os.path.join(self.data, "state.json"))
         self.core_port = free_port()
         self.core_url = f"http://127.0.0.1:{self.core_port}"
         self.procs = []
@@ -193,7 +208,7 @@ class IsolatedServer:
         log_file = open(log_path, "wb")   # a file, not a pipe, so a chatty server can never block
         self.log_files.append(log_file)
         proc = subprocess.Popen([sys.executable, "-m", "uvicorn", app, "--host", "127.0.0.1", "--port", str(port),
-                                 "--log-level", "warning"], cwd=self.dir, env=env, stdout=log_file, stderr=subprocess.STDOUT)
+                                 "--log-level", "warning"], cwd=self.code, env=env, stdout=log_file, stderr=subprocess.STDOUT)
         self.procs.append(proc)
         return proc
 

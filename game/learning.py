@@ -18,7 +18,9 @@ import json
 import os
 import uuid
 
-LESSONS_FILE = "lessons.json"
+import paths
+
+LESSONS_FILE = os.path.join(paths.CONTENT, "lessons.json")
 SETUPS = {"support": "Bounce at support", "resistance": "Rejected at resistance", "breakout": "Breakout",
           "pullback": "Trend pullback", "range": "Range trade", "macro": "Macro release", "earnings": "Earnings",
           "other": "Other"}
@@ -80,7 +82,7 @@ class LearningMixin:
     """Mixed into the Engine. Uses `self.now`, `self.settings`, `self.credit`, `self._notify`, `self.stocks`, `self.is_pro`."""
 
     def _init_learning(self):
-        self.lessons = load_lessons(os.path.join(os.getcwd(), LESSONS_FILE))
+        self.lessons = load_lessons(LESSONS_FILE)
         self._lesson_by_id = {x["id"]: x for x in self.lessons}
 
     # ------------------------------------------------------------------ periods and rewards

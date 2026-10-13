@@ -17,7 +17,7 @@ import unittest
 import urllib.error
 import urllib.request
 
-from _helpers import IsolatedServer, ROOT, free_port
+from _helpers import IsolatedServer, copy_project, free_port
 from test_server import http
 
 import share
@@ -169,7 +169,7 @@ class ClusterTests(unittest.TestCase):
         extra_port = free_port()
         env = dict(os.environ, CORE_KEY=self.srv.key, CORE_URL=f"ws://127.0.0.1:{self.srv.core_port}/internal/gateway")
         proc = subprocess.Popen([sys.executable, "-m", "uvicorn", "gateway:app", "--host", "127.0.0.1", "--port", str(extra_port),
-                                 "--log-level", "warning"], cwd=self.srv.dir, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                 "--log-level", "warning"], cwd=self.srv.code, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
             deadline = time.time() + 30
             while time.time() < deadline:
@@ -224,7 +224,7 @@ class CoreRestartTests(unittest.TestCase):
             # start the game again from the same folder: the gateway finds it by itself
             env = dict(os.environ, ADMIN_KEY="testkey", CORE_KEY=srv.key)
             srv.proc = subprocess.Popen([sys.executable, "-m", "uvicorn", "server:app", "--host", "127.0.0.1", "--port", str(srv.core_port),
-                                         "--log-level", "warning"], cwd=srv.dir, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                         "--log-level", "warning"], cwd=srv.code, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             srv.procs.append(srv.proc)
             deadline = time.time() + 60
             ok = False
@@ -247,16 +247,10 @@ class LauncherTests(unittest.TestCase):
     def test_launch_starts_the_game_and_gateway_workers_that_answer_on_one_port(self):
         folder = tempfile.mkdtemp(prefix="meme_street_launch_")
         try:
-            for f in IsolatedServer.FILES + ["launch.py"]:
-                for base in (ROOT, os.path.join(ROOT, "brand")):
-                    if os.path.exists(os.path.join(base, f)):
-                        shutil.copy(os.path.join(base, f), folder)
-                        break
-            with open(os.path.join(folder, "zz_test_settings.json"), "w", encoding="utf-8") as fh:
-                json.dump({"settings": {"require_password": False, "premarket_seconds": 0, "aftermarket_seconds": 0}}, fh)
+            copy_project(folder, {"require_password": False, "premarket_seconds": 0, "aftermarket_seconds": 0})
             port, core_port = free_port(), free_port()
             log = open(os.path.join(folder, "launch.log"), "wb")
-            proc = subprocess.Popen([sys.executable, "launch.py", "--gateways", "2", "--port", str(port), "--core-port", str(core_port)],
+            proc = subprocess.Popen([sys.executable, os.path.join("tools", "launch.py"), "--gateways", "2", "--port", str(port), "--core-port", str(core_port)],
                                     cwd=folder, stdout=log, stderr=subprocess.STDOUT)
             try:
                 deadline = time.time() + 90

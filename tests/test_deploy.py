@@ -12,6 +12,7 @@ import unittest
 from _helpers import ROOT
 
 DEPLOY = os.path.join(ROOT, "deploy")
+GAME = os.path.join(ROOT, "game")
 
 
 def read(name):
@@ -31,7 +32,7 @@ def local_imports(path, seen=None):
         elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
             names = [node.module.split(".")[0]]
         for name in names:
-            file = os.path.join(ROOT, name + ".py")
+            file = os.path.join(GAME, name + ".py")
             if os.path.exists(file) and name not in seen:
                 seen.add(name)
                 local_imports(file, seen)
@@ -53,6 +54,7 @@ class ServiceFileTests(unittest.TestCase):
         for text in (game, gateway):                                                       # the game may only write in its own folder
             self.assertIn("ReadWritePaths=/opt/memestreet", text)
             self.assertIn("User=memestreet", text)
+            self.assertIn("WorkingDirectory=/opt/memestreet/game", text)                    # (uvicorn finds server.py and gateway.py there)
         self.assertIn("TimeoutStopSec=", game)                                             # time to save on the way down
 
     def test_every_setting_the_code_reads_from_the_environment_is_in_the_example(self):
@@ -61,7 +63,7 @@ class ServiceFileTests(unittest.TestCase):
             self.assertIn(name, env)
         used = set()
         for module in ("server.py", "gateway.py", "mailer.py"):
-            with open(os.path.join(ROOT, module), encoding="utf-8") as fh:
+            with open(os.path.join(GAME, module), encoding="utf-8") as fh:
                 used |= set(re.findall(r'environ(?:\.get)?\(?\[?"([A-Z_]+)"', fh.read()))
         used |= {"SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "MAIL_FROM"}
         for name in used:
@@ -114,15 +116,29 @@ class ServiceFileTests(unittest.TestCase):
         bash = shutil.which("bash")
         if bash is None:
             self.skipTest("no bash on this machine")
-        for name in ("setup_server.sh", "backup.sh"):
+        for name in ("setup_server.sh", "backup.sh", "update_server.sh"):
             path = os.path.join(DEPLOY, name).replace("\\", "/")             # (Git's bash cannot read a path with backslashes when it is started from PowerShell)
             result = subprocess.run([bash, "-n", path], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, name + ": " + result.stderr)
 
     def test_the_backup_copies_the_save_and_makes_a_consistent_copy_of_the_ledger(self):
         text = read("backup.sh")
-        for needed in ("state.json", "state.charts.json", "sqlite3", ".backup", "-mtime +14"):
+        for needed in ("state.json", "state.charts.json", "sqlite3", ".backup", "-mtime +14", "SRC=/opt/memestreet/data"):
             self.assertIn(needed, text)
+
+    def test_the_update_script_moves_an_old_game_into_data_and_never_overwrites_a_save(self):
+        text = read("update_server.sh")
+        self.assertIn("set -euo pipefail", text)
+        self.assertIn("systemctl stop memestreet-gateway memestreet", text)           # nothing moves while the game runs
+        self.assertIn('mv "$APP/$f" "$APP/data/"', text)
+        self.assertIn("refusing to choose", text)                                     # a save in both places: stop
+        self.assertLess(text.index("systemctl stop"), text.index('mv "$APP/$f"'))
+        self.assertIn("install -m 755 \"$APP/deploy/backup.sh\" /usr/local/bin/memestreet-backup", text)
+        for line in text.splitlines():                                                # it deletes code, never a save or a ledger
+            if line.lstrip().startswith("rm ") or " rm -" in line:
+                self.assertNotIn("state", line, line)
+                self.assertNotIn("ledger", line, line)
+        self.assertIn("update_server.sh", read("upload.ps1"))
 
 
 class UploadTests(unittest.TestCase):
@@ -137,23 +153,26 @@ class UploadTests(unittest.TestCase):
 
     def test_every_module_the_server_and_gateway_need_is_in_the_upload(self):
         files = self.listing()
-        needed = {m + ".py" for m in local_imports(os.path.join(ROOT, "server.py")) | local_imports(os.path.join(ROOT, "gateway.py"))}
-        needed |= {"server.py", "gateway.py", "index.html", "admin.html", "requirements.txt", "base.json"}
+        needed = {"game/" + m + ".py" for m in local_imports(os.path.join(GAME, "server.py")) | local_imports(os.path.join(GAME, "gateway.py"))}
+        needed |= {"game/server.py", "game/gateway.py", "game/paths.py", "web/index.html", "web/admin.html", "web/about.html",
+                   "web/shop_pay.html", "requirements.txt", "content/base.json", "content/lessons.json", "tools/reset_game.py",
+                   "deploy/update_server.sh"}
         missing = sorted(needed - files)
         self.assertEqual(missing, [], "the upload would leave these behind: " + ", ".join(missing))
 
     def test_the_upload_never_sends_a_save_a_ledger_or_a_test(self):
         for name in self.listing():
-            self.assertFalse(name.startswith("state"), name)
+            self.assertFalse(os.path.basename(name).startswith("state"), name)
             self.assertNotIn("ledger.db", name)
-            self.assertFalse(name.startswith(("tests/", "backups/", "sim_results/", ".venv")), name)
+            self.assertNotIn("cloudflared", name)
+            self.assertFalse(name.startswith(("tests/", "data/", ".venv")), name)
         self.assertTrue(any(name.startswith("deploy/") for name in self.listing()))
 
     def test_the_content_packs_and_the_logo_go_along(self):
         files = self.listing()
         for name in ("base.json", "expansion.json", "pack_growth.json", "pack_fiction.json", "events_pack.json", "market_profiles.json"):
-            self.assertIn(name, files)
-        self.assertTrue(any(name.endswith("memestreet_logo_peaks.png") for name in files))
+            self.assertIn("content/" + name, files)
+        self.assertIn("brand/memestreet_logo_peaks.png", files)
 
 
 if __name__ == "__main__":

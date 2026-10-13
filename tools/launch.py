@@ -1,7 +1,7 @@
 """Start the game.
 
-    python launch.py                       the game in one process on http://127.0.0.1:8000 (what `uvicorn server:app` does)
-    python launch.py --gateways 4          the game server plus four gateway processes that hold the players' connections
+    python tools/launch.py                 the game in one process on http://127.0.0.1:8000 (what `uvicorn server:app` does)
+    python tools/launch.py --gateways 4    the game server plus four gateway processes that hold the players' connections
 
 One process is plenty for a few hundred players. With `--gateways N` the work of sending every player their once-a-second
 update is spread over N more processes (gateway.py explains how), which is what a larger crowd needs. Players always
@@ -13,7 +13,7 @@ computer (--core-port, default 8001).
     --core-port 8001    where the game server listens in gateway mode (only this computer can reach it)
 
 Set ADMIN_KEY first if you want the admin page (it is switched off without a key).
-To let people outside your home reach it, run `python share.py` as well (see HOW_IT_WORKS.md, "Sharing it")."""
+To let people outside your home reach it, run `python tools/share.py` as well (see docs/HOW_IT_WORKS.md, "Sharing it")."""
 import argparse
 import os
 import secrets
@@ -23,7 +23,7 @@ import sys
 import time
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+GAME = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "game")   # the game's code
 
 
 def wait_for(url, seconds, procs):
@@ -46,7 +46,7 @@ def main(argv=None):
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--core-port", type=int, default=8001)
     args = ap.parse_args(argv)
-    os.chdir(HERE)
+    os.chdir(GAME)                                             # (uvicorn finds server.py and gateway.py there)
     signal.signal(signal.SIGTERM, lambda *a: sys.exit(0))      # a stop request shuts the children down too (the `finally` below)
     py = sys.executable
     if args.gateways <= 0:

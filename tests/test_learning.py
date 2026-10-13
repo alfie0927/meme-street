@@ -153,7 +153,7 @@ class LearningServerTests(unittest.TestCase):
             self.assertTrue(d["lessons"] and d["challenges"])
             les = json.loads(http(srv, "/api/learn/lesson/basics")[1])            # public
             self.assertNotIn("answer", json.dumps(les))
-            with open("lessons.json", encoding="utf-8") as fh:
+            with open(learning.LESSONS_FILE, encoding="utf-8") as fh:
                 ans = [q["answer"] for q in next(x for x in json.load(fh)["lessons"] if x["id"] == "basics")["quiz"]]
             r = json.loads(http(srv, "/api/learn/quiz", "POST", {"lesson": "basics", "answers": ans}, headers=h)[1])
             self.assertTrue(r["passed"])
@@ -169,7 +169,7 @@ class LearningBrowserTests(unittest.TestCase):
     """The Learn, Journal and Calendar pages and the chart tools, in a real browser."""
 
     def test_the_new_pages_and_chart_tools(self):
-        with open("lessons.json", encoding="utf-8") as fh:
+        with open(learning.LESSONS_FILE, encoding="utf-8") as fh:
             answers = [q["answer"] for q in json.load(fh)["lessons"][0]["quiz"]]
         with IsolatedServer() as srv:
             d, errors = asyncio.run(self._pages(srv.url, answers))

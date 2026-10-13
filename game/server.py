@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Header, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
+import paths
 from engine import GUEST_KEY, Engine
 from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, password_problem, verify_password
 from mailer import Mailer
@@ -16,9 +17,8 @@ from wsconn import Conn
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-BASE = os.path.dirname(os.path.abspath(__file__))
-os.chdir(BASE)
-engine = Engine(ledger_path=os.path.join(BASE, "ledger.db"))
+os.makedirs(paths.DATA, exist_ok=True)              # the save, the charts and the ledger live in data/ (paths.py)
+engine = Engine(ledger_path=paths.LEDGER_FILE)
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
 
 # The engine is not thread safe, so it is only ever touched while holding `lock`. The game tick, trades and every
@@ -1229,9 +1229,9 @@ def memory_mb():
 def ops_info():
     """The machine and the files: uptime, memory, free disk, the sizes of the save and the ledger, when the game last saved
     and when the newest backup was made (the folder the backup job writes to; BACKUP_DIR overrides it)."""
-    size = lambda name: (os.path.getsize(os.path.join(BASE, name)) / 1048576) if os.path.exists(os.path.join(BASE, name)) else 0.0
+    size = lambda name: (os.path.getsize(os.path.join(paths.DATA, name)) / 1048576) if os.path.exists(os.path.join(paths.DATA, name)) else 0.0
     try:
-        disk = shutil.disk_usage(BASE)
+        disk = shutil.disk_usage(paths.DATA)
         disk_free_gb, disk_free_pct = disk.free / 1e9, 100.0 * disk.free / disk.total
     except OSError:
         disk_free_gb = disk_free_pct = None
@@ -1446,13 +1446,13 @@ class ResetGame(BaseModel):
 
 def do_reset():
     """Back everything up, then start the game over. Runs under the engine lock."""
-    return engine.reset_with_backup(os.path.join(BASE, "backups", time.strftime("reset-%Y%m%d-%H%M%S")))
+    return engine.reset_with_backup(os.path.join(paths.BACKUPS, time.strftime("reset-%Y%m%d-%H%M%S")))
 
 
 @app.post("/api/admin/reset")
 async def admin_reset(b: ResetGame, x_admin_key: str = Header("")):
     """Start the game over at Day 1 with everyone on the starting balance. Needs the word RESET as confirmation; the
-    old save and ledger are copied into backups/ first."""
+    old save and ledger are copied into data/backups/ first."""
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
     if b.confirm != "RESET":
@@ -1460,7 +1460,7 @@ async def admin_reset(b: ResetGame, x_admin_key: str = Header("")):
     folder = await run(do_reset)
     for conn in list(clients.values()):              # every page reconnects and gets the fresh game
         conn.close(hang_up=True)
-    return {"ok": True, "msg": "The game is back at Day 1. The old game was saved to " + os.path.relpath(folder, BASE)}
+    return {"ok": True, "msg": "The game is back at Day 1. The old game was saved to " + os.path.relpath(folder, paths.ROOT)}
 
 
 @app.get("/api/admin/accounts")
@@ -1534,4 +1534,4 @@ async def admin_appeal(b: AppealDecision, x_admin_key: str = Header("")):
 
 
 # ------------------------------------------------------------------------------------------ pages
-add_pages(app, BASE)
+add_pages(app)

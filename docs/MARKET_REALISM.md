@@ -85,7 +85,7 @@ Causes found by switching parts off one at a time (with a fixed clock so runs ar
 
 ## 4. Where it stands now
 
-`python chart_check.py 12 <seed>` (12 game days, about 5 minutes):
+`python tools/chart_check.py 12 <seed>` (12 game days, about 5 minutes):
 
 | Check | After (seeds 7, 8, 9) | Target |
 |---|---|---|
@@ -104,7 +104,7 @@ Causes found by switching parts off one at a time (with a fixed clock so runs ar
 | Earnings day vs usual day | 2.3-4.1x | 2.5-4x |
 | Prices on a tick | 100% | 100% |
 
-And the "no free money" check (`python realism.py 2 3 40 801`): buying every 1.5-sigma dip, fading every rise,
+And the "no free money" check (`python tools/realism.py 2 3 40 801`): buying every 1.5-sigma dip, fading every rise,
 momentum, breakouts and buying 20-day lows all earn less than holding the market, costs included; trading every
 level test earns about +0.09% a trade (less than holding over a game year); trading only strong levels with the trend
 earns about +0.3% a trade. Strong levels hold 56% of the time, weak ones 42%, a third of breaks fail.

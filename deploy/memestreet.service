@@ -8,16 +8,16 @@ Wants=network-online.target
 [Service]
 User=memestreet
 Group=memestreet
-WorkingDirectory=/opt/memestreet
+WorkingDirectory=/opt/memestreet/game
 EnvironmentFile=/etc/memestreet.env
 ExecStart=/opt/memestreet/.venv/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8001 --log-level warning
 Restart=always
 RestartSec=3
-# On a stop the game saves itself (state.json) before it exits: give it time.
+# On a stop the game saves itself (data/state.json) before it exits: give it time.
 TimeoutStopSec=60
 KillSignal=SIGTERM
 LimitNOFILE=65536
-# The game may only write inside its own folder.
+# The game may only write inside its own folder (it writes in data/).
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/opt/memestreet

@@ -1,18 +1,9 @@
 .venv/
 __pycache__/
 *.pyc
-state.json
-state.json.tmp
 *.log
-ledger.db
-ledger.db-wal
-ledger.db-shm
-state.charts.json
-state.charts.json.tmp
-backups/
-tools/
-share_url.txt
-sim_results/
-admin_key.txt
-live_admin_credentials.txt
-live_admin_credentials.txt.pending
+# what the running game writes (the save, the charts, the ledger, backups), the local admin key, the share link and
+# simulation results: all in data/ (game/paths.py)
+data/
+# the tunnel program `python tools/share.py --install` downloads
+tools/cloudflared*

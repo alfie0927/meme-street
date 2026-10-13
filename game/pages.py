@@ -4,30 +4,33 @@ import os
 
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 
+import paths
 from netutil import TICKER_RENAMES
 
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png"}
 
 
-def add_pages(app, base):
+def add_pages(app):
+    """The pages are in web/ and the logo in brand/ (paths.py)."""
+    web = paths.WEB
+
     def page():
-        return FileResponse(os.path.join(base, "index.html"), headers={"Cache-Control": "no-store"})
+        return FileResponse(os.path.join(web, "index.html"), headers={"Cache-Control": "no-store"})
 
     @app.get("/brand/{name}")
     async def brand_file(name: str):
         """The logo (only the two named brand images are served)."""
         if name not in BRAND_FILES:
             return JSONResponse({"error": "not found"}, status_code=404)
-        for folder in (os.path.join(base, "brand"), base):
-            path = os.path.join(folder, name)
-            if os.path.exists(path):
-                return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
+        path = os.path.join(paths.BRAND, name)
+        if os.path.exists(path):
+            return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
         return JSONResponse({"error": "not found"}, status_code=404)
 
     @app.get("/admin")
     async def admin_page():
         """The page is public but shows nothing until the admin key is entered; the data endpoints check the key."""
-        return FileResponse(os.path.join(base, "admin.html"), headers={"Cache-Control": "no-store"})
+        return FileResponse(os.path.join(web, "admin.html"), headers={"Cache-Control": "no-store"})
 
     @app.get("/")
     async def index():
@@ -36,7 +39,7 @@ def add_pages(app, base):
     @app.get("/about")
     async def about_page():
         """What Meme Street is, for people who have not signed up yet (a plain page: no game connection)."""
-        return FileResponse(os.path.join(base, "about.html"), headers={"Cache-Control": "public, max-age=300"})
+        return FileResponse(os.path.join(web, "about.html"), headers={"Cache-Control": "public, max-age=300"})
 
     @app.get("/stock/{ticker}")
     async def stock_page(ticker: str):
@@ -52,7 +55,7 @@ def add_pages(app, base):
     async def shop_pay_page():
         """The pretend checkout used while the shop is in test mode (payments.py); the page itself asks the server for
         the order and refuses if the shop is not in test mode."""
-        return FileResponse(os.path.join(base, "shop_pay.html"), headers={"Cache-Control": "no-store"})
+        return FileResponse(os.path.join(web, "shop_pay.html"), headers={"Cache-Control": "no-store"})
 
     for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "journal", "calendar"):
         app.add_api_route("/" + route, lambda: page(), methods=["GET"], include_in_schema=False)

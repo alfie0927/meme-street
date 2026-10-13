@@ -165,7 +165,7 @@ class RiskReportTests(unittest.TestCase):
         s = e.house_stats()
         self.assertIn("risk", s)
         self.assertEqual(s["risk"]["exposure"][0]["ticker"], "CLDR")
-        page = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "admin.html"), encoding="utf-8").read()
+        page = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web", "admin.html"), encoding="utf-8").read()
         self.assertIn("House risk", page)
         self.assertIn("stress_loss", page)
 

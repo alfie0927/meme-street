@@ -437,9 +437,9 @@ The old market's edge tools (`edge.py`, `paired.py`, `probe.py`) were removed on
 
 1. The test suite (`python -m unittest discover tests`), which guards money conservation, the ledger and the rule that
    player trades never move prices.
-2. `python chart_check.py 12 <seed>` on two or three seeds: the charts against the facts of real prices
+2. `python tools/chart_check.py 12 <seed>` on two or three seeds: the charts against the facts of real prices
    (MARKET_REALISM.md section 4 has the targets and the last results).
-3. The realism suite (P11, `python realism.py`): stylised facts, pattern rates within their target bands, and the "no free money" strategy
+3. The realism suite (P11, `python tools/realism.py`): stylised facts, pattern rates within their target bands, and the "no free money" strategy
    comparison against holding the index, costs included, on markets never used for tuning.
 4. A look at the charts by a person: does it look like a market a trader would recognise?
 5. Update `HOW_IT_WORKS.md` and this file.

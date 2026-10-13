@@ -1,9 +1,9 @@
 """Let other people open your game from the internet while it runs on your own computer.
 
-    python share.py             open a free Cloudflare "quick tunnel" to the game and print the link to send people
-    python share.py --install   first time only: download Cloudflare's small tunnel program (cloudflared) into ./tools
-    python share.py --port 8000 the port your game listens on (default 8000)
-    python share.py --lan       only show the addresses for people on the same Wi-Fi / network (no tunnel)
+    python tools/share.py             open a free Cloudflare "quick tunnel" to the game and print the link to send people
+    python tools/share.py --install   first time only: download Cloudflare's small tunnel program (cloudflared) into tools/
+    python tools/share.py --port 8000 the port your game listens on (default 8000)
+    python tools/share.py --lan       only show the addresses for people on the same Wi-Fi / network (no tunnel)
 
 This does NOT start the game (start it yourself, as usual) and it never touches your save. It only connects the game
 that is already running on this computer to a public address. How it works: cloudflared makes an outgoing connection
@@ -28,9 +28,8 @@ import threading
 import time
 import urllib.request
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-TOOLS = os.path.join(HERE, "tools")
-SHARE_FILE = os.path.join(HERE, "share_url.txt")
+TOOLS = os.path.dirname(os.path.abspath(__file__))                          # this folder (tools/): cloudflared goes here
+SHARE_FILE = os.path.join(os.path.dirname(TOOLS), "data", "share_url.txt")
 URL_RE = re.compile(r"https://[a-z0-9][a-z0-9-]*\.trycloudflare\.com")
 DOWNLOAD = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
 
@@ -57,7 +56,7 @@ def find_cloudflared():
 
 
 def install():
-    """Download cloudflared (Windows) from Cloudflare's own release page on GitHub into ./tools."""
+    """Download cloudflared (Windows) from Cloudflare's own release page on GitHub into tools/."""
     if os.name != "nt":
         print("On this system install it with your package manager (for example `brew install cloudflared`),")
         print("or see https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/")
@@ -105,7 +104,7 @@ def show_lan(port):
     for ip in ips:
         print(f"    http://{ip}:{port}")
     print("This only works if the game listens to the network, not just this computer. Start it with")
-    print("    python launch.py --host 0.0.0.0     (or: python -m uvicorn server:app --host 0.0.0.0 --port 8000)")
+    print("    python tools/launch.py --host 0.0.0.0     (or: python -m uvicorn server:app --app-dir game --host 0.0.0.0 --port 8000)")
     print("and allow Python through the Windows firewall when it asks.")
 
 
@@ -121,14 +120,14 @@ def main(argv=None):
         show_lan(args.port)
         return 0
     if not game_is_running(args.port):
-        print(f"The game is not running on port {args.port}. Start it first (for example `python launch.py`), then run this again.")
+        print(f"The game is not running on port {args.port}. Start it first (for example `python tools/launch.py`), then run this again.")
         return 1
     exe = find_cloudflared()
     if not exe:
         print("The tunnel program (cloudflared) is not installed yet. Either:")
-        print("    python share.py --install            (downloads it from Cloudflare into ./tools)")
+        print("    python tools/share.py --install      (downloads it from Cloudflare into tools/)")
         print("    winget install --id Cloudflare.cloudflared   (the Windows package manager)")
-        print("then run `python share.py` again.")
+        print("then run `python tools/share.py` again.")
         return 1
     print("Opening the tunnel...")
     proc = subprocess.Popen([exe, "tunnel", "--url", f"http://127.0.0.1:{args.port}", "--no-autoupdate"],
@@ -143,12 +142,13 @@ def main(argv=None):
             url = extract_url(line)
             if url and not found.is_set():
                 found.set()
+                os.makedirs(os.path.dirname(SHARE_FILE), exist_ok=True)
                 with open(SHARE_FILE, "w", encoding="utf-8") as fh:
                     fh.write(url + "\n")
                 bar = "=" * (len(url) + 6)
                 print(f"\n{bar}\n   {url}\n{bar}")
                 print("Send this link to your testers. It works while this window stays open, your computer is awake and")
-                print("the game is running. (Saved to share_url.txt. Press Ctrl+C to stop sharing.)\n")
+                print("the game is running. (Saved to data/share_url.txt. Press Ctrl+C to stop sharing.)\n")
     threading.Thread(target=watch, daemon=True).start()
     try:
         started = time.time()
