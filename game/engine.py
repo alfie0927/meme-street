@@ -39,6 +39,29 @@ logger = logging.getLogger(__name__)
 
 GUEST_KEY = "guest"   # the connection key every logged-out visitor shares (see Engine.guest_for)
 RATINGS = ["D", "C", "CC", "CCC", "B", "BB", "BBB", "A", "AA", "AAA"]
+SMALL_CAP, LARGE_CAP = 2.0, 10.0   # market value (billions) below which a company is a small cap, and from which a large one
+# The market values (billions) the content packs gave these companies before the sizes were spread out on 2026-10-14
+# (small, mid and large caps in every industry). A save from before then has no `cap_base`, so this says how much each
+# company's financials must be scaled to fit its new size (see `_fit_financials`).
+CAPS_BEFORE_SIZES = {"ABYS": 33, "ADSP": 19.1, "AEGX": 130, "AERO": 12, "AIRY": 74.2, "ANCH": 25, "ANCI": 26.3,
+    "ASLN": 25, "ATND": 56.6, "BLFL": 63.5, "BLKL": 131, "BMLN": 10.1, "BNKR": 210, "BRWH": 14.2, "BSMD": 16,
+    "BYTE": 90, "CHBX": 43.2, "CHRN": 16.9, "CLCK": 290.4, "CLDR": 280, "CLSC": 306.9, "CLSD": 40.9, "CLST": 247.1,
+    "CNHR": 59.2, "CRED": 12, "CRLN": 58.6, "CRST": 107.8, "CRXP": 331.2, "CURA": 88, "CYBR": 48, "DDIA": 70.1,
+    "DLGM": 24, "DOGO": 3.2, "DRMW": 182.4, "DRON": 18, "DTHV": 128.1, "ECHN": 190, "ELXR": 42.4, "EMBR": 23,
+    "ENCH": 44, "EPCH": 50.9, "ERSE": 19.5, "FERT": 12, "FIBR": 8, "FLTR": 37.6, "FOGX": 14.9, "FRBK": 56.6,
+    "FRET": 14, "GALE": 13.8, "GLDM": 233.2, "GMHT": 154.4, "GNSP": 30.5, "GRAI": 6, "GRFN": 72.6, "GRID": 58,
+    "GRVN": 208.1, "GRWK": 87, "GTWY": 14.7, "HAIL": 10.5, "HHRS": 11.8, "HLXB": 14, "HNST": 72.3, "HOMR": 20,
+    "HSFG": 27.6, "HVRL": 77.5, "HYDR": 8, "IRHL": 31.1, "KELP": 45.6, "KRKN": 226.3, "KSBH": 313.2, "KYSF": 14.5,
+    "LCDL": 38.8, "LEVT": 70.1, "LFTR": 13, "LITH": 28, "LNLP": 302.3, "LNMN": 24.6, "LPDR": 154.2, "MEMR": 160,
+    "MGMT": 51.2, "MMBK": 18.6, "MOON": 1.8, "MRHS": 37.4, "MSVR": 188.2, "MUNC": 72, "NGHT": 16.9, "NNCF": 25.4,
+    "NUCL": 30, "OILX": 210, "ONCX": 6, "ORSW": 49.5, "PHNX": 182.5, "PHSJ": 46.1, "PLZP": 44.1, "PNCL": 28.3,
+    "PRLG": 23.5, "PRTL": 66.4, "PSTL": 283.1, "PUPZ": 1.3, "PXHB": 370.8, "PXPK": 165.9, "QKLN": 67.7, "QKST": 22.4,
+    "QLEF": 120.6, "QNTR": 35.6, "RBVS": 31.8, "RDHB": 274.1, "ROBO": 50, "RUNE": 27.4, "RWND": 18.2, "SAND": 11,
+    "SBMR": 8.3, "SDTD": 195.3, "SFHB": 41.2, "SKIP": 97.1, "SKOF": 96, "SKYJ": 14, "SLPN": 295.3, "SLRG": 42,
+    "SLVR": 107.1, "SNKW": 118.2, "SNWL": 133.8, "STBR": 143.7, "STDY": 175, "STFG": 54.9, "STNS": 12.6,
+    "STRM": 256.5, "STWB": 19.4, "SUNB": 223.4, "SVSL": 123.6, "SYSL": 50.1, "TBMC": 43.5, "TIDL": 62.7,
+    "TMVT": 44.3, "TPPY": 11.3, "TRDL": 16.6, "TRLT": 45.2, "TRNC": 10.6, "TWRX": 30, "UNCR": 13.2, "VBRN": 21.9,
+    "VLTR": 16.2, "VNSH": 68.2, "VTDV": 82.1, "WAND": 275.2, "WIND": 24, "YETI": 26.5, "ZIPD": 9.5, "ZNTH": 40}
 # Leveraged products that were renamed (old saves and ledgers still use the old tickers) or withdrawn
 from netutil import TICKER_RENAMES  # noqa: E402  (a product that was renamed: old links and old saves still work)
 WITHDRAWN_PRODUCTS = {"BEAR1": "Market Bear 1x"}
@@ -3326,6 +3349,21 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "short_interest": sum(self.short_interest_map().values()),
                 "humans": len(humans), "recapitalized": self.recapitalized, "risk": self.house_risk()}
 
+    @staticmethod
+    def _fit_financials(s, old_cap):
+        """When the content packs give a company a new size (its reference market value, and so its share count), scale
+        the financials it has built up in this game (revenue, cash, debt and its past reports) by the same factor, so its
+        earnings per share, P/E and balance sheet stay what they were. Without this a company made ten times smaller would
+        keep its old revenue and show a P/E of 2."""
+        if not old_cap or s.market_cap_base <= 0 or abs(s.market_cap_base / float(old_cap) - 1) < 1e-9:
+            return
+        k = s.market_cap_base / float(old_cap)
+        s.revenue, s.cash, s.debt = s.revenue * k, s.cash * k, s.debt * k
+        for r in s.reports:
+            for key in ("revenue", "net_income"):
+                if isinstance(r.get(key), (int, float)):
+                    r[key] *= k
+
     def _charts_path(self):
         return os.path.splitext(self.state_file)[0] + ".charts.json"
 
@@ -3380,7 +3418,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                             "base_dps": s.base_dps, "volm": s.volm, "persona": s.persona, "split_factor": s.split_factor, "share_adj": s.share_adj,
                             "offering": s.offering,
                             "revenue": s.revenue, "margin": s.margin, "cash": s.cash, "debt": s.debt,
-                            "rating": s.rating,
+                            "cap_base": s.market_cap_base, "rating": s.rating,
                             "day_open": s.day_open, "day_high": s.day_high, "day_low": s.day_low,
                             "next_earn": s.next_earn, "earn_slot": s.earn_slot, "events": s.events,
                             "next_rating_review": s.next_rating_review,
@@ -3719,6 +3757,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     s.revenue, s.margin = float(v["revenue"]), float(v["margin"])
                     s.cash, s.debt = float(v["cash"]), float(v["debt"])
                     s.base_margin = float(v.get("base_margin", s.margin))
+                    self._fit_financials(s, v.get("cap_base", CAPS_BEFORE_SIZES.get(t)))
                 if s.asset_type == "equity" and "safety" not in v:
                     s.rating = self._rating_for(s)
                 s.next_earn = v.get("next_earn", s.next_earn)

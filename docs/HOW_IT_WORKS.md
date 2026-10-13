@@ -895,6 +895,12 @@ dividend yield     = 4 × declared quarterly dividend per share / live price (se
 ```
 Revenue, margin, cash and debt change at earnings (§7.7), feed the bank ratings (§7.8), and scale with the price moves of the stories behind them. Share counts and the reference price stay fixed. Market cap figures are in billions of MB.
 
+**Company size: small, mid and large caps (since 2026-10-14).** A company is a **small cap** below 2 billion of market value, a **mid cap** from 2 to 10 billion and a **large cap** from 10 billion (the usual bands; `SMALL_CAP` and `LARGE_CAP` in the engine). The stock page shows the size next to the market cap, the market search finds "small cap", "mid cap" or "large cap", and on a phone the market can be sorted by size. Every industry has at least two sizes and most have all three: 56 large, 48 mid and 43 small caps (plus the three meme stocks, which are small or mid, and the two safe-haven funds). The MSI 50 follows the 50 largest, so it is roughly the large caps. Sizes were spread out on 2026-10-14 (before that nearly every company was worth over 6 billion): each company's revenue, cash and debt were scaled with its market value so its margins, earnings per share and P/E stayed the same, and small caps were given more volatility (×1.3 against a large cap; mid caps ×1.1) and a slightly higher beta (+0.10; mid +0.05), as small companies have in real markets. Their trading volume is lower too, because volume follows the number of shares.
+
+Each company's description says what it sells, to whom and how it earns its money, and what sets it apart from the others in its industry (written to match its size and its suppliers, customers and rivals, §7.15).
+
+**Changing a company's size later.** The save keeps each company's market value from the content (`cap_base`). If a content pack later gives a company a different `market_cap`, the next start scales the revenue, cash and debt it has built up in the game (and its past reports) by the same factor (`Engine._fit_financials`), so its P/E and earnings per share carry on unchanged. A save from before `cap_base` existed uses the table of the old values (`CAPS_BEFORE_SIZES`).
+
 `asset_type` is `equity`, `fund`, `commodity` or `index`. Prices are shown as plain "MB" (no per-barrel or per-ounce unit).
 
 ---

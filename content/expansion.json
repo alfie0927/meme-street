@@ -36,102 +36,102 @@
     {
       "ticker": "MEMR", "name": "MemoryWorks", "sector": "tech", "beta": 1.45, "vol": 0.48,
       "sens": 1.2, "depth": 18000, "rating": "BBB", "margin": 0.16, "traits": ["earnings"],
-      "desc": "Manufactures high-bandwidth memory and storage components for cloud servers and AI accelerators."
+      "desc": "Makes high-bandwidth memory and storage chips for cloud servers and AI accelerators. Memory prices swing wildly, and its profit with them."
     },
     {
       "ticker": "CYBR", "name": "Northstar Cyber", "sector": "tech", "beta": 1.1, "vol": 0.38,
       "sens": 0.9, "depth": 18000, "rating": "A", "margin": 0.2, "traits": ["earnings"],
-      "desc": "Sells identity security, threat monitoring, and incident response subscriptions to large organizations."
+      "desc": "Sells identity security, threat monitoring and incident response to large organisations by subscription. A big breach in the news usually lifts its orders."
     },
     {
-      "ticker": "NUCL", "name": "Nucleus Power", "sector": "energy", "beta": 0.8, "vol": 0.32,
+      "ticker": "NUCL", "name": "Nucleus Power", "sector": "energy", "beta": 0.85, "vol": 0.352,
       "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.14, "traits": ["earnings"],
-      "desc": "Develops modular nuclear reactors and long-term power contracts for industrial customers."
+      "desc": "Designs small modular nuclear reactors and sells their power to factories and data centres under long-term contracts. Only two reactors run so far; licences for the next ones will decide its future."
     },
     {
-      "ticker": "HYDR", "name": "Hydra Electrolysis", "sector": "energy", "beta": 1.25, "vol": 0.55,
+      "ticker": "HYDR", "name": "Hydra Electrolysis", "sector": "energy", "beta": 1.3, "vol": 0.65,
       "sens": 1.2, "depth": 16000, "rating": "BB", "margin": 0.08, "traits": ["earnings"],
-      "desc": "Builds electrolyzers that produce low-carbon hydrogen for shipping, steel, and heavy transport."
+      "desc": "A young company building machines that split water into hydrogen for ships, steel mills and trucks. It loses money and depends on a few pilot orders and government support."
     },
     {
-      "ticker": "ONCX", "name": "OncoNova Labs", "sector": "pharma", "beta": 1.4, "vol": 0.72,
+      "ticker": "ONCX", "name": "OncoNova Labs", "sector": "pharma", "beta": 1.45, "vol": 0.851,
       "sens": 1.5, "depth": 15000, "rating": "BB", "margin": -0.08, "traits": ["earnings"],
-      "desc": "A research biotech testing precision oncology medicines in early and mid-stage clinical trials."
+      "desc": "An early-stage biotech testing precision cancer drugs in small trials, burning cash as it goes. A single trial result can double or halve its value."
     },
     {
-      "ticker": "DRON", "name": "Aerial Defense Systems", "sector": "defense", "beta": 0.85, "vol": 0.36,
+      "ticker": "DRON", "name": "Aerial Defense Systems", "sector": "defense", "beta": 0.9, "vol": 0.396,
       "sens": 1.1, "depth": 17000, "rating": "BBB", "margin": 0.12, "traits": ["earnings"],
-      "desc": "Supplies autonomous surveillance aircraft and counter-drone systems under government contracts."
+      "desc": "Builds small surveillance drones and the systems that detect and stop hostile ones, sold to armies and border agencies. It grows faster than the big contractors, but a few contracts make up most of its sales."
     },
     {
-      "ticker": "AERO", "name": "AeroLease Partners", "sector": "airlines", "beta": 1.0, "vol": 0.32,
+      "ticker": "AERO", "name": "AeroLease Partners", "sector": "airlines", "beta": 1.05, "vol": 0.352,
       "sens": 0.9, "depth": 17000, "rating": "A", "margin": 0.13, "traits": ["earnings"],
-      "desc": "Owns and leases passenger aircraft to carriers, with income tied to fleet utilization and travel demand."
+      "desc": "Owns about 400 passenger jets and leases them to airlines for eight to twelve years at a time, so its income is steadier than any airline's. It earns the gap between lease rates and its own borrowing costs, plus gains from selling older planes."
     },
     {
-      "ticker": "HOMR", "name": "Hearth & Home", "sector": "consumer", "beta": 0.85, "vol": 0.24,
+      "ticker": "HOMR", "name": "Hearth & Home", "sector": "consumer", "beta": 0.9, "vol": 0.264,
       "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.11, "traits": ["earnings"],
-      "desc": "Designs affordable furniture and household goods sold through stores and a direct-to-consumer website."
+      "desc": "Designs flat-pack furniture and kitchenware, makes it in its own factories and sells it through big retailers and its website. Big-box stores squeeze its prices, and its sales follow how many people move house."
     },
     {
-      "ticker": "CRED", "name": "Crescent Credit", "sector": "finance", "beta": 1.2, "vol": 0.42,
+      "ticker": "CRED", "name": "Crescent Credit", "sector": "finance", "beta": 1.3, "vol": 0.546,
       "sens": 1.1, "depth": 18000, "rating": "BB", "margin": 0.18, "traits": ["earnings"],
-      "desc": "Provides small-business loans and payment processing, with returns sensitive to defaults and interest rates."
+      "desc": "Lends to small businesses that banks turn down, and processes card payments for shops. Its loans earn high rates, and its profit falls quickly when defaults rise."
     },
     {
       "ticker": "PUPZ", "name": "PupZoom Media", "sector": "meme", "beta": 2.0, "vol": 0.95,
       "sens": 1.6, "depth": 12000, "rating": "B", "margin": 0.02, "traits": [],
-      "desc": "Turns viral pet videos into creator subscriptions, branded toys, and short-lived online trends."
+      "desc": "Runs an app of short pet videos and earns from creator subscriptions and branded toys based on its most popular animals. Its audience moves on quickly, so its revenue lives from one craze to the next."
     },
     {
       "ticker": "GRID", "name": "GridNode Electric", "sector": "utilities", "beta": 0.55, "vol": 0.2,
       "sens": 0.8, "depth": 22000, "rating": "A", "margin": 0.15, "traits": ["earnings"],
-      "desc": "Operates transmission lines, substations, and grid-balancing services for fast-growing power regions."
+      "desc": "Owns the high-voltage power lines and substations of fast-growing regions and earns a regulated return on them. Steady, dividend-paying and sensitive to interest rates."
     },
     {
-      "ticker": "WIND", "name": "Windward Renewables", "sector": "utilities", "beta": 0.8, "vol": 0.29,
+      "ticker": "WIND", "name": "Windward Renewables", "sector": "utilities", "beta": 0.85, "vol": 0.319,
       "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.1, "traits": ["earnings"],
-      "desc": "Owns onshore wind farms and sells renewable electricity under long-term utility agreements."
+      "desc": "Owns onshore wind farms and sells their electricity to utilities under long-term agreements. Its output depends on the weather from month to month."
     },
     {
-      "ticker": "ROBO", "name": "RoboForge Automation", "sector": "industrials", "beta": 1.25, "vol": 0.4,
+      "ticker": "ROBO", "name": "RoboForge Automation", "sector": "industrials", "beta": 1.3, "vol": 0.44,
       "sens": 1.1, "depth": 18000, "rating": "BBB", "margin": 0.13, "traits": ["earnings"],
-      "desc": "Builds factory robots and machine-vision systems that automate electronics and vehicle assembly."
+      "desc": "Builds industrial robot arms and machine-vision cells that assemble electronics and cars, and sells service contracts for them. Orders rise when factories invest and dry up when they stop."
     },
     {
-      "ticker": "FRET", "name": "FreightLoop Logistics", "sector": "industrials", "beta": 1.05, "vol": 0.34,
+      "ticker": "FRET", "name": "FreightLoop Logistics", "sector": "industrials", "beta": 1.15, "vol": 0.442,
       "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.09, "traits": ["earnings"],
-      "desc": "Coordinates rail, warehouse, and trucking capacity for manufacturers and large retailers."
+      "desc": "Books space on trains, trucks and in warehouses for manufacturers and retailers without owning much of it. It earns the margin between what shippers pay and what carriers charge."
     },
     {
       "ticker": "TWRX", "name": "TowerX Networks", "sector": "telecom", "beta": 0.8, "vol": 0.25,
       "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.17, "traits": ["earnings"],
-      "desc": "Leases wireless towers and small-cell sites to mobile carriers under recurring multi-year contracts."
+      "desc": "Owns 40,000 wireless towers and leases space on them to mobile carriers under contracts that rise with inflation. Steady and high-margin, but it carries a lot of debt."
     },
     {
-      "ticker": "FIBR", "name": "FiberSpan", "sector": "telecom", "beta": 0.9, "vol": 0.28,
+      "ticker": "FIBR", "name": "FiberSpan", "sector": "telecom", "beta": 0.95, "vol": 0.331,
       "sens": 0.9, "depth": 17000, "rating": "BBB", "margin": 0.12, "traits": ["earnings"],
-      "desc": "Builds regional fiber-optic networks and sells high-capacity connections to businesses and data centers."
+      "desc": "Builds regional fibre-optic networks and sells fast connections to businesses and data centres in a few cities. Each new route costs a lot up front and pays back over years."
     },
     {
       "ticker": "SAND", "name": "StoneBridge Materials", "sector": "materials", "beta": 1.0, "vol": 0.33,
       "sens": 0.9, "depth": 18000, "rating": "BBB", "margin": 0.1, "traits": ["earnings"],
-      "desc": "Quarries aggregates and produces cement used in roads, housing, and infrastructure projects."
+      "desc": "Owns quarries and cement plants and sells gravel, sand and cement to road and house builders. Rock is heavy, so each quarry only serves its own area, which keeps prices firm."
     },
     {
-      "ticker": "LITH", "name": "Lithic Materials", "sector": "materials", "beta": 1.45, "vol": 0.62,
+      "ticker": "LITH", "name": "Lithic Materials", "sector": "materials", "beta": 1.5, "vol": 0.682,
       "sens": 1.2, "depth": 15000, "rating": "BB", "margin": 0.05, "traits": ["earnings"],
-      "desc": "Processes lithium compounds for battery makers and electric-vehicle supply chains."
+      "desc": "Mines and refines lithium for battery makers. When electric-car sales boom it earns a fortune, and when lithium prices fall it can lose money."
     },
     {
       "ticker": "GRAI", "name": "Prairie Grain Co-op", "sector": "agriculture", "beta": 0.65, "vol": 0.28,
       "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.08, "traits": ["earnings"],
-      "desc": "Stores, grades, and exports grain from a network of farms, elevators, and river terminals."
+      "desc": "A farmer-owned grain handler that buys wheat, corn and soybeans at harvest, grades and stores them in its own elevators, and ships them by barge to food makers and export terminals. It earns a thin margin on every tonne, so the size of the harvest matters more to it than the price."
     },
     {
       "ticker": "FERT", "name": "Fieldstone AgTech", "sector": "agriculture", "beta": 0.95, "vol": 0.38,
       "sens": 1.0, "depth": 17000, "rating": "BBB", "margin": 0.11, "traits": ["earnings"],
-      "desc": "Produces crop nutrients and precision-farming software for commercial growers."
+      "desc": "The biggest maker of crop nutrients on the market: nitrogen, phosphate and potash blends for commercial farms, plus a precision-farming app that tells growers how much to spread, field by field. Its sales follow crop prices, and natural gas is its main cost."
     },
     {
       "ticker": "CRUDE", "name": "Crude Oil Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.45, "vol": 0.48,

@@ -46,12 +46,12 @@
    "ticker": "PHSJ",
    "name": "PhaseJump Logistics",
    "sector": "portals",
-   "beta": 1.66,
-   "vol": 0.73,
+   "beta": 1.71,
+   "vol": 0.803,
    "sens": 1.42,
    "depth": 13000,
    "traits": [],
-   "desc": "Ships cargo between cities through short-range teleport gates in under a minute.",
+   "desc": "Ships cargo between cities through short-range teleport gates in under a minute, charging by the kilogram. It competes with freight brokers on speed rather than price.",
    "dependencies": {
     "QNTR": 0.25
    }
@@ -60,12 +60,12 @@
    "ticker": "GTWY",
    "name": "Gateway Transit",
    "sector": "portals",
-   "beta": 1.7,
-   "vol": 0.52,
+   "beta": 1.8,
+   "vol": 0.676,
    "sens": 1.07,
    "depth": 13000,
    "traits": [],
-   "desc": "Runs public teleport stations that have replaced commuter trains in the biggest cities.",
+   "desc": "Runs public teleport stations in three big cities, charging commuters per trip. It has replaced the trains on its routes, but each new station costs a fortune.",
    "dependencies": {
     "QNTR": 0.2
    }
@@ -74,23 +74,23 @@
    "ticker": "QNTR",
    "name": "Quantum Relay Networks",
    "sector": "portals",
-   "beta": 1.3,
-   "vol": 0.7,
+   "beta": 1.35,
+   "vol": 0.77,
    "sens": 1.28,
    "depth": 13000,
    "traits": [],
-   "desc": "Builds the entanglement relays that keep teleport gates in sync across the world."
+   "desc": "Builds and maintains the entanglement relays that keep teleport gates in sync around the world. Every gate operator pays it a licence fee."
   },
   {
    "ticker": "BMLN",
    "name": "Beamline Couriers",
    "sector": "portals",
-   "beta": 1.4,
-   "vol": 0.56,
+   "beta": 1.5,
+   "vol": 0.728,
    "sens": 1.19,
    "depth": 13000,
    "traits": [],
-   "desc": "Same-hour parcel delivery in miniature teleport pods, door to door.",
+   "desc": "Delivers parcels door to door within the hour in small teleport pods. A start-up still building its network.",
    "dependencies": {
     "QNTR": 0.15,
     "PHSJ": 0.1
@@ -105,7 +105,7 @@
    "sens": 1.07,
    "depth": 13000,
    "traits": [],
-   "desc": "Hotels built around gates, so guests can wake up in a different country every morning.",
+   "desc": "Runs hotels built around teleport gates, so guests can wake up in a different country every morning. It charges a premium on every room for the gate pass.",
    "dependencies": {
     "GTWY": 0.15
    }
@@ -119,7 +119,7 @@
    "sens": 1.36,
    "depth": 13000,
    "traits": [],
-   "desc": "Teleports household and factory rubbish into a sealed vault instead of a landfill.",
+   "desc": "Collects rubbish from homes and factories and teleports it into a sealed vault instead of a landfill, under long contracts with cities.",
    "dependencies": {
     "QNTR": 0.1
    }
@@ -128,12 +128,12 @@
    "ticker": "CLSD",
    "name": "CloudSeed Co",
    "sector": "weather",
-   "beta": 0.99,
-   "vol": 0.31,
+   "beta": 1.04,
+   "vol": 0.341,
    "sens": 1.36,
    "depth": 16000,
    "traits": [],
-   "desc": "Sells rain on demand to farms and reservoirs by seeding clouds."
+   "desc": "Sells rain on demand to farms and reservoirs by seeding clouds, under seasonal contracts."
   },
   {
    "ticker": "STRM",
@@ -144,7 +144,7 @@
    "sens": 1.07,
    "depth": 16000,
    "traits": [],
-   "desc": "Steers hurricanes away from coastlines with giant ocean-cooling rigs.",
+   "desc": "Steers hurricanes away from coastlines with giant ocean-cooling rigs, paid by coastal governments and insurers. A busy storm season is when it earns most.",
    "dependencies": {
     "CLSD": 0.1
    }
@@ -153,12 +153,12 @@
    "ticker": "SNWL",
    "name": "SnowLine Resorts",
    "sector": "weather",
-   "beta": 0.96,
-   "vol": 0.39,
+   "beta": 1.01,
+   "vol": 0.429,
    "sens": 1.09,
    "depth": 16000,
    "traits": [],
-   "desc": "Makes guaranteed snow for ski resorts and winter festivals.",
+   "desc": "Makes guaranteed snow for ski resorts and winter festivals, charging per season. A warm winter means more customers but higher costs.",
    "dependencies": {
     "CLSD": 0.15
    }
@@ -172,29 +172,29 @@
    "sens": 1.32,
    "depth": 16000,
    "traits": [],
-   "desc": "Stores sunshine in orbiting mirrors and beams it down to solar farms on cloudy days."
+   "desc": "Stores sunshine in orbiting mirrors and beams it down to solar farms on cloudy days, selling the extra power to grid operators."
   },
   {
    "ticker": "FOGX",
    "name": "FogWorks",
    "sector": "weather",
-   "beta": 1.06,
-   "vol": 0.35,
+   "beta": 1.16,
+   "vol": 0.455,
    "sens": 1.34,
    "depth": 16000,
    "traits": [],
-   "desc": "Builds mist machines that cool whole cities during heat waves."
+   "desc": "Builds mist machines that cool whole city districts during heat waves, sold to city councils."
   },
   {
    "ticker": "GALE",
    "name": "GaleForce Turbines",
    "sector": "weather",
-   "beta": 0.75,
-   "vol": 0.4,
+   "beta": 0.85,
+   "vol": 0.52,
    "sens": 1.01,
    "depth": 16000,
    "traits": [],
-   "desc": "Seeds steady winds over offshore turbine fields so the blades never stop.",
+   "desc": "Seeds steady winds over offshore turbine fields so the blades never stop, paid a share of the extra power.",
    "dependencies": {
     "SUNB": 0.05
    }
@@ -203,23 +203,23 @@
    "ticker": "CHRN",
    "name": "Chronos Labs",
    "sector": "chrono",
-   "beta": 1.25,
-   "vol": 0.73,
+   "beta": 1.35,
+   "vol": 0.949,
    "sens": 0.93,
    "depth": 12000,
    "traits": [],
-   "desc": "Sells small time-dilation chambers that give workers an extra hour every day."
+   "desc": "Sells small time-dilation chambers that give office workers an extra hour every day, leased to employers by the month. A start-up with one product and one factory, it is profitable but exposed to any safety scare."
   },
   {
    "ticker": "RWND",
    "name": "Rewind Recovery",
    "sector": "chrono",
-   "beta": 1.3,
-   "vol": 0.73,
+   "beta": 1.4,
+   "vol": 0.949,
    "sens": 1.36,
    "depth": 12000,
    "traits": [],
-   "desc": "Reverses rust and spoilage so old food and old machines work like new.",
+   "desc": "Runs a few plants that turn back the clock on spoiled food and worn machine parts so they work like new. Food makers and truck fleets send in batches; the process is still expensive and only pays on valuable items.",
    "dependencies": {
     "CHRN": 0.15
    }
@@ -228,12 +228,12 @@
    "ticker": "TMVT",
    "name": "TimeVault Storage",
    "sector": "chrono",
-   "beta": 1.59,
-   "vol": 0.62,
+   "beta": 1.64,
+   "vol": 0.682,
    "sens": 1.48,
    "depth": 12000,
    "traits": [],
-   "desc": "Keeps valuables in slow-time vaults where decades pass like days.",
+   "desc": "Keeps wine, art and documents in slow-time vaults where decades pass like days, so each item ages or keeps exactly as its owner wants. Banks and collectors pay yearly fees; the vaults are costly to build but cheap to run.",
    "dependencies": {
     "CHRN": 0.15
    }
@@ -247,18 +247,18 @@
    "sens": 1.08,
    "depth": 12000,
    "traits": [],
-   "desc": "Lets historians and courts look back at real events through temporal lenses."
+   "desc": "Rents out temporal lenses that let courts, insurers and historians watch real events from the past. It charges by the viewing hour and owns a huge licensed archive of recordings that news groups pay to use."
   },
   {
    "ticker": "EPCH",
    "name": "Epoch Insurance",
    "sector": "chrono",
-   "beta": 1.3,
-   "vol": 0.79,
+   "beta": 1.35,
+   "vol": 0.869,
    "sens": 1.41,
    "depth": 12000,
    "traits": [],
-   "desc": "Insures businesses against paradoxes and time-travel accidents.",
+   "desc": "Insures time-travel firms and their customers against paradoxes, lost hours and accidents in time. Premiums are high, but one large paradox claim can wipe out a year's profit.",
    "dependencies": {
     "CHRN": 0.1
    }
@@ -272,7 +272,7 @@
    "sens": 0.93,
    "depth": 12000,
    "traits": [],
-   "desc": "Sells fast-forward trips: passengers skip the journey and arrive instantly."
+   "desc": "Sells fast-forward trips: passengers step into a booth, skip the journey and arrive rested at the moment they would have landed. It competes with airlines on long routes and charges a premium for the time saved."
   },
   {
    "ticker": "DRMW",
@@ -283,7 +283,7 @@
    "sens": 1.15,
    "depth": 15000,
    "traits": [],
-   "desc": "Records dreams and sells them as immersive entertainment.",
+   "desc": "Records the dreams of paid dreamers and edits them into films and games that people experience in their sleep. It sells them through streaming services and its own app.",
    "dependencies": {
     "MMBK": 0.1,
     "SLPN": 0.1
@@ -293,12 +293,12 @@
    "ticker": "MMBK",
    "name": "MemoryBank Trust",
    "sector": "dreams",
-   "beta": 1.23,
-   "vol": 0.5,
+   "beta": 1.33,
+   "vol": 0.65,
    "sens": 0.95,
    "depth": 15000,
    "traits": [],
-   "desc": "Stores customers' favourite memories in vaults and lends them out for a fee."
+   "desc": "Stores customers' favourite memories in secure vaults and lends them out, for a fee, to people who want to relive them. A small, new business with unusual legal risks."
   },
   {
    "ticker": "SLPN",
@@ -309,18 +309,18 @@
    "sens": 1.47,
    "depth": 15000,
    "traits": [],
-   "desc": "Smart beds that steer you into the dream of your choice."
+   "desc": "The biggest bed maker on the market, now selling smart beds that steer sleepers into the dream of their choice. It sells through its own stores and earns a growing share from monthly dream subscriptions."
   },
   {
    "ticker": "NGHT",
    "name": "NightShift Learning",
    "sector": "dreams",
-   "beta": 1.25,
-   "vol": 0.45,
+   "beta": 1.35,
+   "vol": 0.585,
    "sens": 1.0,
    "depth": 15000,
    "traits": [],
-   "desc": "Teaches languages and job skills while customers sleep.",
+   "desc": "Teaches languages and job skills through courses that play while you sleep, sold by subscription to students and employers. A small education company growing by word of mouth.",
    "dependencies": {
     "SLPN": 0.15
    }
@@ -329,12 +329,12 @@
    "ticker": "LCDL",
    "name": "LucidLoop Therapy",
    "sector": "dreams",
-   "beta": 1.01,
-   "vol": 0.39,
+   "beta": 1.06,
+   "vol": 0.429,
    "sens": 1.26,
    "depth": 15000,
    "traits": [],
-   "desc": "Dream-therapy clinics that treat anxiety and nightmares.",
+   "desc": "Runs 300 clinics that treat anxiety and nightmares with guided lucid dreaming, paid for by health insurers. Its growth depends on how many new clinics it can staff.",
    "dependencies": {
     "ERSE": 0.1
    }
@@ -343,34 +343,34 @@
    "ticker": "ERSE",
    "name": "EraseEase Clinics",
    "sector": "dreams",
-   "beta": 1.2,
-   "vol": 0.44,
+   "beta": 1.25,
+   "vol": 0.484,
    "sens": 1.31,
    "depth": 15000,
    "traits": [],
-   "desc": "Helps people safely forget bad memories, and sells memory refresh packages."
+   "desc": "Removes painful memories under medical supervision and sells refresh packages that sharpen old happy ones. Each treatment is expensive, and regulators watch the company closely."
   },
   {
    "ticker": "EMBR",
    "name": "Ember Dragon Ranches",
    "sector": "creatures",
-   "beta": 0.92,
-   "vol": 0.37,
+   "beta": 1.02,
+   "vol": 0.481,
    "sens": 1.41,
    "depth": 16000,
    "traits": [],
-   "desc": "Breeds and trains dragons for heavy lifting, fireworks shows and furnace heat."
+   "desc": "Breeds and trains dragons and hires them out for heavy lifting, fireworks shows and furnace heat. It has two ranches and a long waiting list; a sick herd is its biggest risk."
   },
   {
    "ticker": "GRFN",
    "name": "Griffin Air Freight",
    "sector": "creatures",
-   "beta": 0.97,
-   "vol": 0.37,
+   "beta": 1.02,
+   "vol": 0.407,
    "sens": 1.31,
    "depth": 16000,
    "traits": [],
-   "desc": "Cargo and passenger flights on trained griffins over mountain routes.",
+   "desc": "Flies cargo and a few passengers on trained griffins over mountain routes that aircraft find hard to reach. It runs its own breeding farms, and its costs rise when feed grain gets dearer.",
    "dependencies": {
     "EMBR": 0.1
    }
@@ -379,12 +379,12 @@
    "ticker": "UNCR",
    "name": "UniCorn Dairy",
    "sector": "creatures",
-   "beta": 0.89,
-   "vol": 0.4,
+   "beta": 0.99,
+   "vol": 0.52,
    "sens": 1.05,
    "depth": 16000,
    "traits": [],
-   "desc": "Premium milk and cheese from herds of unicorns."
+   "desc": "A small dairy selling premium unicorn milk, butter and cheese to upmarket grocers. The herds are tiny and slow to grow, so it is profitable but cannot expand quickly."
   },
   {
    "ticker": "KRKN",
@@ -395,7 +395,7 @@
    "sens": 1.3,
    "depth": 16000,
    "traits": [],
-   "desc": "Salvage and rescue at sea with tame sea monsters.",
+   "desc": "Salvages ships and rescues crews at sea with tame krakens, and tows oil rigs into position for energy companies. Insurers and oil producers pay for standby contracts, so most of its income arrives even in calm years.",
    "dependencies": {
     "EMBR": 0.05
    }
@@ -409,29 +409,29 @@
    "sens": 1.15,
    "depth": 16000,
    "traits": [],
-   "desc": "Warms towns with phoenix nests that renew themselves every day."
+   "desc": "Heats whole towns from phoenix nests that burn out and renew every day, piping hot water to homes and factories. It is a regulated utility in most of the towns it serves, so profits are steady and it pays a dividend."
   },
   {
    "ticker": "YETI",
    "name": "Yeti Frost Foods",
    "sector": "creatures",
-   "beta": 0.92,
-   "vol": 0.33,
+   "beta": 0.97,
+   "vol": 0.363,
    "sens": 1.02,
    "depth": 16000,
    "traits": [],
-   "desc": "Frozen foods harvested from high mountains with the help of yeti partners."
+   "desc": "Harvests mountain berries and glacier fish with the help of yeti partners and sells them frozen to supermarkets under a premium brand. Customers are loyal, but the harvest season is short."
   },
   {
    "ticker": "ABYS",
    "name": "Abyssal Habitats",
    "sector": "ocean",
-   "beta": 1.19,
-   "vol": 0.42,
+   "beta": 1.24,
+   "vol": 0.462,
    "sens": 1.47,
    "depth": 16000,
    "traits": [],
-   "desc": "Builds apartment towers on the sea floor of the continental shelf.",
+   "desc": "Builds apartment towers on the sea floor and sells the flats before construction starts. Sales are lumpy and depend on mortgage rates.",
    "dependencies": {
     "TRNC": 0.1
    }
@@ -440,34 +440,34 @@
    "ticker": "KELP",
    "name": "KelpWorks Farms",
    "sector": "ocean",
-   "beta": 0.93,
-   "vol": 0.38,
+   "beta": 0.98,
+   "vol": 0.418,
    "sens": 1.0,
    "depth": 16000,
    "traits": [],
-   "desc": "Farms giant kelp forests for food, fuel and fabric."
+   "desc": "Grows giant kelp forests offshore and sells the harvest as food ingredients, biofuel and fibre for textiles."
   },
   {
    "ticker": "TRNC",
    "name": "Trench Mining Corp",
    "sector": "ocean",
-   "beta": 1.03,
-   "vol": 0.32,
+   "beta": 1.13,
+   "vol": 0.416,
    "sens": 1.05,
    "depth": 16000,
    "traits": [],
-   "desc": "Mines the deepest ocean trenches for rare metals."
+   "desc": "Mines rare metals from the deepest ocean trenches with remote-controlled machines and sells them to chip and battery makers."
   },
   {
    "ticker": "PRLG",
    "name": "PearlGate Tourism",
    "sector": "ocean",
-   "beta": 0.92,
-   "vol": 0.41,
+   "beta": 1.02,
+   "vol": 0.533,
    "sens": 0.94,
    "depth": 16000,
    "traits": [],
-   "desc": "Submarine cruise ships and glass-tunnel resorts under the waves.",
+   "desc": "Runs submarine cruise ships and glass-tunnel resorts beneath the waves. It needs full bookings to cover its costs, so tourism slumps hit it hard.",
    "dependencies": {
     "ABYS": 0.1
    }
@@ -481,7 +481,7 @@
    "sens": 1.21,
    "depth": 16000,
    "traits": [],
-   "desc": "Power plants driven by deep ocean currents.",
+   "desc": "Generates electricity with turbines anchored in deep ocean currents, which never stop, and sells it to grids along the coast.",
    "dependencies": {
     "SBMR": 0.05
    }
@@ -490,23 +490,23 @@
    "ticker": "SBMR",
    "name": "Sub-Mariner Transit",
    "sector": "ocean",
-   "beta": 1.16,
-   "vol": 0.35,
+   "beta": 1.21,
+   "vol": 0.414,
    "sens": 1.5,
    "depth": 16000,
    "traits": [],
-   "desc": "Express tunnels along the ocean floor between continents."
+   "desc": "Operates an express train through a tunnel along the ocean floor between two continents. Ticket sales are growing, but it is still paying off the tunnel."
   },
   {
    "ticker": "LEVT",
    "name": "LevitateX",
    "sector": "antigrav",
-   "beta": 1.63,
-   "vol": 0.74,
+   "beta": 1.68,
+   "vol": 0.814,
    "sens": 0.97,
    "depth": 12000,
    "traits": [],
-   "desc": "Makes hover-cars, hover-bikes and hover-boards."
+   "desc": "Designs hover-cars, hover-bikes and hover-boards and sells them to the public in its own showrooms. It competes with petrol and electric carmakers on price, and its margins are thin while it builds its factories."
   },
   {
    "ticker": "HVRL",
@@ -517,7 +517,7 @@
    "sens": 1.24,
    "depth": 12000,
    "traits": [],
-   "desc": "Builds floating high-speed rail lines that skim an inch above the ground.",
+   "desc": "Designs, builds and, for the first ten years, runs floating high-speed rail lines for national governments. Its contracts are few and enormous, it is still losing money on its first lines, and a single tender won or lost moves the shares.",
    "dependencies": {
     "LEVT": 0.15,
     "GRVN": 0.1
@@ -527,12 +527,12 @@
    "ticker": "AIRY",
    "name": "AirSkiff Taxis",
    "sector": "antigrav",
-   "beta": 1.52,
-   "vol": 0.62,
+   "beta": 1.57,
+   "vol": 0.682,
    "sens": 0.93,
    "depth": 12000,
    "traits": [],
-   "desc": "Hover taxis you hail by app, flying at rooftop height.",
+   "desc": "Runs a fleet of four-seat hover taxis that passengers book by app, flying at rooftop height across twelve cities. It owns the vehicles and charges per trip, so how many hours each taxi spends in the air decides its profit.",
    "dependencies": {
     "LEVT": 0.2
    }
@@ -546,18 +546,18 @@
    "sens": 1.04,
    "depth": 12000,
    "traits": [],
-   "desc": "Gravity batteries that store power by lifting and dropping giant weights."
+   "desc": "Stores electricity for the power grid by lifting giant weights when power is cheap and letting them down when it is dear. It owns the storage towers and is paid by grid operators for every megawatt-hour it shifts, under contracts of up to twenty years."
   },
   {
    "ticker": "LFTR",
    "name": "LiftRight Construction",
    "sector": "antigrav",
-   "beta": 1.87,
-   "vol": 0.75,
+   "beta": 1.97,
+   "vol": 0.975,
    "sens": 1.11,
    "depth": 12000,
    "traits": [],
-   "desc": "Antigravity cranes that raise skyscraper parts with no scaffolding.",
+   "desc": "Rents out antigravity cranes, with their operators, to builders of towers and bridges, so heavy parts float into place without scaffolding. A small specialist with a few dozen cranes, it lives and dies with the building cycle.",
    "dependencies": {
     "GRVN": 0.1
    }
@@ -566,12 +566,12 @@
    "ticker": "FLTR",
    "name": "FloatFreight Lines",
    "sector": "antigrav",
-   "beta": 1.67,
-   "vol": 0.82,
+   "beta": 1.77,
+   "vol": 1.066,
    "sens": 0.92,
    "depth": 12000,
    "traits": [],
-   "desc": "Heavy cargo barges that float ten metres above the road.",
+   "desc": "Operates cargo barges that float ten metres above the road on a few fixed corridors between ports and inland depots. Young and loss-making, it bets heavily on every new corridor it opens.",
    "dependencies": {
     "LEVT": 0.1
    }
@@ -580,45 +580,45 @@
    "ticker": "GLDM",
    "name": "GoldMaker Labs",
    "sector": "alchemy",
-   "beta": 0.81,
-   "vol": 0.38,
+   "beta": 0.86,
+   "vol": 0.418,
    "sens": 0.96,
    "depth": 15000,
    "traits": [],
-   "desc": "Turns lead into gold, slowly and at great expense."
+   "desc": "Turns lead into real gold in furnaces that take weeks per batch and use enormous amounts of power. An ounce costs almost as much to make as it sells for, so its profit moves with the gold price far more than with anything it does."
   },
   {
    "ticker": "ELXR",
    "name": "Elixir Wellness",
    "sector": "alchemy",
-   "beta": 0.89,
-   "vol": 0.37,
+   "beta": 0.94,
+   "vol": 0.407,
    "sens": 1.49,
    "depth": 15000,
    "traits": [],
-   "desc": "Brews potions that speed up healing and sells them through pharmacies."
+   "desc": "Brews healing potions in licensed breweries and sells them through pharmacies: bottled tonics that speed recovery from colds, sprains and surgery. Every new potion needs years of safety trials, so a handful of best-sellers carry the company."
   },
   {
    "ticker": "RUNE",
    "name": "RuneWorks Security",
    "sector": "alchemy",
-   "beta": 1.24,
-   "vol": 0.41,
+   "beta": 1.34,
+   "vol": 0.533,
    "sens": 0.95,
    "depth": 15000,
    "traits": [],
-   "desc": "Enchanted locks and rune alarms that no thief has ever bypassed."
+   "desc": "A small, fast-growing maker of rune-carved locks and alarms for bank vaults, data rooms and safe-deposit firms. It installs every system itself, so its growth is limited by how many engravers it can train."
   },
   {
    "ticker": "STNS",
    "name": "StoneSage Materials",
    "sector": "alchemy",
-   "beta": 1.02,
-   "vol": 0.32,
+   "beta": 1.12,
+   "vol": 0.416,
    "sens": 1.05,
    "depth": 15000,
    "traits": [],
-   "desc": "Produces enchanted alloys that never rust, bend or break.",
+   "desc": "Forges enchanted alloys that never rust, bend or crack, in a single plant. Bridge builders and hover-vehicle makers buy them for parts that must last a century; output is small and each batch is sold before it is made.",
    "dependencies": {
     "GLDM": 0.15
    }
@@ -632,7 +632,7 @@
    "sens": 1.1,
    "depth": 15000,
    "traits": [],
-   "desc": "Self-repairing clothes and carpets woven with charmed thread.",
+   "desc": "Weaves charmed thread that mends its own tears into fabric for clothes, carpets and upholstery. It sells the fabric to outdoor and fashion brands rather than to shoppers, and earns a royalty on every garment made with it.",
    "dependencies": {
     "STNS": 0.1
    }
@@ -646,7 +646,7 @@
    "sens": 1.23,
    "depth": 15000,
    "traits": [],
-   "desc": "Precision wands for surgeons, chip designers and stage magicians.",
+   "desc": "The leading maker of precision wands: surgical models for operating theatres, etching wands that chip factories use to draw circuits, and a cheaper stage range for magicians. Most of its profit comes from multi-year service contracts with hospitals and chip makers.",
    "dependencies": {
     "RUNE": 0.05
    }
@@ -1141,482 +1141,482 @@
  "profiles": {
   "PHSJ": {
    "initial_price": 61.55,
-   "market_cap": 46.1,
-   "shares_outstanding": 0.749,
-   "revenue": 8.59,
+   "market_cap": 7.5,
+   "shares_outstanding": 0.121852,
+   "revenue": 1.3975,
    "margin": 0.122,
-   "cash": 2.15,
-   "debt": 6.53,
+   "cash": 0.3498,
+   "debt": 1.0624,
    "dividend_yield": 0.0025
   },
   "GTWY": {
    "initial_price": 22.26,
-   "market_cap": 14.7,
-   "shares_outstanding": 0.66,
-   "revenue": 2.63,
+   "market_cap": 1.48,
+   "shares_outstanding": 0.066487,
+   "revenue": 0.2648,
    "margin": 0.169,
-   "cash": 0.73,
-   "debt": 1.87,
+   "cash": 0.0735,
+   "debt": 0.1883,
    "dividend_yield": 0.0012
   },
   "QNTR": {
    "initial_price": 88.15,
-   "market_cap": 35.6,
-   "shares_outstanding": 0.404,
-   "revenue": 6.88,
+   "market_cap": 3.89,
+   "shares_outstanding": 0.044129,
+   "revenue": 0.7517,
    "margin": 0.222,
-   "cash": 2.75,
-   "debt": 3.31,
+   "cash": 0.3005,
+   "debt": 0.3617,
    "dividend_yield": 0.0094
   },
   "BMLN": {
    "initial_price": 29.19,
-   "market_cap": 10.1,
-   "shares_outstanding": 0.346,
-   "revenue": 1.97,
+   "market_cap": 0.707,
+   "shares_outstanding": 0.024221,
+   "revenue": 0.1379,
    "margin": 0.055,
-   "cash": 0.35,
-   "debt": 0.51,
+   "cash": 0.0245,
+   "debt": 0.0357,
    "dividend_yield": 0.0003
   },
   "PRTL": {
    "initial_price": 190.02,
-   "market_cap": 66.4,
-   "shares_outstanding": 0.349,
-   "revenue": 11.42,
+   "market_cap": 18.1,
+   "shares_outstanding": 0.095253,
+   "revenue": 3.113,
    "margin": 0.149,
-   "cash": 3.02,
-   "debt": 6.97,
+   "cash": 0.8232,
+   "debt": 1.9,
    "dividend_yield": 0.0038
   },
   "VNSH": {
    "initial_price": 38.35,
-   "market_cap": 68.2,
-   "shares_outstanding": 1.778,
-   "revenue": 11.48,
+   "market_cap": 27.6,
+   "shares_outstanding": 0.719687,
+   "revenue": 4.6459,
    "margin": 0.095,
-   "cash": 5.56,
-   "debt": 8.73,
+   "cash": 2.2501,
+   "debt": 3.533,
    "dividend_yield": 0.0055
   },
   "CLSD": {
    "initial_price": 9.08,
-   "market_cap": 40.9,
-   "shares_outstanding": 4.504,
-   "revenue": 20.54,
+   "market_cap": 3.81,
+   "shares_outstanding": 0.419604,
+   "revenue": 1.9134,
    "margin": 0.188,
-   "cash": 2.94,
-   "debt": 14.8,
+   "cash": 0.2738,
+   "debt": 1.3786,
    "dividend_yield": 0.0046
   },
   "STRM": {
    "initial_price": 17.38,
-   "market_cap": 256.5,
-   "shares_outstanding": 14.758,
-   "revenue": 139.18,
+   "market_cap": 110.0,
+   "shares_outstanding": 6.329114,
+   "revenue": 59.69,
    "margin": 0.077,
-   "cash": 30.19,
-   "debt": 77.98,
+   "cash": 12.95,
+   "debt": 33.44,
    "dividend_yield": 0.0113
   },
   "SNWL": {
    "initial_price": 30.06,
-   "market_cap": 133.8,
-   "shares_outstanding": 4.451,
-   "revenue": 67.38,
+   "market_cap": 9.46,
+   "shares_outstanding": 0.314704,
+   "revenue": 4.764,
    "margin": 0.087,
-   "cash": 16.09,
-   "debt": 52.01,
+   "cash": 1.1376,
+   "debt": 3.6772,
    "dividend_yield": 0.0012
   },
   "SUNB": {
    "initial_price": 37.74,
-   "market_cap": 223.4,
-   "shares_outstanding": 5.919,
-   "revenue": 83.76,
+   "market_cap": 72.5,
+   "shares_outstanding": 1.921039,
+   "revenue": 27.19,
    "margin": 0.042,
-   "cash": 9.24,
-   "debt": 66.44,
+   "cash": 2.9987,
+   "debt": 21.56,
    "dividend_yield": 0.0046
   },
   "FOGX": {
    "initial_price": 157.72,
-   "market_cap": 14.9,
-   "shares_outstanding": 0.094,
-   "revenue": 7.15,
+   "market_cap": 1.63,
+   "shares_outstanding": 0.010335,
+   "revenue": 0.7822,
    "margin": 0.079,
-   "cash": 1.96,
-   "debt": 4.4,
+   "cash": 0.2144,
+   "debt": 0.4813,
    "dividend_yield": 0.0096
   },
   "GALE": {
    "initial_price": 193.74,
-   "market_cap": 13.8,
-   "shares_outstanding": 0.071,
-   "revenue": 6.78,
+   "market_cap": 0.928,
+   "shares_outstanding": 0.00479,
+   "revenue": 0.456,
    "margin": 0.044,
-   "cash": 0.9,
-   "debt": 5.37,
+   "cash": 0.0605,
+   "debt": 0.3611,
    "dividend_yield": 0.0061
   },
   "CHRN": {
    "initial_price": 100.21,
-   "market_cap": 16.9,
-   "shares_outstanding": 0.169,
-   "revenue": 2.35,
+   "market_cap": 0.64,
+   "shares_outstanding": 0.006387,
+   "revenue": 0.089,
    "margin": 0.259,
-   "cash": 0.88,
-   "debt": 0.85,
+   "cash": 0.0333,
+   "debt": 0.0322,
    "dividend_yield": 0.0001
   },
   "RWND": {
    "initial_price": 15.73,
-   "market_cap": 18.2,
-   "shares_outstanding": 1.157,
-   "revenue": 1.9,
+   "market_cap": 1.17,
+   "shares_outstanding": 0.07438,
+   "revenue": 0.1222,
    "margin": 0.062,
-   "cash": 0.82,
-   "debt": 0.36,
+   "cash": 0.0527,
+   "debt": 0.0231,
    "dividend_yield": 0.0013
   },
   "TMVT": {
    "initial_price": 42.29,
-   "market_cap": 44.3,
-   "shares_outstanding": 1.048,
-   "revenue": 6.92,
+   "market_cap": 3.65,
+   "shares_outstanding": 0.086309,
+   "revenue": 0.5702,
    "margin": 0.286,
-   "cash": 3.21,
-   "debt": 1.2,
+   "cash": 0.2644,
+   "debt": 0.0988,
    "dividend_yield": 0.0032
   },
   "PSTL": {
    "initial_price": 12.55,
-   "market_cap": 283.1,
-   "shares_outstanding": 22.558,
-   "revenue": 33.99,
+   "market_cap": 85.9,
+   "shares_outstanding": 6.844622,
+   "revenue": 10.32,
    "margin": 0.141,
-   "cash": 16.57,
-   "debt": 8.09,
+   "cash": 5.0278,
+   "debt": 2.4547,
    "dividend_yield": 0.0023
   },
   "EPCH": {
    "initial_price": 21.15,
-   "market_cap": 50.9,
-   "shares_outstanding": 2.407,
-   "revenue": 7.71,
+   "market_cap": 6.54,
+   "shares_outstanding": 0.30922,
+   "revenue": 0.9907,
    "margin": 0.072,
-   "cash": 4.32,
-   "debt": 0.88,
+   "cash": 0.5551,
+   "debt": 0.1131,
    "dividend_yield": 0.0025
   },
   "SKIP": {
    "initial_price": 36.47,
-   "market_cap": 97.1,
-   "shares_outstanding": 2.662,
-   "revenue": 10.28,
+   "market_cap": 20.8,
+   "shares_outstanding": 0.570332,
+   "revenue": 2.2021,
    "margin": 0.184,
-   "cash": 3.72,
-   "debt": 3.05,
+   "cash": 0.7969,
+   "debt": 0.6534,
    "dividend_yield": 0.004
   },
   "DRMW": {
    "initial_price": 103.55,
-   "market_cap": 182.4,
-   "shares_outstanding": 1.761,
-   "revenue": 44.08,
+   "market_cap": 66.2,
+   "shares_outstanding": 0.639305,
+   "revenue": 16.0,
    "margin": 0.165,
-   "cash": 17.03,
-   "debt": 8.97,
+   "cash": 6.1808,
+   "debt": 3.2555,
    "dividend_yield": 0.0004
   },
   "MMBK": {
    "initial_price": 9.16,
-   "market_cap": 18.6,
-   "shares_outstanding": 2.031,
-   "revenue": 4.19,
+   "market_cap": 1.15,
+   "shares_outstanding": 0.125546,
+   "revenue": 0.259,
    "margin": 0.157,
-   "cash": 1.31,
-   "debt": 0.86,
+   "cash": 0.081,
+   "debt": 0.0532,
    "dividend_yield": 0.0056
   },
   "SLPN": {
    "initial_price": 37.88,
-   "market_cap": 295.3,
-   "shares_outstanding": 7.796,
-   "revenue": 64.8,
+   "market_cap": 112.0,
+   "shares_outstanding": 2.956705,
+   "revenue": 24.58,
    "margin": 0.105,
-   "cash": 13.03,
-   "debt": 27.94,
+   "cash": 4.9419,
+   "debt": 10.6,
    "dividend_yield": 0.0095
   },
   "NGHT": {
    "initial_price": 74.2,
-   "market_cap": 16.9,
-   "shares_outstanding": 0.228,
-   "revenue": 4.39,
+   "market_cap": 0.74,
+   "shares_outstanding": 0.009973,
+   "revenue": 0.1922,
    "margin": 0.113,
-   "cash": 1.51,
-   "debt": 2.01,
+   "cash": 0.0661,
+   "debt": 0.0881,
    "dividend_yield": 0.0057
   },
   "LCDL": {
    "initial_price": 94.14,
-   "market_cap": 38.8,
-   "shares_outstanding": 0.412,
-   "revenue": 9.1,
+   "market_cap": 7.21,
+   "shares_outstanding": 0.076588,
+   "revenue": 1.6911,
    "margin": 0.086,
-   "cash": 2.12,
-   "debt": 2.35,
+   "cash": 0.394,
+   "debt": 0.4367,
    "dividend_yield": 0.0015
   },
   "ERSE": {
    "initial_price": 194.72,
-   "market_cap": 19.5,
-   "shares_outstanding": 0.1,
-   "revenue": 4.99,
+   "market_cap": 3.24,
+   "shares_outstanding": 0.016639,
+   "revenue": 0.8291,
    "margin": 0.167,
-   "cash": 1.88,
-   "debt": 0.78,
+   "cash": 0.3124,
+   "debt": 0.1296,
    "dividend_yield": 0.0004
   },
   "EMBR": {
    "initial_price": 65.65,
-   "market_cap": 23.0,
-   "shares_outstanding": 0.35,
-   "revenue": 12.62,
+   "market_cap": 1.75,
+   "shares_outstanding": 0.026657,
+   "revenue": 0.9602,
    "margin": 0.079,
-   "cash": 1.05,
-   "debt": 4.06,
+   "cash": 0.0799,
+   "debt": 0.3089,
    "dividend_yield": 0.0153
   },
   "GRFN": {
    "initial_price": 22.29,
-   "market_cap": 72.6,
-   "shares_outstanding": 3.257,
-   "revenue": 36.08,
+   "market_cap": 8.57,
+   "shares_outstanding": 0.384477,
+   "revenue": 4.259,
    "margin": 0.072,
-   "cash": 3.21,
-   "debt": 21.91,
+   "cash": 0.3789,
+   "debt": 2.5863,
    "dividend_yield": 0.0138
   },
   "UNCR": {
    "initial_price": 41.4,
-   "market_cap": 13.2,
-   "shares_outstanding": 0.319,
-   "revenue": 6.27,
+   "market_cap": 0.815,
+   "shares_outstanding": 0.019686,
+   "revenue": 0.3871,
    "margin": 0.075,
-   "cash": 1.21,
-   "debt": 2.95,
+   "cash": 0.0747,
+   "debt": 0.1822,
    "dividend_yield": 0.0154
   },
   "KRKN": {
    "initial_price": 40.55,
-   "market_cap": 226.3,
-   "shares_outstanding": 5.581,
-   "revenue": 122.65,
+   "market_cap": 87.6,
+   "shares_outstanding": 2.160296,
+   "revenue": 47.48,
    "margin": 0.062,
-   "cash": 10.31,
-   "debt": 44.84,
+   "cash": 3.991,
+   "debt": 17.35,
    "dividend_yield": 0.0078
   },
   "PHNX": {
    "initial_price": 38.5,
-   "market_cap": 182.5,
-   "shares_outstanding": 4.74,
-   "revenue": 114.25,
+   "market_cap": 73.8,
+   "shares_outstanding": 1.916883,
+   "revenue": 46.2,
    "margin": 0.093,
-   "cash": 22.6,
-   "debt": 47.91,
+   "cash": 9.1391,
+   "debt": 19.38,
    "dividend_yield": 0.0063
   },
   "YETI": {
    "initial_price": 180.18,
-   "market_cap": 26.5,
-   "shares_outstanding": 0.147,
-   "revenue": 14.01,
+   "market_cap": 3.51,
+   "shares_outstanding": 0.019481,
+   "revenue": 1.8556,
    "margin": 0.062,
-   "cash": 2.33,
-   "debt": 8.44,
+   "cash": 0.3086,
+   "debt": 1.1179,
    "dividend_yield": 0.0053
   },
   "ABYS": {
    "initial_price": 123.14,
-   "market_cap": 33.0,
-   "shares_outstanding": 0.268,
-   "revenue": 11.58,
+   "market_cap": 4.26,
+   "shares_outstanding": 0.034595,
+   "revenue": 1.4949,
    "margin": 0.152,
-   "cash": 3.05,
-   "debt": 9.37,
+   "cash": 0.3937,
+   "debt": 1.2096,
    "dividend_yield": 0.0126
   },
   "KELP": {
    "initial_price": 13.89,
-   "market_cap": 45.6,
-   "shares_outstanding": 3.283,
-   "revenue": 16.75,
+   "market_cap": 7.65,
+   "shares_outstanding": 0.550756,
+   "revenue": 2.81,
    "margin": 0.072,
-   "cash": 2.02,
-   "debt": 10.02,
+   "cash": 0.3389,
+   "debt": 1.681,
    "dividend_yield": 0.0063
   },
   "TRNC": {
    "initial_price": 28.08,
-   "market_cap": 10.6,
-   "shares_outstanding": 0.377,
-   "revenue": 4.46,
+   "market_cap": 1.06,
+   "shares_outstanding": 0.037749,
+   "revenue": 0.446,
    "margin": 0.066,
-   "cash": 0.91,
-   "debt": 3.95,
+   "cash": 0.0909,
+   "debt": 0.395,
    "dividend_yield": 0.0039
   },
   "PRLG": {
    "initial_price": 118.62,
-   "market_cap": 23.5,
-   "shares_outstanding": 0.198,
-   "revenue": 9.62,
+   "market_cap": 1.66,
+   "shares_outstanding": 0.013994,
+   "revenue": 0.6796,
    "margin": 0.057,
-   "cash": 1.12,
-   "debt": 5.89,
+   "cash": 0.0791,
+   "debt": 0.416,
    "dividend_yield": 0.0123
   },
   "TIDL": {
    "initial_price": 77.2,
-   "market_cap": 62.7,
-   "shares_outstanding": 0.812,
-   "revenue": 28.22,
+   "market_cap": 31.2,
+   "shares_outstanding": 0.404145,
+   "revenue": 14.04,
    "margin": 0.15,
-   "cash": 5.76,
-   "debt": 14.18,
+   "cash": 2.8662,
+   "debt": 7.0561,
    "dividend_yield": 0.0128
   },
   "SBMR": {
    "initial_price": 92.54,
-   "market_cap": 8.3,
-   "shares_outstanding": 0.09,
-   "revenue": 3.11,
+   "market_cap": 0.572,
+   "shares_outstanding": 0.006181,
+   "revenue": 0.2143,
    "margin": 0.047,
-   "cash": 0.69,
-   "debt": 1.79,
+   "cash": 0.0476,
+   "debt": 0.1234,
    "dividend_yield": 0.0142
   },
   "LEVT": {
    "initial_price": 23.53,
-   "market_cap": 70.1,
-   "shares_outstanding": 2.979,
-   "revenue": 11.34,
+   "market_cap": 3.44,
+   "shares_outstanding": 0.146196,
+   "revenue": 0.5565,
    "margin": 0.026,
-   "cash": 2.89,
-   "debt": 6.53,
+   "cash": 0.1418,
+   "debt": 0.3204,
    "dividend_yield": 0.0
   },
   "HVRL": {
    "initial_price": 28.26,
-   "market_cap": 77.5,
-   "shares_outstanding": 2.742,
-   "revenue": 18.72,
+   "market_cap": 28.6,
+   "shares_outstanding": 1.012031,
+   "revenue": 6.9083,
    "margin": -0.117,
-   "cash": 5.81,
-   "debt": 11.09,
+   "cash": 2.1441,
+   "debt": 4.0926,
    "dividend_yield": 0.0
   },
   "AIRY": {
    "initial_price": 11.83,
-   "market_cap": 74.2,
-   "shares_outstanding": 6.272,
-   "revenue": 13.07,
+   "market_cap": 5.42,
+   "shares_outstanding": 0.458157,
+   "revenue": 0.9547,
    "margin": 0.163,
-   "cash": 3.12,
-   "debt": 6.67,
+   "cash": 0.2279,
+   "debt": 0.4873,
    "dividend_yield": 0.0
   },
   "GRVN": {
    "initial_price": 94.39,
-   "market_cap": 208.1,
-   "shares_outstanding": 2.205,
-   "revenue": 50.19,
+   "market_cap": 91.6,
+   "shares_outstanding": 0.970442,
+   "revenue": 22.1,
    "margin": 0.051,
-   "cash": 28.18,
-   "debt": 22.43,
+   "cash": 12.41,
+   "debt": 9.8731,
    "dividend_yield": 0.0
   },
   "LFTR": {
    "initial_price": 26.29,
-   "market_cap": 13.0,
-   "shares_outstanding": 0.494,
-   "revenue": 2.51,
+   "market_cap": 0.677,
+   "shares_outstanding": 0.025751,
+   "revenue": 0.1308,
    "margin": 0.168,
-   "cash": 1.48,
-   "debt": 1.32,
+   "cash": 0.0771,
+   "debt": 0.0688,
    "dividend_yield": 0.0
   },
   "FLTR": {
    "initial_price": 24.86,
-   "market_cap": 37.6,
-   "shares_outstanding": 1.512,
-   "revenue": 8.91,
+   "market_cap": 1.23,
+   "shares_outstanding": 0.049477,
+   "revenue": 0.2915,
    "margin": -0.064,
-   "cash": 4.45,
-   "debt": 4.3,
+   "cash": 0.1456,
+   "debt": 0.1407,
    "dividend_yield": 0.0
   },
   "GLDM": {
    "initial_price": 8.29,
-   "market_cap": 233.2,
-   "shares_outstanding": 28.13,
-   "revenue": 71.93,
+   "market_cap": 4.34,
+   "shares_outstanding": 0.523522,
+   "revenue": 1.3387,
    "margin": 0.136,
-   "cash": 14.73,
-   "debt": 26.7,
+   "cash": 0.2741,
+   "debt": 0.4969,
    "dividend_yield": 0.0139
   },
   "ELXR": {
    "initial_price": 15.49,
-   "market_cap": 42.4,
-   "shares_outstanding": 2.737,
-   "revenue": 12.17,
+   "market_cap": 7.35,
+   "shares_outstanding": 0.4745,
+   "revenue": 2.1096,
    "margin": 0.199,
-   "cash": 1.7,
-   "debt": 6.87,
+   "cash": 0.2947,
+   "debt": 1.1909,
    "dividend_yield": 0.0066
   },
   "RUNE": {
    "initial_price": 217.81,
-   "market_cap": 27.4,
-   "shares_outstanding": 0.126,
-   "revenue": 7.62,
+   "market_cap": 1.51,
+   "shares_outstanding": 0.006933,
+   "revenue": 0.42,
    "margin": 0.118,
-   "cash": 2.23,
-   "debt": 2.15,
+   "cash": 0.1229,
+   "debt": 0.1184,
    "dividend_yield": 0.0121
   },
   "STNS": {
    "initial_price": 53.98,
-   "market_cap": 12.6,
-   "shares_outstanding": 0.233,
-   "revenue": 3.92,
+   "market_cap": 0.892,
+   "shares_outstanding": 0.016525,
+   "revenue": 0.2775,
    "margin": 0.119,
-   "cash": 1.14,
-   "debt": 1.63,
+   "cash": 0.0807,
+   "debt": 0.1154,
    "dividend_yield": 0.0163
   },
   "ENCH": {
    "initial_price": 18.58,
-   "market_cap": 44.0,
-   "shares_outstanding": 2.368,
-   "revenue": 16.45,
+   "market_cap": 22.0,
+   "shares_outstanding": 1.184069,
+   "revenue": 8.225,
    "margin": 0.17,
-   "cash": 3.03,
-   "debt": 5.82,
+   "cash": 1.515,
+   "debt": 2.91,
    "dividend_yield": 0.0208
   },
   "WAND": {
    "initial_price": 53.68,
-   "market_cap": 275.2,
-   "shares_outstanding": 5.127,
-   "revenue": 76.93,
+   "market_cap": 131.0,
+   "shares_outstanding": 2.440387,
+   "revenue": 36.62,
    "margin": 0.096,
-   "cash": 16.14,
-   "debt": 41.08,
+   "cash": 7.683,
+   "debt": 19.56,
    "dividend_yield": 0.0265
   }
  },

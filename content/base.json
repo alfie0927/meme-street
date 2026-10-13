@@ -106,7 +106,7 @@
    "traits": [
     "earnings"
    ],
-   "desc": "Designs high-performance processors and memory for data centers, personal computers, and connected devices."
+   "desc": "The market's largest company: it designs the processors and memory used in data centres, computers and connected devices, and has them made by outside foundries. Demand for AI computing drives its sales."
   },
   {
    "ticker": "CLDR",
@@ -119,7 +119,7 @@
    "traits": [
     "earnings"
    ],
-   "desc": "Provides cloud hosting, data storage, and software tools for businesses moving their operations online."
+   "desc": "Rents out computing, storage and software tools from its cloud data centres to businesses moving online. Customers pay as they go, so its revenue grows with their usage."
   },
   {
    "ticker": "BYTE",
@@ -132,18 +132,18 @@
    "traits": [
     "earnings"
    ],
-   "desc": "Builds AI model software and the specialized computing systems used to train and run it."
+   "desc": "Builds AI models and the computing systems used to train and run them, sold to businesses as a service. It spends heavily on research and computing power."
   },
   {
    "ticker": "SLRG",
    "name": "SolarGrid",
    "sector": "energy",
-   "beta": 1.2,
-   "vol": 0.42,
+   "beta": 1.25,
+   "vol": 0.462,
    "sens": 1.0,
    "depth": 20000,
    "traits": [],
-   "desc": "Develops utility-scale solar farms and battery projects that sell electricity to regional power grids."
+   "desc": "Builds and owns large solar farms with batteries and sells their power to grid operators under twenty-year contracts. It borrows heavily to build, so interest rates matter to it as much as sunshine."
   },
   {
    "ticker": "OILX",
@@ -156,18 +156,18 @@
    "traits": [
     "earnings"
    ],
-   "desc": "Explores for crude oil and natural gas, then operates pipelines and refineries serving industrial customers."
+   "desc": "An integrated oil major: it finds and pumps crude oil and gas, moves them through its own pipelines and refines them into fuels for airlines, power plants and industry. Its profit follows the oil price, and it pays a large dividend."
   },
   {
    "ticker": "HLXB",
    "name": "Helix Biolabs",
    "sector": "pharma",
-   "beta": 1.35,
-   "vol": 0.65,
+   "beta": 1.45,
+   "vol": 0.845,
    "sens": 1.3,
    "depth": 20000,
    "traits": [],
-   "desc": "A clinical-stage biotech developing targeted treatments for rare diseases and immune disorders."
+   "desc": "A clinical-stage biotech testing antibody drugs for immune disorders such as lupus. It has no product on sale yet, so its value rests on trial results."
   },
   {
    "ticker": "CURA",
@@ -180,7 +180,7 @@
    "traits": [
     "earnings"
    ],
-   "desc": "Develops and manufactures established prescription medicines, including specialty and generic treatments."
+   "desc": "Makes established prescription medicines for heart disease, diabetes and infections, plus low-cost generics, sold to pharmacies and hospitals. A steady earner, it must keep replacing drugs whose patents expire."
   },
   {
    "ticker": "AEGX",
@@ -193,7 +193,7 @@
    "traits": [
     "earnings"
    ],
-   "desc": "Supplies radar, secure communications, and maintenance systems to defense and aerospace agencies."
+   "desc": "A prime defense contractor that builds radar systems and secure military communications and maintains aircraft for governments. Its contracts run for decades, so revenue is very predictable and depends mainly on defense budgets."
   },
   {
    "ticker": "SKYJ",
@@ -210,7 +210,7 @@
    "traits": [
     "earnings"
    ],
-   "desc": "Runs a regional and international airline network, with revenue tied to travel demand and fuel costs."
+   "desc": "A full-service national airline with two hub airports, long-haul international routes and a frequent-flyer programme that earns money from credit-card partners. Profits swing with ticket demand, and fuel is its biggest cost after wages."
   },
   {
    "ticker": "MUNC",
@@ -221,20 +221,20 @@
    "sens": 0.6,
    "depth": 20000,
    "traits": [],
-   "desc": "Makes packaged foods and household staples sold through grocery stores and everyday retailers."
+   "desc": "Makes frozen meals, pasta sauces and pantry staples under a dozen household brands, plus own-label goods for supermarkets. People buy them in good times and bad, which makes it one of the steadiest stocks on the market."
   },
   {
    "ticker": "ZIPD",
    "name": "ZipDrop Delivery",
    "sector": "consumer",
-   "beta": 1.35,
-   "vol": 0.5,
+   "beta": 1.4,
+   "vol": 0.591,
    "sens": 0.9,
    "depth": 20000,
    "traits": [
     "earnings"
    ],
-   "desc": "Operates a last-mile delivery platform connecting local shops, restaurants, and online customers."
+   "desc": "Delivers groceries, takeaways and parcels from local shops within the hour, using gig couriers on bikes and vans. It charges shops a commission and customers a fee, and is barely profitable."
   },
   {
    "ticker": "BNKR",
@@ -247,7 +247,7 @@
    "traits": [
     "earnings"
    ],
-   "desc": "A diversified commercial bank earning income from customer deposits, lending, and payment services."
+   "desc": "The largest bank on the market: current accounts, mortgages, business loans and card payments for millions of customers. It earns the gap between what it pays on deposits and what it charges on loans, so interest rates and defaults drive its profit."
   },
   {
    "ticker": "BOND",
@@ -280,7 +280,7 @@
    "sens": 1.5,
    "depth": 12000,
    "traits": [],
-   "desc": "A viral pet brand monetizing social-media attention through merchandise, licensing, and community events."
+   "desc": "Owns a cartoon dog that went viral and sells the merchandise, licences and fan events built around it. Almost all of its value rests on online attention, so its price swings with every trend and meme."
   },
   {
    "ticker": "MOON",
@@ -291,7 +291,7 @@
    "sens": 1.4,
    "depth": 12000,
    "traits": [],
-   "desc": "A speculative launch startup chasing commercial rocket contracts and low-cost small-satellite missions."
+   "desc": "A small rocket start-up that has flown twice and is chasing contracts to launch cheap small satellites. It has little revenue, burns cash on every test, and its fans trade it on hope."
   }
  ],
  "templates": [

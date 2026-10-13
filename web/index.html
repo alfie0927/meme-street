@@ -121,7 +121,7 @@ button:hover{background:#243044}button:active{transform:translateY(1px)}button:d
 input,select{font:inherit;width:100%;padding:9px 10px;margin:10px 0;background:#0a0e14;border:1px solid var(--line);color:var(--txt);border-radius:8px}
 input:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px #5aa2ff22}
 .bar input,.bar select{width:auto;margin:0;padding:6px 10px}
-#q{width:260px}#msort{display:none}
+#q{width:340px}#msort{display:none}
 /* logged-out visitors: they can watch the live market and a stock's page, and are asked to sign in to do anything else */
 #guest-actions,#guest-hero{display:none}
 body.guest #guest-actions{display:flex;gap:8px;align-items:center}
@@ -275,7 +275,7 @@ body.guest .guest-cta{display:flex}
 <div id="session-banner"></div><div id="low-banner"></div><div id="learn-banner"></div>
 <main><section>
 <div class="card" id="guest-hero"><h2>Meme Street</h2><p class="about" style="margin:0 0 10px">A fictional stock market that never closes: 190+ companies, indices and ETFs, news that moves prices, and a daily leaderboard. You are watching it live. Create an account to trade.</p><ul class="hint"><li>Prices follow stories, not players: nobody's trade, ours included, moves a price.</li><li>Read the wire, trade fast, and short a stock if you think it will fall.</li><li>Every trade costs 0.1%, like a broker's fee. Memebucks (MB) are a practice currency with no cash value.</li></ul><div class="bar"><button class="buy" id="gh-join">Create an account</button><button id="gh-login">Sign in</button><a href="/about">How it works</a></div></div>
-<div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Search ticker, company or industry" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option></select></div>
+<div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Search ticker, company, industry or size (small cap…)" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option><option value="cap:-1">Largest companies first</option><option value="cap:1">Smallest companies first</option></select></div>
 <div class="ticket"><span class="lab">Buy size</span><span id="bchips"></span><span class="lab">Sell size</span><span id="schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="Amount in MB"></div>
 <div id="secs-wrap"><div id="secs"></div><button class="chip" id="secs-toggle" aria-expanded="false"></button></div>
 <table><thead><tr><th class="star-h"></th><th data-sort="ticker">Ticker <span data-sort="name" style="font-weight:500">&middot; Company</span></th><th data-sort="price">Price</th><th data-sort="chg">30m</th><th class="spk-col">Trend</th><th class="held-col" data-sort="held">Held</th><th></th></tr></thead><tbody id="rows"></tbody></table>
@@ -606,15 +606,17 @@ function makeRow(x){
  tr.innerHTML=`<td class="star" data-star title="Add to or remove from your watchlist">\u2606</td><td><div class="tick-cell"><span class="sec-ic">${esc(iconOf(x))}</span><span class="tick-main"><span class="tk">${esc(x.ticker)}</span><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="badges"></span></span></div></td><td class="px"></td><td class="chg"></td><td class="spk"></td><td class="held"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;
  return tr}
 const sectorName=id=>{const s=S&&S.sectors.find(x=>x.id===id);return s?s.name:id};
+// company size by market value, in billions: small under 2, mid 2 to 10, large from 10 (the usual bands; engine SMALL_CAP / LARGE_CAP)
+const sizeOf=x=>{if(x.asset_type!=='equity')return '';const c=finOf(x).market_cap||0;return c>=10?'Large cap':c>=2?'Mid cap':'Small cap'};
 function matches(x){
  if(view.watch&&!watch.has(x.ticker))return false;
  if(view.sector==='index'){if(x.asset_type!=='index')return false}
  else if(view.sector!=='all'&&(x.sector!==view.sector||x.asset_type==='index'))return false;
  const q=view.q.trim().toLowerCase();
- if(q){const hay=(x.ticker+' '+x.name+' '+sectorName(x.sector)+' '+(x.asset_type==='index'?'index etf fund':'')).toLowerCase();if(!hay.includes(q))return false}
+ if(q){const hay=(x.ticker+' '+x.name+' '+sectorName(x.sector)+' '+sizeOf(x)+' '+(x.asset_type==='index'?'index etf fund':'')).toLowerCase();if(!hay.includes(q))return false}
  return true}
 const isLev=x=>/^\d[LS]MSI$/.test(x.ticker);   // the 2x and 3x long and short products always sit at the bottom of the table
-function sortKey(x,h){switch(view.sort){case'name':return x.name.toLowerCase();case'price':return x.price;case'chg':return x.chg;case'held':return h?h.value:0;default:return x.ticker}}
+function sortKey(x,h){switch(view.sort){case'name':return x.name.toLowerCase();case'price':return x.price;case'chg':return x.chg;case'held':return h?h.value:0;case'cap':return finOf(x).market_cap||0;default:return x.ticker}}
 function saveView(){lsSet('ms_view',view);lsSet('ms_watch',[...watch])}
 $('rows').addEventListener('click',e=>{
  const tr=e.target.closest('tr[data-k]');if(!tr)return;
@@ -926,7 +928,7 @@ function drawDetail(){
  setText($('d-limits'),`Shorting takes the amount out of your cash as collateral and gives it back when you cover · borrow fee ${f(stock.borrow_hour*100,2)}% per hour. There is no limit on how much of this you can buy or short.`);
  const F=(l,v,c='')=>`<div><small>${l}</small><strong class="${c}">${v}</strong></div>`;
  let facts;
- if(stock.asset_type==='equity')facts=F('Market cap',capText(fin.market_cap))+F('Price',priceText(stock.price))+F('Shares out.',sharesText(fin.shares_outstanding))+F('EPS',fin.eps===null?'N/A':f(fin.eps,2)+' MB')+F('Revenue (annual)',capText(fin.revenue))+F('Net income',capText(fin.net_income),fin.net_income>=0?'up':'dn')+F('Cash',capText(fin.cash))+F('Debt',capText(fin.debt))+F('Net margin',pc(fin.margin))+F('Dividend yield',pc(fin.dividend_yield))+F('P/E',fin.pe===null?'N/A':f(fin.pe,1));
+ if(stock.asset_type==='equity')facts=F('Market cap',capText(fin.market_cap))+F('Size',sizeOf(stock))+F('Price',priceText(stock.price))+F('Shares out.',sharesText(fin.shares_outstanding))+F('EPS',fin.eps===null?'N/A':f(fin.eps,2)+' MB')+F('Revenue (annual)',capText(fin.revenue))+F('Net income',capText(fin.net_income),fin.net_income>=0?'up':'dn')+F('Cash',capText(fin.cash))+F('Debt',capText(fin.debt))+F('Net margin',pc(fin.margin))+F('Dividend yield',pc(fin.dividend_yield))+F('P/E',fin.pe===null?'N/A':f(fin.pe,1));
  else facts=F('Price',priceText(stock.price))+F('Annual volatility',(stock.vol*100).toFixed(1)+'%')+F('Beta to market',f(stock.beta,2));
  facts+=sector&&sector.value&&stock.asset_type!=='index'?F('Sector index',f(sector.value,2)):'';
  setHtml($('d-facts'),facts);

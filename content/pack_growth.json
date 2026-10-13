@@ -41,12 +41,12 @@
    "ticker": "MRHS",
    "name": "Meridian Health Systems",
    "sector": "healthcare",
-   "beta": 0.92,
-   "vol": 0.31,
+   "beta": 0.97,
+   "vol": 0.341,
    "sens": 1.22,
    "depth": 16000,
    "traits": [],
-   "desc": "Runs a regional network of hospitals and outpatient clinics."
+   "desc": "Runs 30 hospitals and outpatient clinics in one region, paid by insurers and the government. Nurses and doctors are its biggest cost."
   },
   {
    "ticker": "ANCI",
@@ -57,18 +57,18 @@
    "sens": 1.01,
    "depth": 16000,
    "traits": [],
-   "desc": "Sells health insurance plans to employers and individuals."
+   "desc": "Sells health insurance to employers and families and pays their medical bills. It profits when premiums rise faster than the cost of care."
   },
   {
    "ticker": "DDIA",
    "name": "DoctorDial",
    "sector": "healthcare",
-   "beta": 0.74,
-   "vol": 0.27,
+   "beta": 0.84,
+   "vol": 0.351,
    "sens": 0.88,
    "depth": 16000,
    "traits": [],
-   "desc": "Offers video doctor visits and prescription delivery by subscription."
+   "desc": "Offers video doctor visits and home delivery of prescriptions for a monthly subscription. Small and growing fast, it competes with every clinic that moves online."
   },
   {
    "ticker": "CLSC",
@@ -79,18 +79,18 @@
    "sens": 1.15,
    "depth": 16000,
    "traits": [],
-   "desc": "Operates imaging centers and clinical testing laboratories."
+   "desc": "Operates imaging centres and testing laboratories that doctors send patients and samples to: scans, blood tests and genetic tests. Insurers pay it per test."
   },
   {
    "ticker": "BSMD",
    "name": "BrightSmile Dental Group",
    "sector": "healthcare",
-   "beta": 0.92,
-   "vol": 0.27,
+   "beta": 1.02,
+   "vol": 0.351,
    "sens": 1.02,
    "depth": 16000,
    "traits": [],
-   "desc": "Owns a chain of dental practices and sells clear aligners."
+   "desc": "Owns 400 dental practices and sells its own clear aligners direct to customers. Patients pay for most treatments themselves, so it slows when household budgets tighten."
   },
   {
    "ticker": "CRXP",
@@ -101,7 +101,7 @@
    "sens": 1.04,
    "depth": 16000,
    "traits": [],
-   "desc": "Operates neighbourhood pharmacies and a mail-order drug service."
+   "desc": "Runs 9,000 neighbourhood pharmacies and a mail-order prescription service, and manages drug benefits for employers. Its margins are thin, but it fills about a third of the market's prescriptions."
   },
   {
    "ticker": "VTDV",
@@ -112,18 +112,18 @@
    "sens": 1.06,
    "depth": 16000,
    "traits": [],
-   "desc": "Makes pacemakers, insulin pumps and other implantable medical devices."
+   "desc": "Makes pacemakers, insulin pumps and other implanted medical devices that surgeons fit. New devices take years to approve, but surgeons rarely switch once they trust a brand."
   },
   {
    "ticker": "SYSL",
    "name": "SilverYears Senior Living",
    "sector": "healthcare",
-   "beta": 0.78,
-   "vol": 0.24,
+   "beta": 0.83,
+   "vol": 0.264,
    "sens": 1.37,
    "depth": 16000,
    "traits": [],
-   "desc": "Builds and manages assisted-living and memory-care communities."
+   "desc": "Builds and runs assisted-living and memory-care homes, charging residents monthly. Demand grows as the population ages, but it carries a lot of debt from building."
   },
   {
    "ticker": "MGMT",
@@ -134,7 +134,7 @@
    "sens": 1.24,
    "depth": 17000,
    "traits": [],
-   "desc": "Runs big-box stores selling groceries, electronics and household goods.",
+   "desc": "Runs big-box stores selling groceries, electronics and household goods at low prices. It wins on volume and buying power, not margin.",
    "dependencies": {
     "CLCK": -0.1
    }
@@ -148,18 +148,18 @@
    "sens": 1.06,
    "depth": 17000,
    "traits": [],
-   "desc": "Online marketplace with same-day delivery in major cities."
+   "desc": "The market's largest online retailer: millions of products from its own warehouses and outside sellers, with same-day delivery in major cities. It earns more from fees and adverts on its site than from the goods themselves."
   },
   {
    "ticker": "VBRN",
    "name": "ValueBarn",
    "sector": "retail",
-   "beta": 1.13,
-   "vol": 0.29,
+   "beta": 1.23,
+   "vol": 0.377,
    "sens": 1.31,
    "depth": 17000,
    "traits": [],
-   "desc": "Discount chain selling basics at rock-bottom prices."
+   "desc": "A discount chain selling basics at rock-bottom prices in small towns. It does well when shoppers trade down."
   },
   {
    "ticker": "MSVR",
@@ -170,51 +170,51 @@
    "sens": 1.22,
    "depth": 17000,
    "traits": [],
-   "desc": "Luxury house selling handbags, watches and perfume."
+   "desc": "A luxury house selling handbags, watches and perfume in its own boutiques. Wealthy buyers keep spending in most downturns, so its margins are high and steady."
   },
   {
    "ticker": "FRBK",
    "name": "FreshBasket Grocers",
    "sector": "retail",
-   "beta": 1.18,
-   "vol": 0.33,
+   "beta": 1.23,
+   "vol": 0.363,
    "sens": 0.83,
    "depth": 17000,
    "traits": [],
-   "desc": "Supermarket chain focused on fresh produce and meal kits."
+   "desc": "A supermarket chain focused on fresh produce and meal kits, with stores in busy towns. It charges more than discounters and depends on shoppers who will pay for quality."
   },
   {
    "ticker": "HNST",
    "name": "HomeNest Furnishings",
    "sector": "retail",
-   "beta": 0.86,
-   "vol": 0.32,
+   "beta": 0.91,
+   "vol": 0.352,
    "sens": 0.89,
    "depth": 17000,
    "traits": [],
-   "desc": "Sells furniture and home decor in stores and online."
+   "desc": "Sells furniture and home decor in its own showrooms and online. Sales follow the housing market, because people furnish homes when they move."
   },
   {
    "ticker": "TRLT",
    "name": "TrailTown Outdoor",
    "sector": "retail",
-   "beta": 0.86,
-   "vol": 0.33,
+   "beta": 0.91,
+   "vol": 0.363,
    "sens": 1.19,
    "depth": 17000,
    "traits": [],
-   "desc": "Outdoor gear and apparel retailer for hikers and campers."
+   "desc": "An outdoor gear and clothing retailer for hikers and campers, with its own brands. Sales peak in spring and summer."
   },
   {
    "ticker": "QKST",
    "name": "QuickStitch Fashion",
    "sector": "retail",
-   "beta": 0.82,
-   "vol": 0.33,
+   "beta": 0.92,
+   "vol": 0.429,
    "sens": 1.09,
    "depth": 17000,
    "traits": [],
-   "desc": "Fast-fashion brand that turns runway trends into shelves in two weeks."
+   "desc": "A fast-fashion brand that copies runway trends and gets them into its stores within two weeks. A wrong guess leaves it stuck with stock to discount."
   },
   {
    "ticker": "STFG",
@@ -225,7 +225,7 @@
    "sens": 0.87,
    "depth": 16000,
    "traits": [],
-   "desc": "Subscription streaming service with original series and films.",
+   "desc": "A subscription streaming service for series and films that spends billions a year on its own shows to stop subscribers leaving. Its profit depends on subscriber growth and how many cancel.",
    "dependencies": {
     "SLVR": 0.1
    }
@@ -239,7 +239,7 @@
    "sens": 1.22,
    "depth": 16000,
    "traits": [],
-   "desc": "Publishes console and mobile games, including a hit battle-royale title.",
+   "desc": "Publishes console and mobile games, led by a battle-royale hit played by 80 million people. Most of its revenue comes from in-game purchases, so a single hit or flop moves its profit.",
    "dependencies": {
     "STFG": 0.05
    }
@@ -248,12 +248,12 @@
    "ticker": "DLGM",
    "name": "Daily Ledger Media",
    "sector": "media",
-   "beta": 1.22,
-   "vol": 0.44,
+   "beta": 1.32,
+   "vol": 0.572,
    "sens": 1.28,
    "depth": 16000,
    "traits": [],
-   "desc": "Owns newspapers, news sites and a financial data terminal business."
+   "desc": "Publishes newspapers and news sites and sells a financial data terminal to traders. The terminals now earn more than the papers."
   },
   {
    "ticker": "SDTD",
@@ -264,18 +264,18 @@
    "sens": 0.9,
    "depth": 16000,
    "traits": [],
-   "desc": "Music streaming platform and record label."
+   "desc": "Runs a music streaming app with 150 million subscribers and owns a record label whose artists it streams. It pays most of its revenue to rights holders, so its margins are thin."
   },
   {
    "ticker": "ADSP",
    "name": "AdSpark",
    "sector": "media",
-   "beta": 1.08,
-   "vol": 0.43,
+   "beta": 1.18,
+   "vol": 0.559,
    "sens": 1.16,
    "depth": 16000,
    "traits": [],
-   "desc": "Digital advertising network that matches ads to viewers in real time.",
+   "desc": "A small digital ad network that auctions ad space on websites and podcasts in real time and takes a cut of every sale.",
    "dependencies": {
     "CHBX": 0.2
    }
@@ -289,40 +289,40 @@
    "sens": 1.37,
    "depth": 16000,
    "traits": [],
-   "desc": "Film studio with a large franchise catalogue and theme-park licensing."
+   "desc": "A film studio with a catalogue of family franchises that it licenses to theme parks, toy makers and streaming services. A blockbuster can carry its whole year."
   },
   {
    "ticker": "CHBX",
    "name": "ChatterBox Social",
    "sector": "media",
-   "beta": 1.03,
-   "vol": 0.45,
+   "beta": 1.08,
+   "vol": 0.495,
    "sens": 1.23,
    "depth": 16000,
    "traits": [],
-   "desc": "Social network built around short videos and group chats."
+   "desc": "A social app built around short videos and group chats, popular with teenagers. It earns money from adverts, so it has to keep users coming back every day."
   },
   {
    "ticker": "ECHN",
    "name": "Echo Cast Network",
    "sector": "media",
-   "beta": 1.22,
-   "vol": 0.5,
+   "beta": 1.27,
+   "vol": 0.55,
    "sens": 1.0,
    "depth": 16000,
    "traits": [],
-   "desc": "Podcast network and audio advertising company."
+   "desc": "Owns 200 popular podcasts and the platform that sells advertising on them, paid by advertisers per listen. Ad budgets are the first thing companies cut in a downturn."
   },
   {
    "ticker": "VLTR",
    "name": "VoltRider Motors",
    "sector": "autos",
-   "beta": 1.48,
-   "vol": 0.39,
+   "beta": 1.58,
+   "vol": 0.507,
    "sens": 1.06,
    "depth": 17000,
    "traits": [],
-   "desc": "Designs electric cars and sells them online.",
+   "desc": "A young electric-car maker that sells two models online, with no dealers, and services them with mobile vans. It is growing fast but makes little money yet, and it depends on one supplier for its batteries.",
    "dependencies": {
     "CLST": 0.25
    }
@@ -331,12 +331,12 @@
    "ticker": "IRHL",
    "name": "IronHaul Trucks",
    "sector": "autos",
-   "beta": 1.56,
-   "vol": 0.43,
+   "beta": 1.61,
+   "vol": 0.473,
    "sens": 0.85,
    "depth": 17000,
    "traits": [],
-   "desc": "Builds heavy trucks and electric delivery vans for fleets.",
+   "desc": "Makes heavy trucks for haulage firms and electric delivery vans for parcel fleets. Orders arrive in large batches from a few fleet buyers, so its revenue is lumpy and follows freight demand.",
    "dependencies": {
     "GRWK": 0.15
    }
@@ -350,7 +350,7 @@
    "sens": 1.02,
    "depth": 17000,
    "traits": [],
-   "desc": "Traditional carmaker with trucks, SUVs and a growing hybrid range.",
+   "desc": "A century-old carmaker best known for pickup trucks and family SUVs, sold through a network of franchised dealers. Petrol models still earn most of its profit and pay for its move into hybrids and electric cars.",
    "dependencies": {
     "GRWK": 0.2,
     "CLST": 0.1
@@ -365,7 +365,7 @@
    "sens": 1.32,
    "depth": 17000,
    "traits": [],
-   "desc": "Manufactures lithium batteries for cars and home storage."
+   "desc": "The largest battery maker on the market: lithium cells and packs for carmakers, truck builders and home and grid storage, sold under long supply deals. Its fortunes follow electric-vehicle sales and the price of lithium."
   },
   {
    "ticker": "GRWK",
@@ -376,18 +376,18 @@
    "sens": 1.12,
    "depth": 17000,
    "traits": [],
-   "desc": "Supplies brakes, transmissions and sensors to carmakers."
+   "desc": "Supplies brakes, gearboxes and driver-assistance sensors to almost every carmaker, and replacement parts to repair garages. Selling to all of them means it depends on no single brand, but it feels every slowdown in car production."
   },
   {
    "ticker": "HAIL",
    "name": "Hailo Rideshare",
    "sector": "autos",
-   "beta": 1.37,
-   "vol": 0.44,
+   "beta": 1.47,
+   "vol": 0.572,
    "sens": 0.96,
    "depth": 17000,
    "traits": [],
-   "desc": "Ride-hailing and scooter-rental app operating in 80 cities.",
+   "desc": "A ride-hailing and e-scooter app in 80 mid-sized cities that the big platforms ignore. It takes a cut of every ride; its drivers are independent, so its costs are mostly marketing and software.",
    "dependencies": {
     "ATND": 0.1
    }
@@ -396,67 +396,67 @@
    "ticker": "ATND",
    "name": "Autonomo Driving Systems",
    "sector": "autos",
-   "beta": 1.27,
-   "vol": 0.49,
+   "beta": 1.32,
+   "vol": 0.539,
    "sens": 0.84,
    "depth": 17000,
    "traits": [],
-   "desc": "Develops self-driving software and licenses it to carmakers."
+   "desc": "Writes self-driving software and licenses it to carmakers and ride-hailing fleets for a fee per vehicle. It spends heavily on testing, so profits are slim today; the bet is that every car will one day need it."
   },
   {
    "ticker": "TBMC",
    "name": "Thunderbolt Motorcycles",
    "sector": "autos",
-   "beta": 1.2,
-   "vol": 0.39,
+   "beta": 1.25,
+   "vol": 0.429,
    "sens": 1.22,
    "depth": 17000,
    "traits": [],
-   "desc": "Makes premium motorcycles and electric dirt bikes."
+   "desc": "Builds premium touring motorcycles and a newer line of electric dirt bikes, sold through its own dealers. Its riders are loyal and pay high prices, but sales fall quickly when the economy weakens."
   },
   {
    "ticker": "SKOF",
    "name": "Skyline Office REIT",
    "sector": "realestate",
-   "beta": 0.96,
-   "vol": 0.25,
+   "beta": 1.01,
+   "vol": 0.275,
    "sens": 0.93,
    "depth": 18000,
    "traits": [],
-   "desc": "Owns downtown office towers leased to banks and law firms."
+   "desc": "Owns downtown office towers leased to banks and law firms. Empty floors since the rise of remote work weigh on its rents and its dividend."
   },
   {
    "ticker": "HHRS",
    "name": "HearthHaven Residential",
    "sector": "realestate",
-   "beta": 0.82,
-   "vol": 0.28,
+   "beta": 0.92,
+   "vol": 0.364,
    "sens": 1.17,
    "depth": 18000,
    "traits": [],
-   "desc": "Landlord of apartment complexes across growing suburbs."
+   "desc": "A small landlord of apartment complexes in fast-growing suburbs, paying out most of its rent as dividends."
   },
   {
    "ticker": "PLZP",
    "name": "Plaza Prime Retail REIT",
    "sector": "realestate",
-   "beta": 0.78,
-   "vol": 0.22,
+   "beta": 0.88,
+   "vol": 0.286,
    "sens": 1.35,
    "depth": 18000,
    "traits": [],
-   "desc": "Owns shopping malls and open-air shopping centers."
+   "desc": "Owns neighbourhood shopping centres anchored by supermarkets, with small shops filling the rest. A property trust, it pays out most of its rent."
   },
   {
    "ticker": "CRST",
    "name": "CrateStack Logistics REIT",
    "sector": "realestate",
-   "beta": 1.05,
-   "vol": 0.2,
+   "beta": 1.1,
+   "vol": 0.22,
    "sens": 1.09,
    "depth": 18000,
    "traits": [],
-   "desc": "Owns warehouses and distribution centers near ports and cities."
+   "desc": "Owns warehouses near ports and big cities, leased to online retailers and shipping firms. As a property trust it pays out most of its rent as dividends."
   },
   {
    "ticker": "GMHT",
@@ -467,7 +467,7 @@
    "sens": 0.8,
    "depth": 18000,
    "traits": [],
-   "desc": "Owns and operates business and resort hotels worldwide."
+   "desc": "Owns and runs 400 business and resort hotels. Room rates and occupancy rise and fall with travel and the economy."
   },
   {
    "ticker": "KSBH",
@@ -478,7 +478,7 @@
    "sens": 0.8,
    "depth": 18000,
    "traits": [],
-   "desc": "Builds starter homes and townhouse communities."
+   "desc": "Builds starter homes and townhouses in new suburbs, buying land years ahead. Its sales follow mortgage rates closely."
   },
   {
    "ticker": "SVSL",
@@ -489,7 +489,7 @@
    "sens": 0.96,
    "depth": 18000,
    "traits": [],
-   "desc": "Leases data center space and power to cloud and AI companies.",
+   "desc": "Owns data centres and leases floor space, power and cooling to cloud and AI companies on long leases. Demand for computing has kept its buildings full.",
    "dependencies": {
     "DTHV": 0.1
    }
@@ -503,7 +503,7 @@
    "sens": 1.22,
    "depth": 12000,
    "traits": [],
-   "desc": "Trading venue where customers swap digital tokens for cash.",
+   "desc": "The largest exchange where people buy and sell digital tokens for cash. It earns a fee on every trade, so its revenue can double in a crypto boom and halve in a bust.",
    "dependencies": {
     "HSFG": 0.15
    }
@@ -512,12 +512,12 @@
    "ticker": "HSFG",
    "name": "HashForge Mining",
    "sector": "crypto",
-   "beta": 1.98,
-   "vol": 0.9,
+   "beta": 2.03,
+   "vol": 0.99,
    "sens": 0.98,
    "depth": 12000,
    "traits": [],
-   "desc": "Runs warehouses of computers that validate blockchain transactions.",
+   "desc": "Runs warehouses full of computers that confirm blockchain transactions, and is paid in newly created tokens. Electricity is nearly all of its cost, so its profit depends on token prices and power bills.",
    "dependencies": {
     "SVSL": 0.05
    }
@@ -526,23 +526,23 @@
    "ticker": "TPPY",
    "name": "TapPay",
    "sector": "crypto",
-   "beta": 2.26,
-   "vol": 0.94,
+   "beta": 2.36,
+   "vol": 1.2,
    "sens": 0.95,
    "depth": 12000,
    "traits": [],
-   "desc": "Mobile payment app for peer-to-peer transfers and merchant checkout."
+   "desc": "A mobile payment app for sending money to friends and paying in shops, popular with students. It loses money on most transfers and hopes to profit from merchant fees and its new debit card."
   },
   {
    "ticker": "BLKL",
    "name": "BlockLedger Software",
    "sector": "crypto",
-   "beta": 2.28,
-   "vol": 0.94,
+   "beta": 2.33,
+   "vol": 1.034,
    "sens": 1.24,
    "depth": 12000,
    "traits": [],
-   "desc": "Sells blockchain record-keeping software to banks and shippers."
+   "desc": "Sells shared-ledger software that banks and shipping firms use to track payments and cargo without paperwork. Customers pay by subscription, so its revenue is far steadier than token prices."
   },
   {
    "ticker": "STDY",
@@ -553,18 +553,18 @@
    "sens": 1.03,
    "depth": 12000,
    "traits": [],
-   "desc": "Issues a dollar-linked digital token backed by short-term bonds."
+   "desc": "Issues SteadyCoin, a digital token worth one dollar and backed by short-term government bonds. It keeps the interest those bonds pay, so it earns more when rates are high and less when they fall."
   },
   {
    "ticker": "PXPK",
    "name": "PixelPunk Collectibles",
    "sector": "crypto",
-   "beta": 1.67,
-   "vol": 1.12,
+   "beta": 1.72,
+   "vol": 1.2,
    "sens": 1.12,
    "depth": 12000,
    "traits": [],
-   "desc": "Marketplace for digital art and in-game collectibles."
+   "desc": "A marketplace for digital art and in-game items that takes a 5% cut of every sale. Trading is driven by collectors and fads, which makes its sales the most erratic in the sector."
   },
   {
    "ticker": "LNLP",
@@ -575,18 +575,18 @@
    "sens": 0.93,
    "depth": 12000,
    "traits": [],
-   "desc": "Builds lending software that matches borrowers and savers directly."
+   "desc": "Runs the biggest online lending marketplace: savers put money in, borrowers take loans out, and its software sets the rates and charges a fee on both sides. It carries little of the risk itself, but its volumes fall sharply when interest rates jump."
   },
   {
    "ticker": "KYSF",
    "name": "KeySafe Wallets",
    "sector": "crypto",
-   "beta": 1.81,
-   "vol": 0.73,
+   "beta": 1.91,
+   "vol": 0.949,
    "sens": 0.87,
    "depth": 12000,
    "traits": [],
-   "desc": "Makes hardware wallets and custody software for digital assets."
+   "desc": "Makes hardware wallets for individuals and custody vaults for funds that hold digital tokens. Still loss-making, its sales jump after every hack in the news."
   },
   {
    "ticker": "LPDR",
@@ -597,7 +597,7 @@
    "sens": 0.84,
    "depth": 12000,
    "traits": [],
-   "desc": "Builds reusable rockets and sells launch slots to satellite operators.",
+   "desc": "Builds reusable rockets and sells launch slots to satellite operators, space tourism firms and mining ventures. Reusing boosters lets it undercut older launchers.",
    "dependencies": {
     "STWB": 0.15
    }
@@ -606,12 +606,12 @@
    "ticker": "STWB",
    "name": "StarWeb Satellites",
    "sector": "space",
-   "beta": 1.75,
-   "vol": 0.77,
+   "beta": 1.8,
+   "vol": 0.847,
    "sens": 1.07,
    "depth": 12000,
    "traits": [],
-   "desc": "Operates a constellation of satellites providing broadband to remote areas.",
+   "desc": "Operates a constellation of satellites that brings broadband to remote areas, ships and planes. It needs years of subscriber growth to pay for its satellites.",
    "dependencies": {
     "LPDR": 0.1
    }
@@ -620,78 +620,78 @@
    "ticker": "LNMN",
    "name": "LunaMine Resources",
    "sector": "space",
-   "beta": 1.5,
-   "vol": 0.64,
+   "beta": 1.6,
+   "vol": 0.832,
    "sens": 0.97,
    "depth": 12000,
    "traits": [],
-   "desc": "Plans to extract water and metals from the Moon."
+   "desc": "Plans to extract water and metals from the Moon. It has no revenue from mining yet and lives on contracts and new shares."
   },
   {
    "ticker": "RDHB",
    "name": "RedDust Habitats",
    "sector": "space",
-   "beta": 1.5,
-   "vol": 0.64,
+   "beta": 1.55,
+   "vol": 0.704,
    "sens": 0.84,
    "depth": 12000,
    "traits": [],
-   "desc": "Designs pressurised habitats for orbital stations and surface bases."
+   "desc": "Designs pressurised habitats for orbital stations and surface bases, sold mainly to space agencies under development contracts."
   },
   {
    "ticker": "ASLN",
    "name": "AstroLens Imaging",
    "sector": "space",
-   "beta": 1.49,
-   "vol": 0.58,
+   "beta": 1.59,
+   "vol": 0.754,
    "sens": 1.09,
    "depth": 12000,
    "traits": [],
-   "desc": "Sells satellite photographs of farms, ports and weather."
+   "desc": "Sells satellite photographs of farms, ports and weather to farmers, insurers and traders by subscription."
   },
   {
    "ticker": "ORSW",
    "name": "OrbitSweep",
    "sector": "space",
-   "beta": 1.8,
-   "vol": 0.76,
+   "beta": 1.9,
+   "vol": 0.988,
    "sens": 1.36,
    "depth": 12000,
    "traits": [],
-   "desc": "Develops spacecraft that remove dead satellites from orbit."
+   "desc": "Develops spacecraft that capture dead satellites and drag them out of orbit, paid by satellite operators and space agencies. It has just started flying."
   },
   {
    "ticker": "ZNTH",
    "name": "Zenith Space Tours",
    "sector": "space",
-   "beta": 1.35,
-   "vol": 0.65,
+   "beta": 1.4,
+   "vol": 0.715,
    "sens": 1.25,
    "depth": 12000,
    "traits": [],
-   "desc": "Sells suborbital flights to paying passengers."
+   "desc": "Sells suborbital flights to paying passengers. Each flight earns a lot, but there are only a few a month."
   },
   {
    "ticker": "QLEF",
    "name": "QuantumLeaf Computing",
    "sector": "tech",
-   "beta": 1.46,
-   "vol": 0.47,
+   "beta": 1.51,
+   "vol": 0.517,
    "sens": 1.25,
    "depth": 16000,
    "traits": [],
-   "desc": "Builds experimental quantum computers and rents access by the hour."
+   "desc": "Builds experimental quantum computers and rents access to them by the hour to researchers and banks. It is years from large-scale profit."
   },
   {
    "ticker": "NNCF",
    "name": "NanoCircuit Foundry",
    "sector": "tech",
-   "beta": 1.47,
-   "vol": 0.42,
+   "beta": 1.52,
+   "vol": 0.462,
    "sens": 1.34,
    "depth": 16000,
    "traits": [],
-   "desc": "Contract manufacturer making advanced chips for other companies."
+   "desc": "A contract chip factory that makes advanced chips designed by other companies. It must spend billions on new equipment to keep up with the latest processes."
   },
   {
    "ticker": "DTHV",
@@ -702,29 +702,29 @@
    "sens": 1.36,
    "depth": 16000,
    "traits": [],
-   "desc": "Sells software that turns company data into dashboards and forecasts."
+   "desc": "Sells software that turns company data into dashboards and forecasts, paid by yearly subscription. Its customers rarely leave once their data is inside."
   },
   {
    "ticker": "RBVS",
    "name": "RoboVision AI",
    "sector": "tech",
-   "beta": 1.4,
-   "vol": 0.34,
+   "beta": 1.5,
+   "vol": 0.442,
    "sens": 1.21,
    "depth": 16000,
    "traits": [],
-   "desc": "Builds computer-vision software for factories, stores and cameras."
+   "desc": "Writes computer-vision software for factories, shops and security cameras that spots faults, counts stock and reads number plates. A small company with a few big customers."
   },
   {
    "ticker": "TRDL",
    "name": "TerraDrill Services",
    "sector": "energy",
-   "beta": 1.17,
-   "vol": 0.37,
+   "beta": 1.27,
+   "vol": 0.481,
    "sens": 1.34,
    "depth": 16000,
    "traits": [],
-   "desc": "Rents drilling rigs and crews to oil and gas producers."
+   "desc": "Rents drilling rigs and crews to oil and gas producers by the day. When oil prices rise producers drill more and its day rates jump; when prices fall, its rigs sit idle."
   },
   {
    "ticker": "BLFL",
@@ -735,29 +735,29 @@
    "sens": 0.92,
    "depth": 16000,
    "traits": [],
-   "desc": "Delivers natural gas to homes and businesses through regulated pipelines."
+   "desc": "Delivers natural gas to nine million homes and businesses through regulated pipelines. Regulators set what it may earn, so profits are steady and the dividend is high, but rising interest rates hurt it."
   },
   {
    "ticker": "ANCH",
    "name": "Anchor Savings Bank",
    "sector": "finance",
-   "beta": 1.17,
-   "vol": 0.33,
+   "beta": 1.27,
+   "vol": 0.429,
    "sens": 0.87,
    "depth": 16000,
    "traits": [],
-   "desc": "Community bank focused on mortgages and small-business loans."
+   "desc": "A community bank with 60 branches in one region, lending mostly home mortgages and small-business loans from local deposits. Simple and steady, but tied to its local housing market."
   },
   {
    "ticker": "PNCL",
    "name": "Pinnacle Asset Management",
    "sector": "finance",
-   "beta": 1.17,
-   "vol": 0.4,
+   "beta": 1.22,
+   "vol": 0.44,
    "sens": 0.98,
    "depth": 16000,
    "traits": [],
-   "desc": "Manages mutual funds and pensions for institutional clients."
+   "desc": "Manages pension and mutual funds for companies and governments and charges a small yearly fee on the money it looks after. When markets rise, its fees rise with them."
   },
   {
    "ticker": "SFHB",
@@ -768,29 +768,29 @@
    "sens": 1.24,
    "depth": 16000,
    "traits": [],
-   "desc": "Sells home, auto and property insurance."
+   "desc": "Insures homes, cars and commercial property, collecting premiums up front and investing them until claims are paid. A bad storm season is its biggest risk."
   },
   {
    "ticker": "QKLN",
    "name": "QuickLoan Fintech",
    "sector": "finance",
-   "beta": 1.27,
-   "vol": 0.37,
+   "beta": 1.32,
+   "vol": 0.407,
    "sens": 1.06,
    "depth": 16000,
    "traits": [],
-   "desc": "Online lender offering instant small loans and buy-now-pay-later."
+   "desc": "An app-based lender offering instant small loans to consumers and buy-now-pay-later at online shops. It lends from its own balance sheet, so it earns high interest but takes the loss when borrowers default."
   },
   {
    "ticker": "BRWH",
    "name": "Brewhouse Beverages",
    "sector": "consumer",
-   "beta": 0.72,
-   "vol": 0.19,
+   "beta": 0.82,
+   "vol": 0.247,
    "sens": 1.24,
    "depth": 16000,
    "traits": [],
-   "desc": "Makes craft beer, sparkling water and energy drinks."
+   "desc": "A regional craft brewer that has added sparkling water and energy drinks, sold in supermarkets and bars. The fizzy drinks grow quickly while the beer side slowly shrinks."
   },
   {
    "ticker": "SNKW",
@@ -801,18 +801,18 @@
    "sens": 0.84,
    "depth": 16000,
    "traits": [],
-   "desc": "Packaged snacks and breakfast cereals sold in supermarkets."
+   "desc": "Owns best-selling crisps, crackers and breakfast cereals sold in supermarkets and vending machines. It spends heavily on advertising to keep its brands at eye level, and its costs follow grain and cooking-oil prices."
   },
   {
    "ticker": "GNSP",
    "name": "GeneSpring Therapeutics",
    "sector": "pharma",
-   "beta": 0.88,
-   "vol": 0.35,
+   "beta": 0.93,
+   "vol": 0.385,
    "sens": 1.23,
    "depth": 16000,
    "traits": [],
-   "desc": "Develops gene therapies for rare inherited diseases."
+   "desc": "Sells two one-time gene therapies for inherited blindness and muscle wasting, priced at over a million dollars per patient. Each new approval transforms its revenue."
   },
   {
    "ticker": "STBR",
@@ -823,7 +823,7 @@
    "sens": 1.34,
    "depth": 16000,
    "traits": [],
-   "desc": "Builds bridges, tunnels and large public works."
+   "desc": "Designs and builds bridges, tunnels, rail lines and other public works for governments, under contracts that run for years. Its profit depends on winning large tenders and finishing within budget."
   }
  ],
  "templates": [
@@ -1121,682 +1121,682 @@
  "profiles": {
   "MRHS": {
    "initial_price": 49.63,
-   "market_cap": 37.4,
-   "shares_outstanding": 0.754,
-   "revenue": 24.43,
+   "market_cap": 4.55,
+   "shares_outstanding": 0.091678,
+   "revenue": 2.9721,
    "margin": 0.095,
-   "cash": 3.4,
-   "debt": 13.31,
+   "cash": 0.4136,
+   "debt": 1.6193,
    "dividend_yield": 0.0083
   },
   "ANCI": {
    "initial_price": 64.78,
-   "market_cap": 26.3,
-   "shares_outstanding": 0.406,
-   "revenue": 20.39,
+   "market_cap": 27.1,
+   "shares_outstanding": 0.418339,
+   "revenue": 21.01,
    "margin": 0.118,
-   "cash": 5.97,
-   "debt": 8.59,
+   "cash": 6.1516,
+   "debt": 8.8513,
    "dividend_yield": 0.0105
   },
   "DDIA": {
    "initial_price": 18.21,
-   "market_cap": 70.1,
-   "shares_outstanding": 3.85,
-   "revenue": 37.04,
+   "market_cap": 1.45,
+   "shares_outstanding": 0.079627,
+   "revenue": 0.7661,
    "margin": 0.114,
-   "cash": 12.42,
-   "debt": 15.74,
+   "cash": 0.2569,
+   "debt": 0.3256,
    "dividend_yield": 0.002
   },
   "CLSC": {
    "initial_price": 93.14,
-   "market_cap": 306.9,
-   "shares_outstanding": 3.295,
-   "revenue": 216.42,
+   "market_cap": 97.0,
+   "shares_outstanding": 1.041443,
+   "revenue": 68.4,
    "margin": 0.089,
-   "cash": 46.01,
-   "debt": 94.05,
+   "cash": 14.54,
+   "debt": 29.72,
    "dividend_yield": 0.0032
   },
   "BSMD": {
    "initial_price": 24.67,
-   "market_cap": 16.0,
-   "shares_outstanding": 0.649,
-   "revenue": 8.54,
+   "market_cap": 1.27,
+   "shares_outstanding": 0.05148,
+   "revenue": 0.6778,
    "margin": 0.031,
-   "cash": 2.55,
-   "debt": 4.58,
+   "cash": 0.2024,
+   "debt": 0.3635,
    "dividend_yield": 0.0021
   },
   "CRXP": {
    "initial_price": 19.9,
-   "market_cap": 331.2,
-   "shares_outstanding": 16.643,
-   "revenue": 172.04,
+   "market_cap": 127.0,
+   "shares_outstanding": 6.38191,
+   "revenue": 65.97,
    "margin": 0.024,
-   "cash": 33.56,
-   "debt": 49.47,
+   "cash": 12.87,
+   "debt": 18.97,
    "dividend_yield": 0.0021
   },
   "VTDV": {
    "initial_price": 47.16,
-   "market_cap": 82.1,
-   "shares_outstanding": 1.741,
-   "revenue": 54.64,
+   "market_cap": 61.5,
+   "shares_outstanding": 1.304071,
+   "revenue": 40.93,
    "margin": 0.02,
-   "cash": 11.97,
-   "debt": 11.59,
+   "cash": 8.9666,
+   "debt": 8.682,
    "dividend_yield": 0.0022
   },
   "SYSL": {
    "initial_price": 9.84,
-   "market_cap": 50.1,
-   "shares_outstanding": 5.091,
-   "revenue": 37.37,
+   "market_cap": 3.37,
+   "shares_outstanding": 0.34248,
+   "revenue": 2.5137,
    "margin": 0.089,
-   "cash": 9.83,
-   "debt": 20.29,
+   "cash": 0.6612,
+   "debt": 1.3649,
    "dividend_yield": 0.0045
   },
   "MGMT": {
    "initial_price": 186.03,
-   "market_cap": 51.2,
-   "shares_outstanding": 0.275,
-   "revenue": 73.54,
+   "market_cap": 45.8,
+   "shares_outstanding": 0.246197,
+   "revenue": 65.78,
    "margin": 0.05,
-   "cash": 8.07,
-   "debt": 40.78,
+   "cash": 7.2189,
+   "debt": 36.48,
    "dividend_yield": 0.0233
   },
   "CLCK": {
    "initial_price": 11.23,
-   "market_cap": 290.4,
-   "shares_outstanding": 25.859,
-   "revenue": 359.34,
+   "market_cap": 174.0,
+   "shares_outstanding": 15.494212,
+   "revenue": 215.31,
    "margin": 0.055,
-   "cash": 36.25,
-   "debt": 122.02,
+   "cash": 21.72,
+   "debt": 73.11,
    "dividend_yield": 0.0202
   },
   "VBRN": {
    "initial_price": 60.56,
-   "market_cap": 21.9,
-   "shares_outstanding": 0.362,
-   "revenue": 37.8,
+   "market_cap": 1.33,
+   "shares_outstanding": 0.021962,
+   "revenue": 2.2956,
    "margin": 0.05,
-   "cash": 3.94,
-   "debt": 17.66,
+   "cash": 0.2393,
+   "debt": 1.0725,
    "dividend_yield": 0.0104
   },
   "MSVR": {
    "initial_price": 61.99,
-   "market_cap": 188.2,
-   "shares_outstanding": 3.036,
-   "revenue": 313.99,
+   "market_cap": 89.4,
+   "shares_outstanding": 1.442168,
+   "revenue": 149.16,
    "margin": 0.045,
-   "cash": 53.97,
-   "debt": 166.16,
+   "cash": 25.63,
+   "debt": 78.93,
    "dividend_yield": 0.0075
   },
   "FRBK": {
    "initial_price": 102.3,
-   "market_cap": 56.6,
-   "shares_outstanding": 0.553,
-   "revenue": 97.13,
+   "market_cap": 7.8,
+   "shares_outstanding": 0.076246,
+   "revenue": 13.38,
    "margin": 0.036,
-   "cash": 9.38,
-   "debt": 38.65,
+   "cash": 1.2926,
+   "debt": 5.3264,
    "dividend_yield": 0.0065
   },
   "HNST": {
    "initial_price": 31.95,
-   "market_cap": 72.3,
-   "shares_outstanding": 2.263,
-   "revenue": 118.88,
+   "market_cap": 5.31,
+   "shares_outstanding": 0.166197,
+   "revenue": 8.731,
    "margin": 0.055,
-   "cash": 18.75,
-   "debt": 83.05,
+   "cash": 1.377,
+   "debt": 6.0995,
    "dividend_yield": 0.0213
   },
   "TRLT": {
    "initial_price": 138.87,
-   "market_cap": 45.2,
-   "shares_outstanding": 0.325,
-   "revenue": 60.94,
+   "market_cap": 3.08,
+   "shares_outstanding": 0.022179,
+   "revenue": 4.1526,
    "margin": 0.05,
-   "cash": 8.76,
-   "debt": 17.61,
+   "cash": 0.5969,
+   "debt": 1.2,
    "dividend_yield": 0.0121
   },
   "QKST": {
    "initial_price": 116.92,
-   "market_cap": 22.4,
-   "shares_outstanding": 0.192,
-   "revenue": 33.46,
+   "market_cap": 1.21,
+   "shares_outstanding": 0.010349,
+   "revenue": 1.8075,
    "margin": 0.019,
-   "cash": 5.8,
-   "debt": 10.86,
+   "cash": 0.3133,
+   "debt": 0.5866,
    "dividend_yield": 0.0107
   },
   "STFG": {
    "initial_price": 9.62,
-   "market_cap": 54.9,
-   "shares_outstanding": 5.707,
-   "revenue": 23.11,
+   "market_cap": 26.6,
+   "shares_outstanding": 2.765073,
+   "revenue": 11.2,
    "margin": 0.227,
-   "cash": 8.1,
-   "debt": 8.57,
+   "cash": 3.9245,
+   "debt": 4.1524,
    "dividend_yield": 0.0087
   },
   "PXHB": {
    "initial_price": 19.21,
-   "market_cap": 370.8,
-   "shares_outstanding": 19.302,
-   "revenue": 148.98,
+   "market_cap": 125.0,
+   "shares_outstanding": 6.507028,
+   "revenue": 50.22,
    "margin": 0.18,
-   "cash": 20.25,
-   "debt": 106.98,
+   "cash": 6.8265,
+   "debt": 36.06,
    "dividend_yield": 0.0028
   },
   "DLGM": {
    "initial_price": 47.91,
-   "market_cap": 24.0,
-   "shares_outstanding": 0.501,
-   "revenue": 11.11,
+   "market_cap": 1.39,
+   "shares_outstanding": 0.029013,
+   "revenue": 0.6435,
    "margin": 0.12,
-   "cash": 4.36,
-   "debt": 9.83,
+   "cash": 0.2525,
+   "debt": 0.5693,
    "dividend_yield": 0.0079
   },
   "SDTD": {
    "initial_price": 154.07,
-   "market_cap": 195.3,
-   "shares_outstanding": 1.268,
-   "revenue": 93.96,
+   "market_cap": 64.0,
+   "shares_outstanding": 0.415396,
+   "revenue": 30.79,
    "margin": 0.109,
-   "cash": 19.12,
-   "debt": 44.83,
+   "cash": 6.2656,
+   "debt": 14.69,
    "dividend_yield": 0.0078
   },
   "ADSP": {
    "initial_price": 160.82,
-   "market_cap": 19.1,
-   "shares_outstanding": 0.119,
-   "revenue": 9.47,
+   "market_cap": 0.91,
+   "shares_outstanding": 0.005659,
+   "revenue": 0.4512,
    "margin": 0.184,
-   "cash": 1.69,
-   "debt": 7.0,
+   "cash": 0.0805,
+   "debt": 0.3335,
    "dividend_yield": 0.0021
   },
   "SLVR": {
    "initial_price": 11.56,
-   "market_cap": 107.1,
-   "shares_outstanding": 9.265,
-   "revenue": 60.25,
+   "market_cap": 43.5,
+   "shares_outstanding": 3.762976,
+   "revenue": 24.48,
    "margin": 0.058,
-   "cash": 18.41,
-   "debt": 31.24,
+   "cash": 7.4775,
+   "debt": 12.69,
    "dividend_yield": 0.0009
   },
   "CHBX": {
    "initial_price": 155.73,
-   "market_cap": 43.2,
-   "shares_outstanding": 0.277,
-   "revenue": 23.1,
+   "market_cap": 5.64,
+   "shares_outstanding": 0.036217,
+   "revenue": 3.0158,
    "margin": 0.046,
-   "cash": 5.13,
-   "debt": 18.06,
+   "cash": 0.6697,
+   "debt": 2.3578,
    "dividend_yield": 0.0005
   },
   "ECHN": {
    "initial_price": 20.8,
-   "market_cap": 190.0,
-   "shares_outstanding": 9.135,
-   "revenue": 107.46,
+   "market_cap": 6.98,
+   "shares_outstanding": 0.335577,
+   "revenue": 3.9478,
    "margin": 0.106,
-   "cash": 26.23,
-   "debt": 92.74,
+   "cash": 0.9636,
+   "debt": 3.4069,
    "dividend_yield": 0.0017
   },
   "VLTR": {
    "initial_price": 64.15,
-   "market_cap": 16.2,
-   "shares_outstanding": 0.253,
-   "revenue": 18.28,
+   "market_cap": 1.69,
+   "shares_outstanding": 0.026345,
+   "revenue": 1.907,
    "margin": 0.049,
-   "cash": 4.17,
-   "debt": 10.27,
+   "cash": 0.435,
+   "debt": 1.0714,
    "dividend_yield": 0.0002
   },
   "IRHL": {
    "initial_price": 11.03,
-   "market_cap": 31.1,
-   "shares_outstanding": 2.82,
-   "revenue": 36.06,
+   "market_cap": 3.17,
+   "shares_outstanding": 0.287398,
+   "revenue": 3.6756,
    "margin": 0.027,
-   "cash": 6.0,
-   "debt": 26.6,
+   "cash": 0.6116,
+   "debt": 2.7113,
    "dividend_yield": 0.0166
   },
   "CRLN": {
    "initial_price": 12.67,
-   "market_cap": 58.6,
-   "shares_outstanding": 4.625,
-   "revenue": 72.54,
+   "market_cap": 57.9,
+   "shares_outstanding": 4.56985,
+   "revenue": 71.68,
    "margin": 0.098,
-   "cash": 16.69,
-   "debt": 57.5,
+   "cash": 16.49,
+   "debt": 56.81,
    "dividend_yield": 0.0146
   },
   "CLST": {
    "initial_price": 170.23,
-   "market_cap": 247.1,
-   "shares_outstanding": 1.452,
-   "revenue": 200.96,
+   "market_cap": 123.0,
+   "shares_outstanding": 0.722552,
+   "revenue": 100.03,
    "margin": 0.049,
-   "cash": 45.31,
-   "debt": 117.53,
+   "cash": 22.55,
+   "debt": 58.51,
    "dividend_yield": 0.0101
   },
   "GRWK": {
    "initial_price": 12.36,
-   "market_cap": 87.0,
-   "shares_outstanding": 7.039,
-   "revenue": 76.41,
+   "market_cap": 30.7,
+   "shares_outstanding": 2.483819,
+   "revenue": 26.96,
    "margin": 0.029,
-   "cash": 20.88,
-   "debt": 71.1,
+   "cash": 7.368,
+   "debt": 25.09,
    "dividend_yield": 0.0035
   },
   "HAIL": {
    "initial_price": 17.63,
-   "market_cap": 10.5,
-   "shares_outstanding": 0.596,
-   "revenue": 9.12,
+   "market_cap": 1.11,
+   "shares_outstanding": 0.062961,
+   "revenue": 0.9641,
    "margin": 0.034,
-   "cash": 1.65,
-   "debt": 9.02,
+   "cash": 0.1745,
+   "debt": 0.9536,
    "dividend_yield": 0.017
   },
   "ATND": {
    "initial_price": 17.23,
-   "market_cap": 56.6,
-   "shares_outstanding": 3.285,
-   "revenue": 66.76,
+   "market_cap": 8.08,
+   "shares_outstanding": 0.46895,
+   "revenue": 9.5344,
    "margin": 0.014,
-   "cash": 17.11,
-   "debt": 37.3,
+   "cash": 2.4425,
+   "debt": 5.3248,
    "dividend_yield": 0.0037
   },
   "TBMC": {
    "initial_price": 168.46,
-   "market_cap": 43.5,
-   "shares_outstanding": 0.258,
-   "revenue": 44.98,
+   "market_cap": 4.81,
+   "shares_outstanding": 0.028553,
+   "revenue": 4.9736,
    "margin": 0.136,
-   "cash": 4.64,
-   "debt": 25.01,
+   "cash": 0.5131,
+   "debt": 2.7655,
    "dividend_yield": 0.0143
   },
   "SKOF": {
    "initial_price": 100.3,
-   "market_cap": 96.0,
-   "shares_outstanding": 0.957,
-   "revenue": 23.88,
+   "market_cap": 3.95,
+   "shares_outstanding": 0.039382,
+   "revenue": 0.9826,
    "margin": 0.32,
-   "cash": 3.26,
-   "debt": 58.1,
+   "cash": 0.1341,
+   "debt": 2.3905,
    "dividend_yield": 0.049
   },
   "HHRS": {
    "initial_price": 16.78,
-   "market_cap": 11.8,
-   "shares_outstanding": 0.703,
-   "revenue": 2.46,
+   "market_cap": 0.839,
+   "shares_outstanding": 0.05,
+   "revenue": 0.1749,
    "margin": 0.202,
-   "cash": 0.21,
-   "debt": 5.96,
+   "cash": 0.0149,
+   "debt": 0.4238,
    "dividend_yield": 0.055
   },
   "PLZP": {
    "initial_price": 112.65,
-   "market_cap": 44.1,
-   "shares_outstanding": 0.391,
-   "revenue": 8.86,
+   "market_cap": 1.92,
+   "shares_outstanding": 0.017044,
+   "revenue": 0.3857,
    "margin": 0.156,
-   "cash": 1.06,
-   "debt": 16.02,
+   "cash": 0.0462,
+   "debt": 0.6975,
    "dividend_yield": 0.0482
   },
   "CRST": {
    "initial_price": 63.16,
-   "market_cap": 107.8,
-   "shares_outstanding": 1.707,
-   "revenue": 18.69,
+   "market_cap": 9.06,
+   "shares_outstanding": 0.143445,
+   "revenue": 1.5708,
    "margin": 0.314,
-   "cash": 1.09,
-   "debt": 30.36,
+   "cash": 0.0916,
+   "debt": 2.5516,
    "dividend_yield": 0.05
   },
   "GMHT": {
    "initial_price": 26.61,
-   "market_cap": 154.4,
-   "shares_outstanding": 5.802,
-   "revenue": 31.27,
+   "market_cap": 35.2,
+   "shares_outstanding": 1.322811,
+   "revenue": 7.1289,
    "margin": 0.296,
-   "cash": 3.99,
-   "debt": 65.58,
+   "cash": 0.9097,
+   "debt": 14.95,
    "dividend_yield": 0.0428
   },
   "KSBH": {
    "initial_price": 143.38,
-   "market_cap": 313.2,
-   "shares_outstanding": 2.184,
-   "revenue": 74.66,
+   "market_cap": 62.7,
+   "shares_outstanding": 0.437299,
+   "revenue": 14.94,
    "margin": 0.192,
-   "cash": 4.33,
-   "debt": 166.77,
+   "cash": 0.8668,
+   "debt": 33.39,
    "dividend_yield": 0.0492
   },
   "SVSL": {
    "initial_price": 205.12,
-   "market_cap": 123.6,
-   "shares_outstanding": 0.603,
-   "revenue": 29.16,
+   "market_cap": 80.9,
+   "shares_outstanding": 0.394403,
+   "revenue": 19.08,
    "margin": 0.243,
-   "cash": 3.66,
-   "debt": 56.16,
+   "cash": 2.3956,
+   "debt": 36.76,
    "dividend_yield": 0.0525
   },
   "CNHR": {
    "initial_price": 158.41,
-   "market_cap": 59.2,
-   "shares_outstanding": 0.374,
-   "revenue": 14.75,
+   "market_cap": 29.1,
+   "shares_outstanding": 0.183701,
+   "revenue": 7.2505,
    "margin": 0.197,
-   "cash": 3.3,
-   "debt": 1.27,
+   "cash": 1.6221,
+   "debt": 0.6243,
    "dividend_yield": 0.0
   },
   "HSFG": {
    "initial_price": 53.82,
-   "market_cap": 27.6,
-   "shares_outstanding": 0.513,
-   "revenue": 6.97,
+   "market_cap": 2.85,
+   "shares_outstanding": 0.052954,
+   "revenue": 0.7197,
    "margin": 0.314,
-   "cash": 3.67,
-   "debt": 0.58,
+   "cash": 0.3789,
+   "debt": 0.0599,
    "dividend_yield": 0.0
   },
   "TPPY": {
    "initial_price": 123.39,
-   "market_cap": 11.3,
-   "shares_outstanding": 0.092,
-   "revenue": 3.05,
+   "market_cap": 0.606,
+   "shares_outstanding": 0.004911,
+   "revenue": 0.1635,
    "margin": -0.07,
-   "cash": 1.49,
-   "debt": 0.9,
+   "cash": 0.0799,
+   "debt": 0.0483,
    "dividend_yield": 0.0
   },
   "BLKL": {
    "initial_price": 158.21,
-   "market_cap": 131.0,
-   "shares_outstanding": 0.828,
-   "revenue": 34.59,
+   "market_cap": 6.14,
+   "shares_outstanding": 0.038809,
+   "revenue": 1.6212,
    "margin": 0.128,
-   "cash": 20.47,
-   "debt": 3.49,
+   "cash": 0.9594,
+   "debt": 0.1636,
    "dividend_yield": 0.0
   },
   "STDY": {
    "initial_price": 49.98,
-   "market_cap": 175.0,
-   "shares_outstanding": 3.501,
-   "revenue": 36.5,
+   "market_cap": 42.6,
+   "shares_outstanding": 0.852341,
+   "revenue": 8.8851,
    "margin": 0.198,
-   "cash": 10.93,
-   "debt": 8.78,
+   "cash": 2.6607,
+   "debt": 2.1373,
    "dividend_yield": 0.0
   },
   "PXPK": {
    "initial_price": 58.58,
-   "market_cap": 165.9,
-   "shares_outstanding": 2.832,
-   "revenue": 45.56,
+   "market_cap": 7.92,
+   "shares_outstanding": 0.1352,
+   "revenue": 2.175,
    "margin": 0.101,
-   "cash": 17.15,
-   "debt": 8.91,
+   "cash": 0.8187,
+   "debt": 0.4254,
    "dividend_yield": 0.0
   },
   "LNLP": {
    "initial_price": 51.83,
-   "market_cap": 302.3,
-   "shares_outstanding": 5.833,
-   "revenue": 82.25,
+   "market_cap": 71.1,
+   "shares_outstanding": 1.371792,
+   "revenue": 19.35,
    "margin": 0.183,
-   "cash": 48.04,
-   "debt": 9.38,
+   "cash": 11.29,
+   "debt": 2.2061,
    "dividend_yield": 0.0
   },
   "KYSF": {
    "initial_price": 17.69,
-   "market_cap": 14.5,
-   "shares_outstanding": 0.82,
-   "revenue": 4.35,
+   "market_cap": 1.19,
+   "shares_outstanding": 0.06727,
+   "revenue": 0.357,
    "margin": -0.051,
-   "cash": 2.52,
-   "debt": 0.6,
+   "cash": 0.2069,
+   "debt": 0.0493,
    "dividend_yield": 0.0
   },
   "LPDR": {
    "initial_price": 11.33,
-   "market_cap": 154.2,
-   "shares_outstanding": 13.61,
-   "revenue": 30.73,
+   "market_cap": 59.1,
+   "shares_outstanding": 5.21624,
+   "revenue": 11.78,
    "margin": 0.044,
-   "cash": 10.75,
-   "debt": 8.34,
+   "cash": 4.1202,
+   "debt": 3.1964,
    "dividend_yield": 0.0
   },
   "STWB": {
    "initial_price": 223.56,
-   "market_cap": 19.4,
-   "shares_outstanding": 0.087,
-   "revenue": 3.15,
+   "market_cap": 5.86,
+   "shares_outstanding": 0.026212,
+   "revenue": 0.9515,
    "margin": -0.096,
-   "cash": 2.5,
-   "debt": 0.67,
+   "cash": 0.7552,
+   "debt": 0.2024,
    "dividend_yield": 0.0
   },
   "LNMN": {
    "initial_price": 9.85,
-   "market_cap": 24.6,
-   "shares_outstanding": 2.497,
-   "revenue": 4.34,
+   "market_cap": 0.492,
+   "shares_outstanding": 0.049949,
+   "revenue": 0.0868,
    "margin": 0.089,
-   "cash": 1.94,
-   "debt": 1.04,
+   "cash": 0.0388,
+   "debt": 0.0208,
    "dividend_yield": 0.0
   },
   "RDHB": {
    "initial_price": 93.07,
-   "market_cap": 274.1,
-   "shares_outstanding": 2.945,
-   "revenue": 50.45,
+   "market_cap": 8.24,
+   "shares_outstanding": 0.088536,
+   "revenue": 1.5166,
    "margin": 0.044,
-   "cash": 25.17,
-   "debt": 26.83,
+   "cash": 0.7567,
+   "debt": 0.8066,
    "dividend_yield": 0.0
   },
   "ASLN": {
    "initial_price": 237.68,
-   "market_cap": 25.0,
-   "shares_outstanding": 0.105,
-   "revenue": 3.55,
+   "market_cap": 1.42,
+   "shares_outstanding": 0.005974,
+   "revenue": 0.2016,
    "margin": -0.048,
-   "cash": 2.85,
-   "debt": 2.12,
+   "cash": 0.1619,
+   "debt": 0.1204,
    "dividend_yield": 0.0
   },
   "ORSW": {
    "initial_price": 42.83,
-   "market_cap": 49.5,
-   "shares_outstanding": 1.156,
-   "revenue": 8.26,
+   "market_cap": 1.09,
+   "shares_outstanding": 0.025449,
+   "revenue": 0.1818,
    "margin": -0.002,
-   "cash": 2.83,
-   "debt": 3.13,
+   "cash": 0.0623,
+   "debt": 0.0689,
    "dividend_yield": 0.0
   },
   "ZNTH": {
    "initial_price": 64.37,
-   "market_cap": 40.0,
-   "shares_outstanding": 0.621,
-   "revenue": 7.42,
+   "market_cap": 3.58,
+   "shares_outstanding": 0.055616,
+   "revenue": 0.664,
    "margin": 0.008,
-   "cash": 5.42,
-   "debt": 1.87,
+   "cash": 0.485,
+   "debt": 0.1673,
    "dividend_yield": 0.0
   },
   "QLEF": {
    "initial_price": 74.46,
-   "market_cap": 120.6,
-   "shares_outstanding": 1.62,
-   "revenue": 24.04,
+   "market_cap": 6.79,
+   "shares_outstanding": 0.09119,
+   "revenue": 1.3535,
    "margin": 0.066,
-   "cash": 4.23,
-   "debt": 5.2,
+   "cash": 0.2382,
+   "debt": 0.2928,
    "dividend_yield": 0.005
   },
   "NNCF": {
    "initial_price": 44.61,
-   "market_cap": 25.4,
-   "shares_outstanding": 0.569,
-   "revenue": 3.9,
+   "market_cap": 9.24,
+   "shares_outstanding": 0.207128,
+   "revenue": 1.4188,
    "margin": 0.216,
-   "cash": 1.23,
-   "debt": 0.62,
+   "cash": 0.4474,
+   "debt": 0.2256,
    "dividend_yield": 0.0067
   },
   "DTHV": {
    "initial_price": 82.56,
-   "market_cap": 128.1,
-   "shares_outstanding": 1.552,
-   "revenue": 19.61,
+   "market_cap": 41.9,
+   "shares_outstanding": 0.50751,
+   "revenue": 6.4142,
    "margin": 0.183,
-   "cash": 2.33,
-   "debt": 2.33,
+   "cash": 0.7622,
+   "debt": 0.7622,
    "dividend_yield": 0.0016
   },
   "RBVS": {
    "initial_price": 18.59,
-   "market_cap": 31.8,
-   "shares_outstanding": 1.711,
-   "revenue": 6.04,
+   "market_cap": 1.3,
+   "shares_outstanding": 0.06993,
+   "revenue": 0.2469,
    "margin": 0.152,
-   "cash": 0.62,
-   "debt": 0.79,
+   "cash": 0.0254,
+   "debt": 0.0323,
    "dividend_yield": 0.005
   },
   "TRDL": {
    "initial_price": 11.44,
-   "market_cap": 16.6,
-   "shares_outstanding": 1.451,
-   "revenue": 18.59,
+   "market_cap": 1.86,
+   "shares_outstanding": 0.162587,
+   "revenue": 2.083,
    "margin": 0.101,
-   "cash": 3.58,
-   "debt": 7.86,
+   "cash": 0.4012,
+   "debt": 0.8807,
    "dividend_yield": 0.0302
   },
   "BLFL": {
    "initial_price": 38.91,
-   "market_cap": 63.5,
-   "shares_outstanding": 1.632,
-   "revenue": 52.64,
+   "market_cap": 38.0,
+   "shares_outstanding": 0.976613,
+   "revenue": 31.5,
    "margin": 0.049,
-   "cash": 6.65,
-   "debt": 33.47,
+   "cash": 3.9795,
+   "debt": 20.03,
    "dividend_yield": 0.0207
   },
   "ANCH": {
    "initial_price": 60.58,
-   "market_cap": 25.0,
-   "shares_outstanding": 0.413,
-   "revenue": 10.43,
+   "market_cap": 1.57,
+   "shares_outstanding": 0.025916,
+   "revenue": 0.655,
    "margin": 0.119,
-   "cash": 2.92,
-   "debt": 5.56,
+   "cash": 0.1834,
+   "debt": 0.3491,
    "dividend_yield": 0.0118
   },
   "PNCL": {
    "initial_price": 216.96,
-   "market_cap": 28.3,
-   "shares_outstanding": 0.13,
-   "revenue": 10.5,
+   "market_cap": 8.91,
+   "shares_outstanding": 0.041067,
+   "revenue": 3.3058,
    "margin": 0.224,
-   "cash": 2.9,
-   "debt": 12.27,
+   "cash": 0.913,
+   "debt": 3.8631,
    "dividend_yield": 0.0254
   },
   "SFHB": {
    "initial_price": 17.07,
-   "market_cap": 41.2,
-   "shares_outstanding": 2.414,
-   "revenue": 13.69,
+   "market_cap": 18.5,
+   "shares_outstanding": 1.083773,
+   "revenue": 6.1472,
    "margin": 0.177,
-   "cash": 2.89,
-   "debt": 14.86,
+   "cash": 1.2977,
+   "debt": 6.6725,
    "dividend_yield": 0.0306
   },
   "QKLN": {
    "initial_price": 22.03,
-   "market_cap": 67.7,
-   "shares_outstanding": 3.073,
-   "revenue": 33.03,
+   "market_cap": 6.02,
+   "shares_outstanding": 0.273264,
+   "revenue": 2.9371,
    "margin": 0.172,
-   "cash": 3.52,
-   "debt": 17.07,
+   "cash": 0.313,
+   "debt": 1.5179,
    "dividend_yield": 0.021
   },
   "BRWH": {
    "initial_price": 55.5,
-   "market_cap": 14.2,
-   "shares_outstanding": 0.256,
-   "revenue": 8.89,
+   "market_cap": 1.54,
+   "shares_outstanding": 0.027748,
+   "revenue": 0.9641,
    "margin": 0.088,
-   "cash": 0.8,
-   "debt": 5.07,
+   "cash": 0.0868,
+   "debt": 0.5499,
    "dividend_yield": 0.0275
   },
   "SNKW": {
    "initial_price": 19.1,
-   "market_cap": 118.2,
-   "shares_outstanding": 6.188,
-   "revenue": 69.56,
+   "market_cap": 47.2,
+   "shares_outstanding": 2.471204,
+   "revenue": 27.78,
    "margin": 0.062,
-   "cash": 4.26,
-   "debt": 26.28,
+   "cash": 1.7011,
+   "debt": 10.49,
    "dividend_yield": 0.0106
   },
   "GNSP": {
    "initial_price": 144.33,
-   "market_cap": 30.5,
-   "shares_outstanding": 0.211,
-   "revenue": 6.71,
+   "market_cap": 5.21,
+   "shares_outstanding": 0.036098,
+   "revenue": 1.1462,
    "margin": 0.125,
-   "cash": 0.7,
-   "debt": 3.31,
+   "cash": 0.1195,
+   "debt": 0.5654,
    "dividend_yield": 0.0068
   },
   "STBR": {
    "initial_price": 254.07,
-   "market_cap": 143.7,
-   "shares_outstanding": 0.566,
-   "revenue": 129.23,
+   "market_cap": 69.7,
+   "shares_outstanding": 0.274334,
+   "revenue": 62.68,
    "margin": 0.086,
-   "cash": 19.99,
-   "debt": 88.46,
+   "cash": 9.6929,
+   "debt": 42.91,
    "dividend_yield": 0.0244
   }
  },

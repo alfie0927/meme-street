@@ -240,6 +240,8 @@ class LearningBrowserTests(unittest.TestCase):
             await pg.goto(base + "/stock/NVXA", 4)
             await d.check("the chart has volume bars", "document.querySelector('#chart-wrap svg') && document.querySelector('#chart-wrap svg').textContent",
                           lambda t: bool(t) and "Volume" in t, wait=15)
+            await d.check("the stock page says how big the company is", "document.getElementById('d-facts').innerText",
+                          lambda t: "Large cap" in t, wait=5)
             await pg.js("document.querySelector('[data-ind=rsi]').click()")
             await d.check("RSI adds a panel", "document.querySelector('#chart-wrap svg').textContent", lambda t: "RSI 14" in t, wait=5)
             await pg.js("document.querySelector('[data-ind=bb]').click()")
