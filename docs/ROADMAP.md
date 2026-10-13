@@ -146,7 +146,7 @@ journal. The plan below builds on it.
 
 | # | Change | Why | How | Size |
 |---|---|---|---|---|
-| TA-F1 | Admin: total MB instead of the house | The house carries no risk now that nothing is paid out. | Done (2026-10-13): the dashboard shows the total MB given or bought (starting, bought, rewards, other) instead of the house reserve, and no house P&L. Still to do: retire the house-risk panel and the reserve top-ups from the dashboard and the engine (M9). | S |
+| TA-F1 | Admin: total MB instead of the house | The house carries no risk now that nothing is paid out. | Done (2026-10-13): the dashboard shows the total MB in the players' hands (starting, bought, rewards, other, plus the players' P&L, so it moves as people trade) instead of the house reserve, and no house P&L. Still to do: retire the house-risk panel and the reserve top-ups from the dashboard and the engine (M9). | S |
 | TA-F2 | Split the chart code out of `index.html` | The chart is becoming the biggest part of the page. | Move the chart, indicators and drawing tools into their own script file with tests (E2). | M |
 | TA-F3 | A browser test for every tool | Chart tools break silently. | Browser tests that draw, place orders from the chart, and check the indicators against values computed in Python. | M |
 

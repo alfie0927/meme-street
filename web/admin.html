@@ -104,8 +104,8 @@ function render(o){
   <p style="margin:10px 0 0">Fees: <b>${mb(fu.fees_total)} MB</b> from ${fu.payers} players, ${f(fu.fees_per_payer,1)} MB each on average. The top 10% of payers paid <b>${f(fu.top10_share*100,0)}%</b> of it.</p>
   <p class="mut" style="font-size:12px">Everything here is counted from the game's own data (no tracking code). "Seen" uses each login's last-seen time, which updates about once an hour, and accounts that never logged in with a password are not counted.</p>`}
  const card=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
- const src=s.total_mb_by_source||{},other=s.total_mb-(src.grant||0)-(src.purchase||0)-(src.challenge||0);
- $('cards').innerHTML=card('Total MB',mb(s.total_mb)+' MB','starting '+mb(src.grant||0)+' · bought '+mb(src.purchase||0)+' · rewards '+mb(src.challenge||0)+(Math.abs(other)>=0.5?' · other '+sgn(other):''))
+ const src=s.total_mb_by_source||{},other=s.player_deposits-(src.grant||0)-(src.purchase||0)-(src.challenge||0);
+ $('cards').innerHTML=card('Total MB',mb(s.total_mb)+' MB','starting '+mb(src.grant||0)+' · bought '+mb(src.purchase||0)+' · rewards '+mb(src.challenge||0)+(Math.abs(other)>=0.5?' · other '+sgn(other):'')+' · players P&L '+sgn(s.players_pnl))
   +card('Fees collected',mb(s.fees)+' MB','of which borrow '+f(s.borrow_fees,0)+' MB')
   +card('Humans P&L',sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB deposited',s.players_pnl>=0?'up':'dn')
   +card('Players',s.humans+' humans',o.online+' online · '+(o.guests||0)+' watching')

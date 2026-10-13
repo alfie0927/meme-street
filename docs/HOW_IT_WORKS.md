@@ -1247,7 +1247,7 @@ Admin endpoints need the `X-Admin-Key` header to match the `ADMIN_KEY` environme
 | Part | What it shows | How to read it |
 |---|---|---|
 | **Alerts** (top) | Plain-language warnings, or a green "No alerts" line | See the rules below |
-| **Total MB** | Every MB players have been given or bought: their deposits in total (`total_mb` in `/api/admin/stats`), split into starting MB, bought, rewards (lessons and challenges) and other (free restarts, admin additions and removals, refunds) | Grows with sign-ups, purchases and rewards; trading moves MB between players and the house but never changes it. (It replaced the house reserve and the house P&L cards on 2026-10-13: nothing is paid out, so the house carries no real risk; both numbers are still in the API.) |
+| **Total MB** | All the MB in the players' hands: every MB they were given or bought (starting MB, bought, rewards for lessons and challenges, and other: free restarts, admin additions and removals, refunds) **plus the players' combined P&L**, which is the same as their cash plus their positions at market prices (`total_mb` in `/api/admin/stats`; what was put in is `player_deposits`, split by source in `total_mb_by_source`) | Steps up with sign-ups, purchases and rewards, and moves as people trade (fees take a little each time) and as the prices of what they hold move. (It replaced the house reserve and the house P&L cards on 2026-10-13: nothing is paid out, so the house carries no real risk; both numbers are still in the API. Until later the same day it counted only what was put in, without the P&L.) |
 | **Fees collected** | All fees, and how much of that is borrow fees | Grows with activity |
 | **Humans P&L** | Players' combined all-time P&L and how much they deposited | Should be about minus the fees (plus a little luck) |
 | **Players** | How many players, how many are connected, and how many visitors are watching | |
@@ -1276,7 +1276,7 @@ Admin endpoints need the `X-Admin-Key` header to match the `ADMIN_KEY` environme
 | **Email and mail** | Whether an SMTP server is set (a red warning in console mode), sent / failed / waiting counts, the last 15 messages (in console mode with their codes), and **Mark email verified** / **Remove email** boxes | §10.6 |
 | **Gateways** | How many gateway processes are connected (0 = everything in one process) | §12 |
 | **Start the game over** | A box where you type `RESET`, and the button | §1, §10. Backs up first |
-| **Two line charts** | Total MB and fees; players' P&L, sampled every 10 seconds for the last 2 hours | Total MB steps up with each sign-up, purchase or reward |
+| **Two line charts** | Total MB and fees; players' P&L, sampled every 10 seconds for the last 2 hours | Total MB steps up with each sign-up, purchase or reward and moves with the players' P&L |
 | **Returns bars** | How many human players are in each all-time return band (below -50% ... above +50%) | A long right tail may mean someone found an edge |
 | **Recent margin calls** | When, who, which stocks were closed, and how much the house lost | |
 | **Top winners** | The 10 best human players by P&L: equity, P&L, return, trades, open positions, margin calls | **Click a row** to open that player |

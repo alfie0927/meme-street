@@ -3079,8 +3079,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if self.now - self._series_t < 10:
             return
         self._series_t = self.now
-        humans = sum(self.equity(p) - p.deposited for p in self.players.values())
-        total = sum(p.deposited for p in self.players.values())        # every MB players have been given or bought
+        put_in = sum(p.deposited for p in self.players.values())       # every MB players have been given or bought
+        total = sum(self.equity(p) for p in self.players.values())     # ...plus their profit and loss: what they hold now
+        humans = total - put_in
         self.series.append({"t": self.now, "house": self.house, "total_mb": total, "fees": self.fees, "humans_pnl": humans,
                             "trades": self.trades_total})
 
@@ -3301,7 +3302,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "trades": p.trades, "margin_calls": p.margin_calls, "holdings": holdings, "log": list(p.log)}
 
     def house_stats(self):
-        """House P&L. Players' combined P&L is the mirror image of the house's (zero-sum)."""
+        """The money in the game. `total_mb` is what all players hold right now (cash plus positions at market prices):
+        every MB they started with, bought or were given (`player_deposits`, split by source in `total_mb_by_source`)
+        plus their combined profit and loss (`players_pnl`), so it moves as people trade. Players' P&L is the mirror
+        image of the house's (zero-sum)."""
         humans = list(self.players.values())
         human_equity = sum(self.equity(p) for p in humans)
         human_in = sum(p.deposited for p in humans)
@@ -3312,7 +3316,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             for k, v in p.mb_by_source.items():
                 sources[k] = sources.get(k, 0.0) + v
         return {"fees": self.fees, "house_pnl": house_pnl,
-                "total_mb": human_in, "total_mb_by_source": sources,
+                "total_mb": human_equity, "total_mb_by_source": sources,
                 "liquidity_pnl": house_pnl - self.fees,
                 "players_pnl": players_pnl, "player_deposits": human_in, "player_equity": human_equity,
                 "player_cash": sum(p.cash for p in humans), "house_capital": self.house_capital,
