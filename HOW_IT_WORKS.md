@@ -1209,8 +1209,8 @@ Player endpoints need the player's **session token** in an `X-Token` header (the
 | `POST /api/admin/reset` `{confirm: "RESET"}` | admin | back up the save and the ledger into `backups/`, then start the game over at Day 1 (§1, §10) |
 | `POST /api/admin/chat/delete` `{id}` | admin | delete a chat message (everyone's screen updates) |
 | `POST /api/admin/mute` `{name, seconds}` | admin | mute a player's chat (`0` lifts it) |
-| `POST /api/admin/credit` `{name, amount}` | admin | add MB to a player |
-| `POST /api/admin/withdraw` `{name, amount}` | admin | remove MB from a player's free cash |
+| `POST /api/admin/credit` `{name, amount, note?}` | admin | add MB to a player (source `admin`, counted as money put in so it never lifts a return or rank); the player gets a message with the note. 400 unless 0 < amount ≤ 1,000,000; 404 for an unknown name (names match whatever the case). The admin page's **Accounts** card has the form (Add MB / Take back MB, with a confirmation) |
+| `POST /api/admin/withdraw` `{name, amount, note?}` | admin | remove MB from a player's free cash (taken off the `admin` source, so the sources still add up); the player gets a message. Same limits |
 
 Every handler runs its engine work in a worker thread under the engine lock (see "Threads" below), so none can freeze the game.
 

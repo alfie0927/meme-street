@@ -816,6 +816,16 @@ async def gateway_endpoint(ws: WebSocket, key: str = ""):
 class Transfer(BaseModel):
     name: str
     amount: float
+    note: str = ""
+
+
+ADMIN_MB_MAX = 1_000_000          # the most MB one admin action can add or take back (a guard against typos)
+
+
+def admin_amount_problem(amount):
+    if not (amount == amount and 0 < amount <= ADMIN_MB_MAX):       # (amount == amount is False for NaN)
+        return f"Give an amount between 0 and {ADMIN_MB_MAX:,} MB"
+    return None
 
 
 def admin_ok(key):
@@ -839,11 +849,18 @@ async def admin_credit(t: Transfer, x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
 
+    bad = admin_amount_problem(t.amount)
+    if bad:
+        return JSONResponse({"error": bad}, status_code=400)
+
     def work():
         p = find_player(t.name)
         if not p:
             return None
         ok, msg = engine.credit(p, t.amount, source="admin")
+        if ok:
+            note = t.note.strip()[:200]
+            engine._notify(p, f"An admin added {t.amount:,.2f} MB to your account" + (f": {note}" if note else "."))
         return ok, msg, p.cash, p.name
     got = await run(work)
     if got is None:
@@ -858,11 +875,19 @@ async def admin_withdraw(t: Transfer, x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
 
+    bad = admin_amount_problem(t.amount)
+    if bad:
+        return JSONResponse({"error": bad}, status_code=400)
+
     def work():
         p = find_player(t.name)
         if not p:
             return None
         ok, msg = engine.debit(p, t.amount)
+        if ok:                                     # (counted against the admin source, so the sources still add up)
+            p.mb_by_source["admin"] = p.mb_by_source.get("admin", 0.0) - t.amount
+            note = t.note.strip()[:200]
+            engine._notify(p, f"An admin removed {t.amount:,.2f} MB from your account" + (f": {note}" if note else "."))
         return ok, msg, p.cash, p.name
     got = await run(work)
     if got is None:

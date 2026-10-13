@@ -311,6 +311,25 @@ class ServerTests(unittest.TestCase):
         finally:
             c.close()
 
+    def test_admin_adds_and_takes_back_mb_with_a_note_and_limits(self):
+        admin = {"X-Admin-Key": "testkey"}
+        a = json.loads(http(self.srv, "/api/join", "POST", {"name": "Gifted"})[1])
+        h = {"X-Token": a["token"]}
+        post = lambda path, body, hdr=admin: http(self.srv, path, "POST", body, hdr)
+        self.assertEqual(post("/api/admin/credit", {"name": "Gifted", "amount": 100}, {})[0], 403)      # no key
+        for bad in (0, -5, 2_000_000):
+            self.assertEqual(post("/api/admin/credit", {"name": "Gifted", "amount": bad})[0], 400, bad)
+            self.assertEqual(post("/api/admin/withdraw", {"name": "Gifted", "amount": bad})[0], 400, bad)
+        self.assertEqual(post("/api/admin/credit", {"name": "Nobody-here", "amount": 5})[0], 404)
+        status, body, _ = post("/api/admin/credit", {"name": "gifted", "amount": 300, "note": "contest prize"})
+        self.assertEqual(status, 200, body)
+        self.assertEqual(json.loads(body)["cash"], 1300)
+        status, body, _ = post("/api/admin/withdraw", {"name": "Gifted", "amount": 100, "note": "correction"})
+        self.assertEqual(json.loads(body)["cash"], 1200)
+        shop = json.loads(http(self.srv, "/api/shop", headers=h)[1])
+        self.assertEqual(shop["mb_by_source"].get("admin"), 200)               # the sources still add up
+        self.assertFalse(json.loads(post("/api/admin/withdraw", {"name": "Gifted", "amount": 5000})[1])["ok"])
+
     def test_admin_page_and_data_endpoints(self):
         status, body, headers = http(self.srv, "/admin")
         self.assertEqual(status, 200)

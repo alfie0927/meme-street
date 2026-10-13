@@ -57,7 +57,8 @@ button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);bo
 <div class="card"><h3>Moderator log (newest first)</h3><div id="modlog" class="mut">Loading…</div></div></div>
 <div class="card" style="margin-top:12px"><h3>Accounts</h3><div id="accts" class="mut">Loading…</div>
 <div class="msgrow" style="margin-top:8px"><input id="rp-name" placeholder="Player name" maxlength="16"><button id="rp-go">Reset password</button><span id="rp-out" class="t"></span></div>
-<p class="mut" style="font-size:12px">A reset ends all of that player's logins and shows a temporary password once. Tell it to them privately; they should change it on their profile page. Addresses are stored only as salted tags, so you can see which accounts share one, not what it is.</p></div>
+<div class="msgrow" style="margin-top:8px"><input id="mb-name" placeholder="Player name" maxlength="16"><input id="mb-amount" type="number" min="0" step="any" placeholder="MB" style="width:110px"><input id="mb-note" placeholder="Note to the player (optional)" maxlength="200"><button id="mb-add">Add MB</button><button id="mb-take">Take back MB</button><span id="mb-out" class="t"></span></div>
+<p class="mut" style="font-size:12px">Adding MB credits the player's cash (recorded as MB "added by an admin", which counts as money put in, so it never lifts their return or rank) and tells them, with your note. Taking back removes only free cash. At most 1,000,000 MB at a time. A reset ends all of that player's logins and shows a temporary password once. Tell it to them privately; they should change it on their profile page. Addresses are stored only as salted tags, so you can see which accounts share one, not what it is.</p></div>
 <div class="card" style="margin-top:12px"><h3>Email and mail</h3><div id="mailbox" class="mut">Loading…</div>
 <div class="msgrow" style="margin-top:8px"><input id="em-name" placeholder="Player name" maxlength="16"><button id="em-verify">Mark email verified</button><button id="em-clear">Remove email</button><span id="em-out" class="t"></span></div>
 <p class="mut" style="font-size:12px">Email addresses make passwords recoverable and stop one person running many accounts (each address belongs to one account). Set the <code>email_mode</code> setting to off, optional or required. With no SMTP server configured (see <code>mailer.py</code>) nothing is sent: the message, code included, appears in the list above so you can hand a code to a tester yourself.</p></div>
@@ -162,6 +163,15 @@ function renderMail(m){
  $('mailbox').innerHTML=head+rows}
 async function emailAct(action){try{const r=await api('/api/admin/email',{name:$('em-name').value.trim(),action});$('em-out').textContent=r.msg;tick()}catch(e){$('em-out').textContent='failed: '+e.message}}
 $('em-verify').addEventListener('click',()=>emailAct('verify'));$('em-clear').addEventListener('click',()=>emailAct('clear'));
+async function mbAct(add){
+ const name=$('mb-name').value.trim(),amount=parseFloat($('mb-amount').value),note=$('mb-note').value.trim();
+ if(!name||!(amount>0)){$('mb-out').textContent='Give a player name and an amount above 0';return}
+ if(!confirm((add?'Add ':'Take back ')+amount.toLocaleString()+' MB '+(add?'to ':'from ')+name+'?'))return;
+ const r=await fetch(add?'/api/admin/credit':'/api/admin/withdraw',{method:'POST',headers:{'X-Admin-Key':key,'Content-Type':'application/json'},body:JSON.stringify({name,amount,note})});
+ const j=await r.json().catch(()=>({}));
+ $('mb-out').textContent=r.status===403?'That key was not accepted':j.error?j.error:(j.ok?j.msg+'. '+name+' now has '+mb(j.cash)+' MB cash':'Not done: '+j.msg);
+ if(j.ok){$('mb-amount').value='';$('mb-note').value='';tick()}}
+$('mb-add').addEventListener('click',()=>mbAct(true));$('mb-take').addEventListener('click',()=>mbAct(false));
 $('rp-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset_password',{name:$('rp-name').value.trim()});$('rp-out').innerHTML=esc(r.msg)+': <b>'+esc(r.password)+'</b>';tick()}catch(e){$('rp-out').textContent='failed: '+e.message}});
 const hm=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m'};
 const cardf=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
