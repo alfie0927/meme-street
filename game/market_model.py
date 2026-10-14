@@ -231,7 +231,7 @@ class Economy:
         self.growth, self.infl, self.unemp, self.rate = 2.2, 2.7, 4.2, 3.5
         self.neutral = 0.75          # the neutral *real* rate (the Taylor rule adds inflation to it)
         self.consensus = {}          # "kind@time" -> what was forecast
-        self.past = deque(maxlen=40)  # releases that happened
+        self.past = deque(maxlen=200)  # releases that happened (about two game years: the calendar shows their results)
         self.t = None
 
     # ------------------------------------------------------------------ the slow economy
@@ -411,7 +411,7 @@ class Economy:
             if k in d:
                 setattr(self, k, float(d[k]))
         self.consensus = dict(d.get("consensus", {}))
-        self.past = deque(d.get("past", []), maxlen=40)
+        self.past = deque(d.get("past", []), maxlen=200)
 
 
 class MarketModel:

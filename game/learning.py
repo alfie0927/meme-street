@@ -209,6 +209,7 @@ class LearningMixin:
             return
         p.stop_seen.append(ticker)
         self._bump(p, "stops")
+        self._ladder_count(p, "stops")
 
     def _learn_after_trade(self, p, ticker):
         """Link journal entries to positions: an idea becomes an open trade when a position is opened, and an open
@@ -225,12 +226,15 @@ class LearningMixin:
         if ticker in p.stop_seen:                       # a position that had a stop was closed: a planned trade
             p.stop_seen.remove(ticker)
             self._bump(p, "planned")
+            self._ladder_count(p, "planned")
         for e in p.journal:
             if e["ticker"] == ticker and e["status"] == "open":
                 result = p.realized.get(ticker, 0.0) - e.get("realized0", 0.0)
                 e.update(status="closed", closed_at=self.now, exit_price=round(price, 6), result=round(result, 4))
                 risk = abs(e.get("entry_price", 0) - (e.get("stop") or 0)) * e.get("shares", 0) if e.get("stop") else 0
                 e["r"] = round(result / risk, 2) if risk > 1e-9 else None
+                if e["r"] is not None and e["r"] >= 2:
+                    self._ladder_count(p, "r2")                 # a trade closed at 2R or better (the quest ladder)
 
     def _open_entry(self, p, e, held, price):
         e.update(status="open", side="long" if held > 0 else "short", entry_price=round(price, 6),
@@ -263,6 +267,7 @@ class LearningMixin:
         del p.journal[:-JOURNAL_MAX]
         if stop is not None:
             self._bump(p, "journal")
+            self._ladder_count(p, "journal")
         return True, "Saved to your journal"
 
     def review_journal(self, p, entry_id, lesson):
@@ -276,6 +281,7 @@ class LearningMixin:
         e["lesson"] = lesson
         if first and e["status"] == "closed":
             self._bump(p, "reviews")
+            self._ladder_count(p, "reviews")
         return True, "Saved"
 
     def delete_journal(self, p, entry_id):

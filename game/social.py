@@ -12,6 +12,7 @@ import sys
 import unicodedata
 from collections import deque
 
+import ladder
 from accounts import mask_email
 from contest import Sandbox, dump_account, load_account
 
@@ -260,6 +261,7 @@ class SocialMixin:
             c["profit_closes"] = c.get("profit_closes", 0) + 1
         self._check_achievements(p, close=(kind, s.ticker, close_pnl, held_since) if close_pnl is not None else None)
         self._check_quests(p)
+        self._ladder_on_trade(p, kind, s, close_pnl, held_since)                 # the quest ladder (ladder.py)
 
     def _on_dividend(self, p, amount):
         if amount > 0:
@@ -267,6 +269,7 @@ class SocialMixin:
             self._daily(p)["dividends"] += 1
             self._check_achievements(p)
             self._check_quests(p)
+            self._ladder_check(p)
 
     # ------------------------------------------------------------------------------------------ achievements
     def _unlock(self, p, ach_id):
@@ -397,7 +400,7 @@ class SocialMixin:
             if not p or not self.ever_traded(p):
                 continue
             gain = r["equity"] - p.deposited
-            pnl.append({"name": r["name"], "token": r["token"], "pnl": gain,
+            pnl.append({"name": r["name"], "token": r["token"], "pnl": gain, "style": r.get("style"),
                         "ret": gain / p.deposited if p.deposited > 0 else 0.0})
         pnl.sort(key=lambda x: -x["pnl"])
         self.boards = {"pnl": pnl}
@@ -405,9 +408,9 @@ class SocialMixin:
 
     def boards_for(self, p, top=20):
         def trim(rows, keys):
-            return [{"rank": i + 1, "me": r["token"] == p.token, **{k: r[k] for k in keys}}
+            return [{"rank": i + 1, "me": r["token"] == p.token, "style": r.get("style"), **{k: r[k] for k in keys}}
                     for i, r in enumerate(rows[:top])]
-        season = [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"],
+        season = [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"], "style": r.get("style"),
                    "ret": r["ret"], "equity": r["equity"]} for i, r in enumerate(self.board[:top])]
         return {"season": season,
                 "pnl": trim(self.boards["pnl"], ("name", "pnl", "ret")),
@@ -618,7 +621,10 @@ class SocialMixin:
                                 for a, t in sorted(p.achievements.items(), key=lambda kv: kv[1])],
                "badges": list(p.badges),
                "followers": sum(1 for x in self.players.values() if p.name in x.following),
-               "following_them": viewer is not None and p.name in viewer.following, "me": mine}
+               "following_them": viewer is not None and p.name in viewer.following, "me": mine,
+               "style": self.style_of(p), "ladder": {"done": len(p.ladder["done"]), "total": len(ladder.LADDER),
+                                                      "tiers": {t: sum(1 for q in p.ladder["done"] if ladder.LADDER_BY[q][1] == t)
+                                                                for t, _ in ladder.TIERS}}}
         if p.public or mine:     # results and holdings are only shown to others when the player opted in
             eq = self.equity(p)
             out.update({"trades": p.trades, "season_ret": self.season_return(p, eq),
@@ -690,6 +696,8 @@ class SocialMixin:
             share = {"kind": entry["k"], "ticker": entry["tk"], "shares": entry["sh"], "price": entry["px"]}
         self.chat_seq += 1
         msg = {"id": self.chat_seq, "t": self.now, "name": p.name, "text": body, "channel": channel, "share": share}
+        if self.style_of(p):
+            msg["style"] = self.style_of(p)                                    # a Diamond title or name colour (ladder.py)
         p.last_chat, p.last_chat_text = self.now, (body, channel)
         p.chat_times.append(self.now)
         self.chat.append(msg)
@@ -873,5 +881,5 @@ class SocialMixin:
                             "email_pending": mask_email(p.email_pending), "email_mode": self.email_mode()},
                 "chat_ready": self._chat_gate(p) is None, "chat_gate": self._chat_gate(p),
                 "chat_trades_left": max(0, int(self.settings.get("chat_min_trades", 3)) - int(p.counters.get("trades", 0))),
-                "counters": dict(p.counters), "dd": p.maxdd,
+                "counters": dict(p.counters), "dd": p.maxdd, "ladder": self.ladder_view(p),
                 "rank": {"season": self.rank.get(p.token), "pnl": self.rank_pnl.get(p.token)}}

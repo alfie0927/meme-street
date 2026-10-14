@@ -1,4 +1,4 @@
-import bisect, glob, itertools, json, logging, math, os, random, shutil, time, uuid
+import bisect, datetime, glob, itertools, json, logging, math, os, random, shutil, time, uuid
 from collections import deque
 from time import sleep as _sleep               # (a name of its own: the tests replace `time` with a fake clock)
 
@@ -6,6 +6,7 @@ import newsgen
 import relations
 import economy
 import learning
+import ladder
 import market_model
 import paths
 import social
@@ -24,6 +25,23 @@ INTRADAY_CANDLE_SECONDS = 60
 TIMEFRAMES = {"30s": 30, "1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "2h": 7200,
               "4h": 14400, "1d": 86400, "1mo": 30 * 86400, "1y": 365 * 86400}
 MAX_TICK_MOVE = 0.15
+# The game's own calendar, for the calendar page: one game day (30 real minutes) is one date, seven make a week and the
+# months are a real calendar's. Game day GAME_DAY0 (1 September 2026, UTC) is 1 January of game year 1.
+GAME_DAY0 = int(datetime.datetime(2026, 9, 1, tzinfo=datetime.timezone.utc).timestamp() // MARKET_DAY_SECONDS)
+GAME_DATE0 = datetime.date(2000, 1, 1)             # (2000 is only for the arithmetic: the page shows "Year 1")
+MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+               "November", "December"]
+MACRO_SHORT = {"claims": "Claims", "pmi": "PMI", "jobs": "Jobs", "cpi": "CPI", "retail": "Retail", "gdp": "GDP",
+               "rates": "Rates"}
+
+
+def game_date(n):
+    """The calendar date of game day `n` (n = real time // 1800)."""
+    return GAME_DATE0 + datetime.timedelta(days=int(n) - GAME_DAY0)
+
+
+def game_day_of(date):
+    return GAME_DAY0 + (date - GAME_DATE0).days
 
 logger = logging.getLogger(__name__)
 
@@ -255,9 +273,10 @@ class Player:
         social.init_player(self)   # achievements, quests, following, chat limits (see social.py)
         economy.init_player(self)  # birth year, Pro, MB by source, spending cap (see economy.py)
         learning.init_player(self)  # lessons passed, challenge progress, the trading journal (see learning.py)
+        ladder.init_player(self)    # the Bronze-to-Diamond quest ladder, and the title and name colour worn (ladder.py)
 
 
-class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin):
+class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin):
     def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None):
         self._init_social()
         self._init_accounts()
@@ -1350,6 +1369,71 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         out["earnings"] = [{"ticker": s.ticker, "name": s.name, "at": s.next_earn, "forecast": self._earnings_forecast(s)}
                            for s in sorted((x for x in self.stocks.values() if x.next_earn), key=lambda x: x.next_earn)[:12]]
         return out
+
+    def calendar_month(self, offset=0):
+        """The calendar page's month grid, in game days: one cell per game day (30 real minutes), seven to a week,
+        months as in a real calendar. Each day lists its economic releases (the forecast, or the result once it is
+        out), the earnings reports (the forecast EPS three game days ahead, the result after) and the scheduled company
+        events. `offset` counts months from the current one (at most two game years either way)."""
+        if self.model is None:
+            return {"on": False}
+        try:
+            offset = max(-24, min(24, int(offset)))
+        except (TypeError, ValueError):
+            offset = 0
+        today = int(self.now // MARKET_DAY_SECONDS)
+        now_d = game_date(today)
+        k = now_d.year * 12 + now_d.month - 1 + offset
+        y, m = divmod(k, 12)
+        m += 1
+        first = datetime.date(y, m, 1)
+        last = datetime.date(y + (m == 12), m % 12 + 1, 1) - datetime.timedelta(days=1)
+        start, end = first - datetime.timedelta(days=first.weekday()), last + datetime.timedelta(days=6 - last.weekday())
+        n0, n1 = game_day_of(start), game_day_of(end) + 1
+        t0, t1, D = n0 * MARKET_DAY_SECONDS, n1 * MARKET_DAY_SECONDS, MARKET_DAY_SECONDS
+        eco = self.model.economy
+        out = {}
+        day = lambda t: out.setdefault(int(t // D), {"macro": [], "earnings": [], "events": []})
+        past = {(r["kind"], int(r["t"])): r for r in eco.past}
+        for kind in eco.KINDS:
+            for t in eco.times(kind, t0 - 1e-6, t1 - 1e-6):
+                rec = {"kind": kind, "short": MACRO_SHORT.get(kind, kind), "name": eco.KINDS[kind][0], "t": t}
+                if t <= self.now:
+                    r = past.get((kind, int(t)))
+                    rec["out"] = True
+                    if r:
+                        rec.update(text=r.get("text"), consensus=r.get("consensus"), unit=r.get("unit", ""),
+                                   z=r.get("market_z", 0.0))
+                else:
+                    rec["forecast"] = eco._forecast_text(kind, eco.consensus.get(f"{kind}@{int(t)}"))
+                day(t)["macro"].append(rec)
+        for s in self.stocks.values():
+            if s.next_earn and t0 <= s.next_earn < t1:
+                day(s.next_earn)["earnings"].append({"ticker": s.ticker, "name": s.name, "t": s.next_earn,
+                                                     "forecast": self._earnings_forecast(s)})
+            for r in s.reports:
+                if t0 <= r["t"] < t1:
+                    day(r["t"])["earnings"].append({"ticker": s.ticker, "name": s.name, "t": r["t"], "out": True,
+                                                    "eps": r.get("eps"), "beat": r.get("beat")})
+            for ev in s.events:
+                if t0 <= ev.get("t", 0) < t1 and ev.get("kind") in newsgen.COMPANY_EVENT_KEYS:
+                    day(ev["t"])["events"].append({"ticker": s.ticker, "name": s.name, "t": ev["t"],
+                                                   "label": newsgen.COMPANY_EVENT_KEYS[ev["kind"]]["label"]})
+        weeks, d = [], start
+        while d <= end:
+            row = []
+            for _ in range(7):
+                n = game_day_of(d)
+                ev = out.get(n, {"macro": [], "earnings": [], "events": []})
+                for key in ev:
+                    ev[key].sort(key=lambda x: x["t"])
+                row.append({"n": n, "day": d.day, "label": f"{d.day} {MONTH_NAMES[d.month - 1]}", "in": d.month == m,
+                            "today": n == today, "t": n * D, **ev})
+                d += datetime.timedelta(days=1)
+            weeks.append(row)
+        return {"on": True, "offset": offset, "title": f"{MONTH_NAMES[m - 1]}, year {y - GAME_DATE0.year + 1}",
+                "today": today, "today_title": f"{now_d.day} {MONTH_NAMES[now_d.month - 1]}, year {now_d.year - GAME_DATE0.year + 1}",
+                "weeks": weeks, "rate": eco.rate, "bank": eco.BANK, "now": self.now, "day_seconds": D}
 
     def _mean_revert(self):
         # Pulls the exogenous fair value back toward the reference price. Player price impact is
@@ -2520,6 +2604,59 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self._drop_order(p, order)
         return True, f"Cancelled your {self.ORDER_KINDS[order['kind']].lower()} in {order['ticker']}"
 
+    def set_exit(self, p, ticker, kind, trigger=None):
+        """The holdings page's Take profit and Stop-loss boxes: set, move or remove the exit of that kind on a position.
+        Moving one keeps it (and its bracket partner); a new one closes the whole position and, when the other exit is
+        already set, is paired with it so whichever is hit first cancels the other (a bracket). `trigger` None removes."""
+        if kind not in ("take_profit", "stop_loss"):
+            return False, "Unknown order type"
+        label = self.ORDER_KINDS[kind]
+        mine = [o for o in p.orders if o["ticker"] == ticker and o["kind"] == kind]
+        if trigger is None:
+            if not mine:
+                return False, f"There is no {label.lower()} on {ticker}"
+            for o in mine:
+                p.orders = [x for x in p.orders if x is not o]
+                if o.get("oco"):                                # its partner stays, on its own
+                    for x in p.orders:
+                        if x.get("oco") == o["oco"]:
+                            x["oco"] = None
+            p.orders_dirty = True
+            return True, f"{label} on {ticker} removed"
+        if not mine:
+            other = next((o for o in p.orders if o["ticker"] == ticker and o["kind"] in ("take_profit", "stop_loss")
+                          and o["kind"] != kind and o.get("pct", 1.0) >= 1.0 and o.get("amount") is None), None)
+            group = None
+            if other is not None:
+                group = other.get("oco")
+                if not group:
+                    self.order_seq += 1
+                    group = other["oco"] = f"b{self.order_seq}"
+            ok, msg = self.place_order(p, ticker, kind, trigger, pct=1.0, oco=group)
+            if not ok and other is not None and other.get("oco") == group and not any(
+                    o is not other and o.get("oco") == group for o in p.orders):
+                other["oco"] = None
+            return ok, msg
+        # move it: the same checks as a new one (a stop-loss below the price for a long, and so on)
+        s = self.stocks.get(ticker)
+        held = p.hold.get(ticker, 0.0)
+        if s is None or abs(held) < 1e-9:
+            return False, f"A {label.lower()} needs a position in {ticker}"
+        if not (isinstance(trigger, (int, float)) and not isinstance(trigger, bool) and math.isfinite(trigger)
+                and 0 < trigger < 1e9):
+            return False, "Bad trigger price"
+        pos = 1 if held > 0 else -1
+        cond = "le" if (pos > 0) == (kind == "stop_loss") else "ge"
+        if (cond == "le" and trigger >= s.price) or (cond == "ge" and trigger <= s.price):
+            way = "below" if cond == "le" else "above"
+            return False, (f"For your {'long' if pos > 0 else 'short'} in {ticker} a {label.lower()} "
+                           f"must be {way} the current price of {s.price:.4g}")
+        o = mine[0]
+        o.update(trigger=round(float(trigger), 8), cond=cond, pos=pos, side="sell" if pos > 0 else "buy",
+                 expires=self.now + float(self.settings.get("order_expiry_seconds", 7 * 86400)))
+        p.orders_dirty = True
+        return True, f"{label} on {ticker} moved to {trigger:.4g}"
+
     def _drop_order(self, p, order, why=None, filled=False):
         """Remove an order (and its bracket partner). `why` is told to the player unless they asked for it."""
         group = order.get("oco")
@@ -2589,7 +2726,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         for p in self.players.values():
             e = self.equity(p)
             self._track_drawdown(p, e)
-            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token}
+            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token, "style": self.style_of(p)}
             everyone.append(row)
             if self.traded_today(p):
                 rows.append(row)
@@ -2674,6 +2811,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p.orders, p.orders_dirty = [], True
             p.notices.clear()
             social.reset_progress(p)
+            ladder.init_player(p)                         # the quest ladder starts again too (like the achievements)
             self._notify(p, f"The game was reset: it is Day 1 again and everyone starts with {target:,.0f} MB.")
         self.season_no = 1
         self.history = []
@@ -2709,6 +2847,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _end_season(self):
         self._board()
+        self._ladder_day_end()                           # top-10 and top-3 finishes count on the quest ladder
         top = [(r["name"], round(r["ret"] * 100, 1)) for r in self.board[:5]]
         self.history.append({"season": self.season_no, "top": top})
         self.history = self.history[-10:]
@@ -3024,7 +3163,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         return notes
 
     def board_view(self):
-        return [{"name": r["name"], "equity": round(r["equity"], 2), "ret": round(r["ret"], 4),
+        return [{"name": r["name"], "equity": round(r["equity"], 2), "ret": round(r["ret"], 4), "style": r.get("style"),
                  } for r in self.board[:10]]
 
     def sector_view(self):
@@ -3432,7 +3571,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                           "entry_fee": p.entry_fee, "realized": p.realized, "fees_paid": p.fees_paid, "trades": p.trades,
                           "log": list(p.log), "margin_calls": p.margin_calls,
                           "social": social.dump_player(p), "economy": economy.dump_player(p),
-                          "learning": learning.dump_player(p),
+                          "learning": learning.dump_player(p), "ladder": ladder.dump_player(p),
                           } for p in self.players.values()],
              "generated": [dict(x.cfg) for x in self.stocks.values() if x.cfg.get("generated")],
              "relations": self.relations.to_json(), "archive": self.archive,
@@ -3829,6 +3968,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 social.load_player(p, x.get("social", {}))
                 economy.load_player(p, x.get("economy", {}))
                 learning.load_player(p, x.get("learning", {}))
+                ladder.load_player(p, x.get("ladder", {}))
                 self.players[p.token] = p
                 self.by_token[p.token] = p
             human_in = sum(p.deposited for p in self.players.values() if p not in retiring)

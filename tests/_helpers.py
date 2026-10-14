@@ -46,6 +46,7 @@ def _real_read(self):
     settings = {k: v for k, v in settings.items() if k not in NEW_MARKET_NEWS}
     settings.setdefault("event_mean_seconds", 120)
     settings["market_model"] = 1
+    settings["quest_ladder"] = False                 # quest rewards would land in the exact-cash checks (test_ladder turns it on)
     return sectors, companies, templates, settings, profiles, derived
 
 
@@ -59,6 +60,7 @@ def _flat_read(self):
                    "require_password": False,                                  # ...may join with just a name...
                    "signup_bonus": 1000}                                        # ...and start with 1,000 MB (the game itself: 10,000)
     forced = {"signup_bonus": 1000,                                          # the tests' money is 1,000 MB a head,
+              "quest_ladder": False,                                         # no quest rewards landing in exact-cash tests,
               "market_model": 1}                                         # on the old zero-drift market (a test of the new
     #                                                                          one sets e.settings["market_model"] = 2)
     return sectors, companies, templates, {**quiet_world, **settings, **forced}, profiles, derived

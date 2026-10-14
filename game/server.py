@@ -505,6 +505,10 @@ async def handle_message(conn, p, raw):
                 action = str(m.get("action"))
                 if action == "cancel":
                     ok, msg = await run(engine.cancel_order, p, m.get("id"))
+                elif action == "exit":                     # the holdings page's Take profit / Stop-loss boxes
+                    raw = m.get("trigger")
+                    ok, msg = await run(engine.set_exit, p, str(m.get("ticker")), str(m.get("kind")),
+                                        None if raw in (None, "") else float(raw))
                 elif action == "bracket":
                     ok, msg = await run(engine.place_bracket, p, str(m.get("ticker")),
                                         float(m.get("take_profit")), float(m.get("stop_loss")))
@@ -1320,6 +1324,12 @@ async def calendar():
     return await run(engine.macro_calendar)
 
 
+@app.get("/api/calendar/month")
+async def calendar_month(offset: int = 0):
+    """The calendar page's month grid in game days (engine.calendar_month); `offset` months from the current one."""
+    return await run(engine.calendar_month, offset)
+
+
 @app.get("/api/admin/model")
 async def admin_model(x_admin_key: str = Header("")):
     """What the price model is doing behind the scenes: the regime, the hidden economy and how many listings are trending
@@ -1396,6 +1406,26 @@ async def admin_refund(b: Ident, x_admin_key: str = Header("")):
     if ok:
         await run(engine.save, False)
     return {"ok": ok, "msg": msg}
+
+
+class LadderStyle(BaseModel):
+    title: str = ""
+    color: str = ""
+
+
+@app.get("/api/ladder")
+async def ladder_get(x_token: str = Header("")):
+    """The quest ladder: Bronze to Diamond quests with progress and rewards, and the titles and colours unlocked."""
+    return await with_player(x_token, "ladder", engine.ladder_view)
+
+
+@app.post("/api/ladder/style")
+async def ladder_style(b: LadderStyle, x_token: str = Header("")):
+    """Wear an unlocked title and name colour ("" for none)."""
+    def work(p):
+        ok, msg = engine.set_style(p, b.title, b.color)
+        return {"ok": ok, "msg": msg, "style": engine.style_of(p)}
+    return await with_player(x_token, "ladder_style", work, interval=0.5)
 
 
 class ProGrant(BaseModel):

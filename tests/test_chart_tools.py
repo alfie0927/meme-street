@@ -145,6 +145,16 @@ class ChartToolsBrowserTests(unittest.TestCase):
             await d.check("and offers Fit prices", "!document.getElementById('z-fit').hidden", True, wait=3)
             await pg.js("document.getElementById('z-fit').click()")
             await d.check("Fit prices puts the price scale back on automatic", "yMan===null&&document.getElementById('z-fit').hidden", True, wait=3)
+            # dragging on the price scale stretches or squeezes the price range; a double-click there makes it automatic
+            span0 = await pg.js("chartGeom.span")
+            drag_axis = ("(dy=>{const w=document.getElementById('chart-wrap'),[x,y]=%s,ev=(t,d)=>w.dispatchEvent(new PointerEvent(t,{clientX:x,clientY:y+d,bubbles:true,buttons:1,pointerId:5}));"
+                         "ev('pointerdown',0);ev('pointermove',dy);ev('pointerup',dy)})" % "(()=>{const w=document.getElementById('chart-wrap'),r=w.querySelector('svg').getBoundingClientRect(),g=chartGeom,x=r.left+(g.axisX+20)*r.width/CH.w,y=r.top+(g.padT+g.PH/2)*r.height/CH.h;return [x,y]})()")
+            await pg.js(drag_axis + "(120)")
+            await d.check("dragging the price scale down shows a wider price range", f"yMan!==null&&chartGeom.span>{span0!r}*1.5", True, wait=3)
+            await pg.js(drag_axis + "(-240)")
+            await d.check("and dragging it up a narrower one", f"chartGeom.span<{span0!r}", True, wait=3)
+            await pg.js("(()=>{const [x,y]=(()=>{const w=document.getElementById('chart-wrap'),r=w.querySelector('svg').getBoundingClientRect(),g=chartGeom,x=r.left+(g.axisX+20)*r.width/CH.w,y=r.top+(g.padT+g.PH/2)*r.height/CH.h;return [x,y]})();document.getElementById('chart-wrap').dispatchEvent(new MouseEvent('dblclick',{clientX:x,clientY:y,bubbles:true}))})()")
+            await d.check("a double-click on the price scale makes it automatic again", "yMan===null", True, wait=3)
             # the toolbar: a small bar with a drop-down, and drawing a trend line
             await d.check("the toolbar is a small bar", "(()=>{const b=document.querySelector('#draw-tools .dt-bar').getBoundingClientRect();return b.width<170&&b.height<40&&!document.querySelector('.dt-menu')})()", True, wait=5)
             await pg.js("document.querySelector('#draw-tools [data-dt=menu]').click()")

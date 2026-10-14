@@ -94,7 +94,7 @@ section>.card{display:none}
 .dt-item{display:flex;align-items:center;gap:8px;min-height:0;padding:5px 8px;border:0;border-radius:7px;background:none;color:var(--txt);font-size:12.5px;text-align:left}
 .dt-item:hover{background:#ffffff10}.dt-item.on{background:var(--acc);color:#04101f}
 .dt-acts{grid-column:1/3;display:flex;gap:2px;border-top:1px solid var(--line);margin-top:4px;padding-top:4px}.dt-acts .dt-item{flex:1;color:var(--mut)}
-.chart-wrap.tool svg{cursor:crosshair}.price-chart [data-dw]{cursor:pointer}.price-chart [data-dh]{cursor:grab}
+.chart-wrap.tool svg{cursor:crosshair}.price-chart .y-axis-hit{cursor:ns-resize}.price-chart [data-dw]{cursor:pointer}.price-chart [data-dh]{cursor:grab}
 .chart-resize{height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;touch-action:none}.chart-resize span{width:52px;height:4px;border-radius:2px;background:var(--line)}.chart-resize:hover span{background:var(--acc)}
 #chart-box.chart-full{position:fixed;inset:0;z-index:60;background:var(--bg);padding:10px 16px;overflow:auto}.chart-full .chart-resize{display:none}
 body.noscroll{overflow:hidden}
@@ -243,7 +243,7 @@ body.guest .guest-cta{display:flex}
  #hold-rows tr,#pf-pos tr{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;padding:12px 2px;border-bottom:1px solid var(--line2)}
  #hold-rows td,#pf-pos td{display:flex;justify-content:space-between;align-items:center;padding:0;border:0;text-align:right;font-size:13px}
  #hold-rows td::before,#pf-pos td::before{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
- #hold-rows td:nth-child(1),#hold-rows td:nth-child(10),#pf-pos td:nth-child(1){grid-column:1/-1;text-align:left}
+ #hold-rows td:nth-child(1),#hold-rows td:nth-child(12),#pf-pos td:nth-child(1){grid-column:1/-1;text-align:left}
  #hold-rows td:nth-child(2)::before,#pf-pos td:nth-child(2)::before{content:"Side"}
  #hold-rows td:nth-child(3)::before,#pf-pos td:nth-child(3)::before{content:"Shares"}
  #hold-rows td:nth-child(4)::before,#pf-pos td:nth-child(4)::before{content:"Avg entry"}
@@ -254,6 +254,9 @@ body.guest .guest-cta{display:flex}
  #hold-rows td:nth-child(8)::before{content:"P/L"}
  #pf-pos td:nth-child(8)::before{content:"Realised"}
  #hold-rows td:nth-child(9)::before{content:"P/L %"}
+ #hold-rows td:nth-child(10)::before{content:"Take profit"}
+ #hold-rows td:nth-child(11)::before{content:"Stop-loss"}
+ #hold-rows td:has(.exit-edit){grid-column:1/-1;justify-content:flex-start;gap:10px}#hold-rows .exit-edit input{width:110px}
  #hold-rows .hold-act{width:100%}#hold-rows .hold-act button{flex:1;min-height:40px}
  /* the long tables that stay tables (history, orders, closed trades) scroll sideways inside their card */
  #history-card table,#hold-orders table,#portfolio-card .two table,#pf-real,#follow-list,#cp-pos{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -268,6 +271,23 @@ body.guest .guest-cta{display:flex}
  .chatlog{height:46vh}
 }
 
+.exit-btn{min-height:0;padding:2px 9px;border-radius:7px;background:none;border:1px dashed var(--line);color:var(--mut);font-variant-numeric:tabular-nums}.exit-btn.set{border-style:solid;color:var(--txt)}.exit-btn:hover{border-color:var(--acc);color:var(--txt)}.exit-btn small{font-size:10.5px}
+.exit-edit{display:inline-flex;gap:4px;align-items:center}.exit-edit input{width:92px;padding:3px 6px}.exit-edit button{min-height:0;padding:3px 8px}
+.ptitle{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:1px 7px;border-radius:999px;border:1px solid #a5f3fc66;color:#a5f3fc;background:#a5f3fc12;vertical-align:1px;white-space:nowrap}
+.lad-tier{border:1px solid var(--line2);border-radius:10px;background:var(--card2);margin:8px 0;padding:0 12px}.lad-tier summary{cursor:pointer;display:grid;grid-template-columns:auto auto 1fr auto;gap:4px 10px;align-items:center;padding:10px 0;list-style:none}
+.lad-tier summary::-webkit-details-marker{display:none}.lad-tier summary .pbar{grid-column:1/-1}.lad-tier .lad-arrow{color:var(--mut);transition:transform .15s}.lad-tier[open] .lad-arrow{transform:rotate(180deg)}
+.lad-bronze{border-left:3px solid #cd7f32}.lad-silver{border-left:3px solid #c0c7d0}.lad-gold{border-left:3px solid #ffd166}.lad-diamond{border-left:3px solid #a5f3fc}
+.lad-q{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:8px 0;border-top:1px solid var(--line2)}.lad-q.done b{color:var(--up)}.lad-p{grid-column:1/-1}.lad-r{font-weight:600;color:var(--up);white-space:nowrap}.lad-unl{font-size:12px;margin-top:3px}
+.lad-h{margin:14px 0 6px;font-size:13px}#lad-preview{margin-left:6px}
+.cal-nav{display:flex;align-items:center;gap:8px;margin:12px 0 4px}.cal-nav h3{margin:0;flex:1;text-align:center;font-size:15px;color:var(--txt);text-transform:none;letter-spacing:0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.cal-wd{font-size:11px;color:var(--mut);text-align:center;padding:2px 0;text-transform:uppercase;letter-spacing:.05em}
+.cal-cell{display:flex;flex-direction:column;align-items:stretch;gap:3px;min-height:96px;min-width:0;padding:5px 6px;border:1px solid var(--line2);border-radius:8px;background:var(--card2);text-align:left;color:var(--txt);font:inherit}
+.cal-cell:hover{border-color:var(--line)}.cal-cell.other{opacity:.45}.cal-cell.past{background:#0f151d}.cal-cell.today{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}.cal-cell.sel{background:#5aa2ff1f}
+.cal-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px}.cal-top b{font-size:13px}.cal-top small{color:var(--mut);font-size:10.5px}
+.cal-chip{font-size:10.5px;font-weight:600;padding:1px 5px;border-radius:5px;background:#5aa2ff24;color:#9ecbff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cal-chip.rates{outline:1px solid #9ecbff66}
+.cal-chip.up{background:#34d27b22;color:var(--up)}.cal-chip.dn{background:#ff5f6d22;color:var(--dn)}.cal-chip.flat{background:#ffffff10;color:var(--mut)}
+.cal-more{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cal-ev{opacity:.8}.cal-h{margin:12px 0 4px;font-size:12.5px;color:var(--mut)}.cal-day table td:first-child{width:70px}.cal-day td{white-space:normal}
+@media (max-width:760px){.cal-grid{gap:2px}.cal-cell{min-height:62px;padding:3px}.cal-chip{font-size:9px;padding:0 3px}.cal-top small,.cal-more{display:none}.cal-nav button{padding:4px 8px}}
 </style><link rel="icon" type="image/png" href="/brand/memestreet_logo_peaks.png">
 </head><body class="page-market">
 <div id="login"><div><h2 style="margin:0">Meme Street</h2><p class="mut">Trade with memebucks (MB). Read the news, trade fast, beat the other players.</p><p id="login-why" class="hint" style="display:none;color:var(--acc)"></p>
@@ -310,7 +330,7 @@ body.guest .guest-cta{display:flex}
 <div class="card" id="holdings-card"><h3>Your holdings</h3>
 <div class="finance-grid" id="hold-sum"></div>
 <div class="ticket" style="margin-top:12px"><span class="lab">Buy size</span><span id="h-bchips"></span><span class="lab">Sell size</span><span id="h-schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB" aria-label="Amount in MB"><span class="mut" style="font-size:12px">Buy more, sell, short or cover right here.</span></div>
-<table><thead><tr><th>Ticker &middot; Company</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>Value</th><th>Dividends</th><th>P/L</th><th>P/L %</th><th></th></tr></thead><tbody id="hold-rows"></tbody></table>
+<table><thead><tr><th>Ticker &middot; Company</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>Value</th><th>Dividends</th><th>P/L</th><th>P/L %</th><th>Take profit</th><th>Stop-loss</th><th></th></tr></thead><tbody id="hold-rows"></tbody></table>
 <div id="hold-orders"></div>
 <p id="hold-empty" class="mut" style="display:none">You don't hold anything yet. Pick a stock on the <a href="/">market</a> and buy some.</p></div>
 <div class="card" id="stock-detail"><a href="/" style="font-size:13px">&larr; Back to market</a><div id="detail-content" class="mut" style="margin-top:12px">Loading…</div></div>
@@ -339,6 +359,7 @@ body.guest .guest-cta{display:flex}
 <p class="hint">You can follow up to 20 traders. Players choose whether their results and holdings are public; holdings are always shown with a delay so nobody can copy a trade as it happens.</p><table id="follow-list"></table></div></div>
 <div class="card" id="profile-card"><div id="prof-head"></div>
 <h3 class="sp">Daily quests</h3><div id="quests"></div>
+<h3 class="sp">Quest ladder <span id="lad-count" class="mut"></span></h3><div id="ladder"></div>
 <h3 class="sp">Daily contest</h3><div id="tours"></div>
 <div id="contest-play" style="display:none"><div id="cp-summary"></div>
 <div class="bar"><select id="cp-ticker" aria-label="Ticker"></select><select id="cp-pct" aria-label="Size"><option value="0.1">10%</option><option value="0.25" selected>25%</option><option value="0.5">50%</option><option value="1">100%</option></select><button class="buy" id="cp-buy">Buy</button><button class="sell" id="cp-sell">Sell / short</button></div>
@@ -366,9 +387,11 @@ body.guest .guest-cta{display:flex}
 <div class="card" id="calendar-card"><h3>Economic calendar</h3>
 <p class="about" style="margin-top:0">The economy behind the market reports on a schedule: weekly jobless claims, monthly consumer prices (CPI), jobs, retail sales and a business survey, quarterly growth (GDP), and eight interest-rate decisions a game year. Each release has a forecast published a few game days ahead. Prices react to the <b>surprise</b>, the gap between the figure and the forecast, not to the figure itself. Hot inflation and strong jobs can mean higher interest rates, which weigh on growth companies and property and help banks. Volatility is usually low just before a release and high just after it.</p>
 <div id="cal-rate" class="notice-box"></div>
-<h3 class="sp">Coming up</h3><table id="cal-up"></table>
-<h3 class="sp">Latest releases</h3><table id="cal-past"></table>
-<h3 class="sp">Next earnings reports</h3><table id="cal-earn"></table></div>
+<div class="cal-nav"><button id="cal-prev" aria-label="Previous month">&lsaquo; Previous</button><h3 id="cal-title"></h3><button id="cal-next" aria-label="Next month">Next &rsaquo;</button><button id="cal-today">Today</button></div>
+<p class="hint" id="cal-note">The calendar runs on game days: one game day is 30 real minutes, so a game week passes in three and a half hours and a game month in about fifteen. Each day shows the real time it starts. Click a day for its details.</p>
+<div class="cal-grid" id="cal-grid"></div>
+<div class="cal-day" id="cal-day"></div>
+<h3 class="sp">Latest releases</h3><table id="cal-past"></table></div>
 <div class="card" id="shop-card"><h3>Shop</h3>
 <p class="about" style="margin-top:0">Meme Street is a place to practise trading. Everyone starts with 1,000 MB of practice money. If you run out, or want a bigger account to practise with, you can buy more here. MB have no cash value: they cannot be withdrawn, sold, given away or swapped for anything. Buying MB never lifts your rank, because returns are measured on the money you put in.</p>
 <div id="shop-mode"></div><div id="shop-restart"></div>
@@ -404,7 +427,7 @@ let buyPct=.25,sellPct=1;
 const view=Object.assign({sort:'ticker',dir:1,q:'',sector:'all',watch:false,secsOpen:false},lsGet('ms_view',{}));
 const watch=new Set(lsGet('ms_watch',[]));
 let selectedTicker=page==='stock'?pageArg:null;
-let chartPeriod='30s',chartCandles=[],clockOffset=0,zoom=1,pan=0,yMan=null,dragY=0,dragY0=null,dragYOn=false,company=null,lastQuery=0;
+let chartPeriod='30s',chartCandles=[],clockOffset=0,zoom=1,pan=0,yMan=null,dragY=0,dragY0=null,dragYOn=false,axisDrag=null,company=null,lastQuery=0;
 let builtFor=null,dragX=null,dragPan0=0,rafPending=false;
 const PERIODS=[['30s','30s',30],['1m','1m',60],['5m','5m',300],['15m','15m',900],['30m','30m',1800],['1h','1h',3600],['2h','2h',7200],['4h','4h',14400],['1d','1d',86400],['1mo','1M',2592000],['1y','1Y',31536000]];
 const secsOf=k=>(PERIODS.find(p=>p[0]===k)||PERIODS[0])[2];
@@ -716,18 +739,40 @@ function renderHoldings(){
   seen.add(h.ticker);let tr=holdEls[h.ticker];
   if(!tr){tr=holdEls[h.ticker]=document.createElement('tr');tr.dataset.k=h.ticker;
    const st=m.byT[h.ticker];
-   tr.innerHTML=`<td><div class="tick-cell"><span class="sec-ic">${esc(st?iconOf(st):'\u25CF')}</span><span class="tick-main"><span class="tk">${esc(h.ticker)}</span><span class="nm">${esc(st?.name||'')}</span></span></div></td><td class="c-side"></td><td class="c-sh"></td><td class="c-avg"></td><td class="c-px"></td><td class="c-val"></td><td class="c-div"></td><td class="c-pnl"></td><td class="c-pct"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;body.appendChild(tr)}
+   tr.innerHTML=`<td><div class="tick-cell"><span class="sec-ic">${esc(st?iconOf(st):'\u25CF')}</span><span class="tick-main"><span class="tk">${esc(h.ticker)}</span><span class="nm">${esc(st?.name||'')}</span></span></div></td><td class="c-side"></td><td class="c-sh"></td><td class="c-avg"></td><td class="c-px"></td><td class="c-val"></td><td class="c-div"></td><td class="c-pnl"></td><td class="c-pct"></td><td class="c-tp"></td><td class="c-sl"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;body.appendChild(tr)}
   const c=h.pnl>=0?'up':'dn';
   setText(tr.querySelector('.c-side'),h.side==='short'?'SHORT':'Long','c-side '+(h.side==='short'?'dn':''));setText(tr.querySelector('.c-sh'),numText(h.shares,4));setText(tr.querySelector('.c-avg'),priceText(h.avg));
   setText(tr.querySelector('.c-px'),priceText(h.price));setText(tr.querySelector('.c-val'),numText(h.value)+' MB');setText(tr.querySelector('.c-div'),h.div?signed(h.div)+' MB':'-');
   setText(tr.querySelector('.c-pnl'),signed(h.pnl)+' MB','c-pnl '+c);setText(tr.querySelector('.c-pct'),pc(h.pct),'c-pct '+c);
-  setText(tr.querySelector('.buy'),h.side==='short'?'Cover':'Buy');setText(tr.querySelector('.sell'),h.side==='long'?'Sell':'Short')}
+  setText(tr.querySelector('.hold-act .buy'),h.side==='short'?'Cover':'Buy');setText(tr.querySelector('.hold-act .sell'),h.side==='long'?'Sell':'Short');
+  drawExits(tr,h)}
  for(const k of Object.keys(holdEls))if(!seen.has(k)){holdEls[k].remove();delete holdEls[k]}
  const os=S.orders||[];
  setHtml($('hold-orders'),os.length?`<h3 style="margin-top:16px">Open orders</h3><table><thead><tr><th>Ticker</th><th>Order</th><th>Triggers</th><th>Size</th><th></th><th></th></tr></thead><tbody>${orderRows(os,true)}</tbody></table>`:'')}
 $('hold-orders').addEventListener('click',e=>{const b=e.target.closest('[data-cancel]');if(b)send({type:'order',action:'cancel',id:Number(b.dataset.cancel)})});
+// Take profit and stop-loss on each position, edited where they are shown (engine.set_exit): "-" when there is none
+let exitEdit=null;
+function drawExits(tr,h){
+ for(const[cl,kind]of[['c-tp','take_profit'],['c-sl','stop_loss']]){
+  const cell=tr.querySelector('.'+cl),o=(S.orders||[]).find(x=>x.ticker===h.ticker&&x.kind===kind),editing=exitEdit&&exitEdit.t===h.ticker&&exitEdit.k===kind;
+  const key=editing?'edit':o?o.trigger+'|'+h.price:'-';if(cell._k===key)continue;cell._k=key;
+  if(editing){const up=(kind==='take_profit')===(h.side!=='short');
+   cell.innerHTML=`<span class="exit-edit"><input type="number" step="any" min="0" value="${o?o.trigger:''}" placeholder="${up?'above':'below'} ${numText(h.price,Math.abs(h.price)<1?4:2)}" aria-label="${kind==='take_profit'?'Take profit':'Stop-loss'} price"><button class="buy" data-exit-save>Set</button>${o?'<button data-exit-clear>Remove</button>':''}<button data-exit-cancel aria-label="Cancel">&times;</button></span>`;
+   const i=cell.querySelector('input');i.focus();i.select()}
+  else cell.innerHTML=`<button class="exit-btn ${o?'set':''}" data-exit="${kind}" title="${o?'Click to move or remove it':'Click to set one'}">${o?numText(o.trigger,Math.abs(o.trigger)<1?4:2)+` <small class="mut">${pc(o.trigger/h.price-1)}</small>`:'-'}</button>`}}
+function saveExit(tr,clear){
+ const kind=exitEdit&&exitEdit.k;if(!kind)return;const v=clear?null:parseFloat(tr.querySelector('.exit-edit input').value);
+ if(!clear&&!(v>0)){toast('Type a price above 0',false);return}
+ send({type:'order',action:'exit',ticker:tr.dataset.k,kind,trigger:v});exitEdit=null;renderHoldings()}
+$('hold-rows').addEventListener('keydown',e=>{const tr=e.target.closest('tr[data-k]');if(!tr||!e.target.closest('.exit-edit'))return;
+ if(e.key==='Enter')saveExit(tr,false);else if(e.key==='Escape'){exitEdit=null;renderHoldings()}});
 $('hold-rows').addEventListener('click',e=>{
  const tr=e.target.closest('tr[data-k]');if(!tr)return;
+ if(e.target.closest('.c-tp,.c-sl')){
+  const b=e.target.closest('[data-exit]');if(b){exitEdit={t:tr.dataset.k,k:b.dataset.exit};renderHoldings();return}
+  if(e.target.closest('[data-exit-save]'))saveExit(tr,false);else if(e.target.closest('[data-exit-clear]'))saveExit(tr,true);
+  else if(e.target.closest('[data-exit-cancel]')){exitEdit=null;renderHoldings()}
+  return}
  const b=e.target.closest('button[data-act]');
  if(b){trade(tr.dataset.k,b.dataset.act);return}
  location.href='/stock/'+encodeURIComponent(tr.dataset.k)});
@@ -817,6 +862,7 @@ function candleSvg(candles,price,avg){
    legend.push(['Auto Fib','#e3b341'])}}
  s+=drawingsSvg();
  s+='</g>';
+ s+=`<rect class="y-axis-hit" x="${axisX}" y="${padT}" width="${padR}" height="${PH}" fill="transparent"><title>Drag up or down (or scroll) to squeeze or stretch the price range; double-click for automatic</title></rect>`;
  if(legend.length||notes.length)s+=`<text x="${padL+4}" y="${padT+12}" font-size="10.5">${legend.map(l=>`<tspan fill="${l[1]}">${esc(l[0])}  </tspan>`).join('')}${notes.map(t=>`<tspan fill="#8b949e">${esc(t)}  </tspan>`).join('')}</text>`;
  // volume, with its average if switched on
  let vmax=0;for(const i of vis)vmax=Math.max(vmax,candles[i].v||0);
@@ -894,7 +940,7 @@ function buildDetail(){
  $('z-in').onclick=()=>zoomAt(1.4,newestX());$('z-out').onclick=()=>zoomAt(1/1.4,newestX());$('z-reset').onclick=resetZoom;
  document.querySelector('.periods').onclick=e=>{const b=e.target.closest('button[data-p]');if(b)selectPeriod(b.dataset.p)};
  const wrap=$('chart-wrap');
- wrap.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.15:1/1.15,svgX(e))},{passive:false});
+ wrap.addEventListener('wheel',e=>{e.preventDefault();if(chartGeom&&onAxis(svgPt(e))){scaleY(curY(),e.deltaY<0?1/1.12:1.12);return}zoomAt(e.deltaY<0?1.15:1/1.15,svgX(e))},{passive:false});
  wireChart(wrap);if(chartFull)toggleFull(true);
  wireOrders();
  drawIndBar();
@@ -1065,7 +1111,10 @@ $('hist-csv').onclick=async()=>{
 
 // ---------- leaderboards ----------
 let boardTab='season',boardsData=null;
-const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${esc(r.name)}</a>`;
+// a name as the player chose to show it: a name colour and a title from the quest ladder's Diamond tier (ladder.py)
+const COLOR_OK=/^#[0-9a-f]{6}$/i;
+function nameHtml(name,st){const c=st&&COLOR_OK.test(st.c||'')?` style="color:${st.c}"`:'';return `<span class="pname"${c}>${esc(name)}</span>${st&&st.t?` <span class="ptitle">${esc(st.t)}</span>`:''}`}
+const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${nameHtml(r.name,r.style)}</a>`;
 const HINTS={season:'Return since this day began (money paid in does not count). A day lasts 24 hours and ends at midnight UTC; balances carry over.',pnl:'Total profit or loss since you joined, in MB, including everything you have realised or still hold.'};
 function drawBoards(){
  const b=boardsData;if(!b)return;
@@ -1086,9 +1135,10 @@ let meData=null;
 const pbar=(v,g)=>`<div class="pbar ${v>=g?'done':''}"><i style="width:${Math.min(100,v/g*100).toFixed(0)}%"></i></div>`;
 function drawProfile(){
  const d=meData;if(!d)return;
- setHtml($('prof-head'),`<h2 style="margin:0 0 4px">${esc(d.name)}</h2><div><span class="pill">Day rank #${d.rank.season??'-'}</span><span class="pill">All-time P&amp;L #${d.rank.pnl??'-'}</span><span class="pill">Worst drawdown ${(d.dd*100).toFixed(1)}%</span>${d.muted?`<span class="pill dn">Chat muted ${Math.ceil(d.muted/60)} min</span>`:''}</div>`);
+ setHtml($('prof-head'),`<h2 style="margin:0 0 4px">${nameHtml(d.name,d.ladder&&d.ladder.style)}</h2><div><span class="pill">Day rank #${d.rank.season??'-'}</span><span class="pill">All-time P&amp;L #${d.rank.pnl??'-'}</span><span class="pill">Worst drawdown ${(d.dd*100).toFixed(1)}%</span>${d.muted?`<span class="pill dn">Chat muted ${Math.ceil(d.muted/60)} min</span>`:''}</div>`);
  const q=d.quests;
  setHtml($('quests'),`<div class="hint">Everyone gets the same three quests each day (UTC). They are for fun and bragging rights: finishing them pays no memebucks. Streak: <b>${q.streak}</b> day(s). New quests in ${dur(q.resets_in)}.</div>`+q.quests.map(x=>`<div class="quest"><b class="${x.done?'up':''}">${x.done?'✔ ':''}${esc(x.text)}</b> <span class="mut">${numText(Math.min(x.progress,x.goal),0)} / ${numText(x.goal,0)}</span>${pbar(x.progress,x.goal)}</div>`).join(''));
+ drawLadder();
  const T=d.tournaments;
  const act=T.active.map(t=>{const left=dur(t.end-engineNow()),mine=t.mine;
   return `<div class="tour"><b>${esc(t.name)}</b> <span class="mut">ends in ${left} · ${t.entrants} entered</span>
@@ -1142,6 +1192,27 @@ $('cp-pos').addEventListener('click',e=>{const b=e.target.closest('[data-cclose]
 setInterval(()=>{if(page==='profile'&&contestId&&!document.hidden)loadMe()},2500);
 $('tours').addEventListener('click',async e=>{const b=e.target.closest('[data-join]');if(!b)return;b.disabled=true;const r=await api('/api/tournament/join',{method:'POST',body:{id:b.dataset.join}});if(r&&r.msg)toast(r.msg,r.ok);loadMe()});
 $('pub-toggle').addEventListener('change',async()=>{const r=await api('/api/public',{method:'POST',body:{public:$('pub-toggle').checked}});if(r&&r.msg)toast(r.msg,r.ok);loadMe()});
+// the quest ladder: Bronze to Diamond, one drop-down per tier (the first unfinished tier starts open)
+const TIER_IC={bronze:'🥉',silver:'🥈',gold:'🥇',diamond:'💎'};
+let ladOpen=lsGet('ms_ladder_open',null);
+function drawLadder(){
+ const L=meData&&meData.ladder;if(!L)return;
+ setText($('lad-count'),`(${L.done} / ${L.total})`);
+ const first=(L.tiers.find(t=>t.done<t.quests.length)||L.tiers[L.tiers.length-1]).id,open=new Set(ladOpen||[first]);
+ const opt=(v,cur,n)=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(n)}</option>`;
+ const style=L.titles.length||L.colors.length?`<div class="bar"><select id="lad-title" aria-label="Title">${opt('',L.wear.title,'No title')}${L.titles.map(t=>opt(t.id,L.wear.title,t.name)).join('')}</select><select id="lad-color" aria-label="Name colour">${opt('',L.wear.color,'Plain name')}${L.colors.map(c=>opt(c.id,L.wear.color,c.name)).join('')}</select><button class="buy" id="lad-save">Save</button><span id="lad-preview">${nameHtml(meData.name,L.style)}</span></div>`
+  :'<p class="hint" style="margin:0">Finish a Diamond quest to unlock a title (such as <span class="ptitle">Top Trader</span>) and a colour for your name.</p>';
+ setHtml($('ladder'),`<p class="hint">One-off quests in four tiers, each harder than the last. Each pays MB once: Bronze ${L.tiers[0].reward}, Silver ${L.tiers[1].reward}, Gold ${L.tiers[2].reward} and Diamond ${L.tiers[3].reward}, and Diamond quests also unlock a title and a name colour for the leaderboards and chat. Rewards count as money put in, so they never lift your return or rank.</p>`
+  +L.tiers.map(t=>`<details class="lad-tier lad-${t.id}" data-tier="${t.id}" ${open.has(t.id)?'open':''}><summary><span class="lad-ic">${TIER_IC[t.id]||''}</span><b>${esc(t.name)}</b><span class="mut">${t.done} / ${t.quests.length} done · +${numText(t.reward,0)} MB each${t.id==='diamond'?' and a title':''}</span><span class="lad-arrow">▾</span>${pbar(t.done,t.quests.length)}</summary>`
+   +t.quests.map(q=>`<div class="lad-q ${q.done?'done':''}"><div><b>${q.done?'✔ ':''}${esc(q.name)}</b> <small class="mut">${esc(q.how)}</small>${q.unlocks?`<div class="lad-unl">Unlocks the title <span class="ptitle">${esc(q.unlocks.title)}</span> and a <b style="color:${COLOR_OK.test(q.unlocks.color)?q.unlocks.color:'inherit'}">${esc(q.unlocks.color_name.toLowerCase())}</b> name</div>`:''}</div><div class="lad-r">+${numText(q.reward,0)} MB</div><div class="lad-p"><span class="mut">${numText(q.n,0)} / ${numText(q.target,0)}</span>${pbar(q.n,q.target)}</div></div>`).join('')+'</details>').join('')
+  +`<h4 class="lad-h">Your name on the boards and in chat</h4>${style}`)}
+$('profile-card').addEventListener('toggle',e=>{const t=e.target.closest&&e.target.closest('.lad-tier');if(!t)return;
+ ladOpen=[...document.querySelectorAll('#ladder .lad-tier')].filter(x=>x.open).map(x=>x.dataset.tier);lsSet('ms_ladder_open',ladOpen)},true);
+$('profile-card').addEventListener('change',e=>{if(!['lad-title','lad-color'].includes(e.target.id))return;const L=meData.ladder;
+ const c=L.colors.find(x=>x.id===$('lad-color').value),t=L.titles.find(x=>x.id===$('lad-title').value);
+ $('lad-preview').innerHTML=nameHtml(meData.name,{c:c?c.hex:'',t:t?t.name:''})});
+$('profile-card').addEventListener('click',async e=>{if(e.target.id!=='lad-save')return;
+ const r=await postJson('/api/ladder/style',{title:$('lad-title').value,color:$('lad-color').value},{'X-Token':token||''});toast(r.msg||r.error||'Error',!!r.ok);loadMe()});
 async function loadMe(){const d=await api('/api/me');if(d&&!d.slow&&!d.notfound){meData=d;if(page==='profile')drawProfile();else if(page==='social'){drawSocialBits();drawChatNote()}}}
 
 // ---------- social: chat and following ----------
@@ -1151,7 +1222,7 @@ function drawChat(){
  if(page!=='social')return;
   const log=$('chat-log'),near=log.scrollHeight-log.scrollTop-log.clientHeight<60;
  const mine=S&&S.name;
- const html=chatMsgs.map(m=>`<div class="msg" data-id="${m.id}"><small>${clock(m.t)}</small><a href="/player/${encodeURIComponent(m.name)}"><b>${esc(m.name)}</b></a>: ${esc(m.text)}${m.share?`<span class="share ${m.share.kind==='buy'||m.share.kind==='cover'?'up':'dn'}">${esc(m.share.kind.toUpperCase())} ${numText(m.share.shares,2)} <a href="/stock/${encodeURIComponent(m.share.ticker)}">${esc(m.share.ticker)}</a> @ ${priceText(m.share.price)}</span>`:''}<span class="rep" data-rep="${m.id}" title="Report this message">🚩</span></div>`).join('');
+ const html=chatMsgs.map(m=>`<div class="msg" data-id="${m.id}"><small>${clock(m.t)}</small><a href="/player/${encodeURIComponent(m.name)}"><b>${nameHtml(m.name,m.style)}</b></a>: ${esc(m.text)}${m.share?`<span class="share ${m.share.kind==='buy'||m.share.kind==='cover'?'up':'dn'}">${esc(m.share.kind.toUpperCase())} ${numText(m.share.shares,2)} <a href="/stock/${encodeURIComponent(m.share.ticker)}">${esc(m.share.ticker)}</a> @ ${priceText(m.share.price)}</span>`:''}<span class="rep" data-rep="${m.id}" title="Report this message">🚩</span></div>`).join('');
  setHtml(log,html||'<span class="mut">No messages yet. Say hello.</span>');
  if(near)log.scrollTop=log.scrollHeight}
 $('chat-log').addEventListener('click',e=>{const r=e.target.closest('[data-rep]');if(r&&confirm('Report this message to the moderators?'))send({type:'chat_report',id:Number(r.dataset.rep)})});
@@ -1203,8 +1274,8 @@ function drawPlayer(){
  box.className='';
  const res=d.public||d.me;
  const holdings=d.holdings;
- setHtml(box,`<h2 style="margin:0 0 6px">${esc(d.name)}</h2>
- <div><span class="pill">${d.public?'Public profile':'Private profile'}</span><span class="pill">${d.followers} follower(s)</span>${d.me?'<span class="pill">This is you</span>':''}</div>
+ setHtml(box,`<h2 style="margin:0 0 6px">${nameHtml(d.name,d.style)}</h2>
+ <div><span class="pill">${d.public?'Public profile':'Private profile'}</span><span class="pill">${d.followers} follower(s)</span>${d.ladder?`<span class="pill">Quest ladder ${d.ladder.done} / ${d.ladder.total}${d.ladder.tiers.diamond?' · 💎 '+d.ladder.tiers.diamond:''}</span>`:''}${d.me?'<span class="pill">This is you</span>':''}</div>
  ${!d.me?`<div class="bar" style="margin-top:10px"><button class="${d.following_them?'sell':'buy'}" id="pl-follow">${d.following_them?'Unfollow':'Follow'}</button></div>`:''}
  ${res&&d.season_ret!==undefined?`<div class="finance-grid"><div><small>Day return</small><strong class="${cls(d.season_ret)}">${pc(d.season_ret)}</strong></div><div><small>Return since joining</small><strong class="${cls(d.alltime_ret)}">${pc(d.alltime_ret)}</strong></div><div><small>Day rank</small><strong>#${d.rank??'-'}</strong></div><div><small>Trades today</small><strong>${d.trades}</strong></div></div>`:'<p class="hint">This trader keeps their results private. You can see their medals and achievements.</p>'}
  ${res&&d.season_ret!==undefined?`<h3 class="sp">What they held</h3>${holdings?`<p class="hint">As of ${stamp(holdings.as_of)}, deliberately delayed by ${Math.round(d.holdings_delay/60)} minutes. Shown as a share of their account, never in MB.</p>`+`<table>${tbl(['Ticker','Side','Share of account'],holdings.positions.map(p=>`<tr><td><a href="/stock/${encodeURIComponent(p.ticker)}">${esc(p.ticker)}</a></td><td class="${p.side==='short'?'dn':''}">${p.side==='short'?'SHORT':'Long'}</td><td>${(p.weight*100).toFixed(1)}%</td></tr>`),'Nothing (all cash) at that time.')}</table>`:'<p class="hint">Not available yet: holdings only appear after the delay.</p>'}`:''}
@@ -1219,7 +1290,7 @@ function render(){
  if(page==='stock')drawDetail();
  else if(page==='holdings')renderHoldings();
  else if(page==='market'){renderMarket();drawUpcoming();drawNews();
-  setHtml($('board'),'<tr><th>#</th><th>Trader</th><th>Return</th></tr>'+S.board.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.name)}</td><td class="${r.ret>=0?'up':'dn'}">${pc(r.ret)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="text-align:left">Nobody has made a trade today.</td></tr>')}
+  setHtml($('board'),'<tr><th>#</th><th>Trader</th><th>Return</th></tr>'+S.board.map((r,i)=>`<tr><td>${i+1}</td><td>${nameHtml(r.name,r.style)}</td><td class="${r.ret>=0?'up':'dn'}">${pc(r.ret)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="text-align:left">Nobody has made a trade today.</td></tr>')}
  drawChips()}
 
 // ---------- the shop (economy.py): MB packages, the Pro pass, the age rules, the spending limit, the free restart ----------
@@ -1511,9 +1582,14 @@ function startPlacing(pt){
  drawList.push(d);
  if(ONE_CLICK.has(tool)){placing={d};finishPlacing();return}
  placing={d,k:d.pts.length-1,down:pt};scheduleChart()}
+// the price range around its middle: factor > 1 shows more prices (squeezes the candles), < 1 fewer (stretches them)
+function scaleY(base,factor){const mid=(base.lo+base.hi)/2,half=Math.max((base.hi-base.lo)/2*factor,Math.abs(mid)*1e-5||1e-9);yMan={lo:mid-half,hi:mid+half};scheduleChart()}
+const onAxis=pt=>{const g=chartGeom;return g&&pt&&pt.x>g.axisX&&pt.y>=g.padT&&pt.y<=g.padT+g.PH};
+const curY=()=>({lo:chartGeom.lo,hi:chartGeom.lo+chartGeom.span});
 function chartDown(e){
  if(e.target.closest('.draw-tools'))return;
  const wrap=$('chart-wrap'),pt=svgPt(e);
+ if(!placing&&onAxis(pt)){axisDrag={y:e.clientY,base:curY()};wrap.classList.add('dragging');try{wrap.setPointerCapture(e.pointerId)}catch(err){}return}
  if(pt&&chartGeom){
   if(placing){const d=placing.d,last=d.pts[d.pts.length-2];
    if(d.type==='path'||d.type==='hs'){const lp=last?[gX(last.t),gY(last.p)]:null;
@@ -1528,6 +1604,7 @@ function chartDown(e){
  dragX=e.clientX;dragPan0=pan;dragY=e.clientY;dragYOn=!!yMan;dragY0=chartGeom?{lo:chartGeom.lo,hi:chartGeom.lo+chartGeom.span,PH:chartGeom.PH}:null;wrap.classList.add('dragging');try{wrap.setPointerCapture(e.pointerId)}catch(err){}}
 function chartMove(e){
  const wrap=$('chart-wrap');
+ if(axisDrag){scaleY(axisDrag.base,Math.exp((e.clientY-axisDrag.y)*0.006));return}
  if(placing&&chartGeom){const pt=svgPt(e);if(!pt)return;const d=placing.d;
   if(d.type==='brush'){if(e.buttons){const lp=d.pts[d.pts.length-1],l=[gX(lp.t),gY(lp.p)];if(Math.hypot(l[0]-pt.x,l[1]-pt.y)>=3&&d.pts.length<400)d.pts.push(atPt(pt))}}
   else d.pts[placing.k]=atPt(pt);scheduleChart();return}
@@ -1543,6 +1620,7 @@ function chartMove(e){
  scheduleChart()}
 function chartUp(e){
  const wrap=$('chart-wrap');
+ if(axisDrag){axisDrag=null;wrap.classList.remove('dragging');return}
  if(placing){const d=placing.d;if(d.type==='brush'){finishPlacing();return}
   if(TWO_POINT.has(d.type)&&placing.down){const pt=svgPt(e);if(pt&&Math.hypot(pt.x-placing.down.x,pt.y-placing.down.y)>6){d.pts[placing.k]=atPt(pt);finishPlacing();return}placing.down=null}return}
  if(dragD){if(dragD.moved)saveDrawings();dragD=null;return}
@@ -1558,7 +1636,7 @@ document.addEventListener('keydown',e=>{
  if((e.key==='Delete'||e.key==='Backspace')&&deleteSelected())e.preventDefault()});
 function drawChartInfo(){const info=$('chart-info');if(!info)return;
  if(tool!=='cursor'){const t=TOOL_BY[tool];let msg=`${t[1]}: ${t[2]}.`;if(placing&&placing.d.type==='hs')msg+=` (${placing.d.pts.length-1} of 7)`;info.textContent=msg+' Esc to stop.';return}
- info.textContent=`${chartCandles.length} candles · scroll to zoom, drag to move it in any direction${yMan?' · price scale moved by hand: Fit prices or double-click to fit':''}${drawList.length?` · ${drawList.length} drawing${drawList.length>1?'s':''}`:''}`}
+ info.textContent=`${chartCandles.length} candles · scroll to zoom, drag to move it in any direction, drag the prices on the right to stretch or squeeze them${yMan?' · price scale set by hand: Fit prices or double-click to fit':''}${drawList.length?` · ${drawList.length} drawing${drawList.length>1?'s':''}`:''}`}
 // the floating toolbar: a small bar (grip, the arrow, the last tool used, a bin while a drawing is selected) and a
 // drop-down with every tool, which closes again once a tool is picked
 let tbOpen=false,lastTool=lsGet('ms_tb_last','trend');
@@ -1605,7 +1683,7 @@ function wireChart(wrap){
  wrap.addEventListener('pointerdown',chartDown);wrap.addEventListener('pointermove',chartMove);
  wrap.addEventListener('pointerup',chartUp);wrap.addEventListener('pointercancel',chartUp);
  wrap.addEventListener('dblclick',e=>{if(placing&&placing.d.type==='path'){const d=placing.d;d.pts.pop();const a=d.pts[d.pts.length-1],b=d.pts[d.pts.length-2];if(a&&b&&Math.abs(gX(a.t)-gX(b.t))<4&&Math.abs(gY(a.p)-gY(b.p))<4)d.pts.pop();finishPlacing()}
-  else if(!placing&&tool==='cursor'&&yMan&&!e.target.closest('[data-dw],.draw-tools')){yMan=null;scheduleChart()}});
+  else if(!placing&&yMan&&(onAxis(svgPt(e))||(tool==='cursor'&&!e.target.closest('[data-dw],.draw-tools')))){yMan=null;scheduleChart()}});
  wireToolbar($('draw-tools'));wireChartSize();drawToolbar()}
 
 // ---------- position size and risk ----------
@@ -1634,11 +1712,42 @@ const CAL_HOW={cpi:'Consumer prices',jobs:'Jobs',claims:'Jobless claims',retail:
 async function loadCalendar(){
  let d=null;try{const r=await fetch('/api/calendar');d=await r.json()}catch(e){return}
  if(!d)return;
- if(!d.on){setHtml($('cal-up'),'<tr><td class="mut" style="text-align:left">The economic calendar is not running in this game.</td></tr>');return}
+ if(!d.on){setHtml($('cal-grid'),'<p class="mut">The economic calendar is not running in this game.</p>');return}
+ loadCalMonth();
  setHtml($('cal-rate'),`The policy rate set by ${esc(d.bank)} is <b>${Number(d.rate).toFixed(2)}%</b>.`);
- setHtml($('cal-up'),'<tr><th>When</th><th>Release</th><th>Forecast</th><th></th></tr>'+d.upcoming.map(u=>`<tr><td>${stamp(u.t)}</td><td class="cal-kind">${esc(u.name)}</td><td>${esc(u.forecast)}</td><td class="mut">in ${evShort(u.t-engineNow())}</td></tr>`).join(''));
- setHtml($('cal-past'),d.past.length?'<tr><th>When</th><th>Release</th><th>Result</th><th>For the market</th></tr>'+d.past.map(p=>{const z=p.market_z||0;return `<tr><td>${stamp(p.t)}</td><td class="cal-kind">${esc(p.name)}</td><td>${esc(p.text)}${p.kind!=='rates'&&p.consensus!==undefined?` <span class="mut">(forecast ${esc(String(p.consensus))}${esc(p.unit||'')})</span>`:''}</td><td class="${z>0.2?'cal-up':z<-0.2?'cal-dn':'mut'}">${z>0.2?'Good news':z<-0.2?'Bad news':'Little surprise'}</td></tr>`}).join(''):'<tr><td class="mut" style="text-align:left">No releases yet.</td></tr>');
- setHtml($('cal-earn'),(d.earnings||[]).length?'<tr><th>When</th><th>Company</th><th>Forecast EPS</th></tr>'+d.earnings.map(x=>`<tr><td>${stamp(x.at)}</td><td><a href="/stock/${encodeURIComponent(x.ticker)}">${esc(x.ticker)}</a> ${esc(x.name)}</td><td>${x.forecast!==null&&x.forecast!==undefined?Number(x.forecast).toFixed(3):'<span class="mut">published 3 game days ahead</span>'}</td></tr>`).join(''):'')}
+ setHtml($('cal-past'),d.past.length?'<tr><th>When</th><th>Release</th><th>Result</th><th>For the market</th></tr>'+d.past.map(p=>{const z=p.market_z||0;return `<tr><td>${stamp(p.t)}</td><td class="cal-kind">${esc(p.name)}</td><td>${esc(p.text)}${p.kind!=='rates'&&p.consensus!==undefined?` <span class="mut">(forecast ${esc(String(p.consensus))}${esc(p.unit||'')})</span>`:''}</td><td class="${z>0.2?'cal-up':z<-0.2?'cal-dn':'mut'}">${z>0.2?'Good news':z<-0.2?'Bad news':'Little surprise'}</td></tr>`}).join(''):'<tr><td class="mut" style="text-align:left">No releases yet.</td></tr>');}
+
+// the month grid: one cell per game day, seven to a week (engine.calendar_month)
+let calOffset=0,calSel=null,calData=null,calT=0,calFor=null;
+async function loadCalMonth(force){
+ if(!force&&calFor===calOffset&&Date.now()-calT<20000)return;
+ let d=null;try{const r=await fetch('/api/calendar/month?offset='+calOffset);d=await r.json()}catch(e){return}
+ if(!d||!d.on)return;calData=d;calT=Date.now();calFor=calOffset;
+ const cells=d.weeks.flat();if(calSel===null||!cells.some(c=>c.n===calSel))calSel=(cells.find(c=>c.today)||cells.find(c=>c.in)||cells[0]).n;
+ drawCalMonth()}
+const hm=t=>new Date(t*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+function calChip(x){const cl=x.out?(x.z>0.2?'up':x.z<-0.2?'dn':'flat'):'next';return `<span class="cal-chip ${cl}${x.kind==='rates'?' rates':''}" title="${esc(x.name)}${x.out&&x.text?': '+esc(x.text):x.forecast?': '+esc(x.forecast):''}">${esc(x.short)}</span>`}
+function drawCalMonth(){
+ const d=calData;if(!d)return;
+ setText($('cal-title'),d.title);
+ const wd=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(w=>`<div class="cal-wd">${w}</div>`).join('');
+ setHtml($('cal-grid'),wd+d.weeks.flat().map(c=>{const nm=c.macro.length,ne=c.earnings.length,nv=c.events.length;
+  return `<button class="cal-cell${c.in?'':' other'}${c.today?' today':''}${c.n===calSel?' sel':''}${c.t+d.day_seconds<=d.now?' past':''}" data-cal="${c.n}" title="${esc(c.label)} (game day), starts ${stamp(c.t)}"><span class="cal-top"><b>${c.day}</b><small>${hm(c.t)}</small></span>${c.macro.slice(0,3).map(calChip).join('')}${nm>3?`<span class="cal-more">+${nm-3} more</span>`:''}${ne?`<span class="cal-more">${ne} earnings</span>`:''}${nv?`<span class="cal-more cal-ev">${nv} event${nv>1?'s':''}</span>`:''}</button>`}).join(''));
+ drawCalDay()}
+function drawCalDay(){
+ const d=calData;if(!d)return;const c=d.weeks.flat().find(x=>x.n===calSel);if(!c){setHtml($('cal-day'),'');return}
+ const when=c.today?'Today':c.t+d.day_seconds<=d.now?'Played':'Coming';
+ const macro=c.macro.map(x=>`<tr><td>${hm(x.t)}</td><td class="cal-kind">${esc(x.name)}</td><td>${x.out?(x.text?`${esc(x.text)}${x.kind!=='rates'&&x.consensus!==undefined&&x.consensus!==null?` <span class="mut">(forecast ${esc(String(x.consensus))}${esc(x.unit||'')})</span>`:''}`:'<span class="mut">released (no result on record)</span>'):esc(x.forecast||'')}</td><td class="${x.out?(x.z>0.2?'up':x.z<-0.2?'dn':'mut'):'mut'}">${x.out?(x.z>0.2?'good for stocks':x.z<-0.2?'bad for stocks':'little change'):'in '+evShort(x.t-engineNow())}</td></tr>`).join('');
+ const earn=c.earnings.map(x=>`<tr><td>${hm(x.t)}</td><td><a href="/stock/${encodeURIComponent(x.ticker)}">${esc(x.ticker)}</a> ${esc(x.name)}</td><td>${x.out?(x.eps!==null&&x.eps!==undefined?`EPS ${Number(x.eps).toFixed(3)} <span class="${x.beat?'up':'dn'}">${x.beat?'beat':'missed'}</span>`:'reported'):(x.forecast!==null&&x.forecast!==undefined?`forecast EPS ${Number(x.forecast).toFixed(3)}`:'<span class="mut">forecast published 3 game days ahead</span>')}</td></tr>`).join('');
+ const ev=c.events.map(x=>`<tr><td>${hm(x.t)}</td><td><a href="/stock/${encodeURIComponent(x.ticker)}">${esc(x.ticker)}</a> ${esc(x.name)}</td><td>${esc(x.label)}</td></tr>`).join('');
+ setHtml($('cal-day'),`<h3 class="sp">${esc(c.label)} <span class="mut" style="text-transform:none;letter-spacing:0">· ${when} · starts ${stamp(c.t)}</span></h3>`
+  +(macro?`<table>${macro}</table>`:'<p class="hint">No economic releases on this day.</p>')
+  +(earn?`<h4 class="cal-h">Earnings reports</h4><table>${earn}</table>`:'')+(ev?`<h4 class="cal-h">Company events</h4><table>${ev}</table>`:''))}
+$('calendar-card').addEventListener('click',e=>{
+ const cell=e.target.closest('[data-cal]');if(cell){calSel=Number(cell.dataset.cal);drawCalMonth();return}
+ if(e.target.id==='cal-prev'){calOffset=Math.max(-24,calOffset-1);calSel=null;loadCalMonth(true)}
+ else if(e.target.id==='cal-next'){calOffset=Math.min(24,calOffset+1);calSel=null;loadCalMonth(true)}
+ else if(e.target.id==='cal-today'){calOffset=0;calSel=null;loadCalMonth(true)}});
 
 // ---------- learn: lessons, quizzes (switched off for now: the `quizzes` setting) and challenges (learning.py) ----------
 let learnData=null,lessonOpen=null;

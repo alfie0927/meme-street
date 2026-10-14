@@ -235,8 +235,8 @@ class LearningBrowserTests(unittest.TestCase):
             await d.check("an entry is saved and listed", "document.getElementById('j-rows').innerText",
                           lambda t: "NVXA" in t and "Bounce at support" in t, wait=10)
             await pg.goto(base + "/calendar", 3)
-            await d.check("the calendar lists releases with forecasts", "document.getElementById('cal-up').innerText",
-                          lambda t: "forecast" in t.lower() and "Weekly jobless claims" in t, wait=10)   # (weekly: always within the next 12 days)
+            await d.check("the calendar grid lists releases", "[...document.querySelectorAll('#cal-grid .cal-chip')].some(c=>c.title.includes('Weekly jobless claims'))",
+                          True, wait=10)   # (weekly: always in a month)
             await pg.goto(base + "/stock/NVXA", 4)
             await d.check("the chart has volume bars", "document.querySelector('#chart-wrap svg') && document.querySelector('#chart-wrap svg').textContent",
                           lambda t: bool(t) and "Volume" in t, wait=15)
