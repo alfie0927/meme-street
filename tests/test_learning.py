@@ -247,7 +247,7 @@ class LearningBrowserTests(unittest.TestCase):
             await d.check("RSI adds a panel", "document.querySelector('#chart-wrap svg').textContent", lambda t: "RSI 14" in t, wait=5)
             await pg.js("document.querySelector('#ind-list [data-ind=bb]').click()")
             await d.check("a Pro indicator says it is Pro", "document.getElementById('toast').textContent", lambda t: "Pro" in t, wait=3)
-            await pg.js("document.body.click();document.querySelector('[data-tool=hline]').click()")
+            await pg.js("document.body.click();document.querySelector('#draw-tools [data-dt=menu]').click();document.querySelector('.dt-menu [data-tool=hline]').click()")
             await pg.js("(()=>{const w=document.getElementById('chart-wrap'),r=w.querySelector('svg').getBoundingClientRect();"
                         "w.dispatchEvent(new PointerEvent('pointerdown',{clientX:r.left+r.width/3,clientY:r.top+r.height*0.25,bubbles:true}))})()")
             await d.check("a level can be drawn", "document.querySelectorAll('#chart-wrap [data-dw]').length", 1, wait=4)

@@ -82,12 +82,18 @@ section>.card{display:none}
 .ind-row:hover{background:#ffffff0d}.ind-row.on{background:#5aa2ff1c}.ind-row small{grid-column:2/4;color:var(--mut);font-size:11.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ind-dot{width:10px;height:10px;border-radius:50%}.ind-name{font-weight:600;font-size:13px}
 .ind-tag{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:1px 7px;border-radius:999px}.ind-tag.free{color:var(--up);border:1px solid #34d27b55}.ind-tag.pro{color:#ffd166;border:1px solid #ffd16655}
-.draw-tools{position:absolute;left:10px;top:10px;z-index:5;display:flex;flex-direction:column;gap:2px;padding:3px 4px 4px;background:#111822f2;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 18px #0009;touch-action:none}
-.dt-grip{height:12px;cursor:grab;display:flex;justify-content:center;align-items:center;color:var(--mut)}.dt-grip svg{width:18px;height:8px;fill:currentColor}.dt-grip:active{cursor:grabbing}
-.dt-btn{width:30px;height:30px;min-height:0;padding:0;display:flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid transparent;background:none;color:var(--mut)}
+.draw-tools{position:absolute;left:10px;top:34px;z-index:5;touch-action:none}
+.dt-bar{display:flex;align-items:center;gap:1px;padding:2px 3px 2px 2px;background:#111822f2;border:1px solid var(--line);border-radius:9px;box-shadow:0 4px 14px #0008}
+.dt-grip{width:12px;height:24px;cursor:grab;display:flex;justify-content:center;align-items:center;color:var(--mut)}.dt-grip svg{width:8px;height:18px;fill:currentColor}.dt-grip:active{cursor:grabbing}
+.dt-btn{width:26px;height:26px;min-height:0;padding:0;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid transparent;background:none;color:var(--mut)}
 .dt-btn:hover{color:var(--txt);background:#ffffff12}.dt-btn.on{color:#04101f;background:var(--acc)}.dt-btn[disabled]{opacity:.35;cursor:default}
-.dt-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.dt-grid{display:grid;grid-auto-flow:column;grid-template-rows:repeat(var(--rows,30),30px);gap:2px}.dt-act{color:#6e7f96}
+.dt-btn svg,.dt-item svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dt-more svg{transition:transform .15s}.dt-more.open svg{transform:rotate(180deg)}
+.dt-menu{position:absolute;top:calc(100% + 4px);left:0;width:290px;max-width:calc(100vw - 40px);display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:6px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px #000c}
+.draw-tools.up .dt-menu{top:auto;bottom:calc(100% + 4px)}.draw-tools.right .dt-menu{left:auto;right:0}
+.dt-item{display:flex;align-items:center;gap:8px;min-height:0;padding:5px 8px;border:0;border-radius:7px;background:none;color:var(--txt);font-size:12.5px;text-align:left}
+.dt-item:hover{background:#ffffff10}.dt-item.on{background:var(--acc);color:#04101f}
+.dt-acts{grid-column:1/3;display:flex;gap:2px;border-top:1px solid var(--line);margin-top:4px;padding-top:4px}.dt-acts .dt-item{flex:1;color:var(--mut)}
 .chart-wrap.tool svg{cursor:crosshair}.price-chart [data-dw]{cursor:pointer}.price-chart [data-dh]{cursor:grab}
 .chart-resize{height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;touch-action:none}.chart-resize span{width:52px;height:4px;border-radius:2px;background:var(--line)}.chart-resize:hover span{background:var(--acc)}
 #chart-box.chart-full{position:fixed;inset:0;z-index:60;background:var(--bg);padding:10px 16px;overflow:auto}.chart-full .chart-resize{display:none}
@@ -398,7 +404,7 @@ let buyPct=.25,sellPct=1;
 const view=Object.assign({sort:'ticker',dir:1,q:'',sector:'all',watch:false,secsOpen:false},lsGet('ms_view',{}));
 const watch=new Set(lsGet('ms_watch',[]));
 let selectedTicker=page==='stock'?pageArg:null;
-let chartPeriod='30s',chartCandles=[],clockOffset=0,zoom=1,pan=0,company=null,lastQuery=0;
+let chartPeriod='30s',chartCandles=[],clockOffset=0,zoom=1,pan=0,yMan=null,dragY=0,dragY0=null,dragYOn=false,company=null,lastQuery=0;
 let builtFor=null,dragX=null,dragPan0=0,rafPending=false;
 const PERIODS=[['30s','30s',30],['1m','1m',60],['5m','5m',300],['15m','15m',900],['30m','30m',1800],['1h','1h',3600],['2h','2h',7200],['4h','4h',14400],['1d','1d',86400],['1mo','1M',2592000],['1y','1Y',31536000]];
 const secsOf=k=>(PERIODS.find(p=>p[0]===k)||PERIODS[0])[2];
@@ -777,6 +783,7 @@ function candleSvg(candles,price,avg){
  if(price){lo=Math.min(lo,price);hi=Math.max(hi,price)}
  if(avg){lo=Math.min(lo,avg);hi=Math.max(hi,avg)}
  const padv=(hi-lo)*.08||hi*.002||1e-6;lo-=padv;hi+=padv;
+ if(yMan){lo=yMan.lo;hi=yMan.hi}               // the player has moved the price scale up or down
  const span=hi-lo,y=v=>padT+PH-(v-lo)/span*PH;
  chartGeom={x0,slot,secs,tLast:candles[n-1].t,n,padL,pw,padT,PH,lo,span,w,h,axisX};
  // indices whose x is on screen, including ones past the newest candle (the Ichimoku cloud is drawn 26 candles ahead)
@@ -848,13 +855,13 @@ function drawChart(){
  const h=S.holdings.find(x=>x.ticker===selectedTicker);
  const candles=chartCandles.length?liveCandles(st.price):[];
  wrap.querySelector('.svgslot').innerHTML=candleSvg(candles,st.price,h?h.avg:0);
- drawChartInfo();drawIndBar();drawToolbar();drawRisk()}
+ drawChartInfo();drawIndBar();drawToolbar();drawRisk();const fit=$('z-fit');if(fit)fit.hidden=!yMan}
 function zoomAt(factor,mx){
  const n=chartCandles.length||1,oldSlot=baseSlot(n)*zoom,nz=clampZoom(zoom*factor,n),newSlot=baseSlot(n)*nz;
  const x0=newestX(),u=(mx-x0)/oldSlot;zoom=nz;pan+=(mx-u*newSlot)-x0;scheduleChart()}
 function svgX(ev){const el=$('chart-wrap').querySelector('svg');if(!el)return newestX();const r=el.getBoundingClientRect();return(ev.clientX-r.left)*CH.w/r.width}
-function resetZoom(){zoom=1;pan=0;scheduleChart()}
-function selectPeriod(p){chartPeriod=p;chartCandles=[];zoom=1;pan=0;document.querySelectorAll('.periods button').forEach(b=>b.classList.toggle('active',b.dataset.p===p));requestHistory();drawChart()}
+function resetZoom(){zoom=1;pan=0;yMan=null;scheduleChart()}
+function selectPeriod(p){chartPeriod=p;chartCandles=[];zoom=1;pan=0;yMan=null;document.querySelectorAll('.periods button').forEach(b=>b.classList.toggle('active',b.dataset.p===p));requestHistory();drawChart()}
 
 // ---------- stock detail ----------
 function buildDetail(){
@@ -878,7 +885,7 @@ function buildDetail(){
 <div class="ind-pop" id="ind-pop" hidden><input id="ind-q" type="search" placeholder="Search indicators: RSI, moving average, Fibonacci, volume…" aria-label="Search indicators" autocomplete="off"><div class="ind-tabs" id="ind-tabs"><button class="chip" data-ind-filter="all">All</button><button class="chip" data-ind-filter="free">Free</button><button class="chip" data-ind-filter="pro">Pro</button><button class="chip" data-ind-filter="on">On</button></div><div id="ind-list"></div></div>
 <div class="chart-wrap" id="chart-wrap"><div class="svgslot"></div><div class="draw-tools" id="draw-tools"></div></div>
 <div class="chart-resize" id="chart-resize" title="Drag to make the chart taller or shorter"><span></span></div>
-<div class="chart-controls"><button id="z-in">+ Zoom in</button><button id="z-out">− Zoom out</button><button id="z-reset">Reset view</button><button id="z-taller">Taller</button><button id="z-shorter">Shorter</button><button id="z-full">⤢ Full screen</button><span class="mut" id="chart-info"></span></div></div>
+<div class="chart-controls"><button id="z-in">+ Zoom in</button><button id="z-out">− Zoom out</button><button id="z-reset">Reset view</button><button id="z-fit" hidden title="Fit the price scale to the candles again (or double-click the chart)">Fit prices</button><button id="z-full">⤢ Full screen</button><span class="mut" id="chart-info"></span></div></div>
 <div class="finance-grid" id="d-facts"></div>
 <div id="d-reports"></div><div id="d-log"></div>`;
  $('d-buy').onclick=()=>trade(selectedTicker,'buy');$('d-sell').onclick=()=>trade(selectedTicker,'sell');
@@ -895,7 +902,7 @@ function buildDetail(){
 let delistedView=false;
 function drawDelisted(){
  // The stock is no longer traded. If it was kept (a bankrupt company, a withdrawn product) its chart and facts are read only.
- if(builtFor!==selectedTicker){builtFor=selectedTicker;chartCandles=[];company=null;zoom=1;pan=0;delistedView=true;buildDetail();requestHistory();requestCompany()}
+ if(builtFor!==selectedTicker){builtFor=selectedTicker;chartCandles=[];company=null;zoom=1;pan=0;yMan=null;delistedView=true;buildDetail();requestHistory();requestCompany()}
  const hide=['.detail-actions','#d-limits','#d-pos','#d-star','#d-orders'];
  for(const sel of hide){const el=document.querySelector(sel);if(el)el.style.display='none'}
  const c=company;
@@ -951,7 +958,7 @@ function drawDetail(){
  const m=S,stock=m.byT[selectedTicker];
  if(!stock){drawDelisted();return}
  if(delistedView){delistedView=false;builtFor=null}
- if(builtFor!==selectedTicker){builtFor=selectedTicker;chartCandles=[];company=null;zoom=1;pan=0;buildDetail();requestHistory();requestCompany()}
+ if(builtFor!==selectedTicker){builtFor=selectedTicker;chartCandles=[];company=null;zoom=1;pan=0;yMan=null;buildDetail();requestHistory();requestCompany()}
  const sector=m.sectors.find(x=>x.id===stock.sector),fin=finOf(stock);
  const type=stock.asset_type==='equity'?'Equity':stock.asset_type==='index'?(stock.tracks&&/x the daily moves/.test(stock.tracks)?'Leveraged product':stock.tracks&&/^Equal weights/.test(stock.tracks)?'ETF':'Index'):'Commodity';
  setText($('d-name'),`${iconOf(stock)} ${stock.name} \u00B7 ${stock.ticker}`);const dj=$('d-journal');if(dj)dj.href='/journal?t='+encodeURIComponent(stock.ticker);document.title=`${stock.ticker} \u00B7 ${stock.name} \u2014 Meme Street`;
@@ -1429,8 +1436,8 @@ const ICONS={cursor:SVGI('<path d="M5 2.5l9 7.2-4.3.5 2.6 4.6-1.9 1-2.6-4.6L5 14
  eye:SVGI('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 1.5 9z"/><circle cx="9" cy="9" r="2.2"/>'),
  eyeoff:SVGI('<path d="M1.5 9S4.3 4 9 4s7.5 5 7.5 5-2.8 5-7.5 5S1.5 9 1.5 9z"/><path d="M3 15L15 3"/>'),
  clear:SVGI('<path d="M12.5 2.5l-5 8M3 10.5h8.5l1.7 5H1.5z"/>'),
- fold:SVGI('<path d="M5.5 11l3.5-3.5 3.5 3.5"/>'),unfold:SVGI('<path d="M5.5 7l3.5 3.5L12.5 7"/>'),
- grip:'<svg viewBox="0 0 18 8"><circle cx="5" cy="2" r="1.2"/><circle cx="9" cy="2" r="1.2"/><circle cx="13" cy="2" r="1.2"/><circle cx="5" cy="6" r="1.2"/><circle cx="9" cy="6" r="1.2"/><circle cx="13" cy="6" r="1.2"/></svg>'};
+ unfold:SVGI('<path d="M5.5 7l3.5 3.5L12.5 7"/>'),
+ grip:'<svg viewBox="0 0 8 18"><circle cx="2.3" cy="4" r="1.2"/><circle cx="5.7" cy="4" r="1.2"/><circle cx="2.3" cy="9" r="1.2"/><circle cx="5.7" cy="9" r="1.2"/><circle cx="2.3" cy="14" r="1.2"/><circle cx="5.7" cy="14" r="1.2"/></svg>'};
 // [tool, name, what to do]
 const TOOLS=[['cursor','Select','Select a drawing to move it or delete it (Esc)'],
  ['hline','Horizontal line','Click to mark a support or resistance level'],['vline','Vertical line','Click to mark a moment'],
@@ -1445,7 +1452,7 @@ const TOOLS=[['cursor','Select','Select a drawing to move it or delete it (Esc)'
 const TOOL_BY=Object.fromEntries(TOOLS.map(x=>[x[0],x]));
 const TWO_POINT=new Set(['trend','ray','rect','circle','fib']),ONE_CLICK=new Set(['hline','vline','long','short','text']);
 const D_COL={hline:'#c3a3ff',vline:'#c3a3ff',trend:'#58a6ff',ray:'#58a6ff',rect:'#58a6ff',circle:'#f778ba',fib:'#e3b341',brush:'#ffa657',path:'#56d364',hs:'#d2a8ff',text:'#e6edf3'};
-let tool='cursor',drawSel=null,placing=null,dragD=null,drawList=[],drawFor=null,tbFolded=lsGet('ms_tb_fold',NARROW),drawHidden=lsGet('ms_draw_hide',false);
+let tool='cursor',drawSel=null,placing=null,dragD=null,drawList=[],drawFor=null,drawHidden=lsGet('ms_draw_hide',false);
 function loadDrawings(){
  if(drawFor===selectedTicker)return;drawFor=selectedTicker;drawSel=null;placing=null;
  const all=lsGet('ms_draw',{});drawList=Array.isArray(all[selectedTicker])?all[selectedTicker]:[];
@@ -1518,7 +1525,7 @@ function chartDown(e){
   if(tool==='cursor'&&(h||dw)){const id=(h?h.dataset.dh.split(':')[0]:dw.dataset.dw),d=drawList.find(x=>x.id===id);
    if(d){drawSel=id;dragD={d,k:h?Number(h.dataset.dh.split(':')[1]):-1,pt,orig:d.pts.map(p=>({...p})),moved:false};try{wrap.setPointerCapture(e.pointerId)}catch(err){}drawToolbar();scheduleChart();return}}
   if(drawSel){drawSel=null;drawToolbar();scheduleChart()}}
- dragX=e.clientX;dragPan0=pan;wrap.classList.add('dragging');try{wrap.setPointerCapture(e.pointerId)}catch(err){}}
+ dragX=e.clientX;dragPan0=pan;dragY=e.clientY;dragYOn=!!yMan;dragY0=chartGeom?{lo:chartGeom.lo,hi:chartGeom.lo+chartGeom.span,PH:chartGeom.PH}:null;wrap.classList.add('dragging');try{wrap.setPointerCapture(e.pointerId)}catch(err){}}
 function chartMove(e){
  const wrap=$('chart-wrap');
  if(placing&&chartGeom){const pt=svgPt(e);if(!pt)return;const d=placing.d;
@@ -1530,7 +1537,10 @@ function chartMove(e){
   else if(d.type==='hline')d.pts[0]={t:o[0].t,p:o[0].p+dp};
   else d.pts[k]={t:o[k].t+dt,p:o[k].p+dp};
   scheduleChart();return}
- if(dragX===null)return;const el=wrap.querySelector('svg');const sc=el?CH.w/el.getBoundingClientRect().width:1;pan=dragPan0+(e.clientX-dragX)*sc;scheduleChart()}
+ if(dragX===null)return;const el=wrap.querySelector('svg'),r=el?el.getBoundingClientRect():null;pan=dragPan0+(e.clientX-dragX)*(r?CH.w/r.width:1);
+ const dy=e.clientY-dragY;                    // up and down too: a clear vertical drag (8 px) takes the price scale off automatic
+ if(dragY0&&(dragYOn||Math.abs(dy)>8)){dragYOn=true;const sh=dy*(r?CH.h/r.height:1)/dragY0.PH*(dragY0.hi-dragY0.lo);yMan={lo:dragY0.lo+sh,hi:dragY0.hi+sh}}
+ scheduleChart()}
 function chartUp(e){
  const wrap=$('chart-wrap');
  if(placing){const d=placing.d;if(d.type==='brush'){finishPlacing();return}
@@ -1548,32 +1558,38 @@ document.addEventListener('keydown',e=>{
  if((e.key==='Delete'||e.key==='Backspace')&&deleteSelected())e.preventDefault()});
 function drawChartInfo(){const info=$('chart-info');if(!info)return;
  if(tool!=='cursor'){const t=TOOL_BY[tool];let msg=`${t[1]}: ${t[2]}.`;if(placing&&placing.d.type==='hs')msg+=` (${placing.d.pts.length-1} of 7)`;info.textContent=msg+' Esc to stop.';return}
- info.textContent=`${chartCandles.length} candles · scroll to zoom, drag to pan${drawList.length?` · ${drawList.length} drawing${drawList.length>1?'s':''}`:''}`}
-// the floating toolbar
+ info.textContent=`${chartCandles.length} candles · scroll to zoom, drag to move it in any direction${yMan?' · price scale moved by hand: Fit prices or double-click to fit':''}${drawList.length?` · ${drawList.length} drawing${drawList.length>1?'s':''}`:''}`}
+// the floating toolbar: a small bar (grip, the arrow, the last tool used, a bin while a drawing is selected) and a
+// drop-down with every tool, which closes again once a tool is picked
+let tbOpen=false,lastTool=lsGet('ms_tb_last','trend');
 function drawToolbar(){
- const el=$('draw-tools');if(!el)return;const key=[tool,drawSel,drawHidden,tbFolded].join('|');if(el._k===key)return;el._k=key;
- el.innerHTML=`<div class="dt-grip" title="Drag to move the toolbar">${ICONS.grip}</div>`
-  +'<div class="dt-grid">'+(tbFolded?'':TOOLS.map(([k,n,h])=>`<button class="dt-btn ${tool===k?'on':''}" data-tool="${k}" title="${esc(n)}: ${esc(h)}" aria-label="${esc(n)}">${ICONS[k]}</button>`).join('')
-   +`<button class="dt-btn dt-act" data-dt="delete" title="Delete the selected drawing (Delete key)" aria-label="Delete the selected drawing" ${drawSel?'':'disabled'}>${ICONS.trash}</button>`
-   +`<button class="dt-btn dt-act ${drawHidden?'on':''}" data-dt="hide" title="${drawHidden?'Show':'Hide'} the drawings" aria-label="${drawHidden?'Show':'Hide'} the drawings">${drawHidden?ICONS.eyeoff:ICONS.eye}</button>`
-   +`<button class="dt-btn dt-act" data-dt="clear" title="Remove every drawing on this stock" aria-label="Remove every drawing">${ICONS.clear}</button>`)
-  +`<button class="dt-btn dt-act" data-dt="fold" title="${tbFolded?'Show the drawing tools':'Fold the toolbar away'}" aria-label="${tbFolded?'Show the drawing tools':'Fold the toolbar'}">${tbFolded?ICONS.unfold:ICONS.fold}</button></div>`;
+ const el=$('draw-tools');if(!el)return;const key=[tool,drawSel,drawHidden,tbOpen,lastTool].join('|');if(el._k===key)return;el._k=key;
+ const quick=TOOL_BY[tool!=='cursor'?tool:lastTool]?(tool!=='cursor'?tool:lastTool):'trend',q=TOOL_BY[quick];
+ el.innerHTML=`<div class="dt-bar"><span class="dt-grip" title="Drag to move the toolbar">${ICONS.grip}</span>`
+  +`<button class="dt-btn ${tool==='cursor'?'on':''}" data-tool="cursor" title="Select: click a drawing to move or delete it (Esc)" aria-label="Select">${ICONS.cursor}</button>`
+  +`<button class="dt-btn ${tool===quick?'on':''}" data-tool="${quick}" title="${esc(q[1])}: ${esc(q[2])}" aria-label="${esc(q[1])}">${ICONS[quick]}</button>`
+  +(drawSel?`<button class="dt-btn" data-dt="delete" title="Delete the selected drawing (Delete key)" aria-label="Delete the selected drawing">${ICONS.trash}</button>`:'')
+  +`<button class="dt-btn dt-more ${tbOpen?'open':''}" data-dt="menu" title="${tbOpen?'Close the list':'All drawing tools'}" aria-label="All drawing tools" aria-expanded="${tbOpen}">${ICONS.unfold}</button></div>`
+  +(tbOpen?`<div class="dt-menu">${TOOLS.map(([k,n,h])=>`<button class="dt-item ${tool===k?'on':''}" data-tool="${k}" title="${esc(h)}">${ICONS[k]}<span>${esc(n)}</span></button>`).join('')}`
+   +`<div class="dt-acts"><button class="dt-item" data-dt="hide">${drawHidden?ICONS.eyeoff:ICONS.eye}<span>${drawHidden?'Show':'Hide'} drawings</span></button><button class="dt-item" data-dt="clear">${ICONS.clear}<span>Clear all</span></button></div></div>`:'');
  placeToolbar()}
-function placeToolbar(){const el=$('draw-tools'),wrap=$('chart-wrap');if(!el||!wrap)return;const p=lsGet('ms_tb',{x:10,y:34});
- el.style.setProperty('--rows',Math.max(4,Math.floor((wrap.clientHeight-30)/32)));
- const mx=Math.max(0,wrap.clientWidth-el.offsetWidth),my=Math.max(0,wrap.clientHeight-el.offsetHeight);el.style.left=Math.max(0,Math.min(mx,p.x))+'px';el.style.top=Math.max(0,Math.min(my,p.y))+'px'}
+function placeToolbar(){const el=$('draw-tools'),wrap=$('chart-wrap');if(!el||!wrap)return;const p=lsGet('ms_tb',{x:10,y:34}),bar=el.querySelector('.dt-bar')||el;
+ const x=Math.max(0,Math.min(Math.max(0,wrap.clientWidth-bar.offsetWidth),p.x)),y=Math.max(0,Math.min(Math.max(0,wrap.clientHeight-bar.offsetHeight),p.y));
+ el.style.left=x+'px';el.style.top=y+'px';el.classList.toggle('up',y>wrap.clientHeight/2);el.classList.toggle('right',x>wrap.clientWidth-300)}
 function wireToolbar(el){
  let g=null;
  el.addEventListener('pointerdown',e=>{e.stopPropagation();if(!e.target.closest('.dt-grip'))return;g={x:e.clientX,y:e.clientY,l:el.offsetLeft,t:el.offsetTop};try{el.setPointerCapture(e.pointerId)}catch(err){}});
- el.addEventListener('pointermove',e=>{if(!g)return;const wrap=$('chart-wrap'),x=Math.max(0,Math.min(wrap.clientWidth-el.offsetWidth,g.l+e.clientX-g.x)),y=Math.max(0,Math.min(wrap.clientHeight-el.offsetHeight,g.t+e.clientY-g.y));el.style.left=x+'px';el.style.top=y+'px'});
- const end=()=>{if(!g)return;g=null;lsSet('ms_tb',{x:el.offsetLeft,y:el.offsetTop})};el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
- el.addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b){setTool(tool===b.dataset.tool&&tool!=='cursor'?'cursor':b.dataset.tool);return}
+ el.addEventListener('pointermove',e=>{if(!g)return;const wrap=$('chart-wrap'),bar=el.querySelector('.dt-bar')||el,x=Math.max(0,Math.min(wrap.clientWidth-bar.offsetWidth,g.l+e.clientX-g.x)),y=Math.max(0,Math.min(wrap.clientHeight-bar.offsetHeight,g.t+e.clientY-g.y));el.style.left=x+'px';el.style.top=y+'px'});
+ const end=()=>{if(!g)return;g=null;lsSet('ms_tb',{x:el.offsetLeft,y:el.offsetTop});placeToolbar()};el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+ el.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('[data-tool]');
+  if(b){const k=b.dataset.tool;tbOpen=false;if(k!=='cursor'&&k!==lastTool){lastTool=k;lsSet('ms_tb_last',k)}setTool(tool===k&&k!=='cursor'&&!b.closest('.dt-menu')?'cursor':k);return}
   const a=e.target.closest('[data-dt]');if(!a)return;const act=a.dataset.dt;
-  if(act==='delete')deleteSelected();
-  else if(act==='hide'){drawHidden=!drawHidden;lsSet('ms_draw_hide',drawHidden);drawToolbar();scheduleChart()}
-  else if(act==='clear'){if(drawList.length&&confirm(`Remove all ${drawList.length} drawing${drawList.length>1?'s':''} on ${selectedTicker}?`)){drawList=[];drawSel=null;saveDrawings();drawToolbar();scheduleChart()}}
-  else if(act==='fold'){tbFolded=!tbFolded;lsSet('ms_tb_fold',tbFolded);drawToolbar()}})}
-// ---------- the chart's size: drag the bar under it, Taller/Shorter, or full screen ----------
+  if(act==='menu'){tbOpen=!tbOpen;drawToolbar()}
+  else if(act==='delete')deleteSelected();
+  else if(act==='hide'){drawHidden=!drawHidden;lsSet('ms_draw_hide',drawHidden);tbOpen=false;drawToolbar();scheduleChart()}
+  else if(act==='clear'){tbOpen=false;drawToolbar();if(drawList.length&&confirm(`Remove all ${drawList.length} drawing${drawList.length>1?'s':''} on ${selectedTicker}?`)){drawList=[];drawSel=null;saveDrawings();drawToolbar();scheduleChart()}}})}
+document.addEventListener('click',e=>{if(tbOpen&&!e.target.closest('#draw-tools')){tbOpen=false;drawToolbar()}});
+// ---------- the chart's size: drag the bar under it, or full screen ----------
 function setPH(v){lsSet('ms_ph',Math.round(Math.max(160,Math.min(1400,v))));scheduleChart()}
 function toggleFull(on){chartFull=on===undefined?!chartFull:on;const box=$('chart-box');if(box)box.classList.toggle('chart-full',chartFull);document.body.classList.toggle('noscroll',chartFull);
  const b=$('z-full');if(b)b.textContent=chartFull?'✕ Exit full screen':'⤢ Full screen';scheduleChart();setTimeout(placeToolbar,50)}
@@ -1582,13 +1598,14 @@ function wireChartSize(){
  bar.addEventListener('pointerdown',e=>{if(chartFull)return;const el=$('chart-wrap').querySelector('svg');r={y:e.clientY,ph:chartPH(),sc:el?CH.w/el.getBoundingClientRect().width:1};try{bar.setPointerCapture(e.pointerId)}catch(err){}});
  bar.addEventListener('pointermove',e=>{if(r)setPH(r.ph+(e.clientY-r.y)*r.sc)});
  const end=()=>{r=null};bar.addEventListener('pointerup',end);bar.addEventListener('pointercancel',end);
- $('z-taller').onclick=()=>{if(chartFull)toggleFull(false);setPH(chartPH()+90)};$('z-shorter').onclick=()=>{if(chartFull)toggleFull(false);setPH(chartPH()-90)};
+ $('z-fit').onclick=()=>{yMan=null;scheduleChart()};
  $('z-full').onclick=()=>toggleFull()}
 window.addEventListener('resize',()=>{if($('chart-wrap')){scheduleChart();placeToolbar()}});
 function wireChart(wrap){
  wrap.addEventListener('pointerdown',chartDown);wrap.addEventListener('pointermove',chartMove);
  wrap.addEventListener('pointerup',chartUp);wrap.addEventListener('pointercancel',chartUp);
- wrap.addEventListener('dblclick',e=>{if(placing&&placing.d.type==='path'){const d=placing.d;d.pts.pop();const a=d.pts[d.pts.length-1],b=d.pts[d.pts.length-2];if(a&&b&&Math.abs(gX(a.t)-gX(b.t))<4&&Math.abs(gY(a.p)-gY(b.p))<4)d.pts.pop();finishPlacing()}});
+ wrap.addEventListener('dblclick',e=>{if(placing&&placing.d.type==='path'){const d=placing.d;d.pts.pop();const a=d.pts[d.pts.length-1],b=d.pts[d.pts.length-2];if(a&&b&&Math.abs(gX(a.t)-gX(b.t))<4&&Math.abs(gY(a.p)-gY(b.p))<4)d.pts.pop();finishPlacing()}
+  else if(!placing&&tool==='cursor'&&yMan&&!e.target.closest('[data-dw],.draw-tools')){yMan=null;scheduleChart()}});
  wireToolbar($('draw-tools'));wireChartSize();drawToolbar()}
 
 // ---------- position size and risk ----------

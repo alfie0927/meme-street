@@ -101,6 +101,7 @@ mfi:mfiOf(C,5),roc:rocOf(C.c,3),bbu:bbOf(C.c,5,2).u,count:IND.length,free:IND.fi
 POINTER_JS = """(()=>{const w=document.getElementById('chart-wrap'),r=w.querySelector('svg').getBoundingClientRect(),g=chartGeom;
 window.__at=(fx,fy)=>({x:r.left+(g.padL+fx*g.pw)*r.width/CH.w,y:r.top+(g.padT+fy*g.PH)*r.height/CH.h});
 window.__ev=(type,fx,fy,target,buttons)=>{const p=__at(fx,fy);(target||w).dispatchEvent(new PointerEvent(type,{clientX:p.x,clientY:p.y,bubbles:true,buttons:buttons||0,pointerId:7}))};
+window.__pick=k=>{document.querySelector('#draw-tools [data-dt=menu]').click();document.querySelector('.dt-menu [data-tool='+k+']').click()};
 return true})()"""
 DRAWN = "(JSON.parse(localStorage.getItem('ms_draw')||'{}').NVXA||[])"
 
@@ -136,10 +137,20 @@ class ChartToolsBrowserTests(unittest.TestCase):
             await pg.goto(base + "/stock/NVXA", 4)
             await d.check("the chart is drawn", "!!document.querySelector('#chart-wrap svg') && !!chartGeom", True, wait=15)
             extra["math"] = json.loads(await pg.js(INDICATOR_JS % json.dumps(CANDLES)))
-            # the toolbar and drawing a trend line
-            await d.check("the toolbar has every tool", "document.querySelectorAll('#draw-tools [data-tool]').length", 14, wait=5)
+            # dragging the chart up and down as well as sideways
             await pg.js(POINTER_JS)
-            await pg.js("document.querySelector('[data-tool=trend]').click()")
+            lo0 = await pg.js("chartGeom.lo")
+            await pg.js("__ev('pointerdown',.5,.5,null,1);__ev('pointermove',.5,.75,null,1);__ev('pointerup',.5,.75)")
+            await d.check("dragging down moves the chart down (higher prices come into view)", f"yMan!==null&&chartGeom.lo>{lo0!r}", True, wait=3)
+            await d.check("and offers Fit prices", "!document.getElementById('z-fit').hidden", True, wait=3)
+            await pg.js("document.getElementById('z-fit').click()")
+            await d.check("Fit prices puts the price scale back on automatic", "yMan===null&&document.getElementById('z-fit').hidden", True, wait=3)
+            # the toolbar: a small bar with a drop-down, and drawing a trend line
+            await d.check("the toolbar is a small bar", "(()=>{const b=document.querySelector('#draw-tools .dt-bar').getBoundingClientRect();return b.width<170&&b.height<40&&!document.querySelector('.dt-menu')})()", True, wait=5)
+            await pg.js("document.querySelector('#draw-tools [data-dt=menu]').click()")
+            await d.check("its drop-down lists every tool", "document.querySelectorAll('.dt-menu [data-tool]').length", 14, wait=3)
+            await pg.js("document.querySelector('.dt-menu [data-tool=trend]').click()")
+            await d.check("picking a tool closes the drop-down", "!document.querySelector('.dt-menu')", True, wait=3)
             await d.check("a tool turns the crosshair on", "document.getElementById('chart-wrap').classList.contains('tool')")
             await pg.js("__ev('pointerdown',.3,.3,null,1);__ev('pointermove',.6,.6,null,1);__ev('pointerup',.6,.6)")
             await d.check("a dragged trend line is saved", f"(()=>{{const l={DRAWN};return l.length===1&&l[0].type==='trend'&&l[0].pts[0].p>l[0].pts[1].p}})()", wait=3)
@@ -152,17 +163,17 @@ class ChartToolsBrowserTests(unittest.TestCase):
             await pg.js("document.dispatchEvent(new KeyboardEvent('keydown',{key:'Delete',bubbles:true}))")
             await d.check("Delete removes the selected drawing", f"{DRAWN}.length", 0, wait=3)
             # the position tool, the Fibonacci tool and hiding
-            await pg.js("document.querySelector('[data-tool=long]').click()")
+            await pg.js("__pick('long')")
             await pg.js("__ev('pointerdown',.5,.5,null,1);__ev('pointerup',.5,.5)")
             await d.check("a long position shows its target, stop and reward to risk", "document.querySelector('#chart-wrap svg').textContent",
                           lambda t: "Target" in t and "Stop" in t and "2.00R" in t and "Long from" in t, wait=3)
-            await pg.js("document.querySelector('[data-tool=fib]').click()")
+            await pg.js("__pick('fib')")
             await pg.js("__ev('pointerdown',.2,.8,null,1);__ev('pointermove',.7,.2,null,1);__ev('pointerup',.7,.2)")
             await d.check("the Fibonacci tool draws its levels", "document.querySelector('#chart-wrap svg').textContent",
                           lambda t: "0.618 (" in t and "0.382 (" in t, wait=3)
-            await pg.js("document.querySelector('[data-dt=hide]').click()")
+            await pg.js("document.querySelector('#draw-tools [data-dt=menu]').click();document.querySelector('.dt-menu [data-dt=hide]').click()")
             await d.check("drawings can be hidden", "document.querySelectorAll('#chart-wrap [data-dw]').length", 0, wait=3)
-            await pg.js("document.querySelector('[data-dt=hide]').click()")
+            await pg.js("document.querySelector('#draw-tools [data-dt=menu]').click();document.querySelector('.dt-menu [data-dt=hide]').click()")
             await d.check("and shown again", "document.querySelectorAll('#chart-wrap [data-dw]').length", 2, wait=3)
             # the toolbar can be dragged around
             x0 = await pg.js("document.getElementById('draw-tools').offsetLeft")
@@ -193,8 +204,9 @@ class ChartToolsBrowserTests(unittest.TestCase):
             await d.check("a click elsewhere closes the box", "document.getElementById('ind-pop').hidden", True, wait=3)
             # the chart's size
             h0 = await pg.js("document.querySelector('#chart-wrap svg').getBoundingClientRect().height")
-            await pg.js("document.getElementById('z-taller').click()")
-            await d.check("Taller makes the chart taller", "document.querySelector('#chart-wrap svg').getBoundingClientRect().height", lambda h: h is not None and h > h0 + 40, wait=3)
+            await pg.js("(()=>{const b=document.getElementById('chart-resize'),r=b.getBoundingClientRect(),e=(t,dy)=>b.dispatchEvent(new PointerEvent(t,{clientX:r.left+r.width/2,clientY:r.top+5+dy,bubbles:true,pointerId:11}));e('pointerdown',0);e('pointermove',150);e('pointerup',150)})()")
+            await d.check("dragging the bar under the chart makes it taller", "document.querySelector('#chart-wrap svg').getBoundingClientRect().height", lambda h: h is not None and h > h0 + 40, wait=3)
+            await d.check("there are no Taller or Shorter buttons", "!document.getElementById('z-taller')&&!document.getElementById('z-shorter')", True)
             await pg.js("document.getElementById('z-full').click()")
             await d.check("full screen covers the window", "(()=>{const e=document.getElementById('chart-box'),b=e.getBoundingClientRect();return [e.classList.contains('chart-full'),Math.round(b.left),Math.round(b.top),Math.round(b.width),Math.round(b.height),document.documentElement.clientWidth,innerHeight,getComputedStyle(e).position]})()",
                           lambda v: v and v[0] and v[1] == 0 and v[2] == 0 and v[3] >= v[5] - 1 and v[4] >= v[6] - 1, wait=3)
