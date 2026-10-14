@@ -2,58 +2,58 @@
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meme Street Admin</title>
 <style>
-:root{--bg:#0d1117;--card:#161b22;--line:#30363d;--txt:#e6edf3;--mut:#8b949e;--up:#3fb950;--dn:#f85149;--acc:#58a6ff;--warn:#d29922}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui,sans-serif}
-header{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+:root{--bg:#0a0e14;--card:#111822;--card2:#161f2c;--line:#212c3b;--line2:#18212d;--txt:#e8eef6;--mut:#8493a8;--up:#34d27b;--dn:#ff5f6d;--acc:#5aa2ff;--warn:#ffc65c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 Inter,"Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:10px 18px;background:#0a0e14e6;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 header b{font-size:18px}a{color:var(--acc);text-decoration:none}.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}.warn{color:var(--warn)}
 main{max-width:1200px;margin:0 auto;padding:14px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.cards .card{background:var(--card2);border-color:var(--line2);border-radius:10px;padding:9px 12px}
 .card small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.card strong{display:block;font-size:18px;margin-top:3px}
 .card em{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-top:2px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
-h3{margin:0 0 8px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
-table{width:100%;border-collapse:collapse}td,th{padding:5px 6px;text-align:right;border-bottom:1px solid #21262d;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+h3{margin:0 0 8px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+table{width:100%;border-collapse:collapse}td,th{padding:5px 6px;text-align:right;border-bottom:1px solid var(--line2);white-space:nowrap}
 td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:12px}
-tr.pick{cursor:pointer}tr.pick:hover{background:#1c2430}
+tr.pick{cursor:pointer}tr.pick:hover{background:#ffffff08}
 svg{width:100%;height:auto;display:block}
-.msgrow{display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid #21262d;font-size:13px}.msgrow span.t{flex:1;word-break:break-word}.msgrow small{color:var(--mut)}
-button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:5px 10px}button{cursor:pointer}button:hover{background:#30363d}
+.msgrow{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line2);font-size:13px}.msgrow span.t{flex:1;word-break:break-word}.msgrow small{color:var(--mut)}
+button,input{font:inherit;background:#1a2331;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 10px}input{background:#0a0e14}input:focus{outline:none;border-color:var(--acc)}button{cursor:pointer}button:hover{background:#243044}
 #login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
 #login input{width:100%;margin:10px 0}
-.alerts div{padding:6px 10px;border-left:3px solid var(--warn);background:#d2992214;margin-bottom:6px;border-radius:0 6px 6px 0}
-.alerts div.bad{border-color:var(--dn);background:#f8514914}.alerts div.ok{border-color:var(--up);background:#3fb95014}
+.alerts div{padding:6px 10px;border-left:3px solid var(--warn);background:#ffc65c14;margin-bottom:6px;border-radius:0 8px 8px 0}
+.alerts div.bad{border-color:var(--dn);background:#ff5f6d14}.alerts div.ok{border-color:var(--up);background:#34d27b14}
 .bar{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:6px}.bar div{flex:1;text-align:center;font-size:10px;color:var(--mut)}
 .bar i{display:block;margin:0 auto 2px;border-radius:3px 3px 0 0;min-height:1px}
 </style></head><body>
 <div id="login"><h2 style="margin:0">Admin</h2><p class="mut">Enter the admin key (the <code>ADMIN_KEY</code> the server was started with). It stays in this browser tab only.</p>
 <input id="key" type="password" placeholder="Admin key" autocomplete="off"><button id="go" style="width:100%">Open dashboard</button><p id="err" class="dn"></p></div>
 <div id="app" style="display:none">
-<header><b>Meme Street Admin</b><a href="/">Market</a><span id="stamp" class="mut"></span><span style="flex:1"></span><button id="out">Lock</button></header>
+<header><b style="display:flex;align-items:center;gap:8px"><img src="/brand/memestreet_logo_peaks.png" alt="" width="26" height="26" style="border-radius:7px">Meme Street Admin</b><a href="/">Market</a><span id="stamp" class="mut"></span><span style="flex:1"></span><button id="out">Lock</button></header>
 <main>
 <div class="alerts" id="alerts"></div><div class="alerts" id="alerts2"></div>
 <div class="cards" id="cards"></div>
 <h3 style="margin:14px 0 6px">The machine, the game and the market</h3><div class="cards" id="cards2"></div>
 <div class="grid2"><div class="card"><h3>Connected pages and visitors (last 2 hours)</h3><div id="ch3"></div></div>
 <div class="card"><h3>Trades per hour (last 24 hours, your local time)</h3><div id="hours"></div></div></div>
-<div class="grid2" style="margin-top:12px"><div class="card"><h3>The last 7 days (UTC days)</h3><div id="days"></div></div>
+<div class="grid2"><div class="card"><h3>The last 7 days (UTC days)</h3><div id="days"></div></div>
 <div class="card"><h3>Most traded stocks (last 24 hours)</h3><div id="tickers"></div></div></div>
 <div class="grid2"><div class="card"><h3>Total MB and fees (MB)</h3><div id="ch1"></div></div>
 <div class="card"><h3>Players' combined P&amp;L (MB, humans)</h3><div id="ch2"></div></div></div>
 <div class="card" style="margin-top:12px"><h3>Shop: sales, Pro and where the MB came from</h3><div id="shop" class="mut">Loading…</div></div>
 <div class="card" style="margin-top:12px"><h3>The price model behind the scenes (never shown to players)</h3><div id="model" class="mut">Loading…</div></div>
 <div class="card" style="margin-top:12px"><h3>Players and fees: how far people get</h3><div id="funnel" class="mut">Loading…</div></div>
-<div class="grid2" style="margin-top:12px"><div class="card"><h3>Biggest players. Click a name for their trades</h3><div id="toplists"></div></div>
+<div class="grid2"><div class="card"><h3>Biggest players. Click a name for their trades</h3><div id="toplists"></div></div>
 <div class="card"><h3>Biggest open positions</h3><div id="bigpos"></div></div></div>
-<div class="grid2" style="margin-top:12px"><div class="card"><h3>Orders, chat and moderation</h3><div id="ordsoc"></div></div>
+<div class="grid2"><div class="card"><h3>Orders, chat and moderation</h3><div id="ordsoc"></div></div>
 <div class="card"><h3>Admin security: wrong keys</h3><div id="security"></div></div></div>
 <div class="card" style="margin-top:12px"><h3>House risk: what players' positions could cost the house</h3><div id="risk"></div></div>
-<div class="grid2" style="margin-top:12px"><div class="card"><h3>Human players by all-time return</h3><div id="dist"></div></div>
+<div class="grid2"><div class="card"><h3>Human players by all-time return</h3><div id="dist"></div></div>
 <div class="card"><h3>Recent margin calls</h3><div id="calls"></div></div></div>
 <div class="card" style="margin-top:12px"><h3>Top winners (humans, by all-time P&amp;L). Click a row for their trades</h3><div id="winners"></div></div>
-<div class="grid2" style="margin-top:12px"><div class="card"><h3>Chat moderation: latest messages</h3><div id="chatlog" class="mut">Loading…</div></div>
+<div class="grid2"><div class="card"><h3>Chat moderation: latest messages</h3><div id="chatlog" class="mut">Loading…</div></div>
 <div class="card"><h3>Reported messages and mutes</h3><div id="reports" class="mut">Loading…</div></div></div>
-<div class="grid2" style="margin-top:12px"><div class="card"><h3>Appeals from muted players</h3><div id="appeals" class="mut">Loading…</div></div>
+<div class="grid2"><div class="card"><h3>Appeals from muted players</h3><div id="appeals" class="mut">Loading…</div></div>
 <div class="card"><h3>Moderator log (newest first)</h3><div id="modlog" class="mut">Loading…</div></div></div>
 <div class="card" style="margin-top:12px"><h3>Accounts</h3><div id="accts" class="mut">Loading…</div>
 <div class="msgrow" style="margin-top:8px"><input id="rp-name" placeholder="Player name" maxlength="16"><button id="rp-go">Reset password</button><span id="rp-out" class="t"></span></div>
@@ -74,7 +74,7 @@ button,input{background:#21262d;color:var(--txt);border:1px solid var(--line);bo
 const $=id=>document.getElementById(id),f=(x,d=2)=>Number(x).toFixed(d);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mb=x=>Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
-const sgn=(x,d=0)=>(x>=0?'+':'-')+Math.abs(x).toLocaleString(undefined,{maximumFractionDigits:d});
+const sgn=(x,d=0)=>{const r=Number(Number(x).toFixed(d));return(r>0?'+':r<0?'-':'')+Math.abs(r).toLocaleString(undefined,{maximumFractionDigits:d})};
 const ago=t=>{const s=Math.max(0,Date.now()/1000-t);return s<90?Math.round(s)+'s ago':s<5400?Math.round(s/60)+'m ago':Math.round(s/3600)+'h ago'};
 let key=null,timer=null,picked=null;try{key=sessionStorage.admin_key||null}catch(e){}
 async function api(path,body){const r=await fetch(path,{method:body===undefined?'GET':'POST',headers:Object.assign({'X-Admin-Key':key},body===undefined?{}:{'Content-Type':'application/json'}),body:body===undefined?undefined:JSON.stringify(body)});if(r.status===403)throw new Error('forbidden');if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
@@ -109,7 +109,7 @@ function render(o){
  const src=s.total_mb_by_source||{},other=s.player_deposits-(src.grant||0)-(src.purchase||0)-(src.challenge||0);
  $('cards').innerHTML=card('Total MB',mb(s.total_mb)+' MB','starting '+mb(src.grant||0)+' · bought '+mb(src.purchase||0)+' · rewards '+mb(src.challenge||0)+(Math.abs(other)>=0.5?' · other '+sgn(other):'')+' · players P&L '+sgn(s.players_pnl))
   +card('Fees collected',mb(s.fees)+' MB','of which borrow '+f(s.borrow_fees,0)+' MB')
-  +card('Humans P&L',sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB deposited',s.players_pnl>=0?'up':'dn')
+  +card('Humans P&L',sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB deposited',Math.round(s.players_pnl)>0?'up':Math.round(s.players_pnl)<0?'dn':'')
   +card('Players',s.humans+' humans',o.online+' online · '+(o.guests||0)+' watching')
   +card('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' per minute (last 5 min)')
   +card('Short interest',mb(s.short_interest)+' MB','shortfall '+f(s.short_shortfall)+' MB',s.short_shortfall>0?'warn':'')

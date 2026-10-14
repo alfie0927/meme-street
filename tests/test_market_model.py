@@ -240,10 +240,11 @@ class EngineTests(unittest.TestCase):
         texts = [x["text"] for x in list(e.news_log)[n:] if x["kind"] == "macro"]
         self.assertTrue(texts, list(e.news_log)[-3:])
         self.assertTrue(any("forecast" in x or "Rate decision" in x for x in texts), texts)
-        self.assertEqual(e.model.economy.past[-1]["kind"], kind)
+        released = [x["kind"] for x in e.model.economy.past if x["t"] == t]   # two can fall on one moment (claims and GDP)
+        self.assertIn(kind, released)
         cal = e.macro_calendar()
         self.assertTrue(cal["on"])
-        self.assertEqual(cal["past"][0]["kind"], kind)
+        self.assertIn(kind, [x["kind"] for x in cal["past"][:len(released)]])
         self.assertTrue(any(u.get("macro") for u in e._upcoming_events()))
 
     def test_earnings_are_judged_against_a_forecast(self):

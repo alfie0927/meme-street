@@ -50,7 +50,7 @@ ACH_NAMES = {a[0]: a[1] for a in ACHIEVEMENTS}
 QUESTS = [
     ("trades", "Make {goal} trades", "trades", 4, 12, 1),
     ("sectors", "Trade stocks in {goal} different sectors", "sectors", 2, 4, 1),
-    ("profit_close", "Close {goal} position(s) at a profit", "profit_closes", 1, 3, 1),
+    ("profit_close", "Close {goal} position{s} at a profit", "profit_closes", 1, 3, 1),
     ("short", "Open a short", "shorts", 1, 1, 1),
     ("positions", "Hold {goal} different positions at once", "max_positions", 3, 6, 1),
     ("index", "Trade an index, ETF or leveraged product", "index_trades", 1, 1, 1),
@@ -329,7 +329,7 @@ class SocialMixin:
         out = []
         for qid, text, metric, lo, hi, mult in rng.sample(QUESTS, 3):
             goal = rng.randint(lo, hi) * mult
-            out.append({"id": qid, "text": text.format(goal=goal), "metric": metric, "goal": goal})
+            out.append({"id": qid, "text": text.format(goal=goal, s="" if goal == 1 else "s"), "metric": metric, "goal": goal})
         return out
 
     def _quest_progress(self, p, quest):
@@ -354,7 +354,7 @@ class SocialMixin:
             p.quest_streak = p.quest_streak + 1 if p.quest_last_full == day - 1 else 1
             p.quest_last_full = day
             self._unlock(p, "quest_day")
-            self._notify(p, f"All of today's quests done! Streak: {p.quest_streak} day(s).")
+            self._notify(p, f"All of today's quests done! Streak: {p.quest_streak} day{'' if p.quest_streak == 1 else 's'}.")
         for key in [k for k in p.quests_done if int(k) < day - 7]:
             p.quests_done.pop(key)
 
@@ -671,7 +671,8 @@ class SocialMixin:
         if gate:
             return False, gate, None
         if self.muted.get(p.token, 0) > self.now:
-            return False, "You are muted for another %d minute(s)" % math.ceil((self.muted[p.token] - self.now) / 60), None
+            mins = math.ceil((self.muted[p.token] - self.now) / 60)
+            return False, f"You are muted for another {mins} minute{'' if mins == 1 else 's'}", None
         body = clean_chat(text, self._filter())
         if not body:
             return False, "Say something first", None

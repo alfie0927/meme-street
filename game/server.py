@@ -452,7 +452,7 @@ async def logout_everywhere(x_token: str = Header("")):
     if p is None:
         return JSONResponse({"error": "bad token"}, status_code=401)
     n = await run(engine.end_all_sessions, p, x_token)
-    return {"ok": True, "msg": f"Logged out of {n} other device(s)" if n else "There were no other devices logged in"}
+    return {"ok": True, "msg": f"Logged out of {n} other device{'' if n == 1 else 's'}" if n else "There were no other devices logged in"}
 
 
 def broadcast(text, audience=None, members_only=False):
@@ -1122,7 +1122,7 @@ async def close_all(x_token: str = Header("")):
                 done += 1
             else:
                 failed.append(f"{tk}: {msg}")
-        return {"ok": not failed, "closed": done, "msg": f"Closed {done} position(s)" + ("; " + "; ".join(failed) if failed else "")}
+        return {"ok": not failed, "closed": done, "msg": f"Closed {done} position{'' if done == 1 else 's'}" + ("; " + "; ".join(failed) if failed else "")}
     return await with_player(x_token, "close_all", work, interval=1.0)
 
 

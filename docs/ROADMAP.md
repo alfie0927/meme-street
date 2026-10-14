@@ -318,6 +318,7 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 | U5 | Accessibility, light theme, languages | Wider reach. | Arrows beside colours, keyboard shortcuts, a light theme, translations of the interface and lessons. | M |
 | U6 | Market overview pages | Seeing the whole market is a skill. | A heatmap, an MSI 50 page, a stock page with the "why it moved" line, levels and the calendar. | M |
 | U7 | Low-data mode | 18 MB an hour on mobile data. | Pause when hidden, send only visible rows, compress. | S |
+| U8 | A look that stays consistent | Pages built at different times drift apart in sizes, colours and wording. | **Done (2026-10-14): a polish pass over every page** (the stock page puts price, trade bar and chart first; one progress-row style; green and red only for numbers that are not zero once rounded; the admin page in the game's colours; plurals written out; HOW_IT_WORKS §11, *Consistency rules*). Repeat it after each big feature: screenshot every page on a laptop and a phone and fix what looks out of place. | S |
 
 ### E. Engineering
 

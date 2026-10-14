@@ -335,7 +335,8 @@ class BrowserPages(unittest.TestCase):
             await pg.goto(base + "/history", 3)
             await d.check("history lists the trades", "document.getElementById('hist-rows').innerText",
                           lambda t: "Buy" in t and "Short" in t and "GOLD" in t, wait=10)
-            await d.check("history has a deposit row", "document.getElementById('hist-rows').innerText", lambda t: "MB added" in t)
+            await d.check("history has a deposit row, named for where it came from", "document.getElementById('hist-rows').innerText",
+                          lambda t: "Starting MB" in t)
             await pg.js("document.querySelector('#hist-filters [data-k=\"buy,cover\"]').click()")
             await d.check("filter keeps only buys and covers",
                           "[...document.querySelectorAll('#hist-rows tr')].every(r=>/Buy|Cover/.test(r.cells[1].textContent))&&document.querySelectorAll('#hist-rows tr').length>0",

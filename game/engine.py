@@ -3429,7 +3429,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             rows = rows[:limit]
             events = [{"seq": r["seq"], "t": r["t"], "kind": r["kind"], "ticker": r["ticker"],
                        "shares": abs(r["shares"]), "price": r["price"], "mb": r["notional"], "fee": r["fee"],
-                       "pnl": r["pnl"], "cash": r["cash_delta"]} for r in rows]
+                       "pnl": r["pnl"], "cash": r["cash_delta"],
+                       "src": (r.get("extra") or {}).get("source", "grant") if r["kind"] == "credit" else None}
+                      for r in rows]
             return {"events": events, "more": more, "next_before": events[-1]["seq"] if events and more else None,
                     "source": "ledger"}
         events = [{"seq": None, "t": x["t"], "kind": x["k"], "ticker": x["tk"], "shares": x["sh"], "price": x["px"],
