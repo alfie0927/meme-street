@@ -276,7 +276,10 @@ class PagesBrowserTests(unittest.TestCase):
             await pg.js("document.getElementById('cal-today').click()")
             await d.check("Today comes back", "document.getElementById('cal-title').innerText", t0, wait=5)
             await pg.js("(()=>{const c=[...document.querySelectorAll('#cal-grid .cal-cell:not(.other)')].find(x=>x.querySelector('.cal-chip'));c.click()})()")
-            await d.check("a day opens with its releases", "document.getElementById('cal-day').innerText", lambda t: bool(t) and ("forecast" in t.lower() or "stocks" in t or "released" in t or "little change" in t), wait=3)
+            await d.check("a day opens with its releases", "document.getElementById('cal-day').innerText", lambda t: bool(t) and ("forecast" in t.lower() or "released" in t), wait=3)
+            await d.check("with no good-news or bad-news verdicts", "document.getElementById('calendar-card').innerText.toLowerCase()",
+                          lambda t: bool(t) and not any(w in t for w in ("good news", "bad news", "good for stocks", "bad for stocks", "little change", "little surprise")))
+            await d.check("and the year with a capital Y", "document.getElementById('cal-title').innerText", lambda t: bool(t) and ", Year " in t)
         finally:
             errors = list(pg.errors)
             proc.terminate()

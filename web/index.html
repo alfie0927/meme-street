@@ -99,7 +99,7 @@ section>.card{display:none}
 #chart-box.chart-full{position:fixed;inset:0;z-index:60;background:var(--bg);padding:10px 16px;overflow:auto}.chart-full .chart-resize{display:none}
 body.noscroll{overflow:hidden}
 .page-calendar #calendar-card{display:block}
-.cal-kind{font-weight:600}.cal-up{color:var(--up)}.cal-dn{color:var(--dn)}
+.cal-kind{font-weight:600}
 .page-learn #learn-card,.page-journal #journal-card{display:block}
 .lesson-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0 14px}
 .lesson-item{display:block;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card2);color:var(--txt);text-decoration:none}
@@ -285,7 +285,7 @@ body.guest .guest-cta{display:flex}
 .cal-cell:hover{border-color:var(--line)}.cal-cell.other{opacity:.45}.cal-cell.past{background:#0f151d}.cal-cell.today{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}.cal-cell.sel{background:#5aa2ff1f}
 .cal-top{display:flex;justify-content:space-between;align-items:baseline;font-size:12px}.cal-top b{font-size:13px}.cal-top small{color:var(--mut);font-size:10.5px}
 .cal-chip{font-size:10.5px;font-weight:600;padding:1px 5px;border-radius:5px;background:#5aa2ff24;color:#9ecbff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cal-chip.rates{outline:1px solid #9ecbff66}
-.cal-chip.up{background:#34d27b22;color:var(--up)}.cal-chip.dn{background:#ff5f6d22;color:var(--dn)}.cal-chip.flat{background:#ffffff10;color:var(--mut)}
+.cal-chip.flat{background:#ffffff10;color:var(--mut)}
 .cal-more{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cal-ev{opacity:.8}.cal-h{margin:12px 0 4px;font-size:12.5px;color:var(--mut)}.cal-day table td:first-child{width:70px}.cal-day td{white-space:normal}
 @media (max-width:760px){.cal-grid{gap:2px}.cal-cell{min-height:62px;padding:3px}.cal-chip{font-size:9px;padding:0 3px}.cal-top small,.cal-more{display:none}.cal-nav button{padding:4px 8px}}
 </style><link rel="icon" type="image/png" href="/brand/memestreet_logo_peaks.png">
@@ -1715,7 +1715,7 @@ async function loadCalendar(){
  if(!d.on){setHtml($('cal-grid'),'<p class="mut">The economic calendar is not running in this game.</p>');return}
  loadCalMonth();
  setHtml($('cal-rate'),`The policy rate set by ${esc(d.bank)} is <b>${Number(d.rate).toFixed(2)}%</b>.`);
- setHtml($('cal-past'),d.past.length?'<tr><th>When</th><th>Release</th><th>Result</th><th>For the market</th></tr>'+d.past.map(p=>{const z=p.market_z||0;return `<tr><td>${stamp(p.t)}</td><td class="cal-kind">${esc(p.name)}</td><td>${esc(p.text)}${p.kind!=='rates'&&p.consensus!==undefined?` <span class="mut">(forecast ${esc(String(p.consensus))}${esc(p.unit||'')})</span>`:''}</td><td class="${z>0.2?'cal-up':z<-0.2?'cal-dn':'mut'}">${z>0.2?'Good news':z<-0.2?'Bad news':'Little surprise'}</td></tr>`}).join(''):'<tr><td class="mut" style="text-align:left">No releases yet.</td></tr>');}
+ setHtml($('cal-past'),d.past.length?'<tr><th>When</th><th>Release</th><th>Result</th></tr>'+d.past.map(p=>{return `<tr><td>${stamp(p.t)}</td><td class="cal-kind">${esc(p.name)}</td><td>${esc(p.text)}${p.kind!=='rates'&&p.consensus!==undefined?` <span class="mut">(forecast ${esc(String(p.consensus))}${esc(p.unit||'')})</span>`:''}</td></tr>`}).join(''):'<tr><td class="mut" style="text-align:left">No releases yet.</td></tr>');}
 
 // the month grid: one cell per game day, seven to a week (engine.calendar_month)
 let calOffset=0,calSel=null,calData=null,calT=0,calFor=null;
@@ -1726,7 +1726,7 @@ async function loadCalMonth(force){
  const cells=d.weeks.flat();if(calSel===null||!cells.some(c=>c.n===calSel))calSel=(cells.find(c=>c.today)||cells.find(c=>c.in)||cells[0]).n;
  drawCalMonth()}
 const hm=t=>new Date(t*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-function calChip(x){const cl=x.out?(x.z>0.2?'up':x.z<-0.2?'dn':'flat'):'next';return `<span class="cal-chip ${cl}${x.kind==='rates'?' rates':''}" title="${esc(x.name)}${x.out&&x.text?': '+esc(x.text):x.forecast?': '+esc(x.forecast):''}">${esc(x.short)}</span>`}
+function calChip(x){const cl=x.out?'flat':'next';return `<span class="cal-chip ${cl}${x.kind==='rates'?' rates':''}" title="${esc(x.name)}${x.out&&x.text?': '+esc(x.text):x.forecast?': '+esc(x.forecast):''}">${esc(x.short)}</span>`}
 function drawCalMonth(){
  const d=calData;if(!d)return;
  setText($('cal-title'),d.title);
@@ -1737,7 +1737,7 @@ function drawCalMonth(){
 function drawCalDay(){
  const d=calData;if(!d)return;const c=d.weeks.flat().find(x=>x.n===calSel);if(!c){setHtml($('cal-day'),'');return}
  const when=c.today?'Today':c.t+d.day_seconds<=d.now?'Played':'Coming';
- const macro=c.macro.map(x=>`<tr><td>${hm(x.t)}</td><td class="cal-kind">${esc(x.name)}</td><td>${x.out?(x.text?`${esc(x.text)}${x.kind!=='rates'&&x.consensus!==undefined&&x.consensus!==null?` <span class="mut">(forecast ${esc(String(x.consensus))}${esc(x.unit||'')})</span>`:''}`:'<span class="mut">released (no result on record)</span>'):esc(x.forecast||'')}</td><td class="${x.out?(x.z>0.2?'up':x.z<-0.2?'dn':'mut'):'mut'}">${x.out?(x.z>0.2?'good for stocks':x.z<-0.2?'bad for stocks':'little change'):'in '+evShort(x.t-engineNow())}</td></tr>`).join('');
+ const macro=c.macro.map(x=>`<tr><td>${hm(x.t)}</td><td class="cal-kind">${esc(x.name)}</td><td>${x.out?(x.text?`${esc(x.text)}${x.kind!=='rates'&&x.consensus!==undefined&&x.consensus!==null?` <span class="mut">(forecast ${esc(String(x.consensus))}${esc(x.unit||'')})</span>`:''}`:'<span class="mut">released (no result on record)</span>'):esc(x.forecast||'')}</td><td class="mut">${x.out?'':'in '+evShort(x.t-engineNow())}</td></tr>`).join('');
  const earn=c.earnings.map(x=>`<tr><td>${hm(x.t)}</td><td><a href="/stock/${encodeURIComponent(x.ticker)}">${esc(x.ticker)}</a> ${esc(x.name)}</td><td>${x.out?(x.eps!==null&&x.eps!==undefined?`EPS ${Number(x.eps).toFixed(3)} <span class="${x.beat?'up':'dn'}">${x.beat?'beat':'missed'}</span>`:'reported'):(x.forecast!==null&&x.forecast!==undefined?`forecast EPS ${Number(x.forecast).toFixed(3)}`:'<span class="mut">forecast published 3 game days ahead</span>')}</td></tr>`).join('');
  const ev=c.events.map(x=>`<tr><td>${hm(x.t)}</td><td><a href="/stock/${encodeURIComponent(x.ticker)}">${esc(x.ticker)}</a> ${esc(x.name)}</td><td>${esc(x.label)}</td></tr>`).join('');
  setHtml($('cal-day'),`<h3 class="sp">${esc(c.label)} <span class="mut" style="text-transform:none;letter-spacing:0">· ${when} · starts ${stamp(c.t)}</span></h3>`

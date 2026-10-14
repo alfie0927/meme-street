@@ -1431,8 +1431,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                             "today": n == today, "t": n * D, **ev})
                 d += datetime.timedelta(days=1)
             weeks.append(row)
-        return {"on": True, "offset": offset, "title": f"{MONTH_NAMES[m - 1]}, year {y - GAME_DATE0.year + 1}",
-                "today": today, "today_title": f"{now_d.day} {MONTH_NAMES[now_d.month - 1]}, year {now_d.year - GAME_DATE0.year + 1}",
+        return {"on": True, "offset": offset, "title": f"{MONTH_NAMES[m - 1]}, Year {y - GAME_DATE0.year + 1}",
+                "today": today, "today_title": f"{now_d.day} {MONTH_NAMES[now_d.month - 1]}, Year {now_d.year - GAME_DATE0.year + 1}",
                 "weeks": weeks, "rate": eco.rate, "bank": eco.BANK, "now": self.now, "day_seconds": D}
 
     def _mean_revert(self):
