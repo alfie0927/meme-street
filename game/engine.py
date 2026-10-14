@@ -340,6 +340,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.house = 0.0          # house reserve: funds new listings, receives delisted pools
         self.fees = 0.0           # fee revenue
         self.house_capital = 0.0  # tokens the house has put in (the starting reserve and every top-up)
+        self.reset_at = 0.0       # when the game was last reset to Day 1 (the admin page's shop counts from then)
         self.minted = 0.0
         self.season_no = 1
         self.board = []
@@ -2812,6 +2813,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p.notices.clear()
             social.reset_progress(p)
             ladder.init_player(p)                         # the quest ladder starts again too (like the achievements)
+            p.mb_by_source = {"grant": target}            # where their MB came from starts again with the new balance
+            p.chal, p.challenge_mb, p.stop_seen = {}, {}, []   # challenges too: the MB they paid went with the old balance
             self._notify(p, f"The game was reset: it is Day 1 again and everyone starts with {target:,.0f} MB.")
         self.season_no = 1
         self.history = []
@@ -2822,6 +2825,15 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.margin_calls = 0
         self.trades_total = 0
         self.chat_reports.clear()
+        # the house's books start again too, so the admin page reads like a new game: no fees collected, the reserve
+        # back at the capital put in, no chart history. `minted` moves with each change, so the tokens still balance.
+        self.minted -= self.fees
+        self.fees, self.borrow_fees, self.short_shortfall, self.recapitalized = 0.0, 0.0, 0.0, 0.0
+        self.minted += self.house_capital - self.house
+        self.house = self.house_capital
+        self.series.clear()
+        self._insights_t = None
+        self.reset_at = self.now
         self._borrow_acc = {}                           # (borrow fees waiting for the ledger belong to the old game)
         if self.ledger is not None:
             self.ledger.clear()
@@ -3539,6 +3551,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             self.ledger.flush()
             seq = self.ledger.last_seq()           # this snapshot already contains every event up to here
         d = {"schema": 7, "ledger_seq": seq, "house": self.house, "fees": self.fees, "house_capital": self.house_capital,
+             "reset_at": self.reset_at,
              "minted": self.minted, "index_level": self.index_level, "index_members": list(self.index_members),
              "short_model": 2, "borrow_fees": self.borrow_fees, "short_shortfall": self.short_shortfall,
              "margin_calls": self.margin_calls, "trades_total": self.trades_total,
@@ -3972,6 +3985,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 self.players[p.token] = p
                 self.by_token[p.token] = p
             human_in = sum(p.deposited for p in self.players.values() if p not in retiring)
+            self.reset_at = float(d.get("reset_at", 0.0))
             if "house_capital" in d:
                 self.house_capital = float(d["house_capital"]) - self._retired_pools
             else:

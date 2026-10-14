@@ -69,6 +69,35 @@ class ResetTests(unittest.TestCase):
     def test_the_tokens_still_balance(self):
         self.assertLess(abs(drift(self.e)), 1e-6)
 
+    def test_the_admin_page_reads_like_a_new_game(self):
+        e = self.e
+        s = e.house_stats()
+        self.assertEqual((s["fees"], s["borrow_fees"]), (0.0, 0.0))                  # no fees from the old game
+        self.assertEqual(s["house_reserve"], e.house_capital)                        # the reserve back at its capital
+        self.assertAlmostEqual(s["total_mb"], BONUS * len(e.players), places=6)
+        self.assertEqual(s["total_mb_by_source"], {"grant": BONUS * len(e.players)})   # no old purchases or rewards
+        self.assertAlmostEqual(s["players_pnl"], 0.0, places=6)
+        self.assertEqual(list(e.series), [])                                         # the charts start again
+        self.assertEqual(e.admin_overview(0, 0)["trades_total"], 0)
+        for p in e.players.values():
+            self.assertEqual(p.chal, {})
+            self.assertEqual(p.challenge_mb, {})
+
+    def test_the_shop_panel_counts_from_the_reset_and_keeps_the_old_orders_aside(self):
+        e, a = played(5)[:2]
+        a.birth_year = 1990
+        o, _ = e.create_order(a, "mb500", "test", True)
+        e.complete_order(o["id"])
+        self.assertEqual(e.economy_stats()["orders_paid"], 1)
+        e.now += 5
+        e.reset_to_day_one()
+        st = e.economy_stats()
+        self.assertEqual((st["orders_paid"], st["buyers"], st["revenue_cents"], st["recent"]), (0, 0, 0, []))
+        self.assertEqual(st["earlier"]["orders"], 1)
+        self.assertEqual(st["since"], e.reset_at)
+        self.assertIn(o["id"], e.shop_orders)                                        # the record itself is kept
+        self.assertLess(abs(drift(e)), 1e-6)
+
     def test_the_market_is_untouched(self):
         e = self.e
         self.assertEqual({k: s.price for k, s in e.stocks.items()}, self.prices)
@@ -109,6 +138,14 @@ class ResetTests(unittest.TestCase):
         e.reset_to_day_one()
         self.assertEqual(a.cash, BONUS)
         self.assertLess(abs(drift(e)), 1e-6)
+
+    def test_the_reset_time_survives_a_restart(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            path = os.path.join(tmp, "state.json")
+            e = engine.Engine(state_file=path)
+            e.reset_to_day_one()
+            f = engine.Engine(state_file=path)
+            self.assertAlmostEqual(f.reset_at, e.reset_at, places=3)
 
     def test_it_survives_a_restart(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

@@ -332,8 +332,14 @@ class EconomyMixin:
                 "challenge_week": self.challenge_week_status(p) if hasattr(self, "challenge_week_status") else None}
 
     def economy_stats(self):
-        """For the admin page: orders, revenue, Pro members and where the MB in the game came from."""
-        paid = [o for o in self.shop_orders.values() if o["status"] == "paid"]
+        """For the admin page: orders, revenue, Pro members and where the MB in the game came from. After a reset to
+        Day 1 it counts from the reset (`reset_at`); the orders from before are kept (they are real payments, and can
+        still be refunded by id) and summed up in `earlier`."""
+        since = float(getattr(self, "reset_at", 0.0) or 0.0)
+        everything = [o for o in self.shop_orders.values() if o["status"] == "paid"]
+        paid = [o for o in everything if o.get("paid_at", o["created"]) >= since]
+        before = [o for o in everything if o.get("paid_at", o["created"]) < since]
+        orders = [o for o in self.shop_orders.values() if o["created"] >= since or o.get("paid_at", 0) >= since]
         by_day = {}
         for o in paid:
             d = int(o["paid_at"] // 86400) * 86400
@@ -343,13 +349,15 @@ class EconomyMixin:
             for k, v in p.mb_by_source.items():
                 sources[k] = sources.get(k, 0.0) + v
         cur = self.shop_currency()
-        recent = sorted(self.shop_orders.values(), key=lambda o: -o["created"])[:40]
+        recent = sorted(orders, key=lambda o: -o["created"])[:40]
         return {"currency": cur, "revenue_cents": sum(o["price_cents"] for o in paid),
                 "revenue_text": money_text(sum(o["price_cents"] for o in paid), cur),
                 "revenue_30d_text": money_text(sum(o["price_cents"] for o in paid if o["paid_at"] > self.now - 30 * 86400), cur),
                 "orders_paid": len(paid), "buyers": len({o["token"] for o in paid}),
-                "refunded": sum(1 for o in self.shop_orders.values() if o["status"] == "refunded"),
-                "pending": sum(1 for o in self.shop_orders.values() if o["status"] == "pending"),
+                "refunded": sum(1 for o in orders if o["status"] == "refunded"),
+                "pending": sum(1 for o in orders if o["status"] == "pending"),
+                "since": since or None,
+                "earlier": {"orders": len(before), "revenue_text": money_text(sum(o["price_cents"] for o in before), cur)} if before else None,
                 "pro_members": sum(1 for p in self.players.values() if self.is_pro(p)),
                 "revenue_by_day": [{"day": d, "cents": c} for d, c in sorted(by_day.items())][-30:],
                 "mb_by_source": sources,
