@@ -8,7 +8,7 @@ Keep this file in step with the code: update it after every change (see "Keeping
 
 > **Change of direction (2026-10-13), and what is built.** The shop, the new price model, the macro calendar, the chart tools and learning now exist (§6A, §10.9, §10.10, §11). The paragraph below is the original note.
 >
-> **Change of direction (2026-10-13).** Meme Street is becoming a site for **learning to trade**: everyone starts with 1,000 MB, more MB is bought in packages (100 to 10,000 MB) and never cashed out, challenges award free MB, and the market is being rebuilt to drift slowly upwards with regimes, scheduled economic data (interest rates, inflation, jobs) and technical structure (support and resistance that holds or breaks). `ROADMAP.md` has the plan. **This file still describes the code as it is today**, which was built for the old plan (a real-money game in which every mechanism is a fair bet and nobody can have an edge). Sections that only matter for that old plan (the house's capital risk, the house-edge discussion in section 15, the fee-based revenue model in section 17.10) say so where they start; they will change or go as the new tracks are built.
+> **Change of direction (2026-10-13).** Meme Street is becoming a site for **learning to trade**: everyone starts with 1,000 MB, more MB is bought in packages (1,000 to 100,000 MB since 2026-10-14) and never cashed out, challenges award free MB, and the market is being rebuilt to drift slowly upwards with regimes, scheduled economic data (interest rates, inflation, jobs) and technical structure (support and resistance that holds or breaks). `ROADMAP.md` has the plan. **This file still describes the code as it is today**, which was built for the old plan (a real-money game in which every mechanism is a fair bet and nobody can have an edge). Sections that only matter for that old plan (the house's capital risk, the house-edge discussion in section 15, the fee-based revenue model in section 17.10) say so where they start; they will change or go as the new tracks are built.
 
 ---
 
@@ -1068,13 +1068,15 @@ MB are a game currency: bought, earned or granted, **never paid out** (there is 
 
 **The catalogue** (`shop_packages`, `shop_pro` in base.json; prices in US cents, `shop_currency`):
 
-| Item | Price | Per 100 MB |
+| Item | Price | Per 1,000 MB |
 |---|---|---|
-| 100 MB | US$0.99 | US$0.99 |
-| 500 MB | US$3.99 | US$0.80 |
-| 1,000 MB | US$6.99 | US$0.70 |
-| 5,000 MB | US$24.99 | US$0.50 |
-| 10,000 MB | US$39.99 | US$0.40 |
+| 1,000 MB | US$1.99 | US$1.99 |
+| 5,000 MB | US$7.99 | US$1.60 |
+| 10,000 MB | US$13.99 | US$1.40 |
+| 50,000 MB | US$59.99 | US$1.20 |
+| 100,000 MB | US$99.99 | US$1.00 |
+
+(Since 2026-10-14; before that the packages were 100 to 10,000 MB at US$0.99 to US$39.99. Every package fits under the default monthly spending limit of US$150.)
 | **Pro, 30 days** | US$4.99 | |
 | **Pro, 1 year** | US$39.99 | |
 

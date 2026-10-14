@@ -23,11 +23,11 @@ import uuid
 
 SOURCES = ("grant", "purchase", "challenge", "restart", "refund", "admin")
 DEFAULT_PACKAGES = [
-    {"sku": "mb100", "mb": 100, "price_cents": 99},
-    {"sku": "mb500", "mb": 500, "price_cents": 399},
-    {"sku": "mb1000", "mb": 1000, "price_cents": 699},
-    {"sku": "mb5000", "mb": 5000, "price_cents": 2499},
-    {"sku": "mb10000", "mb": 10000, "price_cents": 3999},
+    {"sku": "mb1000", "mb": 1000, "price_cents": 199},
+    {"sku": "mb5000", "mb": 5000, "price_cents": 799},
+    {"sku": "mb10000", "mb": 10000, "price_cents": 1399},
+    {"sku": "mb50000", "mb": 50000, "price_cents": 5999},
+    {"sku": "mb100000", "mb": 100000, "price_cents": 9999},
 ]
 DEFAULT_PRO = [
     {"sku": "pro30", "days": 30, "price_cents": 499},
@@ -93,7 +93,7 @@ class EconomyMixin:
         for x in packages:
             x["kind"] = "package"
             x["price"] = money_text(int(x["price_cents"]), cur)
-            x["per_100"] = money_text(round(int(x["price_cents"]) * 100 / max(int(x["mb"]), 1)), cur)
+            x["per_1000"] = money_text(round(int(x["price_cents"]) * 1000 / max(int(x["mb"]), 1)), cur)
         for x in pro:
             x["kind"] = "pro"
             x["price"] = money_text(int(x["price_cents"]), cur)

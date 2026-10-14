@@ -86,7 +86,7 @@ class ResetTests(unittest.TestCase):
     def test_the_shop_panel_counts_from_the_reset_and_keeps_the_old_orders_aside(self):
         e, a = played(5)[:2]
         a.birth_year = 1990
-        o, _ = e.create_order(a, "mb500", "test", True)
+        o, _ = e.create_order(a, "mb5000", "test", True)
         e.complete_order(o["id"])
         self.assertEqual(e.economy_stats()["orders_paid"], 1)
         e.now += 5

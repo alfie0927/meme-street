@@ -51,18 +51,18 @@ class SourcesAndStartTests(unittest.TestCase):
     def test_the_admin_total_is_every_mb_given_or_bought_plus_the_players_pnl(self):
         e = make_engine(2)
         a, b = adult(e, "one"), adult(e, "two")
-        o, _ = e.create_order(b, "mb500", "test", True)
+        o, _ = e.create_order(b, "mb5000", "test", True)
         e.complete_order(o["id"])
         e.credit(a, 20, source="challenge")
         s = e.house_stats()
-        self.assertEqual(s["total_mb"], 2520.0)                  # nobody has traded: exactly what was put in
-        self.assertEqual(s["player_deposits"], 2520.0)
-        self.assertEqual(s["total_mb_by_source"], {"grant": 2000.0, "purchase": 500.0, "challenge": 20.0})
+        self.assertEqual(s["total_mb"], 7020.0)                  # nobody has traded: exactly what was put in
+        self.assertEqual(s["player_deposits"], 7020.0)
+        self.assertEqual(s["total_mb_by_source"], {"grant": 2000.0, "purchase": 5000.0, "challenge": 20.0})
         e.trade(a, "NVXA", "buy", 0.5)                            # a trade costs a fee: the total moves with it
         s = e.house_stats()
-        self.assertEqual(s["player_deposits"], 2520.0)
+        self.assertEqual(s["player_deposits"], 7020.0)
         self.assertLess(s["players_pnl"], 0)
-        self.assertAlmostEqual(s["total_mb"], 2520.0 + s["players_pnl"], places=6)
+        self.assertAlmostEqual(s["total_mb"], 7020.0 + s["players_pnl"], places=6)
         self.assertAlmostEqual(s["total_mb"], e.equity(a) + e.equity(b), places=6)   # what the players hold now
         e.stocks["NVXA"].fair *= 1.10                             # and with the price of what they hold
         self.assertAlmostEqual(e.house_stats()["total_mb"], e.equity(a) + e.equity(b), places=6)
@@ -76,7 +76,9 @@ class ShopTests(unittest.TestCase):
 
     def test_the_catalogue_has_the_five_packages_and_two_pro_passes_with_prices(self):
         cat = self.e.shop_catalog()
-        self.assertEqual([x["mb"] for x in cat["packages"]], [100, 500, 1000, 5000, 10000])
+        self.assertEqual([x["mb"] for x in cat["packages"]], [1000, 5000, 10000, 50000, 100000])
+        cap = self.e.settings.get("spend_cap_month_cents", 15000)
+        self.assertTrue(all(x["price_cents"] <= cap for x in cat["packages"]))     # every package fits the monthly cap
         self.assertEqual([x["days"] for x in cat["pro"]], [30, 365])
         prices = [x["price_cents"] for x in cat["packages"]]
         per_mb = [c / x["mb"] for c, x in zip(prices, cat["packages"])]
@@ -85,18 +87,18 @@ class ShopTests(unittest.TestCase):
 
     def test_buying_a_package_credits_the_mb_once_however_often_it_is_confirmed(self):
         e, p = self.e, self.p
-        order, err = e.create_order(p, "mb500", "test", adult_confirmed=True)
+        order, err = e.create_order(p, "mb5000", "test", adult_confirmed=True)
         self.assertIsNotNone(order, err)
         self.assertEqual(p.cash, 1000.0)                              # nothing until it is paid
-        self.assertTrue(e.complete_order(order["id"], "ref1", 399)[0])
-        self.assertTrue(e.complete_order(order["id"], "ref1", 399)[0])  # a retried webhook
-        self.assertEqual(p.cash, 1500.0)
-        self.assertEqual(p.mb_by_source["purchase"], 500.0)
+        self.assertTrue(e.complete_order(order["id"], "ref1", 799)[0])
+        self.assertTrue(e.complete_order(order["id"], "ref1", 799)[0])  # a retried webhook
+        self.assertEqual(p.cash, 6000.0)
+        self.assertEqual(p.mb_by_source["purchase"], 5000.0)
         self.assertEqual(e.shop_orders[order["id"]]["status"], "paid")
         self.assertLess(abs(drift(e)), 1e-6)
 
     def test_a_wrong_amount_does_not_complete_an_order(self):
-        order, _ = self.e.create_order(self.p, "mb1000", "stripe", adult_confirmed=True)
+        order, _ = self.e.create_order(self.p, "mb10000", "stripe", adult_confirmed=True)
         ok, msg = self.e.complete_order(order["id"], "ref", 1)
         self.assertFalse(ok)
         self.assertEqual(self.p.cash, 1000.0)
@@ -117,7 +119,7 @@ class ShopTests(unittest.TestCase):
 
     def test_a_refund_takes_back_the_mb_the_player_still_has(self):
         e, p = self.e, self.p
-        o, _ = e.create_order(p, "mb1000", "test", True)
+        o, _ = e.create_order(p, "mb10000", "test", True)
         e.complete_order(o["id"])
         e.trade(p, "NVXA", "buy", 0.8)                                # most of it spent on a position
         free = e.free_cash(p)
@@ -129,7 +131,7 @@ class ShopTests(unittest.TestCase):
         self.assertLess(abs(drift(e)), 1e-6)
 
     def test_unpaid_orders_expire_after_a_day(self):
-        o, _ = self.e.create_order(self.p, "mb100", "test", True)
+        o, _ = self.e.create_order(self.p, "mb1000", "test", True)
         self.e.now += 86401
         self.e._expire_orders()
         self.assertEqual(self.e.shop_orders[o["id"]]["status"], "expired")
@@ -151,14 +153,14 @@ class AgeAndLimitTests(unittest.TestCase):
         e = self.e
         teen = join(e, "teen")
         teen.birth_year = THIS_YEAR - 15
-        order, err = e.create_order(teen, "mb100", "test", adult_confirmed=True)
+        order, err = e.create_order(teen, "mb1000", "test", adult_confirmed=True)
         self.assertIsNone(order)
         self.assertIn("18", err)
         nobody = join(e, "noyear")
-        self.assertIn("year", e.create_order(nobody, "mb100", "test", True)[1])
+        self.assertIn("year", e.create_order(nobody, "mb1000", "test", True)[1])
         grown = adult(e, "grown")
-        self.assertIn("18", e.create_order(grown, "mb100", "test", adult_confirmed=False)[1])
-        self.assertIsNotNone(e.create_order(grown, "mb100", "test", adult_confirmed=True)[0])
+        self.assertIn("18", e.create_order(grown, "mb1000", "test", adult_confirmed=False)[1])
+        self.assertIsNotNone(e.create_order(grown, "mb1000", "test", adult_confirmed=True)[0])
 
     def test_the_birth_year_can_be_set_once(self):
         p = join(self.e, "yearonce")
@@ -168,20 +170,20 @@ class AgeAndLimitTests(unittest.TestCase):
 
     def test_the_monthly_spending_cap_and_the_daily_limit(self):
         e = self.e
-        e.settings.update(spend_cap_month_cents=1000, purchases_per_day=2)
+        e.settings.update(spend_cap_month_cents=2000, purchases_per_day=2)
         p = adult(e, "capped")
-        o, _ = e.create_order(p, "mb500", "test", True)                # 3.99
+        o, _ = e.create_order(p, "mb5000", "test", True)               # 7.99
         e.complete_order(o["id"])
-        o, _ = e.create_order(p, "mb500", "test", True)                # 7.98
+        o, _ = e.create_order(p, "mb5000", "test", True)               # 15.98
         e.complete_order(o["id"])
-        order, err = e.create_order(p, "mb100", "test", True)          # a third purchase today
+        order, err = e.create_order(p, "mb1000", "test", True)         # a third purchase today
         self.assertIsNone(order)
         self.assertIn("today", err)
         e.now += 86401
-        order, err = e.create_order(p, "mb500", "test", True)          # 11.97 would pass the 10.00 cap
+        order, err = e.create_order(p, "mb5000", "test", True)         # 23.97 would pass the 20.00 cap
         self.assertIsNone(order)
         self.assertIn("cap", err)
-        self.assertIsNotNone(e.create_order(p, "mb100", "test", True)[0])   # 8.97 is fine
+        self.assertIsNotNone(e.create_order(p, "mb1000", "test", True)[0])   # 17.97 is fine
 
     def test_lowering_the_cap_works_at_once_and_raising_it_waits_a_day(self):
         e = self.e
@@ -313,12 +315,12 @@ class ShopServerTests(unittest.TestCase):
             d = json.loads(text)
             self.assertTrue(d["selling"])
             self.assertEqual(d["mode"], "test")
-            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb500", "adult": True}, headers=h)
+            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb5000", "adult": True}, headers=h)
             self.assertEqual(status, 400)
             self.assertIn("year", json.loads(text)["error"])                    # the age comes first
             http(srv, "/api/account/birth_year", "POST", {"year": THIS_YEAR - 30}, headers=h)
             time.sleep(1.1)                                                       # (one checkout a second)
-            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb500", "adult": True}, headers=h)
+            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb5000", "adult": True}, headers=h)
             self.assertEqual(status, 200, text)
             co = json.loads(text)
             self.assertTrue(co["url"].startswith("/shop/pay?order="))
@@ -326,13 +328,13 @@ class ShopServerTests(unittest.TestCase):
             status, text, _ = http(srv, "/api/shop/test_pay", "POST", {"order": co["order"]}, headers=h)
             self.assertTrue(json.loads(text)["ok"], text)
             d = json.loads(http(srv, "/api/shop", headers=h)[1])
-            self.assertEqual(d["mb_by_source"].get("purchase"), 500.0)
+            self.assertEqual(d["mb_by_source"].get("purchase"), 5000.0)
             self.assertEqual(d["orders"][0]["status"], "paid")
             other = http_join(srv.url, "NotTheBuyer")
             status, _, _ = http(srv, "/api/shop/test_pay", "POST", {"order": co["order"]}, headers={"X-Token": other["token"]})
             self.assertEqual(status, 404)                                          # nobody else can touch the order
             adm = json.loads(http(srv, "/api/admin/shop", headers={"X-Admin-Key": "testkey"})[1])
-            self.assertEqual((adm["orders_paid"], adm["revenue_cents"], adm["mode"]), (1, 399, "test"))
+            self.assertEqual((adm["orders_paid"], adm["revenue_cents"], adm["mode"]), (1, 799, "test"))
 
     def test_with_payments_off_the_shop_shows_prices_but_sells_nothing(self):
         with IsolatedServer() as srv:
@@ -341,7 +343,7 @@ class ShopServerTests(unittest.TestCase):
             d = json.loads(http(srv, "/api/shop", headers=h)[1])
             self.assertFalse(d["selling"])
             self.assertEqual(len(d["catalog"]["packages"]), 5)
-            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb100", "adult": True}, headers=h)
+            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb1000", "adult": True}, headers=h)
             self.assertEqual(status, 400)
             self.assertEqual(http(srv, "/api/shop/test_pay", "POST", {"order": "x"}, headers=h)[0], 404)
             self.assertEqual(http(srv, "/api/shop/stripe/webhook", "POST", {"x": 1})[0], 404)
@@ -391,15 +393,15 @@ class ShopBrowserTests(unittest.TestCase):
             await d.check("after the year, the confirmation box appears", "!!document.getElementById('shop-adult')", wait=8)
             await d.check("Buy is still off until it is ticked", "document.querySelector('#shop-pkgs [data-sku]').disabled", True)
             await pg.js("document.getElementById('shop-adult').click()")
-            await d.check("ticking it turns Buy on", "document.querySelector('#shop-pkgs [data-sku=mb500]').disabled", False, wait=3)
-            await pg.js("document.querySelector('#shop-pkgs [data-sku=mb500]').click()")
+            await d.check("ticking it turns Buy on", "document.querySelector('#shop-pkgs [data-sku=mb5000]').disabled", False, wait=3)
+            await pg.js("document.querySelector('#shop-pkgs [data-sku=mb5000]').click()")
             await d.check("Buy opens the test checkout", "location.pathname", "/shop/pay", wait=8)
-            await d.check("which shows the order", "document.getElementById('what').innerText", lambda t: "500 MB" in t, wait=8)
+            await d.check("which shows the order", "document.getElementById('what').innerText", lambda t: "5,000 MB" in t, wait=8)
             await pg.js("document.getElementById('pay').click()")
             await d.check("paying comes back to the shop", "location.pathname", "/shop", wait=10)
             await d.check("and the purchase is listed as paid", "document.getElementById('shop-orders').innerText",
-                          lambda t: "500 MB" in t and "Paid" in t, wait=10)
-            await d.check("the MB arrived", "document.getElementById('cash').innerText", lambda t: t.startswith("1500"), wait=8)
+                          lambda t: "5,000 MB" in t and "Paid" in t, wait=10)
+            await d.check("the MB arrived", "document.getElementById('cash').innerText", lambda t: t.replace(",", "").startswith("6000"), wait=8)
             await d.check("the address bar is tidied", "location.search", "", wait=6)
             await pg.goto(base + "/history", 3)
             await d.check("the history shows the purchase", "document.getElementById('hist-rows').innerText",
