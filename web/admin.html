@@ -2,29 +2,29 @@
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meme Street Admin</title>
 <style>
-:root{--bg:#0a0e14;--card:#111822;--card2:#161f2c;--line:#212c3b;--line2:#18212d;--txt:#e8eef6;--mut:#8493a8;--up:#34d27b;--dn:#ff5f6d;--acc:#5aa2ff;--warn:#ffc65c}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 Inter,"Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:10px 18px;background:#0a0e14e6;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+:root{--bg:#08090b;--card:#0d1013;--card2:#12161a;--line:#262d33;--line2:#1a1f24;--txt:#dce3e8;--mut:#7d8a93;--up:#3ad07a;--dn:#f25c54;--acc:#4cc3cc;--warn:#ffc65c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",Menlo,monospace;-webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:10px 18px;background:var(--bg);border-bottom:1px solid var(--line)}
 header b{font-size:18px}a{color:var(--acc);text-decoration:none}.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}.warn{color:var(--warn)}
 main{max-width:1200px;margin:0 auto;padding:14px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}.cards .card{background:var(--card2);border-color:var(--line2);border-radius:10px;padding:9px 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:12px 14px}.cards .card{background:none;border-color:var(--line2);border-radius:2px;padding:8px 12px}
 .card small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.card strong{display:block;font-size:18px;margin-top:3px}
 .card em{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-top:2px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
-h3{margin:0 0 8px;font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+h3{margin:0 0 10px;padding-bottom:6px;font-size:13px;color:var(--txt);font-weight:700;border-bottom:1px solid var(--line)}
 table{width:100%;border-collapse:collapse}td,th{padding:5px 6px;text-align:right;border-bottom:1px solid var(--line2);white-space:nowrap}
 td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:12px}
 tr.pick{cursor:pointer}tr.pick:hover{background:#ffffff08}
 svg{width:100%;height:auto;display:block}
 .msgrow{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line2);font-size:13px}.msgrow span.t{flex:1;word-break:break-word}.msgrow small{color:var(--mut)}
-button,input{font:inherit;background:#1a2331;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 10px}input{background:#0a0e14}input:focus{outline:none;border-color:var(--acc)}button{cursor:pointer}button:hover{background:#243044}
-#login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px}
+button,input{font:inherit;background:#161b20;color:var(--txt);border:1px solid var(--line);border-radius:2px;padding:5px 10px}input{background:#08090b}input:focus{outline:none;border-color:var(--acc)}button{cursor:pointer}button:hover{background:#1f262c}
+#login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:2px;padding:20px}
 #login input{width:100%;margin:10px 0}
 .alerts div{padding:6px 10px;border-left:3px solid var(--warn);background:#ffc65c14;margin-bottom:6px;border-radius:0 8px 8px 0}
-.alerts div.bad{border-color:var(--dn);background:#ff5f6d14}.alerts div.ok{border-color:var(--up);background:#34d27b14}
+.alerts div.bad{border-color:var(--dn);background:#f25c5414}.alerts div.ok{border-color:var(--up);background:#3ad07a14}
 .bar{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:6px}.bar div{flex:1;text-align:center;font-size:10px;color:var(--mut)}
-.bar i{display:block;margin:0 auto 2px;border-radius:3px 3px 0 0;min-height:1px}
+.bar i{display:block;margin:0 auto 2px;border-radius:2px 3px 0 0;min-height:1px}
 </style></head><body>
 <div id="login"><h2 style="margin:0">Admin</h2><p class="mut">Enter the admin key (the <code>ADMIN_KEY</code> the server was started with). It stays in this browser tab only.</p>
 <input id="key" type="password" placeholder="Admin key" autocomplete="off"><button id="go" style="width:100%">Open dashboard</button><p id="err" class="dn"></p></div>

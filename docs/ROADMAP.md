@@ -319,6 +319,36 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 | U6 | Market overview pages | Seeing the whole market is a skill. | A heatmap, an MSI 50 page, a stock page with the "why it moved" line, levels and the calendar. | M |
 | U7 | Low-data mode | 18 MB an hour on mobile data. | Pause when hidden, send only visible rows, compress. | S |
 | U8 | A look that stays consistent | Pages built at different times drift apart in sizes, colours and wording. | **Done (2026-10-14): a polish pass over every page** (the stock page puts price, trade bar and chart first; one progress-row style; green and red only for numbers that are not zero once rounded; the admin page in the game's colours; plurals written out; HOW_IT_WORKS §11, *Consistency rules*). Repeat it after each big feature: screenshot every page on a laptop and a phone and fix what looks out of place. | S |
+| U9 | A look of its own | The pages look like a generic AI-built dashboard: dark navy, bright blue, pills, emoji, rounded cards in rounded cards, small grey capital headings and a paragraph of help under every heading. | **Done (2026-10-18): the trading-terminal look** (checklist below). | M |
+
+#### U9 checklist: a look that is not "AI-generated"
+**Done (2026-10-18), in the trading-terminal direction** (HOW_IT_WORKS §11, *The look*). Checked page by page with laptop and phone screenshots; element ids kept so the tests still pass.
+
+**The decision: the trading terminal** (chosen 2026-10-18). The two options were: A *financial newspaper* look (cream or off-black paper, a serif for headlines, thin rules) or a *trading terminal* look (black, one accent colour, a monospaced face for numbers, dense rows). Every item below follows from that choice.
+
+Colour, type and shape
+- [x] Replace the stock palette (navy `#0a0e14`, bright blue `#5aa2ff`, mint green and coral red) with our own, starting from the logo's teal; drop the soft radial glow behind every page.
+- [x] Replace Inter / Segoe UI with two typefaces that have character: one for headings, a tabular or monospaced one for prices and figures.
+- [x] Fewer pills: chips, buttons, badges, tabs and the market-status chip are all fully rounded (11 places). Square-ish buttons, tabs that look like tabs.
+- [x] Fewer boxes: every section sits in a rounded card with a drop shadow, and figures sit in more rounded tiles inside it (the `finance-grid`). Use rules, whitespace and flat tables instead.
+- [x] Headings: the small grey capital letter-spaced label over every section ("YOUR HOLDINGS", "EARNINGS HISTORY") is a template look. Use real headings of different sizes.
+- [x] Buy and Sell: the see-through green and red buttons with coloured borders. Solid, plainer buttons; the colour in one place.
+- [x] The gold gradient PRO badge, the ✔ ticks and the → arrows on links.
+
+Icons and emoji
+- [x] The emoji industry icons on every market row and chip (💻 ⛽ 💊 🛡️ ✈️ 🏦, from `content/base.json`): simple drawn icons, or none (the ticker is enough).
+- [x] The emoji on achievements, medals and the ladder (🏅 🔒 🥉 🥈 🥇 💎 🚩): drawn badges in the new style.
+
+Words
+- [x] Cut the help paragraph under every heading (Learn, Calendar, Journal, Shop, Profile, the contest, chat) to one short sentence, or a small "?" that opens it; the long explanations live in the lessons and on the about page.
+- [x] Fewer "X: Y" sentences ("They reward habits, not luck: ...", "Pre-market: trading is thin, so ...") and fewer "not X, but Y" ones. Write the way a person would say it.
+- [x] The about page is the standard AI landing page: a pill tag, a two-line giant headline, six feature cards in a 3 x 2 grid and an FAQ of fold-outs. Lead with a real screenshot of the market and the chart, then a few plain paragraphs. (Done as plain text and a ruled list; the screenshot is still to do, as the server serves only the two brand images.)
+
+Layout and personality
+- [x] Not everything the same size and spacing: the market and stock pages dense like a trading screen (shorter rows, a tighter header), the lessons laid out like an article.
+- [x] The header's seven identical stat boxes: one compact strip of figures.
+- [x] One signature detail only Meme Street has, for example a scrolling ticker tape of prices under the header, or the news wire set like a newspaper column.
+- [x] Charts and the admin page in the same new style.
 
 ### E. Engineering
 
