@@ -1,33 +1,64 @@
 name: tests
 
-# Runs the fast test suite on every push and pull request. The slow checks (RUN_SLOW=1) and the many-seed
-# market checks (`python tools/realism.py` and `python tools/chart_check.py`, docs/MARKET_REALISM.md) are run by hand before changing prices.
+# Runs the test suite on every push and pull request, split into four parts that run side by side (about a quarter of the
+# time). A test that fails is run once more on its own: if it passes then, the run stays green and the test is marked
+# "flaky" on the run's page; if it fails again, the run fails. Every failure is also written as an annotation, which
+# shows on the run's page and can be read without logging in (ROADMAP E12). The slow checks (RUN_SLOW=1) and the
+# many-seed market checks (`python tools/realism.py`, `python tools/chart_check.py`, docs/MARKET_REALISM.md) are run by hand.
 on: [push, pull_request]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [1, 2, 3, 4]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: pip
       - run: pip install -r requirements.txt
-      - name: Run the tests
+      - name: Run the tests (part ${{ matrix.part }} of 4)
         shell: bash
+        working-directory: tests
         run: |
-          set -o pipefail
-          python -m unittest discover tests -v 2>&1 | tee test.log
+          mods=$(ls test_*.py | sort | awk -v k=${{ matrix.part }} '(NR - 1) % 4 == k - 1' | sed 's/\.py$//')
+          echo "Test files: $mods"
+          set +e
+          python -m unittest -v $mods 2>&1 | tee test.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            failed=$(grep -E "^(FAIL|ERROR): " test.log | sed -E 's/^(FAIL|ERROR): [^ ]+ \(([^)]+)\).*/\2/' | sort -u)
+            if [ -n "$failed" ]; then
+              echo "Running again on their own: $failed"
+              python -m unittest -v $failed 2>&1 | tee retry.log
+              status=${PIPESTATUS[0]}
+              if [ "$status" -eq 0 ]; then
+                for t in $failed; do echo "::warning title=Flaky test::$t failed once and passed when run again"; done
+              else
+                for t in $failed; do echo "::error title=Test failed::$t"; done
+                grep -E -A6 "^(FAIL|ERROR): " retry.log | grep -E "Error|assert|check failed" | head -20 | while read -r line; do echo "::error title=Why::$line"; done
+              fi
+            else
+              echo "::error title=Tests stopped early::the run ended without a list of failures (see the log)"
+            fi
+          fi
+          exit $status
       - name: List what failed (shown on the run's summary page)
         if: always()
         shell: bash
+        working-directory: tests
         run: |
           {
-            echo '## Test result'
+            echo '## Test result, part ${{ matrix.part }}'
             echo '```'
             grep -E "^(Ran |OK|FAILED)" test.log || echo "no summary line: the run stopped early"
             echo '```'
-            echo '### Failures and errors'
+            echo '### Failures and errors (first run)'
             echo '```'
             grep -E -A14 "^(FAIL|ERROR): " test.log | head -200 || true
             echo '```'

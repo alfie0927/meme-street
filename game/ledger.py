@@ -110,10 +110,14 @@ class Ledger:
             cur = self.db.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (seq,))
             return [self._row(cur, r) for r in cur.fetchall()]
 
-    def history(self, token, limit=100, before=None, kinds=None):
-        """A player's events, newest first, for the history page. `before` is a sequence number for paging."""
+    def history(self, token, limit=100, before=None, kinds=None, ticker=None):
+        """A player's events, newest first, for the history page. `before` is a sequence number for paging; `ticker`
+        keeps one stock's."""
         sql = "SELECT * FROM events WHERE token = ?"
         args = [token]
+        if ticker:
+            sql += " AND ticker = ?"
+            args.append(ticker)
         if before:
             sql += " AND seq < ?"
             args.append(int(before))

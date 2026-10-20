@@ -11,14 +11,19 @@ Copies the newest server backups to this computer, so that losing the server doe
 
 Each backup is a folder with the save (state.json), the charts and the money ledger (ledger.db), about 40 MB. A copy is only
 marked complete (a file called .complete inside it) after the save and the ledger arrived with a size above zero, so a
-download that was cut off is fetched again next time. Nothing on the server is changed or deleted. Old copies here are
-never deleted: remove the oldest by hand now and then.
+download that was cut off is fetched again next time. Nothing on the server is changed or deleted. Here, only the newest
+-Keep complete copies are kept (default 60: about two weeks); older ones are deleted.
+
+  -Keep     how many complete backups to keep on this computer (default 60; 0 keeps everything)
+
+It runs by itself every day once deploy\schedule_backups.ps1 has set up the Windows scheduled task (ROADMAP O2).
 It needs the ssh and scp programs that come with Windows 10 and 11.
 #>
 param(
     [Parameter(Mandatory = $true)][string]$Server,
     [string]$To = "D:\meme_street_backups",
-    [int]$Newest = 4
+    [int]$Newest = 4,
+    [int]$Keep = 60
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,5 +49,11 @@ foreach ($raw in $names) {
     $fetched++
     Write-Host "fetched $n"
 }
-$have = @(Get-ChildItem $To -Directory | Where-Object { Test-Path (Join-Path $_.FullName ".complete") }).Count
+$complete = @(Get-ChildItem $To -Directory | Where-Object { Test-Path (Join-Path $_.FullName ".complete") } | Sort-Object Name)
+if ($Keep -gt 0 -and $complete.Count -gt $Keep) {
+    $old = $complete[0..($complete.Count - $Keep - 1)]
+    $old | ForEach-Object { Remove-Item -Recurse -Force $_.FullName }
+    Write-Host ("removed {0} old backup(s)" -f $old.Count)
+}
+$have = [Math]::Min($complete.Count, $(if ($Keep -gt 0) { $Keep } else { $complete.Count }))
 Write-Host ("{0} new backup(s) copied. {1} complete backup(s) are now in {2}." -f $fetched, $have, $To)

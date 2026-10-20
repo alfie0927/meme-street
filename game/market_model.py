@@ -76,10 +76,13 @@ DEFAULTS = {
     "breakout_sigmas": 0.5, "breakout_seconds": 90, "breakout_noise": 1.6, "breakout_volume": 2.5,
     "level_band_sigmas": 0.25,                        # "near a level": within this many daily sigmas of it
     "hold_base": 0.40, "hold_per_touch": 0.09, "hold_round": 0.07, "hold_trend": 0.10, "hold_repeat": 0.07,
+    "hold_strong_aligned": 0.05,                      # more for a strong level (3+ touches or round) in line with the trend (TA-A1)
+    "level_approach_vol": 0.8,                        # the noise near a strong level while it is tested: the approach slows (TA-A1)
     "bounce_sigmas": 0.12, "bounce_seconds": 40,
     "follow_sigmas": 0.45, "follow_seconds": 75, "false_break": 0.3,
     "capitulation_drawdown": 0.14, "capitulation_daily_chance": 0.3,
-    "release_sigmas": 0.55,                           # a 1-sd surprise moves the market about this many daily sigmas
+    "release_sigmas": 0.3,                            # a 1-sd surprise moves the market about this many daily sigmas (0.55 until TA-E1)
+    "release_noise": 0.5, "release_volume": 1.8,      # the burst of activity after a release (1.0 and 2.5 until TA-E1)
     # Stochastic volatility (MARKET_REALISM.md): the log of each listing's volatility is a sum of components with
     # different half-lives (minutes, a game day, weeks), like the HAR cascade of realised volatility, plus market-wide
     # components shared by every listing; falls feed the fast and medium ones (the leverage effect).
@@ -692,7 +695,7 @@ class MarketModel:
             if rel > 2.5 * band or now > t["until"]:
                 sw.test = None
                 return 0.0, 1.0, 1.0
-            return side * push * dt, 1.0, 1.3
+            return side * push * dt, (p["level_approach_vol"] if t["strength"] >= 3 or t["round"] else 1.0), 1.3
         # a break
         if not t.get("crossed"):
             if rel <= 0:
@@ -701,7 +704,7 @@ class MarketModel:
                 sw.test = None
                 return 0.0, 1.0, 1.0
             else:
-                return 0.0, 1.0, 1.4                      # (no push towards the level: that would be momentum)
+                return 0.0, (0.5 + 0.5 * p["level_approach_vol"] if t["strength"] >= 3 or t["round"] else 1.0), 1.4   # (no push towards the level: that would be momentum)
         since = now - t["crossed"]
         if t.get("false") and since > t.get("fail_after", 120):
             if rel > band or since > t.get("fail_after", 120) + 600:
@@ -738,7 +741,8 @@ class MarketModel:
         align = 1 if trend == side else -1 if trend == -side else 0   # support in an uptrend holds more often
         p = self.p
         p_hold = (p["hold_base"] + p["hold_per_touch"] * min(strength, 4) + (p["hold_round"] if rnd else 0.0)
-                  + p["hold_trend"] * align - p["hold_repeat"] * repeats)
+                  + p["hold_trend"] * align - p["hold_repeat"] * repeats
+                  + (p["hold_strong_aligned"] if align > 0 and (strength >= 3 or rnd) else 0.0))
         p_hold = max(0.25, min(0.75, p_hold))
         hold = self.rng.random() < p_hold
         false = (not hold) and self.rng.random() < p["false_break"] + (0.1 if align > 0 else 0.0)
@@ -771,7 +775,8 @@ class MarketModel:
                 if move:
                     amounts[x.ticker] = move
             whip = self.rng.random() < 0.25
-            self.pulses.append(Pulse(now, 45, 8, amounts, whip=whip, noise=1.0, volume=2.5, kind=kind))   # (real releases are priced in seconds)
+            self.pulses.append(Pulse(now, 45, 8, amounts, whip=whip, noise=self.p["release_noise"], volume=self.p["release_volume"],
+                                     kind=kind))   # (real releases are priced in seconds)
             mk = 0.6 * gz - 0.7 * rz
             rec["market_z"] = round(mk, 2)
             strength = "strong" if abs(mk) > 1.2 else "weak" if abs(mk) > 0.4 else "bystander"

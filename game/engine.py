@@ -7,6 +7,7 @@ import relations
 import economy
 import learning
 import ladder
+import chartprefs
 import market_model
 import paths
 import social
@@ -272,11 +273,13 @@ class Player:
         self.guest = False       # True only for the one hidden, read-only visitor (Engine.guest)
         social.init_player(self)   # achievements, quests, following, chat limits (see social.py)
         economy.init_player(self)  # birth year, Pro, MB by source, spending cap (see economy.py)
-        learning.init_player(self)  # lessons passed, challenge progress, the trading journal (see learning.py)
+        learning.init_player(self)  # lessons passed, challenge progress (see learning.py)
         ladder.init_player(self)    # the Bronze-to-Diamond quest ladder, and the title and name colour worn (ladder.py)
+        chartprefs.init_player(self)   # indicators, chart type and drawings, kept on the server (chartprefs.py)
 
 
-class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin):
+class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin,
+             chartprefs.ChartsMixin):
     def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None):
         self._init_social()
         self._init_accounts()
@@ -781,6 +784,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             return None, "Name taken"
         p = Player(name)
         p.created = self.now
+        p.terms = {"v": economy.TERMS_VERSION, "at": self.now}   # the sign-up box says that creating an account accepts them
         self._register(p)
         self._emit("join", p)
         bonus = float(self.settings.get("signup_bonus", START_CASH))
@@ -1094,7 +1098,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         p.last_trade[ticker] = self.now
         p.trades += 1
         self.trades_total += 1
-        self._learn_after_trade(p, ticker)              # the journal and the "planned trade" challenge (learning.py)
+        self._learn_after_trade(p, ticker)              # the "planned trade" challenge (learning.py)
         return True, msg
 
     def _margin_calls(self):
@@ -1981,7 +1985,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 direction = 0
             pt = stock.price * (1 + 0.04 * (target - index) + random.gauss(0.0, 0.02))
             if direction == 0:
-                if random.random() < 0.4:
+                if random.random() < float(self.settings.get("rating_reiterate_share", 0.15)):   # (was 0.4: TA-E2)
                     self.news("rating", f"{bank} reiterates its view on {stock.name}, price target {pt:.2f} MB.",
                               [stock.ticker], 0, "bystander")
                 continue
@@ -3418,13 +3422,14 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
     HISTORY_KINDS = ("buy", "sell", "short", "cover", "margin_call", "dividend", "borrow", "credit", "debit",
                      "delist_payout", "purchase")
 
-    def history_for(self, p, limit=100, before=None, kinds=None):
-        """A player's ledger entries, newest first, with paging (`before` is the `seq` of the last one seen)."""
+    def history_for(self, p, limit=100, before=None, kinds=None, ticker=None):
+        """A player's ledger entries, newest first, with paging (`before` is the `seq` of the last one seen); only one
+        stock's with `ticker` (the chart's trade markers)."""
         limit = max(1, min(int(limit), 500))
         kinds = [k for k in (kinds or ()) if k in self.HISTORY_KINDS] or list(self.HISTORY_KINDS)
         if self.ledger is not None:
             self.ledger.flush()
-            rows = self.ledger.history(p.token, limit + 1, before, kinds)
+            rows = self.ledger.history(p.token, limit + 1, before, kinds, ticker)
             more = len(rows) > limit
             rows = rows[:limit]
             events = [{"seq": r["seq"], "t": r["t"], "kind": r["kind"], "ticker": r["ticker"],
@@ -3436,7 +3441,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     "source": "ledger"}
         events = [{"seq": None, "t": x["t"], "kind": x["k"], "ticker": x["tk"], "shares": x["sh"], "price": x["px"],
                    "mb": x["mb"], "fee": x["fee"], "pnl": None, "cash": None}
-                  for x in reversed(p.log) if x["k"] in kinds][:limit]
+                  for x in reversed(p.log) if x["k"] in kinds and (ticker is None or x["tk"] == ticker)][:limit]
         return {"events": events, "more": False, "next_before": None, "source": "memory"}
 
     def history_csv(self, p):
@@ -3587,6 +3592,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                           "log": list(p.log), "margin_calls": p.margin_calls,
                           "social": social.dump_player(p), "economy": economy.dump_player(p),
                           "learning": learning.dump_player(p), "ladder": ladder.dump_player(p),
+                          "chart": chartprefs.dump_player(p),
                           } for p in self.players.values()],
              "generated": [dict(x.cfg) for x in self.stocks.values() if x.cfg.get("generated")],
              "relations": self.relations.to_json(), "archive": self.archive,
@@ -3984,6 +3990,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 economy.load_player(p, x.get("economy", {}))
                 learning.load_player(p, x.get("learning", {}))
                 ladder.load_player(p, x.get("ladder", {}))
+                chartprefs.load_player(p, x.get("chart", {}))
                 self.players[p.token] = p
                 self.by_token[p.token] = p
             human_in = sum(p.deposited for p in self.players.values() if p not in retiring)

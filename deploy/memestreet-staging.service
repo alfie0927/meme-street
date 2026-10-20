@@ -1,0 +1,25 @@
+# A staging copy of Meme Street (ROADMAP O5): the next version of the code, run on the server next to the live game with
+# a copy of the live save, so an update can be tried in the real setting before it goes live. It listens only on this
+# machine (port 8100); upload.ps1 -Staging opens a tunnel to it from your computer. The shop is closed and no mail is
+# sent (its settings come from /etc/memestreet-staging.env, which holds only the admin key). Start and stop it with
+# upload.ps1 -Staging and upload.ps1 -StopStaging; it is not started when the server boots.
+[Unit]
+Description=Meme Street staging copy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=memestreet
+Group=memestreet
+WorkingDirectory=/opt/memestreet-staging/game
+EnvironmentFile=/etc/memestreet-staging.env
+ExecStart=/opt/memestreet/.venv/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8100 --log-level warning
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=60
+KillSignal=SIGTERM
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/memestreet-staging
+ProtectHome=true
+PrivateTmp=true

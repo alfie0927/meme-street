@@ -1,6 +1,9 @@
 {
  "settings": {
   "event_mean_seconds": 900,
+  "news_followups": false,
+  "rating_review_seconds": [1800, 4500],
+  "company_events_per_quarter": 1.0,
   "event_duration_scale": 12,
   "rumor_prob": 0.25,
   "rumor_credibility": 0.75,
@@ -41,6 +44,7 @@
   "restart_below": 50,
   "restart_days": 7,
   "challenge_week_cap": 500,
+  "rewards_need_email": false,
   "lesson_reward": 20,
   "quizzes": false,
   "quest_ladder": true

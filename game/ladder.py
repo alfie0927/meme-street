@@ -8,8 +8,8 @@ more. They sit next to the daily quests (social.py) and the learning challenges 
   player picks which to wear on their profile page; it shows on the leaderboards, in chat and on their public profile.
   Colours come from a fixed palette, never from what a player types.
 * **Progress** comes from counters the game already keeps (trades, profitable closes, shorts, dividends, realised
-  profit) and from a few the ladder counts itself (different stocks and industries, stops, planned trades, journal
-  entries and reviews, trades closed at 2R or better, days traded, day-board finishes, patient wins). Counts made before
+  profit) and from a few the ladder counts itself (different stocks and industries, stops, take-profits, planned
+  trades, days traded, day-board finishes, patient wins). Counts made before
   the ladder existed still count, so an active player finds some quests already done.
 
 Like the other rewards, nothing here moves a price or gives a trading advantage.
@@ -28,7 +28,7 @@ LADDER = [
     ("b_wins", "bronze", "Small wins", "Close 3 positions at a profit.", "profit_closes", 3, None),
     ("b_stop", "bronze", "Safety net", "Put a stop-loss on a position.", "stops", 1, None),
     ("b_short", "bronze", "Going short", "Open a short.", "shorts", 1, None),
-    ("b_journal", "bronze", "Dear diary", "Write 3 journal entries with a stop.", "journal", 3, None),
+    ("b_target", "bronze", "Set a target", "Put a take-profit on a position.", "targets", 1, None),
     ("b_days", "bronze", "Coming back", "Trade on 3 different days.", "days", 3, None),
     ("b_dividend", "bronze", "Paid to wait", "Receive a dividend.", "dividends", 1, None),
     ("s_trades", "silver", "Getting busy", "Make 50 trades.", "trades", 50, None),
@@ -36,13 +36,13 @@ LADDER = [
     ("s_wins", "silver", "Winning habit", "Close 20 positions at a profit.", "profit_closes", 20, None),
     ("s_planned", "silver", "Plan the trade", "Close 10 positions that had a stop-loss while they were open.", "planned", 10, None),
     ("s_short_wins", "silver", "Short seller", "Close 5 shorts at a profit.", "short_wins", 5, None),
-    ("s_reviews", "silver", "Learning from it", "Write what you learned on 10 closed journal entries.", "reviews", 10, None),
+    ("s_tickers", "silver", "Explorer", "Trade 25 different stocks.", "tickers", 25, None),
     ("s_days", "silver", "A week of trading", "Trade on 7 different days.", "days", 7, None),
     ("s_profit", "silver", "Paying off", "Book 250 MB of realised profit in total.", "realized", 250, None),
     ("g_trades", "gold", "Busy desk", "Make 250 trades.", "trades", 250, None),
     ("g_wins", "gold", "Consistent", "Close 75 positions at a profit.", "profit_closes", 75, None),
     ("g_planned", "gold", "Trade the plan", "Close 40 positions that had a stop-loss while they were open.", "planned", 40, None),
-    ("g_r2", "gold", "Two to one", "Close 10 journal trades at 2R or better.", "r2", 10, None),
+    ("g_short_wins", "gold", "Bear market pro", "Close 25 shorts at a profit.", "short_wins", 25, None),
     ("g_top10", "gold", "On the board", "Finish a day in the top 10 of the day board with a positive return.", "top10", 1, None),
     ("g_days", "gold", "A month of trading", "Trade on 20 different days.", "days", 20, None),
     ("g_profit", "gold", "Real money", "Book 1,000 MB of realised profit in total.", "realized", 1000, None),
@@ -51,7 +51,7 @@ LADDER = [
     ("d_trades", "diamond", "Market Veteran", "Make 1,000 trades.", "trades", 1000, ("veteran", "cyan")),
     ("d_planned", "diamond", "Risk Master", "Close 150 positions that had a stop-loss while they were open.", "planned", 150, ("risk_master", "emerald")),
     ("d_profit", "diamond", "Money Maker", "Book 5,000 MB of realised profit in total.", "realized", 5000, ("money_maker", "ruby")),
-    ("d_r2", "diamond", "Chart Master", "Close 40 journal trades at 2R or better.", "r2", 40, ("chart_master", "violet")),
+    ("d_wins", "diamond", "Chart Master", "Close 300 positions at a profit.", "profit_closes", 300, ("chart_master", "violet")),
     ("d_legend", "diamond", "Legend", "Finish every other quest on the ladder.", "ladder", 29, ("legend", "diamond")),
 ]
 LADDER_BY = {q[0]: q for q in LADDER}
@@ -148,12 +148,15 @@ class LadderMixin:
             if qid in p.ladder["done"] or self._ladder_metric(p, metric) < target:
                 continue
             p.ladder["done"][qid] = self.now
-            reward = REWARD[tier]
-            self.credit(p, reward, source="challenge")
+            blocked = self.reward_block(p)
+            reward = 0 if blocked else REWARD[tier]
+            if reward:
+                self.credit(p, reward, source="challenge")
             extra = ""
             if unlock:
                 extra = f" You can now wear the title “{TITLES[unlock[0]]}” and a {COLORS[unlock[1]][0].lower()} name (on your profile page)."
-            self._notify(p, f"{dict(TIERS)[tier]} quest complete: {name}! +{reward:,.0f} MB.{extra}")
+            paid = f"+{reward:,.0f} MB" if reward else f"no MB: {blocked}"
+            self._notify(p, f"{dict(TIERS)[tier]} quest complete: {name}! {paid}.{extra}")
 
     def ladder_unlocked(self, p):
         titles, colors = [], []

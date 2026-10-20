@@ -120,7 +120,7 @@ class BrowserSmoke(unittest.TestCase):
             await check("cover works", "document.getElementById('toast').textContent", lambda t: t.startswith("Covered"))
             # quarterly earnings (an 18-second quarter in this test) show up on the news wire
             await pg.goto(base + "/", 21)
-            await check("an earnings headline appeared", "document.getElementById('news').innerText",
+            await check("an earnings headline appeared", "document.getElementById('news').textContent",
                         lambda t: "EARNINGS" in t)
             # the admin dashboard: locked until the key is entered, then cards, charts and a player's trades
             await pg.goto(base + "/admin", 1.5)
@@ -675,8 +675,8 @@ class BrowserPhone(unittest.TestCase):
             await d.check("the sort box sorts by the biggest gainers",
                           "(()=>{const v=[...document.querySelectorAll('#rows tr')].filter(r=>r.style.display!=='none').slice(0,6).map(r=>parseFloat(r.querySelector('.chg').textContent));return v.every((x,i)=>i===0||v[i-1]>=x)})()",
                           wait=8)
-            await d.check("the news wire is open above the market and the other side panels are folded",
-                          "(()=>{const c=[...document.querySelectorAll('aside .card')];return c.length===3&&!c[0].classList.contains('shut')&&c[1].classList.contains('shut')&&c[2].classList.contains('shut')&&c[0].getBoundingClientRect().top<document.getElementById('market-card').getBoundingClientRect().top})()")
+            await d.check("the side panels sit folded above the market (the news wire too, ROADMAP TA-E3)",
+                          "(()=>{const c=[...document.querySelectorAll('aside .card')];return c.length===3&&c.every(x=>x.classList.contains('shut'))&&c[0].getBoundingClientRect().top<document.getElementById('market-card').getBoundingClientRect().top})()")
             await pg.js("document.querySelectorAll('aside .card h3')[1].click()")
             await d.check("tapping a heading opens a panel", "!document.querySelectorAll('aside .card')[1].classList.contains('shut')")
             await pg.js("(()=>{const i=document.querySelector('.amt-input');i.value='120';i.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#rows tr[data-k=NVXA] button[data-act=buy]').click()})()")
@@ -696,8 +696,11 @@ class BrowserPhone(unittest.TestCase):
             await pg.goto(base + "/", 3)
             await d.check("on a laptop the table keeps its headings and the sort box is hidden",
                           "getComputedStyle(document.querySelector('#market-card thead')).display!=='none'&&getComputedStyle(document.getElementById('msort')).display==='none'")
-            await d.check("on a laptop the whole header is pinned and the side panels are not folded",
-                          "getComputedStyle(document.querySelector('header')).position==='sticky'&&!document.querySelector('aside .card.fold')")
+            await d.check("on a laptop the whole header is pinned, the news wire is folded and the other side panels open",
+                          "(()=>{const c=[...document.querySelectorAll('aside .card')];return getComputedStyle(document.querySelector('header')).position==='sticky'&&c[0].classList.contains('shut')&&!c[1].classList.contains('shut')&&!c[2].classList.contains('shut')})()")
+            await pg.js("document.querySelector('aside .card h3').click()")
+            await pg.goto(base + "/", 3)
+            await d.check("the news wire stays open once opened", "!document.querySelector('aside .card').classList.contains('shut')")
         finally:
             errors = list(pg.errors)
             proc.terminate()

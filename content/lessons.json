@@ -244,24 +244,24 @@
   },
   {
    "id": "psychology",
-   "title": "Trading psychology and the journal",
+   "title": "Trading psychology",
    "level": "Understanding the market",
    "minutes": 5,
-   "summary": "Revenge trading, fear of missing out, overtrading, and why good traders write things down.",
+   "summary": "Revenge trading, fear of missing out, overtrading, and why good traders keep notes.",
    "body": [
     {"p": "The hardest part of trading is not the chart; it is you. A few habits ruin more accounts than bad analysis ever does."},
     {"h": "Common traps"},
     {"p": "Revenge trading: after a loss, trading bigger to win it back. Fear of missing out: chasing a stock that has already run, at the worst price. Moving a stop further away so as not to take a loss. Overtrading: trading because you are bored, not because there is a setup. Each one turns small losses into big ones."},
     {"h": "Rules before the trade"},
     {"p": "Decide the setup, the entry, the stop, the target and the size before you click. Once the trade is open, the plan is in charge, not your feelings. If the plan says get out, get out."},
-    {"h": "Keep a journal"},
-    {"p": "Write down every trade: the setup, why you took it, the stop and the target, and afterwards what happened and what you learned. After 20 or 30 trades the journal shows you which setups work for you and which mistakes you keep making. The Journal page does the counting for you."},
+    {"h": "Keep notes"},
+    {"p": "Write down every trade: the setup, why you took it, the stop and the target, and afterwards what happened and what you learned. After 20 or 30 trades your notes show you which setups work for you and which mistakes you keep making."},
     {"tip": "If you lose three trades in a row, stop for the session. The market will still be here tomorrow."}
    ],
    "quiz": [
-    {"q": "You have just lost 50 MB. What is revenge trading?", "options": ["Taking a break", "Immediately taking a bigger trade to win it back", "Writing it in your journal"], "answer": 1, "why": "It usually turns one loss into several bigger ones."},
+    {"q": "You have just lost 50 MB. What is revenge trading?", "options": ["Taking a break", "Immediately taking a bigger trade to win it back", "Writing it down"], "answer": 1, "why": "It usually turns one loss into several bigger ones."},
     {"q": "When should you decide where your stop goes?", "options": ["Before you open the trade", "When the trade is already losing", "Never"], "answer": 0, "why": "Decided calmly, before money is at stake."},
-    {"q": "What is the main point of a trading journal?", "options": ["To show off wins", "To find out which setups and habits work for you", "It has no use"], "answer": 1, "why": "Your own data is the best teacher you have."}
+    {"q": "What is the main point of keeping notes on your trades?", "options": ["To show off wins", "To find out which setups and habits work for you", "It has no use"], "answer": 1, "why": "Your own data is the best teacher you have."}
    ]
   }
  ]

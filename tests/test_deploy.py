@@ -98,7 +98,9 @@ class ServiceFileTests(unittest.TestCase):
     def test_a_visitor_cannot_fake_his_address_through_the_web_server(self):
         caddy = read("Caddyfile")
         self.assertIn("header_up -CF-Connecting-IP", caddy)                               # the gateway believes this header from the web server
-        self.assertIn("header_up X-Forwarded-For {remote_host}", caddy)                   # ...and this one, which is set here, not copied
+        self.assertIn("header_up X-Forwarded-For {client_ip}", caddy)                     # ...and this one, which is set here, not copied
+        self.assertIn("client_ip_headers CF-Connecting-IP", caddy)                        # the visitor's address behind Cloudflare...
+        self.assertIn("trusted_proxies static 173.245.48.0/20", caddy)                    # ...believed only from Cloudflare's addresses
         self.assertIn("Strict-Transport-Security", caddy)
         self.assertIn("redir https://YOURDOMAIN{uri} permanent", caddy)
         self.assertIn("basic_auth @admin", caddy)                                          # the optional admin password block is there

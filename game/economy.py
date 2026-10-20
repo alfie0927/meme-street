@@ -9,8 +9,8 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
   and `shop_pro` settings. A purchase is an *order*: created when the player clicks Buy, paid at the payment provider
   (or the test checkout), and completed exactly once by `complete_order`, which credits the MB or extends Pro and writes
   a `purchase` event to the money ledger (so a crash cannot lose a purchase).
-* **Pro** is the income that does not depend on anyone losing: tools (advanced chart indicators, full journal
-  statistics), never trading power and never a leaderboard advantage.
+* **Pro** is the income that does not depend on anyone losing: tools (advanced chart indicators), never trading power
+  and never a leaderboard advantage.
 * **Age.** An account needs a birth year showing at least `min_age` (13); buying needs `buy_min_age` (18) and a
   confirmation. Only the year is kept.
 * **Spending caps.** A default cap per rolling 30 days (`spend_cap_month_cents`), a lower cap a player can set (lowering
@@ -36,12 +36,12 @@ DEFAULT_PRO = [
 PRO_FEATURES = [
     "32 more chart indicators: Bollinger bands, MACD, Ichimoku, VWAP, ATR, ADX, Stochastic RSI, OBV, pivot points and more "
     "(17, including every moving average, RSI and the drawing tools, are free)",
-    "Full trading-journal statistics: results by setup, R-multiples, best and worst setups",
     "A Pro badge on your profile",
 ]
 ORDER_TTL = 86400            # an order that is not paid within a day expires
+TERMS_VERSION = "2026-10-19"  # the date of web/terms.html; an account records the version it signed up under
 PLAYER_FIELDS = ("birth_year", "pro_until", "last_restart", "mb_by_source", "spend_cap_cents", "spend_cap_pending",
-                 "challenge_mb")
+                 "challenge_mb", "terms")
 
 
 def init_player(p):
@@ -52,6 +52,7 @@ def init_player(p):
     p.spend_cap_cents = None     # a player's own lower spending cap (cents per 30 days), or None for the default
     p.spend_cap_pending = None   # [cents, when it takes effect]: a raised cap waits a day
     p.challenge_mb = {}          # week number -> MB earned from challenges that week (for the weekly cap)
+    p.terms = None               # {"v": version, "at": time}: the terms the account agreed to when it signed up
 
 
 def dump_player(p):
@@ -80,6 +81,7 @@ class EconomyMixin:
     `self._ratio` and `self._rebase_peak`."""
 
     def _init_economy(self):
+        self.pay_check = None       # the last daily payment check (reconcile_paid), for the admin page
         self.shop_orders = {}        # order id -> the order (see create_order)
 
     # ------------------------------------------------------------------ the catalogue
@@ -196,7 +198,7 @@ class EconomyMixin:
         order = {"id": oid, "token": p.token, "name": p.name, "sku": item["sku"], "kind": item["kind"],
                  "mb": int(item.get("mb", 0)), "days": int(item.get("days", 0)), "price_cents": int(item["price_cents"]),
                  "currency": self.shop_currency(), "status": "pending", "created": self.now, "provider": provider,
-                 "provider_ref": None}
+                 "provider_ref": None, "consent": "18+, own card, delivery now (no 14-day cancellation)"}
         self.shop_orders[oid] = order
         return order, ""
 
@@ -256,6 +258,43 @@ class EconomyMixin:
         if p.pro_until > self.now:
             p.pro_until = max(self.now, float(p.pro_until) - o["days"] * 86400)
         return True, "Refunded; the Pro time was removed"
+
+    def reconcile_paid(self, found):
+        """The daily payment check (ROADMAP O7): `found` is every (order id, provider reference, amount) the provider
+        says was paid lately. Any order the webhook missed is completed now (exactly once, like a webhook); anything that
+        cannot be completed is listed for the admin."""
+        fixed, problems = [], []
+        for oid, ref, amount in found:
+            o = self.shop_orders.get(oid)
+            if o is not None and o["status"] == "paid":
+                continue
+            ok, msg = self.complete_order(oid, ref, amount)
+            (fixed if ok else problems).append({"order": oid, "ref": ref, "msg": msg})
+        self.pay_check = {"at": self.now, "checked": len(found), "fixed": fixed, "problems": problems, "error": None}
+        return self.pay_check
+
+    def receipt(self, oid):
+        """(to, subject, body) for a paid order's receipt email, or None when the buyer has no verified address."""
+        o = self.shop_orders.get(oid)
+        p = self.by_token.get(o["token"]) if o else None
+        if not (o and p and o["status"] == "paid" and p.email and p.email_verified):
+            return None
+        what = f"{o['mb']:,} MB" if o["kind"] == "package" else f"Meme Street Pro, {o['days']} days"
+        price = money_text(o["price_cents"], o["currency"])
+        when = datetime.datetime.fromtimestamp(o.get("paid_at", self.now), datetime.timezone.utc)
+        body = (f"Thank you for your purchase, {p.name}.\n\n    {what}\n    {price}\n    Order {o['id']}\n"
+                f"    Paid {when:%d %b %Y, %H:%M} UTC\n\n"
+                "MB are practice money for the game: they have no cash value and cannot be withdrawn, sold or given away. "
+                "You asked for the purchase to be delivered at once, so the 14-day right to cancel ended when it was added. "
+                "If something went wrong, reply to this email or see the terms at /terms.\n")
+        return p.email, f"Your Meme Street receipt: {what}", body
+
+    def reward_block(self, p):
+        """Why `p` gets no MB from a challenge or a quest right now, or None. With `rewards_need_email` on (once real
+        email is set up, ROADMAP O1 and R6), only an account with a verified address is paid."""
+        if self.settings.get("rewards_need_email", False) and not getattr(p, "email_verified", False):
+            return "verify your email address on the Profile page to earn MB"
+        return None
 
     def _expire_orders(self):
         for o in self.shop_orders.values():
@@ -359,6 +398,7 @@ class EconomyMixin:
                 "since": since or None,
                 "earlier": {"orders": len(before), "revenue_text": money_text(sum(o["price_cents"] for o in before), cur)} if before else None,
                 "pro_members": sum(1 for p in self.players.values() if self.is_pro(p)),
+                "pay_check": self.pay_check,
                 "revenue_by_day": [{"day": d, "cents": c} for d, c in sorted(by_day.items())][-30:],
                 "mb_by_source": sources,
                 "recent": [{"id": o["id"], "name": o["name"], "sku": o["sku"], "price": money_text(o["price_cents"], o["currency"]),

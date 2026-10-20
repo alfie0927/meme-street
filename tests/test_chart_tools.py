@@ -158,7 +158,7 @@ class ChartToolsBrowserTests(unittest.TestCase):
             # the toolbar: a small bar with a drop-down, and drawing a trend line
             await d.check("the toolbar is a small bar", "(()=>{const b=document.querySelector('#draw-tools .dt-bar').getBoundingClientRect();return b.width<170&&b.height<40&&!document.querySelector('.dt-menu')})()", True, wait=5)
             await pg.js("document.querySelector('#draw-tools [data-dt=menu]').click()")
-            await d.check("its drop-down lists every tool", "document.querySelectorAll('.dt-menu [data-tool]').length", 14, wait=3)
+            await d.check("its drop-down lists every tool", "document.querySelectorAll('.dt-menu [data-tool]').length", 16, wait=3)
             await pg.js("document.querySelector('.dt-menu [data-tool=trend]').click()")
             await d.check("picking a tool closes the drop-down", "!document.querySelector('.dt-menu')", True, wait=3)
             await d.check("a tool turns the crosshair on", "document.getElementById('chart-wrap').classList.contains('tool')")

@@ -1,6 +1,6 @@
-"""Learning (learning.py, lessons.json): lessons and quizzes, challenges that pay MB within a weekly cap, and the trading
-journal that links entries to positions and fills in the result. Quizzes ship switched off (`quizzes: false`); the quiz
-tests switch them on, and QuizzesOffTests check what players get today."""
+"""Learning (learning.py, lessons.json): lessons and quizzes, and challenges that pay MB within a weekly cap. Quizzes ship
+switched off (`quizzes: false`); the quiz tests switch them on, and QuizzesOffTests check what players get today. (The
+trading journal was removed on 2026-10-20: an old save's entries are dropped, and its pages and endpoints are gone.)"""
 import asyncio
 import json
 import unittest
@@ -112,7 +112,7 @@ class QuizzesOffTests(unittest.TestCase):
         self.assertIn("first_stop", ids)
 
 
-class ChallengeAndJournalTests(unittest.TestCase):
+class ChallengeTests(unittest.TestCase):
     def setUp(self):
         self.e = make_engine(22)
         self.p = join(self.e, "trader")
@@ -136,51 +136,29 @@ class ChallengeAndJournalTests(unittest.TestCase):
         self.assertNotIn("NVXA", p.stop_seen)
         self.assertEqual(p.chal["week_planned"]["n"], 1)
 
-    def test_a_journal_idea_becomes_a_trade_and_gets_its_result_in_mb_and_r(self):
+    def test_a_take_profit_counts_for_the_ladder(self):
         e, p = self.e, self.p
-        price = e.stocks["NVXA"].price
-        ok, msg = e.add_journal(p, "nvxa", "support", "bounce off the level", stop=price * 0.95, target=price * 1.1)
+        e.trade(p, "NVXA", "buy", 0.3)
+        ok, msg = e.place_order(p, "NVXA", "take_profit", e.stocks["NVXA"].price * 1.1)
         self.assertTrue(ok, msg)
-        entry = p.journal[-1]
-        self.assertEqual(entry["status"], "idea")
-        e.trade(p, "NVXA", "buy", 0.5)
-        self.assertEqual(entry["status"], "open")
-        self.assertEqual(entry["side"], "long")
-        e.stocks["NVXA"].fair *= 1.05
-        self.step()
-        e.trade(p, "NVXA", "sell", 1.0)
-        self.assertEqual(entry["status"], "closed")
-        self.assertGreater(entry["result"], 0)
-        self.assertAlmostEqual(entry["r"], entry["result"] / (price * 0.05 * entry["shares"]), places=1)
-        self.assertTrue(e.review_journal(p, entry["id"], "Waited for the level and it worked")[0])
-        self.assertEqual(p.chal["week_review"]["n"], 1)
-        view = e.journal_view(p)
-        self.assertEqual(view["summary"]["closed"], 1)
-        self.assertNotIn("pro_stats", view)                          # the breakdown is a Pro tool
-        p.pro_until = e.now + 3600
-        self.assertEqual(e.journal_view(p)["pro_stats"]["by_setup"][0]["setup"], "support")
-
-    def test_bad_journal_entries_are_refused(self):
-        e, p = self.e, self.p
-        self.assertFalse(e.add_journal(p, "NOPE", "support")[0])
-        self.assertFalse(e.add_journal(p, "NVXA", "astrology")[0])
-        self.assertFalse(e.add_journal(p, "NVXA", "support", stop="abc")[0])
-        self.assertFalse(e.add_journal(p, "NVXA", "support", stop=-1)[0])
-        self.assertTrue(e.add_journal(p, "NVXA", "support", plan="x" * 2000)[0])
-        self.assertEqual(len(p.journal[-1]["plan"]), 400)
+        self.assertEqual(p.ladder["n"].get("targets"), 1)
+        self.assertIn("once", p.chal["first_target"]["done"])                  # the "Set a target" challenge
+        self.assertEqual(p.chal["week_targets"]["n"], 1)
 
     def test_the_learning_state_survives_a_save(self):
         p = self.p
         p.lessons_passed["basics"] = 1.0
-        p.journal.append({"id": "j1", "t": 1.0, "ticker": "NVXA", "setup": "other", "status": "idea"})
+        p.stop_seen.append("NVXA")
         q = type(p)("copy")
-        learning.load_player(q, json.loads(json.dumps(learning.dump_player(p))))
+        old = dict(learning.dump_player(p), journal=[{"id": "j1", "t": 1.0, "ticker": "NVXA", "setup": "other"}])
+        learning.load_player(q, json.loads(json.dumps(old)))                  # a save from when the journal existed
         self.assertEqual(q.lessons_passed, {"basics": 1.0})
-        self.assertEqual(q.journal[0]["id"], "j1")
+        self.assertEqual(q.stop_seen, ["NVXA"])
+        self.assertNotIn("journal", learning.dump_player(q))
 
 
 class LearningServerTests(unittest.TestCase):
-    def test_lessons_and_journal_over_http_with_quizzes_off(self):
+    def test_lessons_over_http_with_quizzes_off_and_no_journal(self):
         with IsolatedServer() as srv:
             a = http_join(srv.url, "HttpStudent")
             h = {"X-Token": a["token"]}
@@ -195,16 +173,14 @@ class LearningServerTests(unittest.TestCase):
                 ans = [q["answer"] for q in next(x for x in json.load(fh)["lessons"] if x["id"] == "basics")["quiz"]]
             r = json.loads(http(srv, "/api/learn/quiz", "POST", {"lesson": "basics", "answers": ans}, headers=h)[1])
             self.assertFalse(r["ok"])
-            status, text, _ = http(srv, "/api/journal", "POST", {"ticker": "NVXA", "setup": "breakout", "stop": 1.0}, headers=h)
-            self.assertTrue(json.loads(text)["ok"], text)
-            j = json.loads(http(srv, "/api/journal", headers=h)[1])
-            self.assertEqual(j["entries"][0]["setup"], "breakout")
+            self.assertNotIn("journal", json.dumps(d).lower())                    # no journal challenges
+            self.assertIn(http(srv, "/api/journal", headers=h)[0], (404, 405))
             self.assertEqual(http(srv, "/api/learn")[0], 401)
 
 
 @unittest.skipUnless(find_browser(), "no Edge/Chrome installed")
 class LearningBrowserTests(unittest.TestCase):
-    """The Learn, Journal and Calendar pages and the chart tools, in a real browser."""
+    """The Learn and Calendar pages and the chart tools, in a real browser."""
 
     def test_the_new_pages_and_chart_tools(self):
         with IsolatedServer() as srv:
@@ -227,13 +203,7 @@ class LearningBrowserTests(unittest.TestCase):
             await d.check("a lesson opens to read", "document.querySelector('.lesson-body') && document.querySelector('.lesson-body').innerText.length",
                           lambda n: bool(n) and n > 200, wait=10)
             await d.check("without a quiz", "document.querySelectorAll('.quiz-q').length + (document.getElementById('quiz-go') ? 1 : 0)", 0)
-            await pg.goto(base + "/journal", 3)
-            await d.check("the journal has the setups", "document.getElementById('j-setup').options.length", lambda n: n > 5, wait=10)
-            await pg.js("(()=>{document.getElementById('j-ticker').value='NVXA';document.getElementById('j-setup').value='support';"
-                        "document.getElementById('j-stop').value='1';document.getElementById('j-plan').value='test plan';"
-                        "document.getElementById('j-save').click()})()")
-            await d.check("an entry is saved and listed", "document.getElementById('j-rows').innerText",
-                          lambda t: "NVXA" in t and "Bounce at support" in t, wait=10)
+            await d.check("there is no Journal in the menu", "!document.querySelector('#nav a[href=\"/journal\"]')", True)
             await pg.goto(base + "/calendar", 3)
             await d.check("the calendar grid lists releases", "[...document.querySelectorAll('#cal-grid .cal-chip')].some(c=>c.title.includes('Weekly jobless claims'))",
                           True, wait=10)   # (weekly: always in a month)

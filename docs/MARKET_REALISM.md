@@ -109,6 +109,18 @@ momentum, breakouts and buying 20-day lows all earn less than holding the market
 level test earns about +0.09% a trade (less than holding over a game year); trading only strong levels with the trend
 earns about +0.3% a trade. Strong levels hold 56% of the time, weak ones 42%, a third of breaks fail.
 
+**Levels calibrated, news turned down (2026-10-19, ROADMAP TA-A1, TA-E1, TA-E2).** A strong level (3+ touches or a round
+number) in line with the trend now holds 5 points more often (`hold_strong_aligned`), and while a strong level is tested the
+noise is 0.8x (0.9x before the price reaches a level that will break): the approach visibly slows. Macro releases move the
+market 0.3 daily sigmas per standard deviation of surprise (was 0.55), with half the extra noise and volume after them.
+`python tools/realism.py 2 3 40 601`, old settings against new on the same seeds: strong levels held 56% then 59% (target
+55-65%), weak ones 43% both times, 34% and 33% of breaks failed. The "no free money" picture did not change: trading every
+level test earned +25.4% a game year against +22.2% for holding the market before, +23.2% against +19.2% after (the extra is
+about the market's drift over the hour each trade lasts); strong levels with the trend +14.3% and +10.7%, both below holding.
+Two broader versions tried first (higher odds for every level, a slower approach at every level) also reached 59% but let
+trading every level beat holding by 9 to 12 points, so they were dropped. Seeds 401, 501 and 601 differ a lot in their
+market return (-8% to +9% a game year), so compare settings on the same seeds.
+
 **After company sizes were spread out (2026-10-14)**: small caps now carry 1.3 times the volatility of a large cap (most of it
 their own, not the market's), so stocks move together a little less. Seed 7 over 12 game days: every check in range, with
 the correlation between stocks at 0.19 (it was 0.2 to 0.44 before), earnings days 3.9x, the market's lag-1 autocorrelation

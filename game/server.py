@@ -118,7 +118,9 @@ async def game_loop():
 @asynccontextmanager
 async def lifespan(app):
     task = asyncio.create_task(game_loop())
+    checker = asyncio.create_task(payment_check_loop())
     yield
+    checker.cancel()
     task.cancel()
     try:
         await task
@@ -151,6 +153,7 @@ class Register(BaseModel):
     password: str
     birth_year: int = 0
     email: str = ""
+    website: str = ""          # a field people never see: a bot that fills in every box fills this one too
 
 
 class EmailIn(BaseModel):
@@ -229,6 +232,10 @@ async def register(j: Register, request: Request):
     cap = int(engine.settings.get("signups_per_ip_hour", 5))
     if cap > 0 and limits.count(("signup", ip), 3600, now) >= cap:
         return too_many(limits.retry_after(("signup", ip), 3600, now))
+    if j.website.strip():                                  # the hidden box was filled in: a bot (ROADMAP R6)
+        limits.add(("signup", ip), now)
+        logger.info("sign-up refused: the hidden field was filled in")
+        return JSONResponse({"error": "Could not create the account"}, status_code=400)
     problem = password_problem(j.password, j.name)
     if problem:
         return JSONResponse({"error": problem}, status_code=400)
@@ -960,10 +967,49 @@ async def portfolio(x_token: str = Header("")):
 
 
 @app.get("/api/history")
-async def history(x_token: str = Header(""), limit: int = 100, before: int = 0, kind: str = ""):
-    """The player's ledger entries, newest first. Page with `before` (the `seq` of the last entry received)."""
+async def history(x_token: str = Header(""), limit: int = 100, before: int = 0, kind: str = "", ticker: str = ""):
+    """The player's ledger entries, newest first. Page with `before` (the `seq` of the last entry received); `ticker`
+    keeps one stock's (the chart's trade markers)."""
     kinds = [k for k in kind.split(",") if k] or None
-    return await with_player(x_token, "history", engine.history_for, limit, before or None, kinds)
+    return await with_player(x_token, "history" + ("_tk" if ticker else ""), engine.history_for, limit, before or None,
+                             kinds, ticker.upper()[:8] or None)
+
+
+# ---- the chart set-up kept per player (chartprefs.py): indicators, chart type, drawings
+@app.get("/api/chart")
+async def chart_get(x_token: str = Header("")):
+    return await with_player(x_token, "chart_get", engine.chart_prefs)
+
+
+@app.post("/api/chart")
+async def chart_set(request: Request, x_token: str = Header("")):
+    body = await request.body()
+    if len(body) > 20000:
+        return JSONResponse({"error": "Too much"}, status_code=413)
+    try:
+        d = json.loads(body or b"{}")
+    except ValueError:
+        return JSONResponse({"error": "Not JSON"}, status_code=400)
+    res = await with_player(x_token, "chart_set", engine.set_chart_prefs, d, interval=0.5)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.get("/api/drawings/{ticker}")
+async def drawings_get(ticker: str, x_token: str = Header("")):
+    return await with_player(x_token, "draw_get", engine.drawings, ticker.upper()[:8])
+
+
+@app.post("/api/drawings/{ticker}")
+async def drawings_set(ticker: str, request: Request, x_token: str = Header("")):
+    body = await request.body()
+    if len(body) > 200000:
+        return JSONResponse({"error": "Too much"}, status_code=413)
+    try:
+        d = json.loads(body or b"[]")
+    except ValueError:
+        return JSONResponse({"error": "Not JSON"}, status_code=400)
+    res = await with_player(x_token, "draw_set", engine.set_drawings, ticker.upper()[:8], d, interval=0.5)
+    return res if isinstance(res, JSONResponse) else acted(res)
 
 
 @app.get("/api/history.csv")
@@ -1069,7 +1115,47 @@ async def shop_test_pay(b: TestPay, x_token: str = Header("")):
     res = await with_player(x_token, "testpay", work, interval=0.5)
     if isinstance(res, dict) and res.get("ok"):
         await run(engine.save, False)                  # a purchase must survive a crash (the ledger has it too)
+        await send_receipt(b.order)
     return res
+
+
+async def send_receipt(oid):
+    """Email the buyer a receipt, when real mail is set up and their address is verified (ROADMAP R3)."""
+    if not mailer.configured or not mail_allowed(time.time()):
+        return
+    r = await run(engine.receipt, oid)
+    if r:
+        send_mail(*r)
+
+
+async def check_payments(days=3):
+    """The daily payment check (ROADMAP O7): ask Stripe for every checkout paid in the last few days and complete any
+    order whose webhook never arrived. Returns the report (also kept for the admin page)."""
+    found = await asyncio.get_running_loop().run_in_executor(pool, payments.paid_sessions, time.time() - days * 86400)
+    if found is None:
+        report = {"at": time.time(), "checked": 0, "fixed": [], "problems": [], "error": "Stripe could not be reached"}
+        await run(lambda: setattr(engine, "pay_check", report))
+        return report
+    report = await run(engine.reconcile_paid, found)
+    if report["fixed"]:
+        logger.warning("payment check completed %d order(s) the webhook missed", len(report["fixed"]))
+        await run(engine.save, False)
+        for f in report["fixed"]:
+            await send_receipt(f["order"])
+    if report["problems"]:
+        logger.warning("payment check: %d paid checkout(s) could not be completed: %s", len(report["problems"]), report["problems"])
+    return report
+
+
+async def payment_check_loop():
+    while True:
+        await asyncio.sleep(600)                       # (not at start-up: give the webhook a moment first)
+        if payments.mode == "stripe":
+            try:
+                await check_payments()
+            except Exception:
+                logger.exception("payment check failed")
+        await asyncio.sleep(6 * 3600 - 600)            # four times a day
 
 
 @app.post("/api/shop/stripe/webhook")
@@ -1087,8 +1173,9 @@ async def stripe_webhook(request: Request):
         oid, ref, amount = paid
         ok, msg = await run(engine.complete_order, oid, ref, amount)
         logger.info("stripe webhook: order %s: %s", oid, msg)
-        if ok:
+        if ok and msg != "Already completed":
             await run(engine.save, False)
+            await send_receipt(oid)
     return {"received": True}
 
 
@@ -1260,20 +1347,6 @@ class Quiz(BaseModel):
     answers: list
 
 
-class JournalEntry(BaseModel):
-    ticker: str
-    setup: str
-    plan: str = ""
-    stop: float | None = None
-    target: float | None = None
-    note: str = ""
-
-
-class JournalReview(BaseModel):
-    id: str
-    lesson: str = ""
-
-
 @app.get("/api/learn")
 async def learn(x_token: str = Header("")):
     """The lessons (with which ones the player has passed), the challenges and this week's reward cap."""
@@ -1291,30 +1364,6 @@ async def learn_lesson(lesson_id: str):
 async def learn_quiz(b: Quiz, x_token: str = Header("")):
     """Mark a quiz. Passing a lesson for the first time pays its reward (within the weekly cap)."""
     return await with_player(x_token, "quiz", engine.answer_quiz, b.lesson, b.answers, interval=1.0)
-
-
-@app.get("/api/journal")
-async def journal(x_token: str = Header("")):
-    return await with_player(x_token, "journal", engine.journal_view)
-
-
-@app.post("/api/journal")
-async def journal_add(b: JournalEntry, x_token: str = Header("")):
-    res = await with_player(x_token, "journal_add", engine.add_journal, b.ticker, b.setup, b.plan, b.stop, b.target,
-                            b.note, interval=0.5)
-    return res if isinstance(res, JSONResponse) else acted(res)
-
-
-@app.post("/api/journal/review")
-async def journal_review(b: JournalReview, x_token: str = Header("")):
-    res = await with_player(x_token, "journal_review", engine.review_journal, b.id, b.lesson, interval=0.5)
-    return res if isinstance(res, JSONResponse) else acted(res)
-
-
-@app.post("/api/journal/delete")
-async def journal_delete(b: JournalReview, x_token: str = Header("")):
-    res = await with_player(x_token, "journal_delete", engine.delete_journal, b.id, interval=0.3)
-    return res if isinstance(res, JSONResponse) else acted(res)
 
 
 @app.get("/api/calendar")
@@ -1394,6 +1443,19 @@ async def admin_shop(x_admin_key: str = Header("")):
     data = await run(engine.economy_stats)
     data["mode"] = payments.mode
     return data
+
+
+@app.post("/api/admin/payment_check")
+async def admin_payment_check(x_admin_key: str = Header("")):
+    """Run the payment check now (it also runs by itself four times a day while the shop takes real payments)."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    if payments.mode != "stripe":
+        return {"ok": False, "msg": "Nothing to check: the shop is not taking real payments"}
+    r = await check_payments()
+    if r["error"]:
+        return {"ok": False, "msg": r["error"]}
+    return {"ok": True, "msg": f"Checked {r['checked']} paid checkout(s): {len(r['fixed'])} completed now, {len(r['problems'])} problem(s)"}
 
 
 @app.post("/api/admin/refund")

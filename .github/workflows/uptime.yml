@@ -1,0 +1,26 @@
+name: uptime
+
+# Checks that memestreet.net is up every 15 minutes (ROADMAP O3). `/api/health` answers 200 while the game is ticking
+# and saving, and 503 when it is stuck; a timeout means the server or Caddy is down. When the check fails, the run fails
+# and GitHub emails the repository's owner (Settings > Notifications > Actions on github.com decides where it goes).
+# GitHub may start a scheduled run a few minutes late, and stops scheduled runs in a repository with no commits for 60
+# days (a commit, or "Enable workflow" on the Actions tab, starts them again). A dedicated monitor such as UptimeRobot
+# checks more often and can text you: deploy/DEPLOY.md, "Knowing it is up".
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ask the site whether the game is running
+        run: |
+          for attempt in 1 2 3; do
+            if curl -fsS --max-time 20 https://memestreet.net/api/health; then echo; echo "up"; exit 0; fi
+            sleep 30
+          done
+          echo "::error title=memestreet.net is down::/api/health failed three times in a row"
+          exit 1

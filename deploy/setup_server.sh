@@ -89,6 +89,12 @@ if [ -s /root/.ssh/authorized_keys ]; then
     systemctl reload ssh 2>/dev/null || systemctl reload sshd 2>/dev/null || true
 fi
 
+echo "== fail2ban: an address that keeps failing to log in by ssh is shut out for an hour"
+apt-get install -y fail2ban python3-systemd
+printf '[sshd]\nenabled = true\nbackend = systemd\nmaxretry = 5\nfindtime = 10m\nbantime = 1h\n' > /etc/fail2ban/jail.d/memestreet.local
+systemctl enable --now fail2ban
+systemctl restart fail2ban
+
 echo "== Automatic security updates and backups"
 cat > /etc/apt/apt.conf.d/20auto-upgrades <<'EOF'
 APT::Periodic::Update-Package-Lists "1";

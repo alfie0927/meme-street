@@ -41,6 +41,14 @@ def add_pages(app):
         """What Meme Street is, for people who have not signed up yet (a plain page: no game connection)."""
         return FileResponse(os.path.join(web, "about.html"), headers={"Cache-Control": "public, max-age=300"})
 
+    @app.get("/terms")
+    async def terms_page():
+        return FileResponse(os.path.join(web, "terms.html"), headers={"Cache-Control": "public, max-age=300"})
+
+    @app.get("/privacy")
+    async def privacy_page():
+        return FileResponse(os.path.join(web, "privacy.html"), headers={"Cache-Control": "public, max-age=300"})
+
     @app.get("/stock/{ticker}")
     async def stock_page(ticker: str):
         if ticker in TICKER_RENAMES:                  # an old link to a renamed product (BULL2 is now 2LMSI)
@@ -57,5 +65,5 @@ def add_pages(app):
         the order and refuses if the shop is not in test mode."""
         return FileResponse(os.path.join(web, "shop_pay.html"), headers={"Cache-Control": "no-store"})
 
-    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "journal", "calendar"):
+    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar"):
         app.add_api_route("/" + route, lambda: page(), methods=["GET"], include_in_schema=False)

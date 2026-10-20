@@ -159,6 +159,29 @@ server (it installs changed service files and the backup job) and restarts the g
 players are disconnected for a few seconds and reconnect by themselves. Never sent: `data/` (saves, the ledger, backups)
 and anything else the server owns.
 
+**Trying an update first: the staging copy.** To see the new code on the real server before players do:
+
+```powershell
+powershell -File deploy\upload.ps1 -Server root@YOUR.SERVER.IP -Staging           # add -Fresh to start again from the newest live backup
+```
+
+It sends the code to `/opt/memestreet-staging` instead, starts it there (`memestreet-staging.service`, port 8100, only
+reachable from the server itself) with a copy of the newest live backup, and opens a tunnel: while the window is open,
+**http://127.0.0.1:8100** on your computer is the staging copy. Its shop is closed and it sends no mail
+(`/etc/memestreet-staging.env` holds only the admin key). Ctrl+C closes the tunnel; the staging copy keeps running (it uses
+about 650 MB of memory) until `upload.ps1 -Server root@YOUR.SERVER.IP -StopStaging`. It never starts by itself.
+
+**Undoing an update.** Every live upload first saves the code it replaces in `/opt/memestreet-releases/` (the five newest).
+If an update goes wrong:
+
+```powershell
+powershell -File deploy\rollback.ps1 -Server root@YOUR.SERVER.IP          # back to the code before the last upload, and restart
+powershell -File deploy\rollback.ps1 -Server root@YOUR.SERVER.IP -List    # the saved releases
+```
+
+Only the code goes back; the save, the ledger and the backups stay. Running it again goes one release further back. If an
+update changed how the game saves (rare; the docs say so when it does), restore the backup from before it too (below).
+
 On the server the game is in `/opt/memestreet` with the same folders as here; what it writes is in `/opt/memestreet/data`.
 (Until October 2026 everything sat in `/opt/memestreet` itself. The first upload after the change moved the save, the
 ledger and the reset backups into `data/` and removed the old copies of the code: `update_server.sh` does that by itself on
@@ -174,9 +197,16 @@ scp -r root@YOUR.SERVER.IP:/var/backups/memestreet .\server-backups
 ```
 
 or, better, `powershell -File deploy\pull_backups.ps1 -Server root@YOUR.SERVER.IP`: it copies only the newest backups that are not
-here yet (default: the last day, four copies) into `D:\meme_street_backups`, checks each one arrived whole, and changes nothing on
-the server. Run it every day (it can be set up as a daily Windows scheduled task: Task Scheduler, Create Basic Task, daily,
-action "Start a program", program `powershell`, arguments `-File D:\stock_market_sim\deploy\pull_backups.ps1 -Server root@YOUR.SERVER.IP`).
+here yet (default: the last day, four copies) into `D:\meme_street_backups`, checks each one arrived whole, keeps the newest 60
+(about two weeks) and changes nothing on the server. **To run it every day by itself** (ROADMAP O2):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File deploy\schedule_backups.ps1 -Server root@YOUR.SERVER.IP     # -At 21:00 for another time
+```
+
+That makes a Windows scheduled task, *Meme Street backups*, that runs at 09:00 (or as soon as the computer is on after that),
+with no window, and writes what it did to `D:\meme_street_backups\pull.log`. **On this computer it is set up** (2026-10-19).
+`-Remove` deletes the task.
 
 and switch on the provider's own backups. **Restoring** a backup (the game must be stopped while you copy):
 
@@ -191,6 +221,12 @@ systemctl start memestreet && sleep 5 && systemctl start memestreet-gateway
 
 ## Knowing it is up
 
+**Already in place** (ROADMAP O3): a GitHub Actions job (`.github/workflows/uptime.yml`) asks `https://memestreet.net/api/health`
+every 15 minutes; when it fails three times in a row the run fails and GitHub emails you (on github.com: Settings >
+Notifications > Actions). GitHub may start it a few minutes late and pauses scheduled jobs in a repository with no commits for
+60 days (a commit, or *Enable workflow* on the Actions tab, starts it again). For checks every few minutes and alerts by phone,
+add a dedicated monitor as well:
+
 Free monitors such as UptimeRobot (uptimerobot.com) can check `https://yourdomain.com/api/health` every five minutes and
 email or message you when it fails. That address answers 200 with `{"ok":true,...}` while the game is ticking and saving, and
 503 when it is stuck (no tick for 15 seconds, or no save for five minutes); if the gateways cannot reach the game, or the server
@@ -204,6 +240,43 @@ journalctl -u memestreet -f                            # the game's messages, li
 journalctl -u memestreet-gateway -n 50
 journalctl -u caddy -n 50                              # certificate problems show here
 ```
+
+## Cloudflare in front (optional, ROADMAP O4)
+
+Cloudflare hides the server's address, absorbs floods of traffic and can cache. The server is ready for it: Caddy believes the
+visitor's address that Cloudflare sends (`CF-Connecting-IP`) only from Cloudflare's own addresses (`trusted_proxies` at the
+top of the Caddyfile), so the sign-up and login limits keep working per visitor, with or without Cloudflare. To switch it on:
+
+1. Make a free account at cloudflare.com, **Add a site**, type `memestreet.net`, pick the Free plan. It reads your DNS records;
+   check that `memestreet.net` and `www` point at the server and have the orange cloud (proxied) on.
+2. At the company where you bought the name, replace its name servers with the two Cloudflare shows. It can take a few
+   hours; Cloudflare emails you when the site is active.
+3. In Cloudflare: **SSL/TLS > Overview: Full (strict)** (the server has its own certificate from Caddy). Leave the rest as it
+   is; websockets work through Cloudflare by default.
+4. Check: the site still opens, `https://memestreet.net/api/health` answers, and the admin page's "Connected pages and
+   visitors" shows different addresses for different visitors.
+
+If Cloudflare's address list changes (https://www.cloudflare.com/ips), update `trusted_proxies` in `deploy/Caddyfile` and on
+the server in `/etc/caddy/Caddyfile`, then `caddy validate --config /etc/caddy/Caddyfile` and `systemctl reload caddy`. (On
+memestreet.net the Caddyfile was updated on 2026-10-19; the name servers are still yours to change.)
+
+## Secrets: what they are and where they live (ROADMAP O6)
+
+Never in git, never in chat. If one may have leaked, change it as described.
+
+| Secret | Where | How to change it |
+|---|---|---|
+| `ADMIN_KEY` (the admin page's key) | `/etc/memestreet.env` on the server; this computer's copy in `data\live_admin_credentials.txt`; the local game's in `data\admin_key.txt` | edit the line, `systemctl restart memestreet memestreet-gateway` |
+| The admin page's second password (name `owner`) | its hash in `/etc/caddy/Caddyfile`; the password in `data\live_admin_credentials.txt` | Step 7 |
+| `CORE_KEY` (gateways to game) | `/etc/memestreet.env` | any long random string, then restart both services |
+| `SMTP_PASSWORD` (mail, once on) | `/etc/memestreet.env` (`deploy\set_mail.ps1` puts it there) | make a new key at the mail service, run `set_mail.ps1` again |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (once the shop takes money) | `/etc/memestreet.env` | roll the key in Stripe's dashboard, update the lines, restart |
+| Your ssh key | `C:\Users\YOU\.ssh\` here; its public half in `/root/.ssh/authorized_keys` | `ssh-keygen -t ed25519`, add the new public key to `authorized_keys`, check you can log in with it, then remove the old line |
+| The live save and ledger (players' accounts) | `/opt/memestreet/data`, `/var/backups/memestreet`, `D:\meme_street_backups` | not a key: keep the folders private |
+
+Logging in to the server: keys only (passwords are off for ssh), and **fail2ban** shuts an address out for an hour after five
+failed ssh logins in ten minutes (`fail2ban-client status sshd` lists who is shut out right now). If you lock yourself out,
+the provider's web console still works.
 
 ## When something is wrong
 

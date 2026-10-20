@@ -1,32 +1,24 @@
-"""Learning (ROADMAP.md track L): lessons with quizzes, challenges that award MB, and the trading journal.
+"""Learning (ROADMAP.md track L): lessons with quizzes, and challenges that award MB.
 
 * **Lessons** live in `content/lessons.json`. A lesson's quiz is marked here: the right answers never reach the page
   before the player has answered. Passing a lesson (every answer right) for the first time is worth `lesson_reward` MB.
   **Quizzes are switched off for now** (`quizzes: false` in base.json): the lessons are plain reading, there is no
   quiz, no lesson reward, and the challenges that need quizzes (first lesson, the basics, graduate) are not offered.
   The questions stay in lessons.json, so `quizzes: true` brings it all back.
-* **Challenges** reward the habits the lessons teach (protecting a trade with a stop, keeping a journal, reviewing
-  trades), never volume or luck. Some can be won once, some once a week. Every MB from a lesson or a challenge counts
+* **Challenges** reward the habits the lessons teach (protecting a trade with a stop, closing positions that had one),
+  never volume or luck. Some can be won once, some once a week. Every MB from a lesson or a challenge counts
   as `challenge` MB, and at most `challenge_week_cap` of them are paid in one week (a week runs Monday to Sunday, UTC).
-* **The journal** is a player's own notes on their trades: the setup, the plan (stop and target) and, afterwards, what
-  they learned. An entry is linked to the player's position in that stock: when the position is closed the result is
-  filled in, in MB and in R (the result divided by the risk the plan took). Everyone sees their win rate and average
-  result; Pro adds the breakdown by setup and the R statistics.
 
 Nothing here changes prices or trading: challenges only ever credit MB (counted as money put in, so they never lift a
-return), and the journal is notes.
+return). (A trading journal lived here until 2026-10-20; it was removed, and old saves' entries are dropped on load.)
 """
 import datetime
 import json
 import os
-import uuid
 
 import paths
 
 LESSONS_FILE = os.path.join(paths.CONTENT, "lessons.json")
-SETUPS = {"support": "Bounce at support", "resistance": "Rejected at resistance", "breakout": "Breakout",
-          "pullback": "Trend pullback", "range": "Range trade", "macro": "Macro release", "earnings": "Earnings",
-          "other": "Other"}
 CHALLENGES = [
     {"id": "first_lesson", "title": "First lesson", "how": "Pass the quiz of any lesson.", "period": "once", "target": 1,
      "reward": 25, "counter": "lessons"},
@@ -36,27 +28,23 @@ CHALLENGES = [
      "reward": 250, "counter": "lessons"},
     {"id": "first_stop", "title": "Protect a trade", "how": "Put a stop-loss (or a bracket) on an open position.",
      "period": "once", "target": 1, "reward": 25, "counter": "stops"},
-    {"id": "first_journal", "title": "Dear diary", "how": "Write your first journal entry with a setup and a stop.",
-     "period": "once", "target": 1, "reward": 25, "counter": "journal"},
+    {"id": "first_target", "title": "Set a target", "how": "Put a take-profit on an open position.",
+     "period": "once", "target": 1, "reward": 25, "counter": "targets"},
     {"id": "week_stops", "title": "Every trade protected", "how": "Put a stop-loss on 5 positions this week.",
      "period": "week", "target": 5, "reward": 60, "counter": "stops"},
     {"id": "week_planned", "title": "Plan the trade, trade the plan",
      "how": "Close 3 positions this week that had a stop-loss while they were open, win or lose.", "period": "week",
      "target": 3, "reward": 75, "counter": "planned"},
-    {"id": "week_journal", "title": "Keep a journal", "how": "Write 5 journal entries with a setup and a stop this week.",
-     "period": "week", "target": 5, "reward": 50, "counter": "journal"},
-    {"id": "week_review", "title": "Learn from it", "how": "Write what you learned on 3 closed journal entries this week.",
-     "period": "week", "target": 3, "reward": 40, "counter": "reviews"},
+    {"id": "week_targets", "title": "Every trade has a target", "how": "Put a take-profit on 5 positions this week.",
+     "period": "week", "target": 5, "reward": 50, "counter": "targets"},
 ]
 QUIZ_COUNTERS = ("lessons", "basics")      # challenges won by passing quizzes (not offered while quizzes are off)
-PLAYER_FIELDS = ("lessons_passed", "chal", "journal", "stop_seen")
-JOURNAL_MAX = 300
+PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen")
 
 
 def init_player(p):
     p.lessons_passed = {}      # lesson id -> when it was passed
     p.chal = {}                # challenge id -> {"n": progress, "key": period key, "done": [period keys won]}
-    p.journal = []             # journal entries, oldest first (see add_journal)
     p.stop_seen = []           # tickers whose open position has had a stop-loss (for "planned" trades)
 
 
@@ -70,7 +58,6 @@ def load_player(p, x):
             setattr(p, k, x[k])
     p.lessons_passed = dict(p.lessons_passed or {})
     p.chal = dict(p.chal or {})
-    p.journal = list(p.journal or [])[-JOURNAL_MAX:]
     p.stop_seen = list(p.stop_seen or [])
 
 
@@ -108,6 +95,10 @@ class LearningMixin:
 
     def _reward(self, p, amount, why):
         """Pay a challenge or lesson reward, within the weekly cap. Returns what was paid."""
+        blocked = self.reward_block(p)
+        if blocked:
+            self._notify(p, f"{why}: done, but no MB: {blocked}.")
+            return 0.0
         week = self._week_key()
         cap = float(self.settings.get("challenge_week_cap", 500))
         got = float(p.challenge_mb.get(week, 0.0))
@@ -204,7 +195,10 @@ class LearningMixin:
 
     # ------------------------------------------------------------------ hooks from trading
     def _learn_order(self, p, ticker, kind):
-        """A stop-loss was placed on an open position."""
+        """A stop-loss or a take-profit was placed on an open position."""
+        if kind == "take_profit":
+            self._bump(p, "targets")
+            self._ladder_count(p, "targets")
         if kind != "stop_loss" or ticker in p.stop_seen:
             return
         p.stop_seen.append(ticker)
@@ -212,110 +206,9 @@ class LearningMixin:
         self._ladder_count(p, "stops")
 
     def _learn_after_trade(self, p, ticker):
-        """Link journal entries to positions: an idea becomes an open trade when a position is opened, and an open
-        entry is closed with its result when the position is closed."""
-        held = p.hold.get(ticker, 0.0)
-        s = self.stocks.get(ticker)
-        price = s.price if s else 0.0
-        if abs(held) > 1e-9:
-            for e in reversed(p.journal):
-                if e["ticker"] == ticker and e["status"] == "idea" and self.now - e["t"] < 2 * 1800:
-                    self._open_entry(p, e, held, price)
-                    break
+        """A position that had a stop-loss was closed: a planned trade, win or lose."""
+        if abs(p.hold.get(ticker, 0.0)) > 1e-9 or ticker not in p.stop_seen:
             return
-        if ticker in p.stop_seen:                       # a position that had a stop was closed: a planned trade
-            p.stop_seen.remove(ticker)
-            self._bump(p, "planned")
-            self._ladder_count(p, "planned")
-        for e in p.journal:
-            if e["ticker"] == ticker and e["status"] == "open":
-                result = p.realized.get(ticker, 0.0) - e.get("realized0", 0.0)
-                e.update(status="closed", closed_at=self.now, exit_price=round(price, 6), result=round(result, 4))
-                risk = abs(e.get("entry_price", 0) - (e.get("stop") or 0)) * e.get("shares", 0) if e.get("stop") else 0
-                e["r"] = round(result / risk, 2) if risk > 1e-9 else None
-                if e["r"] is not None and e["r"] >= 2:
-                    self._ladder_count(p, "r2")                 # a trade closed at 2R or better (the quest ladder)
-
-    def _open_entry(self, p, e, held, price):
-        e.update(status="open", side="long" if held > 0 else "short", entry_price=round(price, 6),
-                 shares=abs(held), realized0=p.realized.get(e["ticker"], 0.0), opened_at=self.now)
-
-    # ------------------------------------------------------------------ the journal
-    def add_journal(self, p, ticker, setup, plan="", stop=None, target=None, note=""):
-        ticker = str(ticker or "").upper()
-        if ticker not in self.stocks:
-            return False, "Pick a stock you can trade"
-        if setup not in SETUPS:
-            return False, "Pick a setup"
-        plan, note = str(plan or "")[:400].strip(), str(note or "")[:400].strip()
-        try:
-            stop = float(stop) if stop not in (None, "") else None
-            target = float(target) if target not in (None, "") else None
-        except (TypeError, ValueError):
-            return False, "Stop and target must be prices"
-        if (stop is not None and stop <= 0) or (target is not None and target <= 0):
-            return False, "Stop and target must be above 0"
-        recent = [e for e in p.journal if self.now - e["t"] < 60]
-        if len(recent) >= 5:
-            return False, "Slow down: at most 5 entries a minute"
-        e = {"id": uuid.uuid4().hex[:10], "t": self.now, "ticker": ticker, "setup": setup, "plan": plan, "note": note,
-             "stop": stop, "target": target, "status": "idea", "lesson": ""}
-        held = p.hold.get(ticker, 0.0)
-        if abs(held) > 1e-9:
-            self._open_entry(p, e, held, self.stocks[ticker].price)
-        p.journal.append(e)
-        del p.journal[:-JOURNAL_MAX]
-        if stop is not None:
-            self._bump(p, "journal")
-            self._ladder_count(p, "journal")
-        return True, "Saved to your journal"
-
-    def review_journal(self, p, entry_id, lesson):
-        e = next((x for x in p.journal if x["id"] == entry_id), None)
-        if e is None:
-            return False, "Unknown entry"
-        lesson = str(lesson or "")[:400].strip()
-        if len(lesson) < 10:
-            return False, "Write a sentence or two about what you learned"
-        first = not e.get("lesson")
-        e["lesson"] = lesson
-        if first and e["status"] == "closed":
-            self._bump(p, "reviews")
-            self._ladder_count(p, "reviews")
-        return True, "Saved"
-
-    def delete_journal(self, p, entry_id):
-        n = len(p.journal)
-        p.journal = [x for x in p.journal if x["id"] != entry_id]
-        return (True, "Deleted") if len(p.journal) < n else (False, "Unknown entry")
-
-    def journal_view(self, p):
-        closed = [e for e in p.journal if e["status"] == "closed"]
-        wins = [e for e in closed if e.get("result", 0) > 0]
-        out = {"entries": list(reversed(p.journal[-150:])), "setups": SETUPS, "pro": self.is_pro(p),
-               "summary": {"closed": len(closed), "open": sum(1 for e in p.journal if e["status"] == "open"),
-                           "ideas": sum(1 for e in p.journal if e["status"] == "idea"),
-                           "win_rate": round(len(wins) / len(closed), 3) if closed else None,
-                           "avg_result": round(sum(e.get("result", 0) for e in closed) / len(closed), 2) if closed else None}}
-        if self.is_pro(p):
-            by = {}
-            for e in closed:
-                b = by.setdefault(e["setup"], {"setup": e["setup"], "name": SETUPS.get(e["setup"], e["setup"]), "n": 0,
-                                               "wins": 0, "total": 0.0, "rs": []})
-                b["n"] += 1
-                b["wins"] += e.get("result", 0) > 0
-                b["total"] += e.get("result", 0)
-                if e.get("r") is not None:
-                    b["rs"].append(e["r"])
-            rows = []
-            for b in by.values():
-                rs = b.pop("rs")
-                b.update(win_rate=round(b["wins"] / b["n"], 3), total=round(b["total"], 2),
-                         avg_r=round(sum(rs) / len(rs), 2) if rs else None, with_stop=len(rs))
-                rows.append(b)
-            rows.sort(key=lambda b: -b["total"])
-            rs = [e["r"] for e in closed if e.get("r") is not None]
-            out["pro_stats"] = {"by_setup": rows, "avg_r": round(sum(rs) / len(rs), 2) if rs else None,
-                                "best_r": max(rs) if rs else None, "worst_r": min(rs) if rs else None,
-                                "planned_share": round(len(rs) / len(closed), 3) if closed else None}
-        return out
+        p.stop_seen.remove(ticker)
+        self._bump(p, "planned")
+        self._ladder_count(p, "planned")

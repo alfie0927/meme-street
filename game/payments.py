@@ -101,6 +101,36 @@ class Payments:
         except ValueError:
             return None
 
+    # ------------------------------------------------------------------ the daily check (O7)
+    def paid_sessions(self, since, opener=None, pages=20):
+        """Every checkout Stripe says was paid since `since` (Unix time), as [(order id, session id, amount in cents)];
+        None if Stripe could not be asked. A webhook can be lost (an outage, a restart at the wrong moment): this list is
+        how the game finds out. Nothing to check in the other modes."""
+        if self.mode != "stripe":
+            return []
+        out, after = [], None
+        for _ in range(pages):                               # 100 sessions a page
+            q = {"limit": "100", "created[gte]": str(int(since))}
+            if after:
+                q["starting_after"] = after
+            req = urllib.request.Request(STRIPE_API + "?" + urllib.parse.urlencode(q),
+                                         headers={"Authorization": "Bearer " + self.secret_key})
+            try:
+                with (opener or urllib.request.urlopen)(req, timeout=20) as r:
+                    data = json.loads(r.read().decode("utf-8"))
+            except (urllib.error.URLError, OSError, ValueError) as e:
+                logger.warning("could not list Stripe checkouts: %s", e)
+                return None
+            sessions = data.get("data") or []
+            for s in sessions:
+                got = self.paid_order({"type": "checkout.session.completed", "data": {"object": s}})
+                if got:
+                    out.append(got)
+            if not data.get("has_more") or not sessions:
+                break
+            after = sessions[-1].get("id")
+        return out
+
     @staticmethod
     def paid_order(event):
         """(order id, provider reference, amount in cents) from a Stripe event that means "paid", else None."""
