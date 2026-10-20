@@ -3,7 +3,6 @@ money still adding up, and the old game backed up before anything is cleared."""
 import json
 import os
 import random
-import shutil
 import socket
 import subprocess
 import sys

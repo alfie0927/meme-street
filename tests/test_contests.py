@@ -6,9 +6,8 @@ import tempfile
 import types
 import unittest
 
-from _helpers import advance, drift, engine, join, make_engine
+from _helpers import drift, engine, join, make_engine
 
-import social
 
 DAY = 86400
 

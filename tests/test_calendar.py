@@ -2,7 +2,6 @@
 apart give or take a few game days), bank price-target notes that give a reason only some of the time, and headlines
 that carry no hidden information."""
 import json
-import math
 import os
 import random
 import re
@@ -10,7 +9,7 @@ import tempfile
 import unittest
 
 import _helpers
-from _helpers import advance, drift, engine, join, make_engine, quiet
+from _helpers import advance, engine, make_engine
 
 DAY = engine.MARKET_DAY_SECONDS
 QUARTER = engine.TRADING_DAYS_PER_YEAR / 4 * DAY

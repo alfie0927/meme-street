@@ -50,7 +50,6 @@
    "vol": 0.803,
    "sens": 1.42,
    "depth": 13000,
-   "traits": [],
    "desc": "Ships cargo between cities through short-range teleport gates in under a minute, charging by the kilogram. It competes with freight brokers on speed rather than price.",
    "dependencies": {
     "QNTR": 0.25
@@ -64,7 +63,6 @@
    "vol": 0.676,
    "sens": 1.07,
    "depth": 13000,
-   "traits": [],
    "desc": "Runs public teleport stations in three big cities, charging commuters per trip. It has replaced the trains on its routes, but each new station costs a fortune.",
    "dependencies": {
     "QNTR": 0.2
@@ -78,7 +76,6 @@
    "vol": 0.77,
    "sens": 1.28,
    "depth": 13000,
-   "traits": [],
    "desc": "Builds and maintains the entanglement relays that keep teleport gates in sync around the world. Every gate operator pays it a licence fee."
   },
   {
@@ -89,7 +86,6 @@
    "vol": 0.728,
    "sens": 1.19,
    "depth": 13000,
-   "traits": [],
    "desc": "Delivers parcels door to door within the hour in small teleport pods. A start-up still building its network.",
    "dependencies": {
     "QNTR": 0.15,
@@ -104,7 +100,6 @@
    "vol": 0.67,
    "sens": 1.07,
    "depth": 13000,
-   "traits": [],
    "desc": "Runs hotels built around teleport gates, so guests can wake up in a different country every morning. It charges a premium on every room for the gate pass.",
    "dependencies": {
     "GTWY": 0.15
@@ -118,7 +113,6 @@
    "vol": 0.55,
    "sens": 1.36,
    "depth": 13000,
-   "traits": [],
    "desc": "Collects rubbish from homes and factories and teleports it into a sealed vault instead of a landfill, under long contracts with cities.",
    "dependencies": {
     "QNTR": 0.1
@@ -132,7 +126,6 @@
    "vol": 0.341,
    "sens": 1.36,
    "depth": 16000,
-   "traits": [],
    "desc": "Sells rain on demand to farms and reservoirs by seeding clouds, under seasonal contracts."
   },
   {
@@ -143,7 +136,6 @@
    "vol": 0.32,
    "sens": 1.07,
    "depth": 16000,
-   "traits": [],
    "desc": "Steers hurricanes away from coastlines with giant ocean-cooling rigs, paid by coastal governments and insurers. A busy storm season is when it earns most.",
    "dependencies": {
     "CLSD": 0.1
@@ -157,7 +149,6 @@
    "vol": 0.429,
    "sens": 1.09,
    "depth": 16000,
-   "traits": [],
    "desc": "Makes guaranteed snow for ski resorts and winter festivals, charging per season. A warm winter means more customers but higher costs.",
    "dependencies": {
     "CLSD": 0.15
@@ -171,7 +162,6 @@
    "vol": 0.38,
    "sens": 1.32,
    "depth": 16000,
-   "traits": [],
    "desc": "Stores sunshine in orbiting mirrors and beams it down to solar farms on cloudy days, selling the extra power to grid operators."
   },
   {
@@ -182,7 +172,6 @@
    "vol": 0.455,
    "sens": 1.34,
    "depth": 16000,
-   "traits": [],
    "desc": "Builds mist machines that cool whole city districts during heat waves, sold to city councils."
   },
   {
@@ -193,7 +182,6 @@
    "vol": 0.52,
    "sens": 1.01,
    "depth": 16000,
-   "traits": [],
    "desc": "Seeds steady winds over offshore turbine fields so the blades never stop, paid a share of the extra power.",
    "dependencies": {
     "SUNB": 0.05
@@ -207,7 +195,6 @@
    "vol": 0.949,
    "sens": 0.93,
    "depth": 12000,
-   "traits": [],
    "desc": "Sells small time-dilation chambers that give office workers an extra hour every day, leased to employers by the month. A start-up with one product and one factory, it is profitable but exposed to any safety scare."
   },
   {
@@ -218,7 +205,6 @@
    "vol": 0.949,
    "sens": 1.36,
    "depth": 12000,
-   "traits": [],
    "desc": "Runs a few plants that turn back the clock on spoiled food and worn machine parts so they work like new. Food makers and truck fleets send in batches; the process is still expensive and only pays on valuable items.",
    "dependencies": {
     "CHRN": 0.15
@@ -232,7 +218,6 @@
    "vol": 0.682,
    "sens": 1.48,
    "depth": 12000,
-   "traits": [],
    "desc": "Keeps wine, art and documents in slow-time vaults where decades pass like days, so each item ages or keeps exactly as its owner wants. Banks and collectors pay yearly fees; the vaults are costly to build but cheap to run.",
    "dependencies": {
     "CHRN": 0.15
@@ -246,7 +231,6 @@
    "vol": 0.77,
    "sens": 1.08,
    "depth": 12000,
-   "traits": [],
    "desc": "Rents out temporal lenses that let courts, insurers and historians watch real events from the past. It charges by the viewing hour and owns a huge licensed archive of recordings that news groups pay to use."
   },
   {
@@ -257,7 +241,6 @@
    "vol": 0.869,
    "sens": 1.41,
    "depth": 12000,
-   "traits": [],
    "desc": "Insures time-travel firms and their customers against paradoxes, lost hours and accidents in time. Premiums are high, but one large paradox claim can wipe out a year's profit.",
    "dependencies": {
     "CHRN": 0.1
@@ -271,7 +254,6 @@
    "vol": 0.59,
    "sens": 0.93,
    "depth": 12000,
-   "traits": [],
    "desc": "Sells fast-forward trips: passengers step into a booth, skip the journey and arrive rested at the moment they would have landed. It competes with airlines on long routes and charges a premium for the time saved."
   },
   {
@@ -282,7 +264,6 @@
    "vol": 0.55,
    "sens": 1.15,
    "depth": 15000,
-   "traits": [],
    "desc": "Records the dreams of paid dreamers and edits them into films and games that people experience in their sleep. It sells them through streaming services and its own app.",
    "dependencies": {
     "MMBK": 0.1,
@@ -297,7 +278,6 @@
    "vol": 0.65,
    "sens": 0.95,
    "depth": 15000,
-   "traits": [],
    "desc": "Stores customers' favourite memories in secure vaults and lends them out, for a fee, to people who want to relive them. A small, new business with unusual legal risks."
   },
   {
@@ -308,7 +288,6 @@
    "vol": 0.46,
    "sens": 1.47,
    "depth": 15000,
-   "traits": [],
    "desc": "The biggest bed maker on the market, now selling smart beds that steer sleepers into the dream of their choice. It sells through its own stores and earns a growing share from monthly dream subscriptions."
   },
   {
@@ -319,7 +298,6 @@
    "vol": 0.585,
    "sens": 1.0,
    "depth": 15000,
-   "traits": [],
    "desc": "Teaches languages and job skills through courses that play while you sleep, sold by subscription to students and employers. A small education company growing by word of mouth.",
    "dependencies": {
     "SLPN": 0.15
@@ -333,7 +311,6 @@
    "vol": 0.429,
    "sens": 1.26,
    "depth": 15000,
-   "traits": [],
    "desc": "Runs 300 clinics that treat anxiety and nightmares with guided lucid dreaming, paid for by health insurers. Its growth depends on how many new clinics it can staff.",
    "dependencies": {
     "ERSE": 0.1
@@ -347,7 +324,6 @@
    "vol": 0.484,
    "sens": 1.31,
    "depth": 15000,
-   "traits": [],
    "desc": "Removes painful memories under medical supervision and sells refresh packages that sharpen old happy ones. Each treatment is expensive, and regulators watch the company closely."
   },
   {
@@ -358,7 +334,6 @@
    "vol": 0.481,
    "sens": 1.41,
    "depth": 16000,
-   "traits": [],
    "desc": "Breeds and trains dragons and hires them out for heavy lifting, fireworks shows and furnace heat. It has two ranches and a long waiting list; a sick herd is its biggest risk."
   },
   {
@@ -369,7 +344,6 @@
    "vol": 0.407,
    "sens": 1.31,
    "depth": 16000,
-   "traits": [],
    "desc": "Flies cargo and a few passengers on trained griffins over mountain routes that aircraft find hard to reach. It runs its own breeding farms, and its costs rise when feed grain gets dearer.",
    "dependencies": {
     "EMBR": 0.1
@@ -383,7 +357,6 @@
    "vol": 0.52,
    "sens": 1.05,
    "depth": 16000,
-   "traits": [],
    "desc": "A small dairy selling premium unicorn milk, butter and cheese to upmarket grocers. The herds are tiny and slow to grow, so it is profitable but cannot expand quickly."
   },
   {
@@ -394,7 +367,6 @@
    "vol": 0.43,
    "sens": 1.3,
    "depth": 16000,
-   "traits": [],
    "desc": "Salvages ships and rescues crews at sea with tame krakens, and tows oil rigs into position for energy companies. Insurers and oil producers pay for standby contracts, so most of its income arrives even in calm years.",
    "dependencies": {
     "EMBR": 0.05
@@ -408,7 +380,6 @@
    "vol": 0.46,
    "sens": 1.15,
    "depth": 16000,
-   "traits": [],
    "desc": "Heats whole towns from phoenix nests that burn out and renew every day, piping hot water to homes and factories. It is a regulated utility in most of the towns it serves, so profits are steady and it pays a dividend."
   },
   {
@@ -419,7 +390,6 @@
    "vol": 0.363,
    "sens": 1.02,
    "depth": 16000,
-   "traits": [],
    "desc": "Harvests mountain berries and glacier fish with the help of yeti partners and sells them frozen to supermarkets under a premium brand. Customers are loyal, but the harvest season is short."
   },
   {
@@ -430,7 +400,6 @@
    "vol": 0.462,
    "sens": 1.47,
    "depth": 16000,
-   "traits": [],
    "desc": "Builds apartment towers on the sea floor and sells the flats before construction starts. Sales are lumpy and depend on mortgage rates.",
    "dependencies": {
     "TRNC": 0.1
@@ -444,7 +413,6 @@
    "vol": 0.418,
    "sens": 1.0,
    "depth": 16000,
-   "traits": [],
    "desc": "Grows giant kelp forests offshore and sells the harvest as food ingredients, biofuel and fibre for textiles."
   },
   {
@@ -455,7 +423,6 @@
    "vol": 0.416,
    "sens": 1.05,
    "depth": 16000,
-   "traits": [],
    "desc": "Mines rare metals from the deepest ocean trenches with remote-controlled machines and sells them to chip and battery makers."
   },
   {
@@ -466,7 +433,6 @@
    "vol": 0.533,
    "sens": 0.94,
    "depth": 16000,
-   "traits": [],
    "desc": "Runs submarine cruise ships and glass-tunnel resorts beneath the waves. It needs full bookings to cover its costs, so tourism slumps hit it hard.",
    "dependencies": {
     "ABYS": 0.1
@@ -480,7 +446,6 @@
    "vol": 0.28,
    "sens": 1.21,
    "depth": 16000,
-   "traits": [],
    "desc": "Generates electricity with turbines anchored in deep ocean currents, which never stop, and sells it to grids along the coast.",
    "dependencies": {
     "SBMR": 0.05
@@ -494,7 +459,6 @@
    "vol": 0.414,
    "sens": 1.5,
    "depth": 16000,
-   "traits": [],
    "desc": "Operates an express train through a tunnel along the ocean floor between two continents. Ticket sales are growing, but it is still paying off the tunnel."
   },
   {
@@ -505,7 +469,6 @@
    "vol": 0.814,
    "sens": 0.97,
    "depth": 12000,
-   "traits": [],
    "desc": "Designs hover-cars, hover-bikes and hover-boards and sells them to the public in its own showrooms. It competes with petrol and electric carmakers on price, and its margins are thin while it builds its factories."
   },
   {
@@ -516,7 +479,6 @@
    "vol": 0.74,
    "sens": 1.24,
    "depth": 12000,
-   "traits": [],
    "desc": "Designs, builds and, for the first ten years, runs floating high-speed rail lines for national governments. Its contracts are few and enormous, it is still losing money on its first lines, and a single tender won or lost moves the shares.",
    "dependencies": {
     "LEVT": 0.15,
@@ -531,7 +493,6 @@
    "vol": 0.682,
    "sens": 0.93,
    "depth": 12000,
-   "traits": [],
    "desc": "Runs a fleet of four-seat hover taxis that passengers book by app, flying at rooftop height across twelve cities. It owns the vehicles and charges per trip, so how many hours each taxi spends in the air decides its profit.",
    "dependencies": {
     "LEVT": 0.2
@@ -545,7 +506,6 @@
    "vol": 0.73,
    "sens": 1.04,
    "depth": 12000,
-   "traits": [],
    "desc": "Stores electricity for the power grid by lifting giant weights when power is cheap and letting them down when it is dear. It owns the storage towers and is paid by grid operators for every megawatt-hour it shifts, under contracts of up to twenty years."
   },
   {
@@ -556,7 +516,6 @@
    "vol": 0.975,
    "sens": 1.11,
    "depth": 12000,
-   "traits": [],
    "desc": "Rents out antigravity cranes, with their operators, to builders of towers and bridges, so heavy parts float into place without scaffolding. A small specialist with a few dozen cranes, it lives and dies with the building cycle.",
    "dependencies": {
     "GRVN": 0.1
@@ -570,7 +529,6 @@
    "vol": 1.066,
    "sens": 0.92,
    "depth": 12000,
-   "traits": [],
    "desc": "Operates cargo barges that float ten metres above the road on a few fixed corridors between ports and inland depots. Young and loss-making, it bets heavily on every new corridor it opens.",
    "dependencies": {
     "LEVT": 0.1
@@ -584,7 +542,6 @@
    "vol": 0.418,
    "sens": 0.96,
    "depth": 15000,
-   "traits": [],
    "desc": "Turns lead into real gold in furnaces that take weeks per batch and use enormous amounts of power. An ounce costs almost as much to make as it sells for, so its profit moves with the gold price far more than with anything it does."
   },
   {
@@ -595,7 +552,6 @@
    "vol": 0.407,
    "sens": 1.49,
    "depth": 15000,
-   "traits": [],
    "desc": "Brews healing potions in licensed breweries and sells them through pharmacies: bottled tonics that speed recovery from colds, sprains and surgery. Every new potion needs years of safety trials, so a handful of best-sellers carry the company."
   },
   {
@@ -606,7 +562,6 @@
    "vol": 0.533,
    "sens": 0.95,
    "depth": 15000,
-   "traits": [],
    "desc": "A small, fast-growing maker of rune-carved locks and alarms for bank vaults, data rooms and safe-deposit firms. It installs every system itself, so its growth is limited by how many engravers it can train."
   },
   {
@@ -617,7 +572,6 @@
    "vol": 0.416,
    "sens": 1.05,
    "depth": 15000,
-   "traits": [],
    "desc": "Forges enchanted alloys that never rust, bend or crack, in a single plant. Bridge builders and hover-vehicle makers buy them for parts that must last a century; output is small and each batch is sold before it is made.",
    "dependencies": {
     "GLDM": 0.15
@@ -631,7 +585,6 @@
    "vol": 0.37,
    "sens": 1.1,
    "depth": 15000,
-   "traits": [],
    "desc": "Weaves charmed thread that mends its own tears into fabric for clothes, carpets and upholstery. It sells the fabric to outdoor and fashion brands rather than to shoppers, and earns a royalty on every garment made with it.",
    "dependencies": {
     "STNS": 0.1
@@ -645,7 +598,6 @@
    "vol": 0.33,
    "sens": 1.23,
    "depth": 15000,
-   "traits": [],
    "desc": "The leading maker of precision wands: surgical models for operating theatres, etching wands that chip factories use to draw circuits, and a cheaper stage range for magicians. Most of its profit comes from multi-year service contracts with hospitals and chip makers.",
    "dependencies": {
     "RUNE": 0.05

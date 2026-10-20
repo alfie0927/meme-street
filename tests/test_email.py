@@ -150,14 +150,6 @@ class VerifyTests(unittest.TestCase):
         self.assertFalse(self.e.email_begin(self.p, "x@mailinator.com")[0])
         self.assertIsNone(self.p.email_pending)
 
-    def test_resend_uses_the_waiting_address(self):
-        self.assertFalse(self.e.email_resend(self.p)[0])
-        self.begin()
-        advance(self.e, 61)
-        ok, msg, code, to, _ = self.e.email_resend(self.p)
-        self.assertTrue(ok, msg)
-        self.assertEqual(to, "alice@example.com")
-
     def test_the_admin_can_mark_an_address_verified_or_remove_it(self):
         self.begin()
         self.assertTrue(self.e.email_force_verified(self.p)[0])

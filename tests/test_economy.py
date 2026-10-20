@@ -8,7 +8,6 @@ import os
 import random
 import tempfile
 import time
-import types
 import unittest
 
 from _cdp import find_browser, open_page

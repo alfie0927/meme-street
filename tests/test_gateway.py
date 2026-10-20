@@ -3,7 +3,6 @@ launcher (launch.py) and the helper that shares the game from a home computer (s
 
 The big check is that nothing is different for a player. Set MS_TEST_GATEWAYS=2 and the whole server, wire, accounts,
 social and browser suites run through two gateways instead of straight at the game."""
-import asyncio
 import json
 import os
 import shutil

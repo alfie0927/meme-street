@@ -9,7 +9,6 @@ import unittest
 
 from _helpers import advance, engine, join
 
-import accounts
 
 
 def new_engine(path, seed=1):

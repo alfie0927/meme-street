@@ -45,7 +45,6 @@
    "vol": 0.341,
    "sens": 1.22,
    "depth": 16000,
-   "traits": [],
    "desc": "Runs 30 hospitals and outpatient clinics in one region, paid by insurers and the government. Nurses and doctors are its biggest cost."
   },
   {
@@ -56,7 +55,6 @@
    "vol": 0.29,
    "sens": 1.01,
    "depth": 16000,
-   "traits": [],
    "desc": "Sells health insurance to employers and families and pays their medical bills. It profits when premiums rise faster than the cost of care."
   },
   {
@@ -67,7 +65,6 @@
    "vol": 0.351,
    "sens": 0.88,
    "depth": 16000,
-   "traits": [],
    "desc": "Offers video doctor visits and home delivery of prescriptions for a monthly subscription. Small and growing fast, it competes with every clinic that moves online."
   },
   {
@@ -78,7 +75,6 @@
    "vol": 0.25,
    "sens": 1.15,
    "depth": 16000,
-   "traits": [],
    "desc": "Operates imaging centres and testing laboratories that doctors send patients and samples to: scans, blood tests and genetic tests. Insurers pay it per test."
   },
   {
@@ -89,7 +85,6 @@
    "vol": 0.351,
    "sens": 1.02,
    "depth": 16000,
-   "traits": [],
    "desc": "Owns 400 dental practices and sells its own clear aligners direct to customers. Patients pay for most treatments themselves, so it slows when household budgets tighten."
   },
   {
@@ -100,7 +95,6 @@
    "vol": 0.28,
    "sens": 1.04,
    "depth": 16000,
-   "traits": [],
    "desc": "Runs 9,000 neighbourhood pharmacies and a mail-order prescription service, and manages drug benefits for employers. Its margins are thin, but it fills about a third of the market's prescriptions."
   },
   {
@@ -111,7 +105,6 @@
    "vol": 0.22,
    "sens": 1.06,
    "depth": 16000,
-   "traits": [],
    "desc": "Makes pacemakers, insulin pumps and other implanted medical devices that surgeons fit. New devices take years to approve, but surgeons rarely switch once they trust a brand."
   },
   {
@@ -122,7 +115,6 @@
    "vol": 0.264,
    "sens": 1.37,
    "depth": 16000,
-   "traits": [],
    "desc": "Builds and runs assisted-living and memory-care homes, charging residents monthly. Demand grows as the population ages, but it carries a lot of debt from building."
   },
   {
@@ -133,7 +125,6 @@
    "vol": 0.29,
    "sens": 1.24,
    "depth": 17000,
-   "traits": [],
    "desc": "Runs big-box stores selling groceries, electronics and household goods at low prices. It wins on volume and buying power, not margin.",
    "dependencies": {
     "CLCK": -0.1
@@ -147,7 +138,6 @@
    "vol": 0.31,
    "sens": 1.06,
    "depth": 17000,
-   "traits": [],
    "desc": "The market's largest online retailer: millions of products from its own warehouses and outside sellers, with same-day delivery in major cities. It earns more from fees and adverts on its site than from the goods themselves."
   },
   {
@@ -158,7 +148,6 @@
    "vol": 0.377,
    "sens": 1.31,
    "depth": 17000,
-   "traits": [],
    "desc": "A discount chain selling basics at rock-bottom prices in small towns. It does well when shoppers trade down."
   },
   {
@@ -169,7 +158,6 @@
    "vol": 0.33,
    "sens": 1.22,
    "depth": 17000,
-   "traits": [],
    "desc": "A luxury house selling handbags, watches and perfume in its own boutiques. Wealthy buyers keep spending in most downturns, so its margins are high and steady."
   },
   {
@@ -180,7 +168,6 @@
    "vol": 0.363,
    "sens": 0.83,
    "depth": 17000,
-   "traits": [],
    "desc": "A supermarket chain focused on fresh produce and meal kits, with stores in busy towns. It charges more than discounters and depends on shoppers who will pay for quality."
   },
   {
@@ -191,7 +178,6 @@
    "vol": 0.352,
    "sens": 0.89,
    "depth": 17000,
-   "traits": [],
    "desc": "Sells furniture and home decor in its own showrooms and online. Sales follow the housing market, because people furnish homes when they move."
   },
   {
@@ -202,7 +188,6 @@
    "vol": 0.363,
    "sens": 1.19,
    "depth": 17000,
-   "traits": [],
    "desc": "An outdoor gear and clothing retailer for hikers and campers, with its own brands. Sales peak in spring and summer."
   },
   {
@@ -213,7 +198,6 @@
    "vol": 0.429,
    "sens": 1.09,
    "depth": 17000,
-   "traits": [],
    "desc": "A fast-fashion brand that copies runway trends and gets them into its stores within two weeks. A wrong guess leaves it stuck with stock to discount."
   },
   {
@@ -224,7 +208,6 @@
    "vol": 0.42,
    "sens": 0.87,
    "depth": 16000,
-   "traits": [],
    "desc": "A subscription streaming service for series and films that spends billions a year on its own shows to stop subscribers leaving. Its profit depends on subscriber growth and how many cancel.",
    "dependencies": {
     "SLVR": 0.1
@@ -238,7 +221,6 @@
    "vol": 0.32,
    "sens": 1.22,
    "depth": 16000,
-   "traits": [],
    "desc": "Publishes console and mobile games, led by a battle-royale hit played by 80 million people. Most of its revenue comes from in-game purchases, so a single hit or flop moves its profit.",
    "dependencies": {
     "STFG": 0.05
@@ -252,7 +234,6 @@
    "vol": 0.572,
    "sens": 1.28,
    "depth": 16000,
-   "traits": [],
    "desc": "Publishes newspapers and news sites and sells a financial data terminal to traders. The terminals now earn more than the papers."
   },
   {
@@ -263,7 +244,6 @@
    "vol": 0.36,
    "sens": 0.9,
    "depth": 16000,
-   "traits": [],
    "desc": "Runs a music streaming app with 150 million subscribers and owns a record label whose artists it streams. It pays most of its revenue to rights holders, so its margins are thin."
   },
   {
@@ -274,7 +254,6 @@
    "vol": 0.559,
    "sens": 1.16,
    "depth": 16000,
-   "traits": [],
    "desc": "A small digital ad network that auctions ad space on websites and podcasts in real time and takes a cut of every sale.",
    "dependencies": {
     "CHBX": 0.2
@@ -288,7 +267,6 @@
    "vol": 0.36,
    "sens": 1.37,
    "depth": 16000,
-   "traits": [],
    "desc": "A film studio with a catalogue of family franchises that it licenses to theme parks, toy makers and streaming services. A blockbuster can carry its whole year."
   },
   {
@@ -299,7 +277,6 @@
    "vol": 0.495,
    "sens": 1.23,
    "depth": 16000,
-   "traits": [],
    "desc": "A social app built around short videos and group chats, popular with teenagers. It earns money from adverts, so it has to keep users coming back every day."
   },
   {
@@ -310,7 +287,6 @@
    "vol": 0.55,
    "sens": 1.0,
    "depth": 16000,
-   "traits": [],
    "desc": "Owns 200 popular podcasts and the platform that sells advertising on them, paid by advertisers per listen. Ad budgets are the first thing companies cut in a downturn."
   },
   {
@@ -321,7 +297,6 @@
    "vol": 0.507,
    "sens": 1.06,
    "depth": 17000,
-   "traits": [],
    "desc": "A young electric-car maker that sells two models online, with no dealers, and services them with mobile vans. It is growing fast but makes little money yet, and it depends on one supplier for its batteries.",
    "dependencies": {
     "CLST": 0.25
@@ -335,7 +310,6 @@
    "vol": 0.473,
    "sens": 0.85,
    "depth": 17000,
-   "traits": [],
    "desc": "Makes heavy trucks for haulage firms and electric delivery vans for parcel fleets. Orders arrive in large batches from a few fleet buyers, so its revenue is lumpy and follows freight demand.",
    "dependencies": {
     "GRWK": 0.15
@@ -349,7 +323,6 @@
    "vol": 0.52,
    "sens": 1.02,
    "depth": 17000,
-   "traits": [],
    "desc": "A century-old carmaker best known for pickup trucks and family SUVs, sold through a network of franchised dealers. Petrol models still earn most of its profit and pay for its move into hybrids and electric cars.",
    "dependencies": {
     "GRWK": 0.2,
@@ -364,7 +337,6 @@
    "vol": 0.48,
    "sens": 1.32,
    "depth": 17000,
-   "traits": [],
    "desc": "The largest battery maker on the market: lithium cells and packs for carmakers, truck builders and home and grid storage, sold under long supply deals. Its fortunes follow electric-vehicle sales and the price of lithium."
   },
   {
@@ -375,7 +347,6 @@
    "vol": 0.43,
    "sens": 1.12,
    "depth": 17000,
-   "traits": [],
    "desc": "Supplies brakes, gearboxes and driver-assistance sensors to almost every carmaker, and replacement parts to repair garages. Selling to all of them means it depends on no single brand, but it feels every slowdown in car production."
   },
   {
@@ -386,7 +357,6 @@
    "vol": 0.572,
    "sens": 0.96,
    "depth": 17000,
-   "traits": [],
    "desc": "A ride-hailing and e-scooter app in 80 mid-sized cities that the big platforms ignore. It takes a cut of every ride; its drivers are independent, so its costs are mostly marketing and software.",
    "dependencies": {
     "ATND": 0.1
@@ -400,7 +370,6 @@
    "vol": 0.539,
    "sens": 0.84,
    "depth": 17000,
-   "traits": [],
    "desc": "Writes self-driving software and licenses it to carmakers and ride-hailing fleets for a fee per vehicle. It spends heavily on testing, so profits are slim today; the bet is that every car will one day need it."
   },
   {
@@ -411,7 +380,6 @@
    "vol": 0.429,
    "sens": 1.22,
    "depth": 17000,
-   "traits": [],
    "desc": "Builds premium touring motorcycles and a newer line of electric dirt bikes, sold through its own dealers. Its riders are loyal and pay high prices, but sales fall quickly when the economy weakens."
   },
   {
@@ -422,7 +390,6 @@
    "vol": 0.275,
    "sens": 0.93,
    "depth": 18000,
-   "traits": [],
    "desc": "Owns downtown office towers leased to banks and law firms. Empty floors since the rise of remote work weigh on its rents and its dividend."
   },
   {
@@ -433,7 +400,6 @@
    "vol": 0.364,
    "sens": 1.17,
    "depth": 18000,
-   "traits": [],
    "desc": "A small landlord of apartment complexes in fast-growing suburbs, paying out most of its rent as dividends."
   },
   {
@@ -444,7 +410,6 @@
    "vol": 0.286,
    "sens": 1.35,
    "depth": 18000,
-   "traits": [],
    "desc": "Owns neighbourhood shopping centres anchored by supermarkets, with small shops filling the rest. A property trust, it pays out most of its rent."
   },
   {
@@ -455,7 +420,6 @@
    "vol": 0.22,
    "sens": 1.09,
    "depth": 18000,
-   "traits": [],
    "desc": "Owns warehouses near ports and big cities, leased to online retailers and shipping firms. As a property trust it pays out most of its rent as dividends."
   },
   {
@@ -466,7 +430,6 @@
    "vol": 0.22,
    "sens": 0.8,
    "depth": 18000,
-   "traits": [],
    "desc": "Owns and runs 400 business and resort hotels. Room rates and occupancy rise and fall with travel and the economy."
   },
   {
@@ -477,7 +440,6 @@
    "vol": 0.22,
    "sens": 0.8,
    "depth": 18000,
-   "traits": [],
    "desc": "Builds starter homes and townhouses in new suburbs, buying land years ahead. Its sales follow mortgage rates closely."
   },
   {
@@ -488,7 +450,6 @@
    "vol": 0.23,
    "sens": 0.96,
    "depth": 18000,
-   "traits": [],
    "desc": "Owns data centres and leases floor space, power and cooling to cloud and AI companies on long leases. Demand for computing has kept its buildings full.",
    "dependencies": {
     "DTHV": 0.1
@@ -502,7 +463,6 @@
    "vol": 0.71,
    "sens": 1.22,
    "depth": 12000,
-   "traits": [],
    "desc": "The largest exchange where people buy and sell digital tokens for cash. It earns a fee on every trade, so its revenue can double in a crypto boom and halve in a bust.",
    "dependencies": {
     "HSFG": 0.15
@@ -516,7 +476,6 @@
    "vol": 0.99,
    "sens": 0.98,
    "depth": 12000,
-   "traits": [],
    "desc": "Runs warehouses full of computers that confirm blockchain transactions, and is paid in newly created tokens. Electricity is nearly all of its cost, so its profit depends on token prices and power bills.",
    "dependencies": {
     "SVSL": 0.05
@@ -530,7 +489,6 @@
    "vol": 1.2,
    "sens": 0.95,
    "depth": 12000,
-   "traits": [],
    "desc": "A mobile payment app for sending money to friends and paying in shops, popular with students. It loses money on most transfers and hopes to profit from merchant fees and its new debit card."
   },
   {
@@ -541,7 +499,6 @@
    "vol": 1.034,
    "sens": 1.24,
    "depth": 12000,
-   "traits": [],
    "desc": "Sells shared-ledger software that banks and shipping firms use to track payments and cargo without paperwork. Customers pay by subscription, so its revenue is far steadier than token prices."
   },
   {
@@ -552,7 +509,6 @@
    "vol": 0.9,
    "sens": 1.03,
    "depth": 12000,
-   "traits": [],
    "desc": "Issues SteadyCoin, a digital token worth one dollar and backed by short-term government bonds. It keeps the interest those bonds pay, so it earns more when rates are high and less when they fall."
   },
   {
@@ -563,7 +519,6 @@
    "vol": 1.2,
    "sens": 1.12,
    "depth": 12000,
-   "traits": [],
    "desc": "A marketplace for digital art and in-game items that takes a 5% cut of every sale. Trading is driven by collectors and fads, which makes its sales the most erratic in the sector."
   },
   {
@@ -574,7 +529,6 @@
    "vol": 0.94,
    "sens": 0.93,
    "depth": 12000,
-   "traits": [],
    "desc": "Runs the biggest online lending marketplace: savers put money in, borrowers take loans out, and its software sets the rates and charges a fee on both sides. It carries little of the risk itself, but its volumes fall sharply when interest rates jump."
   },
   {
@@ -585,7 +539,6 @@
    "vol": 0.949,
    "sens": 0.87,
    "depth": 12000,
-   "traits": [],
    "desc": "Makes hardware wallets for individuals and custody vaults for funds that hold digital tokens. Still loss-making, its sales jump after every hack in the news."
   },
   {
@@ -596,7 +549,6 @@
    "vol": 0.55,
    "sens": 0.84,
    "depth": 12000,
-   "traits": [],
    "desc": "Builds reusable rockets and sells launch slots to satellite operators, space tourism firms and mining ventures. Reusing boosters lets it undercut older launchers.",
    "dependencies": {
     "STWB": 0.15
@@ -610,7 +562,6 @@
    "vol": 0.847,
    "sens": 1.07,
    "depth": 12000,
-   "traits": [],
    "desc": "Operates a constellation of satellites that brings broadband to remote areas, ships and planes. It needs years of subscriber growth to pay for its satellites.",
    "dependencies": {
     "LPDR": 0.1
@@ -624,7 +575,6 @@
    "vol": 0.832,
    "sens": 0.97,
    "depth": 12000,
-   "traits": [],
    "desc": "Plans to extract water and metals from the Moon. It has no revenue from mining yet and lives on contracts and new shares."
   },
   {
@@ -635,7 +585,6 @@
    "vol": 0.704,
    "sens": 0.84,
    "depth": 12000,
-   "traits": [],
    "desc": "Designs pressurised habitats for orbital stations and surface bases, sold mainly to space agencies under development contracts."
   },
   {
@@ -646,7 +595,6 @@
    "vol": 0.754,
    "sens": 1.09,
    "depth": 12000,
-   "traits": [],
    "desc": "Sells satellite photographs of farms, ports and weather to farmers, insurers and traders by subscription."
   },
   {
@@ -657,7 +605,6 @@
    "vol": 0.988,
    "sens": 1.36,
    "depth": 12000,
-   "traits": [],
    "desc": "Develops spacecraft that capture dead satellites and drag them out of orbit, paid by satellite operators and space agencies. It has just started flying."
   },
   {
@@ -668,7 +615,6 @@
    "vol": 0.715,
    "sens": 1.25,
    "depth": 12000,
-   "traits": [],
    "desc": "Sells suborbital flights to paying passengers. Each flight earns a lot, but there are only a few a month."
   },
   {
@@ -679,7 +625,6 @@
    "vol": 0.517,
    "sens": 1.25,
    "depth": 16000,
-   "traits": [],
    "desc": "Builds experimental quantum computers and rents access to them by the hour to researchers and banks. It is years from large-scale profit."
   },
   {
@@ -690,7 +635,6 @@
    "vol": 0.462,
    "sens": 1.34,
    "depth": 16000,
-   "traits": [],
    "desc": "A contract chip factory that makes advanced chips designed by other companies. It must spend billions on new equipment to keep up with the latest processes."
   },
   {
@@ -701,7 +645,6 @@
    "vol": 0.52,
    "sens": 1.36,
    "depth": 16000,
-   "traits": [],
    "desc": "Sells software that turns company data into dashboards and forecasts, paid by yearly subscription. Its customers rarely leave once their data is inside."
   },
   {
@@ -712,7 +655,6 @@
    "vol": 0.442,
    "sens": 1.21,
    "depth": 16000,
-   "traits": [],
    "desc": "Writes computer-vision software for factories, shops and security cameras that spots faults, counts stock and reads number plates. A small company with a few big customers."
   },
   {
@@ -723,7 +665,6 @@
    "vol": 0.481,
    "sens": 1.34,
    "depth": 16000,
-   "traits": [],
    "desc": "Rents drilling rigs and crews to oil and gas producers by the day. When oil prices rise producers drill more and its day rates jump; when prices fall, its rigs sit idle."
   },
   {
@@ -734,7 +675,6 @@
    "vol": 0.41,
    "sens": 0.92,
    "depth": 16000,
-   "traits": [],
    "desc": "Delivers natural gas to nine million homes and businesses through regulated pipelines. Regulators set what it may earn, so profits are steady and the dividend is high, but rising interest rates hurt it."
   },
   {
@@ -745,7 +685,6 @@
    "vol": 0.429,
    "sens": 0.87,
    "depth": 16000,
-   "traits": [],
    "desc": "A community bank with 60 branches in one region, lending mostly home mortgages and small-business loans from local deposits. Simple and steady, but tied to its local housing market."
   },
   {
@@ -756,7 +695,6 @@
    "vol": 0.44,
    "sens": 0.98,
    "depth": 16000,
-   "traits": [],
    "desc": "Manages pension and mutual funds for companies and governments and charges a small yearly fee on the money it looks after. When markets rise, its fees rise with them."
   },
   {
@@ -767,7 +705,6 @@
    "vol": 0.4,
    "sens": 1.24,
    "depth": 16000,
-   "traits": [],
    "desc": "Insures homes, cars and commercial property, collecting premiums up front and investing them until claims are paid. A bad storm season is its biggest risk."
   },
   {
@@ -778,7 +715,6 @@
    "vol": 0.407,
    "sens": 1.06,
    "depth": 16000,
-   "traits": [],
    "desc": "An app-based lender offering instant small loans to consumers and buy-now-pay-later at online shops. It lends from its own balance sheet, so it earns high interest but takes the loss when borrowers default."
   },
   {
@@ -789,7 +725,6 @@
    "vol": 0.247,
    "sens": 1.24,
    "depth": 16000,
-   "traits": [],
    "desc": "A regional craft brewer that has added sparkling water and energy drinks, sold in supermarkets and bars. The fizzy drinks grow quickly while the beer side slowly shrinks."
   },
   {
@@ -800,7 +735,6 @@
    "vol": 0.23,
    "sens": 0.84,
    "depth": 16000,
-   "traits": [],
    "desc": "Owns best-selling crisps, crackers and breakfast cereals sold in supermarkets and vending machines. It spends heavily on advertising to keep its brands at eye level, and its costs follow grain and cooking-oil prices."
   },
   {
@@ -811,7 +745,6 @@
    "vol": 0.385,
    "sens": 1.23,
    "depth": 16000,
-   "traits": [],
    "desc": "Sells two one-time gene therapies for inherited blindness and muscle wasting, priced at over a million dollars per patient. Each new approval transforms its revenue."
   },
   {
@@ -822,7 +755,6 @@
    "vol": 0.29,
    "sens": 1.34,
    "depth": 16000,
-   "traits": [],
    "desc": "Designs and builds bridges, tunnels, rail lines and other public works for governments, under contracts that run for years. Its profit depends on winning large tenders and finishing within budget."
   }
  ],

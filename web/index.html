@@ -129,7 +129,6 @@ body.noscroll{overflow:hidden}
 .quiz-q label{display:block;margin:5px 0;cursor:pointer}.quiz-q input{width:auto;margin:0 8px 0 0}
 .quiz-q .why{font-size:13px;margin-top:6px}.chal{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:9px 0;border-bottom:1px solid var(--line2)}
 .chal small{color:var(--mut)}.chal .pbar{grid-column:1/-1;margin-top:4px}.chal-r{text-align:right;white-space:nowrap}.chal-r b{color:var(--up)}
-.chal.done .bar-in{background:var(--up)}
 #learn-banner{display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:9px 18px;font-size:13px;border-bottom:1px solid #4cc3cc44;background:#4cc3cc10}
 .page-shop #shop-card{display:block}
 #low-banner{display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:9px 18px;font-size:13px;border-bottom:1px solid #f25c5455;background:#f25c5412;color:#ffc2c7}
@@ -1927,7 +1926,6 @@ document.addEventListener('click',e=>{
  toast(`Filled in: press ${riskPlan.long?'Buy':'Sell'} for ${numText(riskPlan.cost)} MB, then Set bracket`,true,5000)});
 
 // ---------- the economic calendar page ----------
-const CAL_HOW={cpi:'Consumer prices',jobs:'Jobs',claims:'Jobless claims',retail:'Retail sales',pmi:'Business survey',gdp:'GDP',rates:'Rate decision'};
 async function loadCalendar(){
  let d=null;try{const r=await fetch('/api/calendar');d=await r.json()}catch(e){return}
  if(!d)return;

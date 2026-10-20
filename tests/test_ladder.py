@@ -3,9 +3,6 @@ in chat and on profiles; the holdings page's take-profit and stop-loss boxes (En
 month grid of game days (Engine.calendar_month)."""
 import asyncio
 import json
-import os
-import random
-import tempfile
 import unittest
 
 from _cdp import find_browser, open_page

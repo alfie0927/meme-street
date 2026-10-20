@@ -1,7 +1,5 @@
 {
   "settings": {
-    "rating_review_days": [7, 14],
-    "bailout_chance": 0.25,
     "distress_price_ratio": 0.25,
     "regime_days": [7, 14],
     "news_strength_weights": {
@@ -35,128 +33,122 @@
   "companies": [
     {
       "ticker": "MEMR", "name": "MemoryWorks", "sector": "tech", "beta": 1.45, "vol": 0.48,
-      "sens": 1.2, "depth": 18000, "rating": "BBB", "margin": 0.16, "traits": ["earnings"],
+      "sens": 1.2, "depth": 18000, "rating": "BBB", "margin": 0.16,
       "desc": "Makes high-bandwidth memory and storage chips for cloud servers and AI accelerators. Memory prices swing wildly, and its profit with them."
     },
     {
       "ticker": "CYBR", "name": "Northstar Cyber", "sector": "tech", "beta": 1.1, "vol": 0.38,
-      "sens": 0.9, "depth": 18000, "rating": "A", "margin": 0.2, "traits": ["earnings"],
+      "sens": 0.9, "depth": 18000, "rating": "A", "margin": 0.2,
       "desc": "Sells identity security, threat monitoring and incident response to large organisations by subscription. A big breach in the news usually lifts its orders."
     },
     {
       "ticker": "NUCL", "name": "Nucleus Power", "sector": "energy", "beta": 0.85, "vol": 0.352,
-      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.14, "traits": ["earnings"],
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.14,
       "desc": "Designs small modular nuclear reactors and sells their power to factories and data centres under long-term contracts. Only two reactors run so far; licences for the next ones will decide its future."
     },
     {
       "ticker": "HYDR", "name": "Hydra Electrolysis", "sector": "energy", "beta": 1.3, "vol": 0.65,
-      "sens": 1.2, "depth": 16000, "rating": "BB", "margin": 0.08, "traits": ["earnings"],
+      "sens": 1.2, "depth": 16000, "rating": "BB", "margin": 0.08,
       "desc": "A young company building machines that split water into hydrogen for ships, steel mills and trucks. It loses money and depends on a few pilot orders and government support."
     },
     {
       "ticker": "ONCX", "name": "OncoNova Labs", "sector": "pharma", "beta": 1.45, "vol": 0.851,
-      "sens": 1.5, "depth": 15000, "rating": "BB", "margin": -0.08, "traits": ["earnings"],
+      "sens": 1.5, "depth": 15000, "rating": "BB", "margin": -0.08,
       "desc": "An early-stage biotech testing precision cancer drugs in small trials, burning cash as it goes. A single trial result can double or halve its value."
     },
     {
       "ticker": "DRON", "name": "Aerial Defense Systems", "sector": "defense", "beta": 0.9, "vol": 0.396,
-      "sens": 1.1, "depth": 17000, "rating": "BBB", "margin": 0.12, "traits": ["earnings"],
+      "sens": 1.1, "depth": 17000, "rating": "BBB", "margin": 0.12,
       "desc": "Builds small surveillance drones and the systems that detect and stop hostile ones, sold to armies and border agencies. It grows faster than the big contractors, but a few contracts make up most of its sales."
     },
     {
       "ticker": "AERO", "name": "AeroLease Partners", "sector": "airlines", "beta": 1.05, "vol": 0.352,
-      "sens": 0.9, "depth": 17000, "rating": "A", "margin": 0.13, "traits": ["earnings"],
+      "sens": 0.9, "depth": 17000, "rating": "A", "margin": 0.13,
       "desc": "Owns about 400 passenger jets and leases them to airlines for eight to twelve years at a time, so its income is steadier than any airline's. It earns the gap between lease rates and its own borrowing costs, plus gains from selling older planes."
     },
     {
       "ticker": "HOMR", "name": "Hearth & Home", "sector": "consumer", "beta": 0.9, "vol": 0.264,
-      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.11, "traits": ["earnings"],
+      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.11,
       "desc": "Designs flat-pack furniture and kitchenware, makes it in its own factories and sells it through big retailers and its website. Big-box stores squeeze its prices, and its sales follow how many people move house."
     },
     {
       "ticker": "CRED", "name": "Crescent Credit", "sector": "finance", "beta": 1.3, "vol": 0.546,
-      "sens": 1.1, "depth": 18000, "rating": "BB", "margin": 0.18, "traits": ["earnings"],
+      "sens": 1.1, "depth": 18000, "rating": "BB", "margin": 0.18,
       "desc": "Lends to small businesses that banks turn down, and processes card payments for shops. Its loans earn high rates, and its profit falls quickly when defaults rise."
     },
     {
       "ticker": "PUPZ", "name": "PupZoom Media", "sector": "meme", "beta": 2.0, "vol": 0.95,
-      "sens": 1.6, "depth": 12000, "rating": "B", "margin": 0.02, "traits": [],
-      "desc": "Runs an app of short pet videos and earns from creator subscriptions and branded toys based on its most popular animals. Its audience moves on quickly, so its revenue lives from one craze to the next."
+      "sens": 1.6, "depth": 12000, "rating": "B", "margin": 0.02,      "desc": "Runs an app of short pet videos and earns from creator subscriptions and branded toys based on its most popular animals. Its audience moves on quickly, so its revenue lives from one craze to the next."
     },
     {
       "ticker": "GRID", "name": "GridNode Electric", "sector": "utilities", "beta": 0.55, "vol": 0.2,
-      "sens": 0.8, "depth": 22000, "rating": "A", "margin": 0.15, "traits": ["earnings"],
+      "sens": 0.8, "depth": 22000, "rating": "A", "margin": 0.15,
       "desc": "Owns the high-voltage power lines and substations of fast-growing regions and earns a regulated return on them. Steady, dividend-paying and sensitive to interest rates."
     },
     {
       "ticker": "WIND", "name": "Windward Renewables", "sector": "utilities", "beta": 0.85, "vol": 0.319,
-      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.1, "traits": ["earnings"],
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.1,
       "desc": "Owns onshore wind farms and sells their electricity to utilities under long-term agreements. Its output depends on the weather from month to month."
     },
     {
       "ticker": "ROBO", "name": "RoboForge Automation", "sector": "industrials", "beta": 1.3, "vol": 0.44,
-      "sens": 1.1, "depth": 18000, "rating": "BBB", "margin": 0.13, "traits": ["earnings"],
+      "sens": 1.1, "depth": 18000, "rating": "BBB", "margin": 0.13,
       "desc": "Builds industrial robot arms and machine-vision cells that assemble electronics and cars, and sells service contracts for them. Orders rise when factories invest and dry up when they stop."
     },
     {
       "ticker": "FRET", "name": "FreightLoop Logistics", "sector": "industrials", "beta": 1.15, "vol": 0.442,
-      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.09, "traits": ["earnings"],
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.09,
       "desc": "Books space on trains, trucks and in warehouses for manufacturers and retailers without owning much of it. It earns the margin between what shippers pay and what carriers charge."
     },
     {
       "ticker": "TWRX", "name": "TowerX Networks", "sector": "telecom", "beta": 0.8, "vol": 0.25,
-      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.17, "traits": ["earnings"],
+      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.17,
       "desc": "Owns 40,000 wireless towers and leases space on them to mobile carriers under contracts that rise with inflation. Steady and high-margin, but it carries a lot of debt."
     },
     {
       "ticker": "FIBR", "name": "FiberSpan", "sector": "telecom", "beta": 0.95, "vol": 0.331,
-      "sens": 0.9, "depth": 17000, "rating": "BBB", "margin": 0.12, "traits": ["earnings"],
+      "sens": 0.9, "depth": 17000, "rating": "BBB", "margin": 0.12,
       "desc": "Builds regional fibre-optic networks and sells fast connections to businesses and data centres in a few cities. Each new route costs a lot up front and pays back over years."
     },
     {
       "ticker": "SAND", "name": "StoneBridge Materials", "sector": "materials", "beta": 1.0, "vol": 0.33,
-      "sens": 0.9, "depth": 18000, "rating": "BBB", "margin": 0.1, "traits": ["earnings"],
+      "sens": 0.9, "depth": 18000, "rating": "BBB", "margin": 0.1,
       "desc": "Owns quarries and cement plants and sells gravel, sand and cement to road and house builders. Rock is heavy, so each quarry only serves its own area, which keeps prices firm."
     },
     {
       "ticker": "LITH", "name": "Lithic Materials", "sector": "materials", "beta": 1.5, "vol": 0.682,
-      "sens": 1.2, "depth": 15000, "rating": "BB", "margin": 0.05, "traits": ["earnings"],
+      "sens": 1.2, "depth": 15000, "rating": "BB", "margin": 0.05,
       "desc": "Mines and refines lithium for battery makers. When electric-car sales boom it earns a fortune, and when lithium prices fall it can lose money."
     },
     {
       "ticker": "GRAI", "name": "Prairie Grain Co-op", "sector": "agriculture", "beta": 0.65, "vol": 0.28,
-      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.08, "traits": ["earnings"],
+      "sens": 0.8, "depth": 18000, "rating": "A", "margin": 0.08,
       "desc": "A farmer-owned grain handler that buys wheat, corn and soybeans at harvest, grades and stores them in its own elevators, and ships them by barge to food makers and export terminals. It earns a thin margin on every tonne, so the size of the harvest matters more to it than the price."
     },
     {
       "ticker": "FERT", "name": "Fieldstone AgTech", "sector": "agriculture", "beta": 0.95, "vol": 0.38,
-      "sens": 1.0, "depth": 17000, "rating": "BBB", "margin": 0.11, "traits": ["earnings"],
+      "sens": 1.0, "depth": 17000, "rating": "BBB", "margin": 0.11,
       "desc": "The biggest maker of crop nutrients on the market: nitrogen, phosphate and potash blends for commercial farms, plus a precision-farming app that tells growers how much to spread, field by field. Its sales follow crop prices, and natural gas is its main cost."
     },
     {
       "ticker": "CRUDE", "name": "Crude Oil Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.45, "vol": 0.48,
-      "sens": 1.0, "depth": 20000, "rating": "A", "margin": 0.0, "traits": [],
-      "desc": "A play-money spot-price proxy for benchmark crude oil, driven by supply, inventories, and transport demand."
+      "sens": 1.0, "depth": 20000, "rating": "A", "margin": 0.0,      "desc": "A play-money spot-price proxy for benchmark crude oil, driven by supply, inventories, and transport demand."
     },
     {
       "ticker": "NATG", "name": "Natural Gas Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.35, "vol": 0.72,
-      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.0, "traits": [],
-      "desc": "A play-money natural-gas price proxy responding to storage, weather, and power-generation demand."
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.0,      "desc": "A play-money natural-gas price proxy responding to storage, weather, and power-generation demand."
     },
     {
       "ticker": "WHEAT", "name": "Wheat Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.15, "vol": 0.35,
-      "sens": 1.0, "depth": 18000, "rating": "A", "margin": 0.0, "traits": [],
-      "desc": "A play-money wheat price proxy influenced by harvest size, weather, and export flows."
+      "sens": 1.0, "depth": 18000, "rating": "A", "margin": 0.0,      "desc": "A play-money wheat price proxy influenced by harvest size, weather, and export flows."
     },
     {
       "ticker": "COPR", "name": "Copper Spot", "sector": "commodities", "asset_type": "commodity", "beta": 0.8, "vol": 0.42,
-      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.0, "traits": [],
-      "desc": "A play-money copper price proxy tied to construction, grid investment, and electronics demand."
+      "sens": 1.0, "depth": 18000, "rating": "BBB", "margin": 0.0,      "desc": "A play-money copper price proxy tied to construction, grid investment, and electronics demand."
     },
     {
       "ticker": "GOLD", "name": "Gold Spot", "sector": "commodities", "asset_type": "commodity", "beta": -0.3, "vol": 0.2,
-      "sens": 0.7, "depth": 22000, "rating": "AA", "margin": 0.0, "traits": [],
-      "desc": "A play-money gold price proxy that tends to attract demand during uncertainty and currency stress."
+      "sens": 0.7, "depth": 22000, "rating": "AA", "margin": 0.0,      "desc": "A play-money gold price proxy that tends to attract demand during uncertainty and currency stress."
     }
   ],
   "templates": [
@@ -164,19 +156,19 @@
       "id": "solar_supply_disruption", "scope": "company", "ticker": "SLRG", "sector": "energy",
       "up": ["SolarGrid secures a major grid-storage contract", "SolarGrid supply deal eases chipmakers' power costs"],
       "down": ["SolarGrid panel shipment delay threatens chip supply", "Grid component shortage disrupts SolarGrid deliveries"],
-      "betas": {"self": 1.0, "tech": 0.25}, "sev": [0.1, 0.3], "strength": "strong", "weight": 0.8, "rumor": true, "chunks": 4
+      "betas": {"self": 1.0, "tech": 0.25}, "strength": "strong", "weight": 0.8, "rumor": true
     },
     {
       "id": "commodity_supply", "scope": "sector", "sector": "commodities",
       "up": ["Commodity inventories tighten across key markets", "Export bottlenecks lift raw-material prices"],
       "down": ["New supply floods commodity markets", "Demand outlook weakens for raw materials"],
-      "betas": {"self": 1.0, "materials": 0.3, "agriculture": 0.2}, "sev": [0.1, 0.25], "strength": "strong", "weight": 0.8, "rumor": true, "chunks": 5
+      "betas": {"self": 1.0, "materials": 0.3, "agriculture": 0.2}, "strength": "strong", "weight": 0.8, "rumor": true
     },
     {
       "id": "credit_stress", "good": "down", "scope": "sector", "sector": "finance",
       "up": ["Loan losses rise across regional lenders", "Funding stress hits small-business banks"],
       "down": ["Delinquencies fall and credit quality improves", "Lenders report stronger-than-expected reserves"],
-      "betas": {"self": -1.0, "consumer": -0.2, "industrials": -0.15}, "sev": [0.08, 0.22], "strength": "strong", "weight": 0.7, "rumor": true, "chunks": 5
+      "betas": {"self": -1.0, "consumer": -0.2, "industrials": -0.15}, "strength": "strong", "weight": 0.7, "rumor": true
     }
   ]
 }

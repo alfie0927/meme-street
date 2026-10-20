@@ -4,9 +4,8 @@ import os
 import random
 import tempfile
 import unittest
-from collections import deque
 
-from _helpers import advance, drift, engine, fixed_engine, join, make_engine
+from _helpers import drift, engine, join, make_engine
 
 import social
 

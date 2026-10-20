@@ -1,7 +1,7 @@
 """There are no trading halts: however far a price or the whole market moves, trading and orders carry on."""
 import unittest
 
-from _helpers import advance, drift, engine, join, make_engine
+from _helpers import advance, drift, join, make_engine
 
 
 class NoHaltTests(unittest.TestCase):

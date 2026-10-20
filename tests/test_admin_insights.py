@@ -7,7 +7,7 @@ import time
 import types
 import unittest
 
-from _helpers import IsolatedServer, advance, engine, join, make_engine
+from _helpers import IsolatedServer, engine, join, make_engine
 from ledger import Ledger
 from test_gateway import join as http_join, next_of, socket_to
 from test_server import http

@@ -63,7 +63,6 @@ QUESTS = [
 CONTESTS = {
     "marathon": ("Daily Marathon", 86400, 43200),
 }
-TOURNAMENTS = CONTESTS                               # (the old name, still used by saves and some callers)
 CONTEST_BALANCE = 1000.0                             # every entrant starts with the same paper balance (MB)
 
 

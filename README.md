@@ -18,7 +18,7 @@ move with the statistics of real charts, so technical analysis on it is worth le
 | `docs/` | `HOW_IT_WORKS.md` (the full guide), `ROADMAP.md` (the plan), `MARKET_REALISM.md` (the research behind the charts) |
 | `deploy/` | Putting it on a server: the guide (`DEPLOY.md`), upload, setup, services, backups |
 | `tests/` | The test suite |
-| `brand/` | The logo and promotional media |
+| `brand/` | The logo and the header image |
 
 ## Run it on Windows
 

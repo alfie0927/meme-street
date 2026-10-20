@@ -233,14 +233,14 @@ class BrowserPages(unittest.TestCase):
             await pg.js("document.querySelector('#market-card th[data-sort=price]').click()")
             await asyncio.sleep(1.2)
             await d.check("sorted by price descending",
-                          "(()=>{const v=" + VISIBLE_ROWS + ".filter(r=>!/^\d[LS]MSI$/.test(r.dataset.k)).map(r=>parseFloat(r.querySelector('.px').textContent.replace(/,/g,'')));"
+                          "(()=>{const v=" + VISIBLE_ROWS + ".filter(r=>!/^\\d[LS]MSI$/.test(r.dataset.k)).map(r=>parseFloat(r.querySelector('.px').textContent.replace(/,/g,'')));"
                           "let ok=v.length>50;for(let i=1;i<v.length;i++)if(v[i]>v[i-1]*1.2+0.5)ok=false;return ok})()")
             await d.check("header shows the sort arrow", "document.querySelector('#market-card th[data-sort=price]').className",
                           lambda t: "sorted" in t and "desc" in t)
             await pg.js("document.querySelector('#market-card th[data-sort=ticker]').click()")
             await asyncio.sleep(1.2)
             await d.check("sorted by ticker",
-                          "(()=>{const v=" + VISIBLE_ROWS + ".map(r=>r.dataset.k).filter(k=>!/^\d[LS]MSI$/.test(k));return v.length>50&&v.every((x,i)=>i===0||v[i-1]<=x)})()")
+                          "(()=>{const v=" + VISIBLE_ROWS + ".map(r=>r.dataset.k).filter(k=>!/^\\d[LS]MSI$/.test(k));return v.length>50&&v.every((x,i)=>i===0||v[i-1]<=x)})()")
             await pg.js("document.querySelector('#secs [data-sec=index]').click()")
             await d.check("index chip shows only indices and ETFs", VISIBLE_ROWS + ".map(r=>r.dataset.k).join()",
                           lambda t: "MSI" in t and "2LMSI" in t and "3SMSI" in t and "BEAR1" not in t and "NVXA" not in t)

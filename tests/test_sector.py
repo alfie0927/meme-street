@@ -5,8 +5,7 @@ import math
 import random
 import unittest
 
-import _helpers
-from _helpers import drift, engine, join, make_engine, quiet
+from _helpers import drift, engine, join
 
 import newsgen
 from test_wild import real_engine

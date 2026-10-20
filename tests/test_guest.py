@@ -5,7 +5,7 @@ import time
 import types
 import unittest
 
-from _helpers import IsolatedServer, advance, drift, engine, join, make_engine
+from _helpers import IsolatedServer, advance, drift, join, make_engine
 from test_gateway import join as http_join, next_of, socket_to
 from test_server import http
 

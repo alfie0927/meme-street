@@ -10,7 +10,6 @@ Rows are never updated or deleted. Money columns are *deltas*: what the event ad
 the house reserve, to fees and to the position's cost basis, which is exactly what replay needs.
 """
 import json
-import os
 import sqlite3
 import threading
 
@@ -45,7 +44,6 @@ CREATE INDEX IF NOT EXISTS curve_token ON curve (token, t);
 """
 COLUMNS = ("t", "kind", "token", "name", "ticker", "shares", "price", "cash_delta", "house_delta", "fee",
            "cost_delta", "notional", "pnl", "extra")
-TRADE_KINDS = ("buy", "sell", "short", "cover", "margin_call")
 
 
 class Ledger:

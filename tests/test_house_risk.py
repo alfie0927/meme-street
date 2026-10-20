@@ -1,7 +1,6 @@
 """House tail risk with no limit on how much a player may put into one stock. The tails of the price moves are thinner
 (a rescue after a collapse is a doubling, not a ten-fold jump), the reserve is kept in proportion to the money at stake,
 and the admin page shows what the players' positions could cost the house. None of it changes a price or a payout."""
-import math
 import os
 import random
 import tempfile

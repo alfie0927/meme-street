@@ -354,13 +354,6 @@ class AccountsMixin:
         code = self._issue_code("verify", p.token, addr)
         return True, f"We sent a {self.settings.get('email_code_minutes', 15)}-minute code to {mask_email(addr)}", code, addr, 0
 
-    def email_resend(self, p):
-        """Send the code for the address that is waiting to be verified again."""
-        addr = p.email_pending or (p.email if not p.email_verified else None)
-        if not addr:
-            return False, "There is no address waiting to be verified", None, None, 0
-        return self.email_begin(p, addr)
-
     def email_confirm(self, p, code):
         """The player typed the code from their email. Returns (ok, message)."""
         entry = self.mail_codes.get("verify:" + p.token)

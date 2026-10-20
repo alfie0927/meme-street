@@ -18,7 +18,6 @@ from accounts import AccountsMixin, name_problem
 START_CASH = 1000.0          # default signup bonus (test credits)
 FEE = 0.001                  # per side (0.1%; a round trip costs about 0.2%), collected as house revenue
 COOLDOWN = 1.0
-MAX_POOL_FRAC = 0.05
 MARKET_DAY_SECONDS = 1800
 TRADING_DAYS_PER_YEAR = 365   # the market never closes, so a game year is 365 game days (182.5 real hours); a quarter is a quarter of it
 INTRADAY_CANDLE_SECONDS = 60
@@ -862,14 +861,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
     def maintenance(self, s):
         """Margin-call level as a share of the short's value: 25% up to 30% volatility, rising to 50% at 90%+."""
         return 0.25 + 0.25 * _clamp((s.vol - 0.30) / 0.60, 0, 1) + 0.25 * _clamp((s.vol - 1.2) / 1.8, 0, 1)
-
-    def margin_used(self, p):
-        total = 0.0
-        for tk, sh in p.hold.items():
-            s = self.stocks.get(tk)
-            if s and sh < 0:
-                total += -sh * s.price * self.margin_req(s)
-        return total
 
     def short_liability(self, p):
         """What it would cost, before fees, to buy back every short."""
@@ -2700,11 +2691,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     self._drop_order(p, o, f"{label} carried out: {msg}", filled=True)
                 else:
                     self._drop_order(p, o, f"{label} in {o['ticker']} could not be carried out and was cancelled: {msg}")
-
-    # ---------- helpers ----------
-    def _ret(self, s, n=60):
-        h = s.hist
-        return h[-1] / h[-n] - 1 if len(h) >= n else 0.0
 
     # ---------- season / scoring ----------
     # Seasons are leaderboard periods only. Balances are real and are never reset.

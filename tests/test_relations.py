@@ -8,8 +8,7 @@ import tempfile
 import unittest
 from unittest import mock
 
-import _helpers
-from _helpers import advance, drift, engine, join, make_engine, quiet
+from _helpers import drift, engine, join, make_engine
 
 import relations
 

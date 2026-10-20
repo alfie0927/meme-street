@@ -28,7 +28,7 @@ folder the game is started from.
 | `docs/` | This guide, `ROADMAP.md` (the plan), `MARKET_REALISM.md` (the research behind the charts) and `COUNCIL.md` (verdicts from `/council`) |
 | `deploy/` | Putting the game on a rented server (below) |
 | `tests/` | The test suite (§16) |
-| `brand/` | The logo, and a screenshot and video for promotion |
+| `brand/` | The logo and the header image (an old screenshot and promo video were removed on 2026-10-20; they are in the git history) |
 
 The top folder only holds `start_game.ps1` (start the game), `README.md`, `requirements.txt` and `requirements-lock.txt`.
 
@@ -1577,7 +1577,7 @@ Constants in `engine.py`: `FEE` 0.1% (it was 0.5% until 2026-10-03; see the note
 
 Per-template field `good` (`"down"`): marks the "down" text as the good news.
 
-Fields now ignored: `bots`, `bot_cash` and `bot_action_probability` (there are no bots), `close_seconds`, `bailout_chance`, `bailout_return`, `bankruptcy_haircut`, `position_cap_base`, `position_cap_abs_frac` (replaced by the sessions, the fair distress terms and the removal of position limits), `split_price_ratio` and `split_delay_seconds` (there are no splits), the club settings, and `season_seconds` values other than whole days no longer line up with the daily contest, `event_duration_scale`, `sev` / `chunks` in templates, `rating_review_days`, `earnings_initial_seconds` / `earnings_interval_seconds` (replaced by `earnings_quarter_days`), and the `earnings` trait (every equity with revenue reports).
+Old fields the game ignores (none of them is in the content files any more; removed 2026-10-20): `bots`, `bot_cash`, `bot_action_probability`, `close_seconds`, `bailout_chance`, `bailout_return`, `bankruptcy_haircut`, `position_cap_base`, `position_cap_abs_frac`, `split_price_ratio`, `split_delay_seconds`, the club settings, `event_duration_scale`, `rating_review_days`, `earnings_initial_seconds` / `earnings_interval_seconds` (replaced by `earnings_quarter_days`), `sev` / `chunks` in templates, and the `earnings` trait (every equity with revenue reports). `season_seconds` values other than whole days no longer line up with the daily contest.
 
 The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`).
 
