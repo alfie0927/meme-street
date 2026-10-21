@@ -1,5 +1,5 @@
-"""The long price history (history.py, ROADMAP TA-A10) and the game-time candles built from it (TA-A11): game-day candles
-cover the regular session only, so the overnight move shows as a gap; they are kept in history.db across restarts, a game
+"""The long price history (history.py, ROADMAP TA-A10): game-day candles cover the regular session only, so the overnight
+move is a gap between them; they are kept in history.db across restarts (the price model's daily levels read them), a game
 from before the file existed gets them rebuilt from its intraday candles, and the 1m chart reaches back into minutes.db."""
 import os
 import tempfile
@@ -31,9 +31,7 @@ class StoreTests(unittest.TestCase):
             self.assertEqual([c[0] for c in st.last("AAA", 10)], [120, 180, 240])
             st.close()
 
-    def test_aggregate_and_regular_session_days(self):
-        rows = [[0, 1, 2, 0.5, 1.5, 1], [60, 1.5, 3, 1, 2, 2], [120, 2, 2.5, 0.2, 0.4, 3]]
-        self.assertEqual(history.aggregate(rows, lambda t: 0), [[0, 1, 3, 0.2, 0.4, 6]])
+    def test_regular_session_days_from_intraday_candles(self):
         # five-minute candles of two game days: only the regular session (300 to 1499 s into the day) counts
         five = [[d * D + k * 300, 10 + k, 11 + k, 9 + k, 10.5 + k, 1] for d in (0, 1) for k in range(6)]
         days = history.days_from_intraday(five, D, 300, 300)
@@ -87,19 +85,6 @@ class GameDayTests(unittest.TestCase):
         self.assertIsNotNone(s.reg)                       # day four's session is under way
         gaps = [abs(b[1] / a[4] - 1) for a, b in zip(s.days, list(s.days)[1:])]
         self.assertTrue(all(g > 0 for g in gaps))          # the next open is not the last close
-        # the chart: days (with today's session last), weeks and months of the game calendar
-        ch = e.chart_for("NVXA", "gd")
-        self.assertEqual([c["t"] for c in ch["candles"]], [start, start + D, start + 2 * D, start + 3 * D])
-        self.assertEqual(ch["game_day0"], engine.GAME_DAY0)
-        for period, step in (("gw", 7), ("gm", 28)):
-            agg = e.chart_for("NVXA", period)["candles"]
-            self.assertTrue(1 <= len(agg) <= 2)
-            first = agg[0]["t"] // D
-            if period == "gw":
-                self.assertEqual(engine.game_date(first).weekday(), 0)        # a game week starts on a Monday
-            else:
-                self.assertEqual(engine.game_date(first).day, 1)              # a game month on the 1st
-            self.assertEqual(agg[-1]["c"], ch["candles"][-1]["c"])
         # the file keeps them: a restart reads them back, and today's session goes on
         e.save(full=True)
         e.close_stores()

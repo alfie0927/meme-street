@@ -136,7 +136,7 @@ is still there, but the fatter tails and the leverage effect make individual run
 **The structure a trader reads (2026-10-21, ROADMAP Phase 2: TA-A2 to TA-A11).** Levels from the daily chart (the
 previous day's high, low and close, the open, the 52-week range, the 20/50/200-day averages), volume that tells the story
 (on average), wicks, engulfing turns, squeezes, a weaker last push, climaxes, intraday legs, ten kinds of named chart
-pattern and a game-day chart where gaps show (HOW_IT_WORKS §6A.3, §6A.4, §6A.10, §11). `realism.py` now rebuilds the
+pattern and gaps between one session's close and the next open (HOW_IT_WORKS §6A.3, §6A.4, §6A.10, §11). `realism.py` now rebuilds the
 engine's trading sessions and opening jump, measures the structure and finds the patterns with `patterns.py`.
 
 *What the checks found on the way, and fixed:*
@@ -198,8 +198,8 @@ compare settings on the same seeds. The engine is about 5% slower a tick (7.4 ag
 
 ## 5. What to do next (in order)
 
-1. **Watch it live for a few days** and look at the D, W, 1h, 15m and 5m charts of a few stocks: levels at yesterday's
-   high and low and the averages, gaps on the D chart, a few named patterns. Your eye is the last test (ROADMAP section 8).
+1. **Watch it live for a few days** and look at the 1h, 15m and 5m charts of a few stocks: levels at yesterday's
+   high and low and the averages, gaps at the open, a few named patterns. Your eye is the last test (ROADMAP section 8).
 2. **Calibrate the long-run return on the engine itself**, not only `realism.py`: run the engine for a few game years in
    the background and adjust `erp` until the MSI 50 averages +5-10% a game year across seeds.
 3. **Thinner tails and no one-minute momentum in the market average** on every seed: the tail exponent sits at 2.3-2.8

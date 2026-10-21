@@ -5,12 +5,13 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
 
 * **Sources.** Every MB that enters an account is counted by source: `grant` (the starting balance), `purchase` (a
   package), `challenge` (a reward), `restart` (the free restart), `refund` (taken back, negative) and `admin`.
-* **The shop.** Packages of MB and a Pro pass (30 or 365 days of the Pro tools), at prices set in the `shop_packages`
-  and `shop_pro` settings. A purchase is an *order*: created when the player clicks Buy, paid at the payment provider
+* **The shop.** Packages of MB, a Pro pass and an Expert pass (30 or 365 days each), at prices set in the
+  `shop_packages`, `shop_pro` and `shop_expert` settings. A purchase is an *order*: created when the player clicks Buy, paid at the payment provider
   (or the test checkout), and completed exactly once by `complete_order`, which credits the MB or extends Pro and writes
   a `purchase` event to the money ledger (so a crash cannot lose a purchase).
-* **Pro** is the income that does not depend on anyone losing: tools (advanced chart indicators), never trading power
-  and never a leaderboard advantage.
+* **Pro** is the income that does not depend on anyone losing: the advanced chart indicators and trading with leverage
+  (up to 10x). **Expert** has everything in Pro, plus trading bots the player scripts (indicator rules, a news score,
+  stocks and options) and backtesting them on the price history (bots.py).
 * **Age.** An account needs a birth year showing at least `min_age` (13); buying needs `buy_min_age` (18) and a
   confirmation. Only the year is kept.
 * **Spending caps.** A default cap per rolling 30 days (`spend_cap_month_cents`), a lower cap a player can set (lowering
@@ -33,20 +34,38 @@ DEFAULT_PRO = [
     {"sku": "pro30", "days": 30, "price_cents": 499},
     {"sku": "pro365", "days": 365, "price_cents": 3999},
 ]
+DEFAULT_EXPERT = [
+    {"sku": "expert30", "days": 30, "price_cents": 1299},
+    {"sku": "expert365", "days": 365, "price_cents": 9999},
+]
 PRO_FEATURES = [
+    "Trade any stock with leverage, up to 10x (the leveraged index products excepted): more exposure for your MB, "
+    "losses magnified the same way, interest on what you borrow and an automatic close if the position runs out of margin",
     "32 more chart indicators: Bollinger bands, MACD, Ichimoku, VWAP, ATR, ADX, Stochastic RSI, OBV, pivot points and more "
     "(17, including every moving average, RSI and the drawing tools, are free)",
     "A Pro badge on your profile",
 ]
+EXPERT_FEATURES = [
+    "Everything in Pro",
+    "Trading bots you script yourself: buy, sell, short and cover on your own rules (\"buy when the price crosses above "
+    "the 20 EMA, sell at the 200 EMA\"), with stops, targets, sizing and leverage",
+    "News bots: they read the news wire, score each headline with your own words and weights, and trade on the score",
+    "Bots that trade options too: calls and puts at the strike and expiry you choose",
+    "Backtesting: run a bot over the price history first and see its trades, its return, its worst drawdown and how it "
+    "did against just holding the stock",
+    "An Expert badge on your profile",
+]
+TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
 TERMS_VERSION = "2026-10-19"  # the date of web/terms.html; an account records the version it signed up under
-PLAYER_FIELDS = ("birth_year", "pro_until", "last_restart", "mb_by_source", "spend_cap_cents", "spend_cap_pending",
+PLAYER_FIELDS = ("birth_year", "pro_until", "expert_until", "last_restart", "mb_by_source", "spend_cap_cents", "spend_cap_pending",
                  "challenge_mb", "terms")
 
 
 def init_player(p):
     p.birth_year = None          # only the year is kept (the age rules need nothing more)
     p.pro_until = 0.0            # real time until which the Pro tools are on
+    p.expert_until = 0.0         # real time until which Expert (which includes Pro) is on
     p.last_restart = 0.0         # when the player last used the free restart
     p.mb_by_source = {}          # source -> MB received from it
     p.spend_cap_cents = None     # a player's own lower spending cap (cents per 30 days), or None for the default
@@ -68,6 +87,7 @@ def load_player(p, x):
         p.mb_by_source = {"grant": float(p.deposited)}
     p.challenge_mb = {str(k): float(v) for k, v in dict(p.challenge_mb or {}).items()}
     p.pro_until = float(p.pro_until or 0.0)
+    p.expert_until = float(getattr(p, "expert_until", 0.0) or 0.0)
     p.last_restart = float(p.last_restart or 0.0)
 
 
@@ -91,19 +111,22 @@ class EconomyMixin:
     def shop_catalog(self):
         packages = [dict(x) for x in self.settings.get("shop_packages", DEFAULT_PACKAGES)]
         pro = [dict(x) for x in self.settings.get("shop_pro", DEFAULT_PRO)]
+        expert = [dict(x) for x in self.settings.get("shop_expert", DEFAULT_EXPERT)]
         cur = self.shop_currency()
         for x in packages:
             x["kind"] = "package"
             x["price"] = money_text(int(x["price_cents"]), cur)
             x["per_1000"] = money_text(round(int(x["price_cents"]) * 1000 / max(int(x["mb"]), 1)), cur)
-        for x in pro:
-            x["kind"] = "pro"
-            x["price"] = money_text(int(x["price_cents"]), cur)
-        return {"packages": packages, "pro": pro, "currency": cur, "pro_features": PRO_FEATURES}
+        for kind, items in (("pro", pro), ("expert", expert)):
+            for x in items:
+                x["kind"] = kind
+                x["price"] = money_text(int(x["price_cents"]), cur)
+        return {"packages": packages, "pro": pro, "expert": expert, "currency": cur, "pro_features": PRO_FEATURES,
+                "expert_features": EXPERT_FEATURES}
 
     def _sku(self, sku):
         cat = self.shop_catalog()
-        return next((x for x in cat["packages"] + cat["pro"] if x["sku"] == sku), None)
+        return next((x for x in cat["packages"] + cat["pro"] + cat["expert"] if x["sku"] == sku), None)
 
     # ------------------------------------------------------------------ age
     def _year(self):
@@ -220,8 +243,9 @@ class EconomyMixin:
         self._apply_purchase(p, o)
         self._emit("purchase", p, cash=float(o["mb"]), notional=float(o["mb"]), order=oid, sku=o["sku"], days=o["days"],
                    price_cents=o["price_cents"], source="purchase")
-        if o["kind"] == "pro":
-            self._notify(p, f"Thank you! Meme Street Pro is on until {datetime.datetime.fromtimestamp(p.pro_until, datetime.timezone.utc):%d %b %Y}.")
+        if o["kind"] in TIERS:
+            until = p.expert_until if o["kind"] == "expert" else p.pro_until
+            self._notify(p, f"Thank you! Meme Street {o['kind'].title()} is on until {datetime.datetime.fromtimestamp(until, datetime.timezone.utc):%d %b %Y}.")
         else:
             self._notify(p, f"Thank you! {o['mb']:,} MB were added to your account.")
         return True, "Completed"
@@ -236,8 +260,9 @@ class EconomyMixin:
             self._rebase_peak(p, ratio)
             p.mb_by_source["purchase"] = p.mb_by_source.get("purchase", 0.0) + o["mb"]
         if o["days"] > 0:
-            start = max(self.now if at is None else at, float(p.pro_until or 0.0))     # (a replay passes the event's time)
-            p.pro_until = start + o["days"] * 86400
+            field = "expert_until" if o.get("kind") == "expert" else "pro_until"
+            start = max(self.now if at is None else at, float(getattr(p, field) or 0.0))     # (a replay passes the event's time)
+            setattr(p, field, start + o["days"] * 86400)
 
     def refund_order(self, oid):
         """Admin: the money was given back at the provider. Takes back the MB the player still has (never more than the
@@ -255,9 +280,10 @@ class EconomyMixin:
                 self.debit(p, take)
                 p.mb_by_source["refund"] = p.mb_by_source.get("refund", 0.0) - take
             return True, f"Refunded; took back {take:,.2f} MB"
-        if p.pro_until > self.now:
-            p.pro_until = max(self.now, float(p.pro_until) - o["days"] * 86400)
-        return True, "Refunded; the Pro time was removed"
+        field = "expert_until" if o["kind"] == "expert" else "pro_until"
+        if getattr(p, field) > self.now:
+            setattr(p, field, max(self.now, float(getattr(p, field)) - o["days"] * 86400))
+        return True, f"Refunded; the {o['kind'].title()} time was removed"
 
     def reconcile_paid(self, found):
         """The daily payment check (ROADMAP O7): `found` is every (order id, provider reference, amount) the provider
@@ -279,7 +305,7 @@ class EconomyMixin:
         p = self.by_token.get(o["token"]) if o else None
         if not (o and p and o["status"] == "paid" and p.email and p.email_verified):
             return None
-        what = f"{o['mb']:,} MB" if o["kind"] == "package" else f"Meme Street Pro, {o['days']} days"
+        what = f"{o['mb']:,} MB" if o["kind"] == "package" else f"Meme Street {o['kind'].title()}, {o['days']} days"
         price = money_text(o["price_cents"], o["currency"])
         when = datetime.datetime.fromtimestamp(o.get("paid_at", self.now), datetime.timezone.utc)
         body = (f"Thank you for your purchase, {p.name}.\n\n    {what}\n    {price}\n    Order {o['id']}\n"
@@ -302,19 +328,29 @@ class EconomyMixin:
                 o["status"] = "expired"
 
     # ------------------------------------------------------------------ Pro
-    def is_pro(self, p):
-        return float(getattr(p, "pro_until", 0.0) or 0.0) > self.now
+    def is_expert(self, p):
+        return float(getattr(p, "expert_until", 0.0) or 0.0) > self.now
 
-    def admin_pro(self, p, days=0.0, remove=False):
-        """Admin: give a player Pro for `days` more days (added to any Pro they already have, bought or given), or end it
-        now (`remove`, bought time included). Pro is tools only, so no MB move. The server saves straight after."""
+    def is_pro(self, p):
+        """Pro is on with a Pro pass or an Expert one (Expert includes everything in Pro)."""
+        return float(getattr(p, "pro_until", 0.0) or 0.0) > self.now or self.is_expert(p)
+
+    def tier(self, p):
+        return "expert" if self.is_expert(p) else "pro" if self.is_pro(p) else "free"
+
+    def admin_pro(self, p, days=0.0, remove=False, tier="pro"):
+        """Admin: give a player Pro (or Expert) for `days` more days (added to any they already have, bought or given),
+        or end it now (`remove`, bought time included). No MB move. The server saves straight after."""
+        field, name = ("expert_until", "Expert") if tier == "expert" else ("pro_until", "Pro")
         if remove:
-            had = self.is_pro(p)
-            p.pro_until = min(float(p.pro_until or 0.0), self.now)
-            return True, "Pro ended" if had else "They did not have Pro"
-        p.pro_until = max(self.now, float(p.pro_until or 0.0)) + float(days) * 86400
-        until = datetime.datetime.fromtimestamp(p.pro_until, datetime.timezone.utc)
-        return True, f"Pro until {until:%d %b %Y %H:%M} UTC"
+            had = float(getattr(p, field) or 0.0) > self.now
+            setattr(p, field, min(float(getattr(p, field) or 0.0), self.now))
+            if tier == "expert" and hasattr(self, "_bots_off"):
+                self._bots_off(p, "Expert ended")
+            return True, f"{name} ended" if had else f"They did not have {name}"
+        setattr(p, field, max(self.now, float(getattr(p, field) or 0.0)) + float(days) * 86400)
+        until = datetime.datetime.fromtimestamp(getattr(p, field), datetime.timezone.utc)
+        return True, f"{name} until {until:%d %b %Y %H:%M} UTC"
 
     # ------------------------------------------------------------------ the free restart
     def _start_balance(self):
@@ -326,12 +362,12 @@ class EconomyMixin:
         eq = self.equity(p)
         next_at = (p.last_restart or 0.0) + days * 86400
         status = {"below": below, "days": days, "equity": eq, "next_at": next_at if next_at > self.now else None,
-                  "open_positions": len(p.hold), "eligible": False, "reason": ""}
+                  "open_positions": len(p.hold) + len(getattr(p, "opts", [])), "eligible": False, "reason": ""}
         if days <= 0:
             status["reason"] = "There is no free restart in this game"
         elif eq >= below:
             status["reason"] = f"The free restart is for accounts below {below:,.0f} MB"
-        elif p.hold:
+        elif p.hold or getattr(p, "opts", None):
             status["reason"] = "Close your open positions first"
         elif next_at > self.now:
             status["reason"] = "Your next free restart is available later"
@@ -357,7 +393,8 @@ class EconomyMixin:
         mine = sorted((o for o in self.shop_orders.values() if o["token"] == p.token and o["status"] != "pending"),
                       key=lambda o: -o.get("paid_at", o["created"]))[:30]
         cap = self.spend_cap(p)
-        return {"catalog": cat, "pro": self.is_pro(p), "pro_until": p.pro_until if self.is_pro(p) else None,
+        return {"catalog": cat, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
+                "expert": self.is_expert(p), "expert_until": p.expert_until if self.is_expert(p) else None,
                 "birth_year_set": bool(p.birth_year), "age_ok_to_buy": (self.age_years(p) or 0) >= int(self.settings.get("buy_min_age", 18)),
                 "buy_min_age": int(self.settings.get("buy_min_age", 18)), "min_age": int(self.settings.get("min_age", 13)),
                 "spent_30d": self.spent_cents(p), "spent_30d_text": money_text(self.spent_cents(p), cat["currency"]),
@@ -397,7 +434,8 @@ class EconomyMixin:
                 "pending": sum(1 for o in orders if o["status"] == "pending"),
                 "since": since or None,
                 "earlier": {"orders": len(before), "revenue_text": money_text(sum(o["price_cents"] for o in before), cur)} if before else None,
-                "pro_members": sum(1 for p in self.players.values() if self.is_pro(p)),
+                "pro_members": sum(1 for p in self.players.values() if self.is_pro(p) and not self.is_expert(p)),
+                "expert_members": sum(1 for p in self.players.values() if self.is_expert(p)),
                 "pay_check": self.pay_check,
                 "revenue_by_day": [{"day": d, "cents": c} for d, c in sorted(by_day.items())][-30:],
                 "mb_by_source": sources,

@@ -56,8 +56,7 @@ tr.me td{background:#4cc3cc1c}
 .badge{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:3px;margin-left:7px;vertical-align:middle;border:1px solid var(--line);color:var(--mut);letter-spacing:.03em}
 .b-new{color:var(--acc);border-color:var(--acc)}
 .detail-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.detail-head h2{font-size:19px;margin:0 0 4px}.detail-sub{color:var(--mut);font-size:12.5px}
-.pgame{align-self:center;margin:0 2px 0 8px;color:var(--mut);font:11px var(--mono);text-transform:uppercase;letter-spacing:.04em;cursor:help}
-.periods{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end;max-width:680px}.periods .chip{padding:3px 9px;font-size:12px}.periods button.active{background:var(--acc);color:#021012;border-color:var(--acc)}
+.periods{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end;max-width:520px}.periods .chip{padding:3px 9px;font-size:12px}.periods button.active{background:var(--acc);color:#021012;border-color:var(--acc)}
 .price-chart{width:100%;height:auto;display:block;margin-top:10px;background:var(--bg);border:1px solid var(--line2);border-radius:2px}
 .chart-wrap{position:relative;touch-action:none;user-select:none}.chart-wrap svg{cursor:crosshair}.chart-wrap.dragging svg{cursor:grabbing}
 .xh{position:absolute;inset:0;pointer-events:none;z-index:3}.xh[hidden]{display:none}.xh i{position:absolute;display:block;border:0 dashed #7d8a93b0}
@@ -117,7 +116,10 @@ section>.card{display:none}
 .chart-resize{height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;touch-action:none}.chart-resize span{width:52px;height:4px;border-radius:2px;background:var(--line)}.chart-resize:hover span{background:var(--acc)}
 #chart-box.chart-full{position:fixed;inset:0;z-index:60;background:var(--bg);padding:10px 16px;overflow:auto}.chart-full .chart-resize{display:none}
 body.noscroll{overflow:hidden}
-.page-calendar #calendar-card{display:block}
+.page-calendar #calendar-card{display:block}.page-bots #bots-card{display:block}
+.bot-card{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:8px 0}.bot-log td{padding:2px 8px 2px 0;font-size:12px;text-align:left}
+.bot-rules{width:100%}.bot-rules td{padding:3px 4px;vertical-align:top}.bot-rules .r-when{width:100%;min-width:220px;font:12px var(--mono)}
+@media(max-width:760px){.bot-rules thead{display:none}.bot-rules tr{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);padding:4px 0}.bot-rules td{padding:0;border:0}.bot-rules td:first-child{flex-basis:100%}.bot-rules .r-when{min-width:0}}
 .cal-kind{font-weight:600}
 .page-learn #learn-card{display:block}
 .lesson-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0 14px}
@@ -152,7 +154,14 @@ button:hover{background:#1f262c}button:disabled{opacity:.4;cursor:not-allowed}
 .detail-actions .buy{background:var(--up);border-color:var(--up);color:#04140a;font-weight:700}.detail-actions .sell{background:var(--dn);border-color:var(--dn);color:#1a0504;font-weight:700}
 .chip{border-radius:2px;padding:3px 10px;font-size:12px}
 .chip.on{background:var(--acc);color:#021012;border-color:var(--acc)}
-.amt-input{width:130px;margin:0;padding:5px 9px}.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
+.amt-input{width:130px;margin:0;padding:5px 9px}
+.lev-sel{width:auto;margin:0;padding:5px 6px}
+.dtabs{display:flex;gap:4px;margin:4px 0 8px}
+#opt-box{display:none}body.opt-tab #opt-box{display:block}body.opt-tab #chart-box,body.opt-tab .chart-resize,body.opt-tab .chart-controls{display:none!important}
+.opt-chain{width:100%;font-variant-numeric:tabular-nums}.opt-chain td,.opt-chain th{text-align:right;padding:4px 6px}.opt-chain th.k,.opt-chain td.k{text-align:center;font-weight:700;background:var(--card2)}
+.opt-chain tr.atm td{border-top:1px solid var(--acc)}.opt-chain button{padding:2px 7px;font-size:12px;min-width:56px}.opt-chain button.sel{background:var(--acc);color:#021012}
+@media(max-width:760px){.opt-chain td,.opt-chain th{padding:3px 2px;font-size:11px}.opt-chain button{min-width:0;padding:2px 4px;font-size:11px}}
+.opt-buy{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:var(--r)}.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
 .ticket{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:6px 0;margin-bottom:10px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
 .ticket .lab{color:var(--mut);font-size:12px}
 .orders{margin:10px 0}.orders summary{cursor:pointer;color:var(--mut);font-size:13px;padding:4px 0}.orders[open] summary{color:var(--txt)}
@@ -336,7 +345,7 @@ body.guest .guest-cta{display:flex}
 <p id="auth-hint" class="hint" style="display:none"></p><button id="login-close" style="display:none;width:100%;margin-top:8px">Keep watching the market</button></div></div>
 <header>
 <div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
-<nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><a href="/shop" data-page="shop">Shop</a></nav>
+<nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><a href="/bots" data-page="bots">Bots</a><a href="/shop" data-page="shop">Shop</a></nav>
 <div class="spacer"></div>
 <div id="session"><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
 <div class="stats">
@@ -360,7 +369,7 @@ body.guest .guest-cta{display:flex}
 <div class="finance-grid" id="hold-sum"></div>
 <div class="ticket" style="margin-top:12px"><span class="lab">Buy size</span><span id="h-bchips"></span><span class="lab">Sell size</span><span id="h-schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB" aria-label="Amount in MB"></div>
 <table><thead><tr><th>Ticker &middot; Company</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>Value</th><th>Dividends</th><th>P/L</th><th>Take profit</th><th>Stop-loss</th><th></th></tr></thead><tbody id="hold-rows"></tbody></table>
-<div id="hold-orders"></div>
+<div id="hold-orders"></div><div id="hold-opts"></div>
 <p id="hold-empty" class="mut" style="display:none">You don't hold anything yet. Pick a stock on the <a href="/">market</a> and buy some.</p></div>
 <div class="card" id="stock-detail"><a href="/" style="font-size:13px">Back to market</a><div id="detail-content" class="mut" style="margin-top:12px">Loading…</div></div>
 <div class="card" id="portfolio-card"><h3>Your portfolio</h3><div class="finance-grid" id="pf-sum"></div>
@@ -405,6 +414,7 @@ body.guest .guest-cta{display:flex}
 <h3 class="sp">Privacy</h3><label><input type="checkbox" id="pub-toggle" style="width:auto;margin:0 8px 0 0"> Make my results and (delayed) holdings public</label>
 <p class="hint">If it's public, others see your returns and what you held five minutes ago, in percentages. If not, only your name, medals and achievements (and you still show on the leaderboards).</p></div>
 <div class="card" id="learn-card"><div id="learn-body" class="mut">Loading…</div></div>
+<div class="card" id="bots-card"><h3>Trading bots</h3><div id="bots-body"><p class="mut">Loading…</p></div></div>
 <div class="card" id="calendar-card"><h3>Economic calendar</h3>
 <p class="about" style="margin-top:0">Jobless claims every week, inflation, jobs and retail sales every month, growth every quarter and eight rate decisions a year. Each has a forecast, and prices move on the <b>surprise</b>, how far the figure lands from it.</p>
 <div id="cal-rate" class="notice-box"></div>
@@ -418,7 +428,7 @@ body.guest .guest-cta{display:flex}
 <div id="shop-mode"></div><div id="shop-restart"></div>
 <h3 class="sp">Before you buy</h3><div id="shop-rules"></div>
 <h3 class="sp">MB packages</h3><p class="hint" id="shop-why" style="display:none;margin-top:0"></p><div class="pkg-grid" id="shop-pkgs"></div>
-<h3 class="sp">Meme Street Pro</h3><div id="shop-pro"></div>
+<h3 class="sp">Meme Street Pro</h3><div id="shop-pro"></div><h3 class="sp">Meme Street Expert</h3><div id="shop-expert"></div>
 <h3 class="sp">Your spending limit</h3><div id="shop-cap"></div>
 <h3 class="sp">Where your MB came from</h3><table id="shop-src"></table>
 <h3 class="sp">Your purchases</h3><table id="shop-orders"></table></div>
@@ -435,7 +445,7 @@ const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.p
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const path=location.pathname.replace(/\/+$/,'')||'/';
 let page='market',pageArg=null,mt;
-if(['/holdings','/portfolio','/history','/leaders','/social','/profile','/shop','/calendar','/learn'].includes(path))page=path.slice(1);
+if(['/holdings','/portfolio','/history','/leaders','/social','/profile','/shop','/calendar','/learn','/bots'].includes(path))page=path.slice(1);
 else if(mt=path.match(/^\/stock\/([^/]+)$/)){page='stock';pageArg=decodeURIComponent(mt[1]).toUpperCase()}
 else if(mt=path.match(/^\/player\/([^/]+)$/)){page='player';pageArg=decodeURIComponent(mt[1])}
 document.body.className='page-'+page;
@@ -576,7 +586,7 @@ function connect(){
    else if(t==='init')onInit(m);
    else if(t==='notice'){notify(m.msgs||[])}
    else if(t==='result'){toast(m.msg,m.ok);if(m.contest)setTimeout(loadMe,150)}
-   else if(t==='history'){if(m.ticker===selectedTicker&&m.period===chartPeriod){chartCandles=m.candles||[];if(m.game_day0)gameDay0=m.game_day0;if(m.now)clockOffset=m.now-Date.now()/1000;scheduleChart()}}
+   else if(t==='history'){if(m.ticker===selectedTicker&&m.period===chartPeriod){chartCandles=m.candles||[];if(m.now)clockOffset=m.now-Date.now()/1000;scheduleChart()}}
    else if(t==='company'){if(m.ticker===selectedTicker){company=m;drawCompany()}}
    else if(t==='chat')onChat(m.msg);
    else if(t==='chat_delete'){chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}
@@ -620,10 +630,11 @@ function finOf(x){
 
 // ---------- trading ----------
 const tradeAt={};let amountMB=null;
-function trade(t,side){
+function trade(t,side,lev){
  if(guest){openSignin('register','Create an account to trade');return}
  const now=Date.now();if(now-(tradeAt[t]||0)<300)return;tradeAt[t]=now;
  const msg={type:'trade',ticker:t,side,pct:side==='buy'?buyPct:sellPct};
+ if(lev>1){if(!S.pro){toast('Leverage is a Pro tool: see the Shop',false,3500);return}msg.lev=lev}
  if(amountMB!==null){if(!(amountMB>0)){toast('Enter an amount above 0',false);return}msg.amount=amountMB}
  send(msg)}
 function setAmount(v){
@@ -651,7 +662,7 @@ function renderHeader(){
  const lnb=$('learn-banner'),newbie=!guest&&S.lessons===0&&!lsGet('ms_learn_hide',false)&&page==='market'&&!S.low;
  if(lnb._on!==newbie){lnb._on=newbie;lnb.style.display=newbie?'flex':'none';
   if(newbie)lnb.innerHTML='<span><b>New to trading?</b> Start with the first lesson: it takes about four minutes.</span><span class="bar" style="margin:0"><a href="/learn?l=basics">Start lesson 1</a><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>'}
- const pb=$('pro-badge'),pro=!!S.pro&&!guest;if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}
+ const pb=$('pro-badge'),pro=!!S.pro&&!guest,tier=S.expert?'EXPERT':'PRO';if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}if(pb.textContent!==tier){pb.textContent=tier;pb.title='Meme Street '+(S.expert?'Expert':'Pro')}
  const lb=$('low-banner'),low=!!S.low&&!guest&&!lowHidden&&page!=='shop';
  if(lb._on!==low){lb._on=low;lb.style.display=low?'flex':'none';
   if(low)lb.innerHTML='<span><b>You are nearly out of MB.</b> It happens to every trader while learning. Close your positions, then take the free restart, or top up in the shop.</span><span class="bar" style="margin:0"><button data-shop="closeall">Close all positions</button><a href="/shop">Free restart and shop</a><a href="/learn">Lessons on risk</a><button data-shop="lowhide" aria-label="Hide this message">&times;</button></span>'}
@@ -770,7 +781,7 @@ const holdEls={};
 function renderHoldings(){
  const m=S,cost=m.holdings.reduce((a,h)=>a+h.cost,0),value=m.holdings.reduce((a,h)=>a+(h.side==='short'?-h.value:h.value),0),pnl=m.holdings.reduce((a,h)=>a+h.pnl,0);
  setHtml($('hold-sum'),`<div><small>Cash</small><strong>${numText(m.cash)} MB</strong></div><div><small>Net positions value</small><strong>${numText(value)} MB</strong></div><div><small>Total cost</small><strong>${numText(cost)} MB</strong></div><div><small>Open P/L</small><strong class="${cls(pnl)}">${signed(pnl)} MB (${cost>0?pc(pnl/cost):'0.0%'})</strong></div><div><small>Account equity</small><strong>${numText(m.equity)} MB</strong></div>`);
- $('hold-empty').style.display=m.holdings.length?'none':'block';
+ $('hold-empty').style.display=m.holdings.length||(m.opts||[]).length?'none':'block';
  {const tk=document.querySelector('#holdings-card .ticket'),want=m.holdings.length?'':'none';if(tk.style.display!==want)tk.style.display=want}   // the size chips only matter once there is something to trade
  const body=$('hold-rows'),seen=new Set();
  for(const h of m.holdings){
@@ -779,15 +790,60 @@ function renderHoldings(){
    const st=m.byT[h.ticker];
    tr.innerHTML=`<td><div class="tick-cell"><span class="tick-main"><span class="tk">${esc(h.ticker)}</span><span class="nm">${esc(st?.name||'')}</span></span></div></td><td class="c-side"></td><td class="c-sh"></td><td class="c-avg"></td><td class="c-px"></td><td class="c-val"></td><td class="c-div"></td><td class="c-pnl"></td><td class="c-tp"></td><td class="c-sl"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;body.appendChild(tr)}
   const c=cls(Number(h.pnl.toFixed(2)));
-  setText(tr.querySelector('.c-side'),h.side==='short'?'SHORT':'Long','c-side '+(h.side==='short'?'dn':''));setText(tr.querySelector('.c-sh'),numText(h.shares,4));setText(tr.querySelector('.c-avg'),priceText(h.avg));
+  setText(tr.querySelector('.c-side'),(h.side==='short'?'SHORT':'Long')+(h.lev?' '+h.lev+'x':''),'c-side '+(h.side==='short'?'dn':''));setText(tr.querySelector('.c-sh'),numText(h.shares,4));setText(tr.querySelector('.c-avg'),priceText(h.avg));
   setText(tr.querySelector('.c-px'),priceText(h.price));setText(tr.querySelector('.c-val'),numText(h.value)+' MB');setText(tr.querySelector('.c-div'),h.div?signed(h.div)+' MB':'-');
   setText(tr.querySelector('.c-pnl'),signed(h.pnl)+' MB ('+pc(h.pct)+')','c-pnl '+c);
   setText(tr.querySelector('.hold-act .buy'),h.side==='short'?'Cover':'Buy');setText(tr.querySelector('.hold-act .sell'),h.side==='long'?'Sell':'Short');
   drawExits(tr,h)}
+ drawHoldOpts();
  for(const k of Object.keys(holdEls))if(!seen.has(k)){holdEls[k].remove();delete holdEls[k]}
  const os=S.orders||[];
  setHtml($('hold-orders'),os.length?`<h3 class="sp">Open orders</h3><table><thead><tr><th>Ticker</th><th>Order</th><th>Triggers</th><th>Size</th><th></th><th></th></tr></thead><tbody>${orderRows(os,true)}</tbody></table>`:'')}
 $('hold-orders').addEventListener('click',e=>{const b=e.target.closest('[data-cancel]');if(b)send({type:'order',action:'cancel',id:Number(b.dataset.cancel)})});
+// ---------- options (options.py): the stock page's Options tab, and every option position on the holdings page ----------
+let optTab=false,optChain=null,optExp=null,optSel=null,optT=0,optFor=null;
+function setDetailTab(t){optTab=t==='options';document.body.classList.toggle('opt-tab',optTab);
+ document.querySelectorAll('[data-dtab]').forEach(b=>b.classList.toggle('on',b.dataset.dtab===t));
+ if(optTab)loadChain(true);else scheduleChart()}
+async function loadChain(force){
+ if(!optTab||!selectedTicker)return;const now=Date.now();if(!force&&now-optT<5000&&optFor===selectedTicker)return;optT=now;
+ const tk=selectedTicker,r=await fetch('/api/options/'+encodeURIComponent(tk)).then(x=>x.json()).catch(()=>null);
+ if(!r||tk!==selectedTicker)return;
+ if(optFor!==tk){optFor=tk;optSel=null;optExp=null}
+ optChain=r;if(!r.error&&(!optExp||!r.expiries.some(e=>Math.abs(e-optExp)<1)))optExp=r.expiries[1];drawOptions()}
+const optLeft=t=>{const s=Math.max(0,t-engineNow()),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+String(m).padStart(2,'0')+'m':m+'m'};
+const optName=(kind,K,exp)=>`${numText(K,Math.abs(K)<1?4:2)} ${kind} · ${optLeft(exp)} to expiry`;
+function drawOptions(){
+ const box=$('opt-box');if(!box||!optTab)return;const c=optChain;
+ if(!c){setHtml(box,'<p class="mut">Loading the option chain…</p>');return}
+ if(c.error){setHtml(box,`<p class="mut">${esc(c.error)}. Options are on the companies and the commodities.</p>`);return}
+ const rows=c.rows.filter(r=>Math.abs(r.exp-optExp)<1),px=c.price,atm=rows.reduce((a,r)=>Math.abs(r.K-px)<Math.abs(a.K-px)?r:a,rows[0]);
+ const b=(kind,r)=>{const q=r[kind],on=optSel&&optSel.kind===kind&&Math.abs(optSel.K-r.K)<1e-9;return `<button class="${on?'sel':''}" data-opt-pick="${kind}" data-k="${r.K}">${pxText(q.ask)}</button>`};
+ const earn=c.earnings&&c.earnings<=optExp?`<p class="hint">Earnings are due before this expiry: the prices include a bigger move.</p>`:'';
+ let h=`<p class="hint" style="margin-top:0">A <b>call</b> pays the amount the price ends above the strike at expiry; a <b>put</b> pays the amount it ends below. One contract is on one share. The most you can lose is what you pay; you can sell it back before expiry at the bid. Implied volatility ${(c.iv*100).toFixed(0)}% a game year.</p>
+ <div class="bar">${c.expiries.map(e=>`<button class="chip ${Math.abs(e-optExp)<1?'on':''}" data-opt-exp="${e}">${optLeft(e)}</button>`).join('')}</div>${earn}
+ <div style="overflow-x:auto"><table class="opt-chain"><thead><tr><th colspan="3">Calls</th><th class="k">Strike</th><th colspan="3">Puts</th></tr><tr><th>Bid</th><th>Ask (buy)</th><th>Delta</th><th class="k"></th><th>Delta</th><th>Bid</th><th>Ask (buy)</th></tr></thead><tbody>`
+  +rows.map(r=>`<tr class="${r===atm?'atm':''}"><td>${pxText(r.call.bid)}</td><td>${b('call',r)}</td><td class="mut">${r.call.delta.toFixed(2)}</td><td class="k">${numText(r.K,Math.abs(r.K)<1?4:2)}</td><td class="mut">${r.put.delta.toFixed(2)}</td><td>${pxText(r.put.bid)}</td><td>${b('put',r)}</td></tr>`).join('')+'</tbody></table></div>';
+ if(optSel){const r=rows.find(x=>Math.abs(x.K-optSel.K)<1e-9);
+  if(r){const q=r[optSel.kind],be=optSel.kind==='call'?r.K+q.ask:r.K-q.ask;
+   h+=`<div class="opt-buy"><b>${esc(selectedTicker)} ${esc(optName(optSel.kind,r.K,optExp))}</b><p class="hint">${pxText(q.ask)} MB a contract. It pays at expiry if the price is ${optSel.kind==='call'?'above':'below'} ${numText(r.K,2)}; you make money past <b>${numText(be,2)}</b> (the strike ${optSel.kind==='call'?'plus':'less'} what you paid). The most you can lose is what you pay.</p><div class="bar" style="margin:0"><input id="opt-amt" class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="MB to spend on this option"><button class="buy" id="opt-go">Buy</button></div></div>`}}
+ h+='<div id="opt-mine"></div>';
+ const a0=$('opt-amt'),keep=a0?a0.value:'',focus=a0&&document.activeElement===a0;     // (a refresh keeps what is being typed)
+ setHtml(box,h);const a1=$('opt-amt');if(a1&&a1!==a0){a1.value=keep;if(focus)a1.focus()}
+ drawMyOpts()}
+function optRows(list,act){return list.map(o=>`<tr><td><b>${esc(o.tk)}</b> ${esc(optName(o.kind,o.K,o.exp))}</td><td>${numText(o.qty,2)}</td><td>${numText(o.cost)} MB</td><td>${numText(o.value)} MB</td><td class="${cls(o.pnl)}">${signed(o.pnl)} MB</td>${act?`<td class="hold-act"><button class="sell" data-opt-sell="${o.id}" data-f="0.5">Sell half</button> <button class="sell" data-opt-sell="${o.id}" data-f="1">Sell</button></td>`:''}</tr>`).join('')}
+function drawMyOpts(){const el=$('opt-mine');if(!el)return;const mine=(S.opts||[]).filter(o=>o.tk===selectedTicker);
+ setHtml(el,mine.length?`<h3 class="sp">Your options on ${esc(selectedTicker)}</h3><table><thead><tr><th>Contract</th><th>Contracts</th><th>Cost</th><th>Worth now</th><th>P/L</th><th></th></tr></thead><tbody>${optRows(mine,true)}</tbody></table>`:'')}
+function drawHoldOpts(){const os=S.opts||[];
+ setHtml($('hold-opts'),os.length?`<h3 class="sp">Options</h3><table><thead><tr><th>Contract</th><th>Contracts</th><th>Cost</th><th>Worth now (bid)</th><th>P/L</th><th></th></tr></thead><tbody>${optRows(os,true)}</tbody></table><p class="hint">They settle in cash at expiry by themselves.</p>`:'')}
+document.addEventListener('click',async e=>{
+ const pick=e.target.closest('[data-opt-pick]'),ex=e.target.closest('[data-opt-exp]'),sell=e.target.closest('[data-opt-sell]');
+ if(ex){optExp=Number(ex.dataset.optExp);optSel=null;drawOptions();return}
+ if(pick){if(guest){openSignin('register','Create an account to trade options');return}optSel={kind:pick.dataset.optPick,K:Number(pick.dataset.k)};drawOptions();const a=$('opt-amt');if(a)a.focus();return}
+ if(e.target.id==='opt-go'&&optSel){const amount=Number($('opt-amt').value);if(!(amount>=1)){toast('Type the MB to spend (1 or more)',false);return}
+  const r=await postJson('/api/options/buy',{ticker:selectedTicker,kind:optSel.kind,strike:optSel.K,expiry:optExp,amount},{'X-Token':token||''});
+  toast(r.msg||r.error||'Error',!!r.ok,4000);if(r.ok){optSel=null;loadChain(true)}return}
+ if(sell){sell.disabled=true;const r=await postJson('/api/options/sell',{id:sell.dataset.optSell,fraction:Number(sell.dataset.f)},{'X-Token':token||''});toast(r.msg||r.error||'Error',!!r.ok,4000)}});
 // Take profit and stop-loss on each position, edited where they are shown (engine.set_exit): "-" when there is none
 let exitEdit=null;
 function drawExits(tr,h){
@@ -819,11 +875,13 @@ $('hold-rows').addEventListener('click',e=>{
 let repAll=false,logN=12;
 function buildDetail(){
  $('detail-content').className='';repAll=false;logN=12;
- $('detail-content').innerHTML=`<div class="detail-head"><div><h2><span id="d-name"></span> <span id="d-star" class="star" style="display:inline-block;vertical-align:middle"></span><span id="d-badges"></span></h2><div class="detail-sub" id="d-sub"></div><div class="detail-price"><span id="d-price"></span><span class="detail-move" id="d-move"></span></div></div><div class="periods">${PERIODS.map(p=>(p[0]==='gd'?`<span class="pgame" title="${esc('Game time: a game day is 30 real minutes, and its candle is the regular session only, so the move from one close to the next open shows as a gap')}">Game</span>`:'')+`<button class="chip ${p[0]===chartPeriod?'active':''}" data-p="${p[0]}"${p[3]?` title="${esc(p[3])}"`:''}>${p[1]}</button>`).join('')}</div></div>
+ $('detail-content').innerHTML=`<div class="detail-head"><div><h2><span id="d-name"></span> <span id="d-star" class="star" style="display:inline-block;vertical-align:middle"></span><span id="d-badges"></span></h2><div class="detail-sub" id="d-sub"></div><div class="detail-price"><span id="d-price"></span><span class="detail-move" id="d-move"></span></div></div><div class="periods">${PERIODS.map(p=>`<button class="chip ${p[0]===chartPeriod?'active':''}" data-p="${p[0]}">${p[1]}</button>`).join('')}</div></div>
 <div class="guest-cta" id="d-cta"><span>You are watching live. Create an account to trade this stock.</span><span><button class="buy" id="d-signup">Create an account</button> <button id="d-signin">Sign in</button></span></div>
-<div class="detail-actions"><span class="mut">Buy %</span><span id="detail-bchips"></span><span class="mut">Sell %</span><span id="detail-schips"></span><span class="mut">or</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB amount" aria-label="Amount in MB"><button class="buy" id="d-buy">Buy</button><button class="sell" id="d-sell">Sell</button></div>
+<div class="detail-actions"><span class="mut">Buy %</span><span id="detail-bchips"></span><span class="mut">Sell %</span><span id="detail-schips"></span><span class="mut">or</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB amount" aria-label="Amount in MB"><select id="d-lev" class="lev-sel" aria-label="Leverage" title="Leverage (Pro): your MB buy or short this many times as much. Losses grow exactly as much as gains, interest is charged on what is borrowed, and the position closes by itself if it loses half its margin."><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select><button class="buy" id="d-buy">Buy</button><button class="sell" id="d-sell">Sell</button></div>
 <div class="limits mut" id="d-limits"></div>
 <div class="position" id="d-pos" style="display:none"></div>
+<div class="dtabs" id="d-tabs"><button class="chip on" data-dtab="chart">Chart</button><button class="chip" data-dtab="options">Options</button></div>
+<div id="opt-box"></div>
 <div id="chart-box"><div class="ind-bar" id="ind-bar"></div>
 <div class="ind-cfg" id="ind-cfg" hidden></div><div class="ind-pop" id="ind-pop" hidden><input id="ind-q" type="search" placeholder="Search indicators: RSI, moving average, Fibonacci, volume…" aria-label="Search indicators" autocomplete="off"><div class="ind-tabs" id="ind-tabs"><button class="chip" data-ind-filter="all">All</button><button class="chip" data-ind-filter="free">Free</button><button class="chip" data-ind-filter="pro">Pro</button><button class="chip" data-ind-filter="on">On</button></div><div id="ind-list"></div></div>
 <div class="xread" id="xread" aria-live="off"></div><div class="chart-wrap" id="chart-wrap"><div class="svgslot"></div><div class="xh" id="xh" hidden><i class="xh-v"></i><i class="xh-h"></i><b class="xh-p"></b><b class="xh-t"></b></div><div class="draw-tools" id="draw-tools"></div></div>
@@ -841,7 +899,10 @@ function buildDetail(){
 <h3 class="sp">About the company</h3><p id="d-desc" class="about"></p><div class="persona" id="d-persona"></div><small class="mut" id="d-note"></small>
 <div class="finance-grid" id="d-facts"></div>
 <div id="d-reports"></div><div id="d-log"></div>`;
- $('d-buy').onclick=()=>trade(selectedTicker,'buy');$('d-sell').onclick=()=>trade(selectedTicker,'sell');
+ const levNow=()=>Number(($('d-lev')||{}).value||1);
+ $('d-buy').onclick=()=>trade(selectedTicker,'buy',levNow());$('d-sell').onclick=()=>trade(selectedTicker,'sell',levNow());
+ $('d-tabs').onclick=e=>{const b=e.target.closest('[data-dtab]');if(b)setDetailTab(b.dataset.dtab)};
+ setDetailTab(optTab?'options':'chart');
  $('detail-content').onclick=e=>{const m=e.target.closest('[data-more]');
   if(m){if(m.dataset.more==='rep')repAll=!repAll;else logN+=25;drawCompany();return}
   const w=e.target.closest('.why');if(w)w.classList.toggle('open')};
@@ -917,6 +978,7 @@ function wireOrders(){
 function drawDetail(){
  const m=S,stock=m.byT[selectedTicker];
  if(!stock){drawDelisted();return}
+ if(optTab){loadChain(false);drawMyOpts()}
  if(delistedView){delistedView=false;builtFor=null}
  if(builtFor!==selectedTicker){builtFor=selectedTicker;chartCandles=[];company=null;zoom=1;pan=0;yMan=null;buildDetail();requestHistory();requestCompany()}
  const sector=m.sectors.find(x=>x.id===stock.sector),fin=finOf(stock);
@@ -931,7 +993,8 @@ function drawDetail(){
  const h=m.holdings.find(x=>x.ticker===stock.ticker),pos=$('d-pos');
  setText($('d-buy'),h&&h.side==='short'?'Cover':'Buy');setText($('d-sell'),h&&h.side==='long'?'Sell':'Short');
  if(h){pos.style.display='flex';const c=h.pnl>=0?'up':'dn';
-  setHtml(pos,`<div><small>${h.side==='short'?'Your short (shares owed)':'Your shares'}</small><strong>${numText(h.shares,4)}</strong></div><div><small>Average entry price</small><strong style="color:var(--avg)">${priceText(h.avg)}</strong></div><div><small>Position value</small><strong>${numText(h.value)} MB</strong></div><div><small>Gain / loss</small><strong class="${c}">${signed(h.pnl)} MB (${pc(h.pct)})</strong></div>${h.div?`<div><small>Dividends ${h.div>0?'received':'paid'}</small><strong>${signed(h.div)} MB</strong></div>`:''}${h.borrow?`<div><small>Borrow fees paid</small><strong>${numText(h.borrow)} MB</strong></div>`:''}`)}
+  const lv=$('d-lev');if(lv&&h.lev&&lv.value!==String(h.lev)){lv.value=String(h.lev)}
+  setHtml(pos,(h.lev?`<div><small>Leverage</small><strong>${h.lev}x</strong></div><div><small>Your margin</small><strong>${numText(h.margin)} MB</strong></div>${h.loan?`<div><small>Borrowed</small><strong>${numText(h.loan)} MB</strong></div>`:''}<div><small>Closes by itself at</small><strong class="dn">${h.liq?priceText(h.liq):'-'}</strong></div>`:'')+`<div><small>${h.side==='short'?'Your short (shares owed)':'Your shares'}</small><strong>${numText(h.shares,4)}</strong></div><div><small>Average entry price</small><strong style="color:var(--avg)">${priceText(h.avg)}</strong></div><div><small>Position value</small><strong>${numText(h.value)} MB</strong></div><div><small>Gain / loss</small><strong class="${c}">${signed(h.pnl)} MB (${pc(h.pct)})</strong></div>${h.div?`<div><small>Dividends ${h.div>0?'received':'paid'}</small><strong>${signed(h.div)} MB</strong></div>`:''}${h.borrow?`<div><small>Borrow fees paid</small><strong>${numText(h.borrow)} MB</strong></div>`:''}`)}
  else pos.style.display='none';
  setText($('d-limits'),`A short holds the amount from your cash until you cover · borrow fee ${f(stock.borrow_hour*100,2)}% an hour · no size limit`);
  const F=(l,v,c='')=>`<div><small>${l}</small><strong class="${c}">${v}</strong></div>`;
@@ -1000,13 +1063,13 @@ $('pf-pos').addEventListener('click',e=>{const tr=e.target.closest('tr[data-k]')
 async function loadPortfolio(){const d=await api('/api/portfolio');if(d&&!d.slow&&!d.notfound){pfData=d;drawPortfolio()}}
 
 // ---------- history page ----------
-const KIND_LABEL={buy:'Buy',sell:'Sell',short:'Short',cover:'Cover',margin_call:'Margin call',dividend:'Dividend',borrow:'Borrow fee',credit:'MB added',debit:'MB removed',delist_payout:'Delisting payout',purchase:'Purchase'};
+const KIND_LABEL={buy:'Buy',sell:'Sell',short:'Short',cover:'Cover',margin_call:'Margin call',dividend:'Dividend',borrow:'Borrow fee',credit:'MB added',debit:'MB removed',delist_payout:'Delisting payout',purchase:'Purchase',opt_buy:'Option bought',opt_sell:'Option sold',opt_expire:'Option settled',lend:'Borrowed (leverage)',repay:'Loan repaid'};
 const CREDIT_LABEL={grant:'Starting MB',challenge:'Reward',restart:'Free restart',admin:'Added by an admin',purchase:'Purchase',refund:'Refund'};
 // borrow fees are charged every few minutes while a short is open: back-to-back ones in the same stock are shown as one row
 function foldBorrow(list){const out=[];for(const e of list){const p=out[out.length-1];
  if(p&&e.kind==='borrow'&&p.kind==='borrow'&&p.ticker===e.ticker){p.fee+=e.fee||0;p.cash=(p.cash||0)+(e.cash||0);p.n=(p.n||1)+1;p.t0=e.t}
  else out.push({...e})}return out}
-const HFILTERS=[['All',''],['Trades','buy,sell,short,cover,margin_call'],['Buys','buy,cover'],['Sells','sell,short'],['Dividends','dividend'],['MB added','credit,debit,delist_payout,purchase']];
+const HFILTERS=[['All',''],['Trades','buy,sell,short,cover,margin_call'],['Buys','buy,cover'],['Sells','sell,short'],['Options','opt_buy,opt_sell,opt_expire'],['Dividends','dividend'],['MB added','credit,debit,delist_payout,purchase']];
 let hKind='',hEvents=[],hNext=null,hLoading=false;
 function drawHistFilters(){$('hist-filters').innerHTML=HFILTERS.map(([n,k])=>`<button class="chip ${k===hKind?'on':''}" data-k="${k}">${n}</button>`).join('')}
 $('hist-filters').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;hKind=b.dataset.k;drawHistFilters();loadHistory(true)});
@@ -1240,9 +1303,11 @@ function drawShop(){
  const why=!d.selling?'':!d.birth_year_set?'To turn on Buy, tell us the year you were born (above).':!d.age_ok_to_buy?'':!shopAdult?'To turn on Buy, tick the box above.':'';
  setText($('shop-why'),why);$('shop-why').style.display=why?'block':'none';
  setHtml($('shop-pkgs'),c.packages.map(x=>`<div class="pkg"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${esc(x.per_1000)} per 1,000 MB</small>${buyBtn(x)}</div>`).join(''));
- setHtml($('shop-pro'),`<p class="hint" style="margin-top:0">Extra tools for learning. Pro adds no MB and no leaderboard advantage, and everything you need to learn works without it.</p><ul class="hint">${c.pro_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
-  +(d.pro?`<p class="up">Pro is on until ${new Date(d.pro_until*1000).toLocaleDateString()}. Buying again adds to it.</p>`:'')
-  +`<div class="pkg-grid">${c.pro.map(x=>`<div class="pkg"><b>${x.days===365?'1 year':x.days+' days'}</b><span class="price">${esc(x.price)}</span><small>One payment. It does not renew by itself.</small>${buyBtn(x)}</div>`).join('')}</div>`);
+ const passes=list=>`<div class="pkg-grid">${list.map(x=>`<div class="pkg"><b>${x.days===365?'1 year':x.days+' days'}</b><span class="price">${esc(x.price)}</span><small>One payment. It does not renew by itself.</small>${buyBtn(x)}</div>`).join('')}</div>`;
+ setHtml($('shop-pro'),`<p class="hint" style="margin-top:0">Extra tools and leverage. Pro adds no MB, and everything you need to learn works without it. Leverage magnifies losses exactly as much as gains.</p><ul class="hint">${c.pro_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
+  +(d.pro_until?`<p class="up">Pro is on until ${new Date(d.pro_until*1000).toLocaleDateString()}. Buying again adds to it.</p>`:d.expert?'<p class="up">You have Pro with your Expert pass.</p>':'')+passes(c.pro));
+ setHtml($('shop-expert'),`<p class="hint" style="margin-top:0">For traders who want to automate and test their ideas. Expert includes everything in Pro.</p><ul class="hint">${c.expert_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
+  +(d.expert?`<p class="up">Expert is on until ${new Date(d.expert_until*1000).toLocaleDateString()}. Buying again adds to it. Your bots are on the <a href="/bots">Bots</a> page.</p>`:'')+passes(c.expert));
  let rules='';
  if(!d.birth_year_set)rules=`<p class="hint" style="margin-top:0">Purchases are for people aged ${d.buy_min_age} or over. Tell us the year you were born first: only the year is kept, and only an admin can change it later.</p><div class="bar"><input id="shop-year" type="number" min="1900" max="2100" placeholder="Year you were born" style="width:190px"><button id="shop-year-save">Save</button></div>`;
  else if(!d.age_ok_to_buy)rules=`<p class="hint" style="margin-top:0">Purchases are for people aged ${d.buy_min_age} or over, so the shop is closed to you. Everything else is free: challenges award MB, and the free restart refills an account that has run out.</p>`;
@@ -1252,7 +1317,7 @@ function drawShop(){
  setHtml($('shop-cap'),`<p class="hint" style="margin-top:0">Spent in the last 30 days: <b>${esc(d.spent_30d_text)}</b> of your <b>${esc(d.cap_text)}</b> limit.${d.cap_pending?' Your new limit starts '+stamp(d.cap_pending[1])+'.':''} Lowering the limit works at once; raising it takes 24 hours, so it is never decided in the heat of a loss.</p><div class="bar"><input id="cap-in" type="number" min="0" step="1" placeholder="New limit, whole ${esc(c.currency.toUpperCase())}" style="width:210px"><button id="cap-save">Set limit</button></div>`);
  const src=Object.entries(d.mb_by_source||{}).filter(([k,v])=>Math.abs(v)>=0.005);
  setHtml($('shop-src'),src.length?'<tr><th>Source</th><th>MB</th></tr>'+src.map(([k,v])=>`<tr><td>${esc(SRC_LABEL[k]||k)}</td><td class="${v<0?'dn':''}">${numText(v)} MB</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">Nothing yet.</td></tr>');
- setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='pro'?'Pro, '+o.days+' days':numText(o.mb,0)+' MB'}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
+ setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='pro'?'Pro, '+o.days+' days':o.kind==='expert'?'Expert, '+o.days+' days':numText(o.mb,0)+' MB'}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
 $('shop-card').addEventListener('change',e=>{if(e.target.id==='shop-adult'){shopAdult=e.target.checked;drawShop()}});
 $('shop-card').addEventListener('click',async e=>{
  const b=e.target.closest('[data-sku]'),hdr={'X-Token':token||''};
@@ -1355,4 +1420,4 @@ setInterval(refreshPage,page==='history'?15000:5000);
 // (connect once chart.js has run too: a message could otherwise arrive while it is still loading)
 document.addEventListener('DOMContentLoaded',()=>{drawChips();connect()});
 </script>
-<script src="/js/chart.js"></script></body></html>
+<script src="/js/chart.js"></script><script src="/js/bots.js"></script></body></html>

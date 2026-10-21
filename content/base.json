@@ -38,6 +38,10 @@
     {"sku": "pro30", "days": 30, "price_cents": 499},
     {"sku": "pro365", "days": 365, "price_cents": 3999}
   ],
+  "shop_expert": [
+    {"sku": "expert30", "days": 30, "price_cents": 1299},
+    {"sku": "expert365", "days": 365, "price_cents": 9999}
+  ],
   "spend_cap_month_cents": 15000,
   "purchases_per_day": 3,
   "restart_below": 50,

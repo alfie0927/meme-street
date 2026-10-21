@@ -8,7 +8,9 @@ import economy
 import learning
 import ladder
 import chartprefs
+import bots
 import history
+import options
 import market_model
 import paths
 import social
@@ -25,13 +27,12 @@ INTRADAY_CANDLE_SECONDS = 60
 # real-time candle sizes in seconds, keyed by the labels the chart offers
 TIMEFRAMES = {"30s": 30, "1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "2h": 7200,
               "4h": 14400, "1d": 86400, "1mo": 30 * 86400, "1y": 365 * 86400}
-# game-time candles (ROADMAP TA-A11): a game day's regular session, a game week (Monday to Sunday of the game calendar)
-# and a game month, built from the game-day candles that history.py keeps for many game years (TA-A10)
-GAME_PERIODS = ("gd", "gw", "gm")
+# game-day candles (the regular session) that history.py keeps for many game years (ROADMAP TA-A10); the price model
+# reads its daily levels from them (a game-time chart, TA-A11, was taken out again on request on 2026-10-21)
 DAY_CANDLES_KEPT = 400        # game-day candles each listing keeps in memory (a 52-week range, a 200-day average)
-CHART_DAYS = 1500             # at most this many game-day candles go to a chart (about four game years)
 CHART_MINUTES = 1440          # at most this many one-minute candles go to a chart (a real day)
 MAX_TICK_MOVE = 0.15
+MAX_LEVERAGE = 10.0           # Pro: positions up to this many times the MB put in (not on the leveraged products)
 # The game's own calendar, for the calendar page: one game day (30 real minutes) is one date, seven make a week and the
 # months are a real calendar's. Game day GAME_DAY0 (1 September 2026, UTC) is 1 January of game year 1.
 GAME_DAY0 = int(datetime.datetime(2026, 9, 1, tzinfo=datetime.timezone.utc).timestamp() // MARKET_DAY_SECONDS)
@@ -265,6 +266,10 @@ class Player:
         self.curve = deque(maxlen=1440)   # [time, equity, cash] sampled once a minute (a day of history)
         self.margin_calls = 0
         self.hold = {}           # shares; negative means a short position
+        self.lev = {}            # ticker -> leverage of that position (Pro; absent: 1x)
+        self.loan = {}           # ticker -> MB the house lent for a leveraged long (its interest adds to it)
+        self.loan_int = {}       # ticker -> the interest added to that loan so far (part of the trade's cost)
+        self.collat = {}         # ticker -> collateral posted for a leveraged short (absent: the short's entry value)
         self.notices = []        # one-off messages for the client (margin calls)
         self.cost = {}           # total entry cost of the open position per ticker (for average price)
         self.last_trade = {}
@@ -283,10 +288,12 @@ class Player:
         learning.init_player(self)  # lessons passed, challenge progress (see learning.py)
         ladder.init_player(self)    # the Bronze-to-Diamond quest ladder, and the title and name colour worn (ladder.py)
         chartprefs.init_player(self)   # indicators, chart type and drawings, kept on the server (chartprefs.py)
+        options.init_player(self)      # option positions (options.py)
+        bots.init_player(self)         # trading bots (Expert, bots.py)
 
 
 class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin,
-             chartprefs.ChartsMixin):
+             chartprefs.ChartsMixin, options.OptionsMixin, bots.BotsMixin):
     def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None,
                  history_path=None, minutes_path=None):
         self._init_social()
@@ -350,6 +357,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.gaps_total = 0                        # opening auctions so far
         self.borrow_fees = 0.0                     # total borrow fees collected from shorts (part of `fees`)
         self.short_shortfall = 0.0                 # losses the house absorbed when a short could not be paid for
+        self.lev_shortfall = 0.0                   # ... and when a leveraged long lost more than its margin and the cash
         self._borrow_t = self.now
         self.history = []
         self.house = 0.0          # house reserve: funds new listings, receives delisted pools
@@ -896,11 +904,67 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             s = self.stocks.get(tk)
             if not s:
                 continue
-            if sh > 0:
-                v += s.quote_sell(sh)[0]
+            if sh > 0:                               # (less what the house lent, for a leveraged long)
+                v += s.quote_sell(sh)[0] - p.loan.get(tk, 0.0)
             else:                                    # a short: the collateral posted, plus what the price has done for you
-                v += 2 * p.cost.get(tk, -sh * s.price) - (-sh) * s.price * (1 + FEE)
+                cost = p.cost.get(tk, -sh * s.price)
+                v += self._collat(p, tk) + cost - (-sh) * s.price * (1 + FEE)
+        if p.opts:
+            v += self.options_value(p)
         return v
+
+    # ---------- leverage (Pro): the house lends the rest of a long, a short needs less collateral ----------
+    def _collat(self, p, tk):
+        """The collateral behind a short: what was posted for a leveraged one, the whole entry value otherwise."""
+        c = p.collat.get(tk)
+        return c if c is not None else p.cost.get(tk, 0.0)
+
+    def leverage_ok(self, s):
+        """Leverage is for any listing except the leveraged products (2x and 3x funds)."""
+        return s is not None and not (getattr(s, "spec", None) and s.spec.get("kind") == "leveraged")
+
+    def _maint_lev(self, lev):
+        """A leveraged position is closed when its own equity falls to half the margin it started with."""
+        return 0.5 / max(lev, 1.0)
+
+    def liquidation_price(self, p, tk):
+        lev = p.lev.get(tk, 1.0)
+        sh = p.hold.get(tk, 0.0)
+        if lev <= 1 or abs(sh) < 1e-12:
+            return None
+        m = self._maint_lev(lev)
+        if sh > 0:
+            return p.loan.get(tk, 0.0) / (sh * (1 - FEE - m))
+        return (self._collat(p, tk) + p.cost.get(tk, 0.0)) / (-sh * (1 + FEE + m))
+
+    def _lend(self, p, s, amount):
+        """The house lends `amount` MB towards a leveraged long."""
+        p.cash += amount
+        self.house -= amount
+        p.loan[s.ticker] = p.loan.get(s.ticker, 0.0) + amount
+        self._emit("lend", p, s.ticker, cash=amount, house=-amount, notional=amount, lev=p.lev.get(s.ticker))
+
+    def _repay(self, p, tk, fraction):
+        """Pay back `fraction` of a leveraged long's loan (with its interest) out of cash after a sale. If the cash is not
+        enough (the position lost more than its margin), the player pays what they have and the house takes the rest."""
+        loan = p.loan.get(tk, 0.0)
+        if loan <= 0:
+            p.loan.pop(tk, None)
+            return
+        amount = loan if fraction >= 1 - 1e-12 else loan * fraction
+        paid = min(amount, max(p.cash, 0.0))
+        short = amount - paid
+        p.cash -= paid
+        self.house += paid
+        self.lev_shortfall += short
+        if fraction >= 1 - 1e-12 or loan - amount < 1e-9:
+            p.loan.pop(tk, None)
+            p.loan_int.pop(tk, None)
+        else:
+            p.loan[tk] = loan - amount
+            if tk in p.loan_int:
+                p.loan_int[tk] *= 1 - fraction
+        self._emit("repay", p, tk, cash=-paid, house=paid, notional=amount, amount=amount, shortfall=short)
 
     # ---------- trading ----------
     def _emit(self, kind, p=None, ticker=None, shares=0.0, price=0.0, cash=0.0, house=0.0, fee=0.0, cost=0.0,
@@ -936,15 +1000,20 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         return shares
 
     def _close_basis(self, p, ticker, fraction):
-        """Take `fraction` of a position's cost basis and entry fees out of the books. Returns (cost, entry fee)."""
+        """Take `fraction` of a position's cost basis, entry fees and (leveraged short) collateral out of the books.
+        Returns (cost, entry fee)."""
         cost_before = p.cost.get(ticker, 0.0)
         fee_before = p.entry_fee.get(ticker, 0.0)
         if fraction >= 1 - 1e-12:
             p.cost.pop(ticker, None)
             p.entry_fee.pop(ticker, None)
+            p.collat.pop(ticker, None)
+            p.lev.pop(ticker, None)
             return cost_before, fee_before
         p.cost[ticker] = cost_before * (1 - fraction)          # the average entry price is unchanged
         p.entry_fee[ticker] = fee_before * (1 - fraction)
+        if ticker in p.collat:
+            p.collat[ticker] *= 1 - fraction
         return cost_before * fraction, fee_before * fraction
 
     def _do_sell(self, p, s, shares):
@@ -962,41 +1031,50 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             fraction = 1.0
         else:
             p.hold[s.ticker] = left
+        # (a leveraged long's interest is part of what the trade cost)
+        interest = p.loan_int.get(s.ticker, 0.0) * fraction if s.ticker in p.loan else 0.0
         cost_removed, fee_removed = self._close_basis(p, s.ticker, fraction)
-        pnl = proceeds - cost_removed - fee_removed
+        pnl = proceeds - cost_removed - fee_removed - interest
         p.realized[s.ticker] = p.realized.get(s.ticker, 0.0) + pnl
         self._emit("sell", p, s.ticker, shares=-shares, price=s.price, cash=proceeds, house=-(proceeds + fee), fee=fee,
                    cost=-cost_removed, notional=proceeds + fee, pnl=pnl, efee=fee_removed)
+        if s.ticker in p.loan:
+            self._repay(p, s.ticker, fraction)
         self._on_trade(p, "sell", s, proceeds + fee, pnl, closed=fraction >= 1.0)
         return proceeds
 
-    def _do_short(self, p, s, shares):
+    def _do_short(self, p, s, shares, lev=1.0):
         """Sell shares you don't own. What you short is taken out of your cash and held by the house as collateral
-        (it does not increase your cash). Closing the short gives the collateral back, plus the gain or minus the loss."""
+        (it does not increase your cash): all of it, or a `lev`-th of it for a leveraged short. Closing the short gives the
+        collateral back, plus the gain or minus the loss."""
         gross = shares * s.price
         fee = gross * FEE
-        self.house += gross
+        collat = gross / max(lev, 1.0)
+        self.house += collat
         self.fees += fee
-        p.cash -= gross + fee
+        p.cash -= collat + fee
         if -1e-9 < p.cash < 0:
             p.cash = 0.0                                # (rounding when the whole stake is shorted)
         if abs(p.hold.get(s.ticker, 0.0)) < 1e-9:
             self._on_open(p, s.ticker)
+        if lev > 1:
+            p.collat[s.ticker] = self._collat(p, s.ticker) + collat
+            p.lev[s.ticker] = lev
         p.hold[s.ticker] = p.hold.get(s.ticker, 0.0) - shares
         p.cost[s.ticker] = p.cost.get(s.ticker, 0.0) + gross
         p.entry_fee[s.ticker] = p.entry_fee.get(s.ticker, 0.0) + fee
         p.fees_paid += fee
         self._log(p, "short", s, shares, gross, fee)
-        self._emit("short", p, s.ticker, shares=-shares, price=s.price, cash=-(gross + fee), house=gross, fee=fee,
-                   cost=gross, notional=gross)
+        self._emit("short", p, s.ticker, shares=-shares, price=s.price, cash=-(collat + fee), house=collat, fee=fee,
+                   cost=gross, notional=gross, **({"collat": collat, "lev": lev} if lev > 1 else {}))
         self._on_trade(p, "short", s, gross)
         return gross
 
-    def _short_payout(self, p, cost_part, value, fee):
-        """(cash change, shortfall) when a short with `cost_part` of collateral is bought back at `value`: the
-        collateral plus the gain, less the fee. If the loss is bigger than the collateral the player pays what they
-        have and the house absorbs the rest."""
-        got = 2 * cost_part - value - fee
+    def _short_payout(self, p, cost_part, value, fee, collat_part=None):
+        """(cash change, shortfall) when a short entered at `cost_part` is bought back at `value`: its collateral
+        (`collat_part`; the entry value unless it was leveraged) plus the gain, less the fee. If the loss is bigger than the
+        collateral the player pays what they have and the house absorbs the rest."""
+        got = (cost_part if collat_part is None else collat_part) + cost_part - value - fee
         if got >= 0:
             return got, 0.0
         pay = min(-got, max(p.cash, 0.0))
@@ -1009,9 +1087,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         shares = min(shares, -held)
         fraction = shares / -held if held < 0 else 1.0
         cost_part = p.cost.get(s.ticker, 0.0) * fraction
+        collat_part = self._collat(p, s.ticker) * fraction
         value = shares * s.price
         fee = value * FEE
-        cd, short = self._short_payout(p, cost_part, value, fee)
+        cd, short = self._short_payout(p, cost_part, value, fee, collat_part)
         if short > 0:
             if not pay_all:
                 return None
@@ -1040,8 +1119,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         sh = abs(p.hold.get(ticker, 0.0))
         return p.cost.get(ticker, 0.0) / sh if sh > 0 else 0.0
 
-    def trade(self, p, ticker, side, pct, amount=None):
-        """pct is a fraction (of free cash / position / spare margin); amount, when given, is MB and wins."""
+    def trade(self, p, ticker, side, pct, amount=None, lev=None):
+        """pct is a fraction (of free cash / position / spare margin); amount, when given, is MB and wins. `lev` (Pro) is
+        the leverage of a new position or of what is added to one: the MB put in buy, or short, `lev` times as much. Left
+        out, a position keeps its own leverage (1x for a new one)."""
         s = self.stocks.get(ticker)
         if not s:
             return False, "Unknown ticker"
@@ -1057,6 +1138,22 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             return False, "Cooldown: 1s between trades in the same stock"
         held = p.hold.get(ticker, 0.0)
         price = s.price
+        cur_lev = p.lev.get(ticker, 1.0) if abs(held) > 1e-12 else None
+        try:
+            lev = float(cur_lev or 1.0) if lev is None else float(lev)
+        except (TypeError, ValueError):
+            return False, "Bad leverage"
+        if not (math.isfinite(lev) and 1.0 <= lev <= MAX_LEVERAGE):
+            return False, f"Leverage is 1x to {MAX_LEVERAGE:g}x"
+        opening = (side == "buy" and held > -1e-9) or (side == "sell" and held < 1e-9)
+        if opening and lev > 1:
+            if not self.is_pro(p):
+                return False, "Leverage is a Pro tool (see the Shop)"
+            if not self.leverage_ok(s):
+                return False, "No leverage on the leveraged products: they are leveraged already"
+        if opening and cur_lev is not None and abs(cur_lev - lev) > 1e-9:
+            return False, f"You hold {ticker} at {cur_lev:g}x: add at {cur_lev:g}x, or close it first"
+        lev_text = f" at {lev:g}x leverage" if lev > 1 else ""
         if side == "buy":
             if held < -1e-9:  # buying while short covers the short
                 if amount is not None:
@@ -1077,8 +1174,12 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     return False, f"Not enough free cash ({free:.2f} MB available)"
                 if cash < 1:
                     return False, "Not enough cash (min 1)"
-                sh = self._do_buy(p, s, cash)
-                msg = f"Bought {sh:.2f} {ticker} for {cash:.2f} MB"
+                if lev > 1:                                   # the house lends the rest
+                    p.lev[ticker] = lev
+                    self._lend(p, s, cash * (lev - 1))
+                sh = self._do_buy(p, s, cash * lev)
+                msg = (f"Bought {sh:.2f} {ticker} for {cash * lev:.2f} MB{lev_text} ({cash:.2f} MB of your own)" if lev > 1
+                       else f"Bought {sh:.2f} {ticker} for {cash:.2f} MB")
         elif side == "sell":
             if held > 1e-9:
                 if amount is not None:
@@ -1094,10 +1195,11 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     return False, f"Not enough free cash to short ({free:.2f} MB available)"
                 if outlay < 1:
                     return False, "Not enough cash (min 1)"
-                gross = outlay / (1 + FEE)
+                gross = outlay / (1 / lev + FEE)             # (the collateral is a `lev`-th of what is shorted, plus the fee)
                 sh = gross / price
-                self._do_short(p, s, sh)
-                msg = f"Shorted {sh:.2f} {ticker} for {gross:.2f} MB (taken out of your cash as collateral)"
+                self._do_short(p, s, sh, lev)
+                msg = (f"Shorted {sh:.2f} {ticker} for {gross:.2f} MB{lev_text} ({gross / lev:.2f} MB of collateral)" if lev > 1
+                       else f"Shorted {sh:.2f} {ticker} for {gross:.2f} MB (taken out of your cash as collateral)")
         else:
             return False, "Bad side"
         p.last_trade[ticker] = self.now
@@ -1110,20 +1212,22 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         """Shorts must stay covered. A short in a calm stock is called when equity falls below 25% of what
         closing it would cost; in a volatile stock the level rises to 50%. When any call triggers, every
         short is closed at the market price (the player pays what they have; see `short_shortfall`)."""
-        for p in self.players.values():
-            if not any(sh < 0 for sh in p.hold.values()):
+        for p in list(self.players.values()):
+            if p.lev:
+                self._liquidations(p)
+            if not any(sh < 0 and p.lev.get(tk, 1.0) <= 1 for tk, sh in p.hold.items()):
                 continue
             need = 0.0
             for tk, sh in p.hold.items():
                 st = self.stocks.get(tk)
-                if st and sh < 0:
+                if st and sh < 0 and p.lev.get(tk, 1.0) <= 1:
                     need += -sh * st.price * self.maintenance(st)
             if need <= 0 or self.equity(p) >= need:
                 continue
             closed = []
             shortfall0 = self.short_shortfall
             for tk, sh in list(p.hold.items()):
-                if sh < 0 and tk in self.stocks:
+                if sh < 0 and tk in self.stocks and p.lev.get(tk, 1.0) <= 1:
                     self._do_cover(p, self.stocks[tk], -sh, pay_all=True)
                     closed.append(tk)
             p.margin_calls += 1
@@ -1132,6 +1236,35 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                                     "shortfall": self.short_shortfall - shortfall0})
             self._emit("margin", p, tickers=closed, shortfall=self.short_shortfall - shortfall0)
             p.notices.append("Margin call: your short in " + ", ".join(closed) + " was closed at the market price.")
+
+    def _liquidations(self, p):
+        """A leveraged position stands on its own margin: when its equity falls to half the margin it started with
+        (5% of its value at 10x), it is closed at the market price. A gap past that is paid out of the player's cash; what
+        the cash cannot pay, the house absorbs (`lev_shortfall`, `short_shortfall`)."""
+        for tk, lev in list(p.lev.items()):
+            s = self.stocks.get(tk)
+            sh = p.hold.get(tk, 0.0)
+            if s is None or abs(sh) < 1e-12:
+                p.lev.pop(tk, None)
+                continue
+            value = abs(sh) * s.price
+            if sh > 0:
+                eq = s.quote_sell(sh)[0] - p.loan.get(tk, 0.0)
+            else:
+                eq = self._collat(p, tk) + p.cost.get(tk, 0.0) - value * (1 + FEE)
+            if eq > self._maint_lev(lev) * value:
+                continue
+            before = self.lev_shortfall + self.short_shortfall
+            if sh > 0:
+                self._do_sell(p, s, sh)
+            else:
+                self._do_cover(p, s, -sh, pay_all=True)
+            short = self.lev_shortfall + self.short_shortfall - before
+            p.margin_calls += 1
+            self.margin_calls += 1
+            self.margin_log.append({"t": self.now, "player": p.name, "tickers": [tk], "shortfall": short})
+            self._emit("margin", p, tickers=[tk], shortfall=short, leverage=lev)
+            p.notices.append(f"Your {lev:g}x position in {tk} ran out of margin and was closed at the market price.")
 
     def _flush_borrow(self):
         """Write the borrow fees collected since the last flush as one ledger event per player and stock."""
@@ -1150,7 +1283,11 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if dt <= 0:
             return
         interest = None
+        rate = float(self.settings.get("leverage_rate_day", 0.0003)) * dt / MARKET_DAY_SECONDS
         for p in self.players.values():
+            for tk, loan in p.loan.items():            # a leveraged long's interest is added to its loan
+                p.loan[tk] = loan * (1 + rate)
+                p.loan_int[tk] = p.loan_int.get(tk, 0.0) + loan * rate
             if not any(sh < 0 for sh in p.hold.values()):
                 continue
             if interest is None:
@@ -2340,7 +2477,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         page: what it was, its last numbers, its news and its candles (the most recent of each timeframe)."""
         keep = {k: [[round(x, 5) if i else x for i, x in enumerate(c)] for c in list(stock.tf[k])[-240:]]
                 for k in ("1m", "5m", "30m", "1h", "1d") if k in stock.tf}
-        keep["gd"] = [[round(x, 5) if i else x for i, x in enumerate(c)] for c in list(stock.days)[-240:]]
         p = stock.persona or {}
         self.archive[stock.ticker] = {
             "ticker": stock.ticker, "name": stock.name, "desc": stock.desc, "sector": stock.sector,
@@ -2404,18 +2540,23 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             # Bankruptcy: holders are cashed out at a fraction of the price (no fee), shorts close at that price,
             # and the ticker is delisted for good.
             stock.move(-(1 - payout))
+            self._settle_options(ticker, stock.price)
             for player in self.players.values():
                 sh = player.hold.pop(ticker, 0.0)
                 short_cost = player.cost.pop(ticker, 0.0)
+                collat = player.collat.pop(ticker, None)
                 player.entry_fee.pop(ticker, None)
+                player.lev.pop(ticker, None)
                 if sh > 0:
                     pay = sh * stock.price
                     player.cash += pay
                     self.house -= pay
                     self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=pay,
                                house=-pay, notional=pay)
+                    if ticker in player.loan:                  # a leveraged long pays back what it borrowed
+                        self._repay(player, ticker, 1.0)
                 elif sh < 0:  # a short closes at the bankruptcy price: collateral back, less what the price did
-                    cd, short = self._short_payout(player, short_cost, -sh * stock.price, 0.0)
+                    cd, short = self._short_payout(player, short_cost, -sh * stock.price, 0.0, collat)
                     self.short_shortfall += short
                     player.cash += cd
                     self.house -= cd
@@ -2845,12 +2986,20 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 pay = sh * s.price
                 p.cash += pay
                 self.house -= pay
+                if tk in p.loan:
+                    self._repay(p, tk, 1.0)
             else:
-                cd, short = self._short_payout(p, p.cost.get(tk, 0.0), -sh * s.price, 0.0)
+                cd, short = self._short_payout(p, p.cost.get(tk, 0.0), -sh * s.price, 0.0, self._collat(p, tk))
                 self.short_shortfall += short
                 p.cash += cd
                 self.house -= cd
+        for pos in list(p.opts):                    # options at what they would fetch (the bid)
+            s = self.stocks.get(pos["tk"])
+            pay = pos["qty"] * self.option_quote(s, pos["kind"], pos["K"], pos["exp"])["bid"] if s is not None else 0.0
+            p.cash += pay
+            self.house -= pay
         p.hold, p.cost, p.entry_fee, p.last_trade = {}, {}, {}, {}
+        p.lev, p.loan, p.loan_int, p.collat, p.opts = {}, {}, {}, {}, []
 
     def _retire_bots(self, bots):
         """A save from an older version has house-funded bots. They are removed: each one's positions are closed at the
@@ -3008,6 +3157,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self._paper_tick()
         self._reserve_check()
         self._orders_tick()
+        self._settle_options()
+        self._bots_tick()
         if int(self.now) % 60 == 0:
             self._expire_orders()
         self._update_index()
@@ -3164,20 +3315,15 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         stock = self.stocks.get(ticker)
         if not stock and ticker in self.archive:
             tf = self.archive[ticker]["tf"]
-            if period in ("gw", "gm") and tf.get("gd"):
-                rows = history.aggregate(tf["gd"], self._game_bucket(period))
-            else:
-                key = period if period in tf else next((k for k in ("1m", "5m", "30m", "1h", "1d") if k in tf), None)
-                rows = tf.get(key, [])
+            key = period if period in tf else next((k for k in ("1m", "5m", "30m", "1h", "1d") if k in tf), None)
+            rows = tf.get(key, [])
             candles = [{"t": c[0], "o": c[1], "h": c[2], "l": c[3], "c": c[4], "v": c[5] if len(c) > 5 else 0.0}
                        for c in rows]
             return {"type": "history", "ticker": ticker, "period": period, "candles": candles, "now": self.now,
-                    "delisted": True, "game_day0": GAME_DAY0}
+                    "delisted": True}
         if not stock:
             return {"type": "history", "error": "Unknown or delisted stock"}
-        if period in GAME_PERIODS:
-            rows = self._game_candles(stock, period)
-        elif period == "1m" and self.minute_store is not None:
+        if period == "1m" and self.minute_store is not None:
             mem = list(stock.tf["1m"])
             old = self.minute_store.last(ticker, max(0, CHART_MINUTES - len(mem)), before=mem[0][0] if mem else None)
             rows = old + mem
@@ -3186,29 +3332,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         candles = [{"t": c[0], "o": round(c[1], 5), "h": round(c[2], 5), "l": round(c[3], 5), "c": round(c[4], 5),
                     "v": round(c[5]) if len(c) > 5 else 0} for c in rows]
         return {"type": "history", "ticker": ticker, "period": period, "candles": candles,
-                "now": self.now, "game_day0": GAME_DAY0}
-
-    def _game_bucket(self, period):
-        """The start (real seconds) of the game week (Monday) or game month that a time falls in."""
-        D = MARKET_DAY_SECONDS
-        if period == "gw":
-            return lambda t: (int(t // D) - game_date(int(t // D)).weekday()) * D
-        if period == "gm":
-            return lambda t: (int(t // D) - game_date(int(t // D)).day + 1) * D
-        return lambda t: int(t // D) * D
-
-    def _game_candles(self, stock, period):
-        """Game-day, game-week or game-month candles of a listing, with today's session (if under way) last."""
-        want = CHART_DAYS if period == "gd" else int(float(self.settings.get("history_game_years", 10)) * TRADING_DAYS_PER_YEAR)
-        days = list(stock.days)
-        if self.day_store is not None and len(days) < want:
-            older = self.day_store.last(stock.ticker, want - len(days), before=days[0][0] if days else None)
-            days = older + days
-        if stock.reg is not None:
-            days.append(stock.reg)
-        if period == "gd":
-            return days[-want:]
-        return history.aggregate(days, self._game_bucket(period))
+                "now": self.now}
 
     def _tracks(self, s):
         """What a derived asset follows, in words, for the stock page."""
@@ -3278,15 +3402,26 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             n = abs(sh)
             value = n * price
             pnl = value - cost if sh > 0 else cost - value
-            hold.append({"ticker": tk, "side": "long" if sh > 0 else "short", "shares": round(n, 6),
-                         "avg": round(cost / n, 6) if n > 0 else 0, "price": price, "cost": round(cost, 2),
-                         "value": round(value, 2), "pnl": round(pnl, 2), "div": round(p.divs.get(tk, 0.0), 2),
-                         "borrow": round(p.borrow.get(tk, 0.0), 2),
-                         "pct": round(pnl / cost, 4) if cost > 0 else 0})
+            lev = p.lev.get(tk, 1.0)
+            pnl -= p.loan_int.get(tk, 0.0)
+            margin = cost / lev
+            row = {"ticker": tk, "side": "long" if sh > 0 else "short", "shares": round(n, 6),
+                   "avg": round(cost / n, 6) if n > 0 else 0, "price": price, "cost": round(cost, 2),
+                   "value": round(value, 2), "pnl": round(pnl, 2), "div": round(p.divs.get(tk, 0.0), 2),
+                   "borrow": round(p.borrow.get(tk, 0.0), 2),
+                   "pct": round(pnl / margin, 4) if margin > 0 else 0}
+            if lev > 1:
+                liq = self.liquidation_price(p, tk)
+                row.update(lev=lev, margin=round(margin, 2), loan=round(p.loan.get(tk, 0.0), 2),
+                           liq=round(liq, 6) if liq else None)
+            hold.append(row)
         out = {"cash": round(p.cash, 2), "equity": round(e, 2), "ret": round(self.season_return(p, e), 4),
                "pnl": round(e - p.deposited, 2), "holdings": hold, "rank": self.rank.get(p.token),
-               "pro": self.is_pro(p), "low": e < float(self.settings.get("restart_below", 50.0)),
+               "pro": self.is_pro(p), "expert": self.is_expert(p), "low": e < float(self.settings.get("restart_below", 50.0)),
                "lessons": len(p.lessons_passed)}
+        if p.opts or getattr(p, "opts_dirty", False):   # option positions (options.py), and once more when the last goes
+            out["opts"] = self.options_view(p)
+            p.opts_dirty = bool(p.opts)
         if p.orders or p.orders_dirty:          # sent while there are orders, and once more when the last one goes
             out["orders"] = [self._order_view(o) for o in p.orders]
             p.orders_dirty = False
@@ -3540,7 +3675,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "best": best, "worst": worst, "realized_by_ticker": dict(p.realized)}
 
     HISTORY_KINDS = ("buy", "sell", "short", "cover", "margin_call", "dividend", "borrow", "credit", "debit",
-                     "delist_payout", "purchase")
+                     "delist_payout", "purchase", "opt_buy", "opt_sell", "opt_expire", "lend", "repay")
 
     def history_for(self, p, limit=100, before=None, kinds=None, ticker=None):
         """A player's ledger entries, newest first, with paging (`before` is the `seq` of the last one seen); only one
@@ -3599,7 +3734,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                              "avg": cost / n if n else 0.0, "price": st.price,
                              "pnl": (value - cost) if sh > 0 else (cost - value)})
         return {"name": p.name, "cash": p.cash, "equity": eq, "deposited": p.deposited,
-                "pro": self.is_pro(p), "pro_until": p.pro_until if self.is_pro(p) else None,
+                "pro": self.is_pro(p), "pro_until": p.pro_until if self.is_pro(p) else None, "expert": self.is_expert(p),
+                "expert_until": p.expert_until if self.is_expert(p) else None,
                 "pnl": eq - p.deposited, "divs": sum(p.divs.values()), "borrow": sum(p.borrow.values()),
                 "trades": p.trades, "margin_calls": p.margin_calls, "holdings": holdings, "log": list(p.log)}
 
@@ -3682,7 +3818,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
              "minted": self.minted, "index_level": self.index_level, "index_members": list(self.index_members),
              "short_model": 2, "borrow_fees": self.borrow_fees, "short_shortfall": self.short_shortfall,
              "margin_calls": self.margin_calls, "trades_total": self.trades_total,
-             "margin_log": list(self.margin_log), "mkt_volm": self.mkt_volm,
+             "margin_log": list(self.margin_log), "mkt_volm": self.mkt_volm, "lev_shortfall": self.lev_shortfall,
              "index_hist": list(self.index_hist), "market_day": self.market_day,
              "recapitalized": self.recapitalized, "regime": self.regime, "next_regime_change": self.next_regime_change,
              "model": self.model.dump() if self.model is not None else None,
@@ -3713,6 +3849,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                           "social": social.dump_player(p), "economy": economy.dump_player(p),
                           "learning": learning.dump_player(p), "ladder": ladder.dump_player(p),
                           "chart": chartprefs.dump_player(p),
+                          "lev": p.lev, "loan": p.loan, "loan_int": p.loan_int, "collat": p.collat,
+                          "options": options.dump_player(p), "bots": bots.dump_player(p),
                           } for p in self.players.values()],
              "generated": [dict(x.cfg) for x in self.stocks.values() if x.cfg.get("generated")],
              "relations": self.relations.to_json(), "archive": self.archive,
@@ -3780,7 +3918,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             o = self.shop_orders.get(oid)
             if o is None:                                     # ordered and paid after the snapshot: rebuild the order
                 o = {"id": oid, "token": p.token, "name": p.name, "sku": extra.get("sku"),
-                     "kind": "pro" if extra.get("days") else "package", "mb": int(round(cash)),
+                     "kind": ("expert" if str(extra.get("sku") or "").startswith("expert") else "pro") if extra.get("days")
+                             else "package", "mb": int(round(cash)),
                      "days": int(extra.get("days") or 0), "price_cents": int(extra.get("price_cents") or 0),
                      "currency": self.shop_currency(), "status": "pending", "created": ev["t"], "provider": "replay",
                      "provider_ref": None}
@@ -3794,11 +3933,19 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             self.house += house
             self.fees += fee
             p.fees_paid += fee
-            held = p.hold.get(tk, 0.0) + ev["shares"]
+            before = p.hold.get(tk, 0.0)
+            held = before + ev["shares"]
+            if kind == "short" and extra.get("collat") is not None:        # a leveraged short (Pro)
+                p.collat[tk] = p.collat.get(tk, 0.0) + float(extra["collat"])
+                p.lev[tk] = float(extra.get("lev", 1.0))
+            elif kind in ("cover", "margin_call") and tk in p.collat and before < 0:
+                p.collat[tk] *= max(0.0, 1 - ev["shares"] / -before)
             if abs(held) < 1e-9:
                 p.hold.pop(tk, None)
                 p.cost.pop(tk, None)
                 p.entry_fee.pop(tk, None)
+                p.collat.pop(tk, None)
+                p.lev.pop(tk, None)
             else:
                 p.hold[tk] = held
                 p.cost[tk] = p.cost.get(tk, 0.0) + ev["cost_delta"]
@@ -3813,6 +3960,23 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 self.trades_total += 1
             p.log.append({"t": ev["t"], "k": kind, "tk": tk, "sh": abs(ev["shares"]), "px": ev["price"],
                           "mb": ev["notional"], "fee": fee})
+        elif kind == "lend":                                   # the house lends towards a leveraged long
+            p.cash += cash
+            self.house += house
+            p.loan[tk] = p.loan.get(tk, 0.0) + ev["notional"]
+            p.lev[tk] = float(extra.get("lev") or p.lev.get(tk, 2.0))
+        elif kind == "repay":
+            p.cash += cash
+            self.house += house
+            left = p.loan.get(tk, 0.0) - float(extra.get("amount", 0.0))
+            self.lev_shortfall += extra.get("shortfall", 0.0)
+            if left <= 1e-9 or tk not in p.hold:
+                p.loan.pop(tk, None)
+                p.loan_int.pop(tk, None)
+            else:
+                p.loan[tk] = left
+        elif kind in ("opt_buy", "opt_sell", "opt_expire"):
+            self._apply_option_event(p, ev)
         elif kind == "margin":
             p.margin_calls += 1
             self.margin_calls += 1
@@ -3835,6 +3999,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p.hold.pop(tk, None)
             p.cost.pop(tk, None)
             p.entry_fee.pop(tk, None)
+            p.collat.pop(tk, None)
+            p.lev.pop(tk, None)
             self.short_shortfall += extra.get("shortfall", 0.0)
 
     def _migrate_short_model(self):
@@ -4051,6 +4217,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             self.fees = float(d.get("fees", 0.0))
             self.borrow_fees = float(d.get("borrow_fees", 0.0))
             self.short_shortfall = float(d.get("short_shortfall", 0.0))
+            self.lev_shortfall = float(d.get("lev_shortfall", 0.0))
             self.margin_calls = int(d.get("margin_calls", 0))
             self.mkt_volm = float(d.get("mkt_volm", 1.0))
             self.trades_total = int(d.get("trades_total", 0))
@@ -4069,6 +4236,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 p.token, p.cash = x["token"], x["cash"]
                 p.hold = {ticker: shares for ticker, shares in x["hold"].items() if ticker in self.stocks}
                 p.cost = {tk: float(c) for tk, c in x.get("cost", {}).items() if tk in p.hold}
+                for key in ("lev", "loan", "loan_int", "collat"):          # leverage (Pro)
+                    setattr(p, key, {tk: float(c) for tk, c in (x.get(key) or {}).items() if tk in p.hold})
+                options.load_player(p, x.get("options"))
+                bots.load_player(p, x.get("bots"))
                 p.divs = {tk: float(c) for tk, c in x.get("divs", {}).items()}
                 p.borrow = {tk: float(c) for tk, c in x.get("borrow", {}).items()}
                 p.orders = [o for o in x.get("orders", []) if isinstance(o, dict) and o.get("kind") in self.ORDER_KINDS

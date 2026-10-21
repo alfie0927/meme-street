@@ -23,7 +23,7 @@ async function call(path,body){const r=await fetch(path,{method:body?'POST':'GET
 (async()=>{if(!token){$('what').textContent='Sign in first.';return}
  const o=await call('/api/shop/order/'+encodeURIComponent(order));
  if(o.error){$('what').textContent='This order was not found.';return}
- $('what').innerHTML=`<b>${o.kind==='pro'?'Meme Street Pro, '+o.days+' days':Number(o.mb).toLocaleString()+' MB'}</b> for <b>${o.price}</b> · order ${o.id} · ${o.status}`;
+ $('what').innerHTML=`<b>${o.kind==='pro'||o.kind==='expert'?'Meme Street '+(o.kind==='pro'?'Pro':'Expert')+', '+o.days+' days':Number(o.mb).toLocaleString()+' MB'}</b> for <b>${o.price}</b> · order ${o.id} · ${o.status}`;
  if(o.status!=='pending'){$('pay').disabled=$('cancel').disabled=true}})();
 async function act(action){$('pay').disabled=$('cancel').disabled=true;const r=await call('/api/shop/test_pay',{order,action});$('msg').textContent=r.msg||r.error||'';setTimeout(()=>location.href='/shop'+(action==='pay'&&r.ok?'?paid='+order:'?cancelled='+order),900)}
 $('pay').onclick=()=>act('pay');$('cancel').onclick=()=>act('cancel');

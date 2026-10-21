@@ -24,6 +24,7 @@ class Sandbox:
         self.fees = 0.0
         self.borrow_fees = 0.0
         self.short_shortfall = 0.0
+        self.lev_shortfall = 0.0
         self.trades_total = 0
         self.margin_calls = 0
         self.margin_log = deque(maxlen=20)

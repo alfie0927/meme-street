@@ -3,16 +3,7 @@
 // size and the position-size box. Loaded after the page's own script (index.html), whose helpers it uses ($, esc, S,
 // lsGet, api, ...); the page calls into it only once it is running (drawChart, requestHistory, ...), so the two share
 // one set of globals like a single script would.
-const PERIODS=[['30s','30s',30],['1m','1m',60],['5m','5m',300],['15m','15m',900],['30m','30m',1800],['1h','1h',3600],['2h','2h',7200],['4h','4h',14400],['1d','1d',86400],['1mo','1M',2592000],['1y','1Y',31536000],
- ['gd','D',1800,'A game day (30 real minutes): the regular session'],['gw','W',12600,'A game week: seven game days, Monday to Sunday of the game calendar'],['gm','M',54787.5,'A game month of the game calendar']];
-// Game-time candles (ROADMAP TA-A11): the chart's history says where the game calendar starts; game day n (real time
-// n*1800) is the date n - gameDay0 days after 1 January of Year 1.
-let gameDay0=0;
-const isGame=p=>p==='gd'||p==='gw'||p==='gm';
-const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function gDate(t){return new Date(Date.UTC(2000,0,1)+(Math.floor(t/1800)-gameDay0)*864e5)}
-function gameBucket(t,p){const n=Math.floor(t/1800);if(p==='gd')return n*1800;const d=gDate(t);return(n-(p==='gw'?(d.getUTCDay()+6)%7:d.getUTCDate()-1))*1800}
-function gLabel(t,year){const d=gDate(t),y=' Y'+(d.getUTCFullYear()-1999);return chartPeriod==='gm'?MON[d.getUTCMonth()]+y:d.getUTCDate()+' '+MON[d.getUTCMonth()]+(year?y:'')}
+const PERIODS=[['30s','30s',30],['1m','1m',60],['5m','5m',300],['15m','15m',900],['30m','30m',1800],['1h','1h',3600],['2h','2h',7200],['4h','4h',14400],['1d','1d',86400],['1mo','1M',2592000],['1y','1Y',31536000]];
 const secsOf=k=>(PERIODS.find(p=>p[0]===k)||PERIODS[0])[2];
 
 // ---------- candlestick chart ----------
@@ -39,7 +30,6 @@ function chartPH(){
   return Math.max(200,Math.round((window.innerHeight-used)*scale))}
  const v=Number(lsGet('ms_ph',PH_DEFAULT));return Math.max(160,Math.min(1400,isFinite(v)?v:PH_DEFAULT))}
 function axisLabel(t){
- if(isGame(chartPeriod))return gLabel(t,false);
  const d=new Date(t*1000),p=x=>String(x).padStart(2,'0'),hm=p(d.getHours())+':'+p(d.getMinutes());
  if(chartPeriod==='30s')return hm+':'+p(d.getSeconds());
  if(['1m','5m','15m','30m'].includes(chartPeriod))return hm;
@@ -49,11 +39,6 @@ function axisLabel(t){
 function liveCandles(price){
  const c=chartCandles.map(x=>({...x}));
  if(!c.length||!price)return c;
- if(isGame(chartPeriod)){                 // a game-day candle grows only in the regular session; a new one opens at the open
-  if(((S&&S.market&&S.market.phase)||'open')!=='open')return c;
-  const b=gameBucket(engineNow(),chartPeriod),lc=c[c.length-1];
-  if(b>lc.t)c.push({t:b,o:price,h:price,l:price,c:price,v:0});else{lc.c=price;lc.h=Math.max(lc.h,price);lc.l=Math.min(lc.l,price)}
-  return c}
  const secs=secsOf(chartPeriod),bucket=Math.floor(engineNow()/secs)*secs,lc=c[c.length-1];
  if(bucket>lc.t)c.push({t:bucket,o:lc.c,h:Math.max(lc.c,price),l:Math.min(lc.c,price),c:price,v:0});
  else{lc.c=price;lc.h=Math.max(lc.h,price);lc.l=Math.min(lc.l,price)}
@@ -150,7 +135,7 @@ function candleSvg(candles,price,avg){
  // your own trades in this stock (TA-B6): a green arrow under the price where you bought or covered, a red one over it where
  // you sold or shorted (hover one for what and when); "My trades" under the chart switches them off
  if(showTrades&&myTradesFor===selectedTicker&&myTrades.length){s+=`<g clip-path="url(#clip)">`;
-  for(const e of myTrades){const x=x0-(candles[n-1].t-(isGame(chartPeriod)?gameBucket(e.t,chartPeriod):Math.floor(e.t/secs)*secs))/secs*slot;if(x<padL-8||x>padL+pw+8||!(e.price>0))continue;
+  for(const e of myTrades){const x=x0-(candles[n-1].t-Math.floor(e.t/secs)*secs)/secs*slot;if(x<padL-8||x>padL+pw+8||!(e.price>0))continue;
    const buy=e.kind==='buy'||e.kind==='cover',yy=y(e.price),z=Math.max(4,Math.min(7,bodyW/2+2)),col=buy?'#3ad07a':'#f25c54',a=buy?yy+2:yy-2,b=buy?a+1.6*z:a-1.6*z;
    s+=`<polygon class="trade-mark" points="${x.toFixed(1)},${a.toFixed(1)} ${(x-z).toFixed(1)},${b.toFixed(1)} ${(x+z).toFixed(1)},${b.toFixed(1)}" fill="${col}" stroke="#08090b" stroke-width="1"><title>${esc((TRADE_WORD[e.kind]||e.kind)+' '+numText(e.shares,4)+' at '+pxText(e.price)+' MB, '+stamp(e.t))}</title></polygon>`}
   s+='</g>'}
@@ -188,7 +173,7 @@ function drawChartOpts(){const sel=$('c-type');if(!sel)return;
 // the crosshair (TA-B1): it follows the mouse; on a touch screen a tap puts it on a candle, and a drag moves the chart.
 // The readout above the chart shows that candle (or the newest one) and every indicator's value there.
 let xhPt=null,tapAt=null;
-function crossTime(t){if(isGame(chartPeriod))return(chartPeriod==='gw'?'Week of ':'')+gLabel(t,true);const d=new Date(t*1000),o={month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'};
+function crossTime(t){const d=new Date(t*1000),o={month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'};
  if(chartPeriod==='30s')o.second='2-digit';if(['1d','1mo','1y'].includes(chartPeriod)){delete o.hour;delete o.minute}if(chartPeriod==='1mo'||chartPeriod==='1y')o.year='numeric';
  return d.toLocaleString([],o)}
 const fmtVal=v=>Math.abs(v)>=1e5?volText(v):Math.abs(v)<1?v.toFixed(4):v.toFixed(2);

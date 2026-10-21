@@ -1,12 +1,13 @@
-"""Long price history (ROADMAP TA-A10, TA-A11): game-day candles for many game years, and one-minute candles for a few
-real days, in SQLite files next to the save.
+"""Long price history (ROADMAP TA-A10): game-day candles for many game years, and one-minute candles for a few real
+days, in SQLite files next to the save.
 
 The engine keeps 500 candles per real-time timeframe in memory (30 seconds to a year) and in `state.charts.json`. That is
 too short for technical work: a game year of daily candles is 365 game days. This store adds:
 
 * **Game-day candles** (`data/history.db`): one per listing per game day, covering only the regular session (the open
-  after the pre-market, the close before after-hours), like a real daily chart, so the move between one close and the
-  next open shows as a gap. Kept for `history_game_years` game years (10).
+  after the pre-market, the close before after-hours), like a real daily chart. Kept for `history_game_years` game years
+  (10); the price model reads its daily levels (yesterday's high, low and close, the averages, the 52-week range) from
+  them after a restart.
 * **One-minute candles** (`data/minutes.db`): kept for `history_minute_days` real days (3), so the 1m chart reaches back
   a full real day. A separate file, because it is large and changes every minute (the backups skip it).
 
@@ -82,21 +83,6 @@ class CandleStore:
         self.flush()
         with self.lock:
             self.db.close()
-
-
-def aggregate(candles, bucket):
-    """Merge candles into longer ones: `bucket(t)` gives the start of the longer candle that `t` falls in (a game week or
-    a game month). The input is oldest first; so is the output."""
-    out = []
-    for c in candles:
-        b = bucket(c[0])
-        if out and out[-1][0] == b:
-            o = out[-1]
-            o[2], o[3], o[4] = max(o[2], c[2]), min(o[3], c[3]), c[4]
-            o[5] += c[5] if len(c) > 5 else 0.0
-        else:
-            out.append([b, c[1], c[2], c[3], c[4], c[5] if len(c) > 5 else 0.0])
-    return out
 
 
 def days_from_intraday(candles, day_seconds, pre, post):

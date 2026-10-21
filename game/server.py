@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 import paths
 import errortrack
+import bots as botlib
 from engine import GUEST_KEY, Engine
 from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, password_problem, verify_password
 from mailer import Mailer
@@ -497,8 +498,9 @@ async def handle_message(conn, p, raw):
             try:
                 raw_amount = m.get("amount")
                 amount = None if raw_amount in (None, "") else float(raw_amount)
+                raw_lev = m.get("lev")
                 ok, msg = await run(engine.trade, p, str(m.get("ticker")), str(m.get("side")),
-                                    float(m.get("pct") or 0), amount)
+                                    float(m.get("pct") or 0), amount, None if raw_lev in (None, "") else float(raw_lev))
             except (ValueError, TypeError):
                 ok, msg = False, "Bad trade request"
             except Exception:
@@ -1077,7 +1079,7 @@ async def shop_checkout(b: Checkout, x_token: str = Header("")):
     if not order:
         return JSONResponse({"error": err}, status_code=400)
     item = engine._sku(order["sku"])
-    name = f"{order['mb']:,} MB" if order["kind"] == "package" else f"Meme Street Pro, {order['days']} days"
+    name = f"{order['mb']:,} MB" if order["kind"] == "package" else f"Meme Street {order['kind'].title()}, {order['days']} days"
     url, ref, err = await asyncio.get_running_loop().run_in_executor(pool, payments.checkout, order, name)
     if not url:
         await run(lambda: engine.shop_orders[order["id"]].update(status="failed"))
@@ -1212,6 +1214,13 @@ async def close_all(x_token: str = Header("")):
                 done += 1
             else:
                 failed.append(f"{tk}: {msg}")
+        for pos in list(p.opts):                          # options are sold back at the bid
+            p.last_trade.pop("opt:" + pos["tk"], None)
+            ok, msg = engine.sell_option(p, pos["id"], 1.0)
+            if ok:
+                done += 1
+            else:
+                failed.append(f"{pos['tk']} option: {msg}")
         return {"ok": not failed, "closed": done, "msg": f"Closed {done} position{'' if done == 1 else 's'}" + ("; " + "; ".join(failed) if failed else "")}
     return await with_player(x_token, "close_all", work, interval=1.0)
 
@@ -1369,6 +1378,96 @@ async def learn_quiz(b: Quiz, x_token: str = Header("")):
     return await with_player(x_token, "quiz", engine.answer_quiz, b.lesson, b.answers, interval=1.0)
 
 
+class OptionBuy(BaseModel):
+    ticker: str
+    kind: str
+    strike: float
+    expiry: float
+    amount: float
+
+
+class OptionSell(BaseModel):
+    id: str
+    fraction: float = 1.0
+
+
+@app.get("/api/options/{ticker}")
+async def option_chain(ticker: str):
+    """The option chain of a stock (options.py): every expiry and strike on offer with the bid, the ask and the delta of
+    its call and its put. Public, like the prices."""
+    return await run(engine.option_chain, ticker.upper()[:12])
+
+
+@app.post("/api/options/buy")
+async def option_buy(b: OptionBuy, x_token: str = Header("")):
+    res = await with_player(x_token, "opt_buy", engine.buy_option, b.ticker.upper()[:12], b.kind, b.strike, b.expiry,
+                            b.amount, interval=0.5)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.post("/api/options/sell")
+async def option_sell(b: OptionSell, x_token: str = Header("")):
+    res = await with_player(x_token, "opt_sell", engine.sell_option, b.id[:20], b.fraction, interval=0.5)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+class BotSave(BaseModel):
+    bot: dict
+
+
+class BotToggle(BaseModel):
+    id: str
+    on: bool
+
+
+class BotTest(BaseModel):
+    bot: dict
+    ticker: str
+    timeframe: str = ""
+    bars: int = 500
+    cash: float = 10000.0
+
+
+@app.get("/api/bots")
+async def bots_list(x_token: str = Header("")):
+    """The player's trading bots (Expert, bots.py), with what the rule language offers."""
+    return await with_player(x_token, "bots", engine.bots_view)
+
+
+@app.post("/api/bots/save")
+async def bots_save(b: BotSave, x_token: str = Header("")):
+    def work(p):
+        ok, msg, bid = engine.save_bot(p, b.bot)
+        return {"ok": ok, "msg": msg, "id": bid}
+    return await with_player(x_token, "bot_save", work, interval=0.5)
+
+
+@app.post("/api/bots/toggle")
+async def bots_toggle(b: BotToggle, x_token: str = Header("")):
+    res = await with_player(x_token, "bot_toggle", engine.toggle_bot, b.id[:20], b.on, interval=0.3)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.post("/api/bots/delete")
+async def bots_delete(b: Ident, x_token: str = Header("")):
+    res = await with_player(x_token, "bot_delete", engine.delete_bot, b.id[:20], interval=0.3)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.post("/api/bots/backtest")
+async def bots_backtest(b: BotTest, x_token: str = Header("")):
+    """Run a bot over a stock's past candles. The inputs are gathered under the game's lock; the simulation runs in a
+    worker thread without it, so a long backtest never holds up the game."""
+    res = await with_player(x_token, "backtest", engine.backtest_inputs, b.bot, b.ticker.upper()[:12], b.timeframe,
+                            b.bars, b.cash, interval=3.0)
+    if isinstance(res, JSONResponse) or "error" in res:
+        return res
+    try:
+        return await asyncio.get_running_loop().run_in_executor(pool, lambda: botlib.run_backtest(**res))
+    except botlib.RuleError as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/calendar")
 async def calendar():
     """The economic calendar (market_model.py): upcoming releases and rate decisions with their forecasts, the latest
@@ -1507,6 +1606,7 @@ class ProGrant(BaseModel):
     days: float = 0.0
     remove: bool = False
     note: str = ""
+    tier: str = "pro"                  # "pro" or "expert"
 
 
 ADMIN_PRO_DAYS_MAX = 3650             # the most Pro days one admin action can give (ten years; a guard against typos)
@@ -1514,10 +1614,13 @@ ADMIN_PRO_DAYS_MAX = 3650             # the most Pro days one admin action can g
 
 @app.post("/api/admin/pro")
 async def admin_pro(b: ProGrant, x_admin_key: str = Header("")):
-    """Give a player Pro for a number of days (added to any Pro they have), or take it away (`remove`). The player is
-    told, with the note. Pro is tools only: no MB move, so nothing here touches the ledger; the game saves at once."""
+    """Give a player Pro or Expert (`tier`) for a number of days (added to any they have), or take it away (`remove`).
+    The player is told, with the note. No MB move, so nothing here touches the ledger; the game saves at once."""
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
+    if b.tier not in ("pro", "expert"):
+        return JSONResponse({"error": "The tier is pro or expert"}, status_code=400)
+    label = "Expert" if b.tier == "expert" else "Pro"
     if not b.remove and not (b.days == b.days and 0 < b.days <= ADMIN_PRO_DAYS_MAX):    # (b.days == b.days is False for NaN)
         return JSONResponse({"error": f"Give a number of days between 0 and {ADMIN_PRO_DAYS_MAX:,}"}, status_code=400)
 
@@ -1525,20 +1628,21 @@ async def admin_pro(b: ProGrant, x_admin_key: str = Header("")):
         p = find_player(b.name)
         if not p:
             return None
-        ok, msg = engine.admin_pro(p, b.days, b.remove)
+        ok, msg = engine.admin_pro(p, b.days, b.remove, b.tier)
         note = b.note.strip()[:200]
         if b.remove:
-            engine._notify(p, "An admin ended your Meme Street Pro" + (f": {note}" if note else "."))
+            engine._notify(p, f"An admin ended your Meme Street {label}" + (f": {note}" if note else "."))
         else:
-            engine._notify(p, f"An admin gave you {b.days:g} days of Meme Street Pro ({msg})" + (f": {note}" if note else "."))
+            engine._notify(p, f"An admin gave you {b.days:g} days of Meme Street {label} ({msg})" + (f": {note}" if note else "."))
         engine.save(full=False)
-        return ok, msg, p.name, engine.is_pro(p), (p.pro_until if engine.is_pro(p) else None)
+        return (ok, msg, p.name, engine.is_pro(p), (p.pro_until if p.pro_until > engine.now else None), engine.is_expert(p),
+                (p.expert_until if engine.is_expert(p) else None))
     got = await run(work)
     if got is None:
         return JSONResponse({"error": "unknown player"}, status_code=404)
-    ok, msg, name, pro, until = got
-    logger.info("admin pro %s %s: %s", name, "remove" if b.remove else f"+{b.days:g} days", msg)
-    return {"ok": ok, "msg": msg, "pro": pro, "pro_until": until}
+    ok, msg, name, pro, until, expert, expert_until = got
+    logger.info("admin %s %s %s: %s", b.tier, name, "remove" if b.remove else f"+{b.days:g} days", msg)
+    return {"ok": ok, "msg": msg, "pro": pro, "pro_until": until, "expert": expert, "expert_until": expert_until}
 
 
 @app.get("/api/admin/player/{name}")
