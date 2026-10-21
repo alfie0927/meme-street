@@ -158,7 +158,9 @@ class UploadTests(unittest.TestCase):
         needed = {"game/" + m + ".py" for m in local_imports(os.path.join(GAME, "server.py")) | local_imports(os.path.join(GAME, "gateway.py"))}
         needed |= {"game/server.py", "game/gateway.py", "game/paths.py", "web/index.html", "web/admin.html", "web/about.html",
                    "web/shop_pay.html", "requirements.txt", "content/base.json", "content/lessons.json", "tools/reset_game.py",
-                   "deploy/update_server.sh"}
+                   "deploy/update_server.sh", "game/history.py", "game/errortrack.py"}
+        import pages
+        needed |= {"web/" + name for name in pages.SCRIPTS}                    # the page's own scripts (web/chart.js)
         missing = sorted(needed - files)
         self.assertEqual(missing, [], "the upload would leave these behind: " + ", ".join(missing))
 
@@ -166,6 +168,8 @@ class UploadTests(unittest.TestCase):
         for name in self.listing():
             self.assertFalse(os.path.basename(name).startswith("state"), name)
             self.assertNotIn("ledger.db", name)
+            self.assertNotIn("history.db", name)
+            self.assertNotIn("minutes.db", name)
             self.assertNotIn("cloudflared", name)
             self.assertFalse(name.startswith(("tests/", "data/", ".venv")), name)
         self.assertTrue(any(name.startswith("deploy/") for name in self.listing()))

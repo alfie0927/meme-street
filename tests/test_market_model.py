@@ -43,8 +43,10 @@ class RegimeAndDriftTests(unittest.TestCase):
         self.assertEqual(seen, set(mm.REGIMES))
 
     def test_a_quiet_market_with_no_noise_follows_its_drift(self):
-        """With no noise and no swings the model's own moves add up to the drift a game year (about +5.5% for beta 1)."""
-        m = mm.MarketModel({"price_model": {"trend_strength": 0.0, "release_sigmas": 0.0}}, rng=random.Random(1), now=0.0)
+        """With no noise, no swings and no levels the model's own moves add up to the drift a game year (about +5.5% for
+        beta 1)."""
+        m = mm.MarketModel({"price_model": {"trend_strength": 0.0, "release_sigmas": 0.0, "daily_levels": 0, "patterns": 0}},
+                           rng=random.Random(1), now=0.0)
         m.regime, m.regime_until = "sideways", 1e18
         x = listing()
         sw = m.swing(x, 0.0)
@@ -83,7 +85,7 @@ class SwingAndLevelTests(unittest.TestCase):
     def test_a_held_support_pushes_the_price_up_and_a_break_pushes_it_through(self):
         sw, x = self.sw, self.x
         sig_d = x.vol / math.sqrt(365)
-        sw.levels = [[99.9, 3, True]]
+        sw.levels = [[99.9, 3, True, "swing"]]
         self.m.rng = types.SimpleNamespace(random=lambda: 0.0, uniform=lambda a, b: a, gauss=random.gauss)   # it holds
         r, _, v = self.m._level_step(x, sw, 0.0, 1.0, math.log(100.0), sig_d)
         self.assertEqual(sw.test["outcome"], "hold")
@@ -91,21 +93,21 @@ class SwingAndLevelTests(unittest.TestCase):
         self.assertGreater(v, 1.0)
         sw.test, sw.tested = None, type(sw.tested)(maxlen=12)
         self.m.rng = types.SimpleNamespace(random=lambda: 0.999, uniform=lambda a, b: a, gauss=random.gauss)  # it breaks
-        r, _, _ = self.m._level_step(x, sw, 0.0, 1.0, math.log(100.0), sig_d)
+        r, _, _ = self.m._level_step(x, sw, 700.0, 1.0, math.log(100.0), sig_d)     # (after the gap between tests)
         self.assertEqual(sw.test["outcome"], "break")
         self.assertEqual(r, 0.0)                                             # nothing pushes it to the level
-        r, n, v = self.m._level_step(x, sw, 5.0, 1.0, math.log(99.8), sig_d)     # through it: the follow-through
+        r, n, v = self.m._level_step(x, sw, 705.0, 1.0, math.log(99.8), sig_d)   # through it: the follow-through
         self.assertLess(r, 0)
         self.assertGreater(v, 2.0)
 
     def test_strong_levels_hold_more_often_than_weak_ones_and_repeated_tests_weaken_them(self):
         def p_hold(strength, rnd, repeats=0):
             sw = mm.Swing(0.0, 100.0)
-            sw.levels = [[99.95, strength, rnd]]
+            sw.levels = [[99.95, strength, rnd, "swing"]]
             for i in range(repeats):
                 sw.tested.append([-5000.0 - i, 99.95])
             self.m.regime = "sideways"
-            self.m._start_test(self.x, sw, 0.0, math.log(100.0), 0.004)
+            self.m._start_test(self.x, sw, 0.0, math.log(100.0), 0.004, 0.016)
             return sw.test["p_hold"]
         self.assertGreater(p_hold(3, True), p_hold(1, False))
         self.assertLess(p_hold(3, True, repeats=3), p_hold(3, True))

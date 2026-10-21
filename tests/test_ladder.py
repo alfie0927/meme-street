@@ -228,7 +228,6 @@ class PagesBrowserTests(unittest.TestCase):
     calendar's month grid."""
 
     def test_holdings_exits_ladder_and_calendar(self):
-        from test_browser import Driver
         with IsolatedServer() as srv:
             d, errors = asyncio.run(self._run(srv.url))
         d.verdict(self, errors)

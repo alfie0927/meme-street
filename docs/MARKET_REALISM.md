@@ -1,7 +1,7 @@
 # Making Meme Street's charts move like real ones
 
 This is the research behind the price model, what it found wrong with Meme Street's charts, what was changed
-(2026-10-13), how to check it, and what is left to do. The code is `market_model.py` and the noise in
+(2026-10-13, and the structure a trader reads on 2026-10-21), how to check it, and what is left to do. The code is `market_model.py` and the noise in
 `engine._random_market_moves`; `HOW_IT_WORKS.md` §6A describes the mechanics; `chart_check.py` measures the result.
 
 ## 1. How real stock prices move: what the research says
@@ -133,23 +133,83 @@ Known gaps: the close's burst is sometimes flat (0.98-1.5x midday); the daily ta
 is noisy (-11% to +11% a game year across four-market runs with different phase mixes: the drift of +5.5% a game year
 is still there, but the fatter tails and the leverage effect make individual runs wander more).
 
+**The structure a trader reads (2026-10-21, ROADMAP Phase 2: TA-A2 to TA-A11).** Levels from the daily chart (the
+previous day's high, low and close, the open, the 52-week range, the 20/50/200-day averages), volume that tells the story
+(on average), wicks, engulfing turns, squeezes, a weaker last push, climaxes, intraday legs, ten kinds of named chart
+pattern and a game-day chart where gaps show (HOW_IT_WORKS §6A.3, §6A.4, §6A.10, §11). `realism.py` now rebuilds the
+engine's trading sessions and opening jump, measures the structure and finds the patterns with `patterns.py`.
+
+*What the checks found on the way, and fixed:*
+- **Trading every level test beat holding the market by a wide margin, before any of the new work** (+46% a game year
+  against +33% on the seeds that were reported as +23% against +19% in October; +73% against +15% on others). The edge
+  came from ranges (a level marks a range's edge, and the range pulls the price back to its middle) and from the size of
+  a hold's bounce (it pushed until the price was 2.5 bands away). With the daily levels a stock is near some level most of
+  the time and it grew to +262% a game year. Now a hold pushes until the price is one band away (`bounce_reach`) and a
+  stock starts no new test within 10 minutes of its last (`test_gap_seconds`).
+- **Levels in the thin sessions**: in the pre-market and after-hours a level due to break was seldom reached before its
+  test ran out, while one due to hold still pushed. Levels are now tested in the regular session only.
+- **A steady fall from the leverage effect**: a reaction sized in the volatility of each second grew as it pushed down
+  (a fall raises volatility) and shrank as it pushed up. With the daily levels that bias took the market to -29% a game
+  year. Every reaction is now sized when it begins.
+- **Patterns that moved too fast**: the first patterns (3 daily moves in legs of 3-5 game days) gave the market a
+  short-term momentum real markets do not have: buying every 1.5-sigma dip lost 1.6% a trade, buying a 20-day high earned
+  0.8% a trade. They are now 2.5 daily moves with legs twice as long, and a pattern that has broken out is busted (turns
+  back through the other side) more often than at first.
+
+*Results, `python tools/realism.py 2 3 40 901` (seeds 901-903, fresh: the settings were tuned on 601, 602, 701 and
+801-803):*
+
+| | Result | Target |
+|---|---|---|
+| Market return a game year | +5.9% (+13.2%, +0.3%, +4.1%) | +5% to +10% |
+| Strong / weak levels held | 63% / 48% (swing 58%, the open 59%, yesterday's close 60%, yesterday's high and low 63-64%, the averages 61-64%, the 52-week range 65-68%) | 55-65% / 40-50% |
+| Breaks that failed | 33% | 20-35% |
+| Autocorrelation of 5-minute market returns | +0.027 | near 0 |
+| Volume where a level breaks, times the usual: breaks that run / fail | 1.34x / 1.21x | more on the ones that run, overlapping |
+| Impulse legs / pullbacks, volume | 1.51x / 1.27x | pullbacks quieter |
+| Wick on the level's side, the bar that probed it: held / broke / any bar | 0.24 / 0.22 / 0.19 | longer where it held |
+| Engulfing 15-minute candle where a trend turned / any candle | 23% / 21% (27-38% on other seeds) | more where it turned |
+| 5-minute moves in the two hours before a range breaks out | 0.85x usual | a squeeze |
+| Next game day goes the way of a 10-day move | 52.7% | a little over 50% |
+| RSI divergence: the next 10 game days the expected way, against any new extreme | bearish +0.31 vs -0.17 sigma; bullish +0.34 vs +0.13 | divergences help, never reliably |
+| Patterns made by the model / found by a trader's scan | about 3.8 a stock a game year; most kinds found 20-65% of the time, symmetric triangles and cups 0-10% | |
+
+*No free money (costs included, per trade and per stock a game year; holding: +2.43% a trade, +85% a game year, as a few
+small caps soared):* trade every level test +0.06% (+29%); only strong levels with the trend +0.19% (+37%); only the
+daily levels +0.11% (+41%); buy a 20-day high +0.78% (+27%); buy a 20-day low +1.01% (+16%); momentum +0.05% (+5%);
+buy every 1.5-sigma dip -0.31%; fade every opening gap -0.57%; **trade every completed chart pattern -3.3% a trade**
+(completed 22-67% of the time, reaching the measured move 11-60% of those, by kind). Every rule earns less than holding.
+
+*The engine itself, `python tools/chart_check.py 12 <seed>`, before and after Phase 2 on the same seeds:*
+
+| Seed (before / after) | Tail exponent | Market lag-1 autocorrelation | Volume vs size of move | Small gaps filled | Large gaps filled |
+|---|---|---|---|---|---|
+| 7 | 2.77 / 2.39 | +0.091 / +0.115 | 0.31 / 0.24 | 71% / 70% | 15% / 14% |
+| 9 | 2.70 / 2.72 | +0.034 / +0.062 | 0.30 / 0.29 | 72% / 70% | 24% / 20% |
+| 10 | 2.30 / 2.44 | +0.003 / +0.035 | 0.29 / 0.29 | 70% / 68% | 24% / 29% |
+| 11 | 2.29 / 2.64 | +0.122 / +0.111 | 0.28 / 0.33 | 70% / 71% | 12% / 27% |
+| 8 (after only) | 2.80 | +0.043 | 0.25 | 75% | 25% |
+
+Phase 2 changed none of these beyond the spread between seeds; the tail exponent (target 2.5-4) and the market's
+one-minute autocorrelation (within +-0.1) were already just outside their targets on some seeds before it, and still are.
+`realism.py`'s gap fills (52% small, 50% large) are an artefact of its 10-second steps and approximations: the engine
+fills 68-75% of small gaps and 14-29% of large ones (targets 60-85% and under 40%). Seed-to-seed spread is large, so
+compare settings on the same seeds. The engine is about 5% slower a tick (7.4 against 7.0 ms for 189 listings).
+
 ## 5. What to do next (in order)
 
-1. **Watch it live for a few days** on your own computer (`start_game.ps1 -Fresh`) and look at the 1m, 5m and 30m
-   charts of a few stocks: calm and busy spells, wicks at levels, volume spikes on big candles, earnings gaps. Your eye
-   is the last test (ROADMAP section 8).
+1. **Watch it live for a few days** and look at the D, W, 1h, 15m and 5m charts of a few stocks: levels at yesterday's
+   high and low and the averages, gaps on the D chart, a few named patterns. Your eye is the last test (ROADMAP section 8).
 2. **Calibrate the long-run return on the engine itself**, not only `realism.py`: run the engine for a few game years in
    the background and adjust `erp` until the MSI 50 averages +5-10% a game year across seeds.
-3. **Order-flow levels** (ROADMAP TA-A2): previous day's high, low and close, the open, and moving averages as levels,
-   with Osler's asymmetry (take-profits just before round numbers, stops just beyond them).
-4. **Named chart patterns** (TA-A3) at Bulkowski's rates (double tops failing more often than double bottoms; head and
-   shoulders failing about a third of the time), each measured by an extended `realism.py` so none prints money.
-5. **One-month reversal and 3-12 month momentum** at their (small) real sizes, so a game year of daily candles shows
-   the same tendencies as real markets.
-6. **Game-time timeframes** (TA-A11): a daily candle should be a game day (30 minutes), so a "1D" chart reads like a
-   real daily chart.
-7. **A bid-ask spread** that widens in thin sessions and fast markets (ROADMAP M8): real costs, and the source of the
+3. **Thinner tails and no one-minute momentum in the market average** on every seed: the tail exponent sits at 2.3-2.8
+   and the market's lag-1 autocorrelation reaches +0.12 on some seeds (both before and after Phase 2).
+4. **Osler's asymmetry** at round numbers (take-profits just before them, stops just beyond them).
+5. **One-month reversal and 3-12 month momentum** at their (small) real sizes, now that a game year of daily candles is
+   kept (`history.db`).
+6. **A bid-ask spread** that widens in thin sessions and fast markets (ROADMAP M8): real costs, and the source of the
    slight negative autocorrelation real tick data shows.
+7. **Recognisable symmetric triangles and cups**: the scan finds few of the ones the model makes.
 
 ## Sources
 

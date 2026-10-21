@@ -6,16 +6,16 @@ charts and the tools to read them; news and the economy are background. The
 market behaves like a real one: it drifts slowly upwards over time, with corrections, bear phases and long sideways
 stretches; scheduled economic news (interest-rate decisions, inflation, jobs) moves it; and prices respect and break
 support and resistance the way real charts do, so the setups traders are taught actually appear and can be practised.
-Everyone starts with **1,000 MB**. Players who run out, or want more capital, **buy MB packages** (100, 500, 1,000,
-5,000 or 10,000 MB). **Challenges award free MB** for completing them. MB are a game currency: they have no cash value and
+Everyone starts with **1,000 MB**. Players who run out, or want more capital, **buy MB packages** (1,000, 5,000,
+10,000, 50,000 or 100,000 MB). **Challenges award free MB** for completing them. MB are a game currency: they have no cash value and
 are never paid out.
 
 **What this replaces.** The old plan was a real-money trading game: buy MB with crypto, withdraw winnings, the house as a
 counterparty earning a fee, and every mechanism built as a fair bet so that nobody could have an edge. That plan is
 dropped. Section 2 lists what changes and what happens to the code that was built for it.
 
-Companion doc: `HOW_IT_WORKS.md` describes what the code does **today** (still the old fair-bet market, until the tracks
-below change it). Update it after every change, and check this file before starting any work.
+Companion doc: `HOW_IT_WORKS.md` describes what the code does **today**. Update it after every change, and check this file
+before starting any work.
 
 Size key: **S** = under a day, **M** = a few days, **L** = a week or more.
 
@@ -26,8 +26,8 @@ Size key: **S** = under a day, **M** = a few days, **L** = a week or more.
 | | |
 |---|---|
 | **Who it is for** | People who want to learn to trade without risking their own money (beginners, students, people preparing for a real account, classes and trading clubs), and people who just want to trade for fun. |
-| **What they do** | Trade a live market of invented companies, indices, ETFs and commodities with real tools (charts, indicators, drawing, orders, stops, position sizing), follow lessons, complete challenges, keep a journal and see their skill improve. |
-| **How the site earns** | Selling MB packages (100 / 500 / 1,000 / 5,000 / 10,000 MB). Prices are your decision (B1). A second income that does not depend on people losing (classroom seats, a Pro tier) is recommended (B2). |
+| **What they do** | Trade a live market of invented companies, indices, ETFs and commodities with real tools (charts, indicators, drawing, orders, stops, position sizing), follow lessons, complete challenges and see their skill improve. |
+| **How the site earns** | Selling MB packages (1,000 / 5,000 / 10,000 / 50,000 / 100,000 MB). Prices are your decision (B1). A second income that does not depend on people losing (classroom seats, a Pro tier) is recommended (B2). |
 | **How the market behaves** | Technical structure first (section 1A): trends, ranges, support and resistance, named chart patterns, volume that confirms, gaps. Around it: slow long-run upward drift; regimes (bull, correction, bear, sideways); scheduled macro data and rate decisions with consensus and surprise; fewer, more meaningful headlines; technical structure (support and resistance tested, bounced or broken, false breakouts, retests, trends, volatility squeezes, gaps) and the psychology behind it (overreaction, panic, euphoria, stop runs). |
 | **What it is not** | Not gambling (no cash-out, no prizes with money value), not investment advice, not a broker. |
 
@@ -84,16 +84,16 @@ journal. The plan below builds on it.
 | # | Change | Why | How | Size |
 |---|---|---|---|---|
 | TA-A1 | Calibrate levels to their targets | Strong levels hold 52-54% today against a 55-65% target; the difference between strong and weak levels is what a player learns to read. | Raise the hold odds for strong, aligned levels; make the approach visibly slow down; check with `realism.py` on fresh seeds. **Done (2026-10-19): the old settings already held 56% on fresh seeds; a small extra for strong levels in line with the trend and a slower approach at strong levels bring them to 59%, weak ones stay at 43%, and trading every level beats holding no more than before (MARKET_REALISM.md).** | S |
-| TA-A2 | More kinds of level | Traders watch more than swing points and round numbers. | The previous game day's high, low and close, the day's open, gaps, the 52-game-week high and low, and moving averages (20, 50, 200 game days) acting as moving support and resistance, each with its own hold odds. | M |
-| TA-A3 | Chart patterns that real traders name | Double tops and bottoms, head and shoulders, triangles, flags and pennants, wedges, channels and cup-and-handle are the vocabulary of technical analysis. | The model forms them on purpose at realistic rates (a flag after an impulse, a triangle inside a range, a double top at the end of a trend); the outcome is drawn like a level test, so a pattern completes or fails, never with certainty. | L |
-| TA-A4 | Volume that tells the story | Volume confirmation is taught everywhere; today volume follows the move but tells little. | Rising volume into a true breakout and falling volume on a false one, low volume on pullbacks in a trend, climax volume at blow-off tops and panic lows, divergence (price higher, volume lower) before a reversal. | M |
-| TA-A5 | Candles that mean something | Hammers, engulfing candles and dojis are taught first. | Rejection wicks at levels that hold, engulfing candles at reversals, small-bodied candles before breakouts; at realistic rates, and not reliable on their own. | M |
-| TA-A6 | Timeframes that agree | A trend on the 4-hour chart should contain smaller swings on the 5-minute chart, as real charts do. | Nest the swing structure: intraday legs inside multi-day legs inside the market phase; check that the trend on one timeframe is visible on the next. | M |
-| TA-A7 | Gaps | Gaps and gap fills are classic setups. | Opening gaps sized by the overnight move (the after-hours and pre-market sessions already exist), and a realistic share of small gaps that fill during the day. | S |
-| TA-A8 | Momentum indicators that behave | RSI divergences and Bollinger squeezes should appear because the structure produces them, not by design of the indicator. | No change to the indicators themselves: tune the structure (trend exhaustion, quiet ranges before breakouts) and measure how often divergences and squeezes precede reversals and breakouts. | S |
-| TA-A9 | The realism suite for patterns | Every pattern needs a measured rate and outcome, and no simple pattern rule may print money. | Extend `realism.py`: detect each pattern the way a trader would, count how often it completes and how far it runs, compare simple rules ("buy every bull flag") against holding the index, costs included. | M |
-| TA-A10 | Longer history | Technical work needs months of daily bars; the chart keeps 500 candles per timeframe. | Keep daily candles for many game years and minute candles for longer, in a compact store (was T9). | M |
-| TA-A11 | Game-time timeframes | A "1d" candle is 24 real hours today, which is 48 game days; traders think in days. | Offer candles in game time (a game day of 30 minutes, a game week, a game month) next to the real-time ones, and label which is which. | S |
+| TA-A2 | More kinds of level | Traders watch more than swing points and round numbers. | The previous game day's high, low and close, the day's open, gaps, the 52-game-week high and low, and moving averages (20, 50, 200 game days) acting as moving support and resistance, each with its own hold odds. **Done (2026-10-21): the previous game day's high, low and close, the day's open, the 52-week high and low and the 20/50/200-day averages, each with its own strength, adding up where they meet a swing level or a round number. Bounces are smaller and a stock tests at most one level every 10 minutes, so trading every level test earns about what holding does (HOW_IT_WORKS §6A.4, MARKET_REALISM.md).** | M |
+| TA-A3 | Chart patterns that real traders name | Double tops and bottoms, head and shoulders, triangles, flags and pennants, wedges, channels and cup-and-handle are the vocabulary of technical analysis. | The model forms them on purpose at realistic rates (a flag after an impulse, a triangle inside a range, a double top at the end of a trend); the outcome is drawn like a level test, so a pattern completes or fails, never with certainty. **Done (2026-10-21): double tops and bottoms, head and shoulders (and inverse), wedges, ascending, descending and symmetric triangles, flags, channels and cup and handle, about four a stock a game year, each ending one of three ways (works, busted, fails) at odds that leave a confirmed pattern right a little more often than not (§6A.10).** | L |
+| TA-A4 | Volume that tells the story | Volume confirmation is taught everywhere; today volume follows the move but tells little. | Rising volume into a true breakout and falling volume on a false one, low volume on pullbacks in a trend, climax volume at blow-off tops and panic lows, divergence (price higher, volume lower) before a reversal. **Done (2026-10-21): less volume on a break that will fail (on average: the two overlap), quiet pullbacks, a weaker last push on lower volume, climaxes on four times the volume (§6A.3, §6A.4).** | M |
+| TA-A5 | Candles that mean something | Hammers, engulfing candles and dojis are taught first. | Rejection wicks at levels that hold, engulfing candles at reversals, small-bodied candles before breakouts; at realistic rates, and not reliable on their own. **Done (2026-10-21): a harder push back once the price is through a holding level (wicks), a burst the other way where a trend turns (engulfing candles), a quieter last fifth of a range (small bodies before the breakout).** | M |
+| TA-A6 | Timeframes that agree | A trend on the 4-hour chart should contain smaller swings on the 5-minute chart, as real charts do. | Nest the swing structure: intraday legs inside multi-day legs inside the market phase; check that the trend on one timeframe is visible on the next. **Done (2026-10-21): intraday legs of 4 to 12 minutes that alternate inside a trend's legs, adding no drift (§6A.3); the next game day goes the way of a 10-day move about 51-54% of the time.** | M |
+| TA-A7 | Gaps | Gaps and gap fills are classic setups. | Opening gaps sized by the overnight move (the after-hours and pre-market sessions already exist), and a realistic share of small gaps that fill during the day. **Done (2026-10-21): the opening jump and the thin sessions already made the gaps; the game-day candle is now the regular session alone, so they show on the D chart, and the previous close is a level where a gap fills. The engine fills 68-75% of small gaps and 14-29% of large ones the same day.** | S |
+| TA-A8 | Momentum indicators that behave | RSI divergences and Bollinger squeezes should appear because the structure produces them, not by design of the indicator. | No change to the indicators themselves: tune the structure (trend exhaustion, quiet ranges before breakouts) and measure how often divergences and squeezes precede reversals and breakouts. **Done (2026-10-21): a trend's last push is weaker (divergences before it ends) and a range's end is quieter (squeezes before the breakout); `realism.py` measures both against their baselines (MARKET_REALISM.md).** | S |
+| TA-A9 | The realism suite for patterns | Every pattern needs a measured rate and outcome, and no simple pattern rule may print money. | Extend `realism.py`: detect each pattern the way a trader would, count how often it completes and how far it runs, compare simple rules ("buy every bull flag") against holding the index, costs included. **Done (2026-10-21): `game/patterns.py` finds patterns from candles alone (zigzag swing points, textbook templates, two swing sizes) and follows each forward; `realism.py` reports how many of each it finds, how many complete and work, the result of trading them, and how many of the model's own a trader would recognise.** | M |
+| TA-A10 | Longer history | Technical work needs months of daily bars; the chart keeps 500 candles per timeframe. | Keep daily candles for many game years and minute candles for longer, in a compact store (was T9). **Done (2026-10-21): game-day candles for ten game years in `data/history.db`, one-minute candles for three real days in `data/minutes.db` (`game/history.py`); a running game rebuilds its days once from its 5-minute and 30-minute candles.** | M |
+| TA-A11 | Game-time timeframes | A "1d" candle is 24 real hours today, which is 48 game days; traders think in days. | Offer candles in game time (a game day of 30 minutes, a game week, a game month) next to the real-time ones, and label which is which. **Done (2026-10-21): GAME D, W and M on the chart, with game dates on the scale and in the readout; a game-day candle is the regular session.** | S |
 
 #### B. The tools: charts and trading on the chart (extends track T)
 
@@ -147,7 +147,7 @@ journal. The plan below builds on it.
 | # | Change | Why | How | Size |
 |---|---|---|---|---|
 | TA-F1 | Admin: total MB instead of the house | The house carries no risk now that nothing is paid out. | Done (2026-10-13): the dashboard shows the total MB in the players' hands (starting, bought, rewards, other, plus the players' P&L, so it moves as people trade) instead of the house reserve, and no house P&L. Still to do: retire the house-risk panel and the reserve top-ups from the dashboard and the engine (M9). | S |
-| TA-F2 | Split the chart code out of `index.html` | The chart is becoming the biggest part of the page. | Move the chart, indicators and drawing tools into their own script file with tests (E2). | M |
+| TA-F2 | Split the chart code out of `index.html` | The chart is becoming the biggest part of the page. | Move the chart, indicators and drawing tools into their own script file with tests (E2). **Done (2026-10-21): `web/chart.js` (the chart, indicators, drawing tools, chart size and position size: about 680 lines out of `index.html`), served at `/js/chart.js`; the browser tests cover it.** | M |
 | TA-F3 | A browser test for every tool | Chart tools break silently. | **Mostly done (2026-10-14)**: `tests/test_chart_tools.py` draws, selects, moves and deletes, and checks 13 indicators against Python. Still to do: placing orders from the chart. | M |
 
 ---
@@ -173,36 +173,23 @@ G10 → E10 (scale), G11 → E11 (ledger housekeeping), I2 → decided (packages
 
 ---
 
-## 3. Where things stand (2026-10-13)
+## 3. Where things stand (2026-10-21)
 
-What already exists and carries over unchanged: a tick engine (1 tick = 1 second, 30-minute game days in pre-market,
-regular session and after-hours, a 365-day game year), 193 listings in 30 sectors with invented companies (CEOs, products,
-supplier and rival links, evolving financials, quarterly earnings on a calendar, company events), the MSI 50 index, sector
-indices, ETFs and 2x/3x products; long and short trading, limit, stop-loss, take-profit and bracket orders; accounts with
-passwords and email verification (mail not yet switched on), a read-only visitor view and `/about`; portfolio, history
-with CSV, watchlist, leaderboards, achievements and quests, profiles, following and a moderated chat; a phone layout; a
-crash-proof money ledger; gateways for many connections; an admin dashboard (house, machine health, activity, players,
-security); and the live site **https://memestreet.net** (Hetzner, Caddy, admin behind a second password, `/api/health`,
-six-hourly backups pulled to the D: drive by `deploy/pull_backups.ps1`). 793 tests run in a few minutes per file and in
-about 16 minutes all together.
+**Live on https://memestreet.net** (Hetzner, Caddy, fail2ban, admin behind a second password, `/api/health` watched every
+15 minutes, backups every six hours on the server and pulled to this computer daily): the learn-to-trade market and its
+tools as listed below, with the shop built but closed until a payment provider is chosen.
 
-What does **not** fit the new plan yet: the price process (built to have no direction and no structure), the news mix, the
-starting balance, the lottery listings, the contest, the edge checks and the money flow (no purchases).
-
-Not done at all: payments, the macro economy, technical tools on the chart, lessons, challenges with rewards, a journal,
-classrooms, terms and privacy pages, real email, an uptime monitor, daily automatic backups.
-
-**Built on 2026-10-13, not yet committed (being tested locally first; HOW_IT_WORKS.md §6A, §10.9, §10.10, §11):**
-
-| Track | Done (first version) | Still open |
+| Area | Built | Still open |
 |---|---|---|
-| M economy | M1 (1,000 MB start), M2 (MB by source, in the ledger), M3 (orders, test checkout, Stripe Checkout with a signed webhook, admin refunds), M4 (out-of-money banner, close all, free restart below 50 MB once a week), M5 (challenge MB, 500 MB a week), M6 (US$150 a 30 days, own lower limit, raising waits a day, 3 purchases a day) | M3: Stripe is not a merchant of record (VAT and sales tax are yours); Paddle or Lemon Squeezy would be. M7 pricing model, M8 costs, M9 house |
-| B business | B1 prices (100 MB US$0.99 to 10,000 MB US$39.99), B2 Pro pass (US$4.99 a month, US$39.99 a year: chart tools and journal statistics, never MB or rank) | B3-B9 |
-| R rules | R2 age policy (13+ to sign up, 18+ and a confirmation to buy, year of birth only), R5 spending limits | R1 terms and privacy (needed before the shop opens), R3, R4, R6, R7, R8 |
-| P price model | `market_model.py`: P1 drift, P2 phases, P3 ranges and breakouts, P4 support and resistance, P5 trend legs, P6 leverage effect and quiet ranges, P7 volume, P8 capitulation, P11 first version (`realism.py`), P12 old reversion and regime shocks replaced | P8 overreactions, short squeezes and stop runs, P9 more factors, P10 asset classes, P13; strong levels hold a little less often than the target |
-| N news | N1 far fewer headlines, N2 central bank, N3 releases with forecasts, N4 hidden economy, N5 earnings forecasts and post-earnings drift, N6 calendar page | N7 why it moved, N8, N9 daily wrap, N10 |
-| T charts | T1 volume (no crosshair yet), T2 SMA/EMA/RSI free, Bollinger/VWAP/MACD/ATR with Pro, T3 horizontal levels, T4 position size and risk with a bracket | T5-T9 |
-| L learning | L1 curriculum and L2 twelve lessons with quizzes (quizzes switched off for now, 2026-10-13: `quizzes` setting), L3 challenges (9; 6 offered while quizzes are off), L4 journal linked to positions with results in MB and R, L5 journal statistics (by setup with Pro), L8 onboarding strip | L6, L7, L9, L10 |
+| The market (P, TA-A) | Drift, phases, trends in legs, ranges and breakouts, support and resistance from swing points, round numbers and the daily chart, volume that confirms (on average), wicks, engulfing turns, squeezes, intraday legs, climaxes, gaps, ten kinds of named chart pattern; stochastic volatility, fat tails, sessions; checked by `realism.py` (with the pattern suite) and `chart_check.py` | P8 overreactions, short squeezes and stop runs; P9 more factors; P10 asset classes; P13; the engine's tail exponent and the market's one-minute autocorrelation are just outside their targets on some seeds (as before Phase 2) |
+| News and the economy (N, TA-E) | The central bank and the macro calendar with forecasts, earnings forecasts and drift, far fewer headlines, the news wire folded | TA-E4 why it moved; N8-N10 parked |
+| Charts (T, TA-B) | Crosshair and readout, five chart types and a log scale, 49 indicators with settings saved per player, 16 drawing tools saved on the server, your trades and orders on the chart, real-time and game-time candles (D, W, M) with ten game years of daily history | TA-B5 trade from the chart, TA-B7 alerts, TA-B8 screener, TA-B10 layouts, TA-B11 replay, TA-B12 the trading screen |
+| Learning (L, TA-C) | Twelve lessons (quizzes switched off), challenges paying MB, the quest ladder; the journal was removed | TA-C1 to TA-C7 |
+| Money (M, B, R) | 1,000 MB start, MB by source, packages and Pro, test checkout and Stripe Checkout with a signed webhook, receipts, refunds, spending limits, the free restart, terms and privacy, the age policy, a pricing model (M7) | M3 the payment provider (Paddle or Lemon Squeezy as merchant of record, or Stripe), R4 a lawyer's read, M8 costs, M9 the house |
+| Running it (O, E) | Staging copy, rollback, daily backups off the server, uptime checks, fail2ban, CI in four parts plus lint and types, an error tracker on the admin page | O1 real email (a Resend account), O4 Cloudflare (your account and name servers), O8 capacity, O11 resetting the old 10,000-MB accounts, E2 splitting `engine.py`, E5, E6 |
+
+**Waiting on you:** the payment provider (M3), a Resend account for email (O1), a Cloudflare account and the name-server
+change (O4), a lawyer's read of the terms and privacy pages (R4), and the go-ahead to reset the old accounts (O11).
 
 ---
 
@@ -231,7 +218,7 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 | M4 | What happens when an account runs out | The moment a player busts is when the site teaches the most, and when pressure to buy is least fair. | A "your account is out of money" page that shows what happened (biggest losses, risk taken, a link to the risk lessons) and the options: buy a package, or a free restart on a timer (for example 1,000 MB once a week) if you decide to offer one. No purchase pop-up during trading. | S |
 | M5 | Challenge rewards | Free MB for learning. | Rewards are paid by the challenge engine (L3) into the ledger with source `challenge`; one-time and repeatable challenges, daily and weekly caps, rewards only for verified accounts, a weekly budget per active player as a setting, and a check in the pricing model (M7) that rewards do not remove the reason to buy. | S |
 | M6 | Spending safeguards | Selling currency in a game that people can lose needs limits. | A default monthly cap, player-set lower caps, a cool-off after several purchases in a day, a "what I have spent" page with real-currency totals, and a confirmation step that shows the price. | S |
-| M7 | A pricing model | `revenue_model.py` models fee income, which is no longer the income. | Replace it with a model of package sales: share of players who buy, package mix, how often accounts run out (from the market's difficulty and the bust rule), free MB from challenges; output per 1,000 sign-ups and its sensitivity to each assumption. Fill it with real numbers after M3 ships. | S |
+| M7 | A pricing model | `revenue_model.py` models fee income, which is no longer the income. | Replace it with a model of package sales: share of players who buy, package mix, how often accounts run out (from the market's difficulty and the bust rule), free MB from challenges; output per 1,000 sign-ups and its sensitivity to each assumption. Fill it with real numbers after M3 ships. **Built (2026-10-21): `tools/pricing_model.py`, with every behaviour an assumption in one table and the sensitivity to each (with today's guesses about US$0.30 net a sign-up over 26 weeks; retention and the share who buy without having run out matter most). Fill it in once the shop has real numbers.** | S |
 | M8 | Trading costs that teach | Costs are part of trading; they are no longer the site's income. | Decide the cost model: keep 0.1% per side, or a commission plus a bid-ask spread that widens in thin sessions, fast markets and small companies, and slippage on market orders in fast moves (never moving the price). Show costs per trade in the journal. Any change is checked with the realism suite (P11): costs decide whether a pattern pays. | M |
 | M9 | Simplify the house | Nobody is paid out, so the house carries no real risk. | Keep the conservation checks and the ledger; retire the capital rule, the reserve floor and top-ups as a risk control, and the reserve alarms; turn the admin's house-risk panel into "where players are positioned", which is still interesting. | S |
 
@@ -280,7 +267,7 @@ classrooms, terms and privacy pages, real email, an uptime monitor, daily automa
 | T6 | Alerts on levels and indicators | Waiting for a setup should not mean staring at a chart. | Alerts when price crosses a drawn level or an indicator condition is met, in the page and by email (O1). | M |
 | T7 | A setup screener | Finding setups is a skill to practise. | Scans for stocks near support or resistance, breakouts, squeezes, RSI extremes, gaps and new highs or lows. | M |
 | T8 | Replay mode | Practising on the past, bar by bar, is the best teaching tool there is. | Pick a stock and a past period, step through it bar by bar and trade it in a separate practice account (the contest's paper-account code is a base); needs a longer price history (T9) and a deterministic engine (E5). | L |
-| T9 | Longer price history | Technical work needs months of daily bars; charts keep the last 500 candles per timeframe. | Keep daily candles for many game years, and minute candles for longer than now, in a compact store. | M |
+| T9 | Longer price history | Technical work needs months of daily bars; charts keep the last 500 candles per timeframe. | Keep daily candles for many game years, and minute candles for longer than now, in a compact store. **Done as TA-A10 (2026-10-21).** | M |
 
 ### L. Learning: lessons and challenges (the journal was removed on 2026-10-20)
 
@@ -355,7 +342,7 @@ Layout and personality
 | # | Improvement | Why | How | Size |
 |---|---|---|---|---|
 | E1 | The price process as its own module | Track P rewrites the core; today it is spread through a 3,600-line `engine.py`. | Move price generation (noise, regimes, levels, news reactions) behind one interface with its own tests, keeping the rest of the engine as it is. First step of the P track. | L |
-| E2 | Split the big files | `engine.py` and `index.html` are hard to change safely. | Modules for prices, news, orders, accounts, indices; the page's CSS and JavaScript in their own files. | L |
+| E2 | Split the big files | `engine.py` and `index.html` are hard to change safely. | Modules for prices, news, orders, accounts, indices; the page's CSS and JavaScript in their own files. **Started (2026-10-21): the chart's JavaScript is in `web/chart.js` (TA-F2) and the price history in `game/history.py`; `engine.py` is still one file.** | L |
 | E5 | Determinism and replay | Calibration (P11), replay mode (T8) and bug reports need repeatable markets. | A seeded random stream per market and a tool that replays any period. | M |
 | E6 | Observability | Alerts only while someone looks at the dashboard. | Structured logs, metrics, alerts for drift, late ticks and errors. | M |
 | E7 | Content tooling | Packs are edited by hand. | A validator and a preview for content packs. | S |
@@ -364,7 +351,7 @@ Layout and personality
 | E10 | Scale the game server | Gateways carry connections; the market is one process. | Only when needed (around 4,000 players): engine in its own process, Postgres, per-client subscriptions. | L |
 | E11 | Ledger housekeeping | The ledger only grows. | Rotation of the equity-curve table, a restore drill, a snapshot-versus-ledger check. | S |
 | E12 | A faster test suite and CI that passes | 16 minutes locally; the GitHub run fails. | Parallel runs, per-test time limits, a quick subset; fix the failing GitHub run (its summary page lists the failures) and run the browser tests there. **Done (2026-10-19, takes effect once pushed): four parallel parts, a 30-minute limit, a failed test run once more on its own (flaky ones are marked, real failures fail), failures as annotations anyone can read, newer actions.** | M |
-| E13 | Lint, types and error tracking | Mistakes are found only when a test hits them. | Ruff, a light mypy pass, an error tracker. | S |
+| E13 | Lint, types and error tracking | Mistakes are found only when a test hits them. | Ruff, a light mypy pass, an error tracker. **Done (2026-10-21): Ruff (errors, warnings, pyflakes) and a light mypy pass, both clean and both in CI; a built-in error tracker (`game/errortrack.py`) groups every logged error for the admin page (`/api/admin/errors`). A hosted tracker such as Sentry needs an account of yours.** | S |
 
 ### O. Running memestreet.net
 
@@ -426,7 +413,8 @@ Layout and personality
 ## 6. Suggested order
 
 Since 2026-10-13 the order follows section 1A: technical analysis first. Phases 0, 1, 3 and 4 of the earlier order are
-largely built (section 3); what remains of them is listed under "Alongside".
+largely built (section 3); what remains of them is listed under "Alongside". **Phase 1 (chart basics) was done on
+2026-10-19 and Phase 2 (structure) on 2026-10-21; Phase 3 is next.**
 
 | Phase | Focus | Items | Done when |
 |---|---|---|---|

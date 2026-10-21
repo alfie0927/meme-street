@@ -8,6 +8,7 @@ import economy
 import learning
 import ladder
 import chartprefs
+import history
 import market_model
 import paths
 import social
@@ -24,6 +25,12 @@ INTRADAY_CANDLE_SECONDS = 60
 # real-time candle sizes in seconds, keyed by the labels the chart offers
 TIMEFRAMES = {"30s": 30, "1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 3600, "2h": 7200,
               "4h": 14400, "1d": 86400, "1mo": 30 * 86400, "1y": 365 * 86400}
+# game-time candles (ROADMAP TA-A11): a game day's regular session, a game week (Monday to Sunday of the game calendar)
+# and a game month, built from the game-day candles that history.py keeps for many game years (TA-A10)
+GAME_PERIODS = ("gd", "gw", "gm")
+DAY_CANDLES_KEPT = 400        # game-day candles each listing keeps in memory (a 52-week range, a 200-day average)
+CHART_DAYS = 1500             # at most this many game-day candles go to a chart (about four game years)
+CHART_MINUTES = 1440          # at most this many one-minute candles go to a chart (a real day)
 MAX_TICK_MOVE = 0.15
 # The game's own calendar, for the calendar page: one game day (30 real minutes) is one date, seven make a week and the
 # months are a real calendar's. Game day GAME_DAY0 (1 September 2026, UTC) is 1 January of game year 1.
@@ -159,8 +166,9 @@ class Stock:
         self.fair = self.fair_open = self.initial_price  # the market price: trades never move it
         self.hist = deque(maxlen=MARKET_DAY_SECONDS + 1)
         self.candles = deque(maxlen=2 * MARKET_DAY_SECONDS // INTRADAY_CANDLE_SECONDS)
-        self.daily_hist = deque(maxlen=366)
         self.tf = {k: deque(maxlen=500) for k in TIMEFRAMES}
+        self.days = deque(maxlen=DAY_CANDLES_KEPT)  # finished game-day candles, regular session only: [t, o, h, l, c, v]
+        self.reg = None                            # today's regular-session candle while it is under way
         self.day_open = self.day_high = self.day_low = self.price
         self.next_earn = None
         self.earn_slot = None                      # the nominal report time before it is snapped to pre-market or after-hours
@@ -279,7 +287,8 @@ class Player:
 
 class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin,
              chartprefs.ChartsMixin):
-    def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None):
+    def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None,
+                 history_path=None, minutes_path=None):
         self._init_social()
         self._init_accounts()
         self._init_economy()
@@ -289,6 +298,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.content_glob = content_glob
         self.state_file = state_file
         self.ledger = Ledger(ledger_path) if ledger_path else None   # append-only money log (see ledger.py)
+        # long price history (history.py): game-day candles for many game years, one-minute candles for a few real days
+        self.day_store = history.CandleStore(history_path) if history_path else None
+        self.minute_store = history.CandleStore(minutes_path) if minutes_path else None
+        self._store_prune_t = 0.0
         self.index_prev = {}                       # every stock's price at the previous tick (for index returns)
         self._div_today = {}                       # ticker -> dividend as a share of price, for this tick's index returns
         self._borrow_acc = {}                      # borrow fees waiting to be written to the ledger
@@ -392,6 +405,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self._assign_personas()
         self._add_derived_assets()
         self._load_state()
+        self._load_days()
         self._sync_relations()
         if not had_state or self._pre_moonshot_save:   # a new game (or a save from before moonshots) starts with a few listed
             for _ in range(int(self.settings.get("moonshot_initial", 4))):
@@ -1170,11 +1184,96 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             else:
                 c.append(vol)
         else:
+            if c and self.minute_store is not None:
+                self.minute_store.add(s.ticker, c)       # the minute before is finished
             s.candles.append([minute, price, price, price, price, vol])
         s.day_high = max(s.day_high, price)
         s.day_low = min(s.day_low, price)
         for key, secs in TIMEFRAMES.items():
             self._merge(s.tf[key], int(self.now // secs) * secs, price, price, price, price, vol)
+        # the game-day candle covers the regular session only, like a real daily chart: the move from one close to the
+        # next open (after-hours, pre-market and the opening jump) shows as a gap (TA-A7). (Not before the first tick:
+        # until then the session is not known.)
+        if self._prev_phase is None:
+            return
+        if self._phase == "open":
+            day = int(self.now // MARKET_DAY_SECONDS) * MARKET_DAY_SECONDS
+            r = s.reg
+            if r is not None and r[0] != day:            # (no after-hours: the day ran straight into the next one)
+                self._close_day(s)
+                r = None
+            if r is None:
+                s.reg = [day, price, price, price, price, vol]
+            else:
+                r[2], r[3], r[4] = max(r[2], price), min(r[3], price), price
+                r[5] += vol
+        elif s.reg is not None:
+            self._close_day(s)
+
+    def _close_day(self, s):
+        """The regular session is over: its candle joins the stock's game days (and the history file)."""
+        c, s.reg = s.reg, None
+        if s.days and s.days[-1][0] >= c[0]:
+            return
+        s.days.append(c)
+        if self.day_store is not None:
+            self.day_store.add(s.ticker, c)
+
+    def _flush_stores(self):
+        """Write the finished candles to the history files (once a tick) and drop the oldest ones once an hour."""
+        for store in (self.day_store, self.minute_store):
+            if store is not None and store.buf:
+                try:
+                    store.flush()
+                except Exception:
+                    logger.exception("could not write the price history to %s", store.path)
+        if self.now - self._store_prune_t < 3600 or (self.day_store is None and self.minute_store is None):
+            return
+        self._store_prune_t = self.now
+        try:
+            if self.minute_store is not None:
+                self.minute_store.prune(self.now - float(self.settings.get("history_minute_days", 3)) * 86400)
+            if self.day_store is not None:
+                years = float(self.settings.get("history_game_years", 10))
+                self.day_store.prune(self.now - years * TRADING_DAYS_PER_YEAR * MARKET_DAY_SECONDS)
+        except Exception:
+            logger.exception("could not trim the price history")
+
+    def close_stores(self):
+        for store in (self.day_store, self.minute_store):
+            if store is not None:
+                try:
+                    store.close()
+                except Exception:
+                    logger.exception("could not close %s", store.path)
+
+    def _load_days(self):
+        """Each listing's recent game-day candles: from the history file, or, for a game from before it existed (or with
+        no file), rebuilt once from the 5-minute candles (the regular sessions of the last 80 game days) and the 30-minute
+        ones (whole game days, further back)."""
+        pre, post = self._session_lengths()
+        D = MARKET_DAY_SECONDS
+        today = int(self.now // D) * D
+        stored = self.day_store.tickers() if self.day_store is not None else set()
+        for tk, s in self.stocks.items():
+            s.days.clear()
+            if tk in stored:
+                rows = self.day_store.last(tk, DAY_CANDLES_KEPT, before=today + D)   # (today's, if its session is over)
+            else:
+                rebuilt = {c[0]: c for c in list(s.tf["30m"])}
+                rebuilt.update({c[0]: c for c in history.days_from_intraday(list(s.tf["5m"]), D, pre, post)})
+                rows = [list(rebuilt[k][:6]) + [0.0] * (6 - len(rebuilt[k][:6])) for k in sorted(rebuilt) if k < today]
+                if self.day_store is not None:
+                    for c in rows:
+                        self.day_store.add(tk, c)
+                rows = rows[-DAY_CANDLES_KEPT:]
+            s.days.extend(rows)
+            if s.reg is not None and s.reg[0] != today:   # the save had a session under way that has ended since
+                self._close_day(s)
+            if self.model is not None and tk in self.model.swings:     # the price model reads its daily levels from them
+                self.model.seed_bars(tk, s.tf.get("5m", ()), s.days, s.reg)
+        if self.day_store is not None:
+            self.day_store.flush()
 
     def _volume(self, s):
         """Shares traded this second (the share counts are in billions; volume is in single shares), for the volume bars under the chart. Volume
@@ -1301,7 +1400,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.model.load(self._model_saved, self.now, {tk: s.price for tk, s in self.stocks.items()})
         self._model_saved = None
         for tk, s in self.stocks.items():
-            self.model.seed_bars(tk, s.tf.get("5m", ()))
+            self.model.seed_bars(tk, s.tf.get("5m", ()), s.days, s.reg)
 
     def _model_step(self):
         """One second of the price model: its drifts, swings and level reactions are queued like any other move, its
@@ -1311,7 +1410,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         listings = [s for s in self.stocks.values() if s.asset_type != "index" and s.spec is None and s.fair > 0]
         for s in self.stocks.values():
             s.ticked = True                         # quoted on a tick grid (Stock.price)
-        rets, noise, volume = self.model.step(self.now, dt, listings, activity=self._session_mult())
+        rets, noise, volume = self.model.step(self.now, dt, listings, activity=self._session_mult(),
+                                              sessions=self._session_lengths())
         burst = self.model.market_vol(self.now) / market_model.REGIMES[self.model.regime][1]   # before and after releases
         if burst != 1.0:
             noise = {tk: v * burst for tk, v in noise.items()}
@@ -2240,6 +2340,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         page: what it was, its last numbers, its news and its candles (the most recent of each timeframe)."""
         keep = {k: [[round(x, 5) if i else x for i, x in enumerate(c)] for c in list(stock.tf[k])[-240:]]
                 for k in ("1m", "5m", "30m", "1h", "1d") if k in stock.tf}
+        keep["gd"] = [[round(x, 5) if i else x for i, x in enumerate(c)] for c in list(stock.days)[-240:]]
         p = stock.persona or {}
         self.archive[stock.ticker] = {
             "ticker": stock.ticker, "name": stock.name, "desc": stock.desc, "sector": stock.sector,
@@ -2921,6 +3022,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             if asset:
                 asset.hist.append(asset.price)
                 self._record(asset)
+        self._flush_stores()
         if self.now >= self.season_end:
             self._end_season()
         self._board()
@@ -2936,7 +3038,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if current_day <= self.market_day:
             return
         for stock in self.stocks.values():
-            stock.daily_hist.append((self.market_day, stock.day_open, stock.day_high, stock.day_low, stock.price))
             stock.day_open = stock.day_high = stock.day_low = stock.price
             stock.fair_open = stock.fair
         self.market_day = current_day
@@ -3063,18 +3164,51 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         stock = self.stocks.get(ticker)
         if not stock and ticker in self.archive:
             tf = self.archive[ticker]["tf"]
-            key = period if period in tf else next((k for k in ("1m", "5m", "30m", "1h", "1d") if k in tf), None)
+            if period in ("gw", "gm") and tf.get("gd"):
+                rows = history.aggregate(tf["gd"], self._game_bucket(period))
+            else:
+                key = period if period in tf else next((k for k in ("1m", "5m", "30m", "1h", "1d") if k in tf), None)
+                rows = tf.get(key, [])
             candles = [{"t": c[0], "o": c[1], "h": c[2], "l": c[3], "c": c[4], "v": c[5] if len(c) > 5 else 0.0}
-                       for c in tf.get(key, [])]
+                       for c in rows]
             return {"type": "history", "ticker": ticker, "period": period, "candles": candles, "now": self.now,
-                    "delisted": True}
+                    "delisted": True, "game_day0": GAME_DAY0}
         if not stock:
             return {"type": "history", "error": "Unknown or delisted stock"}
-        key = period if period in TIMEFRAMES else "30s"  # legacy clients may still ask for day/week/...
+        if period in GAME_PERIODS:
+            rows = self._game_candles(stock, period)
+        elif period == "1m" and self.minute_store is not None:
+            mem = list(stock.tf["1m"])
+            old = self.minute_store.last(ticker, max(0, CHART_MINUTES - len(mem)), before=mem[0][0] if mem else None)
+            rows = old + mem
+        else:
+            rows = stock.tf[period if period in TIMEFRAMES else "30s"]  # legacy clients may still ask for day/week/...
         candles = [{"t": c[0], "o": round(c[1], 5), "h": round(c[2], 5), "l": round(c[3], 5), "c": round(c[4], 5),
-                    "v": round(c[5]) if len(c) > 5 else 0} for c in stock.tf[key]]
+                    "v": round(c[5]) if len(c) > 5 else 0} for c in rows]
         return {"type": "history", "ticker": ticker, "period": period, "candles": candles,
-                "now": self.now}
+                "now": self.now, "game_day0": GAME_DAY0}
+
+    def _game_bucket(self, period):
+        """The start (real seconds) of the game week (Monday) or game month that a time falls in."""
+        D = MARKET_DAY_SECONDS
+        if period == "gw":
+            return lambda t: (int(t // D) - game_date(int(t // D)).weekday()) * D
+        if period == "gm":
+            return lambda t: (int(t // D) - game_date(int(t // D)).day + 1) * D
+        return lambda t: int(t // D) * D
+
+    def _game_candles(self, stock, period):
+        """Game-day, game-week or game-month candles of a listing, with today's session (if under way) last."""
+        want = CHART_DAYS if period == "gd" else int(float(self.settings.get("history_game_years", 10)) * TRADING_DAYS_PER_YEAR)
+        days = list(stock.days)
+        if self.day_store is not None and len(days) < want:
+            older = self.day_store.last(stock.ticker, want - len(days), before=days[0][0] if days else None)
+            days = older + days
+        if stock.reg is not None:
+            days.append(stock.reg)
+        if period == "gd":
+            return days[-want:]
+        return history.aggregate(days, self._game_bucket(period))
 
     def _tracks(self, s):
         """What a derived asset follows, in words, for the stock page."""
@@ -3557,7 +3691,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
              "delisted": self.delisted, "season_no": self.season_no,
              "season_end": self.season_end, "history": self.history,
              "stocks": {t: {"base": s.base, "fair": s.fair, "fair_open": s.fair_open,
-                            "daily_hist": list(s.daily_hist), "candles": list(s.candles),
+                            "reg": s.reg, "candles": list(s.candles),
                             "safety": s.safety, "pending": s.pending, "log": list(s.log),
                             "reports": list(s.reports), "trend": s.trend, "mood": s.mood,
                             "dps": s.dps, "div": s.div, "base_margin": s.base_margin, "listed_at": s.listed_at,
@@ -3740,7 +3874,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             if isinstance(v.get("div"), dict) and v["div"].get("amt") is not None:
                 v["div"]["amt"] = float(v["div"]["amt"]) * f
             v["candles"] = candles(v.get("candles", []), f)
-            v["daily_hist"] = [[c[0]] + [x * f for x in c[1:]] for c in v.get("daily_hist", [])]
             for frames in (v.get("tf"), charts.get(tk)):
                 if isinstance(frames, dict):
                     for key in list(frames):
@@ -3860,20 +3993,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     else:  # state from before multi-timeframe candles: rebuild from the minute candles
                         for c in s.candles:
                             self._merge(s.tf[key], int(c[0] // secs) * secs, *c[1:])
-                s.daily_hist.clear()
-                raw_daily = v.get("daily_hist", [])
-                if schema < 3:
-                    for day, price in raw_daily:
-                        scaled = price * history_scale
-                        s.daily_hist.append((day, scaled, scaled, scaled, scaled))
-                else:
-                    # schema < 6 labelled each closed day with the following day's number
-                    shift = 1 if schema < 6 else 0
-                    for day, o, h, l, c in raw_daily:
-                        if s.daily_hist and s.daily_hist[-1][0] >= day - shift:
-                            s.daily_hist.pop()
-                        s.daily_hist.append((day - shift, o * history_scale, h * history_scale,
-                                             l * history_scale, c * history_scale))
+                s.reg = list(v["reg"]) if isinstance(v.get("reg"), list) and len(v["reg"]) == 6 else None
                 if "day_open" in v:
                     s.day_open = v["day_open"] * history_scale
                     s.day_high = v["day_high"] * history_scale

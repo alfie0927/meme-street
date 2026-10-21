@@ -8,6 +8,24 @@ name: tests
 on: [push, pull_request]
 
 jobs:
+  # Lint and types (ROADMAP E13): Ruff with the errors, warnings and pyflakes rules (long lines, assigned lambdas, `l`
+  # for a candle's low and several imports on one line are the house style), and a light mypy pass (most functions have
+  # no annotations, so it checks what it can see). The same commands run locally from the project folder.
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt ruff==0.6.9 mypy==1.11.2
+      - name: Ruff
+        run: ruff check --select E,F,W --ignore E501,E731,E741,E401 game tools tests
+      - name: mypy
+        run: mypy game tools/realism.py tools/pricing_model.py --ignore-missing-imports
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30

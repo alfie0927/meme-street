@@ -257,7 +257,6 @@ class SessionTests(unittest.TestCase):
 
     def test_the_real_noise_scales_with_the_multiplier(self):
         e = self.e
-        s = e.stocks["NVXA"]
         spread = {}
         for name, phase in (("pre", 100), ("mid", 900), ("open", 300)):
             self.at(phase)

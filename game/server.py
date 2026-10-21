@@ -6,6 +6,7 @@ from fastapi import FastAPI, Header, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 import paths
+import errortrack
 from engine import GUEST_KEY, Engine
 from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, password_problem, verify_password
 from mailer import Mailer
@@ -16,9 +17,10 @@ from wsconn import Conn
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
+errors = errortrack.install()                       # every error logged is counted for the admin page (ROADMAP E13)
 
 os.makedirs(paths.DATA, exist_ok=True)              # the save, the charts and the ledger live in data/ (paths.py)
-engine = Engine(ledger_path=paths.LEDGER_FILE)
+engine = Engine(ledger_path=paths.LEDGER_FILE, history_path=paths.HISTORY_FILE, minutes_path=paths.MINUTES_FILE)
 ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
 
 # The engine is not thread safe, so it is only ever touched while holding `lock`. The game tick, trades and every
@@ -27,10 +29,10 @@ ADMIN_KEY = os.environ.get("ADMIN_KEY", "")
 lock = threading.Lock()
 pool = ThreadPoolExecutor(max_workers=8, thread_name_prefix="engine")
 STARTED = time.time()
-online_hist = deque(maxlen=720)        # [time, player pages, visitor pages] every 10 s, for the admin chart (not saved)
+online_hist: deque = deque(maxlen=720)        # [time, player pages, visitor pages] every 10 s, for the admin chart (not saved)
 ADMIN_FAIL_LIMIT, ADMIN_FAIL_WINDOW = 10, 600      # this many wrong admin keys from one address in ten minutes locks it out for the rest of the ten minutes
-admin_fails = {}                      # address -> times of its wrong keys
-admin_log = deque(maxlen=40)          # what the admin page shows: when, from where, what happened
+admin_fails: dict = {}                # address -> times of its wrong keys
+admin_log: deque = deque(maxlen=40)   # what the admin page shows: when, from where, what happened
 perf = {"tick_ms": 0.0, "tick_max_ms": 0.0, "send_ms": 0.0, "late_ticks": 0, "ticks": 0, "last_save_ms": 0.0,
         "recent": deque(maxlen=120)}
 
@@ -48,8 +50,8 @@ def dumps(obj):
     return json.dumps(obj, separators=(",", ":"))
 
 
-clients = {}   # websocket -> Conn here, and (gateway id, connection id) -> RemoteConn for a client on a gateway
-gateways = {}  # gateway id -> GatewayLink (see the end of the websocket section)
+clients: dict = {}   # websocket -> Conn here, and (gateway id, connection id) -> RemoteConn for a client on a gateway
+gateways: dict = {}  # gateway id -> GatewayLink (see the end of the websocket section)
 CORE_KEY = os.environ.get("CORE_KEY", "")   # the shared secret gateways must present; with none set, no gateway can connect
 
 
@@ -130,6 +132,7 @@ async def lifespan(app):
         engine.save()
         if engine.ledger is not None:
             engine.ledger.close()
+        engine.close_stores()
     pool.shutdown(wait=False)
 
 
@@ -909,7 +912,7 @@ async def admin_withdraw(t: Transfer, x_admin_key: str = Header("")):
 
 
 # ------------------------------------------------------------------------------------------ players' own data
-_last_call = {}
+_last_call: dict = {}
 
 
 def rate_ok(token, key, interval):
@@ -1377,6 +1380,15 @@ async def calendar():
 async def calendar_month(offset: int = 0):
     """The calendar page's month grid in game days (engine.calendar_month); `offset` months from the current one."""
     return await run(engine.calendar_month, offset)
+
+
+@app.get("/api/admin/errors")
+async def admin_errors(x_admin_key: str = Header("")):
+    """What has gone wrong since the server started: each kind of error (where it was raised and what it was) with how
+    often, when it was last seen, the last message and its traceback."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    return dict(errors.snapshot(), started=STARTED)
 
 
 @app.get("/api/admin/model")

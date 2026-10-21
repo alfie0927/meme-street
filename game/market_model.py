@@ -19,8 +19,27 @@ the prices, the volume and the macro releases it produces.
   bounce) or breaks (a burst through on high volume that follows through, or fails and falls back inside: a false
   breakout). Strong levels (several touches, a round number, in line with the trend) hold more often; a level that is
   tested again and again gets weaker.
-* **Volatility and volume (P6, P7).** Ranges are quiet, breakouts and macro releases loud; the engine's clustering
-  makes falls raise volatility more than rises (the leverage effect). Every listing gets a volume multiplier.
+* **Levels from the daily chart (TA-A2, TA-A7).** Each listing also keeps its regular-session game days. The previous
+  day's high, low and close (the close is where an opening gap fills), the day's open, the 52-week high and low and the
+  20, 50 and 200-day averages are levels too, each counting as a level of a given strength; where one lies on top of a
+  swing level or a round number they add up.
+* **Volatility and volume (P6, P7, TA-A4).** Ranges are quiet, breakouts and macro releases loud; the engine's clustering
+  makes falls raise volatility more than rises (the leverage effect). Every listing gets a volume multiplier. A breakout
+  that will fail comes on less volume than one that will run (on average: the two overlap), pullbacks in a trend are
+  quiet, the last push of a trend is weaker on lower volume (a divergence) and a trend may end in a climax: a fast move
+  on very high volume.
+* **Candles (TA-A5).** A level that holds pushes back harder once the price is through it, which leaves a wick; a trend
+  that reverses turns with a burst the other way (an engulfing candle); the last stretch of a range is quieter (small
+  bodies: a squeeze before the breakout).
+* **Chart patterns (TA-A3).** Now and then a listing traces a named pattern on purpose: a double top or bottom, a head
+  and shoulders or a wedge where a trend ends, a triangle where a range begins, a flag after a sharp move, a channel or a
+  cup and handle where a trend begins. Each is a script of legs in units of its size (a few daily sigmas) that the price
+  follows loosely, with the noise around it, and it ends one of three ways: it *works* (breaks out and runs to about its
+  measured move), it is *busted* (breaks out a little, then turns back through the other side) or it *fails* (turns
+  before breaking out). The odds are set so that a confirmed pattern is right a little more often than not, and no
+  simple pattern rule prints money (`realism.py` checks this with `patterns.py`, which finds them as a trader would).
+* **Timeframes that agree (TA-A6).** Inside a trend's legs (days) the price swings in short intraday legs (minutes) that
+  alternate, so a trend on the hourly chart is a run of higher highs and higher lows on the 5-minute chart.
 * **Capitulation (P8).** Deep in a sell-off the market can have a panic low: a sharp drop on huge volume and a fast
   rebound, after which the regime turns to recovery.
 * **The economy (N2-N4).** Growth, inflation, unemployment and a policy rate move slowly with the regime and produce
@@ -79,8 +98,36 @@ DEFAULTS = {
     "hold_strong_aligned": 0.05,                      # more for a strong level (3+ touches or round) in line with the trend (TA-A1)
     "level_approach_vol": 0.8,                        # the noise near a strong level while it is tested: the approach slows (TA-A1)
     "bounce_sigmas": 0.12, "bounce_seconds": 40,
+    # A holding level pushes until the price is `bounce_reach` bands away (2.5 until TA-A2), and a stock starts no new
+    # test within `test_gap_seconds` of the last: with the daily levels a stock is near some level most of the time, and
+    # bigger or more frequent bounces let "trade every level test" beat holding the market several times over.
+    "bounce_reach": 1.0, "test_gap_seconds": 600,
     "follow_sigmas": 0.45, "follow_seconds": 75, "false_break": 0.3,
     "capitulation_drawdown": 0.14, "capitulation_daily_chance": 0.3,
+    # TA-A2: levels from the daily chart and the strength each counts as (like touches of a swing level, 1 to 4)
+    "daily_levels": 1,
+    "strength_pdh": 2, "strength_pdl": 2, "strength_pdc": 1, "strength_dop": 1, "strength_hi52": 3, "strength_lo52": 3,
+    "strength_ma20": 1, "strength_ma50": 2, "strength_ma200": 3,
+    # TA-A4: volume. The volume while a breakout runs (on average lower on one that will fail), and the climax that may
+    # end a trend: a fast move the trend's way on very high volume. The last impulse of a trend has this much of the
+    # usual drift and volume (`exhaustion`): price makes a new high on less momentum and less volume.
+    "true_break_volume": 2.5, "false_break_volume": 1.9,
+    "climax_chance": 0.35, "climax_sigmas": 0.35, "climax_seconds": 150, "climax_volume": 4.0, "climax_noise": 1.4,
+    "exhaustion": 0.7,
+    # TA-A5: candles. A holding level pushes back up to (1 + wick_push) times harder once the price is through it; a
+    # trend that reverses turns with a burst the other way; the last `squeeze_share` of a range is quieter.
+    "wick_push": 2.0,
+    "reversal_sigmas": 0.3, "reversal_seconds": 120,
+    "squeeze_share": 0.2, "squeeze_noise": 0.6, "squeeze_volume": 0.65,
+    # TA-A3: chart patterns. Their size in daily sigmas, and how often each kind of moment starts one: a trend's end (a
+    # double top or bottom, a head and shoulders, a wedge), a range's start after a trend (a triangle), a trend's start
+    # (a channel, or before an up-trend a cup and handle) and an impulse leg in a trend (a flag)
+    "patterns": 1, "pattern_size": 2.5, "pattern_days": 2.0, "pattern_pull": 0.25, "pattern_noise": 0.85,
+    "pattern_end_chance": 0.22, "pattern_triangle_chance": 0.25,
+    "pattern_channel_chance": 0.1, "pattern_cup_chance": 0.08, "pattern_flag_chance": 0.07,
+    # TA-A6: intraday legs inside a trend's legs: they alternate, last 4 to 12 minutes and move about this many daily
+    # sigmas each (they add no drift of their own: the trend is the leg's)
+    "subleg_sigmas": 0.2, "subleg_min_seconds": 240, "subleg_max_seconds": 720,
     "release_sigmas": 0.3,                            # a 1-sd surprise moves the market about this many daily sigmas (0.55 until TA-E1)
     "release_noise": 0.5, "release_volume": 1.8,      # the burst of activity after a release (1.0 and 2.5 until TA-E1)
     # Stochastic volatility (MARKET_REALISM.md): the log of each listing's volatility is a sum of components with
@@ -97,6 +144,62 @@ DEFAULTS = {
 # How much more the market factor moves in each phase: stocks move together more in sell-offs (Longin and Solnik 2001,
 # Ang and Chen 2002), so the market's share of every stock's noise rises in a correction or a bear market.
 REGIME_MARKET_FACTOR = {"bull": 1.0, "sideways": 0.95, "correction": 1.35, "bear": 1.3, "recovery": 1.1}
+
+
+def _leg(level, lo, hi, noise=1.0, volume=1.0, shape="l"):
+    """One leg of a pattern: to `level` (in units of the pattern's size, from where it began) over `lo` to `hi` game days,
+    with this much of the usual noise and volume; `shape` "r" is rounded (a cup), "l" straight."""
+    return (level, (lo, hi), noise, volume, shape)
+
+
+# Chart patterns (TA-A3), each written pointing one way; the mirror image is made below. `dir` is the way it points (a
+# double top points down), `legs` its body, then the three endings and the odds of the first two (works, busted).
+_PATTERNS = {
+    "double_top": {"dir": -1, "legs": [_leg(-1.0, 3, 5, 1.0, 0.9), _leg(0.0, 3, 5, 1.0, 0.8)],
+                   "works": [_leg(-2.1, 3, 6, 1.1, 1.5)], "busted": [_leg(-1.25, 1, 2, 1.1, 1.4), _leg(0.5, 3, 5, 1.1, 1.3)],
+                   "fail": [_leg(0.7, 2, 4, 1.0, 1.2)], "odds": (0.35, 0.29), "size": 1.1},
+    "head_shoulders": {"dir": -1, "legs": [_leg(-0.8, 2, 4), _leg(0.6, 3, 5), _leg(-0.8, 3, 5, 1.0, 0.9), _leg(0.0, 2, 4, 1.0, 0.8)],
+                       "works": [_leg(-2.3, 3, 6, 1.1, 1.5)], "busted": [_leg(-1.05, 1, 2, 1.1, 1.4), _leg(0.45, 3, 5, 1.1, 1.3)],
+                       "fail": [_leg(0.8, 2, 4, 1.0, 1.2)], "odds": (0.39, 0.27), "size": 1.3},
+    "rising_wedge": {"dir": -1, "legs": [_leg(1.0, 3, 5), _leg(0.45, 2, 4), _leg(1.35, 2, 4, 0.9, 0.9), _leg(0.95, 2, 3, 0.85, 0.85),
+                                         _leg(1.55, 1, 3, 0.8, 0.75)],
+                     "works": [_leg(0.1, 3, 5, 1.1, 1.5)], "busted": [_leg(0.75, 1, 2, 1.1, 1.4), _leg(1.9, 2, 4, 1.1, 1.3)],
+                     "fail": [_leg(2.1, 2, 4, 1.0, 1.2)], "odds": (0.37, 0.27), "size": 1.3},
+    "ascending_triangle": {"dir": 1, "legs": [_leg(1.0, 2, 4, 1.0, 0.9), _leg(0.3, 2, 4, 0.95, 0.85), _leg(1.0, 2, 3, 0.85, 0.8),
+                                              _leg(0.6, 1, 3, 0.75, 0.7), _leg(1.0, 1, 2, 0.65, 0.65)],
+                           "works": [_leg(1.9, 2, 4, 1.1, 1.6)], "busted": [_leg(1.15, 1, 2, 1.1, 1.4), _leg(0.25, 2, 4, 1.1, 1.3)],
+                           "fail": [_leg(0.2, 2, 4, 1.0, 1.2)], "odds": (0.38, 0.27), "size": 1.2},
+    "symmetric_triangle_up": {"dir": 1, "legs": [_leg(-0.8, 2, 4, 1.0, 0.9), _leg(0.5, 2, 4, 0.9, 0.85), _leg(-0.45, 2, 3, 0.8, 0.8),
+                                                 _leg(0.25, 1, 3, 0.7, 0.7), _leg(-0.15, 1, 2, 0.6, 0.6)],
+                              "works": [_leg(1.1, 2, 4, 1.1, 1.6)], "busted": [_leg(0.4, 1, 2, 1.1, 1.4), _leg(-0.9, 2, 4, 1.1, 1.3)],
+                              "fail": [_leg(-1.0, 2, 4, 1.0, 1.2)], "odds": (0.37, 0.27), "size": 1.3},
+    "bull_flag": {"dir": 1, "legs": [_leg(1.0, 1, 2, 1.2, 1.8), _leg(0.75, 2, 4, 0.6, 0.55)],
+                  "works": [_leg(1.9, 2, 4, 1.1, 1.6)], "busted": [_leg(1.1, 1, 2, 1.1, 1.4), _leg(0.35, 2, 3, 1.1, 1.3)],
+                  "fail": [_leg(0.3, 2, 3, 1.0, 1.2)], "odds": (0.38, 0.28), "size": 1.0},
+    "cup_handle": {"dir": 1, "legs": [_leg(-1.0, 5, 9, 0.9, 0.8, "r"), _leg(0.0, 5, 9, 0.9, 0.9, "r"), _leg(-0.5, 2, 4, 0.7, 0.6)],
+                   "works": [_leg(1.0, 3, 5, 1.1, 1.6)], "busted": [_leg(0.15, 1, 2, 1.1, 1.4), _leg(-0.6, 3, 5, 1.1, 1.3)],
+                   "fail": [_leg(-0.7, 3, 5, 1.0, 1.2)], "odds": (0.38, 0.27), "size": 2.0},
+    "up_channel": {"dir": 1, "legs": [_leg(1.0, 2, 4), _leg(0.45, 2, 3), _leg(1.45, 2, 4), _leg(0.9, 2, 3), _leg(1.9, 2, 4),
+                                      _leg(1.35, 2, 3)],
+                   "works": [_leg(2.4, 3, 5)], "busted": [_leg(2.0, 1, 2), _leg(0.8, 2, 4)], "fail": [_leg(0.6, 2, 4)],
+                   "odds": (0.37, 0.25), "size": 1.4},
+}
+
+
+def _mirror(spec):
+    flip = lambda legs: [(-lv, days, nz, vol, shape) for lv, days, nz, vol, shape in legs]
+    return {"dir": -spec["dir"], "legs": flip(spec["legs"]), "works": flip(spec["works"]), "busted": flip(spec["busted"]),
+            "fail": flip(spec["fail"]), "odds": spec["odds"], "size": spec["size"]}
+
+
+PATTERNS = dict(_PATTERNS)
+for _a, _b, _odds in (("double_top", "double_bottom", (0.39, 0.28)), ("head_shoulders", "inverse_head_shoulders", (0.41, 0.27)),
+                      ("rising_wedge", "falling_wedge", None), ("ascending_triangle", "descending_triangle", None),
+                      ("symmetric_triangle_up", "symmetric_triangle_down", None), ("bull_flag", "bear_flag", None),
+                      ("up_channel", "down_channel", None)):
+    PATTERNS[_b] = _mirror(_PATTERNS[_a])
+    if _odds:
+        PATTERNS[_b]["odds"] = _odds
 
 
 class AR:
@@ -188,9 +291,14 @@ class Swing:
         self.mode, self.dir, self.until = "free", 0, now
         self.leg, self.leg_until = "impulse", now
         self.center = math.log(max(price, 1e-9))
-        self.burst = None                      # [dir, start, end, size]: a breakout from a range
+        self.bursts = []                       # [dir, start, end, size, noise, volume]: a breakout, a climax, a reversal
+        self.mode_start = now
+        self.sub = None                        # [dir, start, end, size]: the intraday leg under way (TA-A6)
         self.bars = deque(maxlen=400)          # [start, high, low, close]
-        self.levels = []                       # [price, strength, round?]
+        self.days = deque(maxlen=370)          # regular-session game days [start, open, high, low, close] (TA-A2)
+        self.today = None                      # today's session while it is under way
+        self.dlev = []                         # (price, strength, kind) from the daily chart
+        self.levels = []                       # [price, strength, round?, kind]
         self.test = None
         self.tested = deque(maxlen=12)         # [time, level price] of recent tests
         self.anchor = math.log(max(price, 1e-9))
@@ -200,16 +308,18 @@ class Swing:
         self.vmin, self.vmin_t = 0.0, -1        # this minute's volume noise
         self.last_price = price
         self.m = 1.0                            # the volatility multiplier last applied
+        self.pat = None                         # the chart pattern under way (TA-A3)
 
     def dump(self):
         return {"mode": self.mode, "dir": self.dir, "until": self.until, "leg": self.leg, "leg_until": self.leg_until,
-                "center": self.center, "burst": self.burst, "anchor": self.anchor, "test": self.test,
-                "tested": list(self.tested)}
+                "center": self.center, "bursts": self.bursts, "anchor": self.anchor, "test": self.test,
+                "tested": list(self.tested), "mode_start": self.mode_start, "sub": self.sub, "pat": self.pat}
 
     def load(self, d):
-        for k in ("mode", "dir", "until", "leg", "leg_until", "center", "burst", "anchor", "test"):
+        for k in ("mode", "dir", "until", "leg", "leg_until", "center", "anchor", "test", "mode_start", "sub", "pat"):
             if k in d:
                 setattr(self, k, d[k])
+        self.bursts = [list(b) for b in d.get("bursts", [])]    # (an older save's single "burst" lasted 90 s: dropped)
         self.tested = deque((list(x) for x in d.get("tested", [])), maxlen=12)
 
 
@@ -436,6 +546,7 @@ class MarketModel:
         self.next_release = None
         self.earn_forecast = {}          # ticker -> [report time, forecast EPS] (set by the engine, saved here)
         self.t = now
+        self.trace = None                # a list to collect (time, ticker, what, direction) in: for realism.py and tests
 
     # ------------------------------------------------------------------ helpers
     def _regime_length(self, name):
@@ -485,13 +596,17 @@ class MarketModel:
         sell-offs)."""
         return REGIME_MARKET_FACTOR.get(self.regime, 1.0)
 
-    def step(self, now, dt, listings, activity=1.0):
+    def step(self, now, dt, listings, activity=1.0, sessions=None):
         """Returns ({ticker: extra return}, {ticker: noise multiplier}, {ticker: volume multiplier}) for `dt` seconds.
         `activity` is how busy trading is right now compared with a normal second (the session factor): the swings'
         and the levels' pushes are scaled by it, so they do not run as steady drifts through the thin pre-market and
-        after-hours (where they made one-minute returns trend)."""
+        after-hours (where they made one-minute returns trend). `sessions` is (pre-market, after-hours) in seconds: the
+        regular session between them is when levels are tested and the game days are kept (none: always regular)."""
         dt = max(0.0, float(dt))
         self.t = now
+        pre, post = sessions if sessions else (0.0, 0.0)
+        phase = now % DAY
+        in_session = pre <= phase < DAY - post
         listings = [x for x in listings if getattr(x, "asset_type", "equity") != "index" and x.price > 0]
         self._regime_step(now)
         self._economy_step(now, dt, listings)
@@ -509,6 +624,8 @@ class MarketModel:
         rev = math.log(2) / (self.p["anchor_halflife_days"] * DAY)
         for x in listings:
             sw = self.swing(x, now)
+            if self.p["daily_levels"] and self._day_step(sw, now, x.price, in_session):
+                self._find_levels(sw, x.price)
             mu = self.drift_of(x, self.p)
             beta = getattr(x, "beta", 1.0)
             lp = math.log(x.price)
@@ -520,8 +637,8 @@ class MarketModel:
             # Levels and breakouts are sized in today's volatility, not the stock's average (traders size them in ATR):
             # a fixed size would dwarf the noise in calm spells and turn every reaction into a little trend.
             sig_now = sig_d * sw.m
-            r2, n2, v2 = self._mode_step(x, sw, now, dt, lp, sig_now, rd)
-            r3, n3, v3 = self._level_step(x, sw, now, dt, lp, sig_now)
+            r2, n2, v2 = self._mode_step(x, sw, now, dt, lp, sig_now, rd, act)
+            r3, n3, v3 = self._level_step(x, sw, now, dt, lp, sig_now, in_session)
             # stochastic volatility: the last second's move, in units of its expected size, feeds the fast and medium
             # components with the opposite sign (a fall raises volatility, a rise lowers it a little)
             if dt and sw.last_price > 0:
@@ -569,60 +686,199 @@ class MarketModel:
         self.regime_until = now + self._regime_length(self.regime)
 
     # ------------------------------------------------------------------ trends, ranges and breakouts
-    def _mode_step(self, x, sw, now, dt, lp, sig_d, rd):
+    def _mode_step(self, x, sw, now, dt, lp, sig_d, rd, act=1.0):
         p = self.p
-        if now >= sw.until:
-            self._next_mode(x, sw, now, lp, rd)
+        if sw.mode == "pattern" and sw.pat is None:     # (a save from a version that had none)
+            sw.mode, sw.until = "free", now
+        if sw.mode != "pattern" and now >= sw.until:
+            self._next_mode(x, sw, now, lp, rd, sig_d)
         r, n, v = 0.0, 1.0, 1.0
-        if sw.mode == "trend":
+        if sw.mode == "pattern":
+            r, n, v = self._pattern_step(x, sw, now, dt, lp)
+        elif sw.mode == "trend":
             if now >= sw.leg_until:
                 sw.leg = "pullback" if sw.leg == "impulse" else "impulse"
+                if self.trace is not None:
+                    self.trace.append((now, x.ticker, sw.leg, sw.dir))
                 days = self.rng.uniform(2, 5) if sw.leg == "impulse" else self.rng.uniform(1, 2.5)
                 sw.leg_until = now + days * DAY
+                if (sw.leg == "impulse" and p["patterns"] and sw.leg_until < sw.until
+                        and self.rng.random() < p["pattern_flag_chance"]):         # a sharp move that pauses: a flag
+                    self._start_pattern(x, sw, now, lp, sig_d, "bull_flag" if sw.dir > 0 else "bear_flag")
+                    return 0.0, 1.0, 1.0
             k = 3.5 if sw.leg == "impulse" else -0.9               # averages about 2: p["trend_strength"]
-            r += sw.dir * k * p["trend_strength"] / 2.0 * x.vol * self.vol_scale * dt / YEAR
             v = 1.15 if sw.leg == "impulse" else 0.85
+            if sw.leg == "impulse" and sw.leg_until >= sw.until:   # the trend's last push: weaker, on less volume (TA-A4)
+                k *= p["exhaustion"]
+                v *= p["exhaustion"]
+            r += sw.dir * k * p["trend_strength"] / 2.0 * x.vol * self.vol_scale * dt / YEAR
+            r += self._subleg(sw, now, dt, sig_d, act)
         elif sw.mode == "range":
             hl = p["range_halflife_days"] * DAY
             r += (sw.center - lp) * (math.log(2) / hl) * dt
             n, v = p["range_noise"], p["range_volume"]
-        if sw.burst:
-            d, start, end, size = sw.burst
-            if now >= end:
-                sw.burst = None
-            else:
-                r += d * size * sig_d * dt / (end - start)
-                n, v = n * p["breakout_noise"], v * p["breakout_volume"]
+            if now > sw.until - p["squeeze_share"] * (sw.until - sw.mode_start):   # the squeeze before the breakout (TA-A5)
+                n, v = n * p["squeeze_noise"], v * p["squeeze_volume"]
+        if sw.bursts:
+            keep = []
+            for b in sw.bursts:
+                d, start, end, size, bn, bv = b
+                if now >= end:
+                    continue
+                keep.append(b)
+                if now >= start:
+                    r += d * size * dt / (end - start)       # (`size` is in log price, fixed when the burst began)
+                    n, v = n * bn, v * bv
+            sw.bursts = keep
         return r, n, v
 
-    def _next_mode(self, x, sw, now, lp, rd):
+    # ------------------------------------------------------------------ chart patterns (TA-A3)
+    def _start_pattern(self, x, sw, now, lp, sig_d, kind):
+        spec = PATTERNS[kind]
+        sw.mode, sw.dir, sw.mode_start, sw.sub = "pattern", spec["dir"], now, None
+        # sized in the stock's usual daily move, not the moment's volatility: a pattern spans days, and one begun in a calm
+        # spell came out too small to see. The usual move is read off its own game days (as a trader reads the average
+        # range), because its stated volatility can be well below what it really does (a high-beta stock's market part)
+        usual = self._daily_move(sw, x)
+        sw.pat = {"kind": kind, "S": self.p["pattern_size"] * spec["size"] * usual * self.rng.uniform(0.8, 1.25), "base": lp,
+                  "legs": [list(leg) for leg in spec["legs"]], "stage": "body", "cur": None, "ending": None, "start": now}
+        self._note(now, x, "pattern:" + kind, spec["dir"])
+
+    def _daily_move(self, sw, x):
+        """The standard deviation of the listing's game-day closes over the last 60 days (its stated volatility until it
+        has 20)."""
+        days = list(sw.days)[-61:]
+        if len(days) >= 21:
+            r = [math.log(b[4] / a[4]) for a, b in zip(days, days[1:]) if a[4] > 0 and b[4] > 0]
+            if len(r) >= 20:
+                m = sum(r) / len(r)
+                return math.sqrt(sum((v - m) ** 2 for v in r) / (len(r) - 1))
+        return x.vol * self.vol_scale / math.sqrt(365)
+
+    def _pattern_step(self, x, sw, now, dt, lp):
+        """Follow the pattern's legs loosely: each leg's path runs from where the price was when it began to its level,
+        and the price is pulled towards the path (with a time constant of a quarter of the leg) while the noise goes on,
+        a little quieter than usual."""
+        pt = sw.pat
+        spec = PATTERNS[pt["kind"]]
+        cur = pt["cur"]
+        if cur is None or now >= cur[2]:
+            if not pt["legs"]:
+                if pt["stage"] == "body":                 # the body is done: how it ends is drawn now
+                    works, busted = spec["odds"]
+                    u = self.rng.random()
+                    pt["ending"] = "works" if u < works else "busted" if u < works + busted else "fail"
+                    pt["stage"], pt["legs"] = "end", [list(leg) for leg in spec[pt["ending"]]]
+                    self._note(now, x, "outcome:" + pt["ending"], spec["dir"])
+                else:
+                    self._end_pattern(x, sw, now)
+                    return 0.0, 1.0, 1.0
+            level, days, nz, vol, shape = pt["legs"].pop(0)
+            cur = pt["cur"] = [pt["base"] + level * pt["S"], now,
+                               now + self.rng.uniform(days[0], days[1]) * self.p["pattern_days"] * DAY, lp,
+                               nz, vol, shape]
+        target, t0, t1, lp0, nz, vol, shape = cur
+        span = max(t1 - t0, 1.0)
+        u = min(1.0, max(0.0, (now - t0) / span))
+        if shape == "r":                                  # rounded: slow at both ends (the bottom of a cup)
+            f, fp = (1 - math.cos(math.pi * u)) / 2, math.pi / 2 * math.sin(math.pi * u)
+        else:
+            f, fp = u, 1.0
+        path = lp0 + (target - lp0) * f
+        tau = max(self.p["pattern_pull"] * span, 0.5 * DAY)     # (never a sharp pull: that made 5-minute jumps)
+        r = (target - lp0) * fp / span * dt + (path - lp) * dt / tau
+        return r, nz * self.p["pattern_noise"], vol
+
+    def _end_pattern(self, x, sw, now):
+        """After a pattern: a trend the way it broke (its own way if it worked, the other way if not)."""
+        pt = sw.pat
+        final = PATTERNS[pt["kind"]]["dir"] * (1 if pt["ending"] == "works" else -1)
+        sw.pat = None
+        sw.mode, sw.dir, sw.mode_start, sw.sub = "trend", final, now, None
+        sw.until = now + self.rng.uniform(8, 30) * DAY
+        sw.leg, sw.leg_until = "impulse", now + self.rng.uniform(2, 5) * DAY
+        self._note(now, x, "trend", final)
+
+    def _note(self, now, x, what, d):
+        if self.trace is not None:
+            self.trace.append((now, x.ticker, what, d))
+
+    def _subleg(self, sw, now, dt, sig_d, act):
+        """The intraday leg under way (TA-A6): legs of 4 to 12 minutes that alternate up and down around the trend, so
+        the 5-minute chart of a trend is a run of higher highs and higher lows. Each moves about `subleg_sigmas` daily
+        sigmas (in today's volatility); up and down legs are the same size on average, so they add no drift."""
+        p = self.p
+        sb = sw.sub
+        if sb is None or now >= sb[2]:
+            d = -sb[0] if sb else (1 if self.rng.random() < 0.5 else -1)
+            sb = sw.sub = [d, now, now + self.rng.uniform(p["subleg_min_seconds"], p["subleg_max_seconds"]),
+                           p["subleg_sigmas"] * self.rng.uniform(0.6, 1.4) * sig_d]
+        return sb[0] * sb[3] * dt / (sb[2] - sb[1])      # (the caller scales it with the session's activity)
+
+    def _next_mode(self, x, sw, now, lp, rd, sig_d):
         rng = self.rng
+        p = self.p
         lean = 0.12 * self.regime_sign()
+        start = now
+        before = sw.mode
+        if sw.mode == "trend" and p["patterns"] and sw.dir and rng.random() < p["pattern_end_chance"]:
+            # the trend ends in a reversal pattern: a double top or bottom, a head and shoulders or a wedge
+            u = rng.random()
+            kind = ("double_top" if u < 0.45 else "head_shoulders" if u < 0.75 else "rising_wedge") if sw.dir > 0 else \
+                   ("double_bottom" if u < 0.45 else "inverse_head_shoulders" if u < 0.75 else "falling_wedge")
+            self._start_pattern(x, sw, now, lp, sig_d, kind)
+            return
         if sw.mode == "range":                         # a range ends in a breakout
             d = 1 if rng.random() < 0.5 + lean else -1
-            sw.burst = [d, now, now + self.p["breakout_seconds"], self.p["breakout_sigmas"]]
+            sw.bursts.append([d, now, now + p["breakout_seconds"], p["breakout_sigmas"] * sig_d, p["breakout_noise"],
+                              p["breakout_volume"]])
+            self._note(now, x, "breakout", d)
             if rng.random() < 0.65:
                 sw.mode, sw.dir = "trend", d
             else:
                 sw.mode, sw.dir = "free", 0
         elif sw.mode == "trend":
+            old = sw.dir
+            if rng.random() < p["climax_chance"]:     # the trend ends in a climax: a fast move its way on huge volume
+                sw.bursts.append([old, now, now + p["climax_seconds"], p["climax_sigmas"] * sig_d, p["climax_noise"],
+                                  p["climax_volume"]])
+                self._note(now, x, "climax", old)
+                start = now + p["climax_seconds"]
             r = rng.random()
             sideways = self.regime == "sideways"
             if r < (0.6 if sideways else 0.45):
+                if p["patterns"] and old and rng.random() < p["pattern_triangle_chance"]:   # a range that narrows: a triangle
+                    kind = (("ascending_triangle" if old > 0 else "descending_triangle") if rng.random() < 0.5 else
+                            ("symmetric_triangle_up" if old > 0 else "symmetric_triangle_down"))
+                    self._start_pattern(x, sw, now, lp, sig_d, kind)
+                    return
                 sw.mode, sw.center = "range", lp
             elif r < 0.8:
                 sw.mode, sw.dir = "free", 0
             else:
-                sw.dir = -sw.dir                        # a reversal
+                sw.dir = -sw.dir                        # a reversal, which turns with a burst the other way (TA-A5)
+                sw.bursts.append([sw.dir, start, start + p["reversal_seconds"], p["reversal_sigmas"] * sig_d, 1.3, 2.0])
+                self._note(start, x, "reversal", sw.dir)
         else:
             range_odds = 0.65 if self.regime == "sideways" else 0.45
             if rng.random() < range_odds:
                 sw.mode, sw.center = "range", lp
             else:
                 sw.mode, sw.dir = "trend", (1 if rng.random() < 0.5 + lean else -1)
+        if sw.mode == "trend" and before != "trend" and p["patterns"]:     # a trend that begins in a channel, or a cup
+            u = rng.random()
+            if u < p["pattern_channel_chance"]:
+                self._start_pattern(x, sw, now, lp, sig_d, "up_channel" if sw.dir > 0 else "down_channel")
+                return
+            if sw.dir > 0 and u < p["pattern_channel_chance"] + p["pattern_cup_chance"]:
+                self._start_pattern(x, sw, now, lp, sig_d, "cup_handle")
+                return
         days = {"trend": (8, 30), "range": (10, 35), "free": (4, 15)}[sw.mode]
+        sw.mode_start = now
+        self._note(now, x, sw.mode, sw.dir)
         sw.until = now + rng.uniform(*days) * DAY
         sw.leg, sw.leg_until = "impulse", now + rng.uniform(2, 5) * DAY
+        sw.sub = None
 
     # ------------------------------------------------------------------ support and resistance
     def _bar(self, sw, now, price):
@@ -635,16 +891,62 @@ class MarketModel:
         if len(sw.bars) % 3 == 0 or len(sw.bars) < 3:   # every 15 minutes is plenty
             self._find_levels(sw, price)
 
-    def seed_bars(self, ticker, bars):
-        """Rebuild a listing's bars from the engine's 5-minute candles after a restart ([t, o, h, l, c, ...])."""
+    def seed_bars(self, ticker, bars, days=(), today=None):
+        """Rebuild a listing's bars from the engine's 5-minute candles after a restart ([t, o, h, l, c, ...]), and its
+        game days from the engine's game-day candles (with today's session, if one is under way)."""
         sw = self.swings.get(ticker)
         if sw is None:
             return
         sw.bars.clear()
         for c in list(bars)[-400:]:
             sw.bars.append([c[0], c[2], c[3], c[4]])
+        sw.days.clear()
+        for c in list(days)[-370:]:
+            sw.days.append([c[0], c[1], c[2], c[3], c[4]])
+        sw.today = [today[0], today[1], today[2], today[3], today[4]] if today else None
+        self._daily_levels(sw)
         if sw.bars:
             self._find_levels(sw, sw.bars[-1][3])
+
+    def _day_step(self, sw, now, price, in_session):
+        """Keep the listing's regular-session game days. True when the daily levels changed (a session opened or
+        closed)."""
+        if in_session:
+            t0 = int(now // DAY) * DAY
+            d = sw.today
+            if d is not None and d[0] == t0:
+                d[2], d[3], d[4] = max(d[2], price), min(d[3], price), price
+                return False
+            if d is not None:
+                sw.days.append(d)
+            sw.today = [t0, price, price, price, price]
+        elif sw.today is not None:
+            sw.days.append(sw.today)
+            sw.today = None
+        else:
+            return False
+        self._daily_levels(sw)
+        return True
+
+    def _daily_levels(self, sw):
+        """The levels a trader reads off the daily chart (TA-A2): the previous game day's high, low and close (the close
+        is where an opening gap fills: TA-A7), today's open, the 52-week high and low (once there are 60 game days to
+        look back on) and the 20, 50 and 200-day averages of the closes."""
+        p = self.p
+        out = []
+        if sw.days:
+            last = sw.days[-1]
+            out += [(last[2], "pdh"), (last[3], "pdl"), (last[4], "pdc")]
+        if sw.today is not None:
+            out.append((sw.today[1], "dop"))
+        if len(sw.days) >= 60:
+            year = list(sw.days)[-364:]
+            out += [(max(d[2] for d in year), "hi52"), (min(d[3] for d in year), "lo52")]
+        closes = [d[4] for d in sw.days]
+        for n in (20, 50, 200):
+            if len(closes) >= n:
+                out.append((sum(closes[-n:]) / n, f"ma{n}"))
+        sw.dlev = [(price, float(p["strength_" + kind]), kind) for price, kind in out if price > 0]
 
     def _find_levels(self, sw, price, k=4):
         bars = list(sw.bars)
@@ -664,7 +966,7 @@ class MarketModel:
                 lv[0] = (lv[0] * lv[1] + pv) / (lv[1] + 1)
                 lv[1] += 1
             else:
-                levels.append([pv, 1, False])
+                levels.append([pv, 1, False, "swing"])
         step = round_step(price)
         for rn in (math.floor(price / step) * step, math.ceil(price / step) * step):
             if rn <= 0:
@@ -673,17 +975,40 @@ class MarketModel:
             if near:
                 near[2] = True
             else:
-                levels.append([rn, 0, True])
+                levels.append([rn, 0, True, "round"])
+        # the daily chart's levels: on top of a swing level or a round number they add up (a confluence)
+        for dp, st, kind in sw.dlev:
+            near = next((lv for lv in levels if abs(lv[0] / dp - 1) < tol), None)
+            if near:
+                near[1] = min(6, near[1] + st)
+                if kind not in near[3].split("+"):
+                    near[3] = kind if near[3] == "round" else near[3] + "+" + kind
+            else:
+                levels.append([dp, st, False, kind])
         sw.levels = levels
 
-    def _level_step(self, x, sw, now, dt, lp, sig_d):
+    def _level_step(self, x, sw, now, dt, lp, sig_d, regular=True):
         p = self.p
         band = p["level_band_sigmas"] * sig_d
         t = sw.test
+        if not regular:
+            # Levels are tested in the regular session only. In the thin pre-market and after-hours the noise is a third
+            # of its size, so a level due to break was seldom reached before its test ran out, while a level due to hold
+            # still pushed the price away: trading every level test earned twice what holding the market did.
+            if t is not None and not t.get("crossed"):
+                sw.test = None
+            if sw.test is None:
+                return 0.0, 1.0, 1.0
+            t = sw.test
         if t is None:
-            t = self._start_test(x, sw, now, lp, band)
+            t = self._start_test(x, sw, now, lp, band, sig_d)
             if t is None:
                 return 0.0, 1.0, 1.0
+        # Every reaction is sized in the volatility of the moment the test began, not of each second: with the leverage
+        # effect a fall raises volatility, so a push sized second by second grew as it pushed down and shrank as it
+        # pushed up, and with many levels that bias added up to a steady fall.
+        sig_d = t.get("sig", sig_d)
+        band = p["level_band_sigmas"] * sig_d
         lvl, side = math.log(t["level"]), t["side"]      # side +1: support below the price; -1: resistance above
         rel = (lp - lvl) * side                           # >0: still on the near side; <0: through the level
         push = p["bounce_sigmas"] * sig_d / p["bounce_seconds"]
@@ -692,10 +1017,12 @@ class MarketModel:
                 t["outcome"] = "pierced"                  # (counted as a break; no follow-through push: pushing every
                 sw.test = None                            # crossing the noise makes turned volatile spells into trends)
                 return 0.0, 1.0, 1.0
-            if rel > 2.5 * band or now > t["until"]:
+            if rel > p["bounce_reach"] * band or now > t["until"]:
                 sw.test = None
                 return 0.0, 1.0, 1.0
-            return side * push * dt, (p["level_approach_vol"] if t["strength"] >= 3 or t["round"] else 1.0), 1.3
+            # once the price is through the level the push back is harder: the wick of a rejection (TA-A5)
+            wick = 1.0 + p["wick_push"] * min(1.0, max(0.0, -rel) / band) if band > 0 else 1.0
+            return side * push * wick * dt, (p["level_approach_vol"] if t["strength"] >= 3 or t["round"] else 1.0), 1.3
         # a break
         if not t.get("crossed"):
             if rel <= 0:
@@ -715,11 +1042,14 @@ class MarketModel:
             sw.test = None
             return 0.0, 1.0, 1.0
         follow = p["follow_sigmas"] * sig_d / p["follow_seconds"]
-        return -side * follow * dt, 1.25, 2.5
+        # a breakout that will fail comes on less volume than one that will run (on average: TA-A4)
+        return -side * follow * dt, 1.25, (p["false_break_volume"] if t.get("false") else p["true_break_volume"])
 
-    def _start_test(self, x, sw, now, lp, band):
+    def _start_test(self, x, sw, now, lp, band, sig_d):
+        if sw.tested and now - sw.tested[-1][0] < self.p["test_gap_seconds"]:
+            return None
         best = None
-        for price, strength, rnd in sw.levels:
+        for price, strength, rnd, kind in sw.levels:
             if strength < 1:                                 # a bare round number is not a level until price has turned there
                 continue
             d = lp - math.log(price)
@@ -730,10 +1060,10 @@ class MarketModel:
             else:
                 continue
             if best is None or abs(d) < abs(best[1]):
-                best = (price, d, side, strength, rnd)
+                best = (price, d, side, strength, rnd, kind)
         if best is None:
             return None
-        price, d, side, strength, rnd = best
+        price, d, side, strength, rnd, kind = best
         if any(abs(price / lv - 1) < 0.002 and now - ts < 1200 for ts, lv in sw.tested):
             return None                                      # this level was just tested: let it go
         repeats = sum(1 for ts, lv in sw.tested if abs(price / lv - 1) < 0.004 and now - ts < 3 * DAY)
@@ -749,7 +1079,7 @@ class MarketModel:
         sw.tested.append([now, price])
         sw.test = {"level": price, "side": side, "outcome": "hold" if hold else "break", "until": now + 900,
                    "false": false, "fail_after": self.rng.uniform(60, 240), "p_hold": round(p_hold, 2),
-                   "strength": strength, "round": rnd, "start": now}
+                   "strength": strength, "round": rnd, "start": now, "kind": kind, "sig": sig_d}
         return sw.test
 
     # ------------------------------------------------------------------ macro releases and panics

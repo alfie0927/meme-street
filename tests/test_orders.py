@@ -127,7 +127,6 @@ class TriggerTests(unittest.TestCase):
             e, p, s = setup(13)
             e.trade(p, TK, "buy", 0.4)
             step(e, 2)
-            held = p.hold[TK]
             self.assertTrue(e.place_order(p, TK, kind, s.price * mult)[0])
             s.fair = s.price * mult * (0.999 if mult < 1 else 1.001)
             e.tick(now=e.now + 1)
@@ -356,7 +355,6 @@ class NoEdgeTests(unittest.TestCase):
     def test_a_bracket_round_trip_costs_only_fees_on_average(self):
         """The price is a fair bet, so a take-profit and stop-loss around a position win and lose in equal measure:
         what is left is the fees."""
-        rng = random.Random(7)
         gains = []
         for k in range(120):
             random.seed(1000 + k)

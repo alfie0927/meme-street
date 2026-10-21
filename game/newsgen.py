@@ -230,7 +230,7 @@ ISSUE_KINDS = [
         "{name} will retire {pct}% of its shares after a strong quarter",
         "Board of {name} approves a {pct}% share repurchase"]),
 ]
-KINDS_BY_SIGN = {1: [k for k in ISSUE_KINDS if k["sign"] > 0], -1: [k for k in ISSUE_KINDS if k["sign"] < 0]}
+KINDS_BY_SIGN = {1: [k for k in ISSUE_KINDS if k["sign"] == 1], -1: [k for k in ISSUE_KINDS if k["sign"] == -1]}
 
 # ----------------------------------------------------------------------------------------------------------
 # Scheduled company events between earnings reports: a guidance update, an investor day, an analyst call, a product

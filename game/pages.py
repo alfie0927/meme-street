@@ -8,6 +8,7 @@ import paths
 from netutil import TICKER_RENAMES
 
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png"}
+SCRIPTS = {"chart.js"}                               # the page's own scripts in web/ (the chart: ROADMAP TA-F2)
 
 
 def add_pages(app):
@@ -26,6 +27,14 @@ def add_pages(app):
         if os.path.exists(path):
             return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
         return JSONResponse({"error": "not found"}, status_code=404)
+
+    @app.get("/js/{name}")
+    async def script_file(name: str):
+        """The page's scripts. Checked against the browser's copy on every load (no-cache), so a new version is picked
+        up at once and an unchanged one costs a 304."""
+        if name not in SCRIPTS:
+            return JSONResponse({"error": "not found"}, status_code=404)
+        return FileResponse(os.path.join(web, name), media_type="text/javascript", headers={"Cache-Control": "no-cache"})
 
     @app.get("/admin")
     async def admin_page():

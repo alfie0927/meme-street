@@ -67,7 +67,7 @@ if ($WithGame) {
 
 # --- the code
 $files = @("requirements.txt")
-foreach ($part in @(@("game", "*.py"), @("web", "*.html"), @("content", "*.json"), @("tools", "*.py"), @("deploy", "*"))) {
+foreach ($part in @(@("game", "*.py"), @("web", "*.html"), @("web", "*.js"), @("content", "*.json"), @("tools", "*.py"), @("deploy", "*"))) {
     $files += Get-ChildItem -File -Path $part[0] -Filter $part[1] | ForEach-Object { $part[0] + "/" + $_.Name }
 }
 foreach ($logo in "brand/memestreet_logo_peaks.png", "brand/memestreet_header_peaks.png") {
@@ -120,7 +120,7 @@ if ($LASTEXITCODE -ne 0) { throw "The server did not finish the update (see the 
 # --- the saved game (once, to move it here)
 if ($WithGame) {
     $game = @()
-    foreach ($f in "state.json", "state.charts.json", "ledger.db", "ledger.db-wal", "ledger.db-shm") {
+    foreach ($f in "state.json", "state.charts.json", "ledger.db", "ledger.db-wal", "ledger.db-shm", "history.db", "history.db-wal", "history.db-shm") {
         if (Test-Path "data/$f") { $game += "data/$f" }
     }
     if ($game.Count -eq 0) { throw "There is no saved game (data\state.json) on this computer." }
@@ -131,7 +131,7 @@ if ($WithGame) {
     & $tar -czf $garchive -T $glist
     scp $garchive "${Server}:/tmp/memestreet-game.tgz"
     $remote = "systemctl stop memestreet-gateway memestreet 2>/dev/null; cd /opt/memestreet && "
-    $remote += "rm -f state.json state.charts.json ledger.db ledger.db-wal ledger.db-shm data/state.json data/state.charts.json data/ledger.db data/ledger.db-wal data/ledger.db-shm && "
+    $remote += "rm -f state.json state.charts.json ledger.db ledger.db-wal ledger.db-shm data/state.json data/state.charts.json data/ledger.db data/ledger.db-wal data/ledger.db-shm data/history.db* data/minutes.db* && "
     $remote += "tar -xzf /tmp/memestreet-game.tgz && rm /tmp/memestreet-game.tgz; "
     if ($installed) { $remote += "bash /opt/memestreet/deploy/update_server.sh; " }
     $remote += "id memestreet >/dev/null 2>&1 && chown -R memestreet:memestreet /opt/memestreet; "

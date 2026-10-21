@@ -279,7 +279,7 @@ class OfferingTests(unittest.TestCase):
         self.assertEqual(row["price"], round(s.price, 4))
 
     def test_positions_dividends_and_money_are_untouched(self):
-        e, s = self.e, self.s
+        e = self.e
         p = join(e, "holder1")
         e.trade(p, "CLDR", "buy", 0.3)
         held, cash, value = p.hold["CLDR"], p.cash, e.equity(p)

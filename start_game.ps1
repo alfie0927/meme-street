@@ -19,7 +19,7 @@ if (-not (Test-Path $keyFile)) {
     Set-Content -Path $keyFile -Value (($bytes | ForEach-Object { $_.ToString("x2") }) -join "") -NoNewline -Encoding ascii
 }
 if ($Fresh) {
-    $save = @("state.json", "state.charts.json", "ledger.db", "ledger.db-wal", "ledger.db-shm") | Where-Object { Test-Path (Join-Path $data $_) }
+    $save = @("state.json", "state.charts.json", "ledger.db", "ledger.db-wal", "ledger.db-shm", "history.db", "history.db-wal", "history.db-shm", "minutes.db", "minutes.db-wal", "minutes.db-shm") | Where-Object { Test-Path (Join-Path $data $_) }
     if ($save) {
         $dest = Join-Path $data ("backups\before_fresh_" + (Get-Date -Format "yyyyMMdd_HHmmss"))
         New-Item -ItemType Directory -Force $dest | Out-Null

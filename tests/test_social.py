@@ -269,7 +269,6 @@ class QuestTests(unittest.TestCase):
 
     def force(self, ids):
         """Pin today's quests to a given set so tests don't depend on the date."""
-        day = int(self.e.now // DAY)
         table = {q[0]: q for q in social.QUESTS}
         quests = []
         for qid in ids:
@@ -603,7 +602,7 @@ class ProfileAndFollowTests(unittest.TestCase):
         self.assertEqual(len(prof["badges"]), 1)
 
     def test_follow_unfollow_and_limits(self):
-        e, p, q = self.e, self.p, self.q
+        e, q = self.e, self.q
         self.assertTrue(e.follow(q, "visible")[0])
         self.assertFalse(e.follow(q, "visible")[0])
         self.assertFalse(e.follow(q, "viewer")[0])
@@ -626,7 +625,7 @@ class ProfileAndFollowTests(unittest.TestCase):
         self.assertIn("at most", msg)
 
     def test_following_for_returns_profiles(self):
-        e, p, q = self.e, self.p, self.q
+        e, q = self.e, self.q
         e.follow(q, "visible")
         rows = e.following_for(q)
         self.assertEqual([r["name"] for r in rows], ["visible"])

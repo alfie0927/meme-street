@@ -21,7 +21,7 @@ folder the game is started from.
 | Folder | What is in it |
 |---|---|
 | `game/` | The Python code the server runs (§2) |
-| `web/` | The pages: `index.html` (the whole player site), `admin.html` (`/admin`), `about.html` (`/about`), `shop_pay.html` (the pretend checkout in test mode, `/shop/pay`) |
+| `web/` | The pages: `index.html` (the whole player site) and its chart, `chart.js`, `admin.html` (`/admin`), `about.html` (`/about`), `shop_pay.html` (the pretend checkout in test mode, `/shop/pay`) |
 | `content/` | The content packs: every `.json` file here is read at start and reloaded within a second when it changes (settings, sectors, companies, news templates, lessons) |
 | `tools/` | Scripts you run by hand: `launch.py`, `reset_game.py`, `share.py`, `chart_check.py`, `realism.py` |
 | `data/` | What the running game writes, **never in git**: the save (`state.json`, `state.charts.json`), the ledger (`ledger.db`), `backups/`, this computer's admin key (`admin_key.txt`), the last share link and simulation results (`sim_results/`) |
@@ -118,6 +118,15 @@ $env:RUN_SLOW = "1"; .venv\Scripts\python.exe -m unittest discover tests -p "tes
 
 See §16 for what the tests cover and when to run which one. The tests never touch `data\`: a test that needs a running server copies the game into a temporary folder with the same layout and starts it there (`copy_project` in `tests/_helpers.py`).
 
+**Lint and types** (ROADMAP E13; the same commands run on every push, §16): install the two tools once with `.venv\Scripts\python.exe -m pip install ruff==0.6.9 mypy==1.11.2`, then
+
+```powershell
+.venv\Scripts\python.exe -m ruff check --select E,F,W --ignore E501,E731,E741,E401 game tools tests
+.venv\Scripts\python.exe -m mypy game tools\realism.py tools\pricing_model.py --ignore-missing-imports
+```
+
+Ruff checks for errors, warnings and the pyflakes rules (unused names and imports, undefined names); long lines, lambdas given a name, `l` for a candle's low and several imports on one line are the house style. mypy is a light pass: most functions have no type annotations, so it checks what it can see.
+
 ### Market checks
 ```powershell
 .venv\Scripts\python.exe tools\chart_check.py 12 7            # the real engine's charts against the facts of real prices (12 game days, seed 7; about 5 minutes)
@@ -125,6 +134,10 @@ See §16 for what the tests cover and when to run which one. The tests never tou
 .venv\Scripts\python.exe tools\realism.py 2 3 40 801          # the price model alone: long run, levels, and no free money (2 game years, 3 markets, 40 stocks)
 ```
 `MARKET_REALISM.md` (in `docs/`) explains both, the research behind their targets, and the latest results (§6A.9).
+
+```powershell
+.venv\Scripts\python.exe tools\pricing_model.py                 # what 1,000 sign-ups might bring in, and which assumption matters most (ROADMAP M7)
+```
 
 **Removed on 2026-10-13.** The old market had to give nobody an edge, and a set of tools checked that: `sim.py` (108
 scripted traders following 36 strategies on a fake clock), `bots.py` (many-bot studies), `edge.py` (the same on many
@@ -142,7 +155,10 @@ last results are kept in §17 as history.
 | File | Role |
 |---|---|
 | `engine.py` | The whole game: prices, trading, orders, volatility, the trading sessions, moonshots, catalysts, industry shocks, scheduled company events, news and narrative, company stories, earnings, offerings, bank ratings, indices and ETFs, days, accounting, save/load and crash recovery. Has no web code. |
-| `market_model.py` | The learn-to-trade price model: drift, market phases, trends, ranges and breakouts, support and resistance, stochastic volatility, volume, the economy and its calendar (§6A). |
+| `market_model.py` | The learn-to-trade price model: drift, market phases, trends, ranges and breakouts, support and resistance (with the daily chart's levels), chart patterns, stochastic volatility, volume, the economy and its calendar (§6A). |
+| `patterns.py` | Finds chart patterns in candles the way a trader would (double tops, head and shoulders, triangles, flags, wedges, channels, cup and handle) and follows each forward like a trade (§6A.10). Used by `realism.py`; ready for a screener. |
+| `history.py` | The long price history: game-day candles for many game years and one-minute candles for a few real days, in SQLite files next to the save (§11, §13). |
+| `errortrack.py` | A small error tracker: every error the server logs, grouped by where it was raised and counted, for the admin page (§12). |
 | `economy.py`, `payments.py` | The shop: MB packages, Pro, age rules, spending limits, the free restart, and the payment providers (off, test, Stripe) (§10.9). |
 | `learning.py` | Lessons (their quizzes are switched off for now) and challenges that pay MB (§10.10). The lessons themselves are in `content/lessons.json`. |
 | `ladder.py` | The quest ladder: 30 one-off quests in Bronze, Silver, Gold and Diamond tiers that pay MB once, and the titles and name colours Diamond quests unlock (§10.11). |
@@ -162,8 +178,9 @@ last results are kept in §17 as history.
 
 | File | Role |
 |---|---|
-| `index.html` | The entire front end: plain HTML, CSS and JS, no build step. One file serves every player page: market, stock, holdings, portfolio, history, leaders, social, profile and player, learn, calendar, shop, and the sign-in box (§11). |
-| `admin.html` | The admin dashboard page, served at `/admin` (§12): the total MB in the game, the shop, the price model, server timings, chat moderation with appeals, accounts, email and mail, adding or taking back MB, and the reset button. |
+| `index.html` | The front end: plain HTML, CSS and JS, no build step. One file serves every player page: market, stock, holdings, portfolio, history, leaders, social, profile and player, learn, calendar, shop, and the sign-in box (§11). |
+| `chart.js` | The stock page's chart, loaded by `index.html` (served at `/js/chart.js`): candles in real and game time, the crosshair, your trades on the chart, the indicators and their settings, the drawing tools, the chart's size and the position-size box (ROADMAP TA-F2). It shares the page's globals, so the two work like one script; the page connects to the game only once both have loaded. |
+| `admin.html` | The admin dashboard page, served at `/admin` (§12): the total MB in the game, the shop, the price model, server timings, chat moderation with appeals, accounts, the errors the server logged, email and mail, adding or taking back MB, and the reset button. |
 | `about.html` | The public "what is Meme Street" page, served at `/about` (no game connection; §11). |
 | `shop_pay.html` | The pretend checkout used while the shop is in test mode (`/shop/pay`, §10.9). |
 
@@ -188,7 +205,8 @@ Every `.json` file here is a content pack: the engine reads them all in name ord
 | `reset_game.py` | The command-line version of the admin **Reset** button: back up, then start the game over at Day 1 (stop the server first). |
 | `share.py` | Gives other people a link to the game while it runs on your own computer, through a free Cloudflare quick tunnel (§1, "Letting other people play"). Never starts the game or touches the save. |
 | `chart_check.py` | Runs the real engine with nobody trading and measures its charts against the known facts of real prices (§6A.9, `docs/MARKET_REALISM.md`). |
-| `realism.py` | Runs the price model on its own for game years: the long-run return, levels, and the "no free money" check (§6A.9). |
+| `realism.py` | Runs the price model on its own for game years: the long-run return, levels, gaps, the structure a trader reads, chart patterns, and the "no free money" check (§6A.9). |
+| `pricing_model.py` | What a cohort of sign-ups might bring in from MB packages and Pro, with every behaviour an assumption and the sensitivity to each (ROADMAP M7). |
 
 ### What the game writes (`data/`, never in git)
 
@@ -196,6 +214,8 @@ Every `.json` file here is a content pack: the engine reads them all in name ord
 |---|---|
 | `state.json` | The save file: a snapshot of the game, written every 30 seconds. The chart candles, most of its size, live in `state.charts.json` beside it, rewritten every five minutes (§13). |
 | `ledger.db` | The ledger: every money event and every player's equity curve (with `-wal` and `-shm` files beside it while the server runs). |
+| `history.db` | Game-day candles (the regular session) of every listing for `history_game_years` (10) game years: the D, W and M charts (§11). Backed up with the save. |
+| `minutes.db` | One-minute candles for `history_minute_days` (3) real days, so the 1m chart reaches back a whole real day. Not backed up. |
 | `backups/` | Copies of the save and the ledger made by the admin **Reset** button, `reset_game.py` or `start_game.ps1 -Fresh`. |
 | `admin_key.txt`, `share_url.txt`, `sim_results/` | This computer's admin key (made by `start_game.ps1`), the last link from `share.py`, and the market checks' cached runs. |
 
@@ -205,7 +225,7 @@ Every `.json` file here is a content pack: the engine reads them all in name ord
 |---|---|
 | `deploy/` | Putting the game on a rented server with a domain name and https: a guide, the upload and update scripts, the setup script, the services, the web-server file and the backup job (§1, "Running it on a real server") |
 | `tests/` | The automated test suite: engine, server, browser, stress, capacity and slow checks (§16). |
-| `.github/workflows/tests.yml` | Runs the test suite automatically on every push (the project is on GitHub). |
+| `.github/workflows/tests.yml` | Runs Ruff, mypy and the test suite automatically on every push (the project is on GitHub). |
 
 ---
 
@@ -510,6 +530,8 @@ opening second:   + one extra random jump, drawn fresh, size ≈ √90 seconds o
 - **The page** shows the session in one header chip (there is no chart of it; an earlier version drew a bar chart of the cycle's busyness and it was removed). Hover the chip for the clock times in your own time zone. The chip says "Pre-market · opens in 3m 12s", "Market open · closes in 12m 04s" or "After-hours · pre-market in 1m 20s".
 - `premarket_seconds = 0` and `aftermarket_seconds = 0` together switch the sessions off completely (the tests and the browser tests do this so they don't depend on the time of day). The two together can't take more than 29 minutes of the cycle: at least a minute of regular session is always left.
 
+The **game-day candle** (§11, "Game time") is the regular session alone, so on a game-day chart the after-hours, the pre-market and the opening jump add up to the gap between one close and the next open (ROADMAP TA-A7).
+
 ### 6.9 Offerings and buybacks (stock splits no longer exist)
 **Stock splits were removed.** (A repeating-split bug in the old code had pushed 22 stocks of one real save to prices like 3e-22, shown as 0.0000 MB: the split left the price above twice its own shrinking reference, so it split again, and again. When a save loads, every stock is put back on its original scale: prices, charts, dividends and trigger prices times the split factor, shares divided by it, so every position keeps its value.) Splitting a stock rescaled its price, its charts, every position and every average entry price, and it kept breaking things, so there are no splits any more and no split badge. (Old saves load fine: a split already done stays done.)
 
@@ -577,7 +599,7 @@ Ordinary stocks were unchanged by this when it was done (their 99th percentile w
 
 With `market_model` set to 2 (base.json) the market is no longer a fair random walk: it drifts slowly upwards, goes through hidden phases, trends, ranges, reacts at support and resistance and to a scheduled economy. Sections 6.1 (noise), 6.4 (spillovers), 6.5 (the soft daily brake), 6.7 (clustering) and 6.8 (sessions) still apply; **6.2 (mean reversion to a fixed price) and the old regime shocks are replaced**, and the zero-edge reasoning in 6.2, 7 and 17 belongs to the old market. The design rule is now **realism you can learn from, but no free money** (ROADMAP.md section 1). Setting `market_model` to 1 brings the old market back (the test suite's engine tests use it unless they ask for 2).
 
-Each second the engine calls `MarketModel.step(now, dt, listings)` (`Engine._model_step`). It returns, for every company and commodity (never an index or fund, which follow their members), an extra return that is queued like any other move, a **noise multiplier** that scales that second's random shock, and a **volume multiplier**. Everything below is hidden; players see only prices, volume and the macro releases.
+Each second the engine calls `MarketModel.step(now, dt, listings, activity, sessions)` (`Engine._model_step`). It returns, for every company and commodity (never an index or fund, which follow their members), an extra return that is queued like any other move, a **noise multiplier** that scales that second's random shock, and a **volume multiplier**. Everything below is hidden; players see only prices, volume and the macro releases.
 
 ### 6A.1 Drift and fair value
 Every listing has an expected return a game year of `rf + beta x erp` (`rf` 1.5%, `erp` 4%: about +5.5% for a beta-1 company; commodities `rf`; moonshots 0), applied as a drift in log price. A game year is 7.6 real days, so this is about +0.03% a real hour: invisible in a session, clear over weeks. Each listing also has a **fair value** that grows at the same rate (plus 60% of the market phase's drift); the price is pulled towards it with a half-life of 120 game days (`anchor_halflife_days`), which keeps prices from wandering off for ever without making the pull worth trading.
@@ -595,18 +617,30 @@ Lengths are random (exponential, between 0.3 and 3 times the average). The phase
 
 ### 6A.3 Swings: trends, ranges and breakouts
 Each listing is, at any time, in one of three modes, for a random spell of game days:
-- **trend** (8-30 days): a drift of about twice the stock's volatility a game year in one direction, delivered in **legs**: an impulse (2-5 days, 3.5x) then a pullback (1-2.5 days, against the trend at 0.9x). Volume is a little higher in impulses.
-- **range** (10-35 days): the price is pulled back towards the middle of the range (half-life 3 game days), the noise is 0.8x and volume 0.65x. A range always ends in a **breakout**: a burst of 0.5 daily sigmas (in today's volatility) over 90 seconds, with 1.6x noise and 2.5x volume, upwards 62% of the time in a bull phase, 38% in a falling one. 65% of breakouts start a trend that way.
+- **trend** (8-30 days): a drift of about twice the stock's volatility a game year in one direction, delivered in **legs**: an impulse (2-5 days, 3.5x) then a pullback (1-2.5 days, against the trend at 0.9x). Volume is higher in impulses (1.15x) than in pullbacks (0.85x). **The last impulse** (the one that runs past the trend's end) has 0.7x the drift and the volume (`exhaustion`): the price makes a new high on less momentum and less volume, the divergence traders watch for (TA-A4, TA-A8). **Intraday legs** (TA-A6): inside a trend the price swings in legs of 4 to 12 minutes that alternate up and down, each about 0.2 daily sigmas (`subleg_*`); up and down legs are the same size on average, so they add no drift, but a trend on the hourly chart becomes a run of higher highs and higher lows on the 5-minute chart.
+- **range** (10-35 days): the price is pulled back towards the middle of the range (half-life 3 game days), the noise is 0.8x and volume 0.65x. The **last fifth of a range is quieter still** (0.6x noise, 0.65x volume: small candles, narrow Bollinger bands; the squeeze before the breakout, TA-A5). A range always ends in a **breakout**: a burst of 0.5 daily sigmas over 90 seconds, with 1.6x noise and 2.5x volume, upwards 62% of the time in a bull phase, 38% in a falling one. 65% of breakouts start a trend that way.
 - **free**: just the drift and the noise.
-In a sideways phase ranges are likelier.
+In a sideways phase ranges are likelier. **How a trend ends**: 35% of the time with a **climax** (TA-A4): a move of 0.35 daily sigmas the trend's way over 150 seconds on 4x volume and 1.4x noise, a blow-off top or a panic low for one stock. When a trend **reverses**, it turns with a burst of 0.3 daily sigmas the new way over two minutes (1.3x noise, 2x volume: an engulfing candle, TA-A5). Instead of these, a trend's end, a range's start, a trend's start or an impulse leg can also be a **chart pattern** (§6A.10). Every burst is sized when it starts, in that moment's volatility (`sw.bursts`, saved).
 
 ### 6A.4 Support and resistance
 Every listing keeps its own 5-minute bars (the last 400, rebuilt from the 5-minute candles after a restart) and, every 15 minutes, finds its **levels**: swing highs and lows (a bar higher or lower than the four on each side), grouped when within 0.4% of each other (a group of three is a level touched three times), plus the round numbers just above and below the price (140 and 150 near 145; `round_step`).
 
-Only levels where the price has actually turned (at least one swing high or low) are tested; a bare round number is not a level on its own, but it makes a level it coincides with stronger. All sizes below are in **today's volatility** (the stock's daily sigma times its current volatility multiplier, §6A.5), as traders size reactions in ATR. When the price comes within a quarter of that of a level, that is a **test**, and its outcome is drawn there and then:
-- it **holds** with probability `0.40 + 0.09 x touches (up to 4) + 0.07 if it is a round number + 0.10 if it lines up with the trend (support in an uptrend) - 0.10 if against it + 0.05 more for a strong level (3+ touches or round) in line with the trend - 0.07 x the times it was tested in the last 3 game days`, between 25% and 75% (strong levels end up holding about 59% of the time, weak ones 43%; MARKET_REALISM.md). While a strong level is tested the price **slows down**: its noise is 0.8x on a test that will hold and 0.9x on the way to one that will break (`level_approach_vol`; ROADMAP TA-A1, 2026-10-19). A hold is a quick rejection: the price is pushed away from the level by 0.12 daily sigmas within 40 seconds (a wick on the candle) on 1.3x volume.
-- otherwise it **breaks**: once the price goes through (nothing pushes it there), it follows through (0.45 daily sigmas over 75 seconds, 1.25x noise, 2.5x volume: the stop-loss orders beyond the level, Osler 2003) - unless the break is **false** (30%, 40% against the trend): one to four minutes after crossing, the price is pushed back inside on 1.8x volume.
-The same level is not tested again within 20 minutes. Noise can still go through a level that was due to hold: the test then simply ends, with no push either way. (Slow pushes and pushes on every crossing made one-minute returns trend, which real prices do not: MARKET_REALISM.md section 2.) The pushes are damped in the thin pre-market and after-hours (`activity`), never amplified.
+**Levels from the daily chart** (TA-A2, TA-A7; 2026-10-21). Each listing also keeps its own regular-session game days (the last 370, given back by the engine's game-day candles after a restart, §11), and these are levels too, each counting as a level of a given strength (`strength_*`):
+
+| Level | Strength | |
+|---|---|---|
+| the previous game day's high and low | 2 | |
+| the previous game day's close | 1 | where an opening gap fills (TA-A7) |
+| today's open | 1 | |
+| the 52-week high and low (364 game days, once there are 60) | 3 | |
+| the 20, 50 and 200-day averages of the closes | 1, 2, 3 | moving support and resistance |
+
+Where one lies within 0.4% of a swing level or a round number they add up (a confluence: the 52-week high on a swing high is a strength-4 level). They change when a session opens or closes.
+
+Only levels where the price has actually turned (at least one swing high or low), and the daily ones, are tested; a bare round number is not a level on its own, but it makes a level it coincides with stronger. All sizes below are in **today's volatility** (the stock's daily sigma times its current volatility multiplier, §6A.5), as traders size reactions in ATR, **fixed when the test begins** (with the leverage effect a push sized second by second grew as it pushed down and shrank as it pushed up, and with the daily levels that added up to a steady fall; found 2026-10-21). Levels are tested **only in the regular session**, and a stock starts **no new test within 10 minutes of its last** (`test_gap_seconds`). When the price comes within a quarter of a daily sigma of a level, that is a **test**, and its outcome is drawn there and then:
+- it **holds** with probability `0.40 + 0.09 x touches (up to 4) + 0.07 if it is a round number + 0.10 if it lines up with the trend (support in an uptrend) - 0.10 if against it + 0.05 more for a strong level (3+ touches or round) in line with the trend - 0.07 x the times it was tested in the last 3 game days`, between 25% and 75% (strong levels end up holding about 59% of the time, weak ones 43%; MARKET_REALISM.md). While a strong level is tested the price **slows down**: its noise is 0.8x on a test that will hold and 0.9x on the way to one that will break (`level_approach_vol`; ROADMAP TA-A1, 2026-10-19). A hold is a quick rejection: the price is pushed away from the level at 0.12 daily sigmas in 40 seconds, on 1.3x volume, until it is a quarter of a daily sigma away (`bounce_reach` 1.0 band; it was 2.5 bands until 2026-10-21: with the daily levels a stock is near some level most of the time, and bigger bounces let "trade every level test" beat holding the market several times over). Once the price is through the level the push back is up to three times harder (`wick_push`): the long wick of a rejection (TA-A5).
+- otherwise it **breaks**: once the price goes through (nothing pushes it there), it follows through (0.45 daily sigmas over 75 seconds, 1.25x noise, 2.5x volume: the stop-loss orders beyond the level, Osler 2003) - unless the break is **false** (30%, 40% against the trend): it comes on less volume (1.9x instead of 2.5x, TA-A4: a hint, not a tell, as the two overlap in the noise), and one to four minutes after crossing the price is pushed back inside on 1.8x volume.
+The same level is not tested again within 20 minutes. Noise can still go through a level that was due to hold: the test then simply ends, with no push either way. (Slow pushes and pushes on every crossing made one-minute returns trend, which real prices do not: MARKET_REALISM.md section 2.) Everything the model pushes is damped in the thin pre-market and after-hours (`activity`), never amplified; a test not yet decided when the regular session ends is dropped (in the thin sessions a level due to break was seldom reached before its test ran out, while one due to hold still pushed: trading every level test earned twice what holding the market did, found 2026-10-21 once `realism.py` modelled the sessions).
 
 ### 6A.5 Volatility, volume and panics
 - **Stochastic volatility** (`market_model.AR`, the `sv_*` settings): each listing's volatility multiplier is `exp(X - var)`, where X is the sum of three of its own components (half-lives 10 minutes, 2 game days and 15 game days; standard deviations 0.30, 0.35 and 0.35) and two market-wide ones every listing shares (20 minutes and 2 game days; 0.20 and 0.30), so calm and busy spells come at several time scales at once (Corsi's HAR cascade) and stocks get busy together. `var` keeps each stock's average variance at its stated volatility. Each second's move feeds the fast and medium components with the opposite sign (a fall raises volatility).
@@ -642,6 +676,28 @@ Three game days before a report, analysts publish a **forecast EPS** (`Engine._e
 ### 6A.8 Fewer headlines
 With the new model `base.json` cuts the news: a random event every 15 minutes on average (was 2), a company issue every 20 (was 1.7), offerings every 2 hours; stories about two companies, catalysts, industry-wide shocks and new moonshots are off. Macro releases, earnings, ratings and scheduled company events carry the news.
 
+### 6A.10 Chart patterns (TA-A3, TA-A9; 2026-10-21)
+Now and then a listing traces a named pattern on purpose (`market_model.PATTERNS`, mode `pattern`):
+
+| When | Pattern (and its mirror image) | How often |
+|---|---|---|
+| a trend ends | double top / bottom (45%), head and shoulders / inverse (30%), rising / falling wedge (25%) | 22% of trend ends (`pattern_end_chance`) |
+| a range begins after a trend | ascending or descending triangle (the trend's way) or a symmetric one, half and half | 25% (`pattern_triangle_chance`) |
+| a trend begins | an up or down channel (10%); before an up-trend a cup and handle (8%) | `pattern_channel_chance`, `pattern_cup_chance` |
+| an impulse leg begins in a trend | a bull or bear flag: a sharp pole, then a quiet drift back | 7% (`pattern_flag_chance`) |
+
+That is about four patterns a stock a game year. Each is a script of legs: levels in units of its size S (2.5 times the stock's usual daily move, read off its own game days, times a size for the kind: 1.0 for a flag up to 2.0 for a cup and handle) reached over a few game days each (doubled by `pattern_days`), with the noise and volume of each leg (a triangle's legs grow quieter, a second top comes on less volume, a breakout on more). The price follows each leg's path loosely: it is pulled towards a point that moves along it (time constant a quarter of the leg, never under half a game day), with 0.85x the usual noise, so the shapes come out as imperfect as real ones. When the body is done, the ending is drawn:
+
+| Ending | | Odds (double top; most others) |
+|---|---|---|
+| **works** | breaks out the way it points and runs to about its measured move | 35%; 37-41% |
+| **busted** | breaks out a little, then turns back through the other side | 29%; 25-28% |
+| **fails** | turns before breaking out | 36%; about 35% |
+
+So a pattern that has broken out is right a little more often than not, never with certainty, and a flag or a triangle that never broke out was simply a pause. After a pattern the listing trends the way it broke. Patterns are saved with the model (`sw.pat`) and carry on after a restart. The odds and sizes were set with `realism.py` (§6A.9): with bigger, faster patterns (3 daily moves, legs half as long) buying every 1.5-sigma dip lost 1.6% a trade and buying 20-day highs earned 0.8% a trade, short-term momentum real markets do not have.
+
+**Finding them** (`patterns.py`, TA-A9): `find(candles, swing)` finds patterns the way a trader would, from candles alone: swing points from a zigzag (a high is a swing high once the price has fallen `swing` below it, so each is known only when confirmed, never earlier), then a template on the last few: two tops within a third of the pattern's height, a head clearly above its shoulders, tops and bottoms that converge (triangles, wedges) or move together (channels), a flag that gives back at most half of a fast move (read off a finer zigzag), a cup with a rim at either side and a small handle. `find_all` uses several swing sizes (1.5 and 2.5 daily moves on game-day candles), and `outcome` follows a pattern forward like a trade: does a close break its trigger within 10 candles (it completes), and does the price then reach the measured move before a close beyond the other side (it works)? The screener (TA-B8) and the lessons on real game charts (TA-C2) can use it.
+
 ### 6A.9 Checking it: `chart_check.py`, `realism.py` and MARKET_REALISM.md
 `MARKET_REALISM.md` has the research on how real prices move (with sources), what was wrong with the charts, what was
 changed on 2026-10-13 and the next steps.
@@ -652,11 +708,20 @@ changed on 2026-10-13 and the next steps.
   memory, the intraday U-shape, correlation between stocks, daily tails, gap fills, earnings days and ticks, each with
   its target. About 20 seconds a game day; results are cached in `data/sim_results/`.
 - `python tools/realism.py [game_years] [seeds] [stocks] [first_seed]` runs the price model on its own in 10-second steps
-  (with the engine's noise, clustering and daily brake rebuilt), about 50 times faster than the engine, for the long run
-  and the "no free money" strategies (§1 of the ROADMAP's design rules). It is an approximation of the engine.
+  (with the engine's noise, clustering, daily brake and, since 2026-10-21, its trading sessions and opening jump rebuilt),
+  about 50 times faster than the engine. It reports the long run, the stylised facts, levels by strength and by kind,
+  opening gaps, the "no free money" strategies (§1 of the ROADMAP's design rules: dips, momentum, breakouts, every level
+  test, the daily levels, fading gaps, every completed chart pattern), the structure a trader reads (volume on breakouts
+  that run against ones that fail, climaxes, quiet pullbacks, wicks, engulfing candles, the squeeze, timeframes that
+  agree, RSI divergences and Bollinger squeezes, each against its baseline) and the chart patterns: how many of each
+  `patterns.py` finds on the game-day charts, how many complete and work, the result of trading them, and how many of
+  the patterns the model made a trader would have recognised. The model can write what it does to a list
+  (`MarketModel.trace`) for this. It is an approximation of the engine (its gap fills differ: use `chart_check.py`).
 
-The latest results are in MARKET_REALISM.md section 4: every chart check within its target on most seeds (the close's
-burst and one seed's daily tails borderline), and no simple strategy beating holding the market, costs included.
+The latest results are in MARKET_REALISM.md section 4 (2026-10-21): the chart checks as before Phase 2 (the tail
+exponent and the market's one-minute autocorrelation just outside their targets on some seeds), levels holding 63% (strong)
+and 48% (weak), the structure readable but never certain, and no simple strategy beating holding the market, costs
+included (trading every level test +0.06% a trade, every completed chart pattern -3.3%).
 Rumours are rarer and slower with the new model (25% of stories, confirmed after 3 to 10 minutes; `rumor_prob`,
 `rumor_delay_seconds` in base.json): a rumour confirmed a minute later made one-minute returns trend.
 
@@ -1200,7 +1265,9 @@ The same page serves laptops and phones; a set of rules in `index.html` that app
 `tests/test_browser.py` (`BrowserPhone`) drives the pages in a 390 x 844 touch browser and checks all of this, including that no page is wider than the screen, that the header stays at the top while scrolling, and that the laptop layout (table headings, the pinned header, unfolded side panels) is unchanged. Not done yet: a pull-up trade ticket instead of the buttons on each card, and installing the game as an app on the home screen (`ROADMAP.md`, E6).
 
 ### Candles and timeframes
-The engine keeps real-time candles for 11 timeframes, each updated on every tick: **30s, 1m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1M, 1Y**, where 1d is 24 real hours, 1M is 30 real days and 1Y is 365 real days. Each timeframe keeps its last 500 candles and is saved. Candles of a long timeframe fill in over real time, so a fresh server shows few 1d, 1M or 1Y candles.
+The engine keeps real-time candles for 11 timeframes, each updated on every tick: **30s, 1m, 5m, 15m, 30m, 1h, 2h, 4h, 1d, 1M, 1Y**, where 1d is 24 real hours, 1M is 30 real days and 1Y is 365 real days. Each timeframe keeps its last 500 candles and is saved. Candles of a long timeframe fill in over real time, so a fresh server shows few 1d, 1M or 1Y candles. The **1m** chart also reaches into `data/minutes.db`, which keeps one-minute candles for three real days: it shows up to 1,440 of them (a real day).
+
+**Game time (ROADMAP TA-A11, 2026-10-21).** After the real-time sizes the chart offers **GAME D W M**: a candle per **game day**, **game week** (Monday to Sunday of the game calendar, §6A.6) or **game month**, with game dates on the time scale ("12 Mar", "Jun Y5") and in the readout ("27 Jul Y7", "Week of 24 Jul Y7"). A game-day candle covers **the regular session only** (00:05 to 00:25 of the 30-minute cycle), like a real daily chart, so the move from one close to the next open (after-hours, pre-market and the opening jump, §6.8) shows as a **gap** (TA-A7); it grows on the page only while the regular session is on. They come from the **long history** (TA-A10, `history.py`): every listing's game days are written to `data/history.db` as each session closes and kept for `history_game_years` (10) game years; each listing keeps its last 400 in memory (`Stock.days`, for the price model's daily levels), with today's session under way in `Stock.reg` (saved). A chart gets up to 1,500 game days (about four game years); weeks and months are built from up to ten game years. A game from before the file existed gets its game days rebuilt once from its 5-minute candles (the regular sessions of about 80 game days) and its 30-minute ones (whole game days, further back).
 
 ### Chart behaviour
 - The **newest candle sits in the middle** and everything shifts left as candles arrive. The first candles are **thick** and get thinner as more are created, down to a minimum width.
@@ -1257,6 +1324,8 @@ Player endpoints need the player's **session token** in an `X-Token` header (the
 | `POST /api/account/birth_year` `{year}` · `POST /api/account/spend_cap` `{cents}` | player | give the year of birth once; set your own spending limit |
 | `POST /api/restart` · `POST /api/close_all` | player | the free restart; close every position at the market price |
 | `GET /api/admin/shop` · `POST /api/admin/refund` `{id}` | admin | sales, Pro members, MB by source, the latest orders; mark a paid order refunded |
+| `GET /api/admin/errors` | admin | every error the server has logged since it started (ROADMAP E13, `errortrack.py`): each kind (where it was raised and what it was) with how often, when it was last seen, the last message and its traceback; at most 100 kinds |
+| `GET /js/chart.js` | none | the chart's script (`web/chart.js`), checked against the browser's copy on every load (`no-cache`) |
 | `GET /api/admin/model` | admin | the price model behind the scenes: phase, days left in it, the hidden economy, how many listings trend or range, levels under test |
 | `GET /api/health` | anyone | for an outside uptime monitor: `{ok, tick_age_s, saved_ago_s, uptime_s}`, **200** while the game has ticked in the last 15 seconds and saved in the last five minutes (the first three minutes after a start are forgiven), **503** when it is stuck. No key, nothing private, never rate limited; it works through a gateway, and if the game or the server is down the gateway or Caddy answers with an error, so a monitor sees that too |
 | `POST /api/register` `{name, password, birth_year, email?}` | anyone | create an account → `{token, name}` (a session token), plus `email_sent`/`email_msg` when an address was given and its code was mailed. 400 with the reason for a weak password, a taken or reserved name, a bad, disposable or already used address (or a missing one in `required` mode); 429 after too many sign-ups from one address |
@@ -1344,6 +1413,7 @@ Admin endpoints need the `X-Admin-Key` header to match the `ADMIN_KEY` environme
 | **House risk** | Reserve, the floor it is topped up to, what has been topped up so far, the **stress loss**, and a table of the stocks players hold most of (net long or short, three daily sigmas, what it could cost the house) | §6.11. A stress loss above the reserve, or one stock being most of it, raises an alert |
 | **Chat moderation** (four boxes) | Latest 40 messages with **Delete** and **Mute 10m / 1h** buttons; reported messages grouped by message (who reported them, how many); who is muted with **Unmute**; **Appeals** from muted players with **Lift mute** / **Keep mute**; the **moderator log** (every automatic and manual action) | Appeals and reports are the first thing to check each day |
 | **Accounts** | Accounts with and without passwords, how many have a verified email and the `email_mode`, logged-in devices, accounts that share an address, a **Reset password** box, **Add MB / Take back MB**, and **Give Pro / Take Pro away** (a player name, a number of days, an optional note) | §10.6, §10.9 |
+| **Errors since the server started** | Each kind of error the server logged (a failed tick, an exception in a request, a failed save or email), how many times, when last, and its message; open one for the traceback | Empty is the goal; anything here is a bug to look at (E13) |
 | **Email and mail** | Whether an SMTP server is set (a red warning in console mode), sent / failed / waiting counts, the last 15 messages (in console mode with their codes), and **Mark email verified** / **Remove email** boxes | §10.6 |
 | **Gateways** | How many gateway processes are connected (0 = everything in one process) | §12 |
 | **Start the game over** | A box where you type `RESET`, and the button | §1, §10. Backs up first |
@@ -1476,7 +1546,7 @@ browsers ──websocket──▶ gateway (1..N processes) ──one link each�
 ### The snapshot (`state.json`)
 - **When:** every 30 ticks, on shutdown, and straight after a recovery. It writes `state.json.tmp` and then replaces `state.json`, so a crash mid-write can't leave a half file. A new account, a password change and an admin reset also save at once. **If Windows refuses to swap the file in** ("Access is denied": OneDrive, a virus scanner or a backup tool has it open for a moment, which this project's OneDrive folder invites), the save tries again up to eight times over a few seconds, and if it still can't it logs a warning and tries again at the next save (the chart file in half a minute) instead of raising an error in the game loop. Keeping the game folder out of OneDrive's sync avoids it altogether.
 - **Two files.** On a long-running game the chart candles (11 timeframes × 500 candles × every stock) were 23 of the 27 MB, and they change slowly. They now live in **`state.charts.json`**, which the periodic save rewrites only every `charts_save_seconds` (300 s) and a clean shutdown always writes; `state.json` keeps everything else including the one-minute candles. If the chart file is a few minutes behind after a crash, the candles it is missing are rebuilt from the one-minute candles when it loads; if it is missing or unreadable the charts are rebuilt from them too (older than a few hours is lost, the 30-second candles of the gap stay empty). A save from before the split, with the charts inline, loads normally. **Why:** a save of the full game took about 2.4 s with the old `json.dump` (a slow Python path) while holding the game lock, which froze every trade and update for that long every 30 seconds; with the fast encoder and the split it takes about 140 ms.
-- **What's saved (schema 7):** per stock: `base` (its size), `fair` (the price), candles for every timeframe, daily candles, rating, hidden safety, mood, trend, **volatility multiplier**, **when it was listed (`listed_at`)**, share adjustments from buybacks and offerings, **the persona (CEO, CFO, product, city, former CEOs)**, **its earnings slot**, financials (revenue, margin, cash, debt, long-run margin), declared dividend and pending ex-date, pending stories, scheduled company events, any pending share offering, the stock's news log, earnings reports, schedules; globally: **the moonshot companies generated so far (`generated`)**, **the supplier / customer / rival graph (`relations`)**, house reserve, fees, house capital, minted, the index, regime, market and sector mood, market volatility, crisis end time, every headline printed (last 6,000), remembered story threads, season data, the margin-call log and counters, and **the ledger position this snapshot covers (`ledger_seq`)**; per player: cash, holdings (negative = short), cost basis, entry fees, realised profit per stock, fees paid, trade count, dividends received, borrow fees paid, their last 100 trades, margin calls, deposits, day base, **open orders**, **the password hash, address tags and sign-up time**, and **all social data**: achievements and their counters, today's progress and quests done, streak, drawdown tracker, medals, privacy, following, strikes, open-position times. Chat, mutes, reports, appeals, the moderator log, the running contest (with every entrant's paper account) and finished contests are saved too, and so are the login sessions (only their hashes), the address salt, the delisted-stock archive (the last 60 companies' charts, news and facts, so their pages still open) and `recapitalized`.
+- **What's saved (schema 7):** per stock: `base` (its size), `fair` (the price), candles for every timeframe, today's regular-session candle while it is under way (`reg`; the finished game days are in `history.db`, below), rating, hidden safety, mood, trend, **volatility multiplier**, **when it was listed (`listed_at`)**, share adjustments from buybacks and offerings, **the persona (CEO, CFO, product, city, former CEOs)**, **its earnings slot**, financials (revenue, margin, cash, debt, long-run margin), declared dividend and pending ex-date, pending stories, scheduled company events, any pending share offering, the stock's news log, earnings reports, schedules; globally: **the moonshot companies generated so far (`generated`)**, **the supplier / customer / rival graph (`relations`)**, house reserve, fees, house capital, minted, the index, regime, market and sector mood, market volatility, crisis end time, every headline printed (last 6,000), remembered story threads, season data, the margin-call log and counters, and **the ledger position this snapshot covers (`ledger_seq`)**; per player: cash, holdings (negative = short), cost basis, entry fees, realised profit per stock, fees paid, trade count, dividends received, borrow fees paid, their last 100 trades, margin calls, deposits, day base, **open orders**, **the password hash, address tags and sign-up time**, and **all social data**: achievements and their counters, today's progress and quests done, streak, drawdown tracker, medals, privacy, following, strikes, open-position times. Chat, mutes, reports, appeals, the moderator log, the running contest (with every entrant's paper account) and finished contests are saved too, and so are the login sessions (only their hashes), the address salt, the delisted-stock archive (the last 60 companies' charts, news and facts, so their pages still open) and `recapitalized`.
 - **Not saved:** the admin charts' history (they restart empty), the global news wire (`news_log`), rumours waiting to confirm, sparklines, equity snapshots, trade cooldowns, the delayed-holdings snapshots (they refill in a few minutes). Per-stock news logs *are* saved.
 - **Older saves** load: a save with the old leveraged tickers is migrated (§9), contests from before paper accounts are dropped, accounts without passwords stay usable, a save without the chart file keeps its inline charts, schemas before 7 get the old pool price as the market price, positions starting at the current price as their average entry, and ratings recomputed; a save with no social section just starts everyone with no achievements; a save from before moonshots simply gets four new ones; a ticker new to the content since the save is marked NEW; a save that still has seed tokens inside its stocks has them retired (§5), and a stock removed from content is simply dropped.
 
@@ -1491,6 +1561,12 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 
 **Housekeeping (see `ROADMAP.md`, G11):** the file only grows. Back it up with the snapshot. To start a new game delete both (§1).
 
+### The price history (`history.py`, `history.db`, `minutes.db`)
+Two more SQLite files in WAL mode beside the save (ROADMAP TA-A10, 2026-10-21), each one table of candles keyed by ticker and start time, written in one transaction a tick (`CandleStore.flush`) and read by chart requests under a lock:
+- **`history.db`**: every listing's **game-day candles** (the regular session, §11), written as each session closes, kept for `history_game_years` (10) game years (pruned once an hour). On start each listing reads back its last 400 (`Stock.days`) and the price model its last 370; a game that has no file yet rebuilds them once from its 5-minute and 30-minute candles. A save that ended in the middle of a session carries that session on (`reg`), or closes it if it has ended since. Backed up with the save (`deploy/backup.sh`, compressed) and copied by `upload.ps1 -WithGame`, the staging copy and `start_game.ps1 -Fresh` (which moves it aside with the rest).
+- **`minutes.db`**: **one-minute candles**, written as each minute ends, kept for `history_minute_days` (3) real days; the 1m chart reaches back into it. Not backed up (it is a few days of detail, about 60 MB).
+The old `daily_hist` (whole 30-minute cycles, one game year, read by nothing) is no longer kept or saved.
+
 ---
 
 ## 14. Settings reference
@@ -1501,7 +1577,7 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 |---|---|---|
 | `signup_bonus` | 1000 | MB credited to new players and to everyone on a game reset (the `grant` source, §10.9) |
 | `market_model` | 2 | 2: the learn-to-trade price model (§6A); 1: the old zero-drift market (§6.2 and the regime shocks) |
-| `price_model` | (none) | a dict overriding `market_model.DEFAULTS`, e.g. `{"erp": 0.035, "hold_base": 0.45}` (§6A) |
+| `price_model` | (none) | a dict overriding `market_model.DEFAULTS`, e.g. `{"erp": 0.035, "hold_base": 0.45}` (§6A). Phase 2's (2026-10-21): `daily_levels` (1) and `strength_*` (§6A.4), `bounce_reach` (1.0) and `test_gap_seconds` (600), `true_break_volume` / `false_break_volume` (2.5 / 1.9), `climax_*`, `exhaustion` (0.7), `wick_push` (2), `reversal_*`, `squeeze_*`, `subleg_*` (§6A.3), and `patterns` (1), `pattern_size` (2.5), `pattern_days` (2), `pattern_pull`, `pattern_noise` and the `pattern_*_chance` settings (§6A.10) |
 | `daily_turnover` | 0.004 | share of a company's shares traded in a game day, for the volume bars (§6A.5) |
 | `min_age` / `buy_min_age` | 13 / 18 | the age to sign up and the age to buy (§10.9) |
 | `shop_packages` / `shop_pro` / `shop_currency` | see §10.9 / `usd` | the catalogue, prices in cents |
@@ -1566,6 +1642,8 @@ A SQLite file in WAL mode with two tables, flushed once per tick:
 | `mail_per_hour` | 200 | a ceiling on all mail the game sends in an hour (0 = none) |
 | `blocked_email_domains` | none | extra throwaway-mail domains to refuse, on top of the built-in list |
 | `charts_save_seconds` | 300 | how often the periodic save rewrites the chart file (§13) |
+| `history_game_years` | 10 | how many game years of game-day candles `history.db` keeps (§13), and how far back the W and M charts reach |
+| `history_minute_days` | 3 | how many real days of one-minute candles `minutes.db` keeps (§13) |
 | `cross_mean_seconds` | 240 | average gap between two-company stories (§7.11) |
 | `auto_sector_indices` / `sector_index_min_members` | true / 3 | create a tradable index for every sector with at least this many companies (§9) |
 | `public_delay_seconds` | 300 | how old a holdings snapshot must be before other players can see it (§10.5) |
@@ -1649,6 +1727,10 @@ The margin-call levels (25% to 75%) in §4 are fixed in the code (`maintenance`)
 | `test_economy.py` | **the shop**: MB by source, the catalogue, an order paid once however often it is confirmed, wrong amounts, Pro adding up, refunds, expiry, the age rules, the spending cap and daily limit, the self-set limit (raising waits a day), the free restart, orders and Pro surviving a crash (the ledger replays a purchase), Stripe's signature (wrong secret, changed body, a replay), the Stripe request, the whole flow through a test server, the shop closed when payments are off, sign-up needing a birth year, and a browser buying a package through the test checkout | 23 | about 25 s |
 | `test_shop_safety.py` | **before the shop opens**: the terms version recorded at sign-up, the consent kept with each order, receipts only to verified addresses, the payment check completing a missed (even expired) order exactly once and refusing a wrong amount, Stripe's list read page by page, the sign-up trap, rewards held back without a verified address, the terms and privacy pages | 13 | about 12 s |
 | `test_chart_prefs.py` | **chart basics**: the chart set-up and drawings kept per player and checked first (bad ids, colours, numbers, notes, too many), only the newest 100 stocks keep drawings, saving and loading, the endpoints, one stock's history; in a browser the five chart types and the log scale, the crosshair and readout, an indicator's length renaming it, the channel and Fibonacci extension tools, a trade arrow and a stop tag on the chart, and drawings and settings coming back in a new browser | 7 | about 45 s |
+| `test_history.py` | **the long price history and game-time candles** (TA-A10, TA-A11): candles written, read back in order, replaced and trimmed; weeks and months built from days; a game-day candle is the regular session only and the next open gaps from the last close; game weeks start on Mondays and months on the 1st; the days survive a restart (and a restart in the after-hours keeps today's finished candle); the 1m chart reaches into the minute file; an old game's days rebuilt from its 5-minute candles | 5 | about 3 min |
+| `test_structure.py` | **Phase 2 of the price model** (TA-A2 to TA-A9): game days and the daily levels (yesterday's high, low and close, the open, the averages, the 52-week range, a confluence adding up); tests only in the regular session, reactions sized when they begin, the harder push through a level (the wick), less volume on a break that will fail, no test straight after another; the trend's weaker last push, a climax and a reversal burst, the squeeze at the end of a range, intraday legs that alternate and add no drift; every pattern ending its three ways and handing over to a trend, a double top's shape, mirror images and odds that are never a sure thing, a pattern surviving a save; the zigzag confirming only after the turn, textbook shapes found and followed, a pattern that breaks the wrong way failing, no pattern counted twice; and `realism.py` running with its structure and pattern reports | 21 | about 3 s |
+| `test_errortrack.py` | **the error tracker** (E13): errors grouped by where they were raised and counted with their traceback, warnings left out, a bounded number of kinds, never raising; `/api/admin/errors` for the admin key only | 3 | about 12 s |
+| `test_pricing_model.py` | **the pricing model** (M7): the game's packages and prices, revenue scaling with sign-ups and nothing when nobody pays, retention falling, the sensitivity covering every assumption | 3 | under a second |
 | `test_market_model.py` | **the price model**: the phases add no long-run drift, the drift by beta, phases change and are bounded, a quiet market follows its drift, levels from swing highs and lows and round numbers, a held support pushes up and a break goes through, strong levels hold more often and repeated tests weaken them, ranges pull to the middle, pulses deliver exactly their move (and whipsaws go the wrong way first), the release calendar (8 rate decisions, 12 CPIs, 52 claims a year), forecasts fixed once published, releases against the forecast, rate decisions in quarter points; in the engine: candles with volume, money conserved, player trades never moving prices, a macro headline and move, earnings against a forecast, the model surviving a save and an old save loading; `/api/calendar` and `/api/admin/model` | 22 | about 5 s |
 | `test_learning.py` | **learning**: the lessons are well formed, the page never gets the answers, a quiz pays once and a wrong answer fails, the basics and graduate challenges, the weekly cap, a stop completing "protect a trade" (once per position) and a closed position counting as planned, a take-profit counting for its challenges and the ladder, the state surviving a save, with quizzes off (what ships): no quiz, no reward and no quiz challenge, the endpoints over HTTP, and a browser reading a lesson with no quiz (and no Journal in the menu), reading the calendar and using the chart's volume, RSI, a Pro indicator, a drawn level and the risk tool | 14 | about 50 s |
 | `test_ladder.py` | **the quest ladder, exits and the calendar grid**: four tiers paying more as they go up, Bronze quests completed by trading and paid once as money put in, stops and shorts counting, a Diamond quest unlocking a title and colour that then show on the boards, in chat and on the profile (and locked ones refused), day-board finishes counted only with a positive return, the ladder surviving a save and a reset clearing it; setting, moving, pairing and removing take-profits and stops (and the right side of the price for longs and shorts), a paired exit closing the position and taking the other with it; the month grid (one cell a day, weeks from Monday, today marked, weekly claims on one weekday, released results shown, months cycling and clamped, over HTTP); and a browser run through the holdings boxes, the ladder's drop-downs and the calendar's grid | 13 | about 50 s |
@@ -1737,7 +1819,7 @@ The market's own checks are `python tools/chart_check.py` and `python tools/real
 | You changed... | Run |
 |---|---|
 | anything in the engine | `python -m unittest discover tests` |
-| `server.py` or `index.html` | the same (includes the server and browser tests) |
+| `server.py`, `index.html` or `chart.js` | the same (includes the server and browser tests) |
 | prices, news, fees, margin, dividends, earnings, volatility, sessions, orders, company events, indices, moonshots, distress, catalysts | the tests, then `python tools/chart_check.py 12 7` and `python tools/realism.py 2 3 40 <fresh seed>` (§6A.9) |
 | anything in `social.py` or `contest.py` | the tests; the "social features never move a price" and "a contest changes nothing outside itself" tests are the ones that matter |
 | `accounts.py`, `mailer.py`, sign-in or the admin reset | the tests (`test_accounts.py`, `test_email.py`, `test_reset.py`, the password and email browser tests) |
@@ -1780,7 +1862,7 @@ class MyTests(unittest.TestCase):
 Advance time with `advance(e, seconds)` (whole one-second ticks) or move the clock with `e.now += 2` to get past the trade cooldown.
 
 ### Running the tests automatically
-`.github/workflows/tests.yml` runs `python -m unittest discover tests -v` on every push and pull request if the project is hosted on GitHub. The slow checks and the 40-seed edge check are run by hand.
+`.github/workflows/tests.yml` runs on every push and pull request: a **lint** job (Ruff and the light mypy pass, §1, ROADMAP E13) and the test suite in four parts side by side, each failing test run once more on its own (ROADMAP E12). The slow checks and the market checks (`realism.py`, `chart_check.py`) are run by hand.
 
 ---
 

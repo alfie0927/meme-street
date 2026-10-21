@@ -204,7 +204,7 @@ SUPPLY = [
     ("creatures", "retail", .30, r"grocer|supermarket|mart"), ("ocean", "realestate", .30),
     ("ocean", "utilities", .25), ("antigrav", "industrials", .25), ("alchemy", "retail", .30),
 ]
-SUPPLY_P = {(r[0], r[1]): (r[2], re.compile(r[3]) if len(r) > 3 else None) for r in SUPPLY}
+SUPPLY_P = {(r[0], r[1]): (r[2], re.compile(str(r[3])) if len(r) > 3 else None) for r in SUPPLY}
 
 RIVAL_SAME_SECTOR = .55            # chance that two companies in the same sector compete directly
 RIVAL_CROSS = {frozenset(("airlines", "portals")): .45,      # teleporting to work instead of flying there

@@ -507,8 +507,6 @@ class MarketContentTests(unittest.TestCase):
         s = e.stocks["XTECH"]
         members = [m for m in e.stocks.values() if m.sector == "tech" and m.asset_type == "equity"]
         w = sum(m.base for m in members)
-        p0 = {m.ticker: m.price for m in members}
-        i0 = s.price
         advance(e, 1)
         # one tick: index return equals the base-weighted average return of its members (from the tick before)
         advance(e, 120)

@@ -26,10 +26,11 @@ if [ "${1:-}" = fresh ] || [ ! -f "$APP/data/state.json" ]; then
     NEWEST=$(ls -1d "$BACKUPS"/*/ 2>/dev/null | sort | tail -n 1 || true)
     if [ -n "$NEWEST" ]; then
         systemctl stop memestreet-staging 2>/dev/null || true
-        rm -f "$APP"/data/state.json "$APP"/data/state.charts.json "$APP"/data/ledger.db*
+        rm -f "$APP"/data/state.json "$APP"/data/state.charts.json "$APP"/data/ledger.db* "$APP"/data/history.db* "$APP"/data/minutes.db*
         for f in state.json state.charts.json ledger.db; do
             if [ -f "$NEWEST$f" ]; then cp "$NEWEST$f" "$APP/data/"; fi
         done
+        if [ -f "${NEWEST}history.db.gz" ]; then gunzip -c "${NEWEST}history.db.gz" > "$APP/data/history.db"; fi
         echo "The staging copy starts from the live backup $(basename "$NEWEST")."
     else
         echo "No live backup found in $BACKUPS: the staging copy starts a new game."

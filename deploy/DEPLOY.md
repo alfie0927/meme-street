@@ -215,9 +215,15 @@ systemctl stop memestreet-gateway memestreet
 cp /var/backups/memestreet/2026-10-05-0400/state.json /var/backups/memestreet/2026-10-05-0400/state.charts.json /opt/memestreet/data/
 rm -f /opt/memestreet/data/ledger.db-wal /opt/memestreet/data/ledger.db-shm
 cp /var/backups/memestreet/2026-10-05-0400/ledger.db /opt/memestreet/data/
-chown memestreet:memestreet /opt/memestreet/data/state*.json /opt/memestreet/data/ledger.db
+# the game-day price history (from October 2026; a backup without it is fine: the days are rebuilt from the charts)
+rm -f /opt/memestreet/data/history.db*
+gunzip -c /var/backups/memestreet/2026-10-05-0400/history.db.gz > /opt/memestreet/data/history.db
+chown memestreet:memestreet /opt/memestreet/data/state*.json /opt/memestreet/data/ledger.db /opt/memestreet/data/history.db
 systemctl start memestreet && sleep 5 && systemctl start memestreet-gateway
 ```
+
+The backups also hold `history.db.gz`: every listing's game-day candles (the D, W and M charts). The one-minute candles
+(`minutes.db`, three real days) are not backed up.
 
 ## Knowing it is up
 

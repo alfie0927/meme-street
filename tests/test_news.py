@@ -336,7 +336,7 @@ class CrossCompanyTests(unittest.TestCase):
 
     def test_all_five_kinds_appear_and_both_directions(self):
         events = self.run_cross(1200)
-        kinds, signs = set(), set()
+        signs = set()
         for tpl, target, sign, scale, final in events:
             signs.add(sign)
         text = " ".join(e[0]["up"][0] for e in events)
@@ -381,7 +381,6 @@ class WordingTests(unittest.TestCase):
         e = make_engine(88, event_mean_seconds=5)
         quiet(e)
         advance(e, 600)
-        raw = {t for tpl in e.templates.values() for t in tpl["up"] + tpl["down"]}
         broadcast = [n["text"] for n in e.news_log if n["kind"] == "breaking" and n["tickers"]]
         self.assertTrue(broadcast)
 

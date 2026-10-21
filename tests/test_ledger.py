@@ -194,7 +194,6 @@ class EventRecordingTests(unittest.TestCase):
         e.now += 2
         s.fair *= 1.2
         e.trade(p, "CLDR", "sell", 0.5)                    # sell half
-        half = e.ledger and None
         evs = [x for x in self.events(p.token) if x["kind"] == "sell"]
         proceeds = evs[0]["cash_delta"]
         self.assertAlmostEqual(evs[0]["pnl"], proceeds - cost * 0.5 - entry_fee * 0.5, places=6)

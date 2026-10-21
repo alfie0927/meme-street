@@ -215,7 +215,7 @@ class WildMoveTests(unittest.TestCase):
         self.assertIn(n.ticker, e._pending)
 
     def test_a_big_catalyst_move_is_not_cut_by_the_per_second_limit(self):
-        e, m = self.e, self.moon
+        m = self.moon
         price = m.price
         m.move(2.0)                                             # +200% in one go
         self.assertAlmostEqual(m.price / price, 3.0, places=9)
