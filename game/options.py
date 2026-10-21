@@ -7,7 +7,7 @@ cash at expiry.
   leveraged products).
 * **Expiries.** At the close of the regular session (the end of a game day's trading): the next close, and the closes 2,
   7 and 30 game days out. A contract can be bought until a minute before it expires.
-* **Strikes.** Thirteen around the price, about 2.5% apart, on round numbers.
+* **Strikes.** Thirteen around the price, 2.5% to 5% apart, on round numbers.
 * **Prices.** Black-Scholes, with the interest rate `rf` of the price model and an *implied volatility* that is the
   stock's own: the higher of its stated volatility and what it has really done over the last 20 game days, or what it
   is doing now, plus a premium (`option_vol_premium`, 10%: in real markets options cost a little more than the moves
@@ -55,7 +55,7 @@ def bs(S, K, T, sigma, kind, r=0.015, extra_var=0.0):
 
 
 def nice_step(price):
-    """A round strike spacing of about 2.5% of the price: 1, 2, 2.5 or 5 times a power of ten."""
+    """A round strike spacing of 2.5% to 5% of the price: the next of 1, 2, 2.5, 5 or 10 times a power of ten."""
     raw = max(price * 0.025, 1e-6)
     mag = 10 ** math.floor(math.log10(raw))
     for m in (1, 2, 2.5, 5, 10):
