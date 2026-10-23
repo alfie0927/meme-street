@@ -185,8 +185,11 @@ class SocialMixin:
         self.last_reversal = {}                    # ticker -> time of its latest REVERSAL headline
         self._social_t = 0.0
         self._holdsnap_t = 0.0
-        self.boards = {"pnl": []}
+        self.boards = {"pnl": [], "ret": []}
         self.rank_pnl = {}
+        self.rank_ret = {}
+        self.board_day_pnl = []                    # the day board by profit in MB (self.board is by return)
+        self.rank_day_pnl = {}
 
     def social_dump(self):
         return {"chat_seq": self.chat_seq, "chat": list(self.chat), "muted": self.muted,
@@ -402,19 +405,26 @@ class SocialMixin:
             pnl.append({"name": r["name"], "token": r["token"], "pnl": gain, "style": r.get("style"),
                         "ret": gain / p.deposited if p.deposited > 0 else 0.0})
         pnl.sort(key=lambda x: -x["pnl"])
-        self.boards = {"pnl": pnl}
+        ret = sorted(pnl, key=lambda x: -x["ret"])
+        self.boards = {"pnl": pnl, "ret": ret}
         self.rank_pnl = {x["token"]: i + 1 for i, x in enumerate(pnl)}
+        self.rank_ret = {x["token"]: i + 1 for i, x in enumerate(ret)}
 
     def boards_for(self, p, top=20):
         def trim(rows, keys):
             return [{"rank": i + 1, "me": r["token"] == p.token, "style": r.get("style"), **{k: r[k] for k in keys}}
                     for i, r in enumerate(rows[:top])]
-        season = [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"], "style": r.get("style"),
-                   "ret": r["ret"], "equity": r["equity"]} for i, r in enumerate(self.board[:top])]
-        return {"season": season,
+        def day(rows):
+            return [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"], "style": r.get("style"),
+                     "ret": r["ret"], "gain": r.get("gain", 0.0), "equity": r["equity"]} for i, r in enumerate(rows[:top])]
+        # four boards: today and all time, each by return (%) and by profit (MB)
+        return {"season": day(self.board), "day_pnl": day(self.board_day_pnl),
                 "pnl": trim(self.boards["pnl"], ("name", "pnl", "ret")),
-                "mine": {"season": self.rank.get(p.token), "pnl": self.rank_pnl.get(p.token), "dd": p.maxdd},
-                "counts": {"season": len(self.board), "pnl": len(self.boards["pnl"])},
+                "ret": trim(self.boards.get("ret", []), ("name", "pnl", "ret")),
+                "mine": {"season": self.rank.get(p.token), "day_pnl": self.rank_day_pnl.get(p.token),
+                         "pnl": self.rank_pnl.get(p.token), "ret": self.rank_ret.get(p.token), "dd": p.maxdd},
+                "counts": {"season": len(self.board), "day_pnl": len(self.board_day_pnl), "pnl": len(self.boards["pnl"]),
+                           "ret": len(self.boards.get("ret", []))},
                 "players": len(self.players)}
 
     # ------------------------------------------------------------------------------------------ contests

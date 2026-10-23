@@ -1036,6 +1036,11 @@ payments = Payments()
 class Checkout(BaseModel):
     sku: str
     adult: bool = False
+    renew_ok: bool = False                 # a monthly pass: agreed that it renews every month until cancelled
+
+
+class CancelSub(BaseModel):
+    kind: str
 
 
 class TestPay(BaseModel):
@@ -1070,7 +1075,7 @@ async def shop_checkout(b: Checkout, x_token: str = Header("")):
         return JSONResponse({"error": "The shop is not open yet"}, status_code=400)
 
     def work(p):
-        order, err = engine.create_order(p, b.sku, payments.mode, b.adult)
+        order, err = engine.create_order(p, b.sku, payments.mode, b.adult, b.renew_ok)
         return order, err
     res = await with_player(x_token, "checkout", work, interval=1.0)
     if isinstance(res, JSONResponse):
@@ -1079,7 +1084,8 @@ async def shop_checkout(b: Checkout, x_token: str = Header("")):
     if not order:
         return JSONResponse({"error": err}, status_code=400)
     item = engine._sku(order["sku"])
-    name = f"{order['mb']:,} MB" if order["kind"] == "package" else f"Meme Street {order['kind'].title()}, {order['days']} days"
+    name = (f"{order['mb']:,} MB" if order["kind"] == "package" else f"Meme Street {order['kind'].title()}, monthly" if order.get("renews")
+            else f"Meme Street {order['kind'].title()}, {'1 year' if order['days'] == 365 else str(order['days']) + ' days'}")
     url, ref, err = await asyncio.get_running_loop().run_in_executor(pool, payments.checkout, order, name)
     if not url:
         await run(lambda: engine.shop_orders[order["id"]].update(status="failed"))
@@ -1136,12 +1142,14 @@ async def send_receipt(oid):
 async def check_payments(days=3):
     """The daily payment check (ROADMAP O7): ask Stripe for every checkout paid in the last few days and complete any
     order whose webhook never arrived. Returns the report (also kept for the admin page)."""
-    found = await asyncio.get_running_loop().run_in_executor(pool, payments.paid_sessions, time.time() - days * 86400)
-    if found is None:
+    loop = asyncio.get_running_loop()
+    found = await loop.run_in_executor(pool, payments.paid_sessions, time.time() - days * 86400)
+    renewals = await loop.run_in_executor(pool, payments.paid_invoices, time.time() - days * 86400)
+    if found is None or renewals is None:
         report = {"at": time.time(), "checked": 0, "fixed": [], "problems": [], "error": "Stripe could not be reached"}
         await run(lambda: setattr(engine, "pay_check", report))
         return report
-    report = await run(engine.reconcile_paid, found)
+    report = await run(engine.reconcile_paid, found, renewals)
     if report["fixed"]:
         logger.warning("payment check completed %d order(s) the webhook missed", len(report["fixed"]))
         await run(engine.save, False)
@@ -1175,13 +1183,40 @@ async def stripe_webhook(request: Request):
         return JSONResponse({"error": "bad signature"}, status_code=400)
     paid = payments.paid_order(event)
     if paid:
-        oid, ref, amount = paid
-        ok, msg = await run(engine.complete_order, oid, ref, amount)
+        oid, ref, amount, sub = paid
+        ok, msg = await run(engine.complete_order, oid, ref, amount, sub)
         logger.info("stripe webhook: order %s: %s", oid, msg)
         if ok and msg != "Already completed":
             await run(engine.save, False)
             await send_receipt(oid)
+    renewed = payments.renewal(event)
+    if renewed:                                        # a later month of a monthly pass
+        sub, inv, amount = renewed
+        ok, msg = await run(engine.renew_by_provider, sub, inv, amount)
+        logger.info("stripe webhook: subscription %s, invoice %s: %s", sub, inv, msg)
+        if ok:
+            await run(engine.save, False)
+            await send_receipt("renew-" + str(inv)[:60])
+    gone = payments.ended(event)
+    if gone:
+        await run(engine.end_subscription, gone)
     return {"received": True}
+
+
+@app.post("/api/shop/cancel")
+async def shop_cancel(b: CancelSub, x_token: str = Header("")):
+    """Cancel a monthly pass: no more payments, and it stays on to the end of the month already paid."""
+    res = await with_player(x_token, "cancel", lambda p: (p, *engine.cancel_subscription(p, b.kind[:10])), interval=1.0)
+    if isinstance(res, JSONResponse):
+        return res
+    p, ok, msg, sub = res
+    if not ok:
+        return {"ok": False, "msg": msg}
+    if sub and not await asyncio.get_running_loop().run_in_executor(pool, payments.cancel_subscription, sub):
+        return {"ok": False, "msg": "The payment provider could not be reached: please try again in a minute"}
+    ok, msg = await run(engine.mark_cancelled, p, b.kind[:10])
+    await run(engine.save, False)
+    return {"ok": ok, "msg": msg}
 
 
 @app.post("/api/account/birth_year")

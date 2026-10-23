@@ -1,4 +1,7 @@
-"""Taking money for MB packages and the Pro pass (ROADMAP.md M3 and O7).
+"""Taking money for MB packages and the Pro and Expert passes (ROADMAP.md M3 and O7). A monthly pass is a Stripe
+subscription: Stripe takes the first month in its checkout and every later month by itself; each month paid reaches us
+as a signed `invoice.paid` event (the daily check also lists paid invoices, in case one was lost), and cancelling sets the
+subscription to end with the month already paid.
 
 The mode comes from the PAYMENTS environment variable:
 
@@ -25,6 +28,8 @@ import urllib.request
 
 logger = logging.getLogger(__name__)
 STRIPE_API = "https://api.stripe.com/v1/checkout/sessions"
+STRIPE_SUBS = "https://api.stripe.com/v1/subscriptions/"
+STRIPE_INVOICES = "https://api.stripe.com/v1/invoices"
 
 
 class Payments:
@@ -53,7 +58,7 @@ class Payments:
         if self.mode != "stripe":
             return None, None, "The shop is not open yet"
         form = {
-            "mode": "payment",
+            "mode": "subscription" if order.get("renews") else "payment",
             "success_url": f"{self.site}/shop?paid={order['id']}",
             "cancel_url": f"{self.site}/shop?cancelled={order['id']}",
             "client_reference_id": order["id"],
@@ -63,6 +68,9 @@ class Payments:
             "line_items[0][price_data][unit_amount]": str(order["price_cents"]),
             "line_items[0][price_data][product_data][name]": item_name,
         }
+        if order.get("renews"):                              # every month, until cancelled
+            form["line_items[0][price_data][recurring][interval]"] = "month"
+            form["subscription_data[metadata][order]"] = order["id"]
         req = urllib.request.Request(STRIPE_API, data=urllib.parse.urlencode(form).encode(), method="POST",
                                      headers={"Authorization": "Bearer " + self.secret_key,
                                               "Content-Type": "application/x-www-form-urlencoded"})
@@ -131,9 +139,73 @@ class Payments:
             after = sessions[-1].get("id")
         return out
 
+    def _call(self, url, form=None, opener=None):
+        """A Stripe API call: the decoded answer, or None if it failed."""
+        data = urllib.parse.urlencode(form).encode() if form is not None else None
+        req = urllib.request.Request(url, data=data, method="POST" if form is not None else "GET",
+                                     headers={"Authorization": "Bearer " + self.secret_key,
+                                              "Content-Type": "application/x-www-form-urlencoded"})
+        try:
+            with (opener or urllib.request.urlopen)(req, timeout=20) as r:
+                return json.loads(r.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            logger.warning("Stripe refused %s: %s %s", url.split("?")[0], e.code, e.read()[:300])
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            logger.warning("could not reach Stripe: %s", e)
+        return None
+
+    def cancel_subscription(self, sub_id, opener=None):
+        """Stop a monthly pass renewing: it runs to the end of the month already paid. True if Stripe agreed."""
+        if self.mode != "stripe" or not sub_id:
+            return False
+        r = self._call(STRIPE_SUBS + urllib.parse.quote(str(sub_id)), {"cancel_at_period_end": "true"}, opener)
+        return bool(r and r.get("cancel_at_period_end"))
+
+    def paid_invoices(self, since, opener=None, pages=20):
+        """Every later month of a monthly pass Stripe says was paid since `since`, as [(subscription, invoice, cents)];
+        None if Stripe could not be asked."""
+        if self.mode != "stripe":
+            return []
+        out, after = [], None
+        for _ in range(pages):
+            q = {"limit": "100", "status": "paid", "created[gte]": str(int(since))}
+            if after:
+                q["starting_after"] = after
+            data = self._call(STRIPE_INVOICES + "?" + urllib.parse.urlencode(q), None, opener)
+            if data is None:
+                return None
+            invoices = data.get("data") or []
+            for inv in invoices:
+                got = self.renewal({"type": "invoice.paid", "data": {"object": inv}})
+                if got:
+                    out.append(got)
+            if not data.get("has_more") or not invoices:
+                break
+            after = invoices[-1].get("id")
+        return out
+
+    @staticmethod
+    def renewal(event):
+        """(subscription, invoice, amount in cents) from a Stripe event saying a later month of a pass was paid, else
+        None (the first month comes with the checkout)."""
+        if not isinstance(event, dict) or event.get("type") not in ("invoice.paid", "invoice.payment_succeeded"):
+            return None
+        inv = (event.get("data") or {}).get("object") or {}
+        if inv.get("billing_reason") != "subscription_cycle" or not inv.get("subscription"):
+            return None
+        return inv["subscription"], inv.get("id"), inv.get("amount_paid")
+
+    @staticmethod
+    def ended(event):
+        """The subscription a `customer.subscription.deleted` event says is over, else None."""
+        if not isinstance(event, dict) or event.get("type") != "customer.subscription.deleted":
+            return None
+        return ((event.get("data") or {}).get("object") or {}).get("id")
+
     @staticmethod
     def paid_order(event):
-        """(order id, provider reference, amount in cents) from a Stripe event that means "paid", else None."""
+        """(order id, provider reference, amount in cents, subscription or None) from a Stripe event that means "paid",
+        else None."""
         if not isinstance(event, dict) or event.get("type") not in ("checkout.session.completed",
                                                                      "checkout.session.async_payment_succeeded"):
             return None
@@ -141,4 +213,4 @@ class Payments:
         if obj.get("payment_status") != "paid":
             return None
         oid = obj.get("client_reference_id") or (obj.get("metadata") or {}).get("order")
-        return (oid, obj.get("id"), obj.get("amount_total")) if oid else None
+        return (oid, obj.get("id"), obj.get("amount_total"), obj.get("subscription")) if oid else None

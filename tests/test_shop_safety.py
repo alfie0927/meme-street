@@ -24,10 +24,11 @@ def adult(e, name):
 class FakeStripe:
     """Answers Stripe's list call from a list of pages; raises when told to."""
     def __init__(self, pages=None, fail=False):
-        self.pages, self.fail, self.urls = list(pages or []), fail, []
+        self.pages, self.fail, self.urls, self.bodies = list(pages or []), fail, [], []
 
     def __call__(self, req, timeout=None):
         self.urls.append(req.full_url)
+        self.bodies.append((req.data or b"").decode())
         if self.fail:
             raise urllib.error.URLError("down")
         return io.BytesIO(json.dumps(self.pages.pop(0)).encode())
@@ -128,7 +129,7 @@ class StripeListTests(unittest.TestCase):
         fake = FakeStripe([{"data": [session("cs_1", "o1", 199), session("cs_2", "o2", 799, "unpaid")], "has_more": True},
                            {"data": [session("cs_3", "o3", 1399), {"id": "cs_4", "payment_status": "paid"}], "has_more": False}])
         got = self.pay.paid_sessions(1000, opener=fake)
-        self.assertEqual(got, [("o1", "cs_1", 199), ("o3", "cs_3", 1399)])
+        self.assertEqual(got, [("o1", "cs_1", 199, None), ("o3", "cs_3", 1399, None)])
         self.assertIn("created%5Bgte%5D=1000", fake.urls[0])
         self.assertIn("starting_after=cs_2", fake.urls[1])
 

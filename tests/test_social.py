@@ -364,6 +364,29 @@ class DrawdownAndBoardTests(unittest.TestCase):
         self.p = join(self.e, "dd_player")
         self.q = join(self.e, "dd_other")
 
+    def test_four_boards_by_return_and_by_profit(self):
+        """Today and all time, each ranked by return (%) and by profit (MB): a rich player who makes more MB but a smaller
+        return tops the profit boards and not the return ones."""
+        e, p, q = self.e, self.p, self.q
+        e.credit(q, 50000)                                   # q has far more money in
+        e._board()
+        q.season_base = e.equity(q)
+        p.season_base = e.equity(p)
+        p.cash *= 1.10                                       # p: +10% of a small account
+        q.cash += 2000                                       # q: +2,000 MB, about +4%
+        for x in (p, q):
+            x.trades = 1                                     # (both traded today, so both are on the day boards)
+        e._board()
+        b = e.boards_for(p)
+        self.assertEqual(b["counts"]["season"], 2)
+        self.assertEqual(b["season"][0]["name"], "dd_player")
+        self.assertEqual(b["day_pnl"][0]["name"], "dd_other")
+        self.assertEqual(b["ret"][0]["name"], "dd_player")
+        self.assertEqual(b["pnl"][0]["name"], "dd_other")
+        self.assertEqual(b["mine"]["season"], 1)
+        self.assertEqual(b["mine"]["day_pnl"], 2)
+        self.assertGreater(b["day_pnl"][0]["gain"], b["day_pnl"][1]["gain"])
+
     def test_drawdown_measures_the_fall_from_the_peak(self):
         e, p = self.e, self.p
         e.trade(p, "CLDR", "buy", 0.5)
@@ -408,7 +431,7 @@ class DrawdownAndBoardTests(unittest.TestCase):
         e.trade(p, "CLDR", "buy", 0.3)
         q.maxdd = 0.3
         e._board()
-        self.assertEqual(set(e.boards), {"pnl"})
+        self.assertEqual(set(e.boards), {"pnl", "ret"})
         self.assertFalse(hasattr(e, "rank_risk"))
         for row in e.board:
             self.assertNotIn("score", row)
@@ -426,7 +449,7 @@ class DrawdownAndBoardTests(unittest.TestCase):
         self.assertEqual(e.boards["pnl"], [])
         self.assertEqual(e.board_view(), [])
         self.assertIsNone(e.rank.get(p.token))
-        self.assertEqual(e.boards_for(p)["counts"], {"season": 0, "pnl": 0})
+        self.assertEqual(e.boards_for(p)["counts"], {"season": 0, "day_pnl": 0, "pnl": 0, "ret": 0})
         self.assertIsNone(e.me_state(p)["rank"])
         self.assertIsNone(e.me_for(p)["rank"]["season"])
         self.assertIsNone(e.me_for(p)["rank"]["pnl"])
@@ -439,7 +462,7 @@ class DrawdownAndBoardTests(unittest.TestCase):
         self.assertNotIn(q.token, e.rank)                     # the one who only watched is on neither board
         self.assertNotIn(q.token, e.rank_pnl)
         self.assertEqual(e.boards_for(q)["mine"]["season"], None)
-        self.assertEqual(e.boards_for(p)["counts"], {"season": 1, "pnl": 1})
+        self.assertEqual(e.boards_for(p)["counts"], {"season": 1, "day_pnl": 1, "pnl": 1, "ret": 1})
         self.assertEqual(len(e.board_view()), 1)
         self.assertTrue(all(r["name"] != "dd_other" for r in e.boards_for(p)["season"] + e.boards_for(p)["pnl"]))
 
@@ -510,7 +533,7 @@ class DrawdownAndBoardTests(unittest.TestCase):
         e.trade(p, "CLDR", "buy", 0.1)                         # (only people who have traded are on a board)
         e._board()
         boards = e.boards_for(p)
-        self.assertEqual({"season", "pnl", "mine", "counts", "players"}, set(boards))
+        self.assertEqual({"season", "day_pnl", "pnl", "ret", "mine", "counts", "players"}, set(boards))
         flat = repr(boards)
         for pl in e.players.values():
             self.assertNotIn(pl.token, flat)

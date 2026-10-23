@@ -2960,13 +2960,16 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         for p in self.players.values():
             e = self.equity(p)
             self._track_drawdown(p, e)
-            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token, "style": self.style_of(p)}
+            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token, "style": self.style_of(p),
+                   "gain": e - p.season_base}
             everyone.append(row)
             if self.traded_today(p):
                 rows.append(row)
         rows.sort(key=lambda r: -r["ret"])
         self.board = rows
         self.rank = {r["token"]: i + 1 for i, r in enumerate(rows)}
+        self.board_day_pnl = sorted(rows, key=lambda r: -r["gain"])        # the day board by profit in MB
+        self.rank_day_pnl = {r["token"]: i + 1 for i, r in enumerate(self.board_day_pnl)}
         self._social_board(everyone)
 
     def _season_boundary(self):
@@ -3366,8 +3369,32 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p = stock.persona
             persona = {"ceo": p.get("ceo"), "cfo": p.get("cfo"), "product": p.get("product"), "city": p.get("city"),
                        "former_ceos": list(p.get("ex_ceos", []))}
-        return {"type": "company", "ticker": ticker, "persona": persona, "log": list(stock.log)[::-1],
-                "reports": [{**r, "causes": list(r["causes"])} for r in list(stock.reports)[::-1]]}
+        out = {"type": "company", "ticker": ticker, "persona": persona, "log": list(stock.log)[::-1],
+               "reports": [{**r, "causes": list(r["causes"])} for r in list(stock.reports)[::-1]]}
+        holdings = self.holdings_for(stock)
+        if holdings is not None:
+            out["holdings"] = holdings
+        return out
+
+    def holdings_for(self, s):
+        """What an index or fund holds, with each holding's weight (shares of 1), biggest first, the way it is really
+        built (`_update_index_level`): the MSI 50 by market value, a sector index by company size, a themed ETF in equal
+        weights, and a leveraged product a multiple of what it tracks. None for anything else."""
+        spec = getattr(s, "spec", None)
+        if not spec:
+            return None
+        if spec["kind"] == "leveraged":
+            u = self.stocks.get(spec.get("of"))
+            return [{"ticker": spec.get("of"), "name": u.name if u else spec.get("of"), "weight": float(spec.get("leverage", 1.0))}]
+        if spec["kind"] == "market":
+            w = {tk: self.stocks[tk].shares_outstanding * self.stocks[tk].price for tk in self.index_members if tk in self.stocks}
+        elif spec["kind"] == "sector":
+            w = {tk: x.base for tk, x in self.stocks.items() if x.asset_type != "index" and x.sector == spec["sector"]}
+        else:
+            w = {tk: 1.0 for tk in spec.get("members", []) if tk in self.stocks and self.stocks[tk].asset_type != "index"}
+        total = sum(w.values()) or 1.0
+        return sorted(({"ticker": tk, "name": self.stocks[tk].name, "weight": round(v / total, 6)} for tk, v in w.items()),
+                      key=lambda r: -r["weight"])
 
     def _upcoming_events(self):
         events = []
@@ -3930,6 +3957,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             if o["status"] != "paid":
                 o["status"], o["paid_at"] = "paid", ev["t"]
                 self._apply_purchase(p, o, at=ev["t"])
+            if extra.get("renews") and o["kind"] in ("pro", "expert") and o["kind"] not in p.subs:   # a monthly pass begins
+                p.subs[o["kind"]] = {"order": oid, "sub": extra.get("sub"), "provider": extra.get("provider"), "status": "active",
+                                     "price_cents": o["price_cents"], "sku": o["sku"], "since": ev["t"], "renewals": 0}
         elif kind in ("buy", "sell", "short", "cover", "margin_call"):
             p.cash += cash
             self.house += house

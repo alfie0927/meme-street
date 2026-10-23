@@ -21,7 +21,7 @@ class LessonTests(unittest.TestCase):
     """The quizzes themselves, switched on (they are kept for later)."""
 
     def setUp(self):
-        self.e = make_engine(21, quizzes=True)
+        self.e = make_engine(21, quizzes=True, challenges=True)
         self.p = join(self.e, "student")
 
     def test_the_lessons_load_and_every_quiz_is_well_formed(self):
@@ -84,7 +84,7 @@ class QuizzesOffTests(unittest.TestCase):
     """What ships: lessons are plain reading, with no quiz, no lesson reward and no challenge that needs a quiz."""
 
     def setUp(self):
-        self.e = make_engine(23)
+        self.e = make_engine(23, challenges=True)
         self.p = join(self.e, "reader")
 
     def test_the_game_ships_with_quizzes_off(self):
@@ -112,9 +112,24 @@ class QuizzesOffTests(unittest.TestCase):
         self.assertIn("first_stop", ids)
 
 
+class ChallengesOffTests(unittest.TestCase):
+    def test_the_game_ships_with_challenges_off_and_they_pay_nothing(self):
+        e = make_engine(24)
+        self.assertFalse(e.settings["challenges"])                                     # (from base.json)
+        p = join(e, "nochal")
+        self.assertEqual(e.lessons_view(p)["challenges"], [])
+        cash = p.cash
+        e.trade(p, "NVXA", "buy", 0.2)
+        e.now += 2
+        e.set_exit(p, "NVXA", "stop_loss", e.stocks["NVXA"].price * 0.9)               # (a stop: "Protect a trade" when on)
+        e.tick(now=e.now + 1)
+        self.assertEqual(p.mb_by_source.get("challenge", 0.0), 0.0)
+        self.assertLess(p.cash, cash)
+
+
 class ChallengeTests(unittest.TestCase):
     def setUp(self):
-        self.e = make_engine(22)
+        self.e = make_engine(22, challenges=True)
         self.p = join(self.e, "trader")
 
     def step(self, n=2):
@@ -163,7 +178,8 @@ class LearningServerTests(unittest.TestCase):
             a = http_join(srv.url, "HttpStudent")
             h = {"X-Token": a["token"]}
             d = json.loads(http(srv, "/api/learn", headers=h)[1])
-            self.assertTrue(d["lessons"] and d["challenges"])
+            self.assertTrue(d["lessons"])
+            self.assertEqual(d["challenges"], [])                                  # the game ships with challenges off
             self.assertFalse(d["quizzes"])
             les = json.loads(http(srv, "/api/learn/lesson/basics")[1])            # public
             self.assertTrue(les["body"])
@@ -196,7 +212,8 @@ class LearningBrowserTests(unittest.TestCase):
                           lambda t: "first lesson" in t, wait=8)
             await pg.goto(base + "/learn", 3)
             await d.check("the lessons are listed", "document.querySelectorAll('.lesson-item').length", lambda n: n >= 10, wait=10)
-            await d.check("and the challenges", "document.querySelectorAll('.chal').length", lambda n: n >= 5)
+            await d.check("and no challenges or MB to earn (switched off)", "document.querySelectorAll('.chal').length+'|'+document.getElementById('learn-body').innerText",
+                          lambda t: t.startswith("0|") and "Challenges" not in t and "MB a week" not in t)
             await d.check("with no quiz mentioned (quizzes are off)", "document.getElementById('learn-body').innerText",
                           lambda t: "quiz" not in t.lower() and "questions" not in t)
             await pg.goto(base + "/learn?l=basics", 3)

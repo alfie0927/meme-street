@@ -17,6 +17,8 @@ nav{display:flex;flex-wrap:wrap;gap:0}nav a{padding:6px 8px;font-size:12.5px;col
 #conn{font-size:11px;color:#d29922}
 #session{display:flex;align-items:center;gap:10px}
 #mkt{font-size:12px;padding:3px 9px;border:1px solid #3ad07a55;color:var(--up);white-space:nowrap}
+a.stat-link{color:inherit;text-decoration:none}a.stat-link:hover small,a.stat-link:hover span{color:var(--acc)}
+#daily-btn{font-size:12px;padding:3px 10px;border:1px solid var(--acc);color:var(--acc);white-space:nowrap;text-decoration:none;font-weight:700}#daily-btn:hover,.page-daily #daily-btn{background:var(--acc);color:#021012}#daily-btn .dl-short{display:none}
 #mkt.pre{color:#ffc65c;border-color:#ffc65c55}#mkt.after{color:#c3a3ff;border-color:#c3a3ff55}
 .stats{display:flex;flex-wrap:wrap;gap:4px 0;padding:2px 18px 8px}
 .stat{padding:0 16px;border-left:1px solid var(--line)}.stat:first-child{padding-left:0;border-left:0}
@@ -115,12 +117,13 @@ section>.card{display:none}
 .chart-resize{height:14px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;touch-action:none}.chart-resize span{width:52px;height:4px;border-radius:2px;background:var(--line)}.chart-resize:hover span{background:var(--acc)}
 #chart-box.chart-full{position:fixed;inset:0;z-index:60;background:var(--bg);padding:10px 16px;overflow:auto}.chart-full .chart-resize{display:none}
 body.noscroll{overflow:hidden}
-.page-calendar #calendar-card{display:block}.page-bots #bots-card{display:block}.page-daily #daily-card{display:block}.chipset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}
+.page-calendar #calendar-card{display:block}.page-bots #bots-card{display:block}.page-daily #daily-card{display:block}.chipset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}.holdings-tbl{width:100%}.holdings-tbl tr[data-go]{cursor:pointer}.holdings-tbl tr[data-go]:hover td{background:#ffffff08}.holdings-tbl td:nth-child(2),.holdings-tbl th:nth-child(2){text-align:left}.holdings-tbl a{color:inherit;text-decoration:none}.holdings-tbl td.w{white-space:nowrap}.wbar{display:inline-block;width:70px;height:6px;background:#ffffff10;border-radius:2px;margin-right:8px;vertical-align:middle;overflow:hidden}.wbar i{display:block;height:100%;background:var(--acc)}
 .dly-stats,.dly-result{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px 14px;margin:0 0 8px}.dly-result{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:10px}
 .dly-stats small,.dly-result small{display:block;color:var(--mut);font-size:11px}.dly-stats strong{font-variant-numeric:tabular-nums}.dly-result strong{font-size:20px}
 .dly-clock{color:var(--acc);font-size:18px}.dly-chart{border:1px solid var(--line);border-radius:var(--r);background:var(--card2);margin-bottom:10px}
 .dly-acts .bar{margin-bottom:6px}.dly-acts .lab{min-width:40px}.dly-acts button{min-width:66px}.dly-start{font-size:16px;padding:10px 32px}
 .dly-board{width:100%}.dly-board tr.me td{background:#4cc3cc14}
+#dly-pop,#buy-pop{display:none;position:fixed;inset:0;z-index:80;background:#000000b3;align-items:center;justify-content:center;padding:16px}.dly-pop-in{width:min(600px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:0 10px 40px #000c}.dly-big{font-size:40px;font-weight:700;margin:10px 0 4px;font-variant-numeric:tabular-nums}.pkg>button{margin-top:auto}.pkg .per{display:inline;font-size:12px;color:var(--mut);font-weight:400}.sub-line .sell{margin-left:8px;padding:2px 10px}
 @media(max-width:760px){.dly-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.dly-result{grid-template-columns:repeat(2,minmax(0,1fr))}.dly-acts button{min-width:0;flex:1}}
 .bot-card{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:8px 0}.bot-log td{padding:2px 8px 2px 0;font-size:12px;text-align:left}
 .bot-rules{width:100%}.bot-rules td{padding:3px 4px;vertical-align:top}.bot-rules th{text-align:left;padding:3px 4px}.bot-rules .r-when{width:100%;min-width:220px;font:12px var(--mono)}
@@ -143,7 +146,7 @@ body.noscroll{overflow:hidden}
 #low-banner a{color:#ffd990}
 .pro-badge{display:none;margin-left:8px;padding:0 5px;border:1px solid var(--avg);border-radius:2px;font-size:10.5px;font-weight:700;color:var(--avg);vertical-align:middle}
 .pkg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,210px));gap:10px;margin:8px 0}
-#shop-src td:last-child,#shop-src th:last-child{text-align:right}
+
 .pkg{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border:1px solid var(--line);border-radius:2px}
 .pkg b{font-size:16px}.pkg .price{font-size:15px;font-weight:650}.pkg small{color:var(--mut);font-size:12px}.pkg button{margin-top:6px}
 .restart-box{border-left:2px solid var(--line);padding:6px 12px;margin:8px 0}
@@ -165,7 +168,7 @@ button:hover{background:#1f262c}button:disabled{opacity:.4;cursor:not-allowed}
 #opt-box{display:none}body.opt-tab #opt-box{display:block}body.opt-tab #chart-box,body.opt-tab .chart-resize,body.opt-tab .chart-controls{display:none!important}
 .opt-chain{width:100%;font-variant-numeric:tabular-nums}.opt-chain td,.opt-chain th{text-align:right;padding:4px 6px}.opt-chain th.k,.opt-chain td.k{text-align:center;font-weight:700;background:var(--card2)}
 .opt-chain td.itm{background:#4cc3cc12}.opt-chain tr.pxline td{border-bottom:1px solid var(--acc)}.opt-chain td.mut{font-size:12px}
-.opt-figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px 14px;margin:8px 0}.opt-figs small{display:block;color:var(--mut);font-size:11px}.opt-figs strong{font-variant-numeric:tabular-nums}#opt-exps .chip.on .mut{color:inherit;opacity:.75}
+.opt-figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px 14px;margin:8px 0}.opt-figs small{display:block;color:var(--mut);font-size:11px}.opt-figs strong{font-variant-numeric:tabular-nums}.pay-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:12px 0 4px;font-size:12px;color:var(--mut)}.pay-key{display:inline-flex;align-items:center;gap:6px}.pay-key i{width:10px;height:10px;border-radius:2px;display:inline-block}svg.payoff{width:100%;height:auto;display:block;margin:2px 0 6px;cursor:crosshair;touch-action:pan-y}#opt-exps .chip.on .mut{color:inherit;opacity:.75}
 #opt-info{margin:-4px 0 10px}
 .opt-chain td[data-opt-pick]{cursor:pointer}.opt-chain td[data-opt-pick]:hover{background:#ffffff0a}.opt-chain td.picked{background:#4cc3cc1f}
 .opt-greeks{width:100%}.opt-greeks td,.opt-greeks th{padding:4px 8px;vertical-align:top;text-align:left}.opt-greeks td.og-v,.opt-greeks td.og-c{white-space:nowrap;font-variant-numeric:tabular-nums}.opt-greeks td.hint{min-width:240px;font-size:12px;white-space:normal}
@@ -196,7 +199,7 @@ aside .news{max-height:260px;overflow-y:auto}
 input,select{font:inherit;width:100%;padding:7px 9px;margin:10px 0;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:2px}
 input:focus,select:focus{outline:none;border-color:var(--acc)}
 .bar input,.bar select{width:auto;margin:0;padding:6px 10px}
-#q{width:340px}#msort{display:none}
+#q{width:340px}#msort{display:none}#rows td.mcap{color:var(--mut);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 /* logged-out visitors: they can watch the live market and a stock's page, and are asked to sign in to do anything else */
 #guest-actions,#guest-hero{display:none}
 body.guest #guest-actions{display:flex;gap:8px;align-items:center}
@@ -220,7 +223,7 @@ body.guest .guest-cta{display:flex}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.two{grid-template-columns:1fr}}
 .alloc{display:flex;height:22px;border-radius:3px;overflow:hidden;margin:6px 0}.alloc i{display:block;height:100%}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mut)}.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.curve{width:100%;height:auto;display:block}
+.curve{width:100%;height:auto;display:block;cursor:crosshair;touch-action:pan-y}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .pbar{height:3px;background:var(--line2);overflow:hidden;margin-top:5px}.pbar i{display:block;height:100%;background:var(--acc)}.pbar.done i{background:var(--up)}
 .quest{padding:8px 0;border-bottom:1px solid var(--line2)}.q-done b{color:var(--up)}
@@ -248,7 +251,7 @@ body.guest .guest-cta{display:flex}
  .stat{min-width:0;padding:3px 0;border-left:0}.stat small{font-size:9.5px}.stat span{font-size:14px}
  .stat:last-child{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline}
  #session-banner{padding:8px 12px;font-size:12.5px}
- #mkt{font-size:11px;white-space:normal}
+ #mkt{font-size:11px;white-space:normal}#daily-btn{font-size:11px;padding:3px 8px}#daily-btn .dl-long{display:none}#daily-btn .dl-short{display:inline}#session{gap:6px}
  main,body:not(.page-market) main{padding:8px}
  .card{padding:12px;margin-bottom:10px;border-radius:3px}
  input,select{font-size:16px}
@@ -281,7 +284,7 @@ body.guest .guest-cta{display:flex}
  #rows td.px{grid-area:p;text-align:right;font-size:15.5px}
  #rows td.chg{grid-area:c}
  #rows td:last-child{grid-area:a;justify-self:end}
- #rows .spk,#rows .held,.spk-col,.held-col{display:none}
+ #rows .spk,#rows .held,#rows .mcap,.spk-col,.held-col,.cap-col{display:none}
  .tick-main{display:flex;flex-direction:column;overflow:hidden}
  .nm{margin-left:0;max-width:100%;display:block;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
  .hold-act button{min-width:58px;min-height:36px}
@@ -378,11 +381,11 @@ body.guest .guest-cta{display:flex}
 <p id="auth-hint" class="hint" style="display:none"></p><button id="login-close" style="display:none;width:100%;margin-top:8px">Keep watching the market</button></div></div>
 <header>
 <div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
-<nav id="nav"><a href="/" data-page="market">Market</a><a href="/daily" data-page="daily">Daily</a><a href="/learn" data-page="learn">Learn</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><a href="/bots" data-page="bots">Bots</a><a href="/shop" data-page="shop">Shop</a></nav>
+<nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><a href="/bots" data-page="bots">Bots</a><a href="/shop" data-page="shop">Shop</a></nav>
 <div class="spacer"></div>
-<div id="session"><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
+<div id="session"><a id="daily-btn" href="/daily" title="Two minutes on a mystery chart, the same for everyone today"><span class="dl-long">Daily Chart</span><span class="dl-short">Daily</span></a><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
 <div class="stats">
-<div class="stat"><small>MSI 50<small id="indexChg" class="mut">+0.0% 30m</small></small><span id="index">100.000</span></div>
+<a class="stat stat-link" href="/stock/MSI" title="The MSI 50: the 50 biggest companies"><small>MSI 50<small id="indexChg" class="mut">+0.0% 30m</small></small><span id="index">100.000</span></a>
 <div class="stat"><small>Cash</small><span id="cash">-</span></div>
 <div class="stat"><small>Equity</small><span id="eq">-</span></div>
 <div class="stat"><small>P&amp;L (all time)</small><span id="pnl">-</span></div>
@@ -396,7 +399,7 @@ body.guest .guest-cta{display:flex}
 <div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Ticker, name, industry or size" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option><option value="cap:-1">Largest companies first</option><option value="cap:1">Smallest companies first</option></select></div>
 <div class="ticket"><span class="lab">Buy size</span><span id="bchips"></span><span class="lab">Sell size</span><span id="schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="Amount in MB"></div>
 <div id="secs-wrap"><div id="secs"></div><button class="chip" id="secs-toggle" aria-expanded="false"></button></div>
-<table><thead><tr><th class="star-h"></th><th data-sort="ticker">Ticker <span data-sort="name" style="font-weight:500">&middot; Company</span></th><th data-sort="price">Price</th><th data-sort="chg">30m</th><th class="spk-col">Trend</th><th class="held-col" data-sort="held">Held</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+<table><thead><tr><th class="star-h"></th><th data-sort="ticker">Ticker <span data-sort="name" style="font-weight:500">&middot; Company</span></th><th data-sort="price">Price</th><th class="cap-col" data-sort="cap">Mkt cap</th><th data-sort="chg">30m</th><th class="spk-col">Trend</th><th class="held-col" data-sort="held">Held</th><th></th></tr></thead><tbody id="rows"></tbody></table>
 <p id="no-match" class="mut" style="display:none">Nothing matches that search. Clear it or pick another industry.</p></div>
 <div class="card" id="holdings-card"><h3>Your holdings</h3>
 <div class="finance-grid" id="hold-sum"></div>
@@ -418,7 +421,7 @@ body.guest .guest-cta{display:flex}
 <table><thead><tr><th>Time</th><th>Type</th><th>Ticker</th><th>Shares</th><th>Price</th><th>Amount</th><th>Fee</th><th>Realised P/L</th><th>Cash change</th></tr></thead><tbody id="hist-rows"></tbody></table>
 <p id="hist-empty" class="mut" style="display:none">Nothing here yet.</p><div class="bar" style="margin-top:8px"><button id="hist-more" style="display:none">Load older</button></div></div>
 <div class="card" id="leaders-card"><h3>Leaderboards</h3>
-<div class="tabs" id="board-tabs"><button class="chip on" data-b="season">Day return</button><button class="chip" data-b="pnl">All-time P&amp;L</button></div>
+<div class="bar" style="justify-content:space-between"><div class="tabs" id="board-tabs" style="margin:0"><button class="chip on" data-b="day">Today</button><button class="chip" data-b="all">All time</button></div><div class="tabs" id="board-by" style="margin:0"><span class="mut">Rank by</span><button class="chip on" data-by="ret">Return</button><button class="chip" data-by="pnl">Profit</button></div></div>
 <p class="hint" id="board-hint"></p><table id="board-table"></table><p class="hint" id="board-me"></p></div>
 <div class="card" id="social-card"><div class="tabs" id="soc-tabs"><button class="chip on" data-tab="chat">Chat</button><button class="chip" data-tab="follow">Following</button></div>
 <div id="tab-chat"><div class="bar"><span class="mut" id="chat-note"></span></div>
@@ -459,12 +462,9 @@ body.guest .guest-cta{display:flex}
 <h3 class="sp">Latest releases</h3><table id="cal-past"></table></div>
 <div class="card" id="shop-card"><h3>Shop</h3>
 <p class="about" style="margin-top:0">Everyone starts with 1,000 MB of practice money, and you can buy more here if you run out. MB can't be withdrawn, sold or swapped for anything, and buying them never lifts your rank.</p>
-<div id="shop-mode"></div><div id="shop-restart"></div>
-<h3 class="sp">Before you buy</h3><div id="shop-rules"></div>
-<h3 class="sp">MB packages</h3><p class="hint" id="shop-why" style="display:none;margin-top:0"></p><div class="pkg-grid" id="shop-pkgs"></div>
+<div id="shop-mode"></div>
+<h3 class="sp">MB packages</h3><div class="pkg-grid" id="shop-pkgs"></div>
 <h3 class="sp">Meme Street Pro</h3><div id="shop-pro"></div><h3 class="sp">Meme Street Expert</h3><div id="shop-expert"></div>
-<h3 class="sp">Your spending limit</h3><div id="shop-cap"></div>
-<h3 class="sp">Where your MB came from</h3><table id="shop-src"></table>
 <h3 class="sp">Your purchases</h3><table id="shop-orders"></table></div>
 <div class="card" id="player-card"><div id="player-body" class="mut">Loading…</div></div>
 </section><aside>
@@ -735,7 +735,7 @@ function badgesHtml(x){
 const rowEls={},prevPx={};let sortDirty=true,lastOrderT=0,orderSig='';
 function makeRow(x){
  const tr=document.createElement('tr');tr.dataset.k=x.ticker;
- tr.innerHTML=`<td class="star" data-star title="Add to or remove from your watchlist">\u2606</td><td><div class="tick-cell"><span class="tick-main"><span class="tk">${esc(x.ticker)}</span><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="badges"></span></span></div></td><td class="px"></td><td class="chg"></td><td class="spk"></td><td class="held"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;
+ tr.innerHTML=`<td class="star" data-star title="Add to or remove from your watchlist">\u2606</td><td><div class="tick-cell"><span class="tick-main"><span class="tk">${esc(x.ticker)}</span><span class="nm" title="${esc(x.name)}">${esc(x.name)}</span><span class="badges"></span></span></div></td><td class="px"></td><td class="mcap"></td><td class="chg"></td><td class="spk"></td><td class="held"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;
  return tr}
 const sectorName=id=>{const s=S&&S.sectors.find(x=>x.id===id);return s?s.name:id};
 // company size by market value, in billions: small under 2, mid 2 to 10, large from 10 (the usual bands; engine SMALL_CAP / LARGE_CAP)
@@ -778,6 +778,7 @@ function renderMarket(){
   const was=prevPx[x.ticker];prevPx[x.ticker]=x.price;
   if(was!==undefined&&Math.abs(x.price/was-1)>0.0015){tr._fp=!tr._fp;setText(tr.querySelector('.px'),priceText(x.price),'px '+(x.price>was?'fu':'fd')+(tr._fp?1:2))}
   else setText(tr.querySelector('.px'),priceText(x.price));
+  setText(tr.querySelector('.mcap'),x.asset_type==='equity'?capText(finOf(x).market_cap):'-');
   setHtml(tr.querySelector('.chg'),`<span class="${Math.abs(x.chg)<0.0005?'flat':x.chg>0?'up':'dn'}">${pc(x.chg)}</span>`);
   setHtml(tr.querySelector('.spk'),spark(x.spark));
   setHtml(tr.querySelector('.badges'),badgesHtml(x));
@@ -890,18 +891,41 @@ function drawOptions(){
    for(const cl of['-st','-bid','-ask']){const td=tr.querySelector('.'+p+cl);td.classList.toggle('itm',itm);td.classList.toggle('picked',on)}}
   tr.classList.toggle('pxline',K===below)});
  drawTicket();drawMyOpts()}
-function payoffSvg(kind,K,ask,px,move){       // profit or loss at expiry of one contract (100 shares)
- const lo=Math.max(0,Math.min(px,K)-Math.max(3*move,Math.abs(K-px)*0.6,px*0.02)),hi=Math.max(px,K)+Math.max(3*move,Math.abs(K-px)*0.6,px*0.02),W=innerWidth<760?360:600,H=innerWidth<760?110:130;
- const pl=x=>((kind==='call'?Math.max(0,x-K):Math.max(0,K-x))-ask)*OPT_X,xs=[lo,K,hi],ys=xs.map(pl),cost=ask*OPT_X,top=Math.max(...ys,cost*0.2),bot=-cost*1.15;
- const X=x=>(x-lo)/(hi-lo)*W,Y=v=>6+(top-v)/(top-bot)*(H-12),be=kind==='call'?K+ask:K-ask;
- const path=xs.map((x,i)=>(i?'L':'M')+X(x).toFixed(1)+' '+Y(ys[i]).toFixed(1)).join(' ');
- return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block;margin:8px 0" role="img" aria-label="Profit or loss at expiry for one contract">
- <line x1="0" x2="${W}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="var(--line)"/>
- <line x1="${X(px).toFixed(1)}" x2="${X(px).toFixed(1)}" y1="0" y2="${H}" stroke="var(--acc)" stroke-dasharray="3 3"/>
- <path d="${path}" fill="none" stroke="var(--up)" stroke-width="1.8"/>
- <text x="${Math.min(W-4,X(px)+4).toFixed(0)}" y="12" fill="var(--acc)" font-size="11">price ${pxText(px)}</text>
- ${be>lo&&be<hi?`<text x="${Math.min(W-90,X(be)+4).toFixed(0)}" y="${(Y(0)-5).toFixed(0)}" fill="var(--mut)" font-size="11">breakeven ${pxText(be)}</text>`:''}
- <text x="4" y="${(H-4).toFixed(0)}" fill="var(--dn)" font-size="11">most you can lose ${numText(cost)} MB</text></svg>`}
+// round steps for a chart's scale (1, 2, 2.5 or 5 times a power of ten), about `n` of them between lo and hi
+function niceTicks(lo,hi,n){const span=hi-lo||Math.abs(hi)||1,raw=span/n,mag=10**Math.floor(Math.log10(raw)),step=[1,2,2.5,5,10].map(m=>m*mag).find(s=>s>=raw)||10*mag;
+ const out=[];for(let v=Math.ceil(lo/step)*step;v<=hi+step*1e-9;v+=step)out.push(+v.toFixed(10));return out}
+const tickText=(v,step)=>numText(v,step<0.01?4:step<1?2:0);
+// The payoff chart: profit or loss at expiry of one contract (100 shares) against where the price ends, the profit
+// shaded green and the loss red; the pointer shows what any price would pay (payPtr: where it is, kept across redraws)
+let payPtr=null;
+function payoffSvg(kind,K,ask,px,move){
+ const W=PHONE?360:820,H=PHONE?200:230,L=PHONE?50:64,R=12,T=12,B=26,pw=W-L-R,ph=H-T-B;
+ const lo=Math.max(0,Math.min(px,K)-Math.max(2.5*move,Math.abs(K-px)*0.6,px*0.04)),hi=Math.max(px,K)+Math.max(2.5*move,Math.abs(K-px)*0.6,px*0.04);
+ const pl=x=>((kind==='call'?Math.max(0,x-K):Math.max(0,K-x))-ask)*OPT_X,cost=ask*OPT_X,be=kind==='call'?K+ask:K-ask;
+ const ends=[pl(lo),pl(K),pl(hi)],top=Math.max(...ends,cost*0.6),bot=-cost*1.3;
+ const X=x=>L+(x-lo)/(hi-lo)*pw,Y=v=>T+(top-v)/(top-bot)*ph,z=Y(0);
+ const line=[[lo,ends[0]],[K,ends[1]],[hi,ends[2]]].map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+ const area=line+` L${X(hi).toFixed(1)} ${z.toFixed(1)} L${X(lo).toFixed(1)} ${z.toFixed(1)} Z`;
+ const yt=niceTicks(bot,top,4),ys=yt.length>1?yt[1]-yt[0]:1,xt=niceTicks(lo,hi,PHONE?4:7),xs=xt.length>1?xt[1]-xt[0]:1;
+ let s=`<svg class="payoff" viewBox="0 0 ${W} ${H}" role="img" aria-label="Profit or loss at expiry for one contract" data-l="${L}" data-pw="${pw}">`
+  +`<defs><clipPath id="pay-up"><rect x="${L}" y="${T}" width="${pw}" height="${(z-T).toFixed(1)}"/></clipPath><clipPath id="pay-dn"><rect x="${L}" y="${z.toFixed(1)}" width="${pw}" height="${(T+ph-z).toFixed(1)}"/></clipPath></defs>`;
+ for(const v of yt){const y=Y(v);if(y<T-1||y>T+ph+1)continue;s+=`<line x1="${L}" x2="${W-R}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${v===0?'var(--mut)':'#ffffff0d'}"/><text x="${L-6}" y="${(y+4).toFixed(1)}" fill="var(--mut)" font-size="11" text-anchor="end">${v>0?'+':''}${tickText(v,ys)}</text>`}
+ for(const v of xt){const x=X(v);if(x<L+14||x>W-R-14)continue;s+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${T}" y2="${T+ph}" stroke="#ffffff08"/><text x="${x.toFixed(1)}" y="${H-7}" fill="var(--mut)" font-size="11" text-anchor="middle">${tickText(v,xs)}</text>`}
+ s+=`<path d="${area}" fill="#3ad07a2e" clip-path="url(#pay-up)"/><path d="${area}" fill="#f25c542e" clip-path="url(#pay-dn)"/>`
+  +`<line x1="${X(K).toFixed(1)}" x2="${X(K).toFixed(1)}" y1="${T}" y2="${T+ph}" stroke="var(--mut)" stroke-dasharray="2 4"/>`
+  +`<line x1="${X(px).toFixed(1)}" x2="${X(px).toFixed(1)}" y1="${T}" y2="${T+ph}" stroke="var(--acc)" stroke-dasharray="5 4" stroke-width="1.4"/>`
+  +`<path d="${line}" fill="none" stroke="var(--txt)" stroke-width="2"/>`
+  +(be>lo&&be<hi?`<circle cx="${X(be).toFixed(1)}" cy="${z.toFixed(1)}" r="4.5" fill="var(--avg)" stroke="var(--card)" stroke-width="2"/>`:'')
+  +`<text x="${L-6}" y="${T-1}" fill="var(--mut)" font-size="10" text-anchor="end">MB</text>`;
+ if(payPtr!==null){const xp=lo+payPtr*(hi-lo),v=pl(xp),x=X(xp),y=Y(v),tx=`Ends at ${pxText(xp)}: ${v>=0?'+':''}${numText(v)} MB`,tw=tx.length*7+16,bx=Math.min(W-R-tw,Math.max(L,x+10));
+  s+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${T}" y2="${T+ph}" stroke="var(--txt)" stroke-opacity="0.5"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${v>=0?'var(--up)':'var(--dn)'}"/>`
+   +`<rect x="${bx.toFixed(1)}" y="${T+2}" width="${tw}" height="22" rx="3" fill="var(--card2)" stroke="var(--line)"/><text x="${(bx+8).toFixed(1)}" y="${T+17}" fill="${v>=0?'var(--up)':'var(--dn)'}" font-size="12" font-weight="700">${tx}</text>`}
+ s+=`<rect class="pay-hit" x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/></svg>`;
+ const key=(c,t)=>`<span class="pay-key"><i style="background:${c}"></i>${t}</span>`;
+ return `<div class="pay-legend">${key('var(--acc)','Price '+pxText(px))}${be>0?key('var(--avg)','Breakeven '+pxText(be)):''}${key('var(--dn)','Most you can lose '+numText(cost)+' MB')}${key('var(--mut)','Strike '+pxText(K))}</div>`+s}
+document.addEventListener('pointermove',e=>{const sv=e.target.closest&&e.target.closest('svg.payoff');if(!sv){if(payPtr!==null&&!e.target.closest('#ot-pay')){payPtr=null;drawTicket()}return}
+ const r=sv.getBoundingClientRect(),vb=sv.viewBox.baseVal,x=(e.clientX-r.left)/r.width*vb.width,L=Number(sv.dataset.l),pw=Number(sv.dataset.pw);
+ const f=(x-L)/pw;const nf=f<0||f>1?null:f;if(nf!==payPtr){payPtr=nf;drawTicket()}});
 const OPT_GREEKS=[
  ['delta','Delta',q=>q.delta.toFixed(3),q=>`moves like ${signed(q.delta*OPT_X,1)} shares`,'How much the option moves for a 1 MB move in the stock: a call between 0 and 1, a put between 0 and −1. Also roughly the chance of finishing in the money.'],
  ['gamma','Gamma',q=>q.gamma.toFixed(4),q=>`delta ${signed(q.gamma*OPT_X,2)} shares per 1 MB`,'How much delta changes for a 1 MB move. Highest at the money and near expiry, where an option swings from worthless to worth something fastest.'],
@@ -926,8 +950,8 @@ function drawTicket(){const el=$('opt-ticket'),c=optChain;if(!el||!c||c.error)re
  $('ot-iv').textContent=(q.iv*100).toFixed(1)+'%';$('ot-itm').textContent=(q.itm*100).toFixed(0)+'%';$('ot-be').textContent=pxText(be);$('ot-oi').textContent=optN(q.oi)+(q.oi===1?' contract':' contracts');
  for(const g of OPT_GREEKS){el.querySelector(`.og-v[data-g="${g[0]}"]`).textContent=g[2](q);el.querySelector(`.og-c[data-g="${g[0]}"]`).textContent=g[3](q)}
  setHtml($('ot-pay'),payoffSvg(kind,r.K,q.ask,c.price,move)+`<p class="hint" style="margin:0">Profit or loss at expiry for one contract: it pays 100 times what the price ends ${kind==='call'?'above':'below'} ${pxText(r.K)}, and makes money past <b>${pxText(be)}</b> (the strike ${kind==='call'?'plus':'less'} what you pay a share).</p>`);
- const n=Number(($('opt-n')||{}).value),fee=0.001,can=Math.floor(Math.max(0,S.cash||0)/(each*(1+fee))+1e-9);
- setHtml($('ot-cost'),(n>=1&&Number.isInteger(n)?`${numText(n,0)} × 100 × ${opx(q.ask)} = <b>${numText(n*each)} MB</b> (+${numText(n*each*fee)} fee) · `:'')+(guest?'':`you can buy up to ${numText(can,0)}`))}
+ const n=Number(($('opt-n')||{}).value),fee=0.001;
+ setHtml($('ot-cost'),n>=1&&Number.isInteger(n)?`${numText(n,0)} × 100 × ${opx(q.ask)} = <b>${numText(n*each)} MB</b> (+${numText(n*each*fee)} fee)`:'')}
 const OPT_HEAD='<th>Contract</th><th>Contracts</th><th>Cost</th><th>Worth now (bid)</th><th>P/L</th><th>Delta</th><th>Theta a day</th><th></th>';
 function drawOptTable(el,list,title,note){if(!el)return;
  const key=list.map(o=>o.id+(o.contracts>1+1e-9?'+':'')).join(',');
@@ -1004,7 +1028,7 @@ function buildDetail(){
 <div class="ticket"><span class="lab">Entry</span><input class="o-in" id="r-entry" type="number" step="any" min="0" placeholder="price now" aria-label="Entry price"><span class="lab">Stop-loss</span><input class="o-in" id="r-stop" type="number" step="any" min="0" placeholder="stop price" aria-label="Stop-loss price"><span class="lab">Risk</span><select id="r-pct" aria-label="Risk per trade"><option value="0.005">0.5%</option><option value="0.01" selected>1%</option><option value="0.02">2%</option></select><span class="lab">of your equity · target</span><select id="r-rr" aria-label="Reward to risk"><option value="1.5">1.5R</option><option value="2" selected>2R</option><option value="3">3R</option></select></div>
 <div id="r-out" class="hint"></div><div class="bar"><button id="r-use" disabled>Fill in the trade and the bracket</button><span class="hint" id="r-atr"></span></div>
 <p class="hint">Professional traders size every position so that being wrong costs a small, fixed share of the account: put the stop where the idea is proved wrong (just past a support or resistance level), then buy only as much as that risk allows. A stop above the entry means a short.</p></details>
-<h3 class="sp">About the company</h3><p id="d-desc" class="about"></p><div class="persona" id="d-persona"></div><small class="mut" id="d-note"></small>
+<h3 class="sp" id="d-about-h">About the company</h3><p id="d-desc" class="about"></p><div class="persona" id="d-persona"></div><small class="mut" id="d-note"></small>
 <div class="finance-grid" id="d-facts"></div>
 <div id="d-reports"></div><div id="d-log"></div>`;
  const levNow=()=>Number(($('d-lev')||{}).value||1);
@@ -1114,6 +1138,14 @@ function drawDetail(){
  if(Date.now()-lastQuery>10000){lastQuery=Date.now();requestCompany();requestHistory()}
  drawOrders();
  drawChart()}
+// an index's or fund's holdings with their weights (engine.holdings_for), each row a link to the stock; prices live
+function drawHoldings(){
+ const H=company.holdings,lev=H.length===1&&Math.abs(H[0].weight-1)>1e-9,top=Math.max(...H.map(h=>Math.abs(h.weight)),1e-9);
+ const rows=H.map((h,i)=>{const x=S&&S.byT[h.ticker];return `<tr data-go="${esc(h.ticker)}"><td class="mut">${i+1}</td><td><a href="/stock/${encodeURIComponent(h.ticker)}"><b>${esc(h.ticker)}</b> <span class="mut">${esc(h.name)}</span></a></td>`
+  +`<td class="w"><span class="wbar"><i style="width:${(Math.abs(h.weight)/top*100).toFixed(1)}%"></i></span>${(h.weight*100).toFixed(Math.abs(h.weight)<0.1?2:1)}%</td><td>${x?priceText(x.price):'-'}</td><td class="${x?clsP(x.chg):''}">${x?pc(x.chg):'-'}</td></tr>`}).join('');
+ setHtml($('d-log'),`<h3 class="sp">Holdings <span class="mut">(${H.length})</span></h3>`+(lev?`<p class="hint" style="margin-top:0">A leveraged product holds no shares itself: each day it moves ${numText(H[0].weight,0)} times what it tracks.</p>`:'')
+  +`<div style="overflow-x:auto"><table class="holdings-tbl"><thead><tr><th>#</th><th>Ticker &middot; Company</th><th>Weight</th><th>Price</th><th>30m</th></tr></thead><tbody>${rows}</tbody></table></div>`)}
+document.addEventListener('click',e=>{const tr=e.target.closest('.holdings-tbl tr[data-go]');if(tr&&!e.target.closest('a'))location.href='/stock/'+encodeURIComponent(tr.dataset.go)});
 function drawCompany(){
  if(!company||!$('d-log'))return;
  const P=company.persona;
@@ -1123,6 +1155,7 @@ function drawCompany(){
   ${r.causes.length?`<small class="why" title="Click to read it all">Behind the numbers: ${r.causes.map(c=>`${esc(c.text)} (${stamp(c.t)})`).join('; ')+((r.n_causes||0)>r.causes.length?` and ${r.n_causes-r.causes.length} more`:'')}</small>`:''}</div>`).join('')
   +(rep.length>4?`<button class="chip more-btn" data-more="rep">${repAll?'Show the latest four':'Show all '+rep.length+' reports'}</button>`:''):'');
  const log=company.log||[];
+ if(company.holdings){const st=S&&S.byT[selectedTicker];setText($('d-about-h'),st&&(st.ticker==='MSI'||/index/i.test(st.name))?'About the index':'About the fund');drawHoldings();return}
  setHtml($('d-log'),`<h3 class="sp">Company news &amp; analyst notes</h3>`+(log.length?log.slice(0,logN).map(n=>`<div class="filing">${newsHtml(n.text,n.kind)}<small>${stamp(n.t)}</small></div>`).join('')
   +(log.length>logN?`<button class="chip more-btn" data-more="log">Show older news (${log.length-logN} more)</button>`:''):'<span class="mut">Nothing yet.</span>'))}
 // a headline in plain text with its kind ("RUMOR", "CONFIRMED"...) as a small coloured tag in front
@@ -1139,19 +1172,36 @@ function drawNews(){
 // ---------- portfolio page ----------
 const PALETTE=['#4cc3cc','#3ad07a','#e3b341','#bc8cff','#f0883e','#39c5cf','#f778ba','#a5d6ff','#7ee787','#d2a8ff','#ffa657','#79c0ff'];
 let pfData=null;
+// The equity curve: what the account is worth over time, against the money paid in (green above it, red below); the
+// pointer shows the worth at any moment (eqPtr: where it is, kept across redraws)
+let eqPtr=null;
 function curveSvg(curve,deposited){
  if(!curve||curve.length<2)return '<p class="mut">The equity curve fills in as time passes (one point per minute).</p>';
- const W=900,H=250,pl=62,pr=12,pt=12,pb=26,ts=curve.map(c=>c[0]),eq=curve.map(c=>c[1]);
- let lo=Math.min(...eq,deposited),hi=Math.max(...eq,deposited);const pad=(hi-lo)*.12||hi*.01||1;lo-=pad;hi+=pad;
- const span=(ts[ts.length-1]-ts[0])||1,x=t=>pl+(t-ts[0])/span*(W-pl-pr),y=v=>pt+(hi-v)/(hi-lo)*(H-pt-pb);
- const line=eq.map((v,i)=>`${x(ts[i]).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
- const up=eq[eq.length-1]>=deposited,col=up?'#3ad07a':'#f25c54';
- let s=`<svg class="curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Equity over time">`;
- for(let i=0;i<=4;i++){const v=lo+(hi-lo)*i/4,yy=y(v).toFixed(1);s+=`<line x1="${pl}" y1="${yy}" x2="${W-pr}" y2="${yy}" stroke="#1a1f24"/><text x="${pl-6}" y="${(+yy+4).toFixed(1)}" fill="#7d8a93" font-size="11" text-anchor="end">${numText(v,hi-lo<4?2:hi-lo<40?1:0)}</text>`}
- s+=`<line x1="${pl}" y1="${y(deposited).toFixed(1)}" x2="${W-pr}" y2="${y(deposited).toFixed(1)}" stroke="#e3b341" stroke-dasharray="3 4"/><text x="${W-pr}" y="${(y(deposited)-5).toFixed(1)}" fill="#e3b341" font-size="11" text-anchor="end">money paid in ${numText(deposited,0)}</text>`;
- s+=`<polygon points="${x(ts[0]).toFixed(1)},${(H-pb)} ${line} ${x(ts[ts.length-1]).toFixed(1)},${(H-pb)}" fill="${col}" opacity=".12"/><polyline fill="none" stroke="${col}" stroke-width="2" points="${line}"/>`;
- s+=`<text x="${pl}" y="${H-8}" fill="#7d8a93" font-size="11">${stamp(ts[0])}</text><text x="${W-pr}" y="${H-8}" fill="#7d8a93" font-size="11" text-anchor="end">${stamp(ts[ts.length-1])}</text></svg>`;
- return s}
+ const W=PHONE?360:900,H=PHONE?200:260,L=PHONE?56:70,R=14,T=14,B=28,pw=W-L-R,ph=H-T-B,ts=curve.map(c=>c[0]),eq=curve.map(c=>c[1]);
+ let lo=Math.min(...eq,deposited),hi=Math.max(...eq,deposited);const pad=(hi-lo)*0.15||Math.max(hi*0.01,1);lo-=pad;hi+=pad;
+ const span=(ts[ts.length-1]-ts[0])||1,X=t=>L+(t-ts[0])/span*pw,Y=v=>T+(hi-v)/(hi-lo)*ph,base=Y(deposited);
+ const now=eq[eq.length-1],up=now>=deposited,col=up?'#3ad07a':'#f25c54';
+ const pts=eq.map((v,i)=>`${X(ts[i]).toFixed(1)} ${Y(v).toFixed(1)}`),line='M'+pts.join(' L');
+ const yt=niceTicks(lo,hi,PHONE?4:5),ys=yt.length>1?yt[1]-yt[0]:1;
+ let s=`<svg class="curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Equity over time" data-l="${L}" data-pw="${pw}"><defs>`
+  +`<linearGradient id="eq-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity="0.28"/><stop offset="1" stop-color="${col}" stop-opacity="0.02"/></linearGradient></defs>`;
+ for(const v of yt){const y=Y(v);if(y<T-1||y>T+ph+1)continue;s+=`<line x1="${L}" x2="${W-R}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#ffffff0d"/><text x="${L-8}" y="${(y+4).toFixed(1)}" fill="var(--mut)" font-size="11" text-anchor="end">${numText(v,ys<1?2:0)}</text>`}
+ const nx=PHONE?2:4;for(let i=0;i<=nx;i++){const t=ts[0]+span*i/nx,x=X(t);s+=`<text x="${x.toFixed(1)}" y="${H-8}" fill="var(--mut)" font-size="11" text-anchor="${i===0?'start':i===nx?'end':'middle'}">${stamp(t)}</text>`}
+ s+=`<path d="${line} L${X(ts[ts.length-1]).toFixed(1)} ${T+ph} L${L} ${T+ph} Z" fill="url(#eq-fill)"/>`
+  +`<line x1="${L}" x2="${W-R}" y1="${base.toFixed(1)}" y2="${base.toFixed(1)}" stroke="var(--avg)" stroke-dasharray="5 4" stroke-width="1.3"/>`
+  +`<path d="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round"/>`
+  +`<circle cx="${X(ts[ts.length-1]).toFixed(1)}" cy="${Y(now).toFixed(1)}" r="4" fill="${col}" stroke="var(--card)" stroke-width="2"/>`;
+ if(eqPtr!==null){const t=ts[0]+eqPtr*span;let i=0;while(i<ts.length-1&&ts[i+1]<=t)i++;const v=eq[i],x=X(ts[i]),y=Y(v),d=v-deposited;
+  const tx=`${stamp(ts[i])}: ${numText(v)} MB (${d>=0?'+':''}${numText(d)})`,tw=tx.length*7+16,bx=Math.min(W-R-tw,Math.max(L,x+10));
+  s+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${T}" y2="${T+ph}" stroke="var(--txt)" stroke-opacity="0.45"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${d>=0?'var(--up)':'var(--dn)'}"/>`
+   +`<rect x="${bx.toFixed(1)}" y="${T+2}" width="${tw}" height="22" rx="3" fill="var(--card2)" stroke="var(--line)"/><text x="${(bx+8).toFixed(1)}" y="${T+17}" fill="${d>=0?'var(--up)':'var(--dn)'}" font-size="12" font-weight="700">${tx}</text>`}
+ s+=`<rect x="${L}" y="${T}" width="${pw}" height="${ph}" fill="transparent"/></svg>`;
+ const key=(c,t)=>`<span class="pay-key"><i style="background:${c}"></i>${t}</span>`;
+ return `<div class="pay-legend">${key(col,'Equity '+numText(now)+' MB')}${key('var(--avg)','Money paid in '+numText(deposited)+' MB')}</div>`+s}
+document.addEventListener('pointermove',e=>{const sv=e.target.closest&&e.target.closest('svg.curve');
+ if(!sv){if(eqPtr!==null&&!e.target.closest('#pf-curve')){eqPtr=null;if(pfData)setHtml($('pf-curve'),curveSvg(pfData.curve,pfData.deposited))}return}
+ const r=sv.getBoundingClientRect(),vb=sv.viewBox.baseVal,x=(e.clientX-r.left)/r.width*vb.width,f=(x-Number(sv.dataset.l))/Number(sv.dataset.pw);
+ const nf=f<0||f>1?null:f;if(nf!==eqPtr&&pfData){eqPtr=nf;setHtml($('pf-curve'),curveSvg(pfData.curve,pfData.deposited))}});
 const tbl=(head,rows,empty)=>rows.length?`<thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody>`:`<tbody><tr><td class="mut" style="text-align:left">${empty}</td></tr></tbody>`;
 function drawPortfolio(){
  const d=pfData;if(!d)return;
@@ -1205,24 +1255,30 @@ $('hist-csv').onclick=async()=>{
  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)};
 
 // ---------- leaderboards ----------
-let boardTab='season',boardsData=null;
+let boardTab='day',boardBy=lsGet('ms_board_by','ret'),boardsData=null;
+const boardKey=()=>boardTab==='day'?(boardBy==='ret'?'season':'day_pnl'):(boardBy==='ret'?'ret':'pnl');
 // a name as the player chose to show it: a name colour and a title from the quest ladder's Diamond tier (ladder.py)
 const COLOR_OK=/^#[0-9a-f]{6}$/i;
 function nameHtml(name,st){const c=st&&COLOR_OK.test(st.c||'')?` style="color:${st.c}"`:'';return `<span class="pname"${c}>${esc(name)}</span>${st&&st.t?` <span class="ptitle">${esc(st.t)}</span>`:''}`}
 const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${nameHtml(r.name,r.style)}</a>`;
-const HINTS={season:'Return since this day began (money paid in does not count). A day lasts 24 hours and ends at midnight UTC; balances carry over.',pnl:'Total profit or loss since you joined, in MB, including everything you have realised or still hold.'};
+const HINTS={season:'Today\'s return: the gain on what your account was worth when the day began (money paid in does not count). A day lasts 24 hours and ends at midnight UTC; balances carry over.',
+ day_pnl:'Today\'s profit: how many MB your account has gained or lost since the day began (money paid in does not count). A day ends at midnight UTC.',
+ ret:'All-time return: your profit as a share of all the money you have put in (the starting balance, purchases and rewards).',
+ pnl:'All-time profit: how many MB you have made or lost since you joined, counting everything you have closed or still hold.'};
 function drawBoards(){
  const b=boardsData;if(!b)return;
- const rows=b[boardTab]||[];
- $('board-hint').textContent=HINTS[boardTab];
- let head,body;
- if(boardTab==='season'){head=['#','Trader','Day return','Equity'];body=rows.map(r=>`<tr class="${r.me?'me':''}"><td>${r.rank}</td><td>${nameLink(r)}</td><td class="${clsP(r.ret)}">${pc(r.ret)}</td><td>${numText(r.equity)} MB</td></tr>`)}
- else{head=['#','Trader','Profit','Return on money paid in'];body=rows.map(r=>`<tr class="${r.me?'me':''}"><td>${r.rank}</td><td>${nameLink(r)}</td><td class="${cls(r.pnl)}">${signed(r.pnl)} MB</td><td class="${clsP(r.ret)}">${pc(r.ret)}</td></tr>`)}
- setHtml($('board-table'),tbl(head,body,boardTab==='season'?'Nobody has made a trade today.':'Nobody has made a trade yet.'));
+ const k=boardKey(),rows=b[k]||[],today=boardTab==='day';
+ $('board-hint').textContent=HINTS[k];
+ const gain=r=>today?r.gain:r.pnl,head=['#','Trader',...(boardBy==='ret'?['Return','Profit']:['Profit','Return']),today?'Equity':''];
+ const cells=r=>{const ret=`<td class="${clsP(r.ret)}">${pc(r.ret)}</td>`,pr=`<td class="${cls(gain(r))}">${signed(gain(r))} MB</td>`;return boardBy==='ret'?ret+pr:pr+ret};
+ const body=rows.map(r=>`<tr class="${r.me?'me':''}"><td>${r.rank}</td><td>${nameLink(r)}</td>${cells(r)}<td>${today?numText(r.equity)+' MB':''}</td></tr>`);
+ setHtml($('board-table'),tbl(head,body,today?'Nobody has made a trade today.':'Nobody has made a trade yet.'));
  const mine=b.mine||{};
- const n=(b.counts||{})[boardTab]??b.players,dd=` Your worst drawdown today: ${((mine.dd||0)*100).toFixed(1)}%.`;
- setText($('board-me'),mine[boardTab]?`You are #${mine[boardTab]} of ${n} on this board.`+dd:`You are not on this board yet: it lists only people who have made a trade ${boardTab==='season'?'today':'since the game began'}.`+dd)}
+ const n=(b.counts||{})[k]??b.players,dd=` Your worst drawdown today: ${((mine.dd||0)*100).toFixed(1)}%.`;
+ setText($('board-me'),mine[k]?`You are #${mine[k]} of ${n} on this board.`+dd:`You are not on this board yet: it lists only people who have made a trade ${today?'today':'since the game began'}.`+dd)}
 $('board-tabs').addEventListener('click',e=>{const t=e.target.closest('[data-b]');if(!t)return;boardTab=t.dataset.b;document.querySelectorAll('#board-tabs .chip').forEach(c=>c.classList.toggle('on',c===t));drawBoards()});
+$('board-by').addEventListener('click',e=>{const t=e.target.closest('[data-by]');if(!t)return;boardBy=t.dataset.by;lsSet('ms_board_by',boardBy);document.querySelectorAll('#board-by .chip').forEach(c=>c.classList.toggle('on',c===t));drawBoards()});
+document.querySelectorAll('#board-by .chip').forEach(c=>c.classList.toggle('on',c.dataset.by===boardBy));
 async function loadBoards(){const b=await api('/api/boards');if(b&&!b.slow&&!b.notfound){boardsData=b;drawBoards()}}
 
 // ---------- profile: quests, tournaments, achievements, privacy ----------
@@ -1390,7 +1446,7 @@ function render(){
  drawChips()}
 
 // ---------- the shop (economy.py): MB packages, the Pro pass, the age rules, the spending limit, the free restart ----------
-let shopData=null,shopAdult=false,shopWait=0;
+let shopData=null,shopWait=0;
 const SRC_LABEL={grant:'Starting balance',purchase:'Bought in the shop',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
 const ORDER_STATUS={paid:'Paid',refunded:'Refunded',expired:'Expired (not paid)',cancelled:'Cancelled',failed:'Failed'};
 async function loadShop(){const d=await api('/api/shop');if(!d||d.slow||d.notfound||d.error)return;shopData=d;drawShop();shopReturn()}
@@ -1402,38 +1458,49 @@ function shopReturn(){            // back from the payment page: say what happen
  if(o&&o.status==='paid'){toast('Thank you! '+(o.kind==='pro'?'Pro is on.':numText(o.mb,0)+' MB were added.'),true,4500);history.replaceState(null,'','/shop');return}
  if(++shopWait<=10){setHtml($('shop-mode'),'<div class="notice-box">Waiting for the payment to be confirmed…</div>');setTimeout(loadShop,3000)}
  else{toast('The payment has not been confirmed yet. If you paid, it will appear here shortly.',false,6000);history.replaceState(null,'','/shop')}}
+const shopDate=t=>new Date(t*1000).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+const passLen=x=>x.renews?'month':x.days===365?'year':x.days+' days';
 function drawShop(){
- const d=shopData;if(!d)return;const c=d.catalog,can=d.selling&&d.age_ok_to_buy&&shopAdult;
+ const d=shopData;if(!d)return;const c=d.catalog;
  setHtml($('shop-mode'),d.mode==='test'?'<div class="notice-box">Test mode: purchases go through a pretend checkout and no money is taken.</div>':!d.selling?'<div class="notice-box">The shop is not open yet. The prices below are what it will charge.</div>':'');
- const r=d.restart;
- setHtml($('shop-restart'),`<div class="restart-box"><b>Free restart</b><p class="hint" style="margin:4px 0">If your account falls below ${numText(r.below,0)} MB, you can top your cash back up to the starting balance for nothing, once every ${numText(r.days,0)} days. ${r.eligible?'<b class="up">You can use it now.</b>':r.equity<r.below?esc(r.reason)+(r.next_at?' (from '+stamp(r.next_at)+')':''):''}</p><div class="bar" style="margin:0">${r.eligible?'<button class="buy" data-shop="restart">Restart with fresh MB</button>':''}${r.open_positions&&r.equity<r.below?'<button data-shop="closeall">Close all positions</button>':''}<a href="/learn">Lessons on managing risk</a></div></div>`);
- const buyBtn=x=>`<button class="buy" data-sku="${esc(x.sku)}" ${can?'':'disabled'}>Buy</button>`;
- const why=!d.selling?'':!d.birth_year_set?'To turn on Buy, tell us the year you were born (above).':!d.age_ok_to_buy?'':!shopAdult?'To turn on Buy, tick the box above.':'';
- setText($('shop-why'),why);$('shop-why').style.display=why?'block':'none';
+ const buyBtn=x=>`<button class="buy" data-sku="${esc(x.sku)}" ${d.selling?'':'disabled'}>Buy</button>`;
  setHtml($('shop-pkgs'),c.packages.map(x=>`<div class="pkg"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${esc(x.per_1000)} per 1,000 MB</small>${buyBtn(x)}</div>`).join(''));
- const passes=list=>`<div class="pkg-grid">${list.map(x=>`<div class="pkg"><b>${x.days===365?'1 year':x.days+' days'}</b><span class="price">${esc(x.price)}</span><small>One payment. It does not renew by itself.</small>${buyBtn(x)}</div>`).join('')}</div>`;
+ const passes=list=>`<div class="pkg-grid">${list.map(x=>`<div class="pkg"><b>${x.renews?'Monthly':x.days===365?'Yearly':x.days+' days'}</b><span class="price">${esc(x.price)}<small class="per"> / ${passLen(x)}</small></span><small>${x.renews?'Renews monthly until you cancel.':`One payment for ${x.days===365?'12 months':x.days+' days'}.`}</small>${buyBtn(x)}</div>`).join('')}</div>`;
+ const status=(kind,until,extra)=>{const sb=(d.subs||{})[kind],T=kind==='pro'?'Pro':'Expert';
+  if(sb&&sb.status==='active')return `<p class="up sub-line">Your monthly ${T} renews on ${shopDate(sb.until)} at ${esc(sb.price)}.${extra} <button class="sell" data-cancel-sub="${kind}">Cancel</button></p>`;
+  if(sb&&sb.status==='cancelled')return `<p class="up sub-line">Your monthly ${T} is cancelled: it stays on until ${shopDate(sb.until)} and nothing more is charged.${extra}</p>`;
+  return until?`<p class="up sub-line">${T} is on until ${shopDate(until)}. Buying again adds to it.${extra}</p>`:''};
  setHtml($('shop-pro'),`<p class="hint" style="margin-top:0">Extra tools and leverage. Pro adds no MB, and everything you need to learn works without it. Leverage magnifies losses exactly as much as gains.</p><ul class="hint">${c.pro_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
-  +(d.pro_until?`<p class="up">Pro is on until ${new Date(d.pro_until*1000).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}. Buying again adds to it.</p>`:d.expert?'<p class="up">You have Pro with your Expert pass.</p>':'')+passes(c.pro));
+  +(d.expert&&!d.pro_until?'<p class="up sub-line">You have Pro with your Expert pass.</p>':status('pro',d.pro_until,''))+passes(c.pro));
  setHtml($('shop-expert'),`<p class="hint" style="margin-top:0">For traders who want to automate and test their ideas. Expert includes everything in Pro.</p><ul class="hint">${c.expert_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
-  +(d.expert?`<p class="up">Expert is on until ${new Date(d.expert_until*1000).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})}. Buying again adds to it. Your bots are on the <a href="/bots">Bots</a> page.</p>`:'')+passes(c.expert));
- let rules='';
- if(!d.birth_year_set)rules=`<p class="hint" style="margin-top:0">Purchases are for people aged ${d.buy_min_age} or over. Tell us the year you were born first: only the year is kept, and only an admin can change it later.</p><div class="bar"><input id="shop-year" type="number" min="1900" max="2100" placeholder="Year you were born" style="width:190px"><button id="shop-year-save">Save</button></div>`;
- else if(!d.age_ok_to_buy)rules=`<p class="hint" style="margin-top:0">Purchases are for people aged ${d.buy_min_age} or over, so the shop is closed to you. Everything else is free: challenges award MB, and the free restart refills an account that has run out.</p>`;
- else rules=`<label class="hint" style="display:block;margin:0 0 6px"><input type="checkbox" id="shop-adult" ${shopAdult?'checked':''} style="width:auto;margin:0 8px 0 0">I am ${d.buy_min_age} or over, the card I pay with is mine or I have the card holder's permission, and I want my purchase added straight away, so I lose the 14-day right to cancel (<a href="/terms" target="_blank">terms</a>).</label>`;
- rules+=`<ul class="hint" style="margin-bottom:0"><li>MB are practice money with no cash value. They cannot be withdrawn, sold, given to other players or exchanged for anything.</li><li>Every payment is one-off: nothing renews automatically.</li><li>At most ${d.purchases_per_day} purchases a day, and no more than your spending limit (below) in any 30 days.</li><li>Losing MB on a trade is part of learning. Before you buy more, look at the free restart above and the lessons on risk.</li></ul>`;
- setHtml($('shop-rules'),rules);
- setHtml($('shop-cap'),`<p class="hint" style="margin-top:0">Spent in the last 30 days: <b>${esc(d.spent_30d_text)}</b> of your <b>${esc(d.cap_text)}</b> limit.${d.cap_pending?' Your new limit starts '+stamp(d.cap_pending[1])+'.':''} Lowering the limit works at once; raising it takes 24 hours, so it is never decided in the heat of a loss.</p><div class="bar"><input id="cap-in" type="number" min="0" step="1" placeholder="New limit, whole ${esc(c.currency.toUpperCase())}" style="width:210px"><button id="cap-save">Set limit</button></div>`);
- const src=Object.entries(d.mb_by_source||{}).filter(([k,v])=>Math.abs(v)>=0.005);
- setHtml($('shop-src'),src.length?'<tr><th>Source</th><th>MB</th></tr>'+src.map(([k,v])=>`<tr><td>${esc(SRC_LABEL[k]||k)}</td><td class="${v<0?'dn':''}">${numText(v)} MB</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">Nothing yet.</td></tr>');
- setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='pro'?'Pro, '+o.days+' days':o.kind==='expert'?'Expert, '+o.days+' days':numText(o.mb,0)+' MB'}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
-$('shop-card').addEventListener('change',e=>{if(e.target.id==='shop-adult'){shopAdult=e.target.checked;drawShop()}});
+  +status('expert',d.expert_until,d.expert?' Your bots are on the <a href="/bots">Bots</a> page.':'')+passes(c.expert));
+ setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='package'?numText(o.mb,0)+' MB':(o.kind==='pro'?'Pro':'Expert')+', '+(o.days===365?'1 year':o.days+' days')}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
+// Buy opens a small box: what it is and costs, the year of birth if it is not known yet, and the one tick the law asks
+// for (18 or over, own card, delivered at once so no 14-day cancellation; for a monthly pass, that it renews)
+function buyBox(x){
+ const d=shopData,renew=!!x.renews,name=x.kind==='package'?numText(x.mb,0)+' MB':`Meme Street ${x.kind==='pro'?'Pro':'Expert'}, ${renew?'monthly':x.days===365?'yearly':x.days+' days'}`;
+ const under=d.birth_year_set&&!d.age_ok_to_buy;
+ let box=$('buy-pop');if(!box){box=document.createElement('div');box.id='buy-pop';document.body.appendChild(box)}
+ setHtml(box,`<div class="dly-pop-in" role="dialog" aria-label="Buy ${esc(name)}"><div class="bar" style="justify-content:space-between;margin:0"><b>${esc(name)}</b><button data-buy-close aria-label="Close">&times;</button></div>
+  <div class="dly-big" style="font-size:30px">${esc(x.price)}${renew?'<small class="mut" style="font-size:14px"> a month</small>':''}</div>
+  <p class="hint" style="margin:0 0 10px">${renew?`Charged now and then every month until you cancel. Cancel any time in the Shop: it stays on to the end of the month you paid for.`:x.kind==='package'?'One payment. MB are practice money with no cash value: they can\'t be withdrawn, sold or given to other players.':'One payment. It does not renew.'}</p>
+  ${under?`<p class="dn">Purchases are for people aged ${d.buy_min_age} or over.</p>`:`${d.birth_year_set?'':`<label class="hint" style="display:block;margin:0 0 8px">The year you were born (only the year is kept)<input id="bp-year" type="number" min="1900" max="2100" placeholder="e.g. 1995" style="max-width:160px;display:block;margin:6px 0 0"></label>`}
+  <label class="hint" style="display:flex;gap:8px;align-items:flex-start;margin:0 0 12px"><input type="checkbox" id="bp-ok" style="width:auto;margin:3px 0 0">I am ${d.buy_min_age} or over, the card I pay with is mine or I have the card holder's permission, and I want it added straight away, so I lose the 14-day right to cancel.${renew?` I agree it renews every month at ${esc(x.price)} until I cancel.`:''}</label>
+  <div class="bar" style="margin:0"><button class="buy" id="bp-go" data-sku="${esc(x.sku)}" disabled>Continue to payment</button><button data-buy-close>Not now</button></div>`}</div>`);
+ box.style.display='flex'}
 $('shop-card').addEventListener('click',async e=>{
- const b=e.target.closest('[data-sku]'),hdr={'X-Token':token||''};
- if(b){b.disabled=true;const r=await postJson('/api/shop/checkout',{sku:b.dataset.sku,adult:shopAdult},hdr);
-  if(r.url){location.href=r.url;return}toast(r.error||'Could not open the payment page',false,4500);b.disabled=false;return}
- if(e.target.id==='shop-year-save'){const r=await postJson('/api/account/birth_year',{year:Number($('shop-year').value)||0},hdr);toast(r.msg||r.error||'Error',!!r.ok,4000);loadShop()}
- else if(e.target.id==='cap-save'){const v=Number($('cap-in').value);if($('cap-in').value===''||!(v>=0)){toast('Type the new limit as a whole number',false);return}
-  const r=await postJson('/api/account/spend_cap',{cents:Math.round(v*100)},hdr);toast(r.msg||r.error||'Error',!!r.ok,4500);loadShop()}});
+ const b=e.target.closest('[data-sku]'),cs=e.target.closest('[data-cancel-sub]'),hdr={'X-Token':token||''};
+ if(b&&shopData){const c=shopData.catalog,x=[...c.packages,...c.pro,...c.expert].find(i=>i.sku===b.dataset.sku);if(x)buyBox(x);return}
+ if(cs){const k=cs.dataset.cancelSub;if(!confirm(`Cancel your monthly ${k==='pro'?'Pro':'Expert'}? Nothing more is charged, and it stays on to the end of the month you paid for.`))return;
+  cs.disabled=true;const r=await postJson('/api/shop/cancel',{kind:k},hdr);toast(r.msg||r.error||'Error',!!r.ok,5000);loadShop()}});
+document.addEventListener('change',e=>{if(e.target.id==='bp-ok'){const g=$('bp-go');if(g)g.disabled=!e.target.checked}});
+document.addEventListener('click',async e=>{
+ if(e.target.closest('[data-buy-close]')||e.target.id==='buy-pop'){const bx=$('buy-pop');if(bx)bx.style.display='none';return}
+ if(e.target.id!=='bp-go')return;const g=e.target,hdr={'X-Token':token||''},c=shopData.catalog,x=[...c.packages,...c.pro,...c.expert].find(i=>i.sku===g.dataset.sku);
+ g.disabled=true;
+ const y=$('bp-year');if(y){const r=await postJson('/api/account/birth_year',{year:Number(y.value)||0},hdr);if(!r.ok){toast(r.msg||r.error||'Type the year you were born',false,4500);g.disabled=false;return}}
+ const r=await postJson('/api/shop/checkout',{sku:g.dataset.sku,adult:true,renew_ok:!!(x&&x.renews)},hdr);
+ if(r.url){location.href=r.url;return}toast(r.error||'Could not open the payment page',false,4500);g.disabled=false;loadShop()});
 // the free restart and "close everything", from the out-of-money banner and the shop
 let lowHidden=false;
 document.addEventListener('click',async e=>{
@@ -1495,9 +1562,9 @@ async function loadLearn(){
 function drawLearn(){
  const d=learnData;if(!d)return;const w=d.week;$('learn-card').classList.remove('reading');
  const groups={};d.lessons.forEach(l=>(groups[l.level]=groups[l.level]||[]).push(l));
- setHtml($('learn-body'),`<h3>Learn to trade</h3><p class="about" style="margin-top:0">${d.quizzes?`Short lessons on how markets move and how traders manage risk, each with a quiz. Passing a quiz the first time earns ${numText(d.lesson_reward,0)} MB, and the challenges pay more for building good habits.`:'Short lessons on how markets move and how traders manage risk. The challenges pay MB for building good habits.'} You can earn up to ${numText(w.cap,0)} MB a week this way (${numText(w.earned,0)} so far this week).</p>`
+ setHtml($('learn-body'),`<h3>Learn to trade</h3><p class="about" style="margin-top:0">Short lessons on how markets move and how traders manage risk${d.quizzes?', each with a quiz':''}. Read them in any order; each takes a few minutes.</p>`
   +Object.entries(groups).map(([g,ls])=>`<h3 class="sp">${esc(g)}</h3><div class="lesson-list">${ls.map(l=>`<a class="lesson-item" href="/learn?l=${encodeURIComponent(l.id)}">${l.passed?'<span class="done">Passed</span>':''}<small>${l.minutes} min${l.questions?` · ${l.questions} questions`:''}</small><b>${esc(l.title)}</b><small>${esc(l.summary)}</small></a>`).join('')}</div>`).join('')
-  +`<h3 class="sp">Challenges</h3><p class="hint" style="margin-top:0">Paid for good habits. The weekly ones start again each Monday (UTC).</p>`
+  +(d.challenges.length?`<h3 class="sp">Challenges</h3><p class="hint" style="margin-top:0">Paid for good habits. The weekly ones start again each Monday (UTC).</p>`:'')
   +d.challenges.map(c=>`<div class="chal ${c.done?'q-done':''}"><div><b>${esc(c.title)}</b> <small>${c.period==='week'?'this week':'once'}</small><br><small>${esc(c.how)}</small></div><div class="chal-r">${c.done?'<span class="up">Done</span>':`<span class="mut">${c.n} / ${c.target}</span>`} · <b>+${numText(c.reward,0)} MB</b></div>${pbar(c.done?1:c.n,c.done?1:c.target)}</div>`).join(''))}
 function lessonBlock(b){if(b.h)return `<h4>${esc(b.h)}</h4>`;if(b.tip)return `<div class="tip">${esc(b.tip)}</div>`;return `<p>${esc(b.p||'')}</p>`}
 function drawLesson(){

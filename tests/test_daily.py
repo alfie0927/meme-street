@@ -100,9 +100,9 @@ class GameTests(unittest.TestCase):
         st = e.daily_trade(p, "sell", 1.0)
         self.assertAlmostEqual(st["cash"], 500 + 500 / price * price2, places=6)
         self.assertEqual(st["shares"], 0)
-        self.assertIn("error", e.daily_trade(p, "sell", 0.25))                      # nothing left to sell
         st = e.daily_trade(p, "buy", 1.0)
         held = st["shares"]
+        self.assertEqual(st["trades"][-1][1], "buy")
         e.now += daily.LIVE                                                           # time is up
         self.assertIn("error", e.daily_trade(p, "buy", 0.25))
         st = e.daily_poll(p, 0)
@@ -110,6 +110,65 @@ class GameTests(unittest.TestCase):
         self.assertEqual(len(st["candles"]), len(cs))                                # now the whole chart
         self.assertAlmostEqual(st["ret"], held * cs[-1][3] / 1000 - 1, places=9)
         self.assertEqual(st["rank"], 1)
+
+    def test_shorts_and_covering(self):
+        e, p = self.e, self.p
+        e.daily_start(p)
+        cs = e.daily_game["chart"]["candles"]
+        e.now += 3.1
+        price = cs[daily.HISTORY + 2][3]
+        st = e.daily_trade(p, "sell", 1.0)                                           # no shares: a short
+        self.assertNotIn("error", st)
+        self.assertEqual(st["trades"][-1][1], "short")
+        self.assertAlmostEqual(st["shares"], -1000 / price, places=9)
+        self.assertAlmostEqual(st["cash"], 2000, places=6)
+        self.assertAlmostEqual(st["equity"], 1000, places=6)                         # nothing gained or lost yet
+        self.assertIn("error", e.daily_trade(p, "sell", 0.5))                        # already as short as the account allows
+        e.now += 5
+        price2 = cs[daily.HISTORY + 7][3]
+        st = e.daily_trade(p, "buy", 0.5)                                            # buying covers half of it
+        self.assertEqual(st["trades"][-1][1], "cover")
+        self.assertAlmostEqual(st["shares"], -500 / price, places=9)
+        self.assertAlmostEqual(st["equity"], 1000 + 1000 / price * (price - price2), places=6)
+        st = e.daily_trade(p, "buy", 1.0)
+        self.assertEqual(st["shares"], 0)
+        st = e.daily_trade(p, "sell", 0.5)                                           # flat again: a new short, half
+        self.assertEqual(st["trades"][-1][1], "short")
+        e.now += daily.LIVE
+        st = e.daily_poll(p, 0)
+        self.assertTrue(st["done"])
+        self.assertAlmostEqual(st["ret"], st["equity"] / 1000 - 1, places=9)
+
+    def test_a_short_cannot_lose_more_than_everything(self):
+        e, p = self.e, self.p
+        e.daily_start(p)
+        e.daily_trade(p, "sell", 1.0)
+        cs = e.daily_game["chart"]["candles"]
+        cs[-1][3] = cs[daily.HISTORY - 1][3] * 3                                     # (the price triples by the end)
+        e.now += daily.LIVE
+        st = e.daily_poll(p, 0)
+        self.assertEqual(st["ret"], -1.0)
+        self.assertEqual(st["equity"], 0.0)
+
+    def test_the_summary_at_the_end(self):
+        e = self.e
+        players = [join(e, f"s{i}") for i in range(4)]
+        for i, pl in enumerate(players):
+            e.daily_start(pl)
+            if i % 2:
+                e.daily_trade(pl, "buy", 1.0)
+            elif i:
+                e.daily_trade(pl, "sell", 1.0)
+        e.now += daily.LIVE + 1
+        st = e.daily_poll(players[1], 0)
+        cs = e.daily_game["chart"]["candles"]
+        self.assertEqual(len(st["dist"]), 4)                                         # everyone's return, no names
+        self.assertEqual(st["dist"], sorted(st["dist"]))
+        self.assertIn(round(st["ret"], 6), [round(r, 6) for r in st["dist"]])
+        self.assertAlmostEqual(st["hold"], cs[-1][3] / cs[daily.HISTORY - 1][3] - 1, places=9)
+        self.assertEqual(st["hi"], max(c[1] for c in cs[daily.HISTORY:]))
+        self.assertEqual(st["lo"], min(c[2] for c in cs[daily.HISTORY:]))
+        self.assertNotIn("dist", e.daily_view(join(e, "late"))["board"][0])          # (the board: names and returns only)
 
     def test_one_game_a_day_and_the_board(self):
         e = self.e

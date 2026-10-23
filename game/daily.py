@@ -9,9 +9,13 @@ board of the day's returns.
   It is seeded from the day and a salt kept in the save (so it cannot be worked out in advance), and the chart itself
   is saved too, so a restart or a new version of the code changes nothing on the day.
 * **A game**: 1,000 MB of paper money. Start shows `HISTORY` candles at once (the lead-in, to read the levels from), then
-  one new candle a second for `LIVE` seconds. Buy 25, 50, 75 or 100% of the cash, sell 25, 50, 75 or 100% of the shares,
-  at the close of the last candle shown, with no fees. At the end what is held is valued at the last close; the score is
-  the return. One game a day for each account.
+  one new candle a second for `LIVE` seconds, at the close of the last candle shown, with no fees:
+  - **Buy** 25, 50, 75 or 100% of the cash; while short, Buy **covers** that share of the short.
+  - **Sell** 25, 50, 75 or 100% of the shares; with none, Sell opens a **short** of that share of what the account is
+    worth (a short already open counts against it, so the most you can be short is the account's worth: 1x).
+  At the end what is held (or owed) is valued at the last close; the score is the return (never below -100%). One game a
+  day for each account. When it ends the player gets the summary: their return, their place, every player's return as
+  a distribution, and what the stock itself did.
 * **Fair**: the candles still to come never leave the server; the page asks for the ones shown so far, and a trade is
   priced on the server at the candle showing when it arrives.
 * **The board**: today's finished games, best return first (ties: who finished first); the last 7 days' top three are
@@ -99,7 +103,7 @@ class DailyMixin:
         if play.get("done") or (not final and self.now - play["t0"] < LIVE):
             return
         last = self.daily_game["chart"]["candles"][-1][3]
-        play["equity"] = play["cash"] + play["shares"] * last
+        play["equity"] = max(0.0, play["cash"] + play["shares"] * last)     # (a short cannot lose more than everything)
         play["ret"] = play["equity"] / START_CASH - 1
         play["done"] = True
         play["end"] = play["t0"] + LIVE
@@ -127,9 +131,14 @@ class DailyMixin:
                "done": bool(play.get("done"))}
         if play.get("done"):
             out["ret"] = play["ret"]
+            out["equity"] = play["equity"]
             board = self._daily_board(d)
             out["rank"] = next((i + 1 for i, x in enumerate(board) if x["name"] == play["name"]), None)
             out["of"] = len(board)
+            out["dist"] = sorted(x["ret"] for x in board)                  # everyone's return today (no names)
+            out["hold"] = cs[-1][3] / cs[HISTORY - 1][3] - 1                # what the stock itself did in the two minutes
+            out["hi"] = max(c[1] for c in cs[HISTORY:])
+            out["lo"] = min(c[2] for c in cs[HISTORY:])
         return out
 
     def daily_view(self, p):
@@ -180,21 +189,34 @@ class DailyMixin:
             return {"error": "Buy or sell 25, 50, 75 or 100%"}
         n = self._daily_shown(play)
         price = d["chart"]["candles"][n - 1][3]
-        if side == "buy":
+        held = play["shares"]
+        if side == "buy" and held < -1e-12:                # buying while short covers that share of the short
+            sh = -held * pct
+            play["shares"] += sh
+            play["cash"] -= sh * price
+            kind = "cover"
+        elif side == "buy":
             spend = play["cash"] * pct
             if spend < 0.01:
                 return {"error": "No cash left to buy with", **self._daily_state(play)}
-            got = spend / price
+            sh = spend / price
             play["cash"] -= spend
-            play["shares"] += got
-            play["trades"].append([n - 1, "buy", price, got])
-        else:
-            sh = play["shares"] * pct
-            if sh * price < 0.01:
-                return {"error": "Nothing to sell", **self._daily_state(play)}
+            play["shares"] += sh
+            kind = "buy"
+        elif held > 1e-12:                                 # selling what is held
+            sh = held * pct
             play["shares"] -= sh
             play["cash"] += sh * price
-            play["trades"].append([n - 1, "sell", price, sh])
-        if play["shares"] * price < 1e-9:
+            kind = "sell"
+        else:                                              # nothing held: a short, of that share of the account's worth
+            room = max(0.0, play["cash"] + held * price - (-held) * price)
+            if room * pct < 0.01:
+                return {"error": "You are already short as much as your account allows", **self._daily_state(play)}
+            sh = room * pct / price
+            play["shares"] -= sh
+            play["cash"] += sh * price
+            kind = "short"
+        play["trades"].append([n - 1, kind, price, sh])
+        if abs(play["shares"]) * price < 1e-9:
             play["shares"] = 0.0
         return self._daily_state(play)

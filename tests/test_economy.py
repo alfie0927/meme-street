@@ -105,15 +105,18 @@ class ShopTests(unittest.TestCase):
     def test_the_pro_pass_turns_pro_on_and_adds_up(self):
         e, p = self.e, self.p
         self.assertFalse(e.is_pro(p))
-        o1, _ = e.create_order(p, "pro30", "test", True)
+        self.assertIsNone(e.create_order(p, "pro_month", "test", True)[0])          # a monthly pass needs the renewal agreed
+        o1, _ = e.create_order(p, "pro_month", "test", True, renew_ok=True)
         e.complete_order(o1["id"])
         self.assertTrue(e.is_pro(p))
         self.assertAlmostEqual(p.pro_until - e.now, 30 * 86400, delta=5)
-        o2, _ = e.create_order(p, "pro30", "test", True)
+        self.assertIsNone(e.create_order(p, "pro_year", "test", True)[0])          # not while a monthly one renews
+        self.assertTrue(e.mark_cancelled(p, "pro")[0])
+        o2, _ = e.create_order(p, "pro_year", "test", True)
         e.complete_order(o2["id"])
-        self.assertAlmostEqual(p.pro_until - e.now, 60 * 86400, delta=5)          # a second pass extends the first
+        self.assertAlmostEqual(p.pro_until - e.now, 395 * 86400, delta=5)         # the year adds to the month
         self.assertEqual(p.cash, 1000.0)                                           # Pro is tools, never MB
-        e.now += 61 * 86400
+        e.now += 396 * 86400
         self.assertFalse(e.is_pro(p))
 
     def test_a_refund_takes_back_the_mb_the_player_still_has(self):
@@ -235,8 +238,8 @@ class SaveAndReplayTests(unittest.TestCase):
             a.tick(now=a.now)
             p = join(a, "keeper")
             p.birth_year = THIS_YEAR - 30
-            a.set_spend_cap(p, 5000)
-            o1, _ = a.create_order(p, "pro365", "test", True)
+            a.set_spend_cap(p, 20000)
+            o1, _ = a.create_order(p, "pro_year", "test", True)
             a.complete_order(o1["id"])
             a.save()
             o2, _ = a.create_order(p, "mb1000", "test", True)              # bought after the snapshot ...
@@ -250,7 +253,7 @@ class SaveAndReplayTests(unittest.TestCase):
             self.assertEqual(q.mb_by_source.get("purchase"), 1000.0)
             self.assertEqual(b.shop_orders[o2["id"]]["status"], "paid")
             self.assertEqual(q.birth_year, THIS_YEAR - 30)
-            self.assertEqual(b.spend_cap(q), 5000)
+            self.assertEqual(b.spend_cap(q), 20000)
             b.ledger.close()
 
 
@@ -267,7 +270,7 @@ class StripeSignatureTests(unittest.TestCase):
         body = json.dumps({"type": "checkout.session.completed", "data": {"object": {"id": "cs_1", "payment_status": "paid",
                           "client_reference_id": "ord1", "amount_total": 399}}}).encode()
         ev = self.pay.verify_stripe(body, self.sign(body))
-        self.assertEqual(self.pay.paid_order(ev), ("ord1", "cs_1", 399))
+        self.assertEqual(self.pay.paid_order(ev), ("ord1", "cs_1", 399, None))
         self.assertIsNone(self.pay.verify_stripe(body, self.sign(body, secret="wrong")))
         self.assertIsNone(self.pay.verify_stripe(body + b" ", self.sign(body)))                  # body changed
         self.assertIsNone(self.pay.verify_stripe(body, self.sign(body, ts=time.time() - 3600)))  # too old (a replay)
@@ -387,14 +390,15 @@ class ShopBrowserTests(unittest.TestCase):
             await pg.goto(base + "/shop", 3)
             await d.check("the shop page lists five packages", "document.querySelectorAll('#shop-pkgs .pkg').length", 5, wait=10)
             await d.check("it says it is in test mode", "document.getElementById('shop-mode').innerText", lambda t: "Test mode" in t)
-            await d.check("Buy is off until the age is known", "document.querySelector('#shop-pkgs [data-sku]').disabled", True)
-            await pg.js(f"document.getElementById('shop-year').value='{THIS_YEAR - 30}';document.getElementById('shop-year-save').click()")
-            await d.check("after the year, the confirmation box appears", "!!document.getElementById('shop-adult')", wait=8)
-            await d.check("Buy is still off until it is ticked", "document.querySelector('#shop-pkgs [data-sku]').disabled", True)
-            await pg.js("document.getElementById('shop-adult').click()")
-            await d.check("ticking it turns Buy on", "document.querySelector('#shop-pkgs [data-sku=mb5000]').disabled", False, wait=3)
+            await d.check("there is no spending-limit, source or before-you-buy section", "document.getElementById('shop-card').innerText",
+                          lambda t: "spending limit" not in t.lower() and "Where your MB" not in t and "Before you buy" not in t and "Free restart" not in t)
             await pg.js("document.querySelector('#shop-pkgs [data-sku=mb5000]').click()")
-            await d.check("Buy opens the test checkout", "location.pathname", "/shop/pay", wait=8)
+            await d.check("Buy opens a box that asks for the year of birth", "!!document.getElementById('bp-year')", wait=5)
+            await d.check("Continue is off until the box is ticked", "document.getElementById('bp-go').disabled", True)
+            await pg.js(f"document.getElementById('bp-year').value='{THIS_YEAR - 30}';document.getElementById('bp-ok').click()")
+            await d.check("ticking it turns Continue on", "document.getElementById('bp-go').disabled", False, wait=3)
+            await pg.js("document.getElementById('bp-go').click()")
+            await d.check("Continue opens the test checkout", "location.pathname", "/shop/pay", wait=8)
             await d.check("which shows the order", "document.getElementById('what').innerText", lambda t: "5,000 MB" in t, wait=8)
             await pg.js("document.getElementById('pay').click()")
             await d.check("paying comes back to the shop", "location.pathname", "/shop", wait=10)

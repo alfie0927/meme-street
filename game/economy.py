@@ -30,13 +30,14 @@ DEFAULT_PACKAGES = [
     {"sku": "mb50000", "mb": 50000, "price_cents": 5999},
     {"sku": "mb100000", "mb": 100000, "price_cents": 9999},
 ]
+# Pro and Expert: a monthly pass that renews every month until it is cancelled ("renews"), or a year paid at once
 DEFAULT_PRO = [
-    {"sku": "pro30", "days": 30, "price_cents": 499},
-    {"sku": "pro365", "days": 365, "price_cents": 3999},
+    {"sku": "pro_month", "days": 30, "price_cents": 999, "renews": True},
+    {"sku": "pro_year", "days": 365, "price_cents": 9999},
 ]
 DEFAULT_EXPERT = [
-    {"sku": "expert30", "days": 30, "price_cents": 1299},
-    {"sku": "expert365", "days": 365, "price_cents": 9999},
+    {"sku": "expert_month", "days": 30, "price_cents": 2999, "renews": True},
+    {"sku": "expert_year", "days": 365, "price_cents": 29999},
 ]
 PRO_FEATURES = [
     "Trade any stock with leverage, up to 10x (the leveraged index products excepted): more exposure for your MB, "
@@ -57,9 +58,9 @@ EXPERT_FEATURES = [
 ]
 TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
-TERMS_VERSION = "2026-10-19"  # the date of web/terms.html; an account records the version it signed up under
+TERMS_VERSION = "2026-10-23"  # the date of web/terms.html; an account records the version it signed up under
 PLAYER_FIELDS = ("birth_year", "pro_until", "expert_until", "last_restart", "mb_by_source", "spend_cap_cents", "spend_cap_pending",
-                 "challenge_mb", "terms")
+                 "challenge_mb", "terms", "subs")
 
 
 def init_player(p):
@@ -72,6 +73,7 @@ def init_player(p):
     p.spend_cap_pending = None   # [cents, when it takes effect]: a raised cap waits a day
     p.challenge_mb = {}          # week number -> MB earned from challenges that week (for the weekly cap)
     p.terms = None               # {"v": version, "at": time}: the terms the account agreed to when it signed up
+    p.subs = {}                  # "pro" / "expert" -> a monthly pass that renews: {order, sub, provider, status, price_cents, sku}
 
 
 def dump_player(p):
@@ -89,6 +91,7 @@ def load_player(p, x):
     p.pro_until = float(p.pro_until or 0.0)
     p.expert_until = float(getattr(p, "expert_until", 0.0) or 0.0)
     p.last_restart = float(p.last_restart or 0.0)
+    p.subs = {str(k): dict(v) for k, v in dict(getattr(p, "subs", None) or {}).items() if isinstance(v, dict)}
 
 
 def money_text(cents, currency="usd"):
@@ -120,6 +123,7 @@ class EconomyMixin:
         for kind, items in (("pro", pro), ("expert", expert)):
             for x in items:
                 x["kind"] = kind
+                x["renews"] = bool(x.get("renews"))
                 x["price"] = money_text(int(x["price_cents"]), cur)
         return {"packages": packages, "pro": pro, "expert": expert, "currency": cur, "pro_features": PRO_FEATURES,
                 "expert_features": EXPERT_FEATURES}
@@ -172,7 +176,7 @@ class EconomyMixin:
 
     def spend_cap(self, p):
         """The cap that applies now, in cents per rolling 30 days (a raised cap waits a day before it counts)."""
-        default = int(self.settings.get("spend_cap_month_cents", 15000))
+        default = int(self.settings.get("spend_cap_month_cents", 50000))
         pend = p.spend_cap_pending
         if pend and self.now >= pend[1]:
             p.spend_cap_cents, p.spend_cap_pending = (None if pend[0] >= default else int(pend[0])), None
@@ -191,12 +195,17 @@ class EconomyMixin:
             p.spend_cap_cents, p.spend_cap_pending = cents, None
             return True, f"Your cap is now {money_text(cents, self.shop_currency())} per 30 days"
         p.spend_cap_pending = [cents, self.now + 86400]
-        return True, f"Your cap rises to {money_text(min(cents, int(self.settings.get('spend_cap_month_cents', 15000))), self.shop_currency())} in 24 hours"
+        return True, f"Your cap rises to {money_text(min(cents, int(self.settings.get('spend_cap_month_cents', 50000))), self.shop_currency())} in 24 hours"
 
-    def buy_problem(self, p, item, adult_confirmed):
+    def buy_problem(self, p, item, adult_confirmed, renew_ok=False):
         """Why this player may not buy this item now, or None."""
         if not item:
             return "Unknown item"
+        if item.get("renews") and not renew_ok:
+            return "Tick the box to agree that it renews every month until you cancel"
+        if item.get("kind") in TIERS and (p.subs.get(item["kind"]) or {}).get("status") == "active":
+            return (f"You have a monthly {item['kind'].title()} that renews by itself: cancel it first (it stays on to the end "
+                    "of the month you paid for)")
         need = int(self.settings.get("buy_min_age", 18))
         age = self.age_years(p)
         if age is None:
@@ -212,21 +221,24 @@ class EconomyMixin:
         return None
 
     # ------------------------------------------------------------------ orders
-    def create_order(self, p, sku, provider, adult_confirmed=False):
+    def create_order(self, p, sku, provider, adult_confirmed=False, renew_ok=False):
         item = self._sku(sku)
-        bad = self.buy_problem(p, item, adult_confirmed)
+        bad = self.buy_problem(p, item, adult_confirmed, renew_ok)
         if bad:
             return None, bad
         oid = uuid.uuid4().hex[:20]
         order = {"id": oid, "token": p.token, "name": p.name, "sku": item["sku"], "kind": item["kind"],
                  "mb": int(item.get("mb", 0)), "days": int(item.get("days", 0)), "price_cents": int(item["price_cents"]),
                  "currency": self.shop_currency(), "status": "pending", "created": self.now, "provider": provider,
-                 "provider_ref": None, "consent": "18+, own card, delivery now (no 14-day cancellation)"}
+                 "provider_ref": None, "renews": bool(item.get("renews")),
+                 "consent": "18+, own card, delivery now (no 14-day cancellation)"
+                            + (", renews monthly until cancelled" if item.get("renews") else "")}
         self.shop_orders[oid] = order
         return order, ""
 
-    def complete_order(self, oid, provider_ref=None, amount_cents=None):
-        """The payment provider says the order is paid: credit the MB or extend Pro, exactly once."""
+    def complete_order(self, oid, provider_ref=None, amount_cents=None, sub_id=None):
+        """The payment provider says the order is paid: credit the MB or extend Pro, exactly once. A monthly pass also
+        starts its subscription (`sub_id`: the provider's, for the renewals and for cancelling)."""
         o = self.shop_orders.get(oid)
         if o is None:
             return False, "Unknown order"
@@ -241,8 +253,12 @@ class EconomyMixin:
             return False, "The account no longer exists"
         o["status"], o["paid_at"], o["provider_ref"] = "paid", self.now, provider_ref
         self._apply_purchase(p, o)
+        if o.get("renews"):
+            p.subs[o["kind"]] = {"order": oid, "sub": sub_id, "provider": o["provider"], "status": "active",
+                                 "price_cents": o["price_cents"], "sku": o["sku"], "since": self.now, "renewals": 0}
         self._emit("purchase", p, cash=float(o["mb"]), notional=float(o["mb"]), order=oid, sku=o["sku"], days=o["days"],
-                   price_cents=o["price_cents"], source="purchase")
+                   price_cents=o["price_cents"], source="purchase", renews=bool(o.get("renews")), sub=sub_id,
+                   provider=o["provider"])
         if o["kind"] in TIERS:
             until = p.expert_until if o["kind"] == "expert" else p.pro_until
             self._notify(p, f"Thank you! Meme Street {o['kind'].title()} is on until {datetime.datetime.fromtimestamp(until, datetime.timezone.utc):%d %b %Y}.")
@@ -285,17 +301,23 @@ class EconomyMixin:
             setattr(p, field, max(self.now, float(getattr(p, field)) - o["days"] * 86400))
         return True, f"Refunded; the {o['kind'].title()} time was removed"
 
-    def reconcile_paid(self, found):
-        """The daily payment check (ROADMAP O7): `found` is every (order id, provider reference, amount) the provider
-        says was paid lately. Any order the webhook missed is completed now (exactly once, like a webhook); anything that
-        cannot be completed is listed for the admin."""
+    def reconcile_paid(self, found, renewals=()):
+        """The daily payment check (ROADMAP O7): `found` is every (order id, provider reference, amount[, subscription])
+        the provider says was paid lately, `renewals` every (subscription, invoice, amount) of a monthly pass's later
+        months. Anything the webhook missed is done now (exactly once, like a webhook); anything that cannot be is listed
+        for the admin."""
         fixed, problems = [], []
-        for oid, ref, amount in found:
+        for oid, ref, amount, *rest in found:
             o = self.shop_orders.get(oid)
             if o is not None and o["status"] == "paid":
                 continue
-            ok, msg = self.complete_order(oid, ref, amount)
+            ok, msg = self.complete_order(oid, ref, amount, rest[0] if rest else None)
             (fixed if ok else problems).append({"order": oid, "ref": ref, "msg": msg})
+        for sub, inv, amount in renewals:
+            if "renew-" + str(inv)[:60] in self.shop_orders:
+                continue
+            ok, msg = self.renew_by_provider(sub, inv, amount)
+            (fixed if ok else problems).append({"order": "renew-" + str(inv)[:60], "ref": inv, "msg": msg})
         self.pay_check = {"at": self.now, "checked": len(found), "fixed": fixed, "problems": problems, "error": None}
         return self.pay_check
 
@@ -305,14 +327,17 @@ class EconomyMixin:
         p = self.by_token.get(o["token"]) if o else None
         if not (o and p and o["status"] == "paid" and p.email and p.email_verified):
             return None
-        what = f"{o['mb']:,} MB" if o["kind"] == "package" else f"Meme Street {o['kind'].title()}, {o['days']} days"
+        what = (f"{o['mb']:,} MB" if o["kind"] == "package" else f"Meme Street {o['kind'].title()}, monthly" if o.get("renews")
+                else f"Meme Street {o['kind'].title()}, {'1 year' if o['days'] == 365 else str(o['days']) + ' days'}")
         price = money_text(o["price_cents"], o["currency"])
         when = datetime.datetime.fromtimestamp(o.get("paid_at", self.now), datetime.timezone.utc)
         body = (f"Thank you for your purchase, {p.name}.\n\n    {what}\n    {price}\n    Order {o['id']}\n"
                 f"    Paid {when:%d %b %Y, %H:%M} UTC\n\n"
                 "MB are practice money for the game: they have no cash value and cannot be withdrawn, sold or given away. "
                 "You asked for the purchase to be delivered at once, so the 14-day right to cancel ended when it was added. "
-                "If something went wrong, reply to this email or see the terms at /terms.\n")
+                + ("It renews every month at the same price until you cancel it in the Shop; cancelling stops the next "
+                   "payment and keeps it on to the end of the month you have paid for. " if o.get("renews") else "")
+                + "If something went wrong, reply to this email or see the terms at /terms.\n")
         return p.email, f"Your Meme Street receipt: {what}", body
 
     def reward_block(self, p):
@@ -326,6 +351,80 @@ class EconomyMixin:
         for o in self.shop_orders.values():
             if o["status"] == "pending" and self.now - o["created"] > ORDER_TTL:
                 o["status"] = "expired"
+        self._renew_test_subs()
+
+    # ------------------------------------------------------------------ monthly passes (subscriptions)
+    def _sub_of(self, sub_id):
+        """(player, kind) of the subscription the provider calls `sub_id`."""
+        for p in self.players.values():
+            for kind, x in (getattr(p, "subs", None) or {}).items():
+                if sub_id and x.get("sub") == sub_id:
+                    return p, kind
+        return None, None
+
+    def renew_subscription(self, p, kind, invoice, amount_cents=None):
+        """A month of a monthly pass was paid (the provider's invoice, or the test mode's pretend one): 30 more days, as
+        a paid order of its own (for the purchase list, refunds and the ledger). Exactly once per invoice."""
+        x = (p.subs or {}).get(kind)
+        oid = "renew-" + str(invoice)[:60]
+        if x is None or oid in self.shop_orders:
+            return False, "Already renewed" if oid in self.shop_orders else "No such subscription"
+        if x.get("status") == "ended":
+            return False, "The subscription has ended"
+        price = int(x["price_cents"] if amount_cents is None else amount_cents)
+        o = {"id": oid, "token": p.token, "name": p.name, "sku": x["sku"], "kind": kind, "mb": 0, "days": 30,
+             "price_cents": price, "currency": self.shop_currency(), "status": "paid", "created": self.now, "paid_at": self.now,
+             "provider": x.get("provider"), "provider_ref": str(invoice), "renews": True, "renewal_of": x.get("order"),
+             "consent": "renewal of a monthly pass"}
+        self.shop_orders[oid] = o
+        self._apply_purchase(p, o)
+        x["renewals"] = int(x.get("renewals", 0)) + 1
+        self._emit("purchase", p, cash=0.0, notional=0.0, order=oid, sku=o["sku"], days=30, price_cents=price, source="purchase",
+                   renewal=True)
+        until = p.expert_until if kind == "expert" else p.pro_until
+        self._notify(p, f"Your monthly {kind.title()} renewed: on until {datetime.datetime.fromtimestamp(until, datetime.timezone.utc):%d %b %Y}.")
+        return True, "Renewed"
+
+    def renew_by_provider(self, sub_id, invoice, amount_cents=None):
+        p, kind = self._sub_of(sub_id)
+        if p is None:
+            return False, "Unknown subscription"
+        return self.renew_subscription(p, kind, invoice, amount_cents)
+
+    def end_subscription(self, sub_id):
+        """The provider says the subscription is over (cancelled and run out, or the card failed for good)."""
+        p, kind = self._sub_of(sub_id)
+        if p is None:
+            return False, "Unknown subscription"
+        p.subs[kind]["status"] = "ended"
+        return True, "Ended"
+
+    def cancel_subscription(self, p, kind):
+        """The player cancels a monthly pass: no more payments; it stays on to the end of the month paid for. Returns
+        (ok, message, the provider's subscription id to cancel there, or None)."""
+        x = (p.subs or {}).get(kind)
+        if x is None or x.get("status") != "active":
+            return False, "Nothing to cancel", None
+        return True, "", x.get("sub") if x.get("provider") == "stripe" else None
+
+    def mark_cancelled(self, p, kind):
+        x = (p.subs or {}).get(kind)
+        if x is None:
+            return False, "Nothing to cancel"
+        x["status"], x["cancelled_at"] = "cancelled", self.now
+        until = p.expert_until if kind == "expert" else p.pro_until
+        return True, (f"Cancelled: no more payments. {kind.title()} stays on until "
+                      f"{datetime.datetime.fromtimestamp(until, datetime.timezone.utc):%d %b %Y}.")
+
+    def _renew_test_subs(self):
+        """In the test mode nobody bills: a monthly pass renews itself when its month is about up, with a pretend
+        invoice, so the whole cycle can be tried. Real ones renew only when the provider says it was paid."""
+        for p in self.players.values():
+            for kind, x in list((getattr(p, "subs", None) or {}).items()):
+                if x.get("provider") == "test" and x.get("status") == "active":
+                    until = p.expert_until if kind == "expert" else p.pro_until
+                    if until - self.now < 120:
+                        self.renew_subscription(p, kind, f"test-{x['order']}-{int(x.get('renewals', 0)) + 1}")
 
     # ------------------------------------------------------------------ Pro
     def is_expert(self, p):
@@ -393,13 +492,16 @@ class EconomyMixin:
         mine = sorted((o for o in self.shop_orders.values() if o["token"] == p.token and o["status"] != "pending"),
                       key=lambda o: -o.get("paid_at", o["created"]))[:30]
         cap = self.spend_cap(p)
-        return {"catalog": cat, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
+        subs = {k: {"status": v.get("status"), "price": money_text(int(v.get("price_cents", 0)), cat["currency"]),
+                    "until": p.expert_until if k == "expert" else p.pro_until} for k, v in (p.subs or {}).items()
+                if v.get("status") in ("active", "cancelled")}
+        return {"catalog": cat, "subs": subs, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
                 "expert": self.is_expert(p), "expert_until": p.expert_until if self.is_expert(p) else None,
                 "birth_year_set": bool(p.birth_year), "age_ok_to_buy": (self.age_years(p) or 0) >= int(self.settings.get("buy_min_age", 18)),
                 "buy_min_age": int(self.settings.get("buy_min_age", 18)), "min_age": int(self.settings.get("min_age", 13)),
                 "spent_30d": self.spent_cents(p), "spent_30d_text": money_text(self.spent_cents(p), cat["currency"]),
                 "cap": cap, "cap_text": money_text(cap, cat["currency"]),
-                "cap_default": int(self.settings.get("spend_cap_month_cents", 15000)),
+                "cap_default": int(self.settings.get("spend_cap_month_cents", 50000)),
                 "cap_pending": p.spend_cap_pending, "purchases_per_day": int(self.settings.get("purchases_per_day", 3)),
                 "orders": [{"id": o["id"], "sku": o["sku"], "kind": o["kind"], "mb": o["mb"], "days": o["days"],
                             "price": money_text(o["price_cents"], o["currency"]), "status": o["status"],

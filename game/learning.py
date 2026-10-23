@@ -80,7 +80,10 @@ class LearningMixin:
         return bool(self.settings.get("quizzes", False))
 
     def _challenges(self):
-        """The challenges on offer: without quizzes, the ones that are won by passing them are left out."""
+        """The challenges on offer: none while they are switched off (the `challenges` setting, off since 2026-10-23: the
+        Learn page is lessons only, and nothing there pays MB); without quizzes, the ones won by passing them are left out."""
+        if not self.settings.get("challenges", False):
+            return []
         return CHALLENGES if self.quizzes_on() else [c for c in CHALLENGES if c["counter"] not in QUIZ_COUNTERS]
 
     # ------------------------------------------------------------------ periods and rewards

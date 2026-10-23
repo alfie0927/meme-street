@@ -101,6 +101,37 @@ class ReturnTests(unittest.TestCase):
         self.assertAlmostEqual(e.stocks["2LMSI"].price / lev - 1, 2 * r, places=9)
 
 
+class HoldingsTests(unittest.TestCase):
+    """An index's or fund's holdings and weights for its page (engine.holdings_for), built the way the index is."""
+
+    def test_holdings_and_weights(self):
+        e = make_engine(5)
+        msi = e.holdings_for(e.stocks["MSI"])
+        self.assertEqual(len(msi), 50)
+        self.assertAlmostEqual(sum(h["weight"] for h in msi), 1.0, places=4)
+        self.assertEqual([h["weight"] for h in msi], sorted((h["weight"] for h in msi), reverse=True))
+        top = msi[0]["ticker"]
+        caps = {tk: e.stocks[tk].shares_outstanding * e.stocks[tk].price for tk in e.index_members}
+        self.assertEqual(top, max(caps, key=caps.get))                       # by market value
+        kinds = {spec["kind"]: tk for tk, spec in e.derived.items() if tk in e.stocks}
+        for kind in ("sector", "basket"):
+            if kind in kinds:
+                h = e.holdings_for(e.stocks[kinds[kind]])
+                self.assertTrue(h)
+                self.assertAlmostEqual(sum(x["weight"] for x in h), 1.0, places=4)
+                self.assertTrue(all(e.stocks[x["ticker"]].asset_type != "index" for x in h))
+        if "basket" in kinds:
+            ws = {round(x["weight"], 6) for x in e.holdings_for(e.stocks[kinds["basket"]])}
+            self.assertEqual(len(ws), 1)                                     # equal weights
+        if "leveraged" in kinds:
+            lev = e.holdings_for(e.stocks[kinds["leveraged"]])
+            self.assertEqual(len(lev), 1)
+            self.assertEqual(lev[0]["ticker"], e.derived[kinds["leveraged"]]["of"])
+        self.assertIsNone(e.holdings_for(e.stocks["NVXA"]))                 # a company holds nothing
+        self.assertEqual(e.company_for("MSI")["holdings"][0]["ticker"], top)
+        self.assertNotIn("holdings", e.company_for("NVXA"))
+
+
 class MembershipChangeTests(unittest.TestCase):
     def test_it_is_re_ranked_when_a_new_game_day_starts(self):
         e = make_engine(5)
