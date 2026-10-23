@@ -9,6 +9,7 @@ import learning
 import ladder
 import chartprefs
 import bots
+import daily
 import history
 import options
 import market_model
@@ -293,7 +294,7 @@ class Player:
 
 
 class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin,
-             chartprefs.ChartsMixin, options.OptionsMixin, bots.BotsMixin):
+             chartprefs.ChartsMixin, options.OptionsMixin, bots.BotsMixin, daily.DailyMixin):
     def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None,
                  history_path=None, minutes_path=None):
         self._init_social()
@@ -3819,6 +3820,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
              "short_model": 2, "borrow_fees": self.borrow_fees, "short_shortfall": self.short_shortfall,
              "margin_calls": self.margin_calls, "trades_total": self.trades_total,
              "margin_log": list(self.margin_log), "mkt_volm": self.mkt_volm, "lev_shortfall": self.lev_shortfall,
+             "daily_game": getattr(self, "daily_game", None),
              "index_hist": list(self.index_hist), "market_day": self.market_day,
              "recapitalized": self.recapitalized, "regime": self.regime, "next_regime_change": self.next_regime_change,
              "model": self.model.dump() if self.model is not None else None,
@@ -4218,6 +4220,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             self.borrow_fees = float(d.get("borrow_fees", 0.0))
             self.short_shortfall = float(d.get("short_shortfall", 0.0))
             self.lev_shortfall = float(d.get("lev_shortfall", 0.0))
+            if isinstance(d.get("daily_game"), dict):
+                self.daily_game = d["daily_game"]                         # the Daily Chart (daily.py)
             self.margin_calls = int(d.get("margin_calls", 0))
             self.mkt_volm = float(d.get("mkt_volm", 1.0))
             self.trades_total = int(d.get("trades_total", 0))

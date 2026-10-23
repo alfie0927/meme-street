@@ -75,8 +75,9 @@ function candleSvg(candles,price,avg){
  const onScreen=len=>{const a=Math.max(0,Math.floor(n-1-(x0-padL+slot)/slot)),b=Math.min(len-1,Math.ceil(n-1+(padL+pw+slot-x0)/slot));return[a,b]};
  const pathOf=(vals,yf)=>{let d='',pen=false;const[a,b]=onScreen(vals.length);for(let i=a;i<=b;i++){const v=vals[i];if(nv(v)){pen=false;continue}d+=(pen?'L':'M')+cx(i).toFixed(1)+' '+yf(v).toFixed(1);pen=true}return d};
  let s=`<svg class="price-chart" viewBox="0 0 ${w} ${h}" style="aspect-ratio:${w}/${h}" role="img" aria-label="${chartPeriod} candlestick price chart"><defs><clipPath id="clip"><rect x="${padL}" y="${padT}" width="${pw}" height="${PH}"/></clipPath><clipPath id="clipV"><rect x="${padL}" y="${vTop}" width="${pw}" height="${h-vTop}"/></clipPath></defs>`;
+ const tagYs=[price,avg,...(S&&S.orders||[]).filter(o=>o.ticker===selectedTicker).map(o=>o.trigger)].filter(v=>v>0).map(y);   // (labels under a tag are left out)
  for(let i=0;i<=4;i++){const v=LG?Math.exp(L0+LS*i/4):lo+span*i/4,yy=y(v).toFixed(1);
-  s+=`<line x1="${padL}" y1="${yy}" x2="${axisX}" y2="${yy}" stroke="#1a1f24"/><text x="${axisX+6}" y="${(+yy+4).toFixed(1)}" fill="#7d8a93" font-size="11">${pxText(v)} MB</text>`}
+  s+=`<line x1="${padL}" y1="${yy}" x2="${axisX}" y2="${yy}" stroke="#1a1f24"/>`+(tagYs.some(t=>Math.abs(t-yy)<14)?'':`<text x="${axisX+6}" y="${(+yy+4).toFixed(1)}" fill="#7d8a93" font-size="11">${pxText(v)} MB</text>`)}
  s+=`<line x1="${axisX}" y1="${padT}" x2="${axisX}" y2="${h-padB}" stroke="#262d33"/><line x1="${padL}" y1="${h-padB}" x2="${axisX}" y2="${h-padB}" stroke="#262d33"/><line x1="${padL}" y1="${vTop-GAP/2}" x2="${axisX}" y2="${vTop-GAP/2}" stroke="#1a1f24"/><g clip-path="url(#clip)">`;
  const every=Math.max(1,Math.ceil(110/slot));
  // overlays under the candles: filled bands and clouds

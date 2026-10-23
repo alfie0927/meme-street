@@ -131,6 +131,7 @@ journal. The plan below builds on it.
 | TA-D1 | No homework | Fun players should not be pushed through lessons. | Keep the onboarding strip one click to hide; nothing locked behind lessons; a "just let me trade" path on sign-up. | S |
 | TA-D2 | Weekly competitions and leagues | Light, social goals keep people coming back. | Weekly challenges ranked on return on money put in and on risk-adjusted return, leagues by level, small capped MB prizes (was S3, S5). | M |
 | TA-D3 | Share a chart | Explaining a trade idea is both fun and learning. | Share a chart with drawings in chat or by link (was S4). | M |
+| TA-D4 | The Daily Chart | A short daily game brings people back every day and teaches reading a chart fast. | **Done (2026-10-23):** one mystery stock a day made by the price model (levels, trends, patterns, high volatility), the same for everyone; 1,000 MB of practice money, two minutes of one-second candles after a one-minute lead-in, buy or sell 25 to 100%; one go a day; the day's board and the last 7 days' winners (HOW_IT_WORKS §10.13). Next, if wanted: shorting, a medal or a small MB prize for the day's top three (watching for extra accounts), sharing a result, a practice round on an old chart. | M |
 
 #### E. News and the economy: turned down (changes track N)
 
