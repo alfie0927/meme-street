@@ -28,9 +28,9 @@ account, never anything else. A condition is an expression like
 * `abs(x) min(a, b) max(a, b)`.
 
 **Actions:** `buy` (open a long), `sell` (close a long), `short` (open a short), `cover` (close a short), `close`
-(close either), `buy_call`, `buy_put` (at a strike a given % out of the money and one of the four expiries) and
-`sell_options` (sell back the options held on the stock). Sizes are a % of the free cash or an amount of MB; buys and
-shorts can be leveraged (Pro, which Expert includes).
+(close either), `buy_call`, `buy_put` (at a strike a given % out of the money and one of the five expiries) and
+`sell_options` (sell back the options held on the stock). Sizes are a % of the free cash or an amount of MB (options:
+as many whole 100-share contracts as that buys); buys and shorts can be leveraged (Pro, which Expert includes).
 
 **Backtests** run a bot over the candles kept for a stock (up to 500 of each size, and three real days of one-minute
 candles), in the same way: rules at each candle's close, orders filled at the next candle's open, the same fee, leverage
@@ -536,7 +536,7 @@ def clean_bot(raw, old=None):
             raise RuleError(f"Rule {len(rules) + 1}: a size in % is between 0 and 100")
         rules.append({"when": when, "do": do, "size": size, "unit": unit,
                       "lev": _num(r.get("lev"), 1.0, 1.0, 10.0), "strike_pct": _num(r.get("strike_pct"), 0.0, 0.0, 15.0),
-                      "expiry": int(_num(r.get("expiry"), 1, 0, 3))})
+                      "expiry": int(_num(r.get("expiry"), 1, 0, len(options.EXPIRY_DAYS) - 1))})
     if not rules:
         raise RuleError("Give the bot at least one rule")
     if len(rules) > MAX_RULES:
@@ -753,8 +753,8 @@ class BotsMixin:
         if do in ("buy_call", "buy_put"):
             kind = "call" if do == "buy_call" else "put"
             want = s.price * (1 + (r["strike_pct"] / 100) * (1 if kind == "call" else -1))
-            K = min(options.strikes_for(s.price), key=lambda k: abs(k - want))
             exp = self.option_expiries()[r["expiry"]]
+            K = min(self.listed_strikes(s, exp), key=lambda k: abs(k - want))
             mb = amount if amount is not None else max(0.0, p.cash) * pct / 1.001
             return self.buy_option(p, tk, kind, K, exp, amount=mb)
         if do == "sell_options":
@@ -795,9 +795,10 @@ class BotsMixin:
                  if not any(abs(n["t"] - x["t"]) < 1e-6 and n["text"] == x["text"] for n in news)]
         news.sort(key=lambda n: n["t"])
         return {"bot": bot, "candles": candles, "tf_secs": TIMEFRAMES[tf], "news": news,
-                "cash": float(_num(cash, 10000, 100, 1e7)), "vol": s.vol, "rf": self._rf(), "allow_lev": self.is_pro(p),
+                "cash": float(_num(cash, 10000, 100, 1e7)), "vol": self._realised_vol(s), "rf": self._rf(), "allow_lev": self.is_pro(p),
                 "spread": float(self.settings.get("option_spread", 0.06)),
-                "vol_premium": float(self.settings.get("option_vol_premium", 0.10)), "ticker": ticker}
+                "vol_premium": float(self.settings.get("option_vol_premium", 0.15)), "ticker": ticker,
+                "carry": self.option_carry(s), "skew": self.option_skew(s)}
 
     def _finished(self, s, tf):
         """The candles of that size whose time is over (the newest may still be under way)."""
@@ -815,7 +816,7 @@ class BotsMixin:
 
 
 def run_backtest(bot, candles, tf_secs, news, cash=10000.0, vol=0.3, rf=0.015, allow_lev=True, spread=0.06,
-                 vol_premium=0.10, ticker=""):
+                 vol_premium=0.15, ticker="", carry=None, skew=(0.0, 0.0)):
     """The simulation itself (pure: candles in, a report out), so tests and tools can run it without an engine."""
     ser = Series(candles)
     n = len(ser)
@@ -855,7 +856,8 @@ def run_backtest(bot, candles, tf_secs, news, cash=10000.0, vol=0.3, rf=0.015, a
         return max(vol, math.sqrt(sum((x - m) ** 2 for x in r) / (len(r) - 1)) * math.sqrt(year_bars))
 
     def _bt_quote(kind, S, K, T):
-        return options.quote(S, K, T, sigma_now * (1 + vol_premium), kind, rf, 0.0, spread)
+        return options.quote(S, K, T, sigma_now * (1 + vol_premium), kind, rf if carry is None else carry, 0.0, 0.0,
+                             skew[0], skew[1], spread)
 
     def close_position(px, why, j):
         nonlocal wins, losses, gross_win, gross_loss, fees
@@ -917,15 +919,16 @@ def run_backtest(bot, candles, tf_secs, news, cash=10000.0, vol=0.3, rf=0.015, a
                 if not any(x["kind"] == kind for x in opts):
                     want = o * (1 + (r["strike_pct"] / 100) * (1 if kind == "call" else -1))
                     K = min(options.strikes_for(o), key=lambda k: abs(k - want))
-                    exp_bar = i + max(1, int(round([1, 2, 7, 30][r["expiry"]] * 1800 / tf_secs)))
+                    exp_bar = i + max(1, int(round(max(1, options.EXPIRY_DAYS[r["expiry"]]) * 1800 / tf_secs)))
                     q = _bt_quote(kind, o, K, (exp_bar - i) / year_bars)
-                    mb = r["size"] if r["unit"] == "mb" else state["cash"] * r["size"] / 100 / (1 + FEE)
-                    if mb >= 1 and mb * (1 + FEE) <= state["cash"] and q["ask"] > 0:
-                        qty = mb / q["ask"]
-                        state["cash"] -= mb * (1 + FEE)
-                        fees += mb * FEE
-                        opts.append({"kind": kind, "K": K, "exp_bar": exp_bar, "qty": qty, "cost": mb * (1 + FEE)})
-                        trades.append({"t": ser.t[i], "do": do, "price": q["ask"], "strike": K})
+                    mb = r["size"] if r["unit"] == "mb" else state["cash"] * r["size"] / 100
+                    n = int(mb / (q["ask"] * options.MULTIPLIER * (1 + FEE)) + 1e-9) if q["ask"] > 0 else 0   # whole contracts
+                    spend = n * options.MULTIPLIER * q["ask"]
+                    if n >= 1 and spend * (1 + FEE) <= state["cash"] + 1e-9:
+                        state["cash"] -= spend * (1 + FEE)
+                        fees += spend * FEE
+                        opts.append({"kind": kind, "K": K, "exp_bar": exp_bar, "qty": n * options.MULTIPLIER, "cost": spend * (1 + FEE)})
+                        trades.append({"t": ser.t[i], "do": do, "price": q["ask"], "strike": K, "contracts": n})
             elif do == "sell_options" and opts:
                 for x in list(opts):
                     q = _bt_quote(x["kind"], o, x["K"], max(0, x["exp_bar"] - i) / year_bars)

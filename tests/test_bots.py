@@ -131,7 +131,8 @@ class RunningTests(unittest.TestCase):
     def test_stops_leverage_and_options(self):
         e, p = self.e, self.p
         e.admin_pro(p, 30, tier="expert")
-        ok, msg, bid = e.save_bot(p, self.bot([{"when": "calls == 0", "do": "buy_call", "size": 5, "strike_pct": 2, "expiry": 1},
+        e.credit(p, 20000)                                         # (enough for whole 100-share contracts)
+        ok, msg, bid = e.save_bot(p, self.bot([{"when": "calls == 0", "do": "buy_call", "size": 20, "strike_pct": 2, "expiry": 1},
                                                {"when": "flat", "do": "buy", "size": 10, "lev": 3}],     # (one action a candle: the first rule that is true)
                                               stop_pct=0.0001))
         self.assertTrue(ok, msg)
@@ -197,9 +198,10 @@ class BacktestTests(unittest.TestCase):
         cs = candles(closes)
         news = [{"t": cs[24][0], "text": "NovaChips beats estimates", "tickers": ["X"]}]
         bot = bots.clean_bot({"tickers": ["X"], "timeframe": "1m",
-                              "rules": [{"when": "news_score > 1 and calls == 0", "do": "buy_call", "size": 10, "expiry": 0}]})
-        r = bots.run_backtest(bot, cs, 60, news, cash=1000.0, ticker="X")
+                              "rules": [{"when": "news_score > 1 and calls == 0", "do": "buy_call", "size": 50, "expiry": 0}]})
+        r = bots.run_backtest(bot, cs, 60, news, cash=10000.0, ticker="X")
         self.assertTrue(any(x["do"] == "buy_call" for x in r["log"]), r["log"])
+        self.assertTrue(all(x.get("contracts", 1) >= 1 and x.get("contracts", 1) == int(x.get("contracts", 1)) for x in r["log"]))
 
     def test_backtest_over_http(self):
         with IsolatedServer() as srv:

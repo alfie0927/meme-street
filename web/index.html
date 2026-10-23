@@ -159,7 +159,16 @@ button:hover{background:#1f262c}button:disabled{opacity:.4;cursor:not-allowed}
 .dtabs{display:flex;gap:4px;margin:4px 0 8px}
 #opt-box{display:none}body.opt-tab #opt-box{display:block}body.opt-tab #chart-box,body.opt-tab .chart-resize,body.opt-tab .chart-controls{display:none!important}
 .opt-chain{width:100%;font-variant-numeric:tabular-nums}.opt-chain td,.opt-chain th{text-align:right;padding:4px 6px}.opt-chain th.k,.opt-chain td.k{text-align:center;font-weight:700;background:var(--card2)}
-.opt-chain tr.atm td{border-top:1px solid var(--acc)}.opt-chain button{padding:2px 7px;font-size:12px;min-width:56px}.opt-chain button.sel{background:var(--acc);color:#021012}
+.opt-chain td.itm{background:#4cc3cc12}.opt-chain tr.pxline td{border-bottom:1px solid var(--acc)}.opt-chain td.mut{font-size:12px}
+.opt-figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px 14px;margin:8px 0}.opt-figs small{display:block;color:var(--mut);font-size:11px}.opt-figs strong{font-variant-numeric:tabular-nums}
+#opt-info{margin:-4px 0 10px}
+.opt-chain td[data-opt-pick]{cursor:pointer}.opt-chain td[data-opt-pick]:hover{background:#ffffff0a}.opt-chain td.picked{background:#4cc3cc1f}
+.opt-greeks{width:100%}.opt-greeks td,.opt-greeks th{padding:4px 8px;vertical-align:top;text-align:left}.opt-greeks td.og-v,.opt-greeks td.og-c{white-space:nowrap;font-variant-numeric:tabular-nums}.opt-greeks td.hint{min-width:240px;font-size:12px;white-space:normal}
+@media(max-width:760px){.opt-greeks,.opt-greeks tbody{display:block}.opt-greeks thead{display:none}.opt-greeks tr{display:grid;grid-template-columns:62px 66px minmax(0,1fr)}.opt-greeks td.og-c{white-space:normal}.opt-greeks td.hint{grid-column:1/-1;min-width:0;padding-top:0}}
+/* an option price flashes green or red when it ticks up or down (two names each, so a second tick the same way flashes again) */
+.ofu1{animation:ofu1 .9s}.ofu2{animation:ofu2 .9s}.ofd1{animation:ofd1 .9s}.ofd2{animation:ofd2 .9s}
+@keyframes ofu1{from{background:#3ad07a45;color:var(--up)}}@keyframes ofu2{from{background:#3ad07a45;color:var(--up)}}
+@keyframes ofd1{from{background:#f25c5445;color:var(--dn)}}@keyframes ofd2{from{background:#f25c5445;color:var(--dn)}}.opt-chain button{padding:2px 7px;font-size:12px;min-width:56px}.opt-chain button.sel{background:var(--acc);color:#021012}
 @media(max-width:760px){.opt-chain td,.opt-chain th{padding:3px 2px;font-size:11px}.opt-chain button{min-width:0;padding:2px 4px;font-size:11px}}
 .opt-buy{margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:var(--r)}.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center}
 .ticket{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:6px 0;margin-bottom:10px;border-top:1px solid var(--line2);border-bottom:1px solid var(--line2)}
@@ -801,49 +810,123 @@ function renderHoldings(){
  setHtml($('hold-orders'),os.length?`<h3 class="sp">Open orders</h3><table><thead><tr><th>Ticker</th><th>Order</th><th>Triggers</th><th>Size</th><th></th><th></th></tr></thead><tbody>${orderRows(os,true)}</tbody></table>`:'')}
 $('hold-orders').addEventListener('click',e=>{const b=e.target.closest('[data-cancel]');if(b)send({type:'order',action:'cancel',id:Number(b.dataset.cancel)})});
 // ---------- options (options.py): the stock page's Options tab, and every option position on the holdings page ----------
-let optTab=false,optChain=null,optExp=null,optSel=null,optT=0,optFor=null;
+// The chain is fetched once a second while the tab is open and updated in place, so the quotes follow the stock (each
+// bid and ask flashes green or red when it ticks up or down) and a click is never lost to a redraw; the table is only
+// rebuilt when the strikes, the expiry or the chosen column change. Click either side of a row for that contract's
+// details: every Greek, per share and per contract. A contract is on 100 shares; prices are per share.
+const OPT_X=100;
+let optTab=false,optChain=null,optExp=null,optSel=null,optT=0,optFor=null,optBusy=false,optKeep=null,optCol=lsGet('ms_opt_col','delta');
+const OPT_COLS={delta:'Delta',gamma:'Gamma',theta:'Theta',vega:'Vega',iv:'IV',itm:'Chance ITM',oi:'Open int.'};if(!OPT_COLS[optCol])optCol='delta';
 function setDetailTab(t){optTab=t==='options';document.body.classList.toggle('opt-tab',optTab);
  document.querySelectorAll('[data-dtab]').forEach(b=>b.classList.toggle('on',b.dataset.dtab===t));
  if(optTab)loadChain(true);else scheduleChart()}
 async function loadChain(force){
- if(!optTab||!selectedTicker)return;const now=Date.now();if(!force&&now-optT<5000&&optFor===selectedTicker)return;optT=now;
- const tk=selectedTicker,r=await fetch('/api/options/'+encodeURIComponent(tk)).then(x=>x.json()).catch(()=>null);
+ if(!optTab||!selectedTicker||document.hidden)return;const now=Date.now();if(optBusy||(!force&&now-optT<1000&&optFor===selectedTicker))return;optT=now;
+ const tk=selectedTicker;if(optFor!==tk){optFor=tk;optSel=null;optExp=null;optChain=null}
+ const want=optExp;optBusy=true;const r=await fetch('/api/options/'+encodeURIComponent(tk)+(want?'?exp='+want:'')).then(x=>x.json()).catch(()=>null);optBusy=false;
  if(!r||tk!==selectedTicker)return;
- if(optFor!==tk){optFor=tk;optSel=null;optExp=null}
- optChain=r;if(!r.error&&(!optExp||!r.expiries.some(e=>Math.abs(e-optExp)<1)))optExp=r.expiries[1];drawOptions()}
+ if(want!==optExp){optT=0;loadChain(true);return}               // (another expiry was picked meanwhile)
+ optChain=r;if(!r.error)optExp=r.exp;drawOptions()}
+const opx=v=>numText(v,optChain&&optChain.price<1?4:2);       // (option prices: cents, as on a real chain)
 const optLeft=t=>{const s=Math.max(0,t-engineNow()),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+String(m).padStart(2,'0')+'m':m+'m'};
 const optName=(kind,K,exp)=>`${numText(K,Math.abs(K)<1?4:2)} ${kind} · ${optLeft(exp)} to expiry`;
+const optStat=(q,c)=>c==='iv'?(q.iv*100).toFixed(1)+'%':c==='itm'?(q.itm*100).toFixed(0)+'%':c==='oi'?numText(q.oi,q.oi%1?2:0):c==='gamma'?q.gamma.toFixed(4):q[c].toFixed(c==='delta'?2:3);
+const optN=n=>numText(n,Math.abs(n-Math.round(n))<1e-9?0:2);
+// a number that flashes green when it rises and red when it falls (two class names each, so a second rise flashes again)
+function flashSet(el,v,txt){if(!el)return;if(el.textContent!==txt)el.textContent=txt;const prev=el._fv;el._fv=v;
+ if(prev===undefined||v===prev)return;el._fn=(el._fn||0)+1;el.classList.remove('ofu1','ofu2','ofd1','ofd2');el.classList.add((v>prev?'ofu':'ofd')+(el._fn%2+1))}
 function drawOptions(){
  const box=$('opt-box');if(!box||!optTab)return;const c=optChain;
- if(!c){setHtml(box,'<p class="mut">Loading the option chain…</p>');return}
- if(c.error){setHtml(box,`<p class="mut">${esc(c.error)}. Options are on the companies and the commodities.</p>`);return}
- const rows=c.rows.filter(r=>Math.abs(r.exp-optExp)<1),px=c.price,atm=rows.reduce((a,r)=>Math.abs(r.K-px)<Math.abs(a.K-px)?r:a,rows[0]);
- const b=(kind,r)=>{const q=r[kind],on=optSel&&optSel.kind===kind&&Math.abs(optSel.K-r.K)<1e-9;return `<button class="${on?'sel':''}" data-opt-pick="${kind}" data-k="${r.K}">${pxText(q.ask)}</button>`};
- const earn=c.earnings&&c.earnings<=optExp?`<p class="hint">Earnings are due before this expiry: the prices include a bigger move.</p>`:'';
- let h=`<p class="hint" style="margin-top:0">A <b>call</b> pays the amount the price ends above the strike at expiry; a <b>put</b> pays the amount it ends below. One contract is on one share. The most you can lose is what you pay; you can sell it back before expiry at the bid. Implied volatility ${(c.iv*100).toFixed(0)}% a game year.</p>
- <div class="bar">${c.expiries.map(e=>`<button class="chip ${Math.abs(e-optExp)<1?'on':''}" data-opt-exp="${e}">${optLeft(e)}</button>`).join('')}</div>${earn}
- <div style="overflow-x:auto"><table class="opt-chain"><thead><tr><th colspan="3">Calls</th><th class="k">Strike</th><th colspan="3">Puts</th></tr><tr><th>Bid</th><th>Ask (buy)</th><th>Delta</th><th class="k"></th><th>Delta</th><th>Bid</th><th>Ask (buy)</th></tr></thead><tbody>`
-  +rows.map(r=>`<tr class="${r===atm?'atm':''}"><td>${pxText(r.call.bid)}</td><td>${b('call',r)}</td><td class="mut">${r.call.delta.toFixed(2)}</td><td class="k">${numText(r.K,Math.abs(r.K)<1?4:2)}</td><td class="mut">${r.put.delta.toFixed(2)}</td><td>${pxText(r.put.bid)}</td><td>${b('put',r)}</td></tr>`).join('')+'</tbody></table></div>';
- if(optSel){const r=rows.find(x=>Math.abs(x.K-optSel.K)<1e-9);
-  if(r){const q=r[optSel.kind],be=optSel.kind==='call'?r.K+q.ask:r.K-q.ask;
-   h+=`<div class="opt-buy"><b>${esc(selectedTicker)} ${esc(optName(optSel.kind,r.K,optExp))}</b><p class="hint">${pxText(q.ask)} MB a contract. It pays at expiry if the price is ${optSel.kind==='call'?'above':'below'} ${numText(r.K,2)}; you make money past <b>${numText(be,2)}</b> (the strike ${optSel.kind==='call'?'plus':'less'} what you paid). The most you can lose is what you pay.</p><div class="bar" style="margin:0"><input id="opt-amt" class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="MB to spend on this option"><button class="buy" id="opt-go">Buy</button></div></div>`}}
- h+='<div id="opt-mine"></div>';
- const a0=$('opt-amt'),keep=a0?a0.value:'',focus=a0&&document.activeElement===a0;     // (a refresh keeps what is being typed)
- setHtml(box,h);const a1=$('opt-amt');if(a1&&a1!==a0){a1.value=keep;if(focus)a1.focus()}
- drawMyOpts()}
-function optRows(list,act){return list.map(o=>`<tr><td><b>${esc(o.tk)}</b> ${esc(optName(o.kind,o.K,o.exp))}</td><td>${numText(o.qty,2)}</td><td>${numText(o.cost)} MB</td><td>${numText(o.value)} MB</td><td class="${cls(o.pnl)}">${signed(o.pnl)} MB</td>${act?`<td class="hold-act"><button class="sell" data-opt-sell="${o.id}" data-f="0.5">Sell half</button> <button class="sell" data-opt-sell="${o.id}" data-f="1">Sell</button></td>`:''}</tr>`).join('')}
-function drawMyOpts(){const el=$('opt-mine');if(!el)return;const mine=(S.opts||[]).filter(o=>o.tk===selectedTicker);
- setHtml(el,mine.length?`<h3 class="sp">Your options on ${esc(selectedTicker)}</h3><table><thead><tr><th>Contract</th><th>Contracts</th><th>Cost</th><th>Worth now</th><th>P/L</th><th></th></tr></thead><tbody>${optRows(mine,true)}</tbody></table>`:'')}
-function drawHoldOpts(){const os=S.opts||[];
- setHtml($('hold-opts'),os.length?`<h3 class="sp">Options</h3><table><thead><tr><th>Contract</th><th>Contracts</th><th>Cost</th><th>Worth now (bid)</th><th>P/L</th><th></th></tr></thead><tbody>${optRows(os,true)}</tbody></table><p class="hint">They settle in cash at expiry by themselves.</p>`:'')}
+ if(!c){setHtml(box,'<p class="mut">Loading the option chain…</p>');box._k=null;return}
+ if(c.error){setHtml(box,`<p class="mut">${esc(c.error)}. Options are on the companies and the commodities.</p>`);box._k=null;return}
+ const key=c.ticker+'|'+c.exp+'|'+c.rows.map(r=>r.K).join(',')+'|'+optCol+'|'+c.expiries.join(',');
+ if(box._k!==key){box._k=key;
+  const ck=K=>numText(K,Math.abs(K)<1?4:2),side=(kind,p,K)=>[`<td class="mut ${p}-st" data-opt-pick="${kind}" data-k="${K}"></td>`,`<td class="${p}-bid" data-opt-pick="${kind}" data-k="${K}"></td>`,`<td class="${p}-ask" data-opt-pick="${kind}" data-k="${K}"><button data-opt-pick="${kind}" data-k="${K}"></button></td>`];
+  const a0=$('opt-n');if(a0)optKeep={v:a0.value,f:document.activeElement===a0};     // (a rebuild keeps what is being typed)
+  setHtml(box,`<p class="hint" style="margin-top:0">A <b>call</b> pays what the price ends above the strike at expiry, a <b>put</b> what it ends below. <b>One contract is on 100 shares</b> and prices are per share, so a contract costs 100 times its price; the most you can lose is what you pay. You buy whole contracts at the ask and can sell them back at the bid until expiry; at expiry they settle in cash by themselves (European style). Prices move with the stock every second (green up, red down). <b>Click a call or a put</b> to see all its Greeks.</p>
+  <div class="bar" id="opt-exps">${c.expiries.map(e=>`<button class="chip" data-opt-exp="${e}"><span class="o-l"></span> <span class="mut o-iv"></span></button>`).join('')}</div><div class="hint" id="opt-info"></div>
+  <div class="bar"><span class="mut">Show</span>${Object.entries(OPT_COLS).map(([k,v])=>`<button class="chip ${k===optCol?'on':''}" data-opt-col="${k}">${v}</button>`).join('')}</div>
+  <div style="overflow-x:auto"><table class="opt-chain"><thead><tr><th colspan="3">Calls</th><th class="k">Strike</th><th colspan="3">Puts</th></tr><tr><th>${OPT_COLS[optCol]}</th><th>Bid</th><th>Ask (buy)</th><th class="k"></th><th>Bid</th><th>Ask (buy)</th><th>${OPT_COLS[optCol]}</th></tr></thead><tbody>`
+   +c.rows.map(r=>{const cs=side('call','c',r.K),ps=side('put','p',r.K);return `<tr data-k="${r.K}">${cs.join('')}<td class="k">${ck(r.K)}</td>${ps[1]}${ps[2]}${ps[0]}</tr>`}).join('')+'</tbody></table></div>'
+   +`<div id="opt-ticket"></div><div id="opt-mine"></div>`);
+ }
+ // the figures, every second
+ document.querySelectorAll('#opt-exps [data-opt-exp]').forEach((bt,i)=>{const e=c.expiries[i];bt.classList.toggle('on',Math.abs(e-c.exp)<1);
+  bt.querySelector('.o-l').textContent=optLeft(e);bt.querySelector('.o-iv').textContent='IV '+(c.term[i]*100).toFixed(0)+'%'});
+ const T=Math.max(0,c.exp-c.now)/(365*1800),move=c.forward*c.iv*Math.sqrt(T);
+ setHtml($('opt-info'),`Price <b>${pxText(c.price)}</b> · expected at expiry <b>${pxText(c.forward)}</b> · implied volatility <b>${(c.iv*100).toFixed(1)}%</b> a game year · the options expect a move of about <b>±${pxText(move)}</b> (±${(move/c.price*100).toFixed(1)}%) by expiry`
+  +(c.earnings?` · <span class="up">earnings are due before this expiry</span>: the prices include a bigger move, which goes once the report is out`:'')
+  +(c.div?` · a dividend of ${numText(c.div,4)} MB goes ex before expiry (the price drops by it), so calls are cheaper and puts dearer`:''));
+ const px=c.price,rows=c.rows;let below=null;for(const r of rows)if(r.K<=px)below=r.K;
+ document.querySelectorAll('#opt-box .opt-chain tbody tr').forEach(tr=>{const K=Number(tr.dataset.k),r=rows.find(x=>x.K===K);if(!r)return;
+  for(const[kind,p]of[['call','c'],['put','p']]){const q=r[kind],itm=kind==='call'?K<px:K>px,on=!!optSel&&optSel.kind===kind&&Math.abs(optSel.K-K)<1e-9;
+   tr.querySelector('.'+p+'-st').textContent=optStat(q,optCol);flashSet(tr.querySelector('.'+p+'-bid'),q.bid,opx(q.bid));
+   const bt=tr.querySelector('.'+p+'-ask button');flashSet(bt,q.ask,opx(q.ask));bt.classList.toggle('sel',on);
+   for(const cl of['-st','-bid','-ask']){const td=tr.querySelector('.'+p+cl);td.classList.toggle('itm',itm);td.classList.toggle('picked',on)}}
+  tr.classList.toggle('pxline',K===below)});
+ drawTicket();drawMyOpts()}
+function payoffSvg(kind,K,ask,px,move){       // profit or loss at expiry of one contract (100 shares)
+ const lo=Math.max(0,Math.min(px,K)-Math.max(3*move,Math.abs(K-px)*0.6,px*0.02)),hi=Math.max(px,K)+Math.max(3*move,Math.abs(K-px)*0.6,px*0.02),W=innerWidth<760?360:600,H=innerWidth<760?110:130;
+ const pl=x=>((kind==='call'?Math.max(0,x-K):Math.max(0,K-x))-ask)*OPT_X,xs=[lo,K,hi],ys=xs.map(pl),cost=ask*OPT_X,top=Math.max(...ys,cost*0.2),bot=-cost*1.15;
+ const X=x=>(x-lo)/(hi-lo)*W,Y=v=>6+(top-v)/(top-bot)*(H-12),be=kind==='call'?K+ask:K-ask;
+ const path=xs.map((x,i)=>(i?'L':'M')+X(x).toFixed(1)+' '+Y(ys[i]).toFixed(1)).join(' ');
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px;height:auto;display:block;margin:8px 0" role="img" aria-label="Profit or loss at expiry for one contract">
+ <line x1="0" x2="${W}" y1="${Y(0).toFixed(1)}" y2="${Y(0).toFixed(1)}" stroke="var(--line)"/>
+ <line x1="${X(px).toFixed(1)}" x2="${X(px).toFixed(1)}" y1="0" y2="${H}" stroke="var(--acc)" stroke-dasharray="3 3"/>
+ <path d="${path}" fill="none" stroke="var(--up)" stroke-width="1.8"/>
+ <text x="${Math.min(W-4,X(px)+4).toFixed(0)}" y="12" fill="var(--acc)" font-size="11">price ${pxText(px)}</text>
+ ${be>lo&&be<hi?`<text x="${Math.min(W-90,X(be)+4).toFixed(0)}" y="${(Y(0)-5).toFixed(0)}" fill="var(--mut)" font-size="11">breakeven ${pxText(be)}</text>`:''}
+ <text x="4" y="${(H-4).toFixed(0)}" fill="var(--dn)" font-size="11">most you can lose ${numText(cost)} MB</text></svg>`}
+const OPT_GREEKS=[
+ ['delta','Delta',q=>q.delta.toFixed(3),q=>`moves like ${signed(q.delta*OPT_X,1)} shares`,'How much the option moves for a 1 MB move in the stock: a call between 0 and 1, a put between 0 and −1. Also roughly the chance of finishing in the money.'],
+ ['gamma','Gamma',q=>q.gamma.toFixed(4),q=>`delta ${signed(q.gamma*OPT_X,2)} shares per 1 MB`,'How much delta changes for a 1 MB move. Highest at the money and near expiry, where an option swings from worthless to worth something fastest.'],
+ ['theta','Theta',q=>signed(q.theta,3),q=>`${signed(q.theta*OPT_X)} MB a game day`,'What the option loses in a game day (30 minutes) if nothing else changes: time decay. It speeds up as expiry gets close.'],
+ ['vega','Vega',q=>q.vega.toFixed(3),q=>`${signed(q.vega*OPT_X)} MB per IV point`,'What it gains if implied volatility rises one point. Bigger for longer expiries; after earnings volatility falls back, and so do the prices (the volatility crush).'],
+ ['rho','Rho',q=>signed(q.rho,3),q=>`${signed(q.rho*OPT_X)} MB per point`,'What it gains if the stock\'s expected growth rate rises one point. Calls gain, puts lose; small except for long expiries.']];
+function drawTicket(){const el=$('opt-ticket'),c=optChain;if(!el||!c||c.error)return;
+ const r=optSel&&c.rows.find(x=>Math.abs(x.K-optSel.K)<1e-9);
+ if(!r){if(el._on){setHtml(el,'');el._on=false}return}
+ const q=r[optSel.kind],kind=optSel.kind,be=kind==='call'?r.K+q.ask:r.K-q.ask,T=Math.max(0,c.exp-c.now)/(365*1800),move=c.forward*c.iv*Math.sqrt(T),each=q.ask*OPT_X;
+ if(!el._on||el._k!==kind+r.K){el._on=true;el._k=kind+r.K;
+  const F=(l,id)=>`<div><small>${l}</small><strong id="${id}"></strong></div>`;
+  setHtml(el,`<div class="opt-buy"><div class="bar" style="justify-content:space-between;margin:0"><b id="ot-name"></b><button data-opt-close aria-label="Close the contract details">&times;</button></div>
+  <div class="opt-figs">${F('Bid (a share)','ot-bid')+F('Ask (a share)','ot-ask')+F('Value (a share)','ot-mid')+F('One contract (100 shares)','ot-each')+F('Implied volatility','ot-iv')+F('Chance ITM at expiry','ot-itm')+F('Breakeven','ot-be')+F('Open interest','ot-oi')}</div>
+  <h3 class="sp" style="margin:10px 0 4px">The Greeks</h3><div style="overflow-x:auto"><table class="opt-greeks"><thead><tr><th>Greek</th><th>A share</th><th>One contract</th><th>What it means</th></tr></thead><tbody>
+  ${OPT_GREEKS.map(g=>`<tr><td><b>${g[1]}</b></td><td class="og-v" data-g="${g[0]}"></td><td class="og-c" data-g="${g[0]}"></td><td class="hint">${g[4]}</td></tr>`).join('')}</tbody></table></div>
+  <div id="ot-pay"></div>
+  <div class="bar" style="margin:0"><input id="opt-n" class="amt-input" type="number" min="1" step="1" placeholder="Contracts" aria-label="Number of contracts to buy (100 shares each)"><button class="buy" id="opt-go">Buy</button><span class="mut" id="ot-cost"></span></div></div>`);
+  const a1=$('opt-n');if(optKeep){a1.value=optKeep.v;if(optKeep.f)a1.focus();optKeep=null}}
+ setHtml($('ot-name'),`${esc(selectedTicker)} ${esc(optName(kind,r.K,c.exp))}`);
+ flashSet($('ot-bid'),q.bid,opx(q.bid));flashSet($('ot-ask'),q.ask,opx(q.ask));flashSet($('ot-mid'),q.mid,opx(q.mid));flashSet($('ot-each'),each,numText(each)+' MB');
+ $('ot-iv').textContent=(q.iv*100).toFixed(1)+'%';$('ot-itm').textContent=(q.itm*100).toFixed(0)+'%';$('ot-be').textContent=pxText(be);$('ot-oi').textContent=optN(q.oi)+(q.oi===1?' contract':' contracts');
+ for(const g of OPT_GREEKS){el.querySelector(`.og-v[data-g="${g[0]}"]`).textContent=g[2](q);el.querySelector(`.og-c[data-g="${g[0]}"]`).textContent=g[3](q)}
+ setHtml($('ot-pay'),payoffSvg(kind,r.K,q.ask,c.price,move)+`<p class="hint" style="margin:0">Profit or loss at expiry for one contract: it pays 100 times what the price ends ${kind==='call'?'above':'below'} ${pxText(r.K)}, and makes money past <b>${pxText(be)}</b> (the strike ${kind==='call'?'plus':'less'} what you pay a share).</p>`);
+ const n=Number(($('opt-n')||{}).value),fee=0.001,can=Math.floor(Math.max(0,S.cash||0)/(each*(1+fee))+1e-9);
+ setHtml($('ot-cost'),(n>=1&&Number.isInteger(n)?`${numText(n,0)} × 100 × ${opx(q.ask)} = <b>${numText(n*each)} MB</b> (+${numText(n*each*fee)} fee) · `:'')+(guest?'':`you can buy up to ${numText(can,0)}`))}
+const OPT_HEAD='<th>Contract</th><th>Contracts</th><th>Cost</th><th>Worth now (bid)</th><th>P/L</th><th>Delta</th><th>Theta a day</th><th></th>';
+function drawOptTable(el,list,title,note){if(!el)return;
+ const key=list.map(o=>o.id+(o.contracts>1+1e-9?'+':'')).join(',');
+ if(el._k!==key){el._k=key;setHtml(el,list.length?`${title}<div style="overflow-x:auto"><table><thead><tr>${OPT_HEAD}</tr></thead><tbody>${list.map(o=>`<tr data-oid="${o.id}"><td><b>${esc(o.tk)}</b> <span class="o-n"></span></td><td class="o-q"></td><td class="o-c"></td><td class="o-v"></td><td class="o-p"></td><td class="o-d" title="Moves like this many shares"></td><td class="o-t" title="What time takes from it in a game day"></td><td class="hold-act">${o.contracts>1+1e-9?`<button class="sell" data-opt-sell="${o.id}" data-c="1">Sell 1</button> <button class="sell" data-opt-sell="${o.id}" data-f="1">Sell all</button>`:`<button class="sell" data-opt-sell="${o.id}" data-f="1">Sell</button>`}</td></tr>`).join('')}</tbody></table></div>${note}`:'')}
+ for(const o of list){const tr=el.querySelector(`tr[data-oid="${o.id}"]`);if(!tr)continue;
+  const set=(c,t,k)=>{const x=tr.querySelector(c);if(x.textContent!==t)x.textContent=t;if(k!==undefined)x.className=c.slice(1)+' '+k};
+  set('.o-n',optName(o.kind,o.K,o.exp));set('.o-q',optN(o.contracts!==undefined?o.contracts:o.qty/OPT_X));set('.o-c',numText(o.cost)+' MB');flashSet(tr.querySelector('.o-v'),o.value,numText(o.value)+' MB');
+  set('.o-p',signed(o.pnl)+' MB',cls(o.pnl));set('.o-d',signed(o.pos_delta||0,1));set('.o-t',signed(o.pos_theta||0)+' MB',cls(o.pos_theta||0))}}
+function drawMyOpts(){drawOptTable($('opt-mine'),(S.opts||[]).filter(o=>o.tk===selectedTicker),`<h3 class="sp">Your options on ${esc(selectedTicker)}</h3>`,'')}
+function drawHoldOpts(){drawOptTable($('hold-opts'),S.opts||[],'<h3 class="sp">Options</h3>','<p class="hint">A contract is on 100 shares. Delta is how many shares each position moves like; theta what time takes from it in a game day. They settle in cash at expiry by themselves.</p>')}
 document.addEventListener('click',async e=>{
- const pick=e.target.closest('[data-opt-pick]'),ex=e.target.closest('[data-opt-exp]'),sell=e.target.closest('[data-opt-sell]');
- if(ex){optExp=Number(ex.dataset.optExp);optSel=null;drawOptions();return}
- if(pick){if(guest){openSignin('register','Create an account to trade options');return}optSel={kind:pick.dataset.optPick,K:Number(pick.dataset.k)};drawOptions();const a=$('opt-amt');if(a)a.focus();return}
- if(e.target.id==='opt-go'&&optSel){const amount=Number($('opt-amt').value);if(!(amount>=1)){toast('Type the MB to spend (1 or more)',false);return}
-  const r=await postJson('/api/options/buy',{ticker:selectedTicker,kind:optSel.kind,strike:optSel.K,expiry:optExp,amount},{'X-Token':token||''});
-  toast(r.msg||r.error||'Error',!!r.ok,4000);if(r.ok){optSel=null;loadChain(true)}return}
- if(sell){sell.disabled=true;const r=await postJson('/api/options/sell',{id:sell.dataset.optSell,fraction:Number(sell.dataset.f)},{'X-Token':token||''});toast(r.msg||r.error||'Error',!!r.ok,4000)}});
+ const pick=e.target.closest('[data-opt-pick]'),ex=e.target.closest('[data-opt-exp]'),col=e.target.closest('[data-opt-col]'),sell=e.target.closest('[data-opt-sell]');
+ if(ex){optExp=Number(ex.dataset.optExp);optSel=null;loadChain(true);return}
+ if(col){optCol=col.dataset.optCol;lsSet('ms_opt_col',optCol);drawOptions();return}
+ if(e.target.closest('[data-opt-close]')){optSel=null;drawOptions();return}
+ if(pick){const was=optSel&&optSel.kind===pick.dataset.optPick&&optSel.K===Number(pick.dataset.k);optSel={kind:pick.dataset.optPick,K:Number(pick.dataset.k)};drawOptions();
+  const t=$('opt-ticket');if(t&&!was)t.scrollIntoView({block:'nearest',behavior:'smooth'});return}
+ if(e.target.id==='opt-go'&&optSel){if(guest){openSignin('register','Create an account to trade options');return}
+  const n=Number($('opt-n').value);if(!(n>=1&&Number.isInteger(n))){toast('Type a whole number of contracts (1 or more)',false);return}
+  const r=await postJson('/api/options/buy',{ticker:selectedTicker,kind:optSel.kind,strike:optSel.K,expiry:optExp,contracts:n},{'X-Token':token||''});
+  toast(r.msg||r.error||'Error',!!r.ok,4000);if(r.ok){$('opt-n').value='';loadChain(true)}return}
+ if(sell){sell.disabled=true;const body=sell.dataset.c?{id:sell.dataset.optSell,contracts:Number(sell.dataset.c)}:{id:sell.dataset.optSell,fraction:1};
+  const r=await postJson('/api/options/sell',body,{'X-Token':token||''});sell.disabled=false;toast(r.msg||r.error||'Error',!!r.ok,4000)}});
+document.addEventListener('input',e=>{if(e.target.id==='opt-n')drawTicket()});
 // Take profit and stop-loss on each position, edited where they are shown (engine.set_exit): "-" when there is none
 let exitEdit=null;
 function drawExits(tr,h){

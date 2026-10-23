@@ -1383,31 +1383,34 @@ class OptionBuy(BaseModel):
     kind: str
     strike: float
     expiry: float
-    amount: float
+    contracts: float | None = None       # whole contracts of 100 shares (or `amount` MB: as many as it buys)
+    amount: float | None = None
 
 
 class OptionSell(BaseModel):
     id: str
+    contracts: float | None = None       # whole contracts, or `fraction` of the position (1: all of it)
     fraction: float = 1.0
 
 
 @app.get("/api/options/{ticker}")
-async def option_chain(ticker: str):
-    """The option chain of a stock (options.py): every expiry and strike on offer with the bid, the ask and the delta of
-    its call and its put. Public, like the prices."""
-    return await run(engine.option_chain, ticker.upper()[:12])
+async def option_chain(ticker: str, exp: float | None = None):
+    """One expiry of a stock's option chain (options.py): the strikes nearest the price with each call's and put's bid,
+    ask, implied volatility, Greeks and open interest. Public, like the prices; the page asks every second."""
+    return await run(engine.option_chain, ticker.upper()[:12], exp)
 
 
 @app.post("/api/options/buy")
 async def option_buy(b: OptionBuy, x_token: str = Header("")):
     res = await with_player(x_token, "opt_buy", engine.buy_option, b.ticker.upper()[:12], b.kind, b.strike, b.expiry,
-                            b.amount, interval=0.5)
+                            b.amount, b.contracts, interval=0.5)
     return res if isinstance(res, JSONResponse) else acted(res)
 
 
 @app.post("/api/options/sell")
 async def option_sell(b: OptionSell, x_token: str = Header("")):
-    res = await with_player(x_token, "opt_sell", engine.sell_option, b.id[:20], b.fraction, interval=0.5)
+    res = await with_player(x_token, "opt_sell", engine.sell_option, b.id[:20], b.fraction, b.contracts,
+                            interval=0.5)
     return res if isinstance(res, JSONResponse) else acted(res)
 
 

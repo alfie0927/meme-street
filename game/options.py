@@ -1,22 +1,41 @@
 """Options on the stocks (everyone can trade them): calls and puts, bought and sold back before expiry, or settled in
-cash at expiry.
+cash at expiry. Priced the way an options desk prices them, so the quotes follow the stock every second and the Greeks
+behave as they do on a real chain.
 
-* **Contracts.** One contract is on one share. A **call** pays `max(0, price - strike)` at expiry, a **put**
-  `max(0, strike - price)`. They are European and cash-settled: nothing is ever delivered, and the payoff is worked out
-  from the stock's price at the expiry time. Only companies and commodities have options (not the index, the funds or the
-  leveraged products).
+* **Contracts.** One contract is on 100 shares, as on real exchanges, and only whole contracts are traded. Prices are
+  quoted per share, so a contract costs 100 times its price. A **call** pays `max(0, price - strike)` a share at
+  expiry, a **put** `max(0, strike - price)`. (A position's `qty` is kept in shares: 100 a contract.) They are European and cash-settled (like index options): nothing is ever delivered, and the
+  payoff is worked out from the stock's price at the expiry time. Only companies and commodities have options (not the
+  index, the funds or the leveraged products).
 * **Expiries.** At the close of the regular session (the end of a game day's trading): the next close, and the closes 2,
-  7 and 30 game days out. A contract can be bought until a minute before it expires.
-* **Strikes.** Thirteen around the price, 2.5% to 5% apart, on round numbers.
-* **Prices.** Black-Scholes, with the interest rate `rf` of the price model and an *implied volatility* that is the
-  stock's own: the higher of its stated volatility and what it has really done over the last 20 game days, or what it
-  is doing now, plus a premium (`option_vol_premium`, 10%: in real markets options cost a little more than the moves
-  they insure, the variance risk premium). If the company reports earnings before the expiry, the price includes a jump
-  of about three ordinary days. You buy at the **ask** and sell at the **bid**, `option_spread` (6%) of the price apart,
-  and at least `option_min_spread` (0.1%) of the share price, so very cheap far-out contracts are not cheap to trade.
-  The usual 0.1% fee applies to what is paid or received.
-* **No free money.** With the premium and the spread, buying options at random loses money on average (test_options.py
-  checks calls, puts and straddles); options reward a view on direction or volatility that turns out right.
+  7, 30 and 90 game days out. A contract can be bought until a minute before it expires.
+* **Strikes** are *listed*, as on an exchange: thirteen around the price, 2.5% to 5% apart on round numbers, when an
+  expiry is first asked for. They stay until it expires, and as the price moves new ones are added so there are always
+  six above and six below it (at the spacing that suits the new price).
+* **The value** is Black-Scholes-Merton on the *forward*, the price the stock is expected to have at expiry: today's
+  price, less a dividend that goes ex before expiry (the price drops by it on the ex-date), grown at the stock's own
+  expected drift (`carry`: the price model's rate plus beta times the equity premium). Nothing is discounted, because MB
+  cash earns no interest here; so a contract is worth what it is expected to pay, and a deep in-the-money call is not a
+  cheaper way to borrow than leverage. Calls and puts on one strike keep put-call parity: call - put = forward - strike.
+* **Implied volatility.** What the stock really does (the larger of its realised volatility over the last 20
+  regular-session closes and over the last 80 game days; the stated volatility is only the noise, and the price model
+  makes real moves about twice as big, so a new game or listing uses twice the stated one until it has history), with
+  today's calm or storm (the engine's volatility clustering) fading out over the contract's life: a storm lifts the
+  short expiries most and a calm lowers them, so the term structure slopes the way real ones do. Plus a premium
+  (`option_vol_premium`, 15%: real options cost more than the moves they insure, the variance risk premium). Across
+  strikes, a **skew**: lower strikes dearer for ordinary stocks (`option_skew`; puts are crash insurance), higher strikes
+  dearer for the wildest (their moves jump up more than down, like meme stocks'), both wings a little dearer
+  (`option_smile`); the commodities have a plain smile. If the company reports earnings before the expiry, the price
+  includes a jump of about three ordinary days; once the report is out that premium is gone (the "volatility crush").
+* **The Greeks** of each contract at its own implied volatility: delta (the change for a 1 MB move in the stock), gamma
+  (the change in delta), theta (the change in a game day), vega (for one point of volatility), rho (for one point of
+  carry), and the chance of finishing in the money.
+* **Quotes.** You buy at the **ask** and sell at the **bid**, `option_spread` (6%) of the value apart and at least
+  `option_min_spread` (0.1%) of the share price, so cheap far-out contracts have wide spreads; on the price ticks of the
+  real markets (0.01 under 3 MB, 0.05 from 3 MB). The usual 0.1% fee applies to what is paid or received.
+* **No free money.** With the premium and the spread, buying options at random loses money on average (test_options.py,
+  and on the real engine across strikes, expiries and calm and stormy spells); options reward a view on direction or
+  volatility that turns out right.
 
 The house is the other side of every contract, as it is for shares: what a player pays goes into the house reserve and
 payoffs come out of it, so the books still balance (`Engine.total_tokens`). Every purchase, sale and settlement is in
@@ -26,32 +45,76 @@ import math
 import uuid
 
 KINDS = ("call", "put")
-EXPIRY_DAYS = (0, 2, 7, 30)          # the next close, and the closes this many game days after it
+EXPIRY_DAYS = (0, 2, 7, 30, 90)      # the next close, and the closes this many game days after it
 STRIKES_EACH_SIDE = 6
 MAX_POSITIONS = 40                   # open option positions a player may hold at once
+MULTIPLIER = 100                     # shares a contract
+MAX_CONTRACTS = 10000                # in one order
 EARNINGS_JUMP = 3.0                  # an earnings report moves a stock about this many ordinary days' moves
+GAME_YEAR = 365 * 1800.0             # real seconds in a game year (T is in game years)
+CLUSTER_SHARE = 0.5                  # the part of a stock's variance that follows the volatility clustering (measured)
 
 
 def norm_cdf(x):
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
 
-def bs(S, K, T, sigma, kind, r=0.015, extra_var=0.0):
-    """(price, delta) of a European call or put. `T` in years, `sigma` a year; `extra_var` adds a known jump's variance
-    (an earnings report before expiry)."""
-    if S <= 0 or K <= 0:
-        return 0.0, 0.0
-    var = max(sigma, 1e-6) ** 2 * max(T, 0.0) + max(extra_var, 0.0)
-    if var <= 1e-14:
-        intrinsic = max(0.0, S - K) if kind == "call" else max(0.0, K - S)
-        return intrinsic, (1.0 if S > K else 0.0) if kind == "call" else (-1.0 if S < K else 0.0)
-    sd = math.sqrt(var)
-    disc = math.exp(-r * max(T, 0.0))
-    d1 = (math.log(S / K) + r * max(T, 0.0) + 0.5 * var) / sd
+def norm_pdf(x):
+    return math.exp(-0.5 * x * x) / math.sqrt(2.0 * math.pi)
+
+
+def smile(x, skew=0.0, curve=0.0):
+    """A strike's implied volatility over the at-the-money one, for a strike `x` standard deviations from the forward:
+    `skew` > 0 makes lower strikes dearer, `curve` both wings."""
+    x = max(-3.0, min(3.0, x))
+    return max(0.75, min(2.0, 1.0 - skew * x + curve * x * x))
+
+
+def contract(S, K, T, sigma, kind, carry=0.0, event_var=0.0, div=0.0, skew=0.0, curve=0.0):
+    """The value of a European call or put and its Greeks. `T` in game years; `sigma` the at-the-money volatility a game
+    year; `carry` the expected growth a game year; `event_var` a known jump's variance before expiry (earnings); `div` a
+    dividend that goes ex before expiry. Undiscounted (cash earns nothing in the game). Returns mid, iv (the strike's
+    own), delta, gamma, theta (a game day), vega (a point of volatility), rho (a point of carry) and itm (the chance of
+    finishing in the money)."""
+    T = max(T, 0.0)
+    g = math.exp(carry * T)
+    F = (S - div if 0 < div < S else S) * g
+    call = kind == "call"
+    v = max(sigma, 1e-6) ** 2 * T + max(event_var, 0.0)
+    if S <= 0 or K <= 0 or v <= 1e-14 or T <= 0:
+        itm = 1.0 if (F > K if call else F < K) else 0.0
+        return {"mid": max(0.0, F - K) if call else max(0.0, K - F), "iv": sigma, "delta": (g if call else -g) * itm,
+                "gamma": 0.0, "theta": 0.0, "vega": 0.0, "rho": 0.0, "itm": itm}
+    sd_atm = math.sqrt(v)
+    sd = sd_atm * smile(math.log(K / F) / sd_atm, skew, curve)
+    iv = sd / math.sqrt(T)
+    d1 = (math.log(F / K) + 0.5 * sd * sd) / sd
     d2 = d1 - sd
-    if kind == "call":
-        return S * norm_cdf(d1) - K * disc * norm_cdf(d2), norm_cdf(d1)
-    return K * disc * norm_cdf(-d2) - S * norm_cdf(-d1), norm_cdf(d1) - 1.0
+    n1 = norm_pdf(d1)
+    decay = F * n1 * iv / (2 * math.sqrt(T))          # (what the passing of time takes, a game year)
+    if call:
+        n = norm_cdf(d1)
+        mid, delta, rho, growth, itm = F * n - K * norm_cdf(d2), g * n, T * F * n, carry * F * n, norm_cdf(d2)
+    else:
+        n = norm_cdf(-d1)
+        mid, delta, rho, growth, itm = K * norm_cdf(-d2) - F * n, -g * n, -T * F * n, -carry * F * n, norm_cdf(-d2)
+    return {"mid": max(mid, 0.0), "iv": iv, "delta": delta, "gamma": g * g * n1 / (F * sd),
+            "theta": -(decay + growth) / 365, "vega": F * n1 * math.sqrt(T) / 100, "rho": rho / 100, "itm": itm}
+
+
+def tick_size(S, price):
+    """The price steps of the real markets: 0.01 under 3, 0.05 from 3 (and finer on the penny stocks)."""
+    return 0.0001 if S < 1 else 0.01 if price < 3 else 0.05
+
+
+def quote(S, K, T, sigma, kind, carry=0.0, event_var=0.0, div=0.0, skew=0.0, curve=0.0, spread=0.06, min_spread=0.001):
+    """`contract` plus what it costs to buy (ask) and fetches when sold (bid), around its value."""
+    c = contract(S, K, T, sigma, kind, carry, event_var, div, skew, curve)
+    half = max(spread * c["mid"], min_spread * S) / 2
+    tick = tick_size(S, c["mid"])
+    c["ask"] = round(max(math.ceil((c["mid"] + half) / tick - 1e-9) * tick, tick), 6)
+    c["bid"] = round(max(0.0, math.floor((c["mid"] - half) / tick + 1e-9) * tick), 6)
+    return c
 
 
 def nice_step(price):
@@ -69,16 +132,6 @@ def strikes_for(price):
     mid = round(price / step) * step
     out = [round(mid + k * step, 6) for k in range(-STRIKES_EACH_SIDE, STRIKES_EACH_SIDE + 1)]
     return [k for k in out if k > 0]
-
-
-def quote(S, K, T, sigma, kind, r=0.015, extra_var=0.0, spread=0.06, min_spread=0.001):
-    """What a contract costs to buy (ask) and fetches when sold (bid), around its Black-Scholes value."""
-    mid, delta = bs(S, K, T, sigma, kind, r, extra_var)
-    half = max(spread * mid, min_spread * S) / 2
-    tick = 0.01 if S >= 1 else 0.0001
-    ask = math.ceil((mid + half) / tick) * tick
-    bid = max(0.0, math.floor((mid - half) / tick) * tick)
-    return {"mid": mid, "bid": bid, "ask": max(ask, tick), "delta": delta}
 
 
 def payoff(kind, K, S):
@@ -107,7 +160,7 @@ class OptionsMixin:
 
     def option_expiries(self, now=None):
         """The expiry times on offer: the regular session's close today (if more than a minute away, else tomorrow's),
-        then 2, 7 and 30 game days after it."""
+        then 2, 7, 30 and 90 game days after it."""
         now = self.now if now is None else now
         D = 1800.0
         pre, post = self._session_lengths()
@@ -121,51 +174,136 @@ class OptionsMixin:
         m = getattr(self, "model", None)
         return float(m.p.get("rf", 0.015)) if m is not None else 0.015
 
-    def option_vol(self, s):
-        """The implied volatility (a game year): the highest of the stated volatility, the last 20 game days' realised
-        volatility and today's, plus the premium."""
-        days = list(getattr(s, "days", ()))[-21:]
-        realised = 0.0
-        if len(days) >= 6:
-            r = [math.log(b[4] / a[4]) for a, b in zip(days, days[1:]) if a[4] > 0 and b[4] > 0]
-            if len(r) >= 5:
-                m = sum(r) / len(r)
-                realised = math.sqrt(sum((x - m) ** 2 for x in r) / (len(r) - 1)) * math.sqrt(365)
-        now_vol = s.vol * self._vol_scale() * self._vol_multiplier(s)
-        base = max(s.vol * self._vol_scale(), realised, now_vol)
-        return base * (1 + float(self.settings.get("option_vol_premium", 0.10)))
+    def option_carry(self, s):
+        """The stock's expected growth a game year (the price model's drift for it): what the forward grows at."""
+        m = getattr(self, "model", None)
+        return float(m.drift_of(s, m.p)) if m is not None else self._rf()
 
-    def option_quote(self, s, kind, K, exp, now=None):
-        now = self.now if now is None else now
-        T = max(0.0, (exp - now) / (365 * 1800.0))
-        sigma = self.option_vol(s)
+    @staticmethod
+    def _rv(rows, n):
+        """Realised volatility (a game year) of the last `n` game-day-long candles: closes in [4]."""
+        rows = list(rows)[-n - 1:]
+        r = [math.log(b[4] / a[4]) for a, b in zip(rows, rows[1:]) if a[4] > 0 and b[4] > 0]
+        return (math.sqrt(sum(x * x for x in r) / len(r) * 365), len(r)) if r else (0.0, 0)
+
+    def _realised_vol(self, s):
+        """What the stock really does: the larger of two estimates that predict the next game days' moves without a
+        bias on the engine itself (the last 20 regular-session closes, and the last 80 game-day candles). The stated
+        volatility is only the noise; the price model's trends, swings, levels and news make real moves about twice as
+        big, so with little history (a new game or a new listing) twice the stated volatility stands in."""
+        a, na = self._rv(getattr(s, "days", ()), 20)
+        b, nb = self._rv(s.tf.get("30m", ()), 80)
+        lr = s.vol * self._vol_scale()
+        guess = lr * float(self.settings.get("option_vol_guess", 2.0))
+        if max(na, nb) < 10:
+            return max(a, b, guess)
+        return max(a, b, lr)
+
+    def option_vol(self, s, T=0.0):
+        """The at-the-money implied volatility (a game year) for an expiry `T` game years away: what the stock really does
+        (`_realised_vol`), scaled by the volatility clustering of the moment fading back to normal over the contract's
+        life (at the engine's own pace, `vol_cluster_decay_days`; half the variance follows it), plus the premium."""
+        m = self._vol_multiplier(s)
+        kt = math.log(2) / max(0.05, float(self.settings.get("vol_cluster_decay_days", 1.0))) * max(T, 0.0) * 365
+        if kt > 1e-9:
+            m = 1 + (m - 1) * (1 - math.exp(-kt)) / kt          # the average multiplier until expiry
+        base = self._realised_vol(s) * math.sqrt((1 - CLUSTER_SHARE) + CLUSTER_SHARE * m * m)
+        return base * (1 + float(self.settings.get("option_vol_premium", 0.15)))
+
+    def option_skew(self, s):
+        """(skew, curve) of the stock's smile. Ordinary stocks: a put skew (lower strikes dearer), turning into a call skew
+        for the wildest (volatility 0.4 to 1.2 a year: their moves jump up more than down, like meme stocks'); none for
+        the commodities; the same curvature for all."""
+        curve = float(self.settings.get("option_smile", 0.08))
+        if s.asset_type != "equity":
+            return 0.0, curve
+        lr = s.vol * self._vol_scale()
+        return float(self.settings.get("option_skew", 0.08)) * max(-1.0, min(1.0, (0.8 - lr) / 0.4)), curve
+
+    def _option_inputs(self, s, exp, now):
+        """(T, sigma, carry, event variance, dividend) of a contract on `s` expiring at `exp`."""
+        T = max(0.0, (exp - now) / GAME_YEAR)
+        sigma = self.option_vol(s, T)
         extra = 0.0
         earn = getattr(s, "next_earn", None)
         if earn and now < earn <= exp:
-            extra = (EARNINGS_JUMP * sigma / math.sqrt(365)) ** 2
-        q = quote(s.price, K, T, sigma, kind, self._rf(), extra, float(self.settings.get("option_spread", 0.06)),
-                  float(self.settings.get("option_min_spread", 0.001)))
-        q["iv"] = sigma
-        return q
+            extra = (EARNINGS_JUMP * self._realised_vol(s) / math.sqrt(365)) ** 2
+        div = getattr(s, "div", None)
+        d = min(div["amt"], s.price * 0.2) if div and now < div["t"] <= exp else 0.0     # (the engine caps it the same)
+        return T, sigma, self.option_carry(s), extra, d
 
-    def option_chain(self, ticker):
+    def option_quote(self, s, kind, K, exp, now=None):
+        now = self.now if now is None else now
+        T, sigma, carry, extra, div = self._option_inputs(s, exp, now)
+        skew, curve = self.option_skew(s)
+        return quote(s.price, K, T, sigma, kind, carry, extra, div, skew, curve,
+                     float(self.settings.get("option_spread", 0.06)), float(self.settings.get("option_min_spread", 0.001)))
+
+    def atm_vol(self, s, exp):
+        """The at-the-money implied volatility of one expiry, earnings included (the term structure)."""
+        T, sigma, _, extra, _ = self._option_inputs(s, exp, self.now)
+        return math.sqrt(sigma * sigma + extra / T) if T > 0 else sigma
+
+    def listed_strikes(self, s, exp):
+        """The strikes listed for one expiry. Like an exchange, the game lists thirteen around the price when the expiry is
+        first asked for and keeps them until it expires; as the price moves, new ones are added so there are always six
+        above and six below it. (Not saved: after a restart an expiry is listed again, with every strike still held.)"""
+        book = self.__dict__.setdefault("_opt_book", {})
+        key = (s.ticker, int(round(exp)))
+        ks = book.get(key)
+        if ks is None:
+            if len(book) > 4000:
+                for k in [k for k in book if k[1] < self.now]:
+                    del book[k]
+            ks = book[key] = {o["K"] for p in self.players.values() for o in p.opts
+                              if o["tk"] == s.ticker and abs(o["exp"] - exp) < 1}
+        ks.update(strikes_for(s.price))
+        return sorted(ks)
+
+    def option_chain(self, ticker, exp=None):
+        """One expiry of a stock's chain: the thirteen listed strikes nearest the price, each call and put with its bid,
+        ask, value, implied volatility, Greeks and open interest (what the players hold), and the at-the-money volatility
+        of every expiry. Worked out once a second however many people are looking."""
         s = self.stocks.get(ticker)
         if not self.option_ok(s):
             return {"error": "No options on this listing"}
         exps = self.option_expiries()
+        try:
+            exp = next((e for e in exps if abs(e - float(exp)) < 1), exps[1]) if exp is not None else exps[1]
+        except (TypeError, ValueError):
+            exp = exps[1]
+        cache = self.__dict__.setdefault("_chain_cache", {})
+        hit = cache.get((ticker, exp))
+        if hit and hit[0] == self.now:
+            return hit[1]
+        ks = sorted(sorted(self.listed_strikes(s, exp), key=lambda k: abs(k - s.price))[:2 * STRIKES_EACH_SIDE + 1])
+        oi = {}
+        for p in self.players.values():
+            for o in p.opts:
+                if o["tk"] == ticker and abs(o["exp"] - exp) < 1:
+                    oi[(o["kind"], o["K"])] = oi.get((o["kind"], o["K"]), 0.0) + o["qty"]
         rows = []
-        for exp in exps:
-            for K in strikes_for(s.price):
-                c, pt = self.option_quote(s, "call", K, exp), self.option_quote(s, "put", K, exp)
-                rows.append({"exp": exp, "K": K, "call": {k: round(v, 6) for k, v in c.items()},
-                             "put": {k: round(v, 6) for k, v in pt.items()}})
-        earn = s.next_earn if getattr(s, "next_earn", None) and s.next_earn <= exps[-1] else None
-        return {"ticker": ticker, "price": s.price, "expiries": exps, "rows": rows, "now": self.now, "earnings": earn,
-                "iv": self.option_vol(s), "fee": 0.001}
+        for K in ks:
+            row = {"K": K}
+            for kind in KINDS:
+                q = {k: round(v, 6) for k, v in self.option_quote(s, kind, K, exp).items()}
+                q["oi"] = round(oi.get((kind, K), 0.0) / MULTIPLIER, 2)
+                row[kind] = q
+            rows.append(row)
+        T, _, carry, _, div = self._option_inputs(s, exp, self.now)
+        earn = getattr(s, "next_earn", None)
+        out = {"ticker": ticker, "price": s.price, "exp": exp, "expiries": exps, "rows": rows, "now": self.now,
+               "term": [round(self.atm_vol(s, e), 4) for e in exps], "carry": round(carry, 4),
+               "forward": round((s.price - div) * math.exp(carry * T), 6), "div": round(div, 6) or None,
+               "div_t": s.div["t"] if div else None, "earnings": earn if earn and self.now < earn <= exp else None,
+               "iv": round(self.atm_vol(s, exp), 4), "fee": 0.001}
+        cache[(ticker, exp)] = (self.now, out)
+        return out
 
     # ------------------------------------------------------------------ trading
-    def buy_option(self, p, ticker, kind, K, exp, amount=None, qty=None):
-        """Buy `qty` contracts, or as many as `amount` MB buys (fee included). Returns (ok, message)."""
+    def buy_option(self, p, ticker, kind, K, exp, amount=None, contracts=None):
+        """Buy whole `contracts` (100 shares each), or as many whole ones as `amount` MB buys, fee included (the bots).
+        Returns (ok, message)."""
         s = self.stocks.get(ticker)
         if not self.option_ok(s):
             return False, "No options on this listing"
@@ -182,31 +320,43 @@ class OptionsMixin:
             return False, "Bad contract"
         if not any(abs(exp - e) < 1 for e in self.option_expiries()):
             return False, "That expiry is not on offer"
-        if not any(abs(K - k) < 1e-6 * max(1.0, K) for k in strikes_for(s.price)):
-            return False, "That strike is not on offer any more: pick one from the chain"
+        exp = next(e for e in self.option_expiries() if abs(exp - e) < 1)
+        listed = self.listed_strikes(s, exp)
+        if not any(abs(K - k) < 1e-6 * max(1.0, K) for k in listed):
+            return False, "That strike is not listed: pick one from the chain"
+        K = min(listed, key=lambda k: abs(k - K))
         if self.now - p.last_trade.get("opt:" + ticker, 0) < 1.0:
             return False, "Cooldown: 1s between option trades in the same stock"
         q = self.option_quote(s, kind, K, exp)
         ask = q["ask"]
         if ask <= 0:
             return False, "Not available"
-        if qty is None:
-            try:
+        each = ask * MULTIPLIER                       # one contract
+        try:
+            if contracts is None:
                 amount = float(amount)
-            except (TypeError, ValueError):
-                return False, "Bad amount"
-            if not (math.isfinite(amount) and amount > 0):
-                return False, "Bad amount"
-            qty = amount / (ask * (1 + 0.001))
-        qty = float(qty)
-        if not (math.isfinite(qty) and qty > 0):
+                if not (math.isfinite(amount) and amount > 0):
+                    return False, "Bad amount"
+                n = int(amount / (each * 1.001) + 1e-9)
+                if n < 1:
+                    return False, f"Not enough for one contract ({each * 1.001:,.2f} MB with the fee)"
+            else:
+                n = float(contracts)
+                if not (math.isfinite(n) and n >= 1 and n == int(n)):
+                    return False, "Whole contracts only: 1 or more"
+                n = int(n)
+        except (TypeError, ValueError):
             return False, "Bad size"
+        if n > MAX_CONTRACTS:
+            return False, f"At most {MAX_CONTRACTS:,} contracts in one order"
+        qty = float(n * MULTIPLIER)
         cost = qty * ask
         fee = cost * 0.001
         if cost < 1:
             return False, "Too small (at least 1 MB)"
         if cost + fee > max(0.0, p.cash) + 1e-9:
-            return False, f"Not enough cash ({max(0.0, p.cash):,.2f} MB)"
+            return False, (f"Not enough cash: {n:,} contract{'s' if n != 1 else ''} cost {cost + fee:,.2f} MB with the fee, "
+                           f"you have {max(0.0, p.cash):,.2f} MB")
         pos = next((o for o in p.opts if o["tk"] == ticker and o["kind"] == kind and abs(o["K"] - K) < 1e-9
                     and abs(o["exp"] - exp) < 1), None)
         if pos is None:
@@ -229,10 +379,12 @@ class OptionsMixin:
                    id=pos["id"], otype=kind, K=K, exp=exp)
         if hasattr(self, "_opt_traded"):
             self._opt_traded(p, ticker)
-        return True, f"Bought {qty:,.2f} {ticker} {self._opt_name(kind, K, exp)} at {ask:,.4g} MB ({cost:,.2f} MB)"
+        return True, (f"Bought {n:,} {ticker} {self._opt_name(kind, K, exp)} contract{'s' if n != 1 else ''} at {ask:,.4g} "
+                      f"MB a share: {cost:,.2f} MB")
 
-    def sell_option(self, p, pos_id, fraction=1.0):
-        """Sell back `fraction` of an option position at the bid."""
+    def sell_option(self, p, pos_id, fraction=1.0, contracts=None):
+        """Sell back whole `contracts` of an option position at the bid (all of it if that is all there is), or a
+        `fraction` of it (the bots and Close all sell everything)."""
         pos = next((o for o in p.opts if o["id"] == pos_id), None)
         if pos is None:
             return False, "No such option position"
@@ -240,6 +392,11 @@ class OptionsMixin:
         if s is None:
             return False, "The stock is gone: the option settles by itself"
         try:
+            if contracts is not None:
+                n = float(contracts)
+                if not (math.isfinite(n) and n >= 1 and n == int(n)):
+                    return False, "Whole contracts only: 1 or more"
+                fraction = min(1.0, n * MULTIPLIER / pos["qty"]) if pos["qty"] > 0 else 1.0
             fraction = min(1.0, max(0.0, float(fraction)))
         except (TypeError, ValueError):
             return False, "Bad size"
@@ -266,7 +423,9 @@ class OptionsMixin:
                    notional=proceeds, pnl=pnl, id=pos["id"], fraction=fraction, otype=pos["kind"], K=pos["K"], exp=pos["exp"])
         if hasattr(self, "_opt_traded"):
             self._opt_traded(p, pos["tk"])
-        return True, f"Sold {qty:,.2f} {pos['tk']} {self._opt_name(pos['kind'], pos['K'], pos['exp'])} at {bid:,.4g} MB ({pnl:+,.2f} MB)"
+        n = qty / MULTIPLIER
+        return True, (f"Sold {n:,.{0 if abs(n - round(n)) < 1e-9 else 2}f} {pos['tk']} {self._opt_name(pos['kind'], pos['K'], pos['exp'])} "
+                      f"contract{'s' if abs(n - 1) > 1e-9 else ''} at {bid:,.4g} MB a share ({pnl:+,.2f} MB)")
 
     @staticmethod
     def _close_option(p, pos, fraction):
@@ -321,12 +480,16 @@ class OptionsMixin:
         out = []
         for pos in p.opts:
             s = self.stocks.get(pos["tk"])
-            q = self.option_quote(s, pos["kind"], pos["K"], pos["exp"]) if s is not None else {"bid": 0.0, "delta": 0.0}
+            q = (self.option_quote(s, pos["kind"], pos["K"], pos["exp"]) if s is not None
+                 else {"bid": 0.0, "delta": 0.0, "theta": 0.0, "iv": 0.0})
             value = pos["qty"] * q["bid"]
             out.append({"id": pos["id"], "tk": pos["tk"], "kind": pos["kind"], "K": pos["K"], "exp": pos["exp"],
-                        "qty": round(pos["qty"], 4), "cost": round(pos["cost"] + pos["fee"], 4), "bid": round(q["bid"], 6),
+                        "qty": round(pos["qty"], 4), "contracts": round(pos["qty"] / MULTIPLIER, 4),
+                        "cost": round(pos["cost"] + pos["fee"], 4), "bid": round(q["bid"], 6),
                         "value": round(value, 4), "pnl": round(value - pos["cost"] - pos["fee"], 4),
-                        "delta": round(q["delta"], 3), "price": s.price if s is not None else None})
+                        "delta": round(q["delta"], 4), "iv": round(q["iv"], 4),
+                        "pos_delta": round(pos["qty"] * q["delta"], 4), "pos_theta": round(pos["qty"] * q["theta"], 4),
+                        "price": s.price if s is not None else None})
         return out
 
     def _apply_option_event(self, p, ev):

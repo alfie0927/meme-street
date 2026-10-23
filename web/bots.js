@@ -1,14 +1,14 @@
 // The Bots page (Expert, game/bots.py): your trading bots, their rules, their news words, and backtests. Loaded after
 // the page's own script (index.html) and chart.js, whose helpers it uses ($, esc, api, postJson, toast, numText, ...).
 let botsData=null,botEdit=null,btRes=null,btBusy=false;
-const BOT_DO={buy:'Buy (open a long)',sell:'Sell (close the long)',short:'Short (open a short)',cover:'Cover (close the short)',close:'Close the position',buy_call:'Buy a call',buy_put:'Buy a put',sell_options:'Sell its options'};
-const BOT_EXP=['the next close','2 game days','7 game days','30 game days'];
+const BOT_DO={buy:'Buy (open a long)',sell:'Sell (close the long)',short:'Short (open a short)',cover:'Cover (close the short)',close:'Close the position',buy_call:'Buy calls (whole contracts)',buy_put:'Buy puts (whole contracts)',sell_options:'Sell its options'};
+const BOT_EXP=['the next close','2 game days','7 game days','30 game days','90 game days'];
 const BOT_TEMPLATES={
  ema:{name:'EMA trend',timeframe:'5m',rules:[{when:'flat and cross_above(close, ema(20)) and close > ema(200)',do:'buy',size:20,unit:'pct'},{when:'long and (close >= ema(200) * 1.03 or cross_below(close, ema(20)))',do:'sell'}],stop_pct:3},
  rsi:{name:'RSI dip',timeframe:'15m',rules:[{when:'flat and rsi(14) < 30 and close > sma(50)',do:'buy',size:15,unit:'pct'},{when:'long and rsi(14) > 60',do:'sell'}],stop_pct:4,target_pct:6},
  breakout:{name:'Breakout on volume',timeframe:'5m',rules:[{when:'flat and close > highest(20) and volume > volume_sma(20) * 1.5',do:'buy',size:20,unit:'pct'},{when:'long and close < ema(20)',do:'sell'}],stop_pct:2.5},
  news:{name:'News momentum',timeframe:'1m',rules:[{when:'flat and news_score >= 2',do:'buy',size:10,unit:'pct'},{when:'flat and news_score <= -2',do:'short',size:10,unit:'pct'},{when:'not flat and abs(news_score) < 0.5',do:'close'}],stop_pct:2,target_pct:4,halflife:20},
- options:{name:'Calls on good news',timeframe:'1m',rules:[{when:'calls == 0 and news_score >= 2',do:'buy_call',size:5,unit:'pct',strike_pct:2,expiry:1},{when:'calls > 0 and news_score < 0',do:'sell_options'}],halflife:30}};
+ options:{name:'Calls on good news',timeframe:'1m',rules:[{when:'calls == 0 and news_score >= 2',do:'buy_call',size:20,unit:'pct',strike_pct:2,expiry:1},{when:'calls > 0 and news_score < 0',do:'sell_options'}],halflife:30}};
 async function loadBots(){
  if(guest){setHtml($('bots-body'),'<p class="mut">Sign in to see bots.</p>');return}
  const d=await api('/api/bots');if(!d||d.error)return;botsData=d;drawBots()}

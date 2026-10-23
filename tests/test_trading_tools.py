@@ -37,9 +37,11 @@ class TradingToolsBrowser(unittest.TestCase):
             await pg.js("document.querySelector('[data-dtab=options]').click()")
             await d.check("the Options tab shows the chain", "document.querySelectorAll('.opt-chain tbody tr').length", lambda n: n == 13, wait=8)
             await d.check("and hides the chart", "getComputedStyle(document.getElementById('chart-box')).display", "none")
-            await pg.js("document.querySelector('[data-opt-pick=call]').click()")
-            await d.check("picking a contract opens the buy box", "!!document.getElementById('opt-go')", True, wait=3)
-            await pg.js("document.getElementById('opt-amt').value='50';document.getElementById('opt-go').click()")
+            await d.check("the quotes change with the stock", "(async()=>{const a=()=>[...document.querySelectorAll('.opt-chain .c-ask button')].map(b=>b.textContent).join();const x=a();await new Promise(r=>setTimeout(r,6000));return x!==a()})()", True, wait=10)
+            await pg.js("document.querySelectorAll('.opt-chain .c-bid')[12].click()")       # a far-out call: one contract is affordable
+            await d.check("clicking a contract shows all its Greeks", "document.getElementById('opt-ticket').innerText",
+                          lambda t: all(g in t for g in ("Delta", "Gamma", "Theta", "Vega", "Rho")) and "One contract" in t, wait=3)
+            await pg.js("document.getElementById('opt-n').value='1';document.getElementById('opt-go').click()")
             await d.check("buying it adds an option position", "(S.opts||[]).length", 1, wait=6)
             await d.check("which is listed under the chain", "document.getElementById('opt-mine').innerText", lambda t: "NVXA" in t and "call" in t, wait=4)
             await pg.goto(base + "/holdings", 4)
