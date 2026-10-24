@@ -192,7 +192,7 @@ aside .card.fold h3{cursor:pointer;display:flex;justify-content:space-between;al
 aside .card.fold h3::after{content:"\25BE";font-size:12px;color:var(--mut)}aside .card.fold.shut h3::after{content:"\25B8"}
 aside .card.fold.shut>h3{margin:0;padding-bottom:0;border-bottom:0}aside .card.fold.shut>:not(h3){display:none}
 aside .news{max-height:260px;overflow-y:auto}
-.news div{padding:6px 0;border-bottom:1px solid var(--line2);font-size:12.5px;line-height:1.45}.news small{color:var(--mut);margin-right:6px}
+.news div{padding:6px 0;border-bottom:1px solid var(--line2);font-size:12.5px;line-height:1.45}.news small{color:var(--mut);margin-right:6px}.news a{text-decoration:underline;text-decoration-color:#4cc3cc66;text-underline-offset:2px}.news a:hover{text-decoration-color:currentColor}
 .k-rumor{color:#e5b34d}.k-breaking{color:var(--acc)}.k-confirm{color:var(--up)}.k-correction{color:var(--dn)}.k-ipo{color:#c3a3ff}.k-season{color:#ff9f5c}.k-macro{color:#d2a8ff}.k-earnings{color:#4fd1d9}.k-dividend{color:#7ee787}.k-rating{color:#a5a5ff}
 #login{position:fixed;inset:0;background:#000d;display:flex;align-items:center;justify-content:center;z-index:9}
 #login>div{background:var(--card);padding:26px;border-radius:3px;border:1px solid var(--line);width:340px}
@@ -1163,11 +1163,13 @@ function newsHtml(text,kind){const m=/^([A-Z][A-Z ]{2,24}):\s*/.exec(text||'');r
 
 // ---------- sidebar ----------
 function evShort(s){s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?h+' hr '+m+' min':m?m+' min '+String(x).padStart(2,'0')+' s':x+' s'}
-function drawUpcoming(){const now=engineNow();setHtml($('upcoming'),S.upcoming.map(e=>{const left=e.at-now,key=String(e.kind).toLowerCase().replace(/[^a-z]+/g,'_');return `<div class="event-row"><div class="ev-main"><div class="ev-top"><span class="ev-kind k-${key}">${esc(e.kind)}</span>${e.ticker?`<span class="ev-tk">${esc(e.ticker)}</span>`:''}</div><span class="ev-name">${esc(e.name)}</span></div><div class="ev-in${left<300?' soon':''}">${left<=0?'now':'in '+evShort(left)}</div></div>`}).join('')||'<span class="mut">No scheduled events</span>')}
+function drawUpcoming(){const now=engineNow();setHtml($('upcoming'),S.upcoming.map(e=>{const left=e.at-now,key=String(e.kind).toLowerCase().replace(/[^a-z]+/g,'_');return `<div class="event-row"><div class="ev-main"><div class="ev-top"><span class="ev-kind k-${key}">${esc(e.kind)}</span>${e.ticker?`<a class="ev-tk" href="/stock/${encodeURIComponent(e.ticker)}">${esc(e.ticker)}</a>`:''}</div>${e.ticker?`<a class="ev-name" href="/stock/${encodeURIComponent(e.ticker)}">${esc(e.name)}</a>`:`<span class="ev-name">${esc(e.name)}</span>`}</div><div class="ev-in${left<300?' soon':''}">${left<=0?'now':'in '+evShort(left)}</div></div>`}).join('')||'<span class="mut">No scheduled events</span>')}
+// a headline with the names of the companies it is about (its tickers) linked to their stock pages
+function linkNames(html,tickers){for(const t of tickers){const x=S.byT[t],n=x&&x.name&&esc(x.name),i=n?html.indexOf(n):-1;if(i>=0)html=html.slice(0,i)+`<a href="/stock/${encodeURIComponent(t)}">${n}</a>`+html.slice(i+n.length)}return html}
 let newsKey='';
 function drawNews(){
  const key=S.news.length+':'+(S.news[0]?.id||0);if(key===newsKey)return;newsKey=key;
- $('news').innerHTML=S.news.map(n=>`<div><small>${clock(n.t)}</small>${newsHtml(n.text,n.kind)}${n.tickers.length?' '+n.tickers.map(t=>`<a href="/stock/${encodeURIComponent(t)}" class="mut">[${esc(t)}]</a>`).join(' '):''}</div>`).join('')||'<span class="mut">No recent news</span>'}
+ $('news').innerHTML=S.news.map(n=>`<div><small>${clock(n.t)}</small>${linkNames(newsHtml(n.text,n.kind),n.tickers)}${n.tickers.length?' '+n.tickers.map(t=>`<a href="/stock/${encodeURIComponent(t)}">[${esc(t)}]</a>`).join(' '):''}</div>`).join('')||'<span class="mut">No recent news</span>'}
 
 // ---------- portfolio page ----------
 const PALETTE=['#4cc3cc','#3ad07a','#e3b341','#bc8cff','#f0883e','#39c5cf','#f778ba','#a5d6ff','#7ee787','#d2a8ff','#ffa657','#79c0ff'];

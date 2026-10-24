@@ -122,6 +122,9 @@ class BrowserSmoke(unittest.TestCase):
             await pg.goto(base + "/", 21)
             await check("an earnings headline appeared", "document.getElementById('news').textContent",
                         lambda t: "EARNINGS" in t)
+            await check("company names on the wire and in upcoming events link to their stock pages",
+                        "[...document.querySelectorAll('#news a[href^=\"/stock/\"]')].some(a=>!a.textContent.startsWith('['))"
+                        "+','+!!document.querySelector('#upcoming a.ev-tk[href^=\"/stock/\"]')", "true,true")
             # the admin dashboard: locked until the key is entered, then cards, charts and a player's trades
             await pg.goto(base + "/admin", 1.5)
             await check("admin page is locked first", "document.getElementById('app').style.display", "none")
