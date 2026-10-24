@@ -234,7 +234,7 @@ check, **O5** staging and rollback, **O6** a hardened server, **O7** payment web
 |---|---|---|---|---|
 | R4 | A lawyer's read | Selling a game currency to the public. | The terms and privacy pages; what the ads may say; that a currency that can never be cashed out is not gambling where you sell. | S |
 | R5 | Responsible spending | People who lose may chase losses; under-18s can buy. | Spending limits exist (US$500 in 30 days, 3 purchases a day, a lower limit by request); consider a lower default, a cool-off, a clear note that buying MB does not make anyone a better trader. | S |
-| R7 | Data rights | Players should be able to leave. | Download my data, delete my account. | M |
+| R7 | Data rights | Players should be able to leave. | **The admin can delete an account (2026-10-25).** Still to do: a player downloads their data and deletes their own account. | M |
 | R8 | "How this market works" | Transparency builds trust and teaches. | What drives prices, what is random, that player trades never move prices. | S |
 | R9 | Who runs the site | Consumer law usually requires the seller's name and address. | A business name and a contact address in the terms (Stripe is the merchant of record for the sale itself). Your decision. | S |
 | X2 | Moonshots and two-outcome catalysts | Lottery tickets do not teach trading. | Remove from the default market or move to an opt-in section. Your decision. | M |

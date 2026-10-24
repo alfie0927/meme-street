@@ -400,5 +400,72 @@ class LegacyAccountTests(unittest.TestCase):
                 c.close()
 
 
+class DeleteAccountTests(unittest.TestCase):
+    """Deleting an account from the admin page (Engine.delete_player, 2026-10-25): positions closed at the market, the
+    cash out of the game with the books still balanced, every trace gone, and a crash before the next save replays it."""
+
+    def test_everything_goes_and_the_books_balance(self):
+        e = make_engine(12)
+        p, q = join(e, "gone"), join(e, "stays")
+        self.assertTrue(e.trade(p, "NVXA", "buy", 0.3)[0])
+        self.assertTrue(e.trade(p, "CLDR", "sell", 0.2)[0])                  # a short too
+        self.assertTrue(e.place_order(p, "NVXA", "limit_buy", e.stocks["NVXA"].price * 0.5, 0.1)[0])
+        q.following = ["gone"]
+        e.new_session(p, "1.2.3.4")
+        e.daily_start(p)
+        tok = p.token
+        cash = e.delete_player(p)
+        self.assertGreater(cash, 0)
+        self.assertNotIn(tok, e.players)
+        self.assertNotIn(tok, e.by_token)
+        self.assertFalse(any(v["p"] == tok for v in e.sessions.values()))
+        self.assertEqual(q.following, [])
+        self.assertNotIn(tok, e.daily_game["plays"])
+        self.assertIn(q.token, e.players)
+        self.assertLess(abs(drift(e)), 1e-6)
+
+    def test_a_crash_after_deleting_replays_it(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            path, led = os.path.join(tmp, "state.json"), os.path.join(tmp, "ledger.db")
+            random.seed(5)
+            a = engine.Engine(state_file=path, ledger_path=led)
+            a.tick(now=a.now)
+            p = join(a, "crashgone")
+            a.trade(p, "NVXA", "buy", 0.5)
+            a.save()                                                        # the snapshot still has the account
+            a.delete_player(p)
+            a.ledger.flush()
+            a.ledger.close()
+            b = engine.Engine(state_file=path, ledger_path=led)
+            self.assertNotIn(p.token, b.by_token)
+            self.assertLess(abs(drift(b)), 1e-6)
+            b.ledger.close()
+
+
+class SignupEmailAndDeleteHttpTests(unittest.TestCase):
+    def test_signing_up_needs_an_email_and_the_admin_can_delete_an_account(self):
+        with IsolatedServer(settings={"require_password": True, "signup_email": True, "signups_per_ip_hour": 1000}) as srv:
+            self.assertTrue(json.loads(http(srv, "/api/auth_mode")[1])["email_signup"])
+            body = {"name": "NoMail", "password": GOOD, "birth_date": "1990-05-17"}
+            status, text, _ = http(srv, "/api/register", "POST", body)
+            self.assertEqual(status, 400)
+            self.assertIn("email", text)
+            body["email"] = "first@example.com"
+            status, text, _ = http(srv, "/api/register", "POST", body)
+            self.assertEqual(status, 200, text)
+            tok = json.loads(text)["token"]
+            status, text, _ = http(srv, "/api/register", "POST", dict(body, name="SameMail", email="FIRST@example.com"))
+            self.assertEqual(status, 400)
+            self.assertIn("already used", text)
+            adm = {"X-Admin-Key": "testkey"}
+            r = json.loads(http(srv, "/api/admin/delete_player", "POST", {"name": "NoMail", "confirm": "nomale"}, headers=adm)[1])
+            self.assertFalse(r["ok"])
+            self.assertEqual(http(srv, "/api/portfolio", headers={"X-Token": tok})[0], 200)
+            r = json.loads(http(srv, "/api/admin/delete_player", "POST", {"name": "NoMail", "confirm": "nomail"}, headers=adm)[1])
+            self.assertTrue(r["ok"], r)
+            self.assertEqual(http(srv, "/api/portfolio", headers={"X-Token": tok})[0], 401)
+            self.assertEqual(http(srv, "/api/admin/delete_player", "POST", {"name": "x", "confirm": "x"})[0], 403)
+
+
 if __name__ == "__main__":
     unittest.main()

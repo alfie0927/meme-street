@@ -150,7 +150,8 @@ async def auth_mode():
     """The sign-in box asks this: are passwords required, or is this a name-only game? Is an email address asked for
     ("off", "optional" or "required") and can mail actually be sent (otherwise there is no password recovery)?"""
     return {"passwords": bool(engine.settings.get("require_password", True)), "email": engine.email_mode(),
-            "mail_ready": mailer.configured, "min_age": int(engine.settings.get("min_age", 13))}
+            "mail_ready": mailer.configured, "min_age": int(engine.settings.get("min_age", 13)),
+            "email_signup": bool(engine.settings.get("signup_email", True))}
 
 
 class Register(BaseModel):
@@ -258,12 +259,14 @@ async def register(j: Register, request: Request):
     if problem:
         return JSONResponse({"error": problem}, status_code=400)
     mode = engine.email_mode()
+    need = bool(engine.settings.get("signup_email", True))        # an address is part of signing up (2026-10-25)
     addr = None
-    if mode != "off" and (j.email.strip() or mode == "required"):     # check the address before the account exists
+    if need or (mode != "off" and (j.email.strip() or mode == "required")):     # check the address before the account exists
         addr, err = engine.email_check(j.email)
         if err:
             return JSONResponse({"error": err}, status_code=400)
-        if canonical_email(addr) in engine.email_owner:
+        canon = canonical_email(addr)
+        if canon in engine.email_owner or any(q.email and canonical_email(q.email) == canon for q in engine.players.values()):
             return JSONResponse({"error": "That email address is already used by another account"}, status_code=400)
     record = await hashed(j.password)
     p, err = await run(engine.register, j.name, record, ip)
@@ -276,7 +279,9 @@ async def register(j: Register, request: Request):
     token = await run(engine.new_session, p, ip)
     out = {"token": token, "name": p.name}
     if addr:
-        out.update(await start_verification(p, addr))
+        p.email, p.email_verified = addr, False      # kept from the start; verified from Profile once mail works
+        if mode != "off":
+            out.update(await start_verification(p, addr))
     await run(engine.save, False)                # an account must survive a crash: it has a password nobody can recreate
     return out
 
@@ -861,6 +866,42 @@ def admin_amount_problem(amount):
 
 def admin_ok(key):
     return bool(ADMIN_KEY) and secrets.compare_digest(key or "", ADMIN_KEY)
+
+
+class DeletePlayer(BaseModel):
+    name: str
+    confirm: str = ""
+
+
+@app.post("/api/admin/delete_player")
+async def admin_delete_player(b: DeletePlayer, x_admin_key: str = Header("")):
+    """Delete an account for good (`Engine.delete_player`). The name must be typed twice. A monthly pass is cancelled
+    at the payment provider first, so nobody is charged for an account that is gone; if that fails, nothing is deleted."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    name = b.name.strip()
+    if not name or b.confirm.strip().lower() != name.lower():
+        return {"ok": False, "msg": "Type the player's name again to confirm"}
+
+    def renewing(p):
+        return [k for k, v in (p.subs or {}).items() if v.get("status") == "active"]
+
+    p = await run(find_player, name)
+    if p is None:
+        return {"ok": False, "msg": "Unknown player"}
+    for kind in await run(renewing, p):
+        ok, msg, sub = await run(engine.cancel_subscription, p, kind)
+        if sub and not await asyncio.get_running_loop().run_in_executor(pool, payments.cancel_subscription, sub):
+            return {"ok": False, "msg": f"Could not cancel their monthly {kind.title()} at the payment provider; nothing was deleted. Try again."}
+        if ok:
+            await run(engine.mark_cancelled, p, kind)
+    cash = await run(engine.delete_player, p)
+    await run(engine.save, False)
+    for conn in list(clients.values()):              # their open pages are logged out
+        if conn.token == p.token:
+            conn.close(hang_up=True)
+    logger.warning("admin deleted the account %s (%.2f MB removed)", p.name, cash)
+    return {"ok": True, "msg": f"Deleted {p.name} ({cash:,.2f} MB removed with it)"}
 
 
 def find_player(name):

@@ -3155,6 +3155,47 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.news("season", f"DAY 1 BEGINS. Everyone starts again with {bonus:,.0f} MB. Good luck.")
         self.save()
 
+    def delete_player(self, p):
+        """Delete an account for good (the admin page; ROADMAP R7). Its positions are closed at the market price (as in a
+        reset) and the cash it has then leaves the game: `minted` goes down by it, and the ledger records a `delete`
+        event, so the tokens still balance and a crash before the next save replays it. Everything that points at the
+        account goes with it (`_forget`). Its paid orders stay in the shop's books: they are real payments, refundable at
+        the payment provider. (The server cancels a monthly pass at the provider first.) Returns the cash removed."""
+        cash = self._delete(p)
+        self._emit("delete", p, cash=-cash)
+        return cash
+
+    def _delete(self, p):
+        p.orders = []
+        self._close_positions_at_market(p)
+        cash, p.cash = p.cash, 0.0
+        self.minted -= cash
+        self._forget(p)
+        return cash
+
+    def _forget(self, p):
+        """Remove every trace of an account outside the shop's books: the player, its sessions, its email and codes,
+        others' follows of it, its place on the boards, its Daily Chart game and stats, and its contest entries."""
+        tok = p.token
+        self.players.pop(tok, None)
+        self.by_token.pop(tok, None)
+        self.rank.pop(tok, None)
+        self.sessions = {k: v for k, v in self.sessions.items() if v.get("p") != tok}
+        self.email_owner = {k: v for k, v in self.email_owner.items() if v != tok}
+        for k in [k for k in self.mail_codes if k.endswith(":" + tok)]:
+            del self.mail_codes[k]
+        for q in self.players.values():
+            if p.name in q.following:
+                q.following = [n for n in q.following if n != p.name]
+        d = self.__dict__.get("daily_game")
+        if isinstance(d, dict):
+            d.get("plays", {}).pop(tok, None)
+            (d.get("stats") or {}).pop(tok, None)
+        for t in self.tournaments:
+            t.get("entrants", {}).pop(tok, None)
+        for sb in self._sandboxes.values():
+            sb.players.pop(tok, None)
+
     def reset_with_backup(self, folder):
         """`reset_to_day_one`, after copying the save, the chart file and the ledger into `folder`."""
         os.makedirs(folder, exist_ok=True)
@@ -4015,6 +4056,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             return
         p = self.by_token.get(ev["token"])
         if p is None:
+            return
+        if kind == "delete":                                  # an account deleted after the snapshot
+            self._delete(p)
             return
         cash, house, fee = ev["cash_delta"], ev["house_delta"], ev["fee"]
         if kind in ("credit", "debit"):

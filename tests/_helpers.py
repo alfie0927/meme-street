@@ -159,7 +159,7 @@ class IsolatedServer:
         self.gateways = int(os.environ.get("MS_TEST_GATEWAYS", 0)) if gateways is None else int(gateways)
         self.state_file = state_file                  # a saved game to start from (copied in; the original is not touched)
         self.admin_key = admin_key
-        self.settings = {"premarket_seconds": 0, "aftermarket_seconds": 0, "chat_min_trades": 0, "contest_join_seconds": 86400, "require_password": False, "signup_bonus": 1000, **(settings or {})}   # flat market unless asked
+        self.settings = {"premarket_seconds": 0, "aftermarket_seconds": 0, "chat_min_trades": 0, "contest_join_seconds": 86400, "require_password": False, "signup_bonus": 1000, "signup_email": False, **(settings or {})}   # flat market unless asked
         self.proc = None
         self.extra_env = dict(env or {})               # e.g. {"PAYMENTS": "test"} for the shop tests
 

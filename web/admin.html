@@ -57,6 +57,7 @@ button,input,select,textarea{font:inherit;background:#161b20;color:var(--txt);bo
 <div class="card"><h3>Moderator log (newest first)</h3><div id="modlog" class="mut">Loading…</div></div></div>
 <div class="card" style="margin-top:12px"><h3>Accounts</h3><div id="accts" class="mut">Loading…</div>
 <div class="msgrow" style="margin-top:8px"><input id="rp-name" placeholder="Player name" maxlength="16"><button id="rp-go">Reset password</button><span id="rp-out" class="t"></span></div>
+<div class="msgrow" style="margin-top:8px"><input id="del-name" placeholder="Player name" maxlength="16"><button id="del-go" class="dn">Delete account</button><span id="del-out" class="t"></span></div>
 <div class="msgrow" style="margin-top:8px"><input id="mb-name" placeholder="Player name" maxlength="16"><input id="mb-amount" type="number" min="0" step="any" placeholder="MB" style="width:110px"><input id="mb-note" placeholder="Note to the player (optional)" maxlength="200"><button id="mb-add">Add MB</button><button id="mb-take">Take back MB</button><span id="mb-out" class="t"></span></div>
 <div class="msgrow" style="margin-top:8px"><select id="pro-tier" aria-label="Which pass"><option value="pro">Pro</option><option value="expert">Expert</option></select><input id="pro-name" placeholder="Player name" maxlength="16"><input id="pro-days" type="number" min="1" max="3650" step="1" value="30" style="width:80px" aria-label="Days of Pro"><span class="mut">days</span><input id="pro-note" placeholder="Note to the player (optional)" maxlength="200"><button id="pro-give">Give Pro</button><button id="pro-take">Take Pro away</button><span id="pro-out" class="t"></span></div>
 <p class="mut" style="font-size:12px">Giving Pro adds that many days to any Pro the player already has (bought or given); taking it away ends it now, bought time included. Pro is tools only, so no MB move. The player is told, with your note.</p>
@@ -187,6 +188,11 @@ async function proAct(give){
  $('pro-out').textContent=r.status===403?'That key was not accepted':j.error?j.error:(j.ok?name+': '+j.msg:'Not done: '+j.msg);
  if(j.ok){$('pro-note').value='';tick()}}
 $('pro-give').addEventListener('click',()=>proAct(true));$('pro-take').addEventListener('click',()=>proAct(false));
+$('del-go').addEventListener('click',async()=>{const n=$('del-name').value.trim();if(!n)return;
+ const again=prompt(`Delete ${n} for good? Their positions are closed, their MB and account are removed, they are logged out, and a monthly pass is cancelled. This cannot be undone.
+
+Type the name again to confirm:`);if(again===null)return;
+ try{const r=await api('/api/admin/delete_player',{name:n,confirm:again});$('del-out').textContent=r.msg;if(r.ok)$('del-name').value='';tick()}catch(e){$('del-out').textContent='failed: '+e.message}});
 $('rp-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset_password',{name:$('rp-name').value.trim()});$('rp-out').innerHTML=esc(r.msg)+': <b>'+esc(r.password)+'</b>';tick()}catch(e){$('rp-out').textContent='failed: '+e.message}});
 const hm=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m'};
 const cardf=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;

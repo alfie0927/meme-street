@@ -564,15 +564,15 @@ async function logoutHere(){try{await api('/api/logout',{method:'POST',body:{}})
 // headlines, and now and then the slower-changing facts. Ticks are merged into S.
 // Signing in. When the server requires passwords the box has Log in / Create account tabs; when it does not (a
 // closed test game) it is the old name-only box. `/api/auth_mode` says which.
-let authPasswords=false,authMode='login',authEmail='off',mailReady=false,minAge=13;
+let authPasswords=false,authMode='login',authEmail='off',mailReady=false,minAge=13,emailSignup=false;
 function drawAuth(){
  const rec=authMode==='recover',reg=authMode==='register';
  $('auth-tabs').style.display=authPasswords?'block':'none';
  $('pw').style.display=authPasswords&&!rec?'block':'none';
  $('pw2').style.display=authPasswords&&reg?'block':'none';
- $('em').style.display=authPasswords&&reg&&authEmail!=='off'?'block':'none';
+ $('em').style.display=authPasswords&&reg&&(authEmail!=='off'||emailSignup)?'block':'none';
  $('by').style.display=authPasswords&&reg?'block':'none';
- $('em').placeholder=authEmail==='required'?'Email address (needed to play)':'Email address (optional)';
+ $('em').placeholder=authEmail==='required'?'Email address (needed to play)':emailSignup?'Email address':'Email address (optional)';
  $('joinbtn').style.display=rec?'none':'block';
  $('forgot-link').style.display=authPasswords&&authMode==='login'?'block':'none';
  $('recover').style.display=rec?'block':'none';
@@ -582,7 +582,7 @@ function drawAuth(){
  $('pw').autocomplete=reg?'new-password':'current-password';
  $('joinbtn').textContent=!authPasswords?'Enter market':reg?'Create account':'Log in';
  document.querySelectorAll('#auth-tabs [data-mode]').forEach(c=>c.classList.toggle('on',c.dataset.mode===authMode))}
-fetch('/api/auth_mode').then(r=>r.json()).then(j=>{authPasswords=!!j.passwords;authEmail=j.email||'off';mailReady=!!j.mail_ready;minAge=j.min_age||13;if(authPasswords&&!lsGet('ms_seen_login',false))authMode='register';drawAuth()}).catch(()=>{});
+fetch('/api/auth_mode').then(r=>r.json()).then(j=>{authPasswords=!!j.passwords;authEmail=j.email||'off';emailSignup=!!j.email_signup;mailReady=!!j.mail_ready;minAge=j.min_age||13;if(authPasswords&&!lsGet('ms_seen_login',false))authMode='register';drawAuth()}).catch(()=>{});
 $('auth-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;authMode=b.dataset.mode;$('lerr').textContent='';drawAuth()});
 async function join(){
  const b=$('joinbtn'),err=$('lerr');err.textContent='';
@@ -591,7 +591,7 @@ async function join(){
   url=authMode==='register'?'/api/register':'/api/login';body.password=$('pw').value;
   if(authMode==='register'){
    if($('pw').value!==$('pw2').value){err.textContent='The two passwords are not the same';return}
-   if(authEmail!=='off')body.email=$('em').value;
+   if(authEmail!=='off'||emailSignup){body.email=$('em').value;if(emailSignup&&!body.email.trim()){err.textContent='Please give your email address';return}}
    body.birth_date=$('by-d').value;if(!body.birth_date){err.textContent='Please give your date of birth';return}
    body.website=$('hp').value}}
  b.disabled=true;

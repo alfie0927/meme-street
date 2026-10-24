@@ -44,6 +44,7 @@
   "challenges": false,
   "daily_chart": true,
   "ipo_per_year": 15,
+  "signup_email": true,
   "max_companies": 200,
   "spend_cap_month_cents": 50000,
   "purchases_per_day": 3,
