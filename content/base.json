@@ -43,6 +43,7 @@
     {"sku": "expert_year", "days": 365, "price_cents": 29999}
   ],
   "challenges": false,
+  "daily_chart": false,
   "spend_cap_month_cents": 50000,
   "purchases_per_day": 3,
   "restart_below": 50,

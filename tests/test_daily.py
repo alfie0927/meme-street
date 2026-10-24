@@ -222,8 +222,18 @@ class GameTests(unittest.TestCase):
 
 
 class ServerTests(unittest.TestCase):
-    def test_the_endpoints(self):
+    def test_archived_off_the_site(self):
+        """The Daily Chart is archived (since 2026-10-24): no page, no script and no endpoints while `daily_chart` is off."""
         with IsolatedServer() as srv:
+            tok = json.loads(http(srv, "/api/join", "POST", {"name": "webarch"})[1])["token"]
+            self.assertEqual(http(srv, "/api/daily", headers={"X-Token": tok})[0], 404)
+            self.assertEqual(http(srv, "/api/daily/start", "POST", {}, headers={"X-Token": tok})[0], 404)
+            self.assertEqual(http(srv, "/daily")[0], 404)
+            self.assertEqual(http(srv, "/js/daily.js")[0], 404)
+            self.assertNotIn('id="daily-btn"', http(srv, "/")[1])
+
+    def test_the_endpoints(self):
+        with IsolatedServer(settings={"daily_chart": True}) as srv:
             status, text, _ = http(srv, "/api/join", "POST", {"name": "webdash"})
             tok = json.loads(text)["token"]
             h = {"X-Token": tok}
@@ -239,8 +249,6 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(status, 200)
             self.assertLessEqual(len(json.loads(text)["candles"]), 5)
             self.assertEqual(http(srv, "/api/daily")[0], 401)
-            self.assertEqual(http(srv, "/daily")[0], 200)
-            self.assertEqual(http(srv, "/js/daily.js")[0], 200)
 
 
 if __name__ == "__main__":

@@ -1143,12 +1143,12 @@
   },
   "VNSH": {
    "initial_price": 38.35,
-   "market_cap": 27.6,
-   "shares_outstanding": 0.719687,
-   "revenue": 4.6459,
+   "market_cap": 156.0,
+   "shares_outstanding": 4.067797,
+   "revenue": 26.26,
    "margin": 0.095,
-   "cash": 2.2501,
-   "debt": 3.533,
+   "cash": 12.72,
+   "debt": 19.97,
    "dividend_yield": 0.0055
   },
   "CLSD": {
@@ -1163,12 +1163,12 @@
   },
   "STRM": {
    "initial_price": 17.38,
-   "market_cap": 110.0,
-   "shares_outstanding": 6.329114,
-   "revenue": 59.69,
+   "market_cap": 1360.0,
+   "shares_outstanding": 78.250863,
+   "revenue": 738.0,
    "margin": 0.077,
-   "cash": 12.95,
-   "debt": 33.44,
+   "cash": 160.1,
+   "debt": 413.4,
    "dividend_yield": 0.0113
   },
   "SNWL": {
@@ -1183,12 +1183,12 @@
   },
   "SUNB": {
    "initial_price": 37.74,
-   "market_cap": 72.5,
-   "shares_outstanding": 1.921039,
-   "revenue": 27.19,
+   "market_cap": 707.0,
+   "shares_outstanding": 18.733439,
+   "revenue": 265.1,
    "margin": 0.042,
-   "cash": 2.9987,
-   "debt": 21.56,
+   "cash": 29.24,
+   "debt": 210.2,
    "dividend_yield": 0.0046
   },
   "FOGX": {
@@ -1243,12 +1243,12 @@
   },
   "PSTL": {
    "initial_price": 12.55,
-   "market_cap": 85.9,
-   "shares_outstanding": 6.844622,
-   "revenue": 10.32,
+   "market_cap": 982.0,
+   "shares_outstanding": 78.247012,
+   "revenue": 118.0,
    "margin": 0.141,
-   "cash": 5.0278,
-   "debt": 2.4547,
+   "cash": 57.48,
+   "debt": 28.06,
    "dividend_yield": 0.0023
   },
   "EPCH": {
@@ -1273,12 +1273,12 @@
   },
   "DRMW": {
    "initial_price": 103.55,
-   "market_cap": 66.2,
-   "shares_outstanding": 0.639305,
-   "revenue": 16.0,
+   "market_cap": 544.0,
+   "shares_outstanding": 5.253501,
+   "revenue": 131.5,
    "margin": 0.165,
-   "cash": 6.1808,
-   "debt": 3.2555,
+   "cash": 50.79,
+   "debt": 26.75,
    "dividend_yield": 0.0004
   },
   "MMBK": {
@@ -1293,12 +1293,12 @@
   },
   "SLPN": {
    "initial_price": 37.88,
-   "market_cap": 112.0,
-   "shares_outstanding": 2.956705,
-   "revenue": 24.58,
+   "market_cap": 1460.0,
+   "shares_outstanding": 38.542767,
+   "revenue": 320.4,
    "margin": 0.105,
-   "cash": 4.9419,
-   "debt": 10.6,
+   "cash": 64.42,
+   "debt": 138.2,
    "dividend_yield": 0.0095
   },
   "NGHT": {
@@ -1363,22 +1363,22 @@
   },
   "KRKN": {
    "initial_price": 40.55,
-   "market_cap": 87.6,
-   "shares_outstanding": 2.160296,
-   "revenue": 47.48,
+   "market_cap": 1050.0,
+   "shares_outstanding": 25.893958,
+   "revenue": 569.1,
    "margin": 0.062,
-   "cash": 3.991,
-   "debt": 17.35,
+   "cash": 47.84,
+   "debt": 208.0,
    "dividend_yield": 0.0078
   },
   "PHNX": {
    "initial_price": 38.5,
-   "market_cap": 73.8,
-   "shares_outstanding": 1.916883,
-   "revenue": 46.2,
+   "market_cap": 755.0,
+   "shares_outstanding": 19.61039,
+   "revenue": 472.6,
    "margin": 0.093,
-   "cash": 9.1391,
-   "debt": 19.38,
+   "cash": 93.5,
+   "debt": 198.3,
    "dividend_yield": 0.0063
   },
   "YETI": {
@@ -1433,12 +1433,12 @@
   },
   "TIDL": {
    "initial_price": 77.2,
-   "market_cap": 31.2,
-   "shares_outstanding": 0.404145,
-   "revenue": 14.04,
+   "market_cap": 217.0,
+   "shares_outstanding": 2.810881,
+   "revenue": 97.65,
    "margin": 0.15,
-   "cash": 2.8662,
-   "debt": 7.0561,
+   "cash": 19.93,
+   "debt": 49.08,
    "dividend_yield": 0.0128
   },
   "SBMR": {
@@ -1463,12 +1463,12 @@
   },
   "HVRL": {
    "initial_price": 28.26,
-   "market_cap": 28.6,
-   "shares_outstanding": 1.012031,
-   "revenue": 6.9083,
+   "market_cap": 167.0,
+   "shares_outstanding": 5.909413,
+   "revenue": 40.34,
    "margin": -0.117,
-   "cash": 2.1441,
-   "debt": 4.0926,
+   "cash": 12.52,
+   "debt": 23.9,
    "dividend_yield": 0.0
   },
   "AIRY": {
@@ -1483,12 +1483,12 @@
   },
   "GRVN": {
    "initial_price": 94.39,
-   "market_cap": 91.6,
-   "shares_outstanding": 0.970442,
-   "revenue": 22.1,
+   "market_cap": 1200.0,
+   "shares_outstanding": 12.713211,
+   "revenue": 289.5,
    "margin": 0.051,
-   "cash": 12.41,
-   "debt": 9.8731,
+   "cash": 162.6,
+   "debt": 129.3,
    "dividend_yield": 0.0
   },
   "LFTR": {
@@ -1563,12 +1563,12 @@
   },
   "WAND": {
    "initial_price": 53.68,
-   "market_cap": 131.0,
-   "shares_outstanding": 2.440387,
-   "revenue": 36.62,
+   "market_cap": 2020.0,
+   "shares_outstanding": 37.630402,
+   "revenue": 564.7,
    "margin": 0.096,
-   "cash": 7.683,
-   "debt": 19.56,
+   "cash": 118.5,
+   "debt": 301.6,
    "dividend_yield": 0.0265
   }
  },

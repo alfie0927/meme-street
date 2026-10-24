@@ -2,7 +2,7 @@ import asyncio, json, logging, os, secrets, shutil, sys, threading, time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Header, Request, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 import paths
@@ -1449,29 +1449,36 @@ async def option_sell(b: OptionSell, x_token: str = Header("")):
     return res if isinstance(res, JSONResponse) else acted(res)
 
 
+def daily_on():
+    """The Daily Chart is archived (since 2026-10-24): its code is kept, but its endpoints answer only when the
+    `daily_chart` setting is on."""
+    if not engine.settings.get("daily_chart"):
+        raise HTTPException(404, "not available")
+
+
 class DailyTrade(BaseModel):
     side: str
     pct: float
 
 
-@app.get("/api/daily")
+@app.get("/api/daily", dependencies=[Depends(daily_on)])
 async def daily_view(x_token: str = Header("")):
     """The Daily Chart (daily.py): today's board, the last days' winners, and the player's game if they have one."""
     return await with_player(x_token, "daily", engine.daily_view, interval=0.2)
 
 
-@app.post("/api/daily/start")
+@app.post("/api/daily/start", dependencies=[Depends(daily_on)])
 async def daily_start(x_token: str = Header("")):
     return await with_player(x_token, "daily_start", engine.daily_start, interval=1.0)
 
 
-@app.get("/api/daily/state")
+@app.get("/api/daily/state", dependencies=[Depends(daily_on)])
 async def daily_state(since: int = 0, x_token: str = Header("")):
     """The candles shown so far (from `since`), the cash, the shares and the time left; never a candle still to come."""
     return await with_player(x_token, "daily_state", engine.daily_poll, since, interval=0.2)
 
 
-@app.post("/api/daily/trade")
+@app.post("/api/daily/trade", dependencies=[Depends(daily_on)])
 async def daily_trade(b: DailyTrade, x_token: str = Header("")):
     return await with_player(x_token, "daily_trade", engine.daily_trade, b.side[:8], b.pct, interval=0.15)
 

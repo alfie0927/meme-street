@@ -8,7 +8,8 @@ import paths
 from netutil import TICKER_RENAMES
 
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png"}
-SCRIPTS = {"chart.js", "bots.js", "daily.js"}        # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart)
+SCRIPTS = {"chart.js", "bots.js"}        # the page's own scripts in web/ (the chart, TA-F2; the Bots page). The Daily Chart's
+# daily.js is archived (since 2026-10-24): add it back here, with "daily" in the routes below, to bring the game back
 
 
 def add_pages(app):
@@ -74,5 +75,5 @@ def add_pages(app):
         the order and refuses if the shop is not in test mode."""
         return FileResponse(os.path.join(web, "shop_pay.html"), headers={"Cache-Control": "no-store"})
 
-    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar", "bots", "daily"):
+    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar", "bots"):
         app.add_api_route("/" + route, lambda: page(), methods=["GET"], include_in_schema=False)
