@@ -148,8 +148,10 @@ Done or dropped: twelve lessons; **L3** challenges (built, switched off 2026-10-
 | P12 | Retire what conflicts | Leftovers of the old zero-drift market. | The hidden mood, two-outcome catalysts and distress bets, kept only where they fit; each change checked by `realism.py`. | M |
 | P13 | A gentler market for beginners | Beginners may want calmer conditions. | A second, calmer market for the first lessons, or a difficulty setting. Later. | M |
 
-Done: **P1-P7** (drift, regimes, ranges, support and resistance, trends in legs, volatility structure, volume) and
-**P11** the realism and no-free-money suite; **TA-A1 to TA-A9** (levels calibrated, more kinds of level, named
+Done: **P1-P7** (drift, regimes, ranges, support and resistance, trends in legs, volatility structure, volume),
+**P11** the realism and no-free-money suite, and **P14 IPOs and takeovers** (2026-10-24: about 15 new companies a game
+year from any industry and size, announced a game day ahead, listed with no pop; past 200 companies each is matched by
+a takeover of the smallest outside the MSI 50 at the market price; HOW_IT_WORKS §6.10A); **TA-A1 to TA-A9** (levels calibrated, more kinds of level, named
 patterns, volume, candles, timeframes that agree, gaps, momentum structure, the pattern suite); **TA-A11** game-time
 candles (built, then taken out on request). Volatility checked 2026-10-24: game-day moves match the stated volatility
 (median about 43% a year; Novaxis 49%), so nothing was changed.

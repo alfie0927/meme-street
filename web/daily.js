@@ -39,19 +39,16 @@ function dlySvg(g){
   h+=`<path d="M${x.toFixed(1)} ${(up?yy-7:yy+7).toFixed(1)} l-5 ${up?9:-9} h10 z" fill="${up?'var(--up)':'var(--dn)'}"><title>${DLY_WORD[t[1]]||t[1]} at ${dlyPx(t[2])}</title></path>`}
  h+=`<line x1="0" x2="${W-R}" y1="${lastY.toFixed(1)}" y2="${lastY.toFixed(1)}" stroke="var(--acc)" stroke-dasharray="2 3"/><rect x="${W-R+1}" y="${(lastY-9).toFixed(0)}" width="${R-2}" height="18" fill="var(--acc)"/><text x="${W-R+4}" y="${(lastY+4).toFixed(0)}" fill="#021012" font-size="11" font-weight="700">${dlyPx(cs[cs.length-1][3])}</text>`;
  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Today's chart">${h}</svg>`}
-// the distribution of today's returns (bars of players), with where the player landed
+// everyone's returns today, like Wordle's guess distribution: a bar per band of returns with how many players landed
+// there, the player's own band in the accent colour, then the median and the best
+const DLY_BANDS=[[-Infinity,-0.25,'−25% or less'],[-0.25,-0.1,'−25 to −10%'],[-0.1,-0.05,'−10 to −5%'],[-0.05,0,'−5 to 0%'],
+ [0,0.05,'0 to +5%'],[0.05,0.1,'+5 to +10%'],[0.1,0.25,'+10 to +25%'],[0.25,Infinity,'+25% or more']];
 function dlyHist(dist,mine){
- const W=PHONE?320:520,H=150,lo=Math.min(...dist,mine,-0.05),hi=Math.max(...dist,mine,0.05),n=Math.min(16,Math.max(8,Math.round(Math.sqrt(dist.length))+6)),bw=(hi-lo)/n;
- const bins=new Array(n).fill(0);for(const r of dist)bins[Math.max(0,Math.min(n-1,Math.floor((r-lo)/bw)))]++;
- const most=Math.max(...bins,1),x=v=>(v-lo)/(hi-lo)*W,ph=H-46,T=22;
- let h='';bins.forEach((c,i)=>{const bh=c/most*ph,mid=lo+(i+0.5)*bw;if(c)h+=`<rect x="${(x(lo+i*bw)+1).toFixed(1)}" y="${(ph-bh+10).toFixed(1)}" width="${Math.max(1,W/n-2).toFixed(1)}" height="${bh.toFixed(1)}" rx="2" fill="${mid>=0?'var(--up)':'var(--dn)'}" opacity="0.5" transform="translate(0 ${T-10})"><title>${c} player${c===1?'':'s'}: ${pc(lo+i*bw)} to ${pc(lo+(i+1)*bw)}</title></rect>`});
- const z=x(0),m=x(mine),base=ph+T,you='you '+pc(mine),yw=you.length*7.4,yx=Math.min(W-yw,Math.max(0,m-yw/2));
- h+=`<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--line)"/><line x1="${z.toFixed(1)}" x2="${z.toFixed(1)}" y1="${T}" y2="${base}" stroke="var(--mut)" stroke-dasharray="3 3"/>`
-  +`<line x1="${m.toFixed(1)}" x2="${m.toFixed(1)}" y1="${T-4}" y2="${base}" stroke="var(--acc)" stroke-width="2.5"/>`
-  +`<text x="${yx.toFixed(0)}" y="13" fill="var(--acc)" font-size="12" font-weight="700">${you}</text>`
-  +`<text x="2" y="${H-4}" fill="var(--mut)" font-size="11">${pc(lo)}</text><text x="${W-2}" y="${H-4}" fill="var(--mut)" font-size="11" text-anchor="end">${pc(hi)}</text>`
-  +(z>44&&z<W-44?`<text x="${z.toFixed(1)}" y="${H-4}" fill="var(--mut)" font-size="11" text-anchor="middle">0%</text>`:'');
- return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img" aria-label="Everyone's returns today, and yours">${h}</svg>`}
+ const band=r=>DLY_BANDS.findIndex(([lo,hi])=>r>=lo&&r<hi),counts=DLY_BANDS.map(()=>0);
+ for(const r of dist)counts[band(r)]++;
+ const most=Math.max(...counts,1),me=band(mine),sorted=[...dist].sort((a,b)=>a-b),med=sorted.length?sorted[Math.floor(sorted.length/2)]:0;
+ return `<div class="dly-dist" role="img" aria-label="Everyone's returns today, and yours">${DLY_BANDS.map(([,,label],i)=>`<div class="dly-drow${i===me?' me':''}"><span>${label}</span><div><i style="width:${Math.max(4,counts[i]/most*100).toFixed(1)}%">${counts[i]}</i>${i===me?'<b>you</b>':''}</div></div>`).join('')}</div>
+  <p class="dly-dsum">Median <b class="${clsP(med)}">${pc(med)}</b> · best <b class="${clsP(sorted[sorted.length-1]||0)}">${pc(sorted[sorted.length-1]||0)}</b> · ${numText(dist.length,0)} played</p>`}
 function dlyBoard(d){
  const me=S&&S.name,medal=['dly-gold','dly-silver','dly-bronze'];
  return `<h3 class="dly-h">Today's best <span class="mut">${numText(d.players,0)} played</span></h3>`

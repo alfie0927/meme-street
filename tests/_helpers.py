@@ -62,6 +62,7 @@ def _flat_read(self):
                    "signup_bonus": 1000}                                        # ...and start with 1,000 MB (the game itself: 10,000)
     forced = {"signup_bonus": 1000,                                          # the tests' money is 1,000 MB a head,
               "quest_ladder": False,                                         # no quest rewards landing in exact-cash tests,
+              "ipo_per_year": 0,                                             # no new listings (a test of them turns them on),
               "market_model": 1}                                         # on the old zero-drift market (a test of the new
     #                                                                          one sets e.settings["market_model"] = 2)
     return sectors, companies, templates, {**quiet_world, **settings, **forced}, profiles, derived

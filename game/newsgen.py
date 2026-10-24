@@ -564,3 +564,120 @@ def make_moonshot(rng, taken, sectors=None):
             "initial_price": price, "market_cap": cap, "shares_outstanding": round(cap / price, 5), "revenue": 0.0,
             "margin": 0.0, "cash": round(cap * rng.uniform(0.2, 0.6), 4), "debt": 0.0, "dividend_yield": 0.0,
             "generated": True, "kind": kind["key"]}
+
+
+# ----------------------------------------------------------------------------------------------------------
+# IPOs (since 2026-10-24): ordinary companies that join the market over time, about `ipo_per_year` a game year, from any
+# industry and of any size. Their finances follow the companies already in their industry (newsgen only words them).
+IPO_PREFIXES = ["North", "Blue", "Bright", "Silver", "Iron", "Clear", "Summit", "Harbor", "Red", "Pine", "Granite", "Swift",
+                "True", "Open", "Prime", "Atlas", "Vertex", "Nova", "Echo", "Arc", "Crest", "Delta", "Orbit", "Pioneer",
+                "Keystone", "Copper", "Willow", "Falcon", "Sterling", "Maple", "Cedar", "Lumen", "Tidal", "Ember", "Quartz"]
+IPO_JOINS = ["", "line", "gate", "field", "wave", "point", "stone", "bridge", "core", "path", "works", "view", "rock"]
+IPO_SECTORS = {
+    "tech": (["Software", "Systems", "Networks", "Data", "Labs"],
+             ["Sells software that companies rent by the month to run their sales and accounts; it listed to fund a push abroad.",
+              "Designs chips for cameras and sensors and has them made by outside foundries; the IPO pays for its next design.",
+              "Runs a cloud platform that small businesses use to build their own apps, and is growing fast at a loss."]),
+    "energy": (["Energy", "Power", "Resources", "Renewables"],
+               ["Builds and runs solar and wind farms and sells the power on long contracts; the IPO funds new sites.",
+                "Drills for oil and gas in two basins; its profits follow the price of crude."]),
+    "pharma": (["Therapeutics", "Pharma", "Biosciences"],
+               ["Has one approved drug for a rare disease and three more in trials; the IPO money funds the trials.",
+                "Makes generic medicines for pharmacies and hospitals at low prices and high volumes."]),
+    "defense": (["Defense", "Dynamics", "Aerospace"],
+                ["Makes drones and the software that flies them for armed forces; its orders come in large, lumpy contracts."]),
+    "airlines": (["Air", "Airways", "Jet"],
+                 ["A low-cost airline flying short routes from secondary airports; fuel and ticket prices decide its year."]),
+    "consumer": (["Foods", "Brands", "Goods", "Home"],
+                 ["Sells snacks and drinks through supermarkets under its own brands; growing by buying small rivals.",
+                  "Makes skincare and household products sold online and in shops; most sales are to repeat customers."]),
+    "finance": (["Capital", "Financial", "Bank", "Partners"],
+                ["An online bank with savings accounts and personal loans and no branches; it earns the gap between the two.",
+                 "Manages investment funds for pension schemes and earns a fee on the money it manages."]),
+    "meme": (["Holdings", "Corp", "Group"],
+             ["A company that is mostly famous online; its shares move on posts and hype far more than on its results."]),
+    "agriculture": (["AgTech", "Farms", "Harvest"],
+                    ["Sells seeds and the software that tells farmers when to plant and water; weather and crop prices drive it."]),
+    "alchemy": (["Alchemy", "Elixirs", "Works"],
+                ["Brews certified potions for chemists and spas; demand swings with the seasons and the price of moonstone."]),
+    "antigrav": (["Lift", "Grav", "Hover"],
+                 ["Makes antigravity pallets for warehouses; it has paying customers and a long list of patents."]),
+    "autos": (["Motors", "Mobility", "Auto"],
+              ["Builds small electric vans for city deliveries and sells charging contracts with them."]),
+    "chrono": (["Chrono", "Temporal", "Time"],
+               ["Sells licensed short time-loops to film studios and sports leagues; regulators watch it closely."]),
+    "creatures": (["Creatures", "Wings", "Ranch"],
+                  ["Breeds and trains griffins for mountain freight; a sick flock is its biggest risk."]),
+    "crypto": (["Pay", "Chain", "Fintech"],
+               ["Runs a payments app that sends money abroad cheaply; its fees grow with the number of users."]),
+    "dreams": (["Dreams", "Sleep", "Mind"],
+               ["Sells guided-dream subscriptions through its app; the IPO funds a clinic for memory therapy."]),
+    "healthcare": (["Health", "Care", "Clinics"],
+                   ["Runs walk-in clinics in three regions, paid by insurers and patients; nurses are its biggest cost."]),
+    "industrials": (["Industries", "Engineering", "Machines"],
+                    ["Makes factory robots and the parts that wear out in them; orders follow how much factories invest."]),
+    "materials": (["Materials", "Metals", "Minerals"],
+                  ["Mines and refines lithium for battery makers; its profits rise and fall with the metal's price."]),
+    "media": (["Media", "Studios", "Games"],
+              ["Publishes mobile games and earns from in-game purchases; one hit or one flop moves its year."]),
+    "ocean": (["Ocean", "Marine", "Deep"],
+              ["Builds pressure domes for seabed towns and rents out the space inside; it is still building its second."]),
+    "portals": (["Gate", "Transit", "Jump"],
+                ["Runs a short-hop teleport line between two cities, priced like a train ticket, and plans a third stop."]),
+    "realestate": (["Properties", "Realty", "Estates"],
+                   ["Owns warehouses near big cities and rents them to online retailers on long leases."]),
+    "retail": (["Retail", "Stores", "Market"],
+               ["Sells discount clothing in its own shops and online; it wins when shoppers trade down."]),
+    "space": (["Orbital", "Space", "Launch"],
+              ["Launches small satellites for companies and governments, with a full order book for two years."]),
+    "telecom": (["Telecom", "Mobile", "Fiber"],
+                ["Lays fibre broadband in towns the big networks skipped and sells it by monthly contract."]),
+    "utilities": (["Utilities", "Water", "Grid"],
+                  ["Supplies water to three cities under regulated prices; steady profits and a dividend."]),
+    "weather": (["Weather", "Climate", "Skies"],
+                ["Sells rain on demand to farms and ski resorts; a dry season is its best one."]),
+}
+IPO_SIZES = (("small", 50, 0.3, 2.0, 1.3), ("mid", 35, 2.0, 10.0, 1.1), ("large", 15, 10.0, 120.0, 0.95))  # cap in B MB
+
+
+def _median(xs, default):
+    xs = sorted(x for x in xs if isinstance(x, (int, float)))
+    return xs[len(xs) // 2] if xs else default
+
+
+def make_company(rng, taken, sector, peers):
+    """A new company for an IPO (a content-pack style dict with its market profile). `peers` are the configs of the
+    companies already in `sector`: the new one's volatility, beta and finances follow theirs (younger: a little more
+    volatile, lower margins, more cash from the IPO, rarely a dividend). Its size is drawn from small, mid or large."""
+    suffixes, descs = IPO_SECTORS.get(sector, (["Group", "Holdings"], ["A newly listed company."]))
+    for _ in range(400):
+        stem = rng.choice(IPO_PREFIXES) + rng.choice(IPO_JOINS)
+        name = f"{stem} {rng.choice(suffixes)}"
+        ticker = stem.upper()[:3] + name.split()[-1][0].upper()
+        if ticker not in taken:
+            break
+    else:
+        ticker = next(t for t in ("".join(rng.choice(string.ascii_uppercase) for _ in range(4)) for _ in range(10000))
+                      if t not in taken)
+    size, _, lo, hi, vol_k = rng.choices(IPO_SIZES, weights=[s[1] for s in IPO_SIZES])[0]
+    cap = round(lo * (hi / lo) ** rng.random(), 3)
+    price = round(6 * (25 ** rng.random()), 2)                        # 6 to 150 MB a share
+
+    def med(key, default):
+        return _median([p.get(key) for p in peers], default)
+
+    def per_cap(key, default):
+        return _median([p.get(key, 0) / p["market_cap"] for p in peers if p.get("market_cap")], default)
+
+    return {"ticker": ticker, "name": name, "sector": sector,
+            "beta": round(med("beta", 1.0) * rng.uniform(0.9, 1.2), 2),
+            "vol": round(min(1.5, max(0.15, med("vol", 0.35) * vol_k * rng.uniform(0.85, 1.15))), 3),
+            "sens": round(med("sens", 1.0), 2), "depth": int(med("depth", 3000)), "traits": [],
+            "desc": rng.choice(descs), "initial_price": price, "market_cap": cap,
+            "shares_outstanding": round(cap / price, 6),
+            "revenue": round(cap * per_cap("revenue", 0.3) * rng.lognormvariate(0, 0.3), 4),
+            "margin": round(med("margin", 0.1) - rng.uniform(0.0, 0.06) - (0.05 if size == "small" else 0.0), 4),
+            "cash": round(cap * (per_cap("cash", 0.08) + rng.uniform(0.08, 0.18)), 4),     # (with what the IPO raised)
+            "debt": round(cap * per_cap("debt", 0.1) * 0.7, 4),
+            "dividend_yield": round(med("dividend_yield", 0.0) * 0.5, 4) if size == "large" else 0.0,
+            "generated": True, "kind": "ipo", "size": size}

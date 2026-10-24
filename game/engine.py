@@ -409,6 +409,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.next_sector_shock = self.now + random.expovariate(1 / float(self.settings.get('sector_shock_mean_seconds', 600)))
         self.next_moonshot = self.now + random.expovariate(1 / float(self.settings.get('moonshot_mean_seconds', 900)))
         self.next_offering = self.now + random.expovariate(1 / float(self.settings.get('offering_mean_seconds', 1200)))
+        self.next_ipo = self._ipo_wait()
+        self.pending_ipo = None                    # an announced IPO, {"at", "cfg"} (saved)
         # The learn-to-trade price model (market_model.py): drift, regimes, swings, support and resistance, volume and
         # the macro calendar. `market_model` 2 turns it on (base.json); 1 is the old zero-drift market.
         self.model = (market_model.MarketModel(self.settings, rng=random.Random(random.random()), now=self.now)
@@ -2550,38 +2552,43 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             # Bankruptcy: holders are cashed out at a fraction of the price (no fee), shorts close at that price,
             # and the ticker is delisted for good.
             stock.move(-(1 - payout))
-            self._settle_options(ticker, stock.price)
-            for player in self.players.values():
-                sh = player.hold.pop(ticker, 0.0)
-                short_cost = player.cost.pop(ticker, 0.0)
-                collat = player.collat.pop(ticker, None)
-                player.entry_fee.pop(ticker, None)
-                player.lev.pop(ticker, None)
-                if sh > 0:
-                    pay = sh * stock.price
-                    player.cash += pay
-                    self.house -= pay
-                    self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=pay,
-                               house=-pay, notional=pay)
-                    if ticker in player.loan:                  # a leveraged long pays back what it borrowed
-                        self._repay(player, ticker, 1.0)
-                elif sh < 0:  # a short closes at the bankruptcy price: collateral back, less what the price did
-                    cd, short = self._short_payout(player, short_cost, -sh * stock.price, 0.0, collat)
-                    self.short_shortfall += short
-                    player.cash += cd
-                    self.house -= cd
-                    self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=cd, house=-cd,
-                               notional=abs(cd), shortfall=short)
-            self._paper_delist(ticker, stock.price)
-            self._emit("delist", None, ticker, house=0.0)
-            self._archive_stock(stock, "bankruptcy", stock.price)
-            self.delisted.append(ticker)
-            self.stocks.pop(ticker)
-            self.relations.remove(ticker)
-            self.index_prev.pop(ticker, None)
-            headline = f"{stock.name} files for bankruptcy and is delisted; holders are paid out at the last price."
-            self.news("bankruptcy", headline, [ticker], -1, "very strong")
-            self.archive[ticker]["log"].append({"t": self.now, "kind": "bankruptcy", "text": headline})
+            self._cash_out(ticker, stock, "bankruptcy",
+                           f"{stock.name} files for bankruptcy and is delisted; holders are paid out at the last price.", -1)
+
+    def _cash_out(self, ticker, stock, reason, headline, sign):
+        """Delist a company for good, settling everyone at its price now: holders are paid out (no fee), shorts close,
+        options settle, and it goes to the archive. A bankruptcy (after its fall) and a takeover (at the market price)."""
+        self._settle_options(ticker, stock.price)
+        for player in self.players.values():
+            sh = player.hold.pop(ticker, 0.0)
+            short_cost = player.cost.pop(ticker, 0.0)
+            collat = player.collat.pop(ticker, None)
+            player.entry_fee.pop(ticker, None)
+            player.lev.pop(ticker, None)
+            if sh > 0:
+                pay = sh * stock.price
+                player.cash += pay
+                self.house -= pay
+                self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=pay,
+                           house=-pay, notional=pay)
+                if ticker in player.loan:                  # a leveraged long pays back what it borrowed
+                    self._repay(player, ticker, 1.0)
+            elif sh < 0:  # a short closes at that price: collateral back, less what the price did
+                cd, short = self._short_payout(player, short_cost, -sh * stock.price, 0.0, collat)
+                self.short_shortfall += short
+                player.cash += cd
+                self.house -= cd
+                self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=cd, house=-cd,
+                           notional=abs(cd), shortfall=short)
+        self._paper_delist(ticker, stock.price)
+        self._emit("delist", None, ticker, house=0.0)
+        self._archive_stock(stock, reason, stock.price)
+        self.delisted.append(ticker)
+        self.stocks.pop(ticker)
+        self.relations.remove(ticker)
+        self.index_prev.pop(ticker, None)
+        self.news(reason, headline, [ticker], sign, "very strong")
+        self.archive[ticker]["log"].append({"t": self.now, "kind": reason, "text": headline})
 
     # ---------- rare news that moves a stock a lot ----------
     def _catalysts(self):
@@ -2740,6 +2747,56 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if sum(1 for x in self.stocks.values() if x.moonshot) < int(self.settings.get("moonshot_max", 8)):
             self._list_moonshot(initial=False)
             self._assign_personas()
+
+    # ---------- IPOs: ordinary companies that join the market over time (since 2026-10-24) ----------
+    def _ipo_wait(self):
+        per_year = float(self.settings.get("ipo_per_year", 15))
+        return self.now + (random.expovariate(per_year / (TRADING_DAYS_PER_YEAR * MARKET_DAY_SECONDS)) if per_year > 0 else 1e18)
+
+    def _ipos(self):
+        """About `ipo_per_year` (15) new companies a game year, from any industry and of any size (newsgen.make_company,
+        its finances like its industry's), each announced a game day ahead (on the wire and in Upcoming events: the name,
+        the industry, the size and the price) and listed at that price with no first-day pop. Past `max_companies` (200)
+        ordinary companies, each listing is matched by a takeover (`_make_room`)."""
+        p = self.pending_ipo
+        if p is not None and self.now >= p["at"]:
+            self.pending_ipo = None
+            cfg = p["cfg"]
+            if cfg["ticker"] not in self.stocks and cfg["ticker"] not in self.delisted and cfg["sector"] in self.sectors:
+                self._list(cfg, initial=False)
+                self._assign_personas()
+                self._make_room()
+        if self.pending_ipo is None and self.now >= self.next_ipo:
+            self.next_ipo = self._ipo_wait()
+            pool = [k for k in self.sectors if k in newsgen.IPO_SECTORS]
+            if not pool:
+                return
+            sector = random.choice(pool)
+            peers = [s.cfg for s in self.stocks.values() if s.sector == sector and s.asset_type == "equity" and not s.moonshot]
+            taken = set(self.stocks) | set(self.delisted) | set(self.derived) | set(self.archive)
+            cfg = newsgen.make_company(random, taken, sector, peers)
+            self.pending_ipo = {"at": self.now + MARKET_DAY_SECONDS, "cfg": cfg}
+            size = {"small": "small", "mid": "mid-sized", "large": "large"}[cfg["size"]]
+            self.news("ipo", f"IPO ahead: {cfg['name']} ({cfg['ticker']}), a {size} {self.sectors[sector]['name']} company, "
+                             f"lists in about 30 minutes at {cfg['initial_price']:.2f} MB a share.", [])
+
+    def _make_room(self):
+        """Keep the market to `max_companies` ordinary companies: the smallest one outside the MSI 50 (and listed at
+        least 30 game days ago) is bought for cash by the largest company in its industry, at the market price. No
+        premium: a takeover that always paid more than the price would make holding small companies free money."""
+        ordinary = [s for s in self.stocks.values() if s.asset_type == "equity" and not s.moonshot]
+        if len(ordinary) <= int(self.settings.get("max_companies", 200)):
+            return
+        settled = self.now - 30 * MARKET_DAY_SECONDS
+        pool = [s for s in ordinary if s.ticker not in self.index_members and s.listed_at <= settled]
+        if not pool:
+            return
+        target = min(pool, key=lambda s: (s.shares_outstanding * s.price, s.ticker))
+        rivals = [s for s in ordinary if s.sector == target.sector and s is not target]
+        buyer = max(rivals, key=lambda s: s.shares_outstanding * s.price).name if rivals else "A private investor"
+        self._cash_out(target.ticker, target, "takeover",
+                       f"{buyer} buys {target.name} for cash at the market price, {target.price:.2f} MB a share; "
+                       f"{target.ticker} is delisted and its holders are paid out.", 0)
 
     # ---------- orders: limit, stop-loss and take-profit ----------
     ORDER_KINDS = {"limit_buy": "Limit buy", "limit_sell": "Limit sell", "stop_loss": "Stop-loss",
@@ -3158,6 +3215,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self._catalysts()
         self._sector_shocks()
         self._moonshot_ipos()
+        self._ipos()
         self._offerings()
         self._earnings()
         self._flush_moves()
@@ -3426,12 +3484,20 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             for ev in stock.events:
                 events.append({"ticker": stock.ticker, "name": stock.name, "kind": newsgen.COMPANY_EVENT_KEYS[ev["kind"]]["label"],
                                "at": ev["t"], "in_seconds": max(0, int(ev["t"] - self.now))})
+        ipo = None
+        if self.pending_ipo:                               # an announced IPO (no link: it is not trading yet)
+            c, at = self.pending_ipo["cfg"], self.pending_ipo["at"]
+            ipo = {"ticker": "", "name": f"{c['name']} ({c['ticker']}) · {self.sectors.get(c['sector'], {}).get('name', c['sector'])} · "
+                                         f"{c['initial_price']:.2f} MB a share", "kind": "IPO", "at": at, "in_seconds": max(0, int(at - self.now))}
+            events.append(ipo)
         events.sort(key=lambda event: event["at"])
         top = events[:20]
         if not any(u.get("macro") for u in top):          # the next economic release is always listed, even hours away
             nxt = next((u for u in events if u.get("macro")), None)
             if nxt:
                 top = top[:19] + [nxt]
+        if ipo and ipo not in top:                         # and so is an IPO
+            top = sorted(top[:19] + [ipo], key=lambda event: event["at"])
         return top
 
     def me_state(self, p, notices=True):
@@ -3870,7 +3936,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
              "model": self.model.dump() if self.model is not None else None,
              "mood": self.mood, "crisis_until": self.crisis_until, "sector_mood": self.sector_mood,
              "used_news": list(self.used_news), "threads": self.threads,
-             "delisted": self.delisted, "season_no": self.season_no,
+             "delisted": self.delisted, "pending_ipo": self.pending_ipo, "season_no": self.season_no,
              "season_end": self.season_end, "history": self.history,
              "stocks": {t: {"base": s.base, "fair": s.fair, "fair_open": s.fair_open,
                             "reg": s.reg, "candles": list(s.candles),
@@ -4168,6 +4234,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             if d.get("relations"):
                 self.relations = relations.Relations.from_json(d["relations"])
             self.delisted = list(d.get("delisted", []))
+            ipo = d.get("pending_ipo")
+            self.pending_ipo = ipo if isinstance(ipo, dict) and isinstance(ipo.get("cfg"), dict) and "at" in ipo else None
             for cfg in d.get("generated", []):                 # companies that were generated while the game ran
                 tk = cfg.get("ticker")
                 if tk and tk not in self.stocks and tk not in self.delisted and tk in saved_stocks:
