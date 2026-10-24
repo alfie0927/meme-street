@@ -3,7 +3,7 @@ Gives the live server its mail settings (so verification codes and password reco
 key ever being typed into a chat or onto a command line: it asks for it here, with the letters hidden, and sends it to the
 server inside the ssh connection.
 
-  powershell -File deploy\set_mail.ps1 -Server root@YOUR.SERVER.IP
+  powershell -ExecutionPolicy Bypass -File deploy\set_mail.ps1 -Server root@YOUR.SERVER.IP
 
 First make an account at a mail service (Resend is the simplest: resend.com, a free plan covers a small game), add your
 domain there and put the DNS records it shows you into your DNS (Cloudflare), then create an API key. For Resend the

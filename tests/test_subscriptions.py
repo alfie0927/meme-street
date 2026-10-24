@@ -162,11 +162,14 @@ class StripeSubscriptionTests(unittest.TestCase):
         self.assertEqual(form["mode"], ["subscription"])
         self.assertEqual(form["line_items[0][price_data][recurring][interval]"], ["month"])
         self.assertEqual(form["subscription_data[metadata][order]"], ["o9"])
+        self.assertEqual(form["line_items[0][price_data][product_data][tax_code]"], ["txcd_10201004"])   # (Managed Payments)
+        self.assertEqual(form["line_items[0][price_data][tax_behavior]"], ["inclusive"])                  # the shop's price
         fake = FakeStripe([{"url": "https://pay", "id": "cs_8"}])
         self.pay.checkout({"id": "o8", "currency": "usd", "price_cents": 9999}, "Pro, 1 year", opener=fake)
         form = urllib.parse.parse_qs(fake.bodies[0])
         self.assertEqual(form["mode"], ["payment"])
         self.assertNotIn("line_items[0][price_data][recurring][interval]", form)
+        self.assertEqual(form["line_items[0][price_data][product_data][tax_code]"], ["txcd_10201003"])
 
     def test_the_events(self):
         done = {"type": "checkout.session.completed", "data": {"object": {"payment_status": "paid", "client_reference_id": "o1",
@@ -178,6 +181,10 @@ class StripeSubscriptionTests(unittest.TestCase):
         first = json.loads(json.dumps(cycle))
         first["data"]["object"]["billing_reason"] = "subscription_create"           # (the first month came with the checkout)
         self.assertIsNone(Payments.renewal(first))
+        basil = {"type": "invoice.paid", "data": {"object": {"id": "in_2", "amount_paid": 999, "billing_reason": "subscription_cycle",
+                                                             "parent": {"type": "subscription_details",
+                                                                        "subscription_details": {"subscription": "sub_1"}}}}}
+        self.assertEqual(Payments.renewal(basil), ("sub_1", "in_2", 999))          # (Stripe's API from 2025-03-31 on)
         self.assertEqual(Payments.ended({"type": "customer.subscription.deleted", "data": {"object": {"id": "sub_1"}}}), "sub_1")
         self.assertIsNone(Payments.ended(cycle))
 

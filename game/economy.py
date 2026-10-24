@@ -12,8 +12,8 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
 * **Pro** is the income that does not depend on anyone losing: the advanced chart indicators and trading with leverage
   (up to 10x). **Expert** has everything in Pro, plus trading bots the player scripts (indicator rules, a news score,
   stocks and options) and backtesting them on the price history (bots.py).
-* **Age.** An account needs a birth year showing at least `min_age` (13); buying needs `buy_min_age` (18) and a
-  confirmation. Only the year is kept.
+* **Age.** An account needs a date of birth showing at least `min_age` (13). Buying has no age rule (since 2026-10-24,
+  on request), only the confirmation that the card may be used and that the purchase is delivered at once.
 * **Spending caps.** A default cap per rolling 30 days (`spend_cap_month_cents`), a lower cap a player can set (lowering
   works at once, raising after 24 hours), and at most `purchases_per_day` purchases a day.
 * **The free restart.** An account whose equity is below `restart_below` MB, with no open positions, can top its cash
@@ -58,13 +58,15 @@ EXPERT_FEATURES = [
 ]
 TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
-TERMS_VERSION = "2026-10-23"  # the date of web/terms.html; an account records the version it signed up under
-PLAYER_FIELDS = ("birth_year", "pro_until", "expert_until", "last_restart", "mb_by_source", "spend_cap_cents", "spend_cap_pending",
+TERMS_VERSION = "2026-10-24"  # the date of web/terms.html; an account records the version it signed up under
+PLAYER_FIELDS = ("birth_year", "birth_date", "ref", "pro_until", "expert_until", "last_restart", "mb_by_source", "spend_cap_cents", "spend_cap_pending",
                  "challenge_mb", "terms", "subs")
 
 
 def init_player(p):
-    p.birth_year = None          # only the year is kept (the age rules need nothing more)
+    p.birth_year = None          # the year of birth (all an account from before 2026-10-24 has)
+    p.birth_date = None          # the date of birth, "YYYY-MM-DD", asked at sign-up since 2026-10-24
+    p.ref = None                 # the tracking link the player first arrived by (?ref=ig_story1), for the admin page
     p.pro_until = 0.0            # real time until which the Pro tools are on
     p.expert_until = 0.0         # real time until which Expert (which includes Pro) is on
     p.last_restart = 0.0         # when the player last used the free restart
@@ -136,12 +138,37 @@ class EconomyMixin:
     def _year(self):
         return datetime.datetime.fromtimestamp(self.now, datetime.timezone.utc).year
 
-    def age_years(self, p):
-        """The age a player reaches this year (from the birth year alone), or None if unknown."""
-        return None if not p.birth_year else self._year() - int(p.birth_year)
+    def _age_on(self, born):
+        today = datetime.datetime.fromtimestamp(self.now, datetime.timezone.utc).date()
+        return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
-    def birth_year_problem(self, year, purpose="signup"):
-        """Why a birth year is not acceptable, or None."""
+    def birth_date_problem(self, text):
+        """Why a date of birth ("YYYY-MM-DD") is not acceptable, or None."""
+        try:
+            born = datetime.date.fromisoformat(str(text or "").strip())
+        except ValueError:
+            return "Please give your date of birth"
+        age = self._age_on(born)
+        if age < 0 or age > 120:
+            return "Please give your date of birth"
+        need = int(self.settings.get("min_age", 13))
+        if age < need:
+            return f"You need to be at least {need} to use Meme Street"
+        return None
+
+    def set_birth_date(self, p, text):
+        """An account from before dates of birth were asked gives it once (the page asks on the next visit)."""
+        if p.birth_date:
+            return False, "Your date of birth is already saved"
+        bad = self.birth_date_problem(text)
+        if bad:
+            return False, bad
+        p.birth_date = str(text).strip()
+        p.birth_year = int(p.birth_date[:4])
+        return True, "Saved"
+
+    def birth_year_problem(self, year):
+        """Why a birth year is not acceptable, or None (a sign-up from a page loaded before dates of birth were asked)."""
         try:
             year = int(year)
         except (TypeError, ValueError):
@@ -153,15 +180,6 @@ class EconomyMixin:
         if this - year < need:
             return f"You need to be at least {need} to use Meme Street"
         return None
-
-    def set_birth_year(self, p, year):
-        if p.birth_year:
-            return False, "Your birth year is already set (an admin can correct it)"
-        bad = self.birth_year_problem(year)
-        if bad:
-            return False, bad
-        p.birth_year = int(year)
-        return True, "Saved"
 
     # ------------------------------------------------------------------ spending
     def spent_cents(self, p, seconds=30 * 86400):
@@ -197,7 +215,7 @@ class EconomyMixin:
         p.spend_cap_pending = [cents, self.now + 86400]
         return True, f"Your cap rises to {money_text(min(cents, int(self.settings.get('spend_cap_month_cents', 50000))), self.shop_currency())} in 24 hours"
 
-    def buy_problem(self, p, item, adult_confirmed, renew_ok=False):
+    def buy_problem(self, p, item, consent, renew_ok=False):
         """Why this player may not buy this item now, or None."""
         if not item:
             return "Unknown item"
@@ -206,12 +224,8 @@ class EconomyMixin:
         if item.get("kind") in TIERS and (p.subs.get(item["kind"]) or {}).get("status") == "active":
             return (f"You have a monthly {item['kind'].title()} that renews by itself: cancel it first (it stays on to the end "
                     "of the month you paid for)")
-        need = int(self.settings.get("buy_min_age", 18))
-        age = self.age_years(p)
-        if age is None:
-            return "Tell us the year you were born first (Profile, Account)"
-        if age < need or not adult_confirmed:
-            return f"Purchases are for people aged {need} or over"
+        if not consent:
+            return "Tick the box to confirm the card and that you want it added straight away"
         if self.spent_cents(p) + int(item["price_cents"]) > self.spend_cap(p):
             return ("That would take you over your spending cap of " + money_text(self.spend_cap(p), self.shop_currency())
                     + " in 30 days")
@@ -221,9 +235,9 @@ class EconomyMixin:
         return None
 
     # ------------------------------------------------------------------ orders
-    def create_order(self, p, sku, provider, adult_confirmed=False, renew_ok=False):
+    def create_order(self, p, sku, provider, consent=False, renew_ok=False):
         item = self._sku(sku)
-        bad = self.buy_problem(p, item, adult_confirmed, renew_ok)
+        bad = self.buy_problem(p, item, consent, renew_ok)
         if bad:
             return None, bad
         oid = uuid.uuid4().hex[:20]
@@ -231,7 +245,7 @@ class EconomyMixin:
                  "mb": int(item.get("mb", 0)), "days": int(item.get("days", 0)), "price_cents": int(item["price_cents"]),
                  "currency": self.shop_currency(), "status": "pending", "created": self.now, "provider": provider,
                  "provider_ref": None, "renews": bool(item.get("renews")),
-                 "consent": "18+, own card, delivery now (no 14-day cancellation)"
+                 "consent": "own card or the holder's permission, delivery now (no 14-day cancellation)"
                             + (", renews monthly until cancelled" if item.get("renews") else "")}
         self.shop_orders[oid] = order
         return order, ""
@@ -497,8 +511,7 @@ class EconomyMixin:
                 if v.get("status") in ("active", "cancelled")}
         return {"catalog": cat, "subs": subs, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
                 "expert": self.is_expert(p), "expert_until": p.expert_until if self.is_expert(p) else None,
-                "birth_year_set": bool(p.birth_year), "age_ok_to_buy": (self.age_years(p) or 0) >= int(self.settings.get("buy_min_age", 18)),
-                "buy_min_age": int(self.settings.get("buy_min_age", 18)), "min_age": int(self.settings.get("min_age", 13)),
+                "min_age": int(self.settings.get("min_age", 13)),
                 "spent_30d": self.spent_cents(p), "spent_30d_text": money_text(self.spent_cents(p), cat["currency"]),
                 "cap": cap, "cap_text": money_text(cap, cat["currency"]),
                 "cap_default": int(self.settings.get("spend_cap_month_cents", 50000)),
@@ -508,6 +521,22 @@ class EconomyMixin:
                             "at": o.get("paid_at", o["created"])} for o in mine],
                 "restart": self.restart_status(p), "mb_by_source": dict(p.mb_by_source),
                 "challenge_week": self.challenge_week_status(p) if hasattr(self, "challenge_week_status") else None}
+
+    def _by_ref(self, paid):
+        """Sign-ups, buyers and revenue per tracking link (`?ref=`), most sign-ups first; "" is no link."""
+        rows = {}
+        for p in self.players.values():
+            r = rows.setdefault(p.ref or "", {"ref": p.ref or "", "signups": 0, "buyers": set(), "cents": 0})
+            r["signups"] += 1
+        refs = {p.token: p.ref or "" for p in self.players.values()}
+        for o in paid:
+            r = rows.get(refs.get(o["token"], ""))
+            if r is not None:
+                r["buyers"].add(o["token"])
+                r["cents"] += o["price_cents"]
+        cur = self.shop_currency()
+        return [{"ref": r["ref"], "signups": r["signups"], "buyers": len(r["buyers"]), "revenue_text": money_text(r["cents"], cur)}
+                for r in sorted(rows.values(), key=lambda r: (-r["signups"], r["ref"]))]
 
     def economy_stats(self):
         """For the admin page: orders, revenue, Pro members and where the MB in the game came from. After a reset to
@@ -539,6 +568,7 @@ class EconomyMixin:
                 "pro_members": sum(1 for p in self.players.values() if self.is_pro(p) and not self.is_expert(p)),
                 "expert_members": sum(1 for p in self.players.values() if self.is_expert(p)),
                 "pay_check": self.pay_check,
+                "by_ref": self._by_ref(paid),
                 "revenue_by_day": [{"day": d, "cents": c} for d, c in sorted(by_day.items())][-30:],
                 "mb_by_source": sources,
                 "recent": [{"id": o["id"], "name": o["name"], "sku": o["sku"], "price": money_text(o["price_cents"], o["currency"]),

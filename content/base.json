@@ -25,7 +25,6 @@
   "signup_bonus": 1000,
   "contest_balance": 1000,
   "min_age": 13,
-  "buy_min_age": 18,
   "shop_currency": "usd",
   "shop_packages": [
     {"sku": "mb1000", "mb": 1000, "price_cents": 199},
@@ -43,7 +42,7 @@
     {"sku": "expert_year", "days": 365, "price_cents": 29999}
   ],
   "challenges": false,
-  "daily_chart": false,
+  "daily_chart": true,
   "spend_cap_month_cents": 50000,
   "purchases_per_day": 3,
   "restart_below": 50,

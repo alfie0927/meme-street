@@ -3,6 +3,7 @@ indicators against hand calculations, crosses, the news score from the bot's own
 Expert running them, a running bot trading on its rules through the real trading code (stocks, leverage, options,
 stops and targets), and backtests that fill at the next open and compare with holding."""
 import json
+import os
 import unittest
 
 from _helpers import IsolatedServer, advance, drift, engine, join, make_engine, quiet
@@ -214,6 +215,22 @@ class BacktestTests(unittest.TestCase):
             d = json.loads(http(srv, "/api/bots", headers=h)[1])
             self.assertFalse(d["expert"])
             self.assertIn("ema", d["funcs"])
+            status, page, _ = http(srv, "/bots/guide")
+            self.assertEqual(status, 200)
+            self.assertIn("Trading bots: the guide", page)
+
+
+class GuideTests(unittest.TestCase):
+    def test_the_guide_covers_every_word_and_action(self):
+        """The guide (web/bots-guide.html, at /bots/guide) names everything a rule can use, so it can't fall behind."""
+        page = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "web", "bots-guide.html"),
+                    encoding="utf-8").read()
+        for word in (*bots.FUNCS, *bots.SERIES, *bots.SCALARS, *bots.TIMEFRAMES):
+            self.assertIn(word, page)
+        for label in ("Buy", "Sell", "Short", "Cover", "Close the position", "Buy calls", "Buy puts", "Sell its options"):
+            self.assertIn(label, page)
+        for w in bots.DEFAULT_WORDS:
+            self.assertIn(w, page)
 
 
 if __name__ == "__main__":

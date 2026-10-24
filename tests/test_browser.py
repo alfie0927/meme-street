@@ -531,7 +531,7 @@ class BrowserPages(unittest.TestCase):
         proc, pg, _ = await open_page(debug_port=9351)
         d = Driver(pg)
         name = "pw" + str(random.randint(1000, 9999))
-        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('by','1990')})()")
+        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('by-d','1990-05-17')})()")
         try:
             await pg.goto(base + "/", 3)
             await d.check("the box offers Log in and Create account", "document.getElementById('auth-tabs').style.display", "block", wait=8)
@@ -601,7 +601,7 @@ class BrowserPages(unittest.TestCase):
         d = Driver(pg)
         name = "em" + str(random.randint(1000, 9999))
         addr = name + "@example.com"
-        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('em','%s');set('by','1990')})()")
+        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('em','%s');set('by-d','1990-05-17')})()")
         try:
             await pg.goto(base + "/", 3)
             await d.check("the sign-up form asks for an email address", "document.getElementById('em').style.display", "block", wait=8)

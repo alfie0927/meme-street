@@ -76,24 +76,26 @@ class ServiceFileTests(unittest.TestCase):
         self.assertIn("@admin path /admin /admin/* /api/admin/*", caddy)            # what the password covers
         self.assertIn("basic_auth @admin", caddy)
         doc = read("DEPLOY.md")
-        for needed in ("pull_backups.ps1", "set_mail.ps1", "/api/health", "basic_auth"):
+        for needed in ("pull_backups.ps1", "set_mail.ps1", "set_stripe.ps1", "/api/health", "basic_auth"):
             self.assertIn(needed, doc)
 
     def test_the_powershell_helpers_are_valid_powershell(self):
         if sys.platform != "win32" or shutil.which("powershell") is None:
             self.skipTest("needs Windows PowerShell")
-        for name in ("upload.ps1", "pull_backups.ps1", "set_mail.ps1"):
+        for name in ("upload.ps1", "pull_backups.ps1", "set_mail.ps1", "set_stripe.ps1"):
             path = os.path.join(DEPLOY, name)
             cmd = ("$e=$null;$t=$null;[void][System.Management.Automation.Language.Parser]::ParseFile('%s',[ref]$t,[ref]$e);"
                    "if($e.Count -gt 0){$e|ForEach-Object{$_.Message};exit 1}" % path)
             result = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, name + ": " + result.stdout + result.stderr)
 
-    def test_the_mail_helper_never_puts_the_key_on_a_command_line(self):
-        text = read("set_mail.ps1")
-        self.assertIn("Read-Host", text)
-        self.assertIn("-AsSecureString", text)
-        self.assertIn('ssh $Server "bash -s"', text)                              # the secret travels on stdin, not in an argument
+    def test_the_mail_and_stripe_helpers_never_put_a_key_on_a_command_line(self):
+        for name in ("set_mail.ps1", "set_stripe.ps1"):
+            text = read(name)
+            self.assertIn("Read-Host", text)
+            self.assertIn("-AsSecureString", text)
+            self.assertIn('ssh $Server "bash -s"', text)                          # the secret travels on stdin, not in an argument
+        self.assertIn("test key", read("set_stripe.ps1"))                         # a test key on the live site would give MB away
 
     def test_a_visitor_cannot_fake_his_address_through_the_web_server(self):
         caddy = read("Caddyfile")

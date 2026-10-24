@@ -44,7 +44,8 @@ logger = logging.getLogger("gateway")
 CORE_URL = os.environ.get("CORE_URL", "ws://127.0.0.1:8001/internal/gateway")
 CORE_KEY = os.environ.get("CORE_KEY", "")
 TRUST_PROXY = os.environ.get("TRUST_PROXY", "") == "1"
-FORWARD_HEADERS = ("x-token", "x-admin-key", "content-type", "accept", "user-agent")
+FORWARD_HEADERS = ("x-token", "x-admin-key", "content-type", "accept", "user-agent",
+                   "stripe-signature")        # (without it every Stripe webhook is refused as unsigned)
 MAX_BODY = 64 * 1024
 MESSAGES_PER_SECOND = 20.0         # what one page may send, on average ...
 MESSAGE_BURST = 40                 # ... with this much saved up

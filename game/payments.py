@@ -30,6 +30,12 @@ logger = logging.getLogger(__name__)
 STRIPE_API = "https://api.stripe.com/v1/checkout/sessions"
 STRIPE_SUBS = "https://api.stripe.com/v1/subscriptions/"
 STRIPE_INVOICES = "https://api.stripe.com/v1/invoices"
+# Stripe's product tax codes, which Managed Payments (Stripe selling as merchant of record and handling the tax) requires on
+# every product: a browser game played online, by subscription (the monthly passes) or not (MB packages, yearly passes).
+# Prices include the tax, as shown in the shop (EU and UK prices to consumers must), so the amount Stripe charges is the
+# order's price, which complete_order checks.
+TAX_CODE_SUBSCRIPTION = "txcd_10201004"   # Video Games - streamed - subscription - with conditional rights
+TAX_CODE_ONE_OFF = "txcd_10201003"        # Video Games - streamed - non subscription - with limited rights
 
 
 class Payments:
@@ -67,6 +73,8 @@ class Payments:
             "line_items[0][price_data][currency]": order["currency"],
             "line_items[0][price_data][unit_amount]": str(order["price_cents"]),
             "line_items[0][price_data][product_data][name]": item_name,
+            "line_items[0][price_data][product_data][tax_code]": TAX_CODE_SUBSCRIPTION if order.get("renews") else TAX_CODE_ONE_OFF,
+            "line_items[0][price_data][tax_behavior]": "inclusive",
         }
         if order.get("renews"):                              # every month, until cancelled
             form["line_items[0][price_data][recurring][interval]"] = "month"
@@ -191,9 +199,14 @@ class Payments:
         if not isinstance(event, dict) or event.get("type") not in ("invoice.paid", "invoice.payment_succeeded"):
             return None
         inv = (event.get("data") or {}).get("object") or {}
-        if inv.get("billing_reason") != "subscription_cycle" or not inv.get("subscription"):
+        # Stripe's API from 2025-03-31 ("basil") on moved an invoice's subscription to parent.subscription_details; a new
+        # account gets that shape, an older one the top-level field, so both are read
+        sub = inv.get("subscription") or (((inv.get("parent") or {}).get("subscription_details") or {}).get("subscription"))
+        if isinstance(sub, dict):                     # (expanded)
+            sub = sub.get("id")
+        if inv.get("billing_reason") != "subscription_cycle" or not sub:
             return None
-        return inv["subscription"], inv.get("id"), inv.get("amount_paid")
+        return sub, inv.get("id"), inv.get("amount_paid")
 
     @staticmethod
     def ended(event):

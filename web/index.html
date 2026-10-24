@@ -118,13 +118,24 @@ section>.card{display:none}
 #chart-box.chart-full{position:fixed;inset:0;z-index:60;background:var(--bg);padding:10px 16px;overflow:auto}.chart-full .chart-resize{display:none}
 body.noscroll{overflow:hidden}
 .page-calendar #calendar-card{display:block}.page-bots #bots-card{display:block}.page-daily #daily-card{display:block}.chipset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}.holdings-tbl{width:100%}.holdings-tbl tr[data-go]{cursor:pointer}.holdings-tbl tr[data-go]:hover td{background:#ffffff08}.holdings-tbl td:nth-child(2),.holdings-tbl th:nth-child(2){text-align:left}.holdings-tbl a{color:inherit;text-decoration:none}.holdings-tbl td.w{white-space:nowrap}.wbar{display:inline-block;width:70px;height:6px;background:#ffffff10;border-radius:2px;margin-right:8px;vertical-align:middle;overflow:hidden}.wbar i{display:block;height:100%;background:var(--acc)}
-.dly-stats,.dly-result{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px 14px;margin:0 0 8px}.dly-result{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:10px}
-.dly-stats small,.dly-result small{display:block;color:var(--mut);font-size:11px}.dly-stats strong{font-variant-numeric:tabular-nums}.dly-result strong{font-size:20px}
-.dly-clock{color:var(--acc);font-size:18px}.dly-chart{border:1px solid var(--line);border-radius:var(--r);background:var(--card2);margin-bottom:10px}
-.dly-acts .bar{margin-bottom:6px}.dly-acts .lab{min-width:40px}.dly-acts button{min-width:66px}.dly-start{font-size:16px;padding:10px 32px}
-.dly-board{width:100%}.dly-board tr.me td{background:#4cc3cc14}
-#dly-pop,#buy-pop{display:none;position:fixed;inset:0;z-index:80;background:#000000b3;align-items:center;justify-content:center;padding:16px}.dly-pop-in{width:min(600px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:0 10px 40px #000c}.dly-big{font-size:40px;font-weight:700;margin:10px 0 4px;font-variant-numeric:tabular-nums}.pkg>button{margin-top:auto}.pkg .per{display:inline;font-size:12px;color:var(--mut);font-weight:400}.sub-line .sell{margin-left:8px;padding:2px 10px}
-@media(max-width:760px){.dly-stats{grid-template-columns:repeat(3,minmax(0,1fr))}.dly-result{grid-template-columns:repeat(2,minmax(0,1fr))}.dly-acts button{min-width:0;flex:1}}
+.dly-wrap{max-width:680px;margin:0 auto}.dly-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 0 12px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.dly-title{font-size:20px;font-weight:700;letter-spacing:.02em}.dly-title span{color:var(--acc)}.dly-sub{color:var(--mut);font-size:12px;margin-top:2px}.dly-icons{display:flex;gap:6px}.dly-ic{min-width:34px;height:34px;padding:0 10px;font-weight:700}
+.dly-hero{text-align:center;padding:26px 0 22px}.dly-tag{font-size:22px;line-height:1.35;font-weight:700;margin:0 0 18px}.dly-streak{color:var(--acc);margin:0 0 14px}.dly-small{color:var(--mut);font-size:12px;margin:14px 0 0}
+.dly-go{font-size:17px;font-weight:700;padding:13px 44px;background:var(--acc);border:1px solid var(--acc);color:#021012;border-radius:999px;cursor:pointer}.dly-go:hover{filter:brightness(1.1)}.dly-alt{padding:12px 20px;border-radius:999px}
+.dly-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px}.dly-timer{font-size:44px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1}.dly-timer.low{color:var(--dn);animation:dlyPulse 1s infinite}@keyframes dlyPulse{50%{opacity:.55}}
+.dly-pnl{text-align:right}.dly-ret{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}.dly-eq{color:var(--mut);font-size:12px}
+.dly-chart{border:1px solid var(--line);border-radius:6px;background:var(--card2);margin:0 0 10px;overflow:hidden}.dly-pos{text-align:center;color:var(--mut);font-size:13px;margin:4px 0 10px}.dly-pos b{color:var(--txt)}.dly-pos b.up{color:var(--up)}.dly-pos b.dn{color:var(--dn)}
+.dly-sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}.dly-sizes button{padding:9px 0;border-radius:999px;font-weight:700}.dly-sizes button.on{background:var(--acc);border-color:var(--acc);color:#021012}
+.dly-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dly-buy,.dly-sell{padding:16px 0;font-size:20px;font-weight:700;border-radius:10px;border:0;color:#04140a;cursor:pointer;display:flex;justify-content:center;align-items:baseline;gap:8px}
+.dly-buy{background:var(--up)}.dly-sell{background:var(--dn);color:#1a0302}.dly-buy small,.dly-sell small{font-size:11px;opacity:.55}.dly-buy:active,.dly-sell:active{transform:scale(.98)}
+.dly-res{text-align:center;padding:4px 0 6px}.dly-kicker{color:var(--mut);font-size:12px;letter-spacing:.04em;text-transform:uppercase}.dly-res .dly-big{font-size:56px;margin:6px 0 2px;line-height:1.05}.dly-place{color:var(--mut)}.dly-place b{color:var(--txt)}
+.dly-grid{display:flex;justify-content:center;gap:6px;margin:16px 0 12px}.dly-grid i{width:30px;height:30px;border-radius:4px;background:#2a3138}.dly-grid i.u{background:var(--up)}.dly-grid i.d{background:var(--dn)}.dly-grid.anim i{animation:dlyPop .35s ease-out both}@keyframes dlyPop{from{transform:scale(.4) rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
+.dly-vs{color:var(--mut);font-size:13px;margin-bottom:14px}.dly-stat{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:6px 0 14px}.dly-stat div{display:flex;flex-direction:column;align-items:center}.dly-stat strong{font-size:22px;font-variant-numeric:tabular-nums}.dly-stat small{color:var(--mut);font-size:11px;text-align:center}
+.dly-share{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.dly-next{color:var(--mut);font-size:13px;margin-top:14px;text-align:center}.dly-next b{color:var(--txt);font-variant-numeric:tabular-nums}
+.dly-h{font-size:13px;margin:22px 0 6px;display:flex;justify-content:space-between}.dly-board{width:100%}.dly-board td{padding:7px 6px}.dly-board tr.me td{background:#4cc3cc14}.dly-r{text-align:right;font-weight:700}
+.dly-rk{width:34px;color:var(--mut);font-weight:700}.dly-gold{color:#e8b84a}.dly-silver{color:#c0c7cc}.dly-bronze{color:#c9875a}.dly-modal{position:relative;width:min(480px,100%)}.dly-x{position:absolute;top:10px;right:10px;width:32px;height:32px;padding:0}.dly-mt{margin:0 0 10px}.dly-rules{padding-left:18px;margin:0}.dly-rules li{margin:6px 0}
+input[type=date]{color-scheme:dark}#dly-pop,#buy-pop,#dob-pop{display:none;position:fixed;inset:0;z-index:80;background:#000000b3;align-items:center;justify-content:center;padding:16px}.dly-pop-in{width:min(600px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:0 10px 40px #000c}.dly-big{font-size:40px;font-weight:700;margin:10px 0 4px;font-variant-numeric:tabular-nums}.pkg>button{margin-top:auto}.pkg .per{display:inline;font-size:12px;color:var(--mut);font-weight:400}.sub-line .sell{margin-left:8px;padding:2px 10px}
+@media(max-width:760px){.dly-res .dly-big{font-size:46px}.dly-grid i{width:26px;height:26px}.dly-stat strong{font-size:18px}.dly-timer{font-size:38px}.dly-tag{font-size:19px}.dly-go{padding:13px 32px}.dly-buy small,.dly-sell small{display:none}}
 .bot-card{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:8px 0}.bot-log td{padding:2px 8px 2px 0;font-size:12px;text-align:left}
 .bot-rules{width:100%}.bot-rules td{padding:3px 4px;vertical-align:top}.bot-rules th{text-align:left;padding:3px 4px}.bot-rules .r-when{width:100%;min-width:220px;font:12px var(--mono)}
 @media(max-width:760px){.bot-rules thead{display:none}.bot-rules tr{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);padding:4px 0}.bot-rules td{padding:0;border:0}.bot-rules td:first-child{flex-basis:100%}.bot-rules .r-when{min-width:0}}
@@ -196,8 +207,8 @@ aside .news{max-height:260px;overflow-y:auto}
 .k-rumor{color:#e5b34d}.k-breaking{color:var(--acc)}.k-confirm{color:var(--up)}.k-correction{color:var(--dn)}.k-ipo{color:#c3a3ff}.k-season{color:#ff9f5c}.k-macro{color:#d2a8ff}.k-earnings{color:#4fd1d9}.k-dividend{color:#7ee787}.k-rating{color:#a5a5ff}
 #login{position:fixed;inset:0;background:#000d;display:flex;align-items:center;justify-content:center;z-index:9}
 #login>div{background:var(--card);padding:26px;border-radius:3px;border:1px solid var(--line);width:340px}
-input,select{font:inherit;width:100%;padding:7px 9px;margin:10px 0;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:2px}
-input:focus,select:focus{outline:none;border-color:var(--acc)}
+input,select,textarea{font:inherit;width:100%;padding:7px 9px;margin:10px 0;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:2px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
 .bar input,.bar select{width:auto;margin:0;padding:6px 10px}
 #q{width:340px}#msort{display:none}#rows td.mcap{color:var(--mut);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 /* logged-out visitors: they can watch the live market and a stock's page, and are asked to sign in to do anything else */
@@ -254,7 +265,7 @@ body.guest .guest-cta{display:flex}
  #mkt{font-size:11px;white-space:normal}#daily-btn{font-size:11px;padding:3px 8px}#daily-btn .dl-long{display:none}#daily-btn .dl-short{display:inline}#session{gap:6px}
  main,body:not(.page-market) main{padding:8px}
  .card{padding:12px;margin-bottom:10px;border-radius:3px}
- input,select{font-size:16px}
+ input,select,textarea{font-size:16px}
  button{min-height:34px}.chip{min-height:30px;padding:5px 12px}
  #login>div{width:min(340px,92vw);padding:20px}
  #notes{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));left:10px;right:10px;max-width:none}
@@ -368,7 +379,7 @@ body.guest .guest-cta{display:flex}
 <input id="pw" type="password" maxlength="128" placeholder="Password" autocomplete="current-password" style="display:none;margin-bottom:8px">
 <input id="pw2" type="password" maxlength="128" placeholder="Repeat the password" autocomplete="new-password" style="display:none;margin-bottom:8px">
 <input id="em" type="email" maxlength="254" placeholder="Email address" autocomplete="email" style="display:none;margin-bottom:8px">
-<input id="by" type="number" min="1900" max="2100" placeholder="Year you were born" autocomplete="bday-year" style="display:none;margin-bottom:8px">
+<label id="by" class="hint" style="display:none;margin:2px 0 8px">Date of birth<input id="by-d" type="date" autocomplete="bday" style="margin:4px 0 0"></label>
 <input id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
 <p id="terms-note" class="hint" style="display:none">By creating an account you agree to the <a href="/terms" target="_blank">terms</a> and the <a href="/privacy" target="_blank">privacy policy</a>.</p>
 <button class="buy" style="width:100%;padding:8px" id="joinbtn">Enter market</button><p id="lerr" class="dn"></p>
@@ -383,7 +394,7 @@ body.guest .guest-cta{display:flex}
 <div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
 <nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><a href="/bots" data-page="bots">Bots</a><a href="/shop" data-page="shop">Shop</a></nav>
 <div class="spacer"></div>
-<div id="session"><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
+<div id="session"><a id="daily-btn" href="/daily" title="Two minutes on a mystery chart, the same for everyone today"><span class="dl-long">Daily Chart</span><span class="dl-short">Daily</span></a><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
 <div class="stats">
 <a class="stat stat-link" href="/stock/MSI" title="The MSI 50: the 50 biggest companies"><small>MSI 50<small id="indexChg" class="mut">+0.0% 30m</small></small><span id="index">100.000</span></a>
 <div class="stat"><small>Cash</small><span id="cash">-</span></div>
@@ -451,7 +462,7 @@ body.guest .guest-cta{display:flex}
 <p class="hint">If it's public, others see your returns and what you held five minutes ago, in percentages. If not, only your name, medals and achievements (and you still show on the leaderboards).</p></div>
 <div class="card" id="learn-card"><div id="learn-body" class="mut">Loading…</div></div>
 <div class="card" id="bots-card"><h3>Trading bots</h3><div id="bots-body"><p class="mut">Loading…</p></div></div>
-<div class="card" id="daily-card"><h3>The Daily Chart</h3><div id="daily-body"><p class="mut">Loading…</p></div></div>
+<div class="card" id="daily-card"><div id="daily-body"><p class="mut">Loading…</p></div></div>
 <div class="card" id="calendar-card"><h3>Economic calendar</h3>
 <p class="about" style="margin-top:0">Jobless claims every week, inflation, jobs and retail sales every month, growth every quarter and eight rate decisions a year. Each has a forecast, and prices move on the <b>surprise</b>, how far the figure lands from it.</p>
 <div id="cal-rate" class="notice-box"></div>
@@ -479,7 +490,7 @@ const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.p
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 const path=location.pathname.replace(/\/+$/,'')||'/';
 let page='market',pageArg=null,mt;
-if(['/holdings','/portfolio','/history','/leaders','/social','/profile','/shop','/calendar','/learn','/bots'].includes(path))page=path.slice(1);
+if(['/holdings','/portfolio','/history','/leaders','/social','/profile','/shop','/calendar','/learn','/bots','/daily'].includes(path))page=path.slice(1);
 else if(mt=path.match(/^\/stock\/([^/]+)$/)){page='stock';pageArg=decodeURIComponent(mt[1]).toUpperCase()}
 else if(mt=path.match(/^\/player\/([^/]+)$/)){page='player';pageArg=decodeURIComponent(mt[1])}
 document.body.className='page-'+page;
@@ -495,6 +506,8 @@ let buyPct=.25,sellPct=1;
 const view=Object.assign({sort:'ticker',dir:1,q:'',sector:'all',watch:false,secsOpen:false},lsGet('ms_view',{}));
 const watch=new Set(lsGet('ms_watch',[]));
 let selectedTicker=page==='stock'?pageArg:null;
+// a tracking link (?ref=ig_story1, ROADMAP B4): the first one a visitor arrives by is kept and sent with the sign-up
+try{const r=new URLSearchParams(location.search).get('ref');if(r&&/^[A-Za-z0-9_-]{1,40}$/.test(r)&&!localStorage.ms_ref)localStorage.ms_ref=r.toLowerCase()}catch(e){}
 let chartPeriod='30s',chartCandles=[],clockOffset=0,zoom=1,pan=0,yMan=null,dragY=0,dragY0=null,dragYOn=false,axisDrag=null,company=null,lastQuery=0;
 let builtFor=null,dragX=null,dragPan0=0,rafPending=false;
 const engineNow=()=>Date.now()/1000+clockOffset;
@@ -565,7 +578,7 @@ function drawAuth(){
  $('recover').style.display=rec?'block':'none';
  $('auth-hint').style.display=authPasswords&&reg?'block':'none';
  $('terms-note').style.display=reg||!authPasswords?'block':'none';
- setText($('auth-hint'),'You need to be '+minAge+' or older; only the year you were born is kept. Use at least 8 characters for the password. Your password is stored only as a salted hash, so nobody (including the admin) can read it. '+(authEmail!=='off'&&mailReady?'If you forget it, a reset code can be emailed to your verified address.':'If you forget it, an admin can give you a temporary password.'));
+ setText($('auth-hint'),'You need to be '+minAge+' or older. Use at least 8 characters for the password. Your password is stored only as a salted hash, so nobody (including the admin) can read it. '+(authEmail!=='off'&&mailReady?'If you forget it, a reset code can be emailed to your verified address.':'If you forget it, an admin can give you a temporary password.'));
  $('pw').autocomplete=reg?'new-password':'current-password';
  $('joinbtn').textContent=!authPasswords?'Enter market':reg?'Create account':'Log in';
  document.querySelectorAll('#auth-tabs [data-mode]').forEach(c=>c.classList.toggle('on',c.dataset.mode===authMode))}
@@ -573,13 +586,13 @@ fetch('/api/auth_mode').then(r=>r.json()).then(j=>{authPasswords=!!j.passwords;a
 $('auth-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;authMode=b.dataset.mode;$('lerr').textContent='';drawAuth()});
 async function join(){
  const b=$('joinbtn'),err=$('lerr');err.textContent='';
- let url='/api/join',body={name:$('nm').value};
+ let url='/api/join',body={name:$('nm').value,ref:(()=>{try{return localStorage.ms_ref||''}catch(e){return ''}})()};
  if(authPasswords){
   url=authMode==='register'?'/api/register':'/api/login';body.password=$('pw').value;
   if(authMode==='register'){
    if($('pw').value!==$('pw2').value){err.textContent='The two passwords are not the same';return}
    if(authEmail!=='off')body.email=$('em').value;
-   body.birth_year=Number($('by').value)||0;if(!body.birth_year){err.textContent='Please give the year you were born';return}
+   body.birth_date=$('by-d').value;if(!body.birth_date){err.textContent='Please give your date of birth';return}
    body.website=$('hp').value}}
  b.disabled=true;
  try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
@@ -620,7 +633,7 @@ function connect(){
    else if(t==='init')onInit(m);
    else if(t==='notice'){notify(m.msgs||[])}
    else if(t==='result'){toast(m.msg,m.ok);if(m.contest)setTimeout(loadMe,150)}
-   else if(t==='history'){if(m.ticker===selectedTicker&&m.period===chartPeriod){chartCandles=m.candles||[];if(m.now)clockOffset=m.now-Date.now()/1000;scheduleChart()}}
+   else if(t==='history'){if(m.ticker===selectedTicker&&m.period===chartPeriod){if(m.since==null)chartCandles=m.candles||[];else if(chartCandles.length)chartCandles=chartCandles.filter(c=>c.t<m.since).concat(m.candles||[]).slice(-CHART_MAX);else requestHistory();if(m.now)clockOffset=m.now-Date.now()/1000;scheduleChart()}}
    else if(t==='company'){if(m.ticker===selectedTicker){company=m;drawCompany()}}
    else if(t==='chat')onChat(m.msg);
    else if(t==='chat_delete'){chatMsgs=chatMsgs.filter(x=>x.id!==m.id);drawChat()}
@@ -640,7 +653,7 @@ function onInit(m){
  m.market_at=Date.now();
  S=m;lastSeq=m.seq;chatMsgs=(m.chat||[]).slice();
  if(m.notices&&m.notices.length)notify(m.notices);
- onFirstData();render();drawChat()}
+ onFirstData();render();drawChat();if(S.need_dob)askDob()}
 function onTick(m){
  if(!S)return;
  if(m.static_v!==S.static_v||(lastSeq&&m.seq-lastSeq>4))requestSync();
@@ -655,7 +668,19 @@ function onTick(m){
  if(m.board)S.board=m.board;
  if(m.upcoming)S.upcoming=m.upcoming;
  Object.assign(S,m.me);
- render()}
+ render();if(S.need_dob)askDob()}
+// an account made before sign-up asked for the date of birth gives it on its next visit (once; no way round it)
+function askDob(){
+ let box=$('dob-pop');if(box&&box.style.display==='flex')return;
+ if(!box){box=document.createElement('div');box.id='dob-pop';document.body.appendChild(box)}
+ setHtml(box,`<div class="dly-pop-in" role="dialog" aria-label="Date of birth" style="width:min(360px,100%)"><b>Date of birth</b>
+  <input id="dob-in" type="date" autocomplete="bday"><p class="dn" id="dob-err" style="margin:0 0 8px"></p>
+  <button class="buy" id="dob-go">Save</button></div>`);
+ box.style.display='flex'}
+document.addEventListener('click',async e=>{if(e.target.id!=='dob-go')return;
+ const v=$('dob-in').value,er=$('dob-err');if(!v){er.textContent='Please give your date of birth';return}
+ e.target.disabled=true;const r=await postJson('/api/account/birth_date',{date:v},{'X-Token':token||''});
+ if(r.ok){S.need_dob=false;$('dob-pop').style.display='none'}else{er.textContent=r.msg||r.error||'Error';e.target.disabled=false}});
 // price-derived numbers are worked out from the live price, so they never need to travel in updates
 function finOf(x){
  const fin=x.financials||{};if(x.asset_type!=='equity')return fin;
@@ -676,7 +701,10 @@ function setAmount(v){
  document.querySelectorAll('.amt-input').forEach(i=>{if(i.value!==v)i.value=v});
  drawChips()}
 document.addEventListener('input',e=>{if(e.target.classList&&e.target.classList.contains('amt-input'))setAmount(e.target.value)});
-function requestHistory(){if(selectedTicker&&ws&&ws.readyState===1)ws.send(JSON.stringify({type:'history',ticker:selectedTicker,period:chartPeriod}))}
+// a chart has up to CHART_MAX candles (2,000 in every timeframe); its refresh every 10 s (`more`) asks only for the
+// candles from its newest one on, and they replace that one and join the end
+const CHART_MAX=2000;
+function requestHistory(more){if(selectedTicker&&ws&&ws.readyState===1)ws.send(JSON.stringify({type:'history',ticker:selectedTicker,period:chartPeriod,...(more&&chartCandles.length?{since:chartCandles[chartCandles.length-1].t}:{})}))}
 function requestCompany(){if(selectedTicker&&ws&&ws.readyState===1)ws.send(JSON.stringify({type:'company',ticker:selectedTicker}))}
 function chipHtml(arr,cur,kind){return arr.map(p=>`<button class="chip ${p===cur&&amountMB===null?'on':''}" data-chip="${kind}" data-v="${p}">${p*100}%</button>`).join(' ')}
 function drawChips(){
@@ -1135,7 +1163,7 @@ function drawDetail(){
  else facts=F('Annual volatility',(stock.vol*100).toFixed(1)+'%')+F('Beta to market',f(stock.beta,2));
  facts+=sector&&sector.value&&stock.asset_type!=='index'?F('Sector index',f(sector.value,2)):'';
  setHtml($('d-facts'),facts);
- if(Date.now()-lastQuery>10000){lastQuery=Date.now();requestCompany();requestHistory()}
+ if(Date.now()-lastQuery>10000){lastQuery=Date.now();requestCompany();requestHistory(true)}
  drawOrders();
  drawChart()}
 // an index's or fund's holdings with their weights (engine.holdings_for), each row a link to the stock; prices live
@@ -1477,18 +1505,16 @@ function drawShop(){
  setHtml($('shop-expert'),`<p class="hint" style="margin-top:0">For traders who want to automate and test their ideas. Expert includes everything in Pro.</p><ul class="hint">${c.expert_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
   +status('expert',d.expert_until,d.expert?' Your bots are on the <a href="/bots">Bots</a> page.':'')+passes(c.expert));
  setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='package'?numText(o.mb,0)+' MB':(o.kind==='pro'?'Pro':'Expert')+', '+(o.days===365?'1 year':o.days+' days')}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
-// Buy opens a small box: what it is and costs, the year of birth if it is not known yet, and the one tick the law asks
-// for (18 or over, own card, delivered at once so no 14-day cancellation; for a monthly pass, that it renews)
+// Buy opens a small box: what it is and costs, and the one tick the law asks for (own card or the holder's permission,
+// delivered at once so no 14-day cancellation; for a monthly pass, that it renews)
 function buyBox(x){
  const d=shopData,renew=!!x.renews,name=x.kind==='package'?numText(x.mb,0)+' MB':`Meme Street ${x.kind==='pro'?'Pro':'Expert'}, ${renew?'monthly':x.days===365?'yearly':x.days+' days'}`;
- const under=d.birth_year_set&&!d.age_ok_to_buy;
  let box=$('buy-pop');if(!box){box=document.createElement('div');box.id='buy-pop';document.body.appendChild(box)}
  setHtml(box,`<div class="dly-pop-in" role="dialog" aria-label="Buy ${esc(name)}"><div class="bar" style="justify-content:space-between;margin:0"><b>${esc(name)}</b><button data-buy-close aria-label="Close">&times;</button></div>
   <div class="dly-big" style="font-size:30px">${esc(x.price)}${renew?'<small class="mut" style="font-size:14px"> a month</small>':''}</div>
   <p class="hint" style="margin:0 0 10px">${renew?`Charged now and then every month until you cancel. Cancel any time in the Shop: it stays on to the end of the month you paid for.`:x.kind==='package'?'One payment. MB are practice money with no cash value: they can\'t be withdrawn, sold or given to other players.':'One payment. It does not renew.'}</p>
-  ${under?`<p class="dn">Purchases are for people aged ${d.buy_min_age} or over.</p>`:`${d.birth_year_set?'':`<label class="hint" style="display:block;margin:0 0 8px">The year you were born (only the year is kept)<input id="bp-year" type="number" min="1900" max="2100" placeholder="e.g. 1995" style="max-width:160px;display:block;margin:6px 0 0"></label>`}
-  <label class="hint" style="display:flex;gap:8px;align-items:flex-start;margin:0 0 12px"><input type="checkbox" id="bp-ok" style="width:auto;margin:3px 0 0">I am ${d.buy_min_age} or over, the card I pay with is mine or I have the card holder's permission, and I want it added straight away, so I lose the 14-day right to cancel.${renew?` I agree it renews every month at ${esc(x.price)} until I cancel.`:''}</label>
-  <div class="bar" style="margin:0"><button class="buy" id="bp-go" data-sku="${esc(x.sku)}" disabled>Continue to payment</button><button data-buy-close>Not now</button></div>`}</div>`);
+  <label class="hint" style="display:flex;gap:8px;align-items:flex-start;margin:0 0 12px"><input type="checkbox" id="bp-ok" style="width:auto;margin:3px 0 0">The card I pay with is mine or I have the card holder's permission, and I want it added straight away, so I lose the 14-day right to cancel.${renew?` I agree it renews every month at ${esc(x.price)} until I cancel.`:''}</label>
+  <div class="bar" style="margin:0"><button class="buy" id="bp-go" data-sku="${esc(x.sku)}" disabled>Continue to payment</button><button data-buy-close>Not now</button></div></div>`);
  box.style.display='flex'}
 $('shop-card').addEventListener('click',async e=>{
  const b=e.target.closest('[data-sku]'),cs=e.target.closest('[data-cancel-sub]'),hdr={'X-Token':token||''};
@@ -1500,8 +1526,7 @@ document.addEventListener('click',async e=>{
  if(e.target.closest('[data-buy-close]')||e.target.id==='buy-pop'){const bx=$('buy-pop');if(bx)bx.style.display='none';return}
  if(e.target.id!=='bp-go')return;const g=e.target,hdr={'X-Token':token||''},c=shopData.catalog,x=[...c.packages,...c.pro,...c.expert].find(i=>i.sku===g.dataset.sku);
  g.disabled=true;
- const y=$('bp-year');if(y){const r=await postJson('/api/account/birth_year',{year:Number(y.value)||0},hdr);if(!r.ok){toast(r.msg||r.error||'Type the year you were born',false,4500);g.disabled=false;return}}
- const r=await postJson('/api/shop/checkout',{sku:g.dataset.sku,adult:true,renew_ok:!!(x&&x.renews)},hdr);
+ const r=await postJson('/api/shop/checkout',{sku:g.dataset.sku,consent:true,renew_ok:!!(x&&x.renews)},hdr);
  if(r.url){location.href=r.url;return}toast(r.error||'Could not open the payment page',false,4500);g.disabled=false;loadShop()});
 // the free restart and "close everything", from the out-of-money banner and the shop
 let lowHidden=false;
@@ -1597,4 +1622,4 @@ setInterval(refreshPage,page==='history'?15000:5000);
 // (connect once chart.js has run too: a message could otherwise arrive while it is still loading)
 document.addEventListener('DOMContentLoaded',()=>{drawChips();connect()});
 </script>
-<script src="/js/chart.js"></script><script src="/js/bots.js"></script></body></html>
+<script src="/js/chart.js"></script><script src="/js/bots.js"></script><script src="/js/daily.js"></script></body></html>

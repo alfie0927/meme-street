@@ -1,6 +1,7 @@
 """The learn-to-trade economy (economy.py, payments.py): MB by source, the shop (packages and the Pro pass), the age rules,
 spending caps, the free restart, and the shop through a real server with the test checkout and a signed Stripe webhook."""
 import asyncio
+import datetime
 import hashlib
 import hmac
 import json
@@ -86,7 +87,7 @@ class ShopTests(unittest.TestCase):
 
     def test_buying_a_package_credits_the_mb_once_however_often_it_is_confirmed(self):
         e, p = self.e, self.p
-        order, err = e.create_order(p, "mb5000", "test", adult_confirmed=True)
+        order, err = e.create_order(p, "mb5000", "test", consent=True)
         self.assertIsNotNone(order, err)
         self.assertEqual(p.cash, 1000.0)                              # nothing until it is paid
         self.assertTrue(e.complete_order(order["id"], "ref1", 799)[0])
@@ -97,7 +98,7 @@ class ShopTests(unittest.TestCase):
         self.assertLess(abs(drift(e)), 1e-6)
 
     def test_a_wrong_amount_does_not_complete_an_order(self):
-        order, _ = self.e.create_order(self.p, "mb10000", "stripe", adult_confirmed=True)
+        order, _ = self.e.create_order(self.p, "mb10000", "stripe", consent=True)
         ok, msg = self.e.complete_order(order["id"], "ref", 1)
         self.assertFalse(ok)
         self.assertEqual(self.p.cash, 1000.0)
@@ -151,24 +152,43 @@ class AgeAndLimitTests(unittest.TestCase):
         for bad in (None, "abc", THIS_YEAR + 1, 1800):
             self.assertIsNotNone(e.birth_year_problem(bad))
 
-    def test_under_18s_and_unconfirmed_buyers_cannot_buy(self):
+    def test_signing_up_needs_a_date_of_birth_and_age_13(self):
+        e = self.e
+        today = datetime.datetime.fromtimestamp(e.now, datetime.timezone.utc).date()
+        self.assertIsNone(e.birth_date_problem(f"{today.year - 20}-06-15"))
+        self.assertIsNone(e.birth_date_problem(today.replace(year=today.year - 13).isoformat()))      # 13 today
+        tomorrow = today + datetime.timedelta(days=1)
+        self.assertIn("13", e.birth_date_problem(tomorrow.replace(year=tomorrow.year - 13).isoformat()))   # 13 tomorrow
+        for bad in ("", None, "15/06/2000", "2000-13-01", tomorrow.isoformat(), "1850-01-01"):
+            self.assertIsNotNone(e.birth_date_problem(bad))
+
+    def test_no_age_rule_for_buying_only_the_confirmation(self):
+        """Since 2026-10-24 buying has no age rule (on request): a 15-year-old or an account with no date of birth can
+        buy; the tick (the card may be used, delivered at once) is still needed."""
         e = self.e
         teen = join(e, "teen")
         teen.birth_year = THIS_YEAR - 15
-        order, err = e.create_order(teen, "mb1000", "test", adult_confirmed=True)
-        self.assertIsNone(order)
-        self.assertIn("18", err)
+        self.assertIsNotNone(e.create_order(teen, "mb1000", "test", consent=True)[0])
         nobody = join(e, "noyear")
-        self.assertIn("year", e.create_order(nobody, "mb1000", "test", True)[1])
-        grown = adult(e, "grown")
-        self.assertIn("18", e.create_order(grown, "mb1000", "test", adult_confirmed=False)[1])
-        self.assertIsNotNone(e.create_order(grown, "mb1000", "test", adult_confirmed=True)[0])
+        self.assertIsNotNone(e.create_order(nobody, "mb1000", "test", True)[0])
+        order, err = e.create_order(adult(e, "grown"), "mb1000", "test", consent=False)
+        self.assertIsNone(order)
+        self.assertIn("Tick the box", err)
+        self.assertNotIn("buy_min_age", e.economy_view(teen))
 
-    def test_the_birth_year_can_be_set_once(self):
-        p = join(self.e, "yearonce")
-        self.assertTrue(self.e.set_birth_year(p, THIS_YEAR - 25)[0])
-        self.assertFalse(self.e.set_birth_year(p, THIS_YEAR - 40)[0])
-        self.assertEqual(p.birth_year, THIS_YEAR - 25)
+    def test_an_older_account_gives_its_date_of_birth_once(self):
+        e = self.e
+        p = join(e, "dateonce")
+        e.settings["require_password"] = True
+        self.assertTrue(e.me_state(p).get("need_dob"))                     # the page asks for it
+        self.assertFalse(e.set_birth_date(p, f"{THIS_YEAR - 5}-01-01")[0])  # too young
+        self.assertTrue(e.set_birth_date(p, f"{THIS_YEAR - 25}-03-04")[0])
+        self.assertFalse(e.set_birth_date(p, f"{THIS_YEAR - 40}-03-04")[0])
+        self.assertEqual((p.birth_date, p.birth_year), (f"{THIS_YEAR - 25}-03-04", THIS_YEAR - 25))
+        self.assertNotIn("need_dob", e.me_state(p))
+        self.assertNotIn("need_dob", e.me_state(e.guest))
+        e.settings["require_password"] = False                              # (no sign-up form, so nothing to ask)
+        self.assertNotIn("need_dob", e.me_state(join(e, "quick")))
 
     def test_the_monthly_spending_cap_and_the_daily_limit(self):
         e = self.e
@@ -317,12 +337,11 @@ class ShopServerTests(unittest.TestCase):
             d = json.loads(text)
             self.assertTrue(d["selling"])
             self.assertEqual(d["mode"], "test")
-            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb5000", "adult": True}, headers=h)
+            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb5000"}, headers=h)
             self.assertEqual(status, 400)
-            self.assertIn("year", json.loads(text)["error"])                    # the age comes first
-            http(srv, "/api/account/birth_year", "POST", {"year": THIS_YEAR - 30}, headers=h)
+            self.assertIn("Tick the box", json.loads(text)["error"])            # the confirmation comes first
             time.sleep(1.1)                                                       # (one checkout a second)
-            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb5000", "adult": True}, headers=h)
+            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb5000", "consent": True}, headers=h)
             self.assertEqual(status, 200, text)
             co = json.loads(text)
             self.assertTrue(co["url"].startswith("/shop/pay?order="))
@@ -345,7 +364,7 @@ class ShopServerTests(unittest.TestCase):
             d = json.loads(http(srv, "/api/shop", headers=h)[1])
             self.assertFalse(d["selling"])
             self.assertEqual(len(d["catalog"]["packages"]), 5)
-            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb1000", "adult": True}, headers=h)
+            status, text, _ = http(srv, "/api/shop/checkout", "POST", {"sku": "mb1000", "consent": True}, headers=h)
             self.assertEqual(status, 400)
             self.assertEqual(http(srv, "/api/shop/test_pay", "POST", {"order": "x"}, headers=h)[0], 404)
             self.assertEqual(http(srv, "/api/shop/stripe/webhook", "POST", {"x": 1})[0], 404)
@@ -358,8 +377,17 @@ class ShopServerTests(unittest.TestCase):
             status, text, _ = http(srv, "/api/register", "POST", body)
             self.assertEqual(status, 400)
             self.assertIn("13", text)
-            body["birth_year"] = THIS_YEAR - 16
+            body["birth_year"] = THIS_YEAR - 16                                # (a page from before dates were asked)
             self.assertEqual(http(srv, "/api/register", "POST", body)[0], 200)
+            body = {"name": "DatedOne", "password": "a-long-password-1", "birth_date": f"{THIS_YEAR - 10}-01-01"}
+            self.assertIn("13", http(srv, "/api/register", "POST", body)[1])
+            body["birth_date"] = "2000-02-30"
+            self.assertEqual(http(srv, "/api/register", "POST", body)[0], 400)
+            body["birth_date"] = f"{THIS_YEAR - 30}-02-28"
+            status, text, _ = http(srv, "/api/register", "POST", body)
+            self.assertEqual(status, 200, text)
+            h = {"X-Token": json.loads(text)["token"]}
+            self.assertFalse(json.loads(http(srv, "/api/account/birth_date", "POST", {"date": "1990-01-01"}, headers=h)[1])["ok"])
             self.assertEqual(json.loads(http(srv, "/api/auth_mode")[1])["min_age"], 13)
 
     def test_close_all_and_the_free_restart_through_the_server(self):
@@ -373,6 +401,30 @@ class ShopServerTests(unittest.TestCase):
 
 
 @unittest.skipUnless(find_browser(), "no Edge/Chrome installed")
+class TrackingLinkTests(unittest.TestCase):
+    """Sign-ups, buyers and revenue per tracking link (?ref=, ROADMAP B4), for the admin page."""
+
+    def test_revenue_is_counted_per_link(self):
+        e = make_engine(9)
+        a, b = adult(e, "fromig"), adult(e, "alsoig")
+        adult(e, "direct")
+        a.ref = b.ref = "ig_story1"
+        o, _ = e.create_order(a, "mb1000", "test", consent=True)
+        e.complete_order(o["id"])
+        rows = {r["ref"]: r for r in e.economy_stats()["by_ref"]}
+        self.assertEqual((rows["ig_story1"]["signups"], rows["ig_story1"]["buyers"], rows["ig_story1"]["revenue_text"]), (2, 1, "US$1.99"))
+        self.assertEqual(rows[""]["buyers"], 0)
+
+    def test_the_link_is_kept_at_sign_up_and_cleaned(self):
+        with IsolatedServer() as srv:
+            http(srv, "/api/join", "POST", {"name": "RefOne", "ref": "IG_Story1"})
+            http(srv, "/api/join", "POST", {"name": "RefTwo", "ref": "<script>"})
+            rows = {r["ref"]: r["signups"] for r in json.loads(http(srv, "/api/admin/shop", headers={"X-Admin-Key": "testkey"})[1])["by_ref"]}
+            self.assertEqual(rows.get("ig_story1"), 1)
+            self.assertGreaterEqual(rows.get(""), 1)                              # (a bad link counts as none)
+            self.assertNotIn("<script>", rows)
+
+
 class ShopBrowserTests(unittest.TestCase):
     """The shop page in a real browser: the age question, the confirmation, the test checkout and the way back."""
 
@@ -393,9 +445,10 @@ class ShopBrowserTests(unittest.TestCase):
             await d.check("there is no spending-limit, source or before-you-buy section", "document.getElementById('shop-card').innerText",
                           lambda t: "spending limit" not in t.lower() and "Where your MB" not in t and "Before you buy" not in t and "Free restart" not in t)
             await pg.js("document.querySelector('#shop-pkgs [data-sku=mb5000]').click()")
-            await d.check("Buy opens a box that asks for the year of birth", "!!document.getElementById('bp-year')", wait=5)
+            await d.check("Buy opens a box with the tick and no age or year", "document.getElementById('buy-pop').innerText",
+                          lambda t: "card I pay with" in t and "18" not in t and "year" not in t.lower(), wait=5)
             await d.check("Continue is off until the box is ticked", "document.getElementById('bp-go').disabled", True)
-            await pg.js(f"document.getElementById('bp-year').value='{THIS_YEAR - 30}';document.getElementById('bp-ok').click()")
+            await pg.js("document.getElementById('bp-ok').click()")
             await d.check("ticking it turns Continue on", "document.getElementById('bp-go').disabled", False, wait=3)
             await pg.js("document.getElementById('bp-go').click()")
             await d.check("Continue opens the test checkout", "location.pathname", "/shop/pay", wait=8)

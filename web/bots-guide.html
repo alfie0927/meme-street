@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#08090b">
+<title>Trading bots: the guide · Meme Street</title>
+<meta name="description" content="How Meme Street's trading bots work: setting one up, the rules they follow, every word a rule can use, news scoring, options and backtests.">
+<link rel="icon" type="image/png" href="/brand/memestreet_logo_peaks.png">
+<style>
+:root{--bg:#08090b;--card:#0d1013;--line:#262d33;--line2:#1a1f24;--txt:#dce3e8;--mut:#7d8a93;--up:#3ad07a;--acc:#4cc3cc;
+ --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.65 var(--mono)}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:900px;margin:0 auto;padding:0 18px}
+header{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:var(--txt)}.brand img{width:26px;height:26px;border-radius:3px}
+.brand:hover{text-decoration:none}.sp{flex:1}
+.btn{display:inline-block;padding:8px 14px;border-radius:2px;border:1px solid var(--line);color:var(--txt);font:600 13px var(--mono)}
+.btn:hover{text-decoration:none;border-color:var(--acc)}
+h1{font:700 clamp(24px,4.5vw,34px)/1.2 var(--mono);margin:34px 0 12px}
+.lead{font-size:16px;color:#b9c3ca;max-width:680px;margin:0 0 10px}
+h2{font:700 15px var(--mono);margin:38px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font:700 14px var(--mono);margin:20px 0 4px}
+p,li{color:#b9c3ca}p{margin:6px 0 10px}ol,ul{padding-left:22px;margin:6px 0 10px}li{margin:4px 0}
+b,strong{color:var(--txt)}
+code{color:var(--acc);background:#4cc3cc12;padding:1px 4px;border-radius:2px;font:13px var(--mono)}
+pre{background:var(--card);border:1px solid var(--line);border-radius:3px;padding:10px 12px;overflow-x:auto;font:13px/1.6 var(--mono);color:var(--acc);margin:8px 0 12px}
+.tbl{width:100%;overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:6px 0 12px;font-size:13px}
+th{text-align:left;color:var(--mut);font-weight:600;border-bottom:1px solid var(--line);padding:6px 10px 6px 0;white-space:nowrap}
+td{border-bottom:1px solid var(--line2);padding:7px 10px 7px 0;vertical-align:top;color:#b9c3ca}
+td:first-child{white-space:nowrap}
+.toc{display:flex;flex-wrap:wrap;gap:6px 14px;margin:14px 0 0;font-size:13px}
+.note{border-left:2px solid var(--acc);padding:4px 0 4px 12px;margin:10px 0}
+footer{padding:34px 0 40px;color:var(--mut);font-size:13px}
+@media(max-width:640px){body{font-size:13.5px}td:first-child{white-space:normal}}
+</style></head><body><div class="wrap">
+<header><a class="brand" href="/"><img src="/brand/memestreet_logo_peaks.png" alt="" width="26" height="26">Meme Street</a><span class="sp"></span><a href="/bots" class="btn">Your bots</a></header>
+
+<h1>Trading bots: the guide</h1>
+<p class="lead">A bot is a short list of rules you write, like "buy when the price crosses above the 20 EMA, sell when it gets back below it". It trades on your account while you are away, with the same fees, cooldowns and limits as your own clicks. Bots come with <b>Meme Street Expert</b>, which includes everything in Pro.</p>
+<nav class="toc"><a href="#start">Set one up</a><a href="#run">How a bot runs</a><a href="#rules">Writing rules</a><a href="#words">Every word a rule can use</a><a href="#actions">Actions and sizes</a><a href="#news">News scores</a><a href="#backtest">Backtests</a><a href="#examples">Examples</a><a href="#limits">Limits</a><a href="#trouble">When a bot does nothing</a></nav>
+
+<h2 id="start">Set one up, step by step</h2>
+<ol>
+<li><b>Open <a href="/bots">Bots</a></b> in the menu. You need an Expert pass that is on; without one the page links to the <a href="/shop">Shop</a>.</li>
+<li><b>Press New bot</b>, or start from a template: <i>EMA trend</i>, <i>RSI dip</i>, <i>Breakout on volume</i>, <i>News momentum</i> or <i>Calls on good news</i>. A template is an ordinary bot you can change.</li>
+<li><b>Name it, list its stocks and pick a candle size.</b> Stocks are tickers separated by commas (<code>NVXA, CLDR</code>), up to 10. The candle size is 1m, 5m, 15m, 30m or 1h: the bot thinks once each candle of that size closes.</li>
+<li><b>Write its rules.</b> Each row is a condition (<i>When this is true</i>) and an action (<i>Do this</i>), with a size for buys, shorts and options. <b>Add a rule</b> adds a row, up to 10. The order matters: the first rule that is true and makes sense acts (<a href="#run">below</a>).</li>
+<li><b>Set a stop and a target</b> if you want them: the position closes when it moves that % against you or for you, from your entry (0 means none). <b>At most … trades a game day</b> caps how busy it can get.</li>
+<li><b>Choose its news words</b> if it reads the news (optional; <a href="#news">below</a>).</li>
+<li><b>Run a backtest</b> under the editor: pick a stock, a candle size, how many candles and how much MB to start with, and press <b>Run</b>. It shows how the rules would have done (<a href="#backtest">below</a>).</li>
+<li><b>Save.</b> A rule the bot can't understand is refused with the place it went wrong, so you can fix it.</li>
+<li><b>Switch it on</b> on its card. The card shows its stocks, how many trades it has made today, its rules in plain words, and <b>What it did</b>: its last 40 actions and what came of each. <b>Switch off</b>, <b>Edit</b> and <b>Delete</b> are on the card too.</li>
+</ol>
+
+<h2 id="run">How a bot runs</h2>
+<ul>
+<li><b>Once a candle.</b> When a candle of the bot's size closes, the bot works out its rules on the finished candles, stock by stock. A rule never sees the candle still forming, except through <code>price</code>.</li>
+<li><b>The first rule that is true and makes sense acts</b>, and only one action per stock per candle. "Makes sense" means: no buy or short while it already holds the stock, no sell unless long, no cover unless short, no call while it holds a call on that stock, and so on. So you rarely need to write <code>flat and</code> in front of a buy, but it does no harm.</li>
+<li><b>Stops and targets are checked every second</b>, not once a candle, and close the whole position.</li>
+<li><b>It trades your account.</b> Its orders go through the same code as your own clicks: the 0.1% fee, the cooldowns, your cash, and leverage only if you have Pro (Expert includes it). A sell, cover or close closes <b>your whole position</b> in the stock, including shares you bought by hand, so leave the stocks a bot trades to the bot.</li>
+<li><b>It stops when your Expert pass ends.</b> Every bot is switched off and you get a message. Switch them back on after renewing.</li>
+<li><b>It sees the last 300 candles.</b> An indicator needs that many candles to have a value: <code>ema(200)</code> is fine, while <code>sma(400)</code> never has one in a running bot, so a comparison with it is always false.</li>
+</ul>
+
+<h2 id="rules">Writing rules</h2>
+<p>A condition is a small formula that is either true or false. Some examples:</p>
+<pre>cross_above(close, ema(20)) and rsi(14) &lt; 70
+price &gt;= ema(200) or pnl_pct &lt;= -5
+news_score &gt; 2 and change(12) &gt; 0
+close &gt; highest(20) and volume &gt; volume_sma(20) * 1.5</pre>
+<ul>
+<li><b>Numbers and maths:</b> <code>+ - * / %</code> and brackets. A division by zero gives "no value".</li>
+<li><b>Comparisons:</b> <code>&lt; &lt;= &gt; &gt;= == !=</code>. A comparison with something that has no value yet (an indicator still warming up) is false.</li>
+<li><b>Logic:</b> <code>and</code>, <code>or</code>, <code>not</code>, and the words <code>true</code> and <code>false</code>. <code>and</code> is worked out before <code>or</code>; use brackets when in doubt.</li>
+<li><b>Words are lower case</b> (<code>close</code>, not <code>Close</code>); spaces are optional.</li>
+<li>A condition is at most 300 characters. It is read by the game's own small parser, never run as code, and can only read the market and your account.</li>
+</ul>
+
+<h2 id="words">Every word a rule can use</h2>
+<h3>The candles</h3>
+<div class="tbl"><table><tr><th>Word</th><th>What it is</th></tr>
+<tr><td><code>open high low close volume</code></td><td>The last finished candle.</td></tr>
+<tr><td><code>price</code></td><td>The price right now (inside the candle that is still forming).</td></tr>
+<tr><td><code>prev(x, n)</code></td><td>Anything <code>x</code> as it was <code>n</code> candles ago (1 to 200): <code>prev(close, 1)</code> is the close before, <code>prev(rsi(14), 3)</code> the RSI three candles back.</td></tr>
+</table></div>
+<h3>Indicators</h3>
+<p>The numbers in brackets are lengths in candles (1 to 500) and must be plain numbers. Leave one out to get the default shown.</p>
+<div class="tbl"><table><tr><th>Indicator</th><th>What it is</th></tr>
+<tr><td><code>sma(n)</code></td><td>Simple moving average of the closes over n candles.</td></tr>
+<tr><td><code>ema(n)</code></td><td>Exponential moving average: like the SMA, but recent candles count more.</td></tr>
+<tr><td><code>wma(n)</code></td><td>Weighted moving average: weights n, n−1, … 1, newest first.</td></tr>
+<tr><td><code>rsi(n=14)</code></td><td>Relative strength index, 0 to 100. Below 30 is often called oversold, above 70 overbought.</td></tr>
+<tr><td><code>macd(fast=12, slow=26)</code></td><td>The MACD line: <code>ema(fast) − ema(slow)</code>.</td></tr>
+<tr><td><code>macd_signal(12, 26, 9)</code></td><td>The signal line: an EMA of the MACD line.</td></tr>
+<tr><td><code>macd_hist(12, 26, 9)</code></td><td>The histogram: MACD line minus signal line.</td></tr>
+<tr><td><code>atr(n=14)</code></td><td>Average true range: how far a candle typically moves, in MB.</td></tr>
+<tr><td><code>bb_upper(n=20, k=2)</code><br><code>bb_mid(n=20)</code><br><code>bb_lower(n=20, k=2)</code></td><td>Bollinger bands: the SMA, and k standard deviations above and below it.</td></tr>
+<tr><td><code>stoch_k(n=14)</code><br><code>stoch_d(n=14, d=3)</code></td><td>Stochastic oscillator, 0 to 100: where the close sits in the range of the last n candles; %D is its d-candle average.</td></tr>
+<tr><td><code>highest(n)</code><br><code>lowest(n)</code></td><td>The highest high and lowest low of the n candles <b>before</b> this one, so a breakout reads <code>close &gt; highest(20)</code>.</td></tr>
+<tr><td><code>change(n)</code></td><td>The % change of the close over n candles: <code>change(12) &gt; 3</code> means up more than 3%.</td></tr>
+<tr><td><code>volume_sma(n)</code></td><td>Average volume over n candles.</td></tr>
+<tr><td><code>vwap()</code></td><td>Volume-weighted average price since the start of the game day (30 real minutes).</td></tr>
+</table></div>
+<h3>Crosses and helpers</h3>
+<div class="tbl"><table><tr><th>Word</th><th>What it is</th></tr>
+<tr><td><code>cross_above(a, b)</code></td><td>True on the candle where a went from at or below b to above it.</td></tr>
+<tr><td><code>cross_below(a, b)</code></td><td>True on the candle where a went from at or above b to below it.</td></tr>
+<tr><td><code>abs(x) min(a, b) max(a, b)</code></td><td>Size without sign, the smaller, the larger.</td></tr>
+</table></div>
+<h3>Your account (for the stock being looked at)</h3>
+<div class="tbl"><table><tr><th>Word</th><th>What it is</th></tr>
+<tr><td><code>position</code></td><td>Shares held: positive when long, negative when short, 0 when flat.</td></tr>
+<tr><td><code>long short flat</code></td><td>1 (true) or 0 (false).</td></tr>
+<tr><td><code>entry</code></td><td>Your average entry price (0 when flat).</td></tr>
+<tr><td><code>pnl_pct</code></td><td>The open position's move from the entry in %, your way: +4 means 4% in your favour, long or short.</td></tr>
+<tr><td><code>cash equity</code></td><td>Your free cash, and what the whole account is worth, in MB.</td></tr>
+<tr><td><code>calls puts</code></td><td>How many call or put positions you hold on this stock.</td></tr>
+</table></div>
+<h3>The news</h3>
+<div class="tbl"><table><tr><th>Word</th><th>What it is</th></tr>
+<tr><td><code>news_score</code></td><td>The score of this stock's recent headlines, with your words (<a href="#news">below</a>).</td></tr>
+<tr><td><code>market_news</code></td><td>The same for headlines about no single company: the economy, rates, the market.</td></tr>
+</table></div>
+
+<h2 id="actions">Actions and sizes</h2>
+<div class="tbl"><table><tr><th>Action</th><th>What it does</th><th>Acts only when</th></tr>
+<tr><td><b>Buy</b></td><td>Opens a long</td><td>you hold none of the stock</td></tr>
+<tr><td><b>Sell</b></td><td>Closes the whole long</td><td>you are long</td></tr>
+<tr><td><b>Short</b></td><td>Opens a short</td><td>you hold none of the stock</td></tr>
+<tr><td><b>Cover</b></td><td>Closes the whole short</td><td>you are short</td></tr>
+<tr><td><b>Close the position</b></td><td>Closes a long or a short</td><td>you hold some</td></tr>
+<tr><td><b>Buy calls / Buy puts</b></td><td>Buys whole 100-share option contracts</td><td>you don't hold a call (or put) on it</td></tr>
+<tr><td><b>Sell its options</b></td><td>Sells every option you hold on the stock</td><td>you hold some</td></tr>
+</table></div>
+<ul>
+<li><b>Size</b> (buys, shorts, options): a % of your free cash, or an amount of MB. Options buy as many whole contracts as that pays for (none if it can't pay for one).</li>
+<li><b>Leverage</b> (buys and shorts): 1x, 2x, 3x, 5x or 10x. It needs Pro, which Expert includes, and costs interest like a leveraged trade by hand.</li>
+<li><b>Options:</b> the strike is a % out of the money (0 to 15; 0 is the strike nearest the price), and the expiry is the next close or 2, 7, 30 or 90 game days after it (a game day is 30 real minutes).</li>
+</ul>
+
+<h2 id="news">News scores</h2>
+<p>A bot can read the news wire the way you do. Each headline about the stock is scored by adding up the weights of your words that appear in it. Older headlines count less: a headline's score halves every <b>half-life</b> (30 real minutes unless you change it, 1 to 1,440). <code>news_score</code> is the total for the stock; <code>market_news</code> for headlines about no single company.</p>
+<p>In the editor, under <b>News words</b>, write one per line: a word or phrase, <code>=</code>, and its weight. A word ending in <code>*</code> matches any word it starts: <code>upgrade*</code> matches "upgraded" and "upgrades". Up to 200 words. <b>Back to the default words</b> restores the starting list:</p>
+<pre>beat* = 2       raise* = 1.5    record = 1      surge* = 1.5    soar* = 2
+jump* = 1       win* = 1.5      upgrade* = 2    approv* = 2     expand* = 1
+strong = 1      buyback = 1.5   partnership = 1 contract = 1    rebound* = 1
+rall* = 1.5     rescue* = 1.5   above the forecast = 1
+miss* = -2      cut* = -1.5     downgrade* = -2 recall* = -2    lawsuit* = -1.5
+probe* = -1.5   investigation = -1.5            warn* = -1.5    delay* = -1
+fall* = -1      plunge* = -2    slump* = -1.5   weak* = -1      loss* = -1
+layoff* = -1    fraud = -3      bankrupt* = -3  default* = -2   resign* = -1
+shortage* = -1  offering = -1   dilut* = -1.5   below the forecast = -1</pre>
+<p>It only reads the headline text, exactly what you could read yourself, never anything hidden behind the prices.</p>
+
+<h2 id="backtest">Backtests</h2>
+<p>A backtest runs the bot over the past: rules at each candle's close, orders filled at the <b>next candle's open</b>, the same fee, leverage with its interest, stops and targets on the candles' highs and lows, options priced the way the game prices them, and the news score from the headlines the stock has kept. It can use up to 2,000 candles of each size (three real days of 1-minute candles).</p>
+<p>The result shows the return against <b>just holding the stock</b>, the number of trades, how many won, the average win and loss, the profit factor (money won ÷ money lost), the worst drawdown, the fees, the time in the market, an equity curve and every trade.</p>
+<p class="note">A backtest only shows the past. The market has no free money in it: a rule that did well over a few days has usually found luck, not an edge. Try it on several stocks and candle sizes, and be wary of rules tuned until the curve looks perfect.</p>
+
+<h2 id="examples">Examples</h2>
+<h3>EMA trend (the template; 5m candles, stop 3%)</h3>
+<pre>Buy 20%:  flat and cross_above(close, ema(20)) and close &gt; ema(200)
+Sell:     long and (close &gt;= ema(200) * 1.03 or cross_below(close, ema(20)))</pre>
+<h3>RSI dip (15m candles, stop 4%, target 6%)</h3>
+<pre>Buy 15%:  flat and rsi(14) &lt; 30 and close &gt; sma(50)
+Sell:     long and rsi(14) &gt; 60</pre>
+<h3>Breakout on volume (5m candles, stop 2.5%)</h3>
+<pre>Buy 20%:  flat and close &gt; highest(20) and volume &gt; volume_sma(20) * 1.5
+Sell:     long and close &lt; ema(20)</pre>
+<h3>News momentum (1m candles, stop 2%, target 4%, half-life 20)</h3>
+<pre>Buy 10%:   flat and news_score &gt;= 2
+Short 10%: flat and news_score &lt;= -2
+Close:     not flat and abs(news_score) &lt; 0.5</pre>
+<h3>Calls on good news (1m candles, half-life 30)</h3>
+<pre>Buy calls 20%, 2% out, next close:  calls == 0 and news_score &gt;= 2
+Sell its options:                   calls &gt; 0 and news_score &lt; 0</pre>
+<h3>A few more ideas</h3>
+<pre>Buy on a MACD turn:          cross_above(macd(), macd_signal())
+Buy a bounce off the band:   close &lt; bb_lower(20, 2) and rsi() &lt; 35
+Buy above the VWAP:          cross_above(close, vwap()) and market_news &gt;= 0
+Sell before a gain goes:     pnl_pct &gt; 5 and close &lt; prev(low, 1)</pre>
+
+<h2 id="limits">Limits</h2>
+<div class="tbl"><table><tr><th>What</th><th>Limit</th></tr>
+<tr><td>Bots a player</td><td>5</td></tr>
+<tr><td>Stocks a bot</td><td>10</td></tr>
+<tr><td>Rules a bot</td><td>10, each at most 300 characters</td></tr>
+<tr><td>Candle sizes</td><td>1m, 5m, 15m, 30m, 1h</td></tr>
+<tr><td>Indicator lengths</td><td>1 to 500 (a running bot sees the last 300 candles)</td></tr>
+<tr><td>Trades a game day</td><td>1 to 500 (30 to start)</td></tr>
+<tr><td>Stop / target</td><td>up to 90% / up to 1,000%</td></tr>
+<tr><td>News words</td><td>200; half-life 1 to 1,440 real minutes</td></tr>
+<tr><td>Backtests</td><td>one every 3 seconds; 50 to 5,000 candles</td></tr>
+</table></div>
+
+<h2 id="trouble">When a bot does nothing</h2>
+<ul>
+<li><b>Is it switched on</b>, and is your Expert pass on? Bots stop when Expert ends.</li>
+<li><b>Has a candle closed?</b> A 1h bot thinks once an hour.</li>
+<li><b>Does the action make sense for the position?</b> A buy does nothing while you already hold the stock, even shares you bought by hand.</li>
+<li><b>Has it reached its trades for the game day?</b></li>
+<li><b>Is an indicator too long?</b> With fewer candles than its length it has no value, and the rule is false.</li>
+<li><b>Look at What it did</b> on its card: every action is listed with the reason it failed, if it did (too little cash, a cooldown).</li>
+</ul>
+
+<footer><a href="/bots">Your bots</a> · <a href="/about">About Meme Street</a> · <a href="/">The market</a><br>Memebucks (MB) are practice money with no cash value.</footer>
+</div></body></html>

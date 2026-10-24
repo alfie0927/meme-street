@@ -41,6 +41,28 @@ def next_of(ws, kind, tries=40, timeout=8):
     raise AssertionError("no " + kind)
 
 
+class StripeThroughGatewayTests(unittest.TestCase):
+    def test_a_signed_stripe_webhook_reaches_the_game_through_a_gateway(self):
+        """The gateway passes Stripe's signature header on: without it every webhook was refused as unsigned, and paid
+        orders waited for the payment check (2026-10-24)."""
+        import hashlib
+        import hmac
+        env = {"PAYMENTS": "stripe", "STRIPE_SECRET_KEY": "sk_test_x", "STRIPE_WEBHOOK_SECRET": "whsec_gw"}
+        with IsolatedServer(gateways=1, env=env) as srv:
+            url = f"http://127.0.0.1:{srv.gateway_ports[0]}/api/shop/stripe/webhook"
+            body = json.dumps({"type": "customer.created", "data": {"object": {}}}).encode()
+            ts = int(time.time())
+            sig = "t=%d,v1=%s" % (ts, hmac.new(b"whsec_gw", f"{ts}.".encode() + body, hashlib.sha256).hexdigest())
+            req = urllib.request.Request(url, data=body, method="POST",
+                                         headers={"Content-Type": "application/json", "Stripe-Signature": sig})
+            with urllib.request.urlopen(req, timeout=10) as r:
+                self.assertEqual(json.loads(r.read()), {"received": True})
+            with self.assertRaises(urllib.error.HTTPError) as err:              # unsigned: refused
+                urllib.request.urlopen(urllib.request.Request(url, data=body, method="POST",
+                                                              headers={"Content-Type": "application/json"}), timeout=10)
+            self.assertEqual(err.exception.code, 400)
+
+
 class ClusterTests(unittest.TestCase):
     """One game server and two gateways."""
 

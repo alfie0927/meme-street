@@ -32,8 +32,8 @@ account, never anything else. A condition is an expression like
 `sell_options` (sell back the options held on the stock). Sizes are a % of the free cash or an amount of MB (options:
 as many whole 100-share contracts as that buys); buys and shorts can be leveraged (Pro, which Expert includes).
 
-**Backtests** run a bot over the candles kept for a stock (up to 500 of each size, and three real days of one-minute
-candles), in the same way: rules at each candle's close, orders filled at the next candle's open, the same fee, leverage
+**Backtests** run a bot over the candles kept for a stock (2,000 of each size, three real days of one-minute candles),
+in the same way: rules at each candle's close, orders filled at the next candle's open, the same fee, leverage
 with its interest and its margin, stops and targets on the candles' highs and lows, options priced as the game prices
 them (Black-Scholes on the stock's recent volatility plus the premium and the spread). The news score uses the headlines
 the stock has kept. The result is the trades, the equity curve and how it did against simply holding the stock.
@@ -809,9 +809,9 @@ class BotsMixin:
 
     def _history_candles(self, s, tf):
         rows = self._finished(s, tf)
-        if tf == "1m" and self.minute_store is not None:
-            older = self.minute_store.last(s.ticker, 4320, before=rows[0][0] if rows else None)
-            rows = older + rows
+        store = self.minute_store if tf == "1m" else self.frame_stores.get(tf)    # (older candles: minutes.db)
+        if store is not None:
+            rows = store.last(s.ticker, 5000, before=rows[0][0] if rows else None) + rows
         return [list(c) + [0.0] * (6 - len(c)) for c in rows]
 
 

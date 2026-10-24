@@ -8,8 +8,7 @@ import paths
 from netutil import TICKER_RENAMES
 
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png"}
-SCRIPTS = {"chart.js", "bots.js"}        # the page's own scripts in web/ (the chart, TA-F2; the Bots page). The Daily Chart's
-# daily.js is archived (since 2026-10-24): add it back here, with "daily" in the routes below, to bring the game back
+SCRIPTS = {"chart.js", "bots.js", "daily.js"}        # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart)
 
 
 def add_pages(app):
@@ -51,6 +50,11 @@ def add_pages(app):
         """What Meme Street is, for people who have not signed up yet (a plain page: no game connection)."""
         return FileResponse(os.path.join(web, "about.html"), headers={"Cache-Control": "public, max-age=300"})
 
+    @app.get("/bots/guide")
+    async def bots_guide_page():
+        """How the trading bots work: setting one up, every word a rule can use, news scores, backtests."""
+        return FileResponse(os.path.join(web, "bots-guide.html"), headers={"Cache-Control": "public, max-age=300"})
+
     @app.get("/terms")
     async def terms_page():
         return FileResponse(os.path.join(web, "terms.html"), headers={"Cache-Control": "public, max-age=300"})
@@ -75,5 +79,5 @@ def add_pages(app):
         the order and refuses if the shop is not in test mode."""
         return FileResponse(os.path.join(web, "shop_pay.html"), headers={"Cache-Control": "no-store"})
 
-    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar", "bots"):
+    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar", "bots", "daily"):
         app.add_api_route("/" + route, lambda: page(), methods=["GET"], include_in_schema=False)

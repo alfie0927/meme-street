@@ -111,11 +111,27 @@ your own copy is still running. Otherwise the server starts a fresh market (you 
 clean Day 1 at any time). After this, **stop using the copy on your computer**: only one game may own the players'
 money.
 
+## Step 5b. Take payments (Stripe)
+
+1. Open a Stripe account and activate it (business details, bank account, identity). Describe what you sell as a game
+   currency with no cash value that can't be cashed out or transferred.
+2. Developers > API keys > **Create restricted key**: Checkout Sessions, Subscriptions, Products and Prices: Write;
+   Invoices: Read; everything else None (it starts `rk_live_`).
+3. Developers > Webhooks > **Add endpoint**: `https://yourdomain.com/api/shop/stripe/webhook`, events
+   `checkout.session.completed`, `invoice.paid`, `customer.subscription.deleted`. Copy its signing secret (`whsec_`).
+4. **The easy way:** `powershell -ExecutionPolicy Bypass -File deploy\set_stripe.ps1 -Server root@YOUR.SERVER.IP`. It asks for the key and the
+   signing secret (typed hidden, sent inside the ssh connection, never in a command line or a chat; test keys are refused),
+   writes `PAYMENTS=stripe`, both and `SITE_URL` into `/etc/memestreet.env`, restarts the game and asks it whether the shop
+   is taking payments. **By hand instead:** add those four lines with `nano /etc/memestreet.env`, then
+   `systemctl restart memestreet memestreet-gateway`.
+5. Buy the cheapest package with your own card, check the MB arrive and the webhook shows as delivered in Stripe, then
+   refund it. To close the shop: `PAYMENTS=off` in that file, and restart.
+
 ## Step 6. Turn on email (so players can recover passwords)
 
 1. Make a free account at an email service (Resend or Brevo are easy), add your domain there and add the DNS records it
    asks for (SPF and DKIM; without them your mail goes to spam).
-2. **The easy way:** `powershell -File deploy\set_mail.ps1 -Server root@YOUR.SERVER.IP`. It asks for the SMTP user, the
+2. **The easy way:** `powershell -ExecutionPolicy Bypass -File deploy\set_mail.ps1 -Server root@YOUR.SERVER.IP`. It asks for the SMTP user, the
    password or API key (typed hidden, and sent to the server inside the ssh connection, never in a command line or a chat)
    and the from-address (`Meme Street <no-reply@yourdomain.com>`), writes them into `/etc/memestreet.env`, restarts the game
    and checks that the game now says mail is ready. With Resend the host is `smtp.resend.com` and the user is `resend`.
@@ -276,7 +292,7 @@ Never in git, never in chat. If one may have leaked, change it as described.
 | The admin page's second password (name `owner`) | its hash in `/etc/caddy/Caddyfile`; the password in `data\live_admin_credentials.txt` | Step 7 |
 | `CORE_KEY` (gateways to game) | `/etc/memestreet.env` | any long random string, then restart both services |
 | `SMTP_PASSWORD` (mail, once on) | `/etc/memestreet.env` (`deploy\set_mail.ps1` puts it there) | make a new key at the mail service, run `set_mail.ps1` again |
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (once the shop takes money) | `/etc/memestreet.env` | roll the key in Stripe's dashboard, update the lines, restart |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (once the shop takes money) | `/etc/memestreet.env` (`deploy\set_stripe.ps1` puts them there) | roll the key in Stripe's dashboard, run `set_stripe.ps1` again |
 | Your ssh key | `C:\Users\YOU\.ssh\` here; its public half in `/root/.ssh/authorized_keys` | `ssh-keygen -t ed25519`, add the new public key to `authorized_keys`, check you can log in with it, then remove the old line |
 | The live save and ledger (players' accounts) | `/opt/memestreet/data`, `/var/backups/memestreet`, `D:\meme_street_backups` | not a key: keep the folders private |
 

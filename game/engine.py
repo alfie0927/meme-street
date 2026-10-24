@@ -31,7 +31,8 @@ TIMEFRAMES = {"30s": 30, "1m": 60, "5m": 300, "15m": 900, "30m": 1800, "1h": 360
 # game-day candles (the regular session) that history.py keeps for many game years (ROADMAP TA-A10); the price model
 # reads its daily levels from them (a game-time chart, TA-A11, was taken out again on request on 2026-10-21)
 DAY_CANDLES_KEPT = 400        # game-day candles each listing keeps in memory (a 52-week range, a 200-day average)
-CHART_MINUTES = 1440          # at most this many one-minute candles go to a chart (a real day)
+CHART_CANDLES = 2000          # at most this many candles go to a chart, in every timeframe (memory keeps 500; the rest
+                              # are in minutes.db: the minute store, and a table per timeframe, history.py)
 MAX_TICK_MOVE = 0.15
 MAX_LEVERAGE = 10.0           # Pro: positions up to this many times the MB put in (not on the leveraged products)
 # The game's own calendar, for the calendar page: one game day (30 real minutes) is one date, seven make a week and the
@@ -309,6 +310,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         # long price history (history.py): game-day candles for many game years, one-minute candles for a few real days
         self.day_store = history.CandleStore(history_path) if history_path else None
         self.minute_store = history.CandleStore(minutes_path) if minutes_path else None
+        # every other timeframe's finished candles, in the same file, so its chart reaches back CHART_CANDLES
+        self.frame_stores = ({k: history.CandleStore(minutes_path, "tf_" + k) for k in TIMEFRAMES if k != "1m"}
+                             if minutes_path else {})
         self._store_prune_t = 0.0
         self.index_prev = {}                       # every stock's price at the previous tick (for index returns)
         self._div_today = {}                       # ticker -> dividend as a share of price, for this tick's index returns
@@ -1328,7 +1332,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         s.day_high = max(s.day_high, price)
         s.day_low = min(s.day_low, price)
         for key, secs in TIMEFRAMES.items():
-            self._merge(s.tf[key], int(self.now // secs) * secs, price, price, price, price, vol)
+            dq, t = s.tf[key], int(self.now // secs) * secs
+            if dq and dq[-1][0] != t and key in self.frame_stores:
+                self.frame_stores[key].add(s.ticker, dq[-1])      # the candle before is finished
+            self._merge(dq, t, price, price, price, price, vol)
         # the game-day candle covers the regular session only, like a real daily chart: the move from one close to the
         # next open (after-hours, pre-market and the opening jump) shows as a gap (TA-A7). (Not before the first tick:
         # until then the session is not known.)
@@ -1359,7 +1366,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _flush_stores(self):
         """Write the finished candles to the history files (once a tick) and drop the oldest ones once an hour."""
-        for store in (self.day_store, self.minute_store):
+        for store in (self.day_store, self.minute_store, *self.frame_stores.values()):
             if store is not None and store.buf:
                 try:
                     store.flush()
@@ -1371,6 +1378,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         try:
             if self.minute_store is not None:
                 self.minute_store.prune(self.now - float(self.settings.get("history_minute_days", 3)) * 86400)
+            for key, store in self.frame_stores.items():
+                store.prune(self.now - (CHART_CANDLES + 10) * TIMEFRAMES[key])
             if self.day_store is not None:
                 years = float(self.settings.get("history_game_years", 10))
                 self.day_store.prune(self.now - years * TRADING_DAYS_PER_YEAR * MARKET_DAY_SECONDS)
@@ -1378,7 +1387,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             logger.exception("could not trim the price history")
 
     def close_stores(self):
-        for store in (self.day_store, self.minute_store):
+        for store in (self.day_store, self.minute_store, *self.frame_stores.values()):
             if store is not None:
                 try:
                     store.close()
@@ -3315,7 +3324,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             level = 100 * sum(s.base * s.price / s.initial_price for s in members) / weight if weight else 100.0
             self.sector_indices[sector_id] = {"value": round(level, 2), "chg": round(level / 100 - 1, 4)}
 
-    def chart_for(self, ticker, period):
+    def chart_for(self, ticker, period, since=None):
+        """A chart's candles: the newest CHART_CANDLES (memory's 500 and older ones from the candle files). With `since`
+        (a chart refreshing itself), only the candles from that start on, if memory still reaches back that far."""
         stock = self.stocks.get(ticker)
         if not stock and ticker in self.archive:
             tf = self.archive[ticker]["tf"]
@@ -3327,16 +3338,20 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     "delisted": True}
         if not stock:
             return {"type": "history", "error": "Unknown or delisted stock"}
-        if period == "1m" and self.minute_store is not None:
-            mem = list(stock.tf["1m"])
-            old = self.minute_store.last(ticker, max(0, CHART_MINUTES - len(mem)), before=mem[0][0] if mem else None)
-            rows = old + mem
-        else:
-            rows = stock.tf[period if period in TIMEFRAMES else "30s"]  # legacy clients may still ask for day/week/...
+        key = period if period in TIMEFRAMES else "30s"                     # legacy clients may still ask for day/week/...
+        rows = list(stock.tf[key])
+        part = since is not None and rows and rows[0][0] <= since
+        store = self.minute_store if key == "1m" else self.frame_stores.get(key)
+        if part:
+            rows = [c for c in rows if c[0] >= since]
+        elif store is not None and len(rows) < CHART_CANDLES:
+            rows = store.last(ticker, CHART_CANDLES - len(rows), before=rows[0][0] if rows else None) + rows
         candles = [{"t": c[0], "o": round(c[1], 5), "h": round(c[2], 5), "l": round(c[3], 5), "c": round(c[4], 5),
-                    "v": round(c[5]) if len(c) > 5 else 0} for c in rows]
-        return {"type": "history", "ticker": ticker, "period": period, "candles": candles,
-                "now": self.now}
+                    "v": round(c[5]) if len(c) > 5 else 0} for c in rows[-CHART_CANDLES:]]
+        out = {"type": "history", "ticker": ticker, "period": period, "candles": candles, "now": self.now}
+        if part:
+            out["since"] = since
+        return out
 
     def _tracks(self, s):
         """What a derived asset follows, in words, for the stock page."""
@@ -3453,6 +3468,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if p.orders or p.orders_dirty:          # sent while there are orders, and once more when the last one goes
             out["orders"] = [self._order_view(o) for o in p.orders]
             p.orders_dirty = False
+        if not p.birth_date and not p.guest and self.settings.get("require_password", True):
+            out["need_dob"] = True                # an account from before dates of birth were asked: the page asks for it
         if notices:
             out["notices"], p.notices = p.notices, []
         return out

@@ -1,4 +1,4 @@
-import asyncio, json, logging, os, secrets, shutil, sys, threading, time
+import asyncio, json, logging, math, os, re, secrets, shutil, sys, threading, time
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
@@ -142,6 +142,7 @@ app = FastAPI(lifespan=lifespan)
 
 class Join(BaseModel):
     name: str
+    ref: str = ""
 
 
 @app.get("/api/auth_mode")
@@ -155,8 +156,10 @@ async def auth_mode():
 class Register(BaseModel):
     name: str
     password: str
-    birth_year: int = 0
+    birth_date: str = ""       # "YYYY-MM-DD" (since 2026-10-24)
+    birth_year: int = 0        # (a page loaded before then sends only the year)
     email: str = ""
+    ref: str = ""              # the tracking link the visitor arrived by (?ref=), kept by the page until sign-up
     website: str = ""          # a field people never see: a bot that fills in every box fills this one too
 
 
@@ -218,6 +221,12 @@ def too_many(seconds):
                         headers={"Retry-After": str(seconds)})
 
 
+def clean_ref(ref):
+    """A tracking link's name (letters, digits, - and _, at most 40), lower case; anything else is no link."""
+    ref = str(ref or "").strip().lower()
+    return ref if re.fullmatch(r"[a-z0-9_-]{1,40}", ref) else None
+
+
 @app.post("/api/join")
 async def join(j: Join):
     """Name-only sign-up. Only available while `require_password` is off (tests, a closed friends-only game)."""
@@ -226,6 +235,8 @@ async def join(j: Join):
     p, err = await run(engine.join, j.name)
     if not p:
         return JSONResponse({"error": err}, status_code=400)
+    if p.ref is None:                                   # (joining again under the same name keeps the first link)
+        p.ref = clean_ref(j.ref)
     return {"token": p.token, "name": p.name}
 
 
@@ -243,7 +254,7 @@ async def register(j: Register, request: Request):
     problem = password_problem(j.password, j.name)
     if problem:
         return JSONResponse({"error": problem}, status_code=400)
-    problem = engine.birth_year_problem(j.birth_year)               # the age policy: only the year is asked and kept
+    problem = engine.birth_date_problem(j.birth_date) if j.birth_date or not j.birth_year else engine.birth_year_problem(j.birth_year)
     if problem:
         return JSONResponse({"error": problem}, status_code=400)
     mode = engine.email_mode()
@@ -258,7 +269,9 @@ async def register(j: Register, request: Request):
     p, err = await run(engine.register, j.name, record, ip)
     if not p:
         return JSONResponse({"error": err}, status_code=400)
-    p.birth_year = int(j.birth_year)
+    p.ref = clean_ref(j.ref)
+    p.birth_date = j.birth_date.strip() or None
+    p.birth_year = int(p.birth_date[:4]) if p.birth_date else int(j.birth_year)
     limits.add(("signup", ip), now)
     token = await run(engine.new_session, p, ip)
     out = {"token": token, "name": p.name}
@@ -563,7 +576,9 @@ async def handle_message(conn, p, raw):
             conn.last_query[kind] = now
             ticker = str(m.get("ticker", ""))
             if kind == "history":
-                result = await run(engine.chart_for, ticker, str(m.get("period", "30s")))
+                since = m.get("since")                    # a chart refreshing itself: only the candles from then on
+                since = float(since) if isinstance(since, (int, float)) and not isinstance(since, bool) and math.isfinite(since) else None
+                result = await run(engine.chart_for, ticker, str(m.get("period", "30s")), since)
             else:
                 result = await run(engine.company_for, ticker)
             conn.push(dumps(result))
@@ -1035,8 +1050,20 @@ payments = Payments()
 
 class Checkout(BaseModel):
     sku: str
-    adult: bool = False
+    consent: bool = False                  # the card may be used, delivered at once so no 14-day cancellation
+    adult: bool = False                    # (the same tick, from a page loaded before 2026-10-24)
     renew_ok: bool = False                 # a monthly pass: agreed that it renews every month until cancelled
+
+
+class BirthDate(BaseModel):
+    date: str
+
+
+@app.post("/api/account/birth_date")
+async def set_birth_date(b: BirthDate, x_token: str = Header("")):
+    """An account from before dates of birth were asked at sign-up gives it once."""
+    res = await with_player(x_token, "birth_date", engine.set_birth_date, b.date[:10], interval=1.0)
+    return res if isinstance(res, JSONResponse) else acted(res)
 
 
 class CancelSub(BaseModel):
@@ -1046,10 +1073,6 @@ class CancelSub(BaseModel):
 class TestPay(BaseModel):
     order: str
     action: str = "pay"
-
-
-class Year(BaseModel):
-    year: int
 
 
 class Cap(BaseModel):
@@ -1075,7 +1098,7 @@ async def shop_checkout(b: Checkout, x_token: str = Header("")):
         return JSONResponse({"error": "The shop is not open yet"}, status_code=400)
 
     def work(p):
-        order, err = engine.create_order(p, b.sku, payments.mode, b.adult, b.renew_ok)
+        order, err = engine.create_order(p, b.sku, payments.mode, b.consent or b.adult, b.renew_ok)
         return order, err
     res = await with_player(x_token, "checkout", work, interval=1.0)
     if isinstance(res, JSONResponse):
@@ -1179,7 +1202,8 @@ async def stripe_webhook(request: Request):
         return JSONResponse({"error": "not available"}, status_code=404)
     body = await request.body()
     event = payments.verify_stripe(body, request.headers.get("stripe-signature", ""))
-    if event is None:
+    if event is None:                                  # (a wrong signing secret, or the header lost on the way, shows here)
+        logger.warning("stripe webhook refused: %s signature", "a bad" if request.headers.get("stripe-signature") else "no")
         return JSONResponse({"error": "bad signature"}, status_code=400)
     paid = payments.paid_order(event)
     if paid:
@@ -1217,11 +1241,6 @@ async def shop_cancel(b: CancelSub, x_token: str = Header("")):
     ok, msg = await run(engine.mark_cancelled, p, b.kind[:10])
     await run(engine.save, False)
     return {"ok": ok, "msg": msg}
-
-
-@app.post("/api/account/birth_year")
-async def set_birth_year(b: Year, x_token: str = Header("")):
-    return acted(await with_player(x_token, "birth_year", engine.set_birth_year, b.year, interval=1.0)) if True else None
 
 
 @app.post("/api/account/spend_cap")

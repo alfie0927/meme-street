@@ -203,6 +203,49 @@ class GameTests(unittest.TestCase):
         self.assertEqual(v["past"][0]["players"], 1)
         self.assertNotIn("error", e.daily_start(p))
 
+    def test_numbered_days_streaks_and_stats(self):
+        """Like the daily word games: each day a number, a streak of days in a row (a missed day ends it), and stats."""
+        e, p = self.e, self.p
+        first = e.daily_view(p)
+        self.assertEqual(first["number"], first["day"] - daily.EPOCH_DAY + 1)
+        self.assertEqual(first["stats"]["played"], 0)
+        for day in range(3):                                               # three days in a row
+            e.daily_start(p)
+            if day == 1:
+                e.daily_trade(p, "buy", 1.0)
+            e.now += daily.LIVE + 1
+            st = e.daily_view(p)["stats"]
+            self.assertEqual((st["played"], st["streak"]), (day + 1, day + 1))
+            e.now += daily.DAY_SECONDS
+        self.assertEqual(e.daily_view(p)["stats"]["streak"], 3)           # (yesterday counts: today is still to play)
+        self.assertEqual(e.daily_view(p)["number"], first["number"] + 3)
+        e.now += daily.DAY_SECONDS                                          # a day missed
+        st = e.daily_view(p)["stats"]
+        self.assertEqual((st["streak"], st["max_streak"], st["played"]), (0, 3, 3))
+        e.daily_start(p)
+        e.now += daily.LIVE + 1
+        st = e.daily_view(p)["stats"]
+        self.assertEqual((st["streak"], st["max_streak"], st["played"]), (1, 3, 4))
+        self.assertIsNotNone(st["avg"])
+        self.assertLessEqual(st["beat"], st["played"])
+
+    def test_the_result_grid(self):
+        """Eight squares, one per 15 seconds: flat while in cash, then up or down with the account's worth."""
+        e, p = self.e, self.p
+        e.daily_start(p)
+        e.now += daily.LIVE // 2                                            # half way: buy everything
+        e.daily_trade(p, "buy", 1.0)
+        e.now += daily.LIVE
+        g = e.daily_view(p)["game"]
+        self.assertEqual(len(g["grid"]), daily.SQUARES)
+        self.assertEqual(g["grid"][:daily.SQUARES // 2 - 1], [0] * (daily.SQUARES // 2 - 1))   # in cash: flat
+        cs = e.daily_game["chart"]["candles"]
+        step = daily.LIVE // daily.SQUARES
+        for k in range(daily.SQUARES // 2, daily.SQUARES):                 # held the stock: its own move
+            a, b = cs[daily.HISTORY - 1 + k * step][3], cs[daily.HISTORY - 1 + (k + 1) * step][3]
+            want = 0 if abs(b - a) <= 0.0005 * a else (1 if b > a else -1)
+            self.assertEqual(g["grid"][k], want, k)
+
     def test_the_game_survives_a_save(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             a = engine.Engine(state_file=os.path.join(tmp, "state.json"))
@@ -222,15 +265,16 @@ class GameTests(unittest.TestCase):
 
 
 class ServerTests(unittest.TestCase):
-    def test_archived_off_the_site(self):
-        """The Daily Chart is archived (since 2026-10-24): no page, no script and no endpoints while `daily_chart` is off."""
+    def test_on_the_site_and_switchable_off(self):
+        """Back on the site (2026-10-24): the page, the script and the header button; with `daily_chart` off the endpoints
+        answer 404."""
         with IsolatedServer() as srv:
+            self.assertEqual(http(srv, "/daily")[0], 200)
+            self.assertEqual(http(srv, "/js/daily.js")[0], 200)
+            self.assertIn('id="daily-btn"', http(srv, "/")[1])
+        with IsolatedServer(settings={"daily_chart": False}) as srv:
             tok = json.loads(http(srv, "/api/join", "POST", {"name": "webarch"})[1])["token"]
             self.assertEqual(http(srv, "/api/daily", headers={"X-Token": tok})[0], 404)
-            self.assertEqual(http(srv, "/api/daily/start", "POST", {}, headers={"X-Token": tok})[0], 404)
-            self.assertEqual(http(srv, "/daily")[0], 404)
-            self.assertEqual(http(srv, "/js/daily.js")[0], 404)
-            self.assertNotIn('id="daily-btn"', http(srv, "/")[1])
 
     def test_the_endpoints(self):
         with IsolatedServer(settings={"daily_chart": True}) as srv:

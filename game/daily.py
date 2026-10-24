@@ -20,9 +20,14 @@ board of the day's returns.
   priced on the server at the candle showing when it arrives.
 * **The board**: today's finished games, best return first (ties: who finished first); the last 7 days' top three are
   kept.
+* **Like the daily word games** (since 2026-10-24): each day has a number (Daily #1 is 24 October 2026); each player
+  keeps stats (games played, the current and best streak of days in a row, the average and best return, how often they
+  beat just holding the stock); and a finished game has a grid of `SQUARES` squares, one per stretch of the two minutes,
+  up, down or flat, for the shared result.
 
 Paper money only: nothing here touches MB, the ledger or the market.
 """
+import datetime
 import hashlib
 import math
 import random
@@ -39,6 +44,8 @@ START_CASH = 1000.0
 CHIPS = (0.25, 0.5, 0.75, 1.0)
 DAY_SECONDS = 86400          # a real day, as the game's days (UTC)
 BOARD = 20
+SQUARES = 8                  # the result grid: one square per 15 seconds of the two minutes
+EPOCH_DAY = (datetime.date(2026, 10, 24) - datetime.date(1970, 1, 1)).days    # Daily #1
 
 
 def make_chart(seed):
@@ -107,6 +114,46 @@ class DailyMixin:
         play["ret"] = play["equity"] / START_CASH - 1
         play["done"] = True
         play["end"] = play["t0"] + LIVE
+        self._daily_record(play)
+
+    def _daily_record(self, play):
+        """A finished game counts towards its player's stats, once."""
+        d, token = self.daily_game, play.get("token")
+        if not token:
+            return
+        st = d.setdefault("stats", {}).setdefault(token, {"played": 0, "streak": 0, "max_streak": 0, "last": None,
+                                                          "sum": 0.0, "best": None, "beat": 0})
+        if st["last"] == d["day"]:
+            return
+        cs = d["chart"]["candles"]
+        st["streak"] = st["streak"] + 1 if st["last"] == d["day"] - 1 else 1
+        st["max_streak"] = max(st["max_streak"], st["streak"])
+        st["last"], st["played"], st["sum"] = d["day"], st["played"] + 1, st["sum"] + play["ret"]
+        st["best"] = play["ret"] if st["best"] is None else max(st["best"], play["ret"])
+        st["beat"] += play["ret"] > cs[-1][3] / cs[HISTORY - 1][3] - 1 + 1e-9
+
+    def _daily_stats(self, p):
+        st = (self.daily_game.get("stats") or {}).get(p.token)
+        if not st:
+            return {"played": 0, "streak": 0, "max_streak": 0, "avg": None, "best": None, "beat": 0}
+        alive = st["last"] is not None and st["last"] >= self.daily_game["day"] - 1     # (a day missed ends the streak)
+        return {"played": st["played"], "streak": st["streak"] if alive else 0, "max_streak": st["max_streak"],
+                "avg": st["sum"] / st["played"] if st["played"] else None, "best": st["best"], "beat": st["beat"]}
+
+    @staticmethod
+    def _daily_grid(play, cs):
+        """One square per stretch of the two minutes: +1 if the account's worth rose over it, -1 if it fell, 0 if flat."""
+        trades = sorted(play["trades"], key=lambda t: t[0])
+        cash, shares, j, worth = START_CASH, 0.0, 0, []
+        step = LIVE // SQUARES
+        for k in range(SQUARES + 1):
+            i = HISTORY - 1 + k * step
+            while j < len(trades) and trades[j][0] <= i:
+                _, kind, price, sh = trades[j]
+                sh = sh if kind in ("buy", "cover") else -sh
+                shares, cash, j = shares + sh, cash - sh * price, j + 1
+            worth.append(max(0.0, cash + shares * cs[i][3]))
+        return [0 if abs(b - a) <= 0.0005 * max(a, 1.0) else (1 if b > a else -1) for a, b in zip(worth, worth[1:])]
 
     def _daily_board(self, d, final=False):
         for play in d["plays"].values():
@@ -139,13 +186,15 @@ class DailyMixin:
             out["hold"] = cs[-1][3] / cs[HISTORY - 1][3] - 1                # what the stock itself did in the two minutes
             out["hi"] = max(c[1] for c in cs[HISTORY:])
             out["lo"] = min(c[2] for c in cs[HISTORY:])
+            out["grid"] = self._daily_grid(play, cs)
         return out
 
     def daily_view(self, p):
         d = self._dchart()
         board = self._daily_board(d)
         play = d["plays"].get(p.token)
-        out = {"day": d["day"], "live": LIVE, "history": HISTORY, "cash": START_CASH, "chips": CHIPS,
+        out = {"day": d["day"], "number": d["day"] - EPOCH_DAY + 1, "live": LIVE, "history": HISTORY, "cash": START_CASH,
+               "chips": CHIPS, "stats": self._daily_stats(p),
                "board": board[:BOARD], "players": len(board), "past": d["past"], "guest": bool(getattr(p, "guest", False)),
                "status": "new" if play is None else "done" if play.get("done") or self.now - play["t0"] >= LIVE else "running",
                "next": (d["day"] + 1) * DAY_SECONDS}
@@ -159,7 +208,7 @@ class DailyMixin:
         d = self._dchart()
         if p.token in d["plays"]:
             return {"error": "You have played today's chart: a new one comes at midnight (UTC)"}
-        d["plays"][p.token] = {"name": p.name, "t0": self.now, "cash": START_CASH, "shares": 0.0, "trades": []}
+        d["plays"][p.token] = {"name": p.name, "token": p.token, "t0": self.now, "cash": START_CASH, "shares": 0.0, "trades": []}
         return self._daily_state(d["plays"][p.token])
 
     def daily_poll(self, p, since=0):

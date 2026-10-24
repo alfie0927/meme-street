@@ -116,6 +116,38 @@ class GameDayTests(unittest.TestCase):
         self.assertTrue(all(b - a == 60 for a, b in zip(ts, ts[1:])))
         e.close_stores()
 
+    def test_every_timeframe_reaches_back_2000_candles_and_a_refresh_gets_only_the_new_ones(self):
+        """Every other timeframe's finished candles go to its own table in minutes.db, so its chart reaches back
+        CHART_CANDLES (2,000) while memory keeps 500; a refresh (`since`) gets only the newest; each table is trimmed to
+        its own 2,000 candles."""
+        e = self.make(state=False)
+        e.settings.update(premarket_seconds=0, aftermarket_seconds=0)
+        for k in e.stocks.values():
+            k.tf["30s"] = type(k.tf["30s"])(maxlen=5)      # (a short in-memory window, so the file has to fill the rest)
+        advance(e, 30 * 12)
+        ts = [c["t"] for c in e.chart_for("NVXA", "30s")["candles"]]
+        self.assertGreaterEqual(len(ts), 11)
+        self.assertTrue(all(b - a == 30 for a, b in zip(ts, ts[1:])))      # no gap, no candle twice, oldest first
+        mem = e.stocks["NVXA"].tf["5m"]
+        st = e.frame_stores["5m"]
+        for i in range(1, 2501):
+            st.add("NVXA", [mem[0][0] - i * 300, 1, 1, 1, 1, 0])
+        st.flush()
+        rows = e.chart_for("NVXA", "5m")["candles"]
+        self.assertEqual(len(rows), engine.CHART_CANDLES)                   # 2,000 at most: the newest
+        self.assertEqual(rows[-1]["t"], mem[-1][0])
+        tf = e.stocks["NVXA"].tf["30s"]
+        part = e.chart_for("NVXA", "30s", since=tf[-2][0])
+        self.assertEqual(part["since"], tf[-2][0])
+        self.assertEqual([c["t"] for c in part["candles"]], [tf[-2][0], tf[-1][0]])
+        self.assertNotIn("since", e.chart_for("NVXA", "30s", since=0))     # (from before memory's reach: everything)
+        e._store_prune_t = e.now - 7200
+        e._flush_stores()
+        kept = [c[0] for c in st.last("NVXA", 5000)]
+        self.assertLess(len(kept), 2500)
+        self.assertGreaterEqual(min(kept), e.now - (engine.CHART_CANDLES + 10) * 300)
+        e.close_stores()
+
     def test_a_game_from_before_the_history_file_gets_its_days_rebuilt(self):
         e = engine.Engine(state_file=None)
         e.settings.update(premarket_seconds=300, aftermarket_seconds=300)
