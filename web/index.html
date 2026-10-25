@@ -377,7 +377,7 @@ body.guest .guest-cta{display:flex}
 <p id="auth-tabs" style="display:none;margin:0 0 8px"><button class="chip on" data-mode="login">Log in</button> <button class="chip" data-mode="register">Create account</button></p>
 <input id="nm" maxlength="16" placeholder="Pick a trader name" autocomplete="username" style="margin-bottom:8px">
 <input id="pw" type="password" maxlength="128" placeholder="Password" autocomplete="current-password" style="display:none;margin-bottom:8px">
-<input id="pw2" type="password" maxlength="128" placeholder="Repeat the password" autocomplete="new-password" style="display:none;margin-bottom:8px">
+<input id="pw2" type="password" maxlength="128" placeholder="Confirm password" autocomplete="new-password" style="display:none;margin-bottom:8px">
 <input id="em" type="email" maxlength="254" placeholder="Email address" autocomplete="email" style="display:none;margin-bottom:8px">
 <label id="by" class="hint" style="display:none;margin:2px 0 8px">Date of birth<input id="by-d" type="date" autocomplete="bday" style="margin:4px 0 0"></label>
 <input id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
@@ -578,7 +578,7 @@ function drawAuth(){
  $('recover').style.display=rec?'block':'none';
  $('auth-hint').style.display=authPasswords&&reg?'block':'none';
  $('terms-note').style.display=reg||!authPasswords?'block':'none';
- setText($('auth-hint'),'You need to be '+minAge+' or older. Use at least 8 characters for the password. Your password is stored only as a salted hash, so nobody (including the admin) can read it. '+(authEmail!=='off'&&mailReady?'If you forget it, a reset code can be emailed to your verified address.':'If you forget it, an admin can give you a temporary password.'));
+ setText($('auth-hint'),'You need to be '+minAge+' or older. Use at least 8 characters for the password.');
  $('pw').autocomplete=reg?'new-password':'current-password';
  $('joinbtn').textContent=!authPasswords?'Enter market':reg?'Create account':'Log in';
  document.querySelectorAll('#auth-tabs [data-mode]').forEach(c=>c.classList.toggle('on',c.dataset.mode===authMode))}
