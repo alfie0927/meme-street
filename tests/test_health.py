@@ -31,7 +31,7 @@ class HealthTests(unittest.TestCase):
     def test_it_is_not_one_of_the_admin_paths_so_a_monitor_is_never_locked_out(self):
         with IsolatedServer() as srv:
             for i in range(12):                                                     # more wrong admin keys than the lock-out allows
-                http(srv, "/api/admin/stats", headers={"X-Admin-Key": "wrong%d" % i})
+                http(srv, "/api/admin/overview", headers={"X-Admin-Key": "wrong%d" % i})
             self.check(srv)
 
     def test_it_works_through_a_gateway(self):

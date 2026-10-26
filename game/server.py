@@ -594,8 +594,6 @@ async def handle_message(conn, p, raw):
                 broadcast(dumps({"type": "chat", "msg": cm}), audience, members_only=True)
             else:
                 conn.push(dumps({"type": "chat_error", "msg": msg}))
-        elif kind == "chat_history":
-            conn.push(dumps({"type": "chat_history", "msgs": await run(engine.chat_history, p)}))
         elif kind == "chat_report":
             ok, msg = await run(engine.report_chat, p, int(m.get("id", 0)))
             conn.push(dumps({"type": "result", "ok": ok, "msg": msg}))
@@ -908,13 +906,6 @@ def find_player(name):
     return next((p for p in engine.players.values() if p.name.lower() == name.lower()), None)
 
 
-@app.get("/api/admin/stats")
-async def admin_stats(x_admin_key: str = Header("")):
-    if not admin_ok(x_admin_key):
-        return JSONResponse({"error": "forbidden"}, status_code=403)
-    return await run(engine.house_stats)
-
-
 @app.post("/api/admin/credit")
 async def admin_credit(t: Transfer, x_admin_key: str = Header("")):
     """Credit MB to a player by hand: a correction or a gift (recorded with source `admin`; purchases go through the shop)."""
@@ -1116,10 +1107,6 @@ class TestPay(BaseModel):
     action: str = "pay"
 
 
-class Cap(BaseModel):
-    cents: int
-
-
 def shop_view(p):
     out = engine.economy_view(p)
     out.update({"selling": payments.selling, "mode": payments.mode})
@@ -1282,12 +1269,6 @@ async def shop_cancel(b: CancelSub, x_token: str = Header("")):
     ok, msg = await run(engine.mark_cancelled, p, b.kind[:10])
     await run(engine.save, False)
     return {"ok": ok, "msg": msg}
-
-
-@app.post("/api/account/spend_cap")
-async def set_spend_cap(b: Cap, x_token: str = Header("")):
-    res = await with_player(x_token, "spend_cap", engine.set_spend_cap, b.cents, interval=1.0)
-    return res if isinstance(res, JSONResponse) else acted(res)
 
 
 @app.post("/api/restart")
@@ -1672,7 +1653,11 @@ async def admin_overview(x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
     guests = sum(1 for c in clients.values() if c.token == GUEST_KEY)      # logged-out visitors watching the market
-    data = await run(engine.admin_overview, online=len(clients) - guests, guests=guests)
+    tabs = {}                                                               # who is on: account key -> pages open
+    for c in clients.values():
+        if c.token != GUEST_KEY:
+            tabs[c.token] = tabs.get(c.token, 0) + 1
+    data = await run(engine.admin_overview, online=len(clients) - guests, guests=guests, tabs=tabs)
     data["perf"] = {k: (round(v, 2) if isinstance(v, float) else v) for k, v in perf.items() if k != "recent"}
     data["perf"]["gateways"] = len(gateways)
     return data
@@ -1716,12 +1701,6 @@ async def admin_refund(b: Ident, x_admin_key: str = Header("")):
 class LadderStyle(BaseModel):
     title: str = ""
     color: str = ""
-
-
-@app.get("/api/ladder")
-async def ladder_get(x_token: str = Header("")):
-    """The quest ladder: Bronze to Diamond quests with progress and rewards, and the titles and colours unlocked."""
-    return await with_player(x_token, "ladder", engine.ladder_view)
 
 
 @app.post("/api/ladder/style")

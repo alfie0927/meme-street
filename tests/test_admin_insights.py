@@ -196,11 +196,11 @@ class AdminLockoutTests(unittest.TestCase):
     def test_ten_wrong_keys_lock_an_address_out_even_with_the_right_key(self):
         with IsolatedServer() as srv:
             for i in range(10):
-                self.assertEqual(http(srv, "/api/admin/stats", headers={"X-Admin-Key": "wrong%d" % i})[0], 403, i)
-            status, text, _ = http(srv, "/api/admin/stats", headers={"X-Admin-Key": "wrong-again"})
+                self.assertEqual(http(srv, "/api/admin/overview", headers={"X-Admin-Key": "wrong%d" % i})[0], 403, i)
+            status, text, _ = http(srv, "/api/admin/overview", headers={"X-Admin-Key": "wrong-again"})
             self.assertEqual(status, 429)
             self.assertIn("try again", text)
-            self.assertEqual(http(srv, "/api/admin/stats", headers={"X-Admin-Key": "testkey"})[0], 429)    # the right key is locked out too
+            self.assertEqual(http(srv, "/api/admin/overview", headers={"X-Admin-Key": "testkey"})[0], 429)    # the right key is locked out too
             self.assertEqual(http(srv, "/api/admin/overview", headers={"X-Admin-Key": "testkey"})[0], 429)
             # the game itself is not affected: a player can still join and the public pages still work
             self.assertEqual(http(srv, "/api/auth_mode")[0], 200)

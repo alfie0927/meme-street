@@ -63,6 +63,7 @@ from collections import deque
 DAY = 1800                    # a game day in seconds (engine.MARKET_DAY_SECONDS)
 YEAR = 365 * DAY              # a game year in seconds
 BAR = 300                     # the model's own bars (5 minutes), for finding swing highs and lows
+LEVEL_TOL = 0.004             # prices within 0.4% of each other count as the same level
 
 # drift a game year (log, of the market factor), noise multiplier, mean length (game days), what may come next
 REGIMES = {
@@ -94,6 +95,11 @@ DEFAULTS = {
     "range_noise": 0.8, "range_volume": 0.65,
     "breakout_sigmas": 0.5, "breakout_seconds": 90, "breakout_noise": 1.6, "breakout_volume": 2.5,
     "level_band_sigmas": 0.25,                        # "near a level": within this many daily sigmas of it
+    # where levels come from: swing highs and lows of the model's own bars (`bar_seconds` long, a swing being the
+    # highest or lowest of `pivot_k` bars either side), and with `fvg_levels` the middle of each fair value gap the
+    # price has not filled yet. The Daily Chart (daily.py) uses shorter bars and gaps so its levels are the ones a
+    # player sees on its one-second candles; the market keeps these defaults.
+    "bar_seconds": BAR, "pivot_k": 4, "fvg_levels": 0, "fvg_min": 0.003,
     "hold_base": 0.40, "hold_per_touch": 0.09, "hold_round": 0.07, "hold_trend": 0.10, "hold_repeat": 0.07,
     "hold_strong_aligned": 0.05,                      # more for a strong level (3+ touches or round) in line with the trend (TA-A1)
     "level_approach_vol": 0.8,                        # the noise near a strong level while it is tested: the approach slows (TA-A1)
@@ -882,13 +888,14 @@ class MarketModel:
 
     # ------------------------------------------------------------------ support and resistance
     def _bar(self, sw, now, price):
-        start = int(now // BAR) * BAR
+        bar = int(self.p["bar_seconds"])
+        start = int(now // bar) * bar
         if sw.bars and sw.bars[-1][0] == start:
             b = sw.bars[-1]
             b[1], b[2], b[3] = max(b[1], price), min(b[2], price), price
             return
         sw.bars.append([start, price, price, price])
-        if len(sw.bars) % 3 == 0 or len(sw.bars) < 3:   # every 15 minutes is plenty
+        if len(sw.bars) % 3 == 0 or len(sw.bars) < 3:   # every 3 bars (15 minutes in the market) is plenty
             self._find_levels(sw, price)
 
     def seed_bars(self, ticker, bars, days=(), today=None):
@@ -948,7 +955,8 @@ class MarketModel:
                 out.append((sum(closes[-n:]) / n, f"ma{n}"))
         sw.dlev = [(price, float(p["strength_" + kind]), kind) for price, kind in out if price > 0]
 
-    def _find_levels(self, sw, price, k=4):
+    def _find_levels(self, sw, price):
+        k = int(self.p["pivot_k"])
         bars = list(sw.bars)
         pivots = []
         for i in range(k, len(bars) - k):
@@ -959,7 +967,7 @@ class MarketModel:
                 pivots.append(l)
         pivots = pivots[-24:]
         levels = []
-        tol = 0.004
+        tol = LEVEL_TOL
         for pv in sorted(pivots):
             if levels and abs(pv / levels[-1][0] - 1) < tol:
                 lv = levels[-1]
@@ -976,6 +984,30 @@ class MarketModel:
                 near[2] = True
             else:
                 levels.append([rn, 0, True, "round"])
+        if self.p["fvg_levels"]:
+            # Fair value gaps: three bars where the first's high is below the third's low (or its low above the third's
+            # high). The gap's middle is a level of strength 2 until a later bar has traded right through the gap, so a
+            # retrace into it is tested like any other level: it holds or it breaks.
+            gaps, n = [], len(bars)
+            low_after, high_after = [math.inf] * (n + 1), [-math.inf] * (n + 1)   # the lowest low / highest high after a bar
+            for i in range(n - 1, -1, -1):
+                low_after[i], high_after[i] = min(bars[i][2], low_after[i + 1]), max(bars[i][1], high_after[i + 1])
+            for i in range(2, n):
+                a, c = bars[i - 2], bars[i]
+                if c[2] > a[1] * (1 + self.p["fvg_min"]):
+                    lo, hi, up = a[1], c[2], True
+                elif a[2] > c[1] * (1 + self.p["fvg_min"]):
+                    lo, hi, up = c[1], a[2], False
+                else:
+                    continue
+                if (low_after[i + 1] > lo) if up else (high_after[i + 1] < hi):     # not filled yet
+                    gaps.append((lo + hi) / 2)
+            for mid in gaps[-6:]:
+                near = next((lv for lv in levels if abs(lv[0] / mid - 1) < tol), None)
+                if near:
+                    near[1] = min(6, near[1] + 2)
+                else:
+                    levels.append([mid, 2, False, "fvg"])
         # the daily chart's levels: on top of a swing level or a round number they add up (a confluence)
         for dp, st, kind in sw.dlev:
             near = next((lv for lv in levels if abs(lv[0] / dp - 1) < tol), None)
@@ -1077,6 +1109,7 @@ class MarketModel:
         hold = self.rng.random() < p_hold
         false = (not hold) and self.rng.random() < p["false_break"] + (0.1 if align > 0 else 0.0)
         sw.tested.append([now, price])
+        self._note(now, x, "level", {"level": price, "side": side, "kind": kind})   # (the Daily Chart's breakdown)
         sw.test = {"level": price, "side": side, "outcome": "hold" if hold else "break", "until": now + 900,
                    "false": false, "fail_after": self.rng.uniform(60, 240), "p_hold": round(p_hold, 2),
                    "strength": strength, "round": rnd, "start": now, "kind": kind, "sig": sig_d}

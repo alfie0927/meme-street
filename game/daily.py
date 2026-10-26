@@ -44,6 +44,17 @@ START_CASH = 1000.0
 CHIPS = (0.25, 0.5, 0.75, 1.0)
 DAY_SECONDS = 86400          # a real day, as the game's days (UTC)
 BOARD = 20
+# The Daily Chart is a game for reading charts, so its price model leans a little further into technical structure than
+# the market's (2026-10-26, on request: "more emphasis, not crazy"): levels come from swings and fair value gaps a player
+# can see on the one-second candles (a model bar is two candles), are tested more often, hold somewhat more often and
+# bounce visibly; breakouts run further; patterns form at the chart's scale and a little more often. Fakeouts and failed
+# levels stay common. (The market keeps its own settings: there a reliable edge would be free money.)
+TECHNICAL = {"bar_seconds": 60, "pivot_k": 3, "fvg_levels": 1,
+             "hold_base": 0.46, "hold_per_touch": 0.10, "hold_strong_aligned": 0.08,
+             "test_gap_seconds": 300, "bounce_sigmas": 0.18, "bounce_reach": 1.6, "follow_sigmas": 0.6,
+             "pattern_days": 0.8, "pattern_flag_chance": 0.12, "pattern_end_chance": 0.3, "pattern_triangle_chance": 0.35}
+CLOSE_RAMP = 30             # the last seconds of a game, where volume builds as at a real close
+LEVELS_SHOWN = 6             # levels drawn on the finished chart
 SQUARES = 8                  # the result grid: one square per 15 seconds of the two minutes
 EPOCH_DAY = (datetime.date(2026, 10, 24) - datetime.date(1970, 1, 1)).days    # Daily #1
 
@@ -55,9 +66,10 @@ def make_chart(seed):
     price = round(rng.choice((rng.uniform(4, 30), rng.uniform(30, 150), rng.uniform(150, 600))), 2)
     x = types.SimpleNamespace(ticker="DAILY", price=price, vol=vol, beta=rng.uniform(0.6, 1.8), sector="daily",
                               asset_type="equity", moonshot=False)
-    model = mm.MarketModel({"price_model": {}}, rng=random.Random(seed ^ 0x5DEECE66D), now=0.0)
+    model = mm.MarketModel({"price_model": dict(TECHNICAL)}, rng=random.Random(seed ^ 0x5DEECE66D), now=0.0)
     model.regime = rng.choice(sorted(mm.REGIMES))
     model.regime_until = mm.DAY * rng.uniform(1, 5)
+    model.trace = []                                                    # (its level tests, for the after-game breakdown)
     annual = math.sqrt(mm.YEAR)
     sig = vol / annual * math.sqrt(STEP)                               # one step's ordinary move
     volm, t = 1.0, 0.0
@@ -83,9 +95,60 @@ def make_chart(seed):
         else:
             c = candles[-1]
             c[1], c[2], c[3], c[4] = max(c[1], x.price), min(c[2], x.price), x.price, c[4] + v
+    # Like a real close, the last `CLOSE_RAMP` seconds get busier (2026-10-26, on request: a game could fade out in a
+    # calm patch): at least 80% of the chart's usual volume (its mean without the top tenth, so a climax does not set
+    # the bar), rising by up to 60% towards the final candle. Quiet stretches elsewhere stay: volume drying up before a
+    # breakout is one of the things the game teaches.
+    vols = sorted(c[4] for c in candles)
+    usual = sum(vols[:len(vols) * 9 // 10]) / (len(vols) * 9 // 10)
+    for j, c in enumerate(candles[-CLOSE_RAMP:]):
+        c[4] = max(c[4], 0.8 * usual * (0.9 + 0.2 * rng.random())) * (1 + 0.6 * j / (CLOSE_RAMP - 1))
     nd = 4 if min(c[2] for c in candles) < 1 else 2
     return {"vol": round(vol, 4), "candles": [[round(c[0], nd), round(c[1], nd), round(c[2], nd), round(c[3], nd),
-                                               int(c[4] * 1000)] for c in candles]}
+                                               int(c[4] * 1000)] for c in candles],
+            "levels": _levels(model.trace, warm * STEP, candles, nd)}
+
+
+def _seen(closes, k, level, side, th):
+    """How a level test at candle `k` looks on the candles that follow: "held" (the price moved `th` away on its own
+    side first), "broke" (it closed `th` through and stayed), "fake break" (through, then back on its side within 8
+    candles), or None (neither within 15 candles: not shown). Read from the candles, not from what the model meant,
+    so the after-game breakdown never contradicts the chart."""
+    lv = math.log(level)
+    start = max(0.0, (math.log(closes[k]) - lv) * side)
+    for j in range(k + 1, min(len(closes), k + 16)):
+        rel = (math.log(closes[j]) - lv) * side          # > 0: on the level's own side
+        if rel > th + start:
+            return "held"
+        if rel < -th:
+            back = any((math.log(c) - lv) * side > th / 2 for c in closes[j + 1:j + 9])
+            return "fake break" if back else "broke"
+    return None
+
+
+def _levels(trace, start, candles, nd):
+    """The levels the chart tested (shown only after the game): each one's price, kind (support, resistance or a fair
+    value gap), and every test of it that shows on the candles as [candle, outcome] (`_seen`). Tests of the same level
+    are grouped; at most `LEVELS_SHOWN`, the most tested first."""
+    closes = [c[3] for c in candles]
+    rets = [math.log(b / a) for a, b in zip(closes, closes[1:]) if a > 0 and b > 0]
+    th = 2 * (sum(r * r for r in rets) / max(len(rets), 1)) ** 0.5   # two candles' usual move
+    groups = []
+    for t, _, what, d in trace:
+        k = int((t - start) // MODEL_SECONDS)
+        if what != "level" or not 0 <= k < len(candles) - 1:
+            continue
+        seen = _seen(closes, k, d["level"], d["side"], th)
+        if seen is None:
+            continue
+        g = next((g for g in groups if abs(g["price"] / d["level"] - 1) < mm.LEVEL_TOL), None)
+        if g is None:
+            g = {"price": d["level"], "kind": "fvg" if d["kind"] == "fvg" else "support" if d["side"] > 0 else "resistance",
+                 "tests": []}
+            groups.append(g)
+        g["tests"].append([k, seen])
+    groups.sort(key=lambda g: (-len(g["tests"]), g["tests"][0][0]))
+    return [dict(g, price=round(g["price"], nd)) for g in groups[:LEVELS_SHOWN]]
 
 
 class DailyMixin:
@@ -187,6 +250,7 @@ class DailyMixin:
             out["hi"] = max(c[1] for c in cs[HISTORY:])
             out["lo"] = min(c[2] for c in cs[HISTORY:])
             out["grid"] = self._daily_grid(play, cs)
+            out["levels"] = d["chart"].get("levels", [])                 # (only once the game is over: they tell the future)
         return out
 
     def daily_view(self, p):

@@ -207,20 +207,6 @@ class AgeAndLimitTests(unittest.TestCase):
         self.assertIn("cap", err)
         self.assertIsNotNone(e.create_order(p, "mb1000", "test", True)[0])   # 17.97 is fine
 
-    def test_lowering_the_cap_works_at_once_and_raising_it_waits_a_day(self):
-        e = self.e
-        p = adult(e, "self")
-        default = e.spend_cap(p)
-        e.set_spend_cap(p, 2000)
-        self.assertEqual(e.spend_cap(p), 2000)
-        e.set_spend_cap(p, 9000)
-        self.assertEqual(e.spend_cap(p), 2000)                         # not yet
-        e.now += 86401
-        self.assertEqual(e.spend_cap(p), 9000)
-        e.set_spend_cap(p, 10 ** 9)
-        e.now += 86401
-        self.assertEqual(e.spend_cap(p), default)                      # never above the site's own cap
-
 
 class RestartTests(unittest.TestCase):
     def test_the_free_restart_needs_an_empty_account_and_waits_a_week(self):
@@ -258,7 +244,6 @@ class SaveAndReplayTests(unittest.TestCase):
             a.tick(now=a.now)
             p = join(a, "keeper")
             p.birth_year = THIS_YEAR - 30
-            a.set_spend_cap(p, 20000)
             o1, _ = a.create_order(p, "pro_year", "test", True)
             a.complete_order(o1["id"])
             a.save()
@@ -273,7 +258,6 @@ class SaveAndReplayTests(unittest.TestCase):
             self.assertEqual(q.mb_by_source.get("purchase"), 1000.0)
             self.assertEqual(b.shop_orders[o2["id"]]["status"], "paid")
             self.assertEqual(q.birth_year, THIS_YEAR - 30)
-            self.assertEqual(b.spend_cap(q), 20000)
             b.ledger.close()
 
 

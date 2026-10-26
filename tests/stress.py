@@ -93,7 +93,7 @@ async def client(srv, i, seconds, stats):
                         msg = {"type": "chat", "text": random.choice(CHATS), "channel": random.choice(CHANNELS),
                                "share": random.choice([None, None, 1.5, "x", 0])}
                     elif r < 0.80:
-                        msg = random.choice([{"type": "sync"}, {"type": "chat_history"},
+                        msg = random.choice([{"type": "sync"},
                                              {"type": "chat_report", "id": random.choice([0, 1, 2, "x", None])}])
                     elif r < 0.84:
                         await asyncio.get_running_loop().run_in_executor(None, social_call, srv, token, stats)
@@ -150,9 +150,9 @@ def run(clients=40, seconds=30, verbose=True):
             await asyncio.gather(monitor(srv, seconds, mon), slow_client(srv, seconds),
                                  *[client(srv, i, seconds, stats) for i in range(clients)])
         asyncio.run(main())
-        req = urllib.request.Request(srv.url + "/api/admin/stats", headers={"X-Admin-Key": "testkey"})
+        req = urllib.request.Request(srv.url + "/api/admin/overview", headers={"X-Admin-Key": "testkey"})
         with urllib.request.urlopen(req, timeout=10) as r:
-            admin = json.loads(r.read())
+            admin = json.loads(r.read())["stats"]
         req = urllib.request.Request(srv.url + "/api/admin/overview", headers={"X-Admin-Key": "testkey"})
         with urllib.request.urlopen(req, timeout=10) as r:
             perf = json.loads(r.read())["perf"]

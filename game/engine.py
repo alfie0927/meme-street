@@ -3755,9 +3755,18 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "signups": signups, "fees_total": total, "payers": len(fees),
                 "fees_per_payer": total / len(fees) if fees else 0.0, "top10_share": sum(fees[:top]) / total if total else 0.0}
 
-    def admin_overview(self, online=0, guests=0):
-        """Everything the admin page shows, in one call."""
+    def admin_overview(self, online=0, guests=0, tabs=None):
+        """Everything the admin page shows, in one call. `tabs`: account key -> pages that account has open now."""
         humans = list(self.players.values())
+        on = []
+        for tok, n in (tabs or {}).items():
+            p = self.players.get(tok)
+            if p is not None:
+                pnl = self.equity(p) - p.deposited
+                on.append({"name": p.name, "tabs": n, "tier": "expert" if self.is_expert(p) else "pro" if self.is_pro(p) else "",
+                           "equity": round(pnl + p.deposited, 2), "ret": round(pnl / p.deposited, 6) if p.deposited > 0 else 0.0,
+                           "trades": p.trades, "positions": len(p.hold)})
+        on.sort(key=lambda r: r["name"].lower())
         rows = []
         for p in humans:
             eq = self.equity(p)
@@ -3776,7 +3785,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             old = next((x for x in series if x["t"] >= last["t"] - 300), series[0])
             span = max(last["t"] - old["t"], 1.0)
             per_min = (last["trades"] - old["trades"]) / span * 60
-        return {"stats": self.house_stats(), "series": series, "online": online, "guests": guests, "funnel": self.funnel_stats(),
+        return {"stats": self.house_stats(), "series": series, "online": online, "guests": guests, "online_players": on,
+                "funnel": self.funnel_stats(),
                 "trades_total": self.trades_total,
                 "trades_per_min": per_min, "margin_calls": self.margin_calls,
                 "margin_log": list(self.margin_log)[::-1][:20], "dist": dist, "winners": rows[:10]}

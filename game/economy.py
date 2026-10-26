@@ -59,7 +59,7 @@ EXPERT_FEATURES = [
 TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
 TERMS_VERSION = "2026-10-24"  # the date of web/terms.html; an account records the version it signed up under
-PLAYER_FIELDS = ("birth_year", "birth_date", "ref", "pro_until", "expert_until", "last_restart", "mb_by_source", "spend_cap_cents", "spend_cap_pending",
+PLAYER_FIELDS = ("birth_year", "birth_date", "ref", "pro_until", "expert_until", "last_restart", "mb_by_source",
                  "challenge_mb", "terms", "subs")
 
 
@@ -71,8 +71,6 @@ def init_player(p):
     p.expert_until = 0.0         # real time until which Expert (which includes Pro) is on
     p.last_restart = 0.0         # when the player last used the free restart
     p.mb_by_source = {}          # source -> MB received from it
-    p.spend_cap_cents = None     # a player's own lower spending cap (cents per 30 days), or None for the default
-    p.spend_cap_pending = None   # [cents, when it takes effect]: a raised cap waits a day
     p.challenge_mb = {}          # week number -> MB earned from challenges that week (for the weekly cap)
     p.terms = None               # {"v": version, "at": time}: the terms the account agreed to when it signed up
     p.subs = {}                  # "pro" / "expert" -> a monthly pass that renews: {order, sub, provider, status, price_cents, sku}
@@ -193,27 +191,8 @@ class EconomyMixin:
                    if o["token"] == p.token and o["status"] == "paid" and o.get("paid_at", 0) >= since)
 
     def spend_cap(self, p):
-        """The cap that applies now, in cents per rolling 30 days (a raised cap waits a day before it counts)."""
-        default = int(self.settings.get("spend_cap_month_cents", 50000))
-        pend = p.spend_cap_pending
-        if pend and self.now >= pend[1]:
-            p.spend_cap_cents, p.spend_cap_pending = (None if pend[0] >= default else int(pend[0])), None
-        own = p.spend_cap_cents
-        return default if own is None else min(default, int(own))
-
-    def set_spend_cap(self, p, cents):
-        """Lowering takes effect at once; raising (or going back to the default) after 24 hours, so it is never a
-        decision made in the heat of a loss."""
-        try:
-            cents = max(0, int(cents))
-        except (TypeError, ValueError):
-            return False, "Give the cap in whole cents"
-        current = self.spend_cap(p)
-        if cents <= current:
-            p.spend_cap_cents, p.spend_cap_pending = cents, None
-            return True, f"Your cap is now {money_text(cents, self.shop_currency())} per 30 days"
-        p.spend_cap_pending = [cents, self.now + 86400]
-        return True, f"Your cap rises to {money_text(min(cents, int(self.settings.get('spend_cap_month_cents', 50000))), self.shop_currency())} in 24 hours"
+        """The most anyone may spend in a rolling 30 days, in cents (`spend_cap_month_cents`)."""
+        return int(self.settings.get("spend_cap_month_cents", 50000))
 
     def buy_problem(self, p, item, consent, renew_ok=False):
         """Why this player may not buy this item now, or None."""
@@ -458,7 +437,7 @@ class EconomyMixin:
         if remove:
             had = float(getattr(p, field) or 0.0) > self.now
             setattr(p, field, min(float(getattr(p, field) or 0.0), self.now))
-            if tier == "expert" and hasattr(self, "_bots_off"):
+            if tier == "expert":
                 self._bots_off(p, "Expert ended")
             return True, f"{name} ended" if had else f"They did not have {name}"
         setattr(p, field, max(self.now, float(getattr(p, field) or 0.0)) + float(days) * 86400)
@@ -505,22 +484,16 @@ class EconomyMixin:
         cat = self.shop_catalog()
         mine = sorted((o for o in self.shop_orders.values() if o["token"] == p.token and o["status"] != "pending"),
                       key=lambda o: -o.get("paid_at", o["created"]))[:30]
-        cap = self.spend_cap(p)
         subs = {k: {"status": v.get("status"), "price": money_text(int(v.get("price_cents", 0)), cat["currency"]),
                     "until": p.expert_until if k == "expert" else p.pro_until} for k, v in (p.subs or {}).items()
                 if v.get("status") in ("active", "cancelled")}
         return {"catalog": cat, "subs": subs, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
                 "expert": self.is_expert(p), "expert_until": p.expert_until if self.is_expert(p) else None,
                 "min_age": int(self.settings.get("min_age", 13)),
-                "spent_30d": self.spent_cents(p), "spent_30d_text": money_text(self.spent_cents(p), cat["currency"]),
-                "cap": cap, "cap_text": money_text(cap, cat["currency"]),
-                "cap_default": int(self.settings.get("spend_cap_month_cents", 50000)),
-                "cap_pending": p.spend_cap_pending, "purchases_per_day": int(self.settings.get("purchases_per_day", 3)),
                 "orders": [{"id": o["id"], "sku": o["sku"], "kind": o["kind"], "mb": o["mb"], "days": o["days"],
                             "price": money_text(o["price_cents"], o["currency"]), "status": o["status"],
                             "at": o.get("paid_at", o["created"])} for o in mine],
-                "restart": self.restart_status(p), "mb_by_source": dict(p.mb_by_source),
-                "challenge_week": self.challenge_week_status(p) if hasattr(self, "challenge_week_status") else None}
+                "mb_by_source": dict(p.mb_by_source)}
 
     def _by_ref(self, paid):
         """Sign-ups, buyers and revenue per tracking link (`?ref=`), most sign-ups first; "" is no link."""
@@ -551,6 +524,8 @@ class EconomyMixin:
         for o in paid:
             d = int(o["paid_at"] // 86400) * 86400
             by_day[d] = by_day.get(d, 0) + o["price_cents"]
+        today = int(self.now // 86400)
+        last30 = [(d * 86400, by_day.get(d * 86400, 0)) for d in range(today - 29, today + 1)]   # empty days too
         sources = {}
         for p in self.players.values():
             for k, v in p.mb_by_source.items():
@@ -569,7 +544,7 @@ class EconomyMixin:
                 "expert_members": sum(1 for p in self.players.values() if self.is_expert(p)),
                 "pay_check": self.pay_check,
                 "by_ref": self._by_ref(paid),
-                "revenue_by_day": [{"day": d, "cents": c} for d, c in sorted(by_day.items())][-30:],
+                "revenue_by_day": [{"day": d, "cents": c, "text": money_text(c, cur)} for d, c in last30],
                 "mb_by_source": sources,
                 "recent": [{"id": o["id"], "name": o["name"], "sku": o["sku"], "price": money_text(o["price_cents"], o["currency"]),
                             "status": o["status"], "at": o.get("paid_at", o["created"]), "provider": o["provider"]} for o in recent]}

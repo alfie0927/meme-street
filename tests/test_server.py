@@ -290,11 +290,11 @@ class ServerTests(unittest.TestCase):
                 c.close()
 
     def test_admin_endpoints_need_the_key(self):
-        self.assertEqual(http(self.srv, "/api/admin/stats")[0], 403)
-        self.assertEqual(http(self.srv, "/api/admin/stats", headers={"X-Admin-Key": "wrong"})[0], 403)
-        status, body, _ = http(self.srv, "/api/admin/stats", headers={"X-Admin-Key": "testkey"})
+        self.assertEqual(http(self.srv, "/api/admin/overview")[0], 403)
+        self.assertEqual(http(self.srv, "/api/admin/overview", headers={"X-Admin-Key": "wrong"})[0], 403)
+        status, body, _ = http(self.srv, "/api/admin/overview", headers={"X-Admin-Key": "testkey"})
         self.assertEqual(status, 200)
-        stats = json.loads(body)
+        stats = json.loads(body)["stats"]
         self.assertLess(abs(stats["invariant_drift"]), 1e-6)
         for key in ("fees", "house_reserve", "borrow_fees", "short_shortfall", "short_interest"):
             self.assertIn(key, stats)
@@ -765,7 +765,7 @@ class ServerTests(unittest.TestCase):
                         c.send({"type": "trade", "ticker": "GOLD", "side": "buy" if n % 8 == 0 else "sell", "pct": 0.05})
                     n += 1
                     time.sleep(0.25)
-                    http(self.srv, "/api/admin/stats", headers={"X-Admin-Key": "testkey"})
+                    http(self.srv, "/api/admin/overview", headers={"X-Admin-Key": "testkey"})
             except Exception as e:
                 errors.append(repr(e))
         try:

@@ -413,7 +413,8 @@ def structure(res):
     legs = {"impulse": [], "pullback": []}
     state = {}
     for t, tk, what, d in res["trace"]:
-        state.setdefault(tk, []).append((t, what))
+        if what != "level":                               # (level tests are logged too, for the Daily Chart)
+            state.setdefault(tk, []).append((t, what))
     for tk, evs in state.items():
         v = vol5[tk]
         for (t0, what), (t1, _) in zip(evs, evs[1:]):

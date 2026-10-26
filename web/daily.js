@@ -23,10 +23,15 @@ const dlyPx=v=>numText(v,v<1?4:2);
 const dlyPlace=n=>n+(n%100>=11&&n%100<=13?'th':['th','st','nd','rd'][n%10]||'th');
 const dlyDate=d=>new Date(d.day*86400000).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
 const DLY_WORD={buy:'Bought',sell:'Sold',short:'Shorted',cover:'Covered'};
+// overlays a player can switch on (remembered): the 20-candle EMA (chart.js's emaOf) and the VWAP of the chart so far
+const DLY_OV=Object.assign({ema:true,vwap:false},lsGet('ms_daily_ov',{}));
+const dlyVwap=cs=>{let pv=0,vv=0;return cs.map(c=>{const tp=(c[1]+c[2]+c[3])/3;pv+=tp*c[4];vv+=c[4];return vv?pv/vv:tp})};
+// the levels the chart tested, shown once the game is over: the colour is how its last test went
+const DLY_LV={held:'#4cc3cc',broke:'#f0883e','fake break':'#d2a8ff'},DLY_LVNAME={support:'Support',resistance:'Resistance',fvg:'Fair value gap'};
 // the chart: the lead-in and the candles so far, your trades as arrows, the last price
 function dlySvg(g){
- const cs=g.candles,total=g.history+g.live,W=PHONE?380:900,H=PHONE?260:340,R=PHONE?52:64,top=8,volH=H*0.14,ph=H-volH-14;
- const lo=Math.min(...cs.map(c=>c[2]),...g.trades.map(t=>t[2])),hi=Math.max(...cs.map(c=>c[1]),...g.trades.map(t=>t[2])),pad=(hi-lo||hi*0.01)*0.08;
+ const cs=g.candles,total=g.history+g.live,W=PHONE?380:900,H=PHONE?260:340,R=PHONE?52:64,top=8,volH=H*0.14,ph=H-volH-14,lv=g.done&&g.levels||[];
+ const lo=Math.min(...cs.map(c=>c[2]),...g.trades.map(t=>t[2]),...lv.map(l=>l.price)),hi=Math.max(...cs.map(c=>c[1]),...g.trades.map(t=>t[2]),...lv.map(l=>l.price)),pad=(hi-lo||hi*0.01)*0.08;
  const a=lo-pad,b=hi+pad,y=v=>top+(b-v)/(b-a)*ph,sw=(W-R)/total,bw=Math.max(1,sw*0.68),vx=Math.max(...cs.map(c=>c[4]),1),lastY=y(cs[cs.length-1][3]);
  const startX=(g.history-0.5)*sw;
  let h=`<rect x="0" y="0" width="${startX.toFixed(1)}" height="${H}" fill="#ffffff05"/><line x1="${startX.toFixed(1)}" x2="${startX.toFixed(1)}" y1="0" y2="${H}" stroke="#ffffff1a" stroke-dasharray="3 4"/>`;
@@ -35,6 +40,12 @@ function dlySvg(g){
   h+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${y(c[1]).toFixed(1)}" y2="${y(c[2]).toFixed(1)}" stroke="${col}"/>`
    +`<rect x="${(x-bw/2).toFixed(1)}" y="${y(Math.max(c[0],c[3])).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,Math.abs(y(c[0])-y(c[3]))).toFixed(1)}" fill="${col}"/>`
    +`<rect x="${(x-bw/2).toFixed(1)}" y="${(H-6-c[4]/vx*volH).toFixed(1)}" width="${bw.toFixed(1)}" height="${(c[4]/vx*volH).toFixed(1)}" fill="${col}" opacity="0.3"/>`});
+ const line=vals=>vals.map((v,i)=>v==null?'':`${i&&vals[i-1]!=null?'L':'M'}${(i*sw+sw/2).toFixed(1)} ${y(v).toFixed(1)}`).join('');
+ if(DLY_OV.ema&&cs.length>20)h+=`<path d="${line(emaOf(cs.map(c=>c[3]),20))}" fill="none" stroke="#e8b84a" stroke-width="1.4" opacity="0.9"/>`;
+ if(DLY_OV.vwap&&cs.length>1)h+=`<path d="${line(dlyVwap(cs))}" fill="none" stroke="#79c0ff" stroke-width="1.4" stroke-dasharray="5 3" opacity="0.9"/>`;
+ lv.forEach((l,n)=>{const yy=y(l.price).toFixed(1),col=DLY_LV[l.tests[l.tests.length-1][1]],x0=l.tests[0][0]*sw,xe=W-R-10-(n%2)*16;   // (numbered at the right; alternate so close ones don't overlap)
+  h+=`<line x1="${x0.toFixed(1)}" x2="${xe}" y1="${yy}" y2="${yy}" stroke="${col}" stroke-dasharray="6 4" opacity="0.8"/><circle cx="${xe}" cy="${yy}" r="7" fill="${col}"/><text x="${xe}" y="${(+yy+3.5).toFixed(1)}" fill="#021012" font-size="9.5" font-weight="700" text-anchor="middle">${n+1}</text>`
+   +l.tests.map(([k,o])=>`<circle cx="${(k*sw+sw/2).toFixed(1)}" cy="${yy}" r="3.2" fill="${DLY_LV[o]}"><title>${DLY_LVNAME[l.kind]} at ${dlyPx(l.price)}: ${o}</title></circle>`).join('')});
  for(const t of g.trades){const x=t[0]*sw+sw/2,up=t[1]==='buy'||t[1]==='cover',c=cs[t[0]]||[0,t[2],t[2]],yy=up?y(c[2])+12:y(c[1])-12;
   h+=`<path d="M${x.toFixed(1)} ${(up?yy-7:yy+7).toFixed(1)} l-5 ${up?9:-9} h10 z" fill="${up?'var(--up)':'var(--dn)'}"><title>${DLY_WORD[t[1]]||t[1]} at ${dlyPx(t[2])}</title></path>`}
  h+=`<line x1="0" x2="${W-R}" y1="${lastY.toFixed(1)}" y2="${lastY.toFixed(1)}" stroke="var(--acc)" stroke-dasharray="2 3"/><rect x="${W-R+1}" y="${(lastY-9).toFixed(0)}" width="${R-2}" height="18" fill="var(--acc)"/><text x="${W-R+4}" y="${(lastY+4).toFixed(0)}" fill="#021012" font-size="11" font-weight="700">${dlyPx(cs[cs.length-1][3])}</text>`;
@@ -103,10 +114,11 @@ function drawDaily(){
    ${d.stats.streak?`<p class="dly-streak">Streak <b>${d.stats.streak}</b> day${d.stats.streak===1?'':'s'}: keep it going</p>`:''}<button class="dly-go" id="dly-start">Play</button>
    <p class="dly-small">One go a day · 1,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div></div>`);
   else if(st==='running')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-top"><div class="dly-timer" id="dly-timer"></div><div class="dly-pnl"><div class="dly-ret" id="dly-ret"></div><div class="dly-eq" id="dly-eq"></div></div></div>
-   <div id="dly-chart" class="dly-chart"></div><div class="dly-pos" id="dly-pos"></div>
+   ${dlyOvBar()}<div id="dly-chart" class="dly-chart"></div><div class="dly-pos" id="dly-pos"></div>
    <div class="dly-sizes" role="group" aria-label="Size">${[0.25,0.5,0.75,1].map((p,i)=>`<button data-dly-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
    <div class="dly-btns"><button class="dly-buy" data-dly="buy"><span id="dly-lb">Buy</span><small>B</small></button><button class="dly-sell" data-dly="sell"><span id="dly-ls">Sell</span><small>S</small></button></div></div>`);
-  else setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div id="dly-card"></div><div id="dly-chart" class="dly-chart"></div><div id="dly-dist"></div><div id="dly-board"></div></div>`)}
+  else setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div id="dly-card"></div><h3 class="dly-h">Today's chart <span class="mut">the levels it tested</span></h3>${dlyOvBar()}<div id="dly-chart" class="dly-chart"></div><div id="dly-levels"></div><div id="dly-dist"></div><div id="dly-board"></div></div>`)}
+ document.querySelectorAll('[data-dly-ov]').forEach(b=>b.classList.toggle('on',!!DLY_OV[b.dataset.dlyOv]));
  const g=dlyG;
  if(st==='running'&&g&&g.candles&&g.candles.length){
   setHtml($('dly-chart'),dlySvg(g));
@@ -119,10 +131,18 @@ function drawDaily(){
  else if(st==='done'&&g&&g.done){
   if(g.candles&&g.candles.length)setHtml($('dly-chart'),dlySvg(g));
   if(!$('dly-card').firstChild)setHtml($('dly-card'),dlyCard(g,d,false));
+  if(!$('dly-levels').firstChild)setHtml($('dly-levels'),dlyLevelList(g.levels||[]));
   if(g.dist&&!$('dly-dist').firstChild)setHtml($('dly-dist'),`<h3 class="dly-h">Everyone's returns today</h3>${dlyHist(g.dist,g.ret)}`);
   dlyCountdown()}
  else if(st==='new')dlyCountdown();
  const bd=$('dly-board');if(bd)setHtml(bd,dlyBoard(d))}
+function dlyOvBar(){return `<div class="dly-ov"><button data-dly-ov="ema"><i style="background:#e8b84a"></i>20 EMA</button><button data-dly-ov="vwap"><i style="background:#79c0ff"></i>VWAP</button></div>`}
+// what today's chart did, in words: each level it tested and how each test went (a lesson in reading levels)
+function dlyLevelList(lv){
+ if(!lv.length)return '<p class="dly-small" style="text-align:left">No clear level was tested today: the chart trended without stopping to test one.</p>';
+ const say=ts=>{const o=ts.map(t=>t[1]);return o.every(x=>x===o[0])?(o.length===1?o[0]:o[0]+' '+(o.length===2?'twice':o.length+' times')):o.join(', then ')};
+ return `<div class="dly-lv">${lv.map((l,n)=>`<div><i style="background:${DLY_LV[l.tests[l.tests.length-1][1]]}">${n+1}</i><span><b>${DLY_LVNAME[l.kind]}</b> at ${dlyPx(l.price)}${l.kind==='fvg'?' <span class="mut">(the middle of the gap)</span>':''}: ${say(l.tests)}</span></div>`).join('')}</div>
+  <p class="dly-small" style="text-align:left;margin-top:6px">Dots mark each test: <span style="color:#4cc3cc">held</span>, <span style="color:#f0883e">broke</span>, <span style="color:#d2a8ff">fake break</span> (broke, then came back). Levels hold more often than not, but not always: that is why traders use stops.</p>`}
 // sharing: the result as text (the squares, like Wordle's) and as a picture for an Instagram story (1080 x 1920). A phone
 // gets its share sheet; elsewhere the text is copied (and the picture saved, from its own button)
 function dlyShareText(g,d){
@@ -165,6 +185,7 @@ document.addEventListener('click',async e=>{
  if(t.closest('[data-dly-share]')){dlyShare();return}
  if(t.closest('[data-dly-pic]')){dlySavePicture();return}
  if(t.closest('[data-dly-join]')){const j=$('g-join');if(j)j.click();return}
+ const ov=t.closest('[data-dly-ov]');if(ov){const k=ov.dataset.dlyOv;DLY_OV[k]=!DLY_OV[k];lsSet('ms_daily_ov',DLY_OV);drawDaily();return}
  const sz=t.closest('[data-dly-size]');if(sz){dlySize=Number(sz.dataset.dlySize);lsSet('ms_daily_size',dlySize);drawDaily();return}
  if(t.id==='dly-start'){t.disabled=true;const r=await postJson('/api/daily/start',{},{'X-Token':token||''});t.disabled=false;
   if(r.error){toast(r.error,false,4000);loadDaily();return}dly.status='running';dlyG=r;dlyWasRunning=true;dlyRun();drawDaily();return}

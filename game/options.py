@@ -311,7 +311,7 @@ class OptionsMixin:
             return False, "A call or a put"
         if getattr(p, "guest", False):
             return False, "Create an account to trade"
-        gate = self.email_gate(p) if hasattr(self, "email_gate") else None
+        gate = self.email_gate(p)
         if gate:
             return False, gate
         try:
@@ -377,8 +377,6 @@ class OptionsMixin:
         self.trades_total += 1
         self._emit("opt_buy", p, ticker, shares=qty, price=ask, cash=-(cost + fee), house=cost, fee=fee, notional=cost,
                    id=pos["id"], otype=kind, K=K, exp=exp)
-        if hasattr(self, "_opt_traded"):
-            self._opt_traded(p, ticker)
         return True, (f"Bought {n:,} {ticker} {self._opt_name(kind, K, exp)} contract{'s' if n != 1 else ''} at {ask:,.4g} "
                       f"MB a share: {cost:,.2f} MB")
 
@@ -421,8 +419,6 @@ class OptionsMixin:
         self.trades_total += 1
         self._emit("opt_sell", p, pos["tk"], shares=-qty, price=bid, cash=proceeds - fee, house=-proceeds, fee=fee,
                    notional=proceeds, pnl=pnl, id=pos["id"], fraction=fraction, otype=pos["kind"], K=pos["K"], exp=pos["exp"])
-        if hasattr(self, "_opt_traded"):
-            self._opt_traded(p, pos["tk"])
         n = qty / MULTIPLIER
         return True, (f"Sold {n:,.{0 if abs(n - round(n)) < 1e-9 else 2}f} {pos['tk']} {self._opt_name(pos['kind'], pos['K'], pos['exp'])} "
                       f"contract{'s' if abs(n - 1) > 1e-9 else ''} at {bid:,.4g} MB a share ({pnl:+,.2f} MB)")
@@ -464,8 +460,7 @@ class OptionsMixin:
                 self._emit("opt_expire", p, pos["tk"], shares=-pos["qty"], price=S, cash=pay, house=-pay, notional=pay,
                            pnl=pnl, id=pos["id"], otype=pos["kind"], K=pos["K"], exp=pos["exp"])
                 what = "expired worthless" if pay <= 0 else f"paid {pay:,.2f} MB"
-                if hasattr(self, "_notify"):
-                    self._notify(p, f"Your {pos['tk']} {pos['K']:,.4g} {pos['kind']} {what} ({pnl:+,.2f} MB).")
+                self._notify(p, f"Your {pos['tk']} {pos['K']:,.4g} {pos['kind']} {what} ({pnl:+,.2f} MB).")
 
     def options_value(self, p):
         """What a player's options would fetch now (at the bid): part of their equity."""

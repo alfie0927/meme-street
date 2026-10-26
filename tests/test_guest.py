@@ -122,7 +122,7 @@ class GuestServerTests:
             for msg in ({"type": "trade", "ticker": "NVXA", "side": "buy", "pct": 0.5},
                         {"type": "order", "action": "place", "ticker": "NVXA", "kind": "limit_buy", "trigger": 1, "pct": 1},
                         {"type": "contest_trade", "id": "x", "ticker": "NVXA", "side": "buy", "pct": 1},
-                        {"type": "chat", "text": "hello"}, {"type": "chat_history"}, {"type": "chat_report", "id": 1},
+                        {"type": "chat", "text": "hello"}, {"type": "chat_report", "id": 1},
                         {"type": "chat_appeal", "text": "please"}):
                 ws.send(json.dumps(msg))
                 r = next_of(ws, "result")

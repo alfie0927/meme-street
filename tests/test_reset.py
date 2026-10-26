@@ -290,7 +290,7 @@ class AdminEndpointTests(unittest.TestCase):
                 time.sleep(1.0)
                 status, text, _ = http(srv, "/api/me", headers={"X-Token": c.token})
                 self.assertEqual(status, 200)
-                stats = json.loads(http(srv, "/api/admin/stats", headers=admin)[1])
+                stats = json.loads(http(srv, "/api/admin/overview", headers=admin)[1])["stats"]
                 portfolio = json.loads(http(srv, "/api/portfolio", headers={"X-Token": c.token})[1])
                 self.assertAlmostEqual(portfolio["cash"], 2500.0, places=2)
                 self.assertEqual(portfolio["positions"], [])

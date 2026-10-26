@@ -145,9 +145,9 @@ def run(clients=100, seconds=30, verbose=True, gateways=0):
         req = urllib.request.Request(srv.url + "/api/admin/overview", headers={"X-Admin-Key": "testkey"})
         with urllib.request.urlopen(req, timeout=20) as r:
             perf = json.loads(r.read())["perf"]
-        req = urllib.request.Request(srv.url + "/api/admin/stats", headers={"X-Admin-Key": "testkey"})
+        req = urllib.request.Request(srv.url + "/api/admin/overview", headers={"X-Admin-Key": "testkey"})
         with urllib.request.urlopen(req, timeout=20) as r:
-            admin = json.loads(r.read())
+            admin = json.loads(r.read())["stats"]
     summary = {"clients": clients, "seconds": seconds, "errors": stats["errors"],
                "bytes_per_player_per_second": int(stats["bytes"] / max(1, clients) / max(1.0, wall)),
                "server_tick_ms": round(perf["tick_ms"], 1), "server_tick_max_ms": round(perf["tick_max_ms"], 1),

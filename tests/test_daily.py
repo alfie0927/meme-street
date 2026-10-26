@@ -246,6 +246,37 @@ class GameTests(unittest.TestCase):
             want = 0 if abs(b - a) <= 0.0005 * a else (1 if b > a else -1)
             self.assertEqual(g["grid"][k], want, k)
 
+    def test_the_levels_it_tested_are_shown_only_after_the_game(self):
+        """The chart's level tests (support, resistance, fair value gaps; held, broke or a fake break) are kept with the
+        chart and given to the player only once their game is over: during it they would tell the future."""
+        e, p = self.e, self.p
+        st = e.daily_start(p)
+        self.assertNotIn("levels", st)
+        e.now += 30
+        self.assertNotIn("levels", e.daily_poll(p))
+        e.now += daily.LIVE
+        g = e.daily_view(p)["game"]
+        self.assertTrue(g["done"])
+        self.assertLessEqual(len(g["levels"]), daily.LEVELS_SHOWN)
+        n = daily.HISTORY + daily.LIVE
+        for lv in g["levels"]:
+            self.assertIn(lv["kind"], ("support", "resistance", "fvg"))
+            self.assertGreater(lv["price"], 0)
+            self.assertTrue(all(0 <= k < n and o in ("held", "broke", "fake break") for k, o in lv["tests"]))
+        tested = sum(len(daily.make_chart(s)["levels"]) > 0 for s in range(1, 11))
+        self.assertGreaterEqual(tested, 8)                                   # (nearly every chart tests some level)
+
+    def test_a_level_is_labelled_by_what_the_candles_did(self):
+        """held: the next closes move away on the level's side; broke: they close through and stay; fake break: through,
+        then back. Read from the candles, so the breakdown never contradicts the chart."""
+        up = [100.0] * 3 + [100.5, 101.5, 103.0, 104.0] + [104.0] * 20
+        down = [100.0] * 3 + [99.0, 97.5, 96.0, 95.0] + [95.0] * 20
+        fake = [100.0] * 3 + [99.0, 97.5, 98.0, 100.5, 102.0] + [102.0] * 20
+        self.assertEqual(daily._seen(up, 2, 99.5, +1, 0.02), "held")          # support below: bounced
+        self.assertEqual(daily._seen(down, 2, 99.5, +1, 0.02), "broke")       # support below: gave way
+        self.assertEqual(daily._seen(fake, 2, 99.5, +1, 0.01), "fake break")  # through, then back
+        self.assertIsNone(daily._seen([100.0] * 30, 2, 99.5, +1, 0.02))       # (nothing happened: not shown)
+
     def test_the_game_survives_a_save(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             a = engine.Engine(state_file=os.path.join(tmp, "state.json"))

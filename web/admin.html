@@ -59,6 +59,8 @@ details summary{cursor:pointer}
 .toast{position:fixed;right:18px;bottom:18px;z-index:50;max-width:440px;padding:11px 15px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);box-shadow:0 10px 30px #000a;display:none}
 .toast.ok{border-color:#3ad07a77}.toast.bad{border-color:#f25c5477}
 .empty{color:var(--mut);padding:6px 0}
+.bars.rev{height:62px;gap:3px}.bars.rev i{width:100%;margin:0;background:#3ad07a}.bars.rev i.z{background:#262d33}
+.rlab{display:flex;justify-content:space-between;color:var(--mut);font-size:11px;margin-top:4px}
 #detailcard{scroll-margin-top:110px}
 @media(max-width:640px){.panel table{display:block;overflow-x:auto}main{padding:14px 12px 30px}#find{width:100%;order:9}}
 </style></head><body>
@@ -78,6 +80,7 @@ details summary{cursor:pointer}
 <section class="page on" data-page="overview">
  <div class="alerts" id="alerts"></div>
  <div class="kpis" id="cards"></div>
+ <div class="panel"><h2>Online now <span class="mut" id="on-n"></span></h2><div id="online"></div></div>
  <div class="grid2"><div class="panel"><h2>Who is on (last 2 hours)</h2><div id="ch3"></div></div>
   <div class="panel"><h2>Trades per hour <span class="mut">last 24 hours, your time</span></h2><div id="hours"></div></div></div>
  <div class="panel"><h2>The last 7 days <span class="mut">UTC</span></h2><div id="days"></div></div>
@@ -139,6 +142,7 @@ const hm=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floo
 const small=x=>x==null?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:1});
 const kpi=(l,v,e='',c='')=>`<div class="kpi"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
 const empty=t=>`<p class="empty">${t}</p>`;
+const setHtml=(el,h)=>{if(el._h!==h){el._h=h;el.innerHTML=h}};   // (only when it changed: no flicker, no lost hover)
 let key=null,timer=null,picked=null,players=[],tickN=0,alertsA=[],alertsB=[];try{key=sessionStorage.admin_key||null}catch(e){}
 // talking to the server: GETs throw on an error; POSTs return the server's answer (its message), whatever the status
 async function api(path){const r=await fetch(path,{headers:{'X-Admin-Key':key}});if(r.status===403)throw new Error('forbidden');if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
@@ -152,7 +156,7 @@ function showTab(name){if(!document.querySelector(`[data-page="${name}"]`))name=
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.dataset.page===name));
  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
  if(location.hash!=='#'+name)history.replaceState(null,'','#'+name)}
-$('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)showTab(b.dataset.tab)});
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){showTab(b.dataset.tab);loadTab(b.dataset.tab)}});
 function line(series,fields,fmt,minSpan=0){
  const W=560,H=190,pl=52,pr=8,pt=12,pb=22;if(series.length<2)return empty('Collecting data…');
  const xs=series.map(p=>p.t),x0=xs[0],x1=xs[xs.length-1]||x0+1;let lo=Infinity,hi=-Infinity;
@@ -177,7 +181,7 @@ function render(o){
  drawAlerts();
  const src=s.total_mb_by_source||{},fu=o.funnel,today=fu&&fu.signups.length?fu.signups[fu.signups.length-1].n:0;
  $('cards').innerHTML=kpi('Players',mb(s.humans),(fu?today+' signed up today · ':'')+(fu?fu.seen_24h+' seen in 24h':''))
-  +kpi('On now',o.online,(o.guests||0)+' visitors watching')
+  +kpi('On now',(o.online_players||[]).length,(o.guests||0)+' visitors watching')
   +kpi('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' a minute right now')
   +kpi('Total MB',mb(s.total_mb),'started '+mb(src.grant||0)+' · bought '+mb(src.purchase||0))
   +kpi("Players' P&L",sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB put in',cls(Math.round(s.players_pnl)))
@@ -191,6 +195,8 @@ function render(o){
  const mx=Math.max(1,...o.dist.map(b=>b.count));
  $('dist').innerHTML=`<div class="bars">${o.dist.map(b=>`<div><i style="height:${Math.round(b.count/mx*90)}px;background:${b.hi<=0?'#f25c54':'#3ad07a'}"></i>${b.count}<br>${esc(b.label)}</div>`).join('')}</div>`;
  $('calls').innerHTML=o.margin_log.length?`<table><thead><tr><th>When</th><th>Player</th><th>Closed</th><th>House loss</th></tr></thead><tbody>${o.margin_log.map(c=>`<tr class="pick" data-n="${esc(c.player)}"><td>${ago(c.t)}</td><td>${esc(c.player)}</td><td>${esc(c.tickers.join(', '))}</td><td class="${c.shortfall>0?'dn':'mut'}">${f(c.shortfall)} MB</td></tr>`).join('')}</tbody></table>`:empty('None yet.');
+ const on=o.online_players||[];$('on-n').textContent=on.length+' signed in · '+(o.guests||0)+' visitors without an account';
+ $('online').innerHTML=on.length?`<table><thead><tr><th>Player</th><th>Equity</th><th>Return</th><th>Trades</th><th>Positions</th><th>Pages open</th></tr></thead><tbody>${on.map(w=>`<tr class="pick" data-n="${esc(w.name)}"><td><b>${esc(w.name)}</b> ${w.tier?`<span class="chip acc">${w.tier==='expert'?'Expert':'Pro'}</span>`:''}</td><td>${mb(w.equity)}</td><td class="${cls(w.ret)}">${sgn(w.ret*100,1)}%</td><td>${w.trades}</td><td>${w.positions}</td><td class="mut">${w.tabs}</td></tr>`).join('')}</tbody></table>`:empty('Nobody signed in is on right now.');
  $('winners').innerHTML=`<table><thead><tr><th>Player</th><th>Equity</th><th>P&amp;L</th><th>Return</th><th>Trades</th></tr></thead><tbody>${o.winners.map(w=>`<tr class="pick" data-n="${esc(w.name)}"><td>${esc(w.name)}</td><td>${mb(w.equity)}</td><td class="${cls(w.pnl)}">${sgn(w.pnl)}</td><td class="${cls(w.ret)}">${sgn(w.ret*100,1)}%</td><td>${w.trades}</td></tr>`).join('')||'<tr><td class="mut">No players yet.</td></tr>'}</tbody></table>`;
  $('risk').innerHTML=r?`<p class="note" style="margin:0 0 10px">Players' positions, with the house on the other side. <b>Stress loss</b>: every stock moves three of its daily sigmas against the house at once.</p><div class="kpis">${kpi('Reserve',mb(r.reserve)+' MB','topped up to '+f(r.floor,0)+' MB if it falls below')+kpi('Stress loss',mb(r.stress_loss)+' MB','',r.stress_loss>r.reserve?'dn':'')+kpi('Topped up so far',mb(r.recapitalized)+' MB')}</div>`
   +(r.exposure.length?`<table><thead><tr><th>Stock</th><th>Players net</th><th>3 daily sigmas</th><th>Cost to the house</th></tr></thead><tbody>${r.exposure.map(x=>`<tr><td>${esc(x.ticker)} <span class="mut">${esc(x.name)}</span></td><td class="${x.net>=0?'up':'dn'}">${x.net>=0?'long ':'short '}${mb(Math.abs(x.net))} MB</td><td>${f(x.move*100,1)}%</td><td>${mb(x.loss)} MB</td></tr>`).join('')}</tbody></table>`:empty('No open positions.')):'';
@@ -203,8 +209,8 @@ function render(o){
 function drawPlayers(){
  const q=$('psearch').value.trim().toLowerCase(),rows=players.filter(p=>!q||p.name.toLowerCase().includes(q)||(p.email||'').toLowerCase().includes(q));
  $('pcount').textContent=players.length?`${rows.length} of ${players.length}`:'';
- $('plist').innerHTML=rows.length?`<table><thead><tr><th>Player</th><th>Joined</th><th>Last seen</th><th>Equity</th><th>Return</th></tr></thead><tbody>${rows.map(p=>`<tr class="pick${p.name===picked?' sel':''}" data-n="${esc(p.name)}"><td><b>${esc(p.name)}</b> ${p.tier?`<span class="chip acc">${p.tier==='expert'?'Expert':'Pro'}</span>`:''}<br><span class="mut" style="font-size:11.5px">${p.email?esc(p.email)+(p.verified?' ✓':''):'no email'}</span></td><td class="mut">${ago(p.created)}</td><td class="mut">${ago(p.seen)}</td><td>${mb(p.equity)}</td><td class="${cls(p.ret)}">${sgn(p.ret*100,1)}%</td></tr>`).join('')}</tbody></table>`:empty(players.length?'Nobody matches.':'No players yet.');
- $('names').innerHTML=players.map(p=>`<option value="${esc(p.name)}">`).join('')}
+ setHtml($('plist'),rows.length?`<table><thead><tr><th>Player</th><th>Joined</th><th>Last seen</th><th>Equity</th><th>Return</th></tr></thead><tbody>${rows.map(p=>`<tr class="pick${p.name===picked?' sel':''}" data-n="${esc(p.name)}"><td><b>${esc(p.name)}</b> ${p.tier?`<span class="chip acc">${p.tier==='expert'?'Expert':'Pro'}</span>`:''}<br><span class="mut" style="font-size:11.5px">${p.email?esc(p.email)+(p.verified?' ✓':''):'no email'}</span></td><td class="mut">${ago(p.created)}</td><td class="mut">${ago(p.seen)}</td><td>${mb(p.equity)}</td><td class="${cls(p.ret)}">${sgn(p.ret*100,1)}%</td></tr>`).join('')}</tbody></table>`:empty(players.length?'Nobody matches.':'No players yet.'));
+ setHtml($('names'),players.map(p=>`<option value="${esc(p.name)}">`).join(''))}
 $('psearch').addEventListener('input',drawPlayers);
 async function loadPlayer(name,quiet){
  if(quiet&&picked===name&&($('detail').contains(document.activeElement)||['a-mb','a-mb-note','a-pass-note'].some(id=>$(id)&&$(id).value)))return;   // (not while you are typing in it)
@@ -230,7 +236,7 @@ async function loadPlayer(name,quiet){
   if(quiet&&tier){$('a-tier').value=tier;$('a-days').value=days}
   drawPlayers();
  }catch(e){if(!quiet){$('detail').textContent='Could not load '+name+': '+e.message}}}
-function pick(name){showTab('players');loadPlayer(name);$('detailcard').scrollIntoView({behavior:'smooth',block:'start'})}
+function pick(name){showTab('players');loadTab('players');loadPlayer(name);$('detailcard').scrollIntoView({behavior:'smooth',block:'start'})}
 document.addEventListener('click',e=>{const tr=e.target.closest('tr.pick[data-n]');if(tr)pick(tr.dataset.n)});
 $('find').addEventListener('change',()=>{const n=$('find').value.trim(),p=players.find(x=>x.name.toLowerCase()===n.toLowerCase());if(p){pick(p.name);$('find').value=''}});
 $('find').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const n=$('find').value.trim().toLowerCase(),p=players.find(x=>x.name.toLowerCase()===n)||players.find(x=>x.name.toLowerCase().includes(n));if(p){pick(p.name);$('find').value=''}else toast('No player called '+$('find').value,false)});
@@ -339,12 +345,14 @@ function renderMail(m){
 const SRC={grant:'Starting balances',purchase:'Bought',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
 function renderShop(d){
  const mode={off:'Off: prices are shown, nothing is sold',test:'TEST: a pretend checkout, no money taken. Never on the public site.',stripe:'Stripe: real payments'}[d.mode]||d.mode;
- const max=Math.max(1,...d.revenue_by_day.map(x=>x.cents)),src=Object.entries(d.mb_by_source||{}),pc=d.pay_check;
+ const src=Object.entries(d.mb_by_source||{}),pc=d.pay_check;
+ // revenue a day: the server sends the last 30 UTC days, empty ones too, so one sale is one narrow bar
+ const days=d.revenue_by_day,max=Math.max(1,...days.map(x=>x.cents)),dd=t=>new Date(t*1000).toLocaleDateString([],{day:'numeric',month:'short',timeZone:'UTC'});
  $('shop').innerHTML=`<div class="panel"><h2><span>Payments: <span class="${d.mode==='test'?'warn':d.mode==='stripe'?'up':'mut'}">${esc(mode)}</span></span>${d.mode==='stripe'?'<button data-paycheck>Check payments now</button>':''}</h2>
   ${d.mode==='stripe'?`<p class="note" style="margin:0 0 12px">Payment check (every 6 hours: Stripe's paid checkouts against our orders): ${pc?(pc.error?`<b class="dn">${esc(pc.error)}</b>`:`${ago(pc.at)}, ${pc.checked} checked, <b class="${pc.fixed.length?'warn':''}">${pc.fixed.length} completed late</b>, <b class="${pc.problems.length?'dn':''}">${pc.problems.length} problem${pc.problems.length===1?'':'s'}</b>`)+(pc&&pc.problems.length?': '+pc.problems.map(x=>esc(x.order+' '+x.msg)).join('; '):''):'not run yet'}</p>`:''}
   ${d.since?`<p class="note" style="margin:0 0 12px">Counted since the reset to Day 1 on ${new Date(d.since*1000).toLocaleString()}.${d.earlier?` Before that: ${d.earlier.orders} paid order${d.earlier.orders===1?'':'s'}, ${esc(d.earlier.revenue_text)}.`:''}</p>`:''}
   <div class="kpis" style="margin:0">${[[d.since?'Revenue since Day 1':'Revenue',d.revenue_text],['Last 30 days',d.revenue_30d_text],['Paid orders',d.orders_paid],['Buyers',d.buyers],['Pro members',d.pro_members],['Expert members',d.expert_members??0],['Refunded',d.refunded],['Waiting for payment',d.pending]].map(([l,v])=>kpi(l,esc(v))).join('')}</div>
-  ${d.revenue_by_day.length?`<h3>Revenue a day (UTC)</h3><div style="display:flex;align-items:flex-end;gap:3px;height:60px">${d.revenue_by_day.map(x=>`<div title="${new Date(x.day*1000).toLocaleDateString()}: ${(x.cents/100).toFixed(2)}" style="flex:1;background:#3ad07a;border-radius:2px 2px 0 0;min-height:2px;height:${Math.max(2,Math.round(56*x.cents/max))}px"></div>`).join('')}</div>`:''}</div>
+  <h3>Revenue a day, last 30 days (UTC)</h3><div class="bars rev">${days.map(x=>`<div title="${dd(x.day)}: ${esc(x.text)}"><i class="${x.cents?'':'z'}" style="height:${x.cents?Math.max(6,Math.round(56*x.cents/max)):1}px"></i></div>`).join('')}</div><div class="rlab"><span>${dd(days[0].day)}</span><span>${dd(days[14].day)}</span><span>today</span></div></div>
   <div class="panel"><h2>Latest orders</h2><table><thead><tr><th>When</th><th>Player</th><th>Item</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>${d.recent.map(o=>`<tr><td class="mut">${ago(o.at)}</td><td><a href="#" data-p="${esc(o.name)}">${esc(o.name)}</a></td><td>${esc(o.sku)}</td><td>${esc(o.price)}</td><td class="${o.status==='paid'?'up':o.status==='refunded'?'warn':'mut'}">${esc(o.status)}${o.provider==='test'?' <span class="mut">(test)</span>':''}</td><td>${o.status==='paid'?`<button data-refund="${esc(o.id)}">Refund</button>`:''}</td></tr>`).join('')||'<tr><td class="mut">No orders yet.</td></tr>'}</tbody></table>
   <p class="note">Refund here only after refunding the payment in Stripe. It takes back the MB the player still has free (never more than the order gave), or the pass time.</p></div>
   <div class="grid2"><div class="panel"><h2>Where players came from <span class="mut">?ref= links</span></h2><table><thead><tr><th>Link</th><th>Sign-ups</th><th>Buyers</th><th>Revenue</th></tr></thead><tbody>${(d.by_ref||[]).map(r=>`<tr><td>${r.ref?esc(r.ref):'<span class="mut">no link</span>'}</td><td>${r.signups}</td><td>${r.buyers}</td><td>${esc(r.revenue_text)}</td></tr>`).join('')||'<tr><td class="mut">No players yet.</td></tr>'}</tbody></table><p class="note">Use links like <code>memestreet.net/?ref=ig_story1</code> in ads; the first one a visitor arrives by is kept until they sign up.</p></div>
@@ -359,14 +367,22 @@ $('reset-go').addEventListener('click',async()=>{if($('reset-word').value.trim()
  try{const r=await post('/api/admin/reset',{confirm:'RESET'});toast(said(r),!!r.ok);$('reset-word').value='';tick()}catch(err){if(err.message!=='forbidden')toast('Not reset: '+err.message,false)}});
 
 // ---------- refreshing ----------
-async function refreshPlayers(){try{players=(await api('/api/admin/players')).players;drawPlayers()}catch(e){}}
-async function tick(){try{
- render(await api('/api/admin/overview'));
- if(tickN%4===0){renderInsights(await api('/api/admin/insights'));renderShop(await api('/api/admin/shop'));renderModel(await api('/api/admin/model'))}
- tickN++;
- renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'));renderErrors(await api('/api/admin/errors'));
- await refreshPlayers()}
- catch(e){if(e.message==='forbidden')lock('That key was not accepted.');else $('stamp').textContent='error: '+e.message}}
+// Every 5 seconds: the overview and the chat (and every 20 s the deeper numbers), which feed the alerts and the counts on
+// the tabs, plus what the open tab shows; all at once, and never a new round before the last one is back
+const gotPlayers=d=>{players=d.players;drawPlayers()};
+const TAB_DATA={players:[['/api/admin/players',gotPlayers],['/api/admin/accounts',renderAccounts]],shop:[['/api/admin/shop',renderShop]],
+ market:[['/api/admin/model',renderModel]],system:[['/api/admin/mail',renderMail],['/api/admin/errors',renderErrors]]};
+async function fetchAll(jobs){const res=await Promise.all(jobs.map(([u])=>api(u)));res.forEach((d,i)=>jobs[i][1](d))}
+async function loadTab(name){try{await fetchAll(TAB_DATA[name]||[])}catch(e){if(e.message==='forbidden')lock('That key was not accepted.')}}
+const refreshPlayers=()=>loadTab('players');
+let busy=false;
+async function tick(){if(busy)return;busy=true;
+ const tab=(document.querySelector('#tabs button.on')||{dataset:{}}).dataset.tab,deep=tickN++%4===0;
+ const jobs=[['/api/admin/overview',render],['/api/admin/chat',renderChat],...(deep?[['/api/admin/insights',renderInsights]]:[]),
+  ...(TAB_DATA[tab]||[]),...(deep&&tab!=='players'?[['/api/admin/players',gotPlayers]]:[])];   // (the names for Find a player)
+ try{await fetchAll(jobs)}
+ catch(e){if(e.message==='forbidden')lock('That key was not accepted.');else $('stamp').textContent='error: '+e.message}
+ finally{busy=false}}
 function lock(msg){clearInterval(timer);try{sessionStorage.removeItem('admin_key')}catch(e){}key=null;$('app').style.display='none';$('login').style.display='block';$('err').textContent=msg||''}
 function open_(){$('login').style.display='none';$('app').style.display='block';showTab(location.hash.slice(1)||'overview');tickN=0;tick();clearInterval(timer);timer=setInterval(tick,5000)}
 $('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};

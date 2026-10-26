@@ -101,8 +101,9 @@ sharing (TA-D4), purchases credited at once (O7), a date of birth at sign-up, th
 | TA-D9 | A reminder | "The new chart is out" brings people back. | An optional email (needs O1) or browser notification when the new chart starts, never more than once a day. | S |
 
 Done: **TA-D1** no homework (nothing locked behind lessons, the onboarding strip one click to hide). **TA-D4** the Daily
-Chart (2026-10-23; relaunched 2026-10-24 with day numbers, streaks, stats, a result grid, Share and a story picture,
-HOW_IT_WORKS §10.13).
+Chart (2026-10-23; relaunched 2026-10-24 with day numbers, streaks, stats, a result grid, Share and a story picture;
+2026-10-26 more technical: visible support, resistance and fair value gaps, EMA and VWAP overlays, and an after-game
+breakdown of the levels the chart tested; HOW_IT_WORKS §10.13).
 
 ### TA-B. Charts and trading tools
 

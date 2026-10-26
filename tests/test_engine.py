@@ -812,8 +812,9 @@ class AdminDataTests(unittest.TestCase):
         e.trade(loser, "GOLD", "buy", 0.5)
         e.stocks["GOLD"].fair *= 1.3
         advance(e, 12)
-        o = e.admin_overview(online=3)
+        o = e.admin_overview(online=3, tabs={loser.token: 2, winner.token: 1, "gone": 1})
         self.assertEqual(o["online"], 3)
+        self.assertEqual([(r["name"], r["tabs"]) for r in o["online_players"]], [("loser1", 2), ("winner1", 1)])
         self.assertEqual(o["winners"][0]["name"], "winner1" if e.equity(winner) >= e.equity(loser) else "loser1")
         self.assertEqual(sum(b["count"] for b in o["dist"]), 2)
         self.assertIn("invariant_drift", o["stats"])

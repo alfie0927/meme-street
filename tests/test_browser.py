@@ -136,6 +136,7 @@ class BrowserSmoke(unittest.TestCase):
             await pg.js("document.getElementById('go').click()")
             await check("admin cards render", "document.querySelectorAll('#cards .kpi').length", lambda n: n >= 9, wait=10)
             await check("alerts line is shown", "document.getElementById('alerts').innerText", lambda t: len(t) > 10)
+            await check("the Online now panel renders", "document.getElementById('on-n').textContent", lambda t: "signed in" in t)
             await check("the deeper panels render: the machine (System tab) and the market (Market tab)",
                         "document.querySelectorAll('#syscards .kpi').length+document.querySelectorAll('#mktcards .kpi').length", lambda n: n >= 14, wait=12)
             await check("the machine cards show an uptime and the market's game day and MSI 50",
