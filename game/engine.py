@@ -3869,6 +3869,23 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             out.append(",".join(cells))
         return "\n".join(out) + "\n"
 
+    def admin_players(self):
+        """Every account for the admin page's Players tab: who, since when, last seen, email, pass, and how they are doing."""
+        seen = {}
+        for v in self.sessions.values():
+            seen[v["p"]] = max(seen.get(v["p"], 0.0), v.get("seen", 0.0))
+        rows = []
+        for p in self.players.values():
+            eq = self.equity(p)
+            pnl = eq - p.deposited
+            rows.append({"name": p.name, "created": p.created or None, "seen": seen.get(p.token) or None,
+                         "email": p.email, "verified": bool(p.email_verified),
+                         "tier": "expert" if self.is_expert(p) else "pro" if self.is_pro(p) else "",
+                         "equity": round(eq, 2), "pnl": round(pnl, 2), "ret": round(pnl / p.deposited, 6) if p.deposited > 0 else 0.0,
+                         "trades": p.trades, "positions": len(p.hold), "ref": p.ref})
+        rows.sort(key=lambda r: -(r["created"] or 0))
+        return rows
+
     def admin_player(self, name):
         p = next((x for x in self.players.values() if x.name.lower() == name.lower()), None)
         if not p:
@@ -3889,7 +3906,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "pro": self.is_pro(p), "pro_until": p.pro_until if self.is_pro(p) else None, "expert": self.is_expert(p),
                 "expert_until": p.expert_until if self.is_expert(p) else None,
                 "pnl": eq - p.deposited, "divs": sum(p.divs.values()), "borrow": sum(p.borrow.values()),
-                "trades": p.trades, "margin_calls": p.margin_calls, "holdings": holdings, "log": list(p.log)}
+                "trades": p.trades, "margin_calls": p.margin_calls, "holdings": holdings, "log": list(p.log),
+                "email": p.email, "verified": bool(p.email_verified), "created": p.created or None, "ref": p.ref,
+                "birth_date": p.birth_date, "subs": {k: v.get("status") for k, v in (p.subs or {}).items()}}
 
     def house_stats(self):
         """The money in the game. `total_mb` is what all players hold right now (cash plus positions at market prices):

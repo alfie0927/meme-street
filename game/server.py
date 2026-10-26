@@ -1777,6 +1777,14 @@ async def admin_pro(b: ProGrant, x_admin_key: str = Header("")):
     return {"ok": ok, "msg": msg, "pro": pro, "pro_until": until, "expert": expert, "expert_until": expert_until}
 
 
+@app.get("/api/admin/players")
+async def admin_players(x_admin_key: str = Header("")):
+    """Every account, newest first (the admin page's Players tab)."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    return {"players": await run(engine.admin_players)}
+
+
 @app.get("/api/admin/player/{name}")
 async def admin_player(name: str, x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):

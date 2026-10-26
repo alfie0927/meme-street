@@ -134,13 +134,15 @@ class BrowserSmoke(unittest.TestCase):
                         lambda t: "not accepted" in t, wait=8)
             await pg.js("document.getElementById('key').value='testkey'")
             await pg.js("document.getElementById('go').click()")
-            await check("admin cards render", "document.querySelectorAll('#cards .card').length", lambda n: n >= 9, wait=10)
+            await check("admin cards render", "document.querySelectorAll('#cards .kpi').length", lambda n: n >= 9, wait=10)
             await check("alerts line is shown", "document.getElementById('alerts').innerText", lambda t: len(t) > 10)
-            await check("the deeper panels render: machine, game and market cards", "document.querySelectorAll('#cards2 .card').length", lambda n: n >= 14, wait=12)
-            await check("the machine cards show an uptime and the market's game day", "document.getElementById('cards2').innerText",
+            await check("the deeper panels render: the machine (System tab) and the market (Market tab)",
+                        "document.querySelectorAll('#syscards .kpi').length+document.querySelectorAll('#mktcards .kpi').length", lambda n: n >= 14, wait=12)
+            await check("the machine cards show an uptime and the market's game day and MSI 50",
+                        "document.getElementById('syscards').textContent+' '+document.getElementById('mktcards').textContent",
                         lambda t: "SERVER UP FOR" in t.upper() and "GAME DAY" in t.upper() and "MSI 50" in t.upper())
             await check("seven days of activity are listed", "document.querySelectorAll('#days tr').length", 8, wait=8)
-            await check("24 hourly bars are drawn", "document.querySelectorAll('#hours .bar > div').length", 24, wait=8)
+            await check("24 hourly bars are drawn", "document.querySelectorAll('#hours .bars > div').length", 24, wait=8)
             await check("the settings in effect are listed", "document.getElementById('settings').innerText",
                         lambda t: "game_year_days" in t and "365" in t and "quarter_game_days" in t)
             await check("the admin-security panel says nobody has tried a wrong key, or lists the one the test just made",
@@ -152,6 +154,9 @@ class BrowserSmoke(unittest.TestCase):
             await pg.js("document.querySelector('#winners tr[data-n]').click()")
             await check("player detail shows the trade log", "document.getElementById('detail').innerText.toLowerCase()",
                         lambda t: "trades (newest first)" in t and "short" in t, wait=8)
+            await check("the players tab lists every account and opened on the picked one",
+                        "document.querySelector('[data-page=players]').classList.contains('on')+' '+document.querySelectorAll('#plist tr.pick').length",
+                        lambda t: t.startswith("true ") and int(t.split()[1]) >= 1, wait=8)
         finally:
             errors = list(pg.errors)
             proc.terminate()

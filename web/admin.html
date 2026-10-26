@@ -1,272 +1,374 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meme Street Admin</title>
+<link rel="icon" type="image/png" href="/brand/memestreet_logo_peaks.png">
 <style>
-:root{--bg:#08090b;--card:#0d1013;--card2:#12161a;--line:#262d33;--line2:#1a1f24;--txt:#dce3e8;--mut:#7d8a93;--up:#3ad07a;--dn:#f25c54;--acc:#4cc3cc;--warn:#ffc65c}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",Menlo,monospace;-webkit-font-smoothing:antialiased}
-header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:10px 18px;background:var(--bg);border-bottom:1px solid var(--line)}
-header b{font-size:18px}a{color:var(--acc);text-decoration:none}.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}.warn{color:var(--warn)}
-main{max-width:1200px;margin:0 auto;padding:14px}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:12px 14px}.cards .card{background:none;border-color:var(--line2);border-radius:2px;padding:8px 12px}
-.card small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em}.card strong{display:block;font-size:18px;margin-top:3px}
-.card em{display:block;font-style:normal;color:var(--mut);font-size:11px;margin-top:2px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
-h3{margin:0 0 10px;padding-bottom:6px;font-size:13px;color:var(--txt);font-weight:700;border-bottom:1px solid var(--line)}
-table{width:100%;border-collapse:collapse}td,th{padding:5px 6px;text-align:right;border-bottom:1px solid var(--line2);white-space:nowrap}
-td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:12px}
-tr.pick{cursor:pointer}tr.pick:hover{background:#ffffff08}
+:root{--bg:#08090b;--panel:#0d1013;--panel2:#12161a;--line:#262d33;--line2:#1a1f24;--txt:#dce3e8;--mut:#7d8a93;--up:#3ad07a;--dn:#f25c54;--acc:#4cc3cc;--warn:#e8b84a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",Menlo,monospace;-webkit-font-smoothing:antialiased}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}.warn{color:var(--warn)}
+button,input,select,textarea{font:inherit;color:var(--txt);background:#161b20;border:1px solid var(--line);border-radius:4px;padding:6px 11px}
+input,select{background:#08090b}input:focus,select:focus{outline:none;border-color:var(--acc)}
+button{cursor:pointer;white-space:nowrap}button:hover{background:#1f262c}button:disabled{opacity:.5;cursor:default}
+button.primary{background:var(--acc);border-color:var(--acc);color:#021012;font-weight:700}button.primary:hover{filter:brightness(1.1)}
+button.danger{border-color:#f25c5466;color:var(--dn)}button.danger:hover{background:#f25c541a}
+button.ghost{background:none}
+/* the sign-in box */
+#login{max-width:380px;margin:12vh auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px}
+#login h1{font-size:18px;margin:0 0 6px;display:flex;align-items:center;gap:10px}#login input,#login button{width:100%;margin-top:12px}
+/* the header and tabs */
+.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar1{display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}.brand img{width:26px;height:26px;border-radius:6px}
+.sp{flex:1}#find{width:220px}#stamp{font-size:11.5px}
+#tabs{display:flex;gap:2px;padding:0 14px;overflow-x:auto}
+#tabs button{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--mut);padding:9px 12px}
+#tabs button:hover{color:var(--txt);background:none}#tabs button.on{color:var(--txt);border-bottom-color:var(--acc)}
+.badge{display:inline-block;min-width:18px;margin-left:5px;padding:0 6px;border-radius:9px;background:var(--dn);color:#fff;font-size:10.5px;line-height:17px;text-align:center}.badge:empty{display:none}
+main{max-width:1280px;margin:0 auto;padding:18px 20px 40px}
+.page{display:none}.page.on{display:block}
+/* building blocks */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.kpi small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.kpi strong{display:block;font-size:21px;margin-top:3px;font-variant-numeric:tabular-nums}.kpi em{display:block;font-style:normal;color:var(--mut);font-size:11.5px;margin-top:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:16px;min-width:0}
+.panel h2{font-size:13.5px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel h3{font-size:12.5px;margin:16px 0 8px;color:var(--mut);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid2>.panel{margin-bottom:16px}
+.players{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+@media(max-width:980px){.grid2,.players{grid-template-columns:1fr}}
+.note{color:var(--mut);font-size:12px;margin:8px 0 0}
+table{width:100%;border-collapse:collapse}td,th{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line2);white-space:nowrap}
+td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}
+tbody tr:hover td{background:#ffffff05}tr.pick{cursor:pointer}tr.sel td{background:#4cc3cc12}
+.scroll{max-height:520px;overflow:auto}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--mut);margin:0 4px 4px 0}
+.chip.acc{border-color:#4cc3cc66;color:var(--acc)}.chip.up{border-color:#3ad07a55;color:var(--up)}.chip.warn{border-color:#e8b84a66;color:var(--warn)}
+.alerts div{padding:9px 12px;border-left:3px solid var(--warn);background:#e8b84a12;border-radius:0 6px 6px 0;margin-bottom:8px}
+.alerts div.bad{border-color:var(--dn);background:#f25c5412}.alerts div.ok{border-color:var(--up);background:#3ad07a10}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line2)}.row:last-child{border-bottom:0}
+.row .t{flex:1;min-width:200px;word-break:break-word}.row small{color:var(--mut)}
+.acts{display:grid;gap:10px}.act{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;background:var(--panel2);border:1px solid var(--line2);border-radius:6px}
+.act b{min-width:92px}.act input{flex:1;min-width:110px}.act input[type=number]{flex:0 0 100px;min-width:0}
+.bars{display:flex;align-items:flex-end;gap:5px;height:120px}.bars div{flex:1;text-align:center;font-size:10px;color:var(--mut)}
+.bars i{display:block;margin:0 auto 3px;border-radius:3px 3px 0 0;min-height:2px}
 svg{width:100%;height:auto;display:block}
-.msgrow{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--line2);font-size:13px}.msgrow span.t{flex:1;word-break:break-word}.msgrow small{color:var(--mut)}
-button,input,select,textarea{font:inherit;background:#161b20;color:var(--txt);border:1px solid var(--line);border-radius:2px;padding:5px 10px}input{background:#08090b}input:focus{outline:none;border-color:var(--acc)}button{cursor:pointer}button:hover{background:#1f262c}
-#login{max-width:360px;margin:80px auto;background:var(--card);border:1px solid var(--line);border-radius:2px;padding:20px}
-#login input{width:100%;margin:10px 0}
-.alerts div{padding:6px 10px;border-left:3px solid var(--warn);background:#ffc65c14;margin-bottom:6px;border-radius:0 8px 8px 0}
-.alerts div.bad{border-color:var(--dn);background:#f25c5414}.alerts div.ok{border-color:var(--up);background:#3ad07a14}
-.bar{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:6px}.bar div{flex:1;text-align:center;font-size:10px;color:var(--mut)}
-.bar i{display:block;margin:0 auto 2px;border-radius:2px 3px 0 0;min-height:1px}
+details summary{cursor:pointer}
+.toast{position:fixed;right:18px;bottom:18px;z-index:50;max-width:440px;padding:11px 15px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);box-shadow:0 10px 30px #000a;display:none}
+.toast.ok{border-color:#3ad07a77}.toast.bad{border-color:#f25c5477}
+.empty{color:var(--mut);padding:6px 0}
+#detailcard{scroll-margin-top:110px}
+@media(max-width:640px){.panel table{display:block;overflow-x:auto}main{padding:14px 12px 30px}#find{width:100%;order:9}}
 </style></head><body>
-<div id="login"><h2 style="margin:0">Admin</h2><p class="mut">Enter the admin key (the <code>ADMIN_KEY</code> the server was started with). It stays in this browser tab only.</p>
-<input id="key" type="password" placeholder="Admin key" autocomplete="off"><button id="go" style="width:100%">Open dashboard</button><p id="err" class="dn"></p></div>
+<div id="login"><h1><img src="/brand/memestreet_logo_peaks.png" alt="" width="26" height="26" style="border-radius:6px">Meme Street Admin</h1>
+<p class="mut" style="margin:0">Enter the admin key. It stays in this browser tab only.</p>
+<input id="key" type="password" placeholder="Admin key" autocomplete="off"><button id="go" class="primary">Open the dashboard</button><p id="err" class="dn"></p></div>
+
 <div id="app" style="display:none">
-<header><b style="display:flex;align-items:center;gap:8px"><img src="/brand/memestreet_logo_peaks.png" alt="" width="26" height="26" style="border-radius:7px">Meme Street Admin</b><a href="/">Market</a><span id="stamp" class="mut"></span><span style="flex:1"></span><button id="out">Lock</button></header>
+<div class="top">
+ <div class="bar1"><span class="brand"><img src="/brand/memestreet_logo_peaks.png" alt="">Admin</span>
+  <span class="sp"></span><input id="find" list="names" placeholder="Find a player…" autocomplete="off"><datalist id="names"></datalist>
+  <span id="stamp" class="mut"></span><a href="/" target="_blank">Open the site</a><button id="out" class="ghost">Lock</button></div>
+ <nav id="tabs"><button data-tab="overview" class="on">Overview</button><button data-tab="players">Players</button><button data-tab="shop">Shop</button><button data-tab="chat">Chat<span class="badge" id="chat-badge"></span></button><button data-tab="market">Market</button><button data-tab="system">System<span class="badge" id="sys-badge"></span></button></nav>
+</div>
 <main>
-<div class="alerts" id="alerts"></div><div class="alerts" id="alerts2"></div>
-<div class="cards" id="cards"></div>
-<h3 style="margin:14px 0 6px">The machine, the game and the market</h3><div class="cards" id="cards2"></div>
-<div class="grid2"><div class="card"><h3>Connected pages and visitors (last 2 hours)</h3><div id="ch3"></div></div>
-<div class="card"><h3>Trades per hour (last 24 hours, your local time)</h3><div id="hours"></div></div></div>
-<div class="grid2"><div class="card"><h3>The last 7 days (UTC days)</h3><div id="days"></div></div>
-<div class="card"><h3>Most traded stocks (last 24 hours)</h3><div id="tickers"></div></div></div>
-<div class="grid2"><div class="card"><h3>Total MB and fees (MB)</h3><div id="ch1"></div></div>
-<div class="card"><h3>Players' combined P&amp;L (MB, humans)</h3><div id="ch2"></div></div></div>
-<div class="card" style="margin-top:12px"><h3>Shop: sales, Pro and where the MB came from</h3><div id="shop" class="mut">Loading…</div></div>
-<div class="card" style="margin-top:12px"><h3>The price model behind the scenes (never shown to players)</h3><div id="model" class="mut">Loading…</div></div>
-<div class="card" style="margin-top:12px"><h3>Players and fees: how far people get</h3><div id="funnel" class="mut">Loading…</div></div>
-<div class="grid2"><div class="card"><h3>Biggest players. Click a name for their trades</h3><div id="toplists"></div></div>
-<div class="card"><h3>Biggest open positions</h3><div id="bigpos"></div></div></div>
-<div class="grid2"><div class="card"><h3>Orders, chat and moderation</h3><div id="ordsoc"></div></div>
-<div class="card"><h3>Admin security: wrong keys</h3><div id="security"></div></div></div>
-<div class="card" style="margin-top:12px"><h3>House risk: what players' positions could cost the house</h3><div id="risk"></div></div>
-<div class="grid2"><div class="card"><h3>Human players by all-time return</h3><div id="dist"></div></div>
-<div class="card"><h3>Recent margin calls</h3><div id="calls"></div></div></div>
-<div class="card" style="margin-top:12px"><h3>Top winners (humans, by all-time P&amp;L). Click a row for their trades</h3><div id="winners"></div></div>
-<div class="grid2"><div class="card"><h3>Chat moderation: latest messages</h3><div id="chatlog" class="mut">Loading…</div></div>
-<div class="card"><h3>Reported messages and mutes</h3><div id="reports" class="mut">Loading…</div></div></div>
-<div class="grid2"><div class="card"><h3>Appeals from muted players</h3><div id="appeals" class="mut">Loading…</div></div>
-<div class="card"><h3>Moderator log (newest first)</h3><div id="modlog" class="mut">Loading…</div></div></div>
-<div class="card" style="margin-top:12px"><h3>Accounts</h3><div id="accts" class="mut">Loading…</div>
-<div class="msgrow" style="margin-top:8px"><input id="rp-name" placeholder="Player name" maxlength="16"><button id="rp-go">Reset password</button><span id="rp-out" class="t"></span></div>
-<div class="msgrow" style="margin-top:8px"><input id="del-name" placeholder="Player name" maxlength="16"><button id="del-go" class="dn">Delete account</button><span id="del-out" class="t"></span></div>
-<div class="msgrow" style="margin-top:8px"><input id="mb-name" placeholder="Player name" maxlength="16"><input id="mb-amount" type="number" min="0" step="any" placeholder="MB" style="width:110px"><input id="mb-note" placeholder="Note to the player (optional)" maxlength="200"><button id="mb-add">Add MB</button><button id="mb-take">Take back MB</button><span id="mb-out" class="t"></span></div>
-<div class="msgrow" style="margin-top:8px"><select id="pro-tier" aria-label="Which pass"><option value="pro">Pro</option><option value="expert">Expert</option></select><input id="pro-name" placeholder="Player name" maxlength="16"><input id="pro-days" type="number" min="1" max="3650" step="1" value="30" style="width:80px" aria-label="Days of Pro"><span class="mut">days</span><input id="pro-note" placeholder="Note to the player (optional)" maxlength="200"><button id="pro-give">Give Pro</button><button id="pro-take">Take Pro away</button><span id="pro-out" class="t"></span></div>
-<p class="mut" style="font-size:12px">Giving Pro adds that many days to any Pro the player already has (bought or given); taking it away ends it now, bought time included. Pro is tools only, so no MB move. The player is told, with your note.</p>
-<p class="mut" style="font-size:12px">Adding MB credits the player's cash (recorded as MB "added by an admin", which counts as money put in, so it never lifts their return or rank) and tells them, with your note. Taking back removes only free cash. At most 1,000,000 MB at a time. A reset ends all of that player's logins and shows a temporary password once. Tell it to them privately; they should change it on their profile page. Addresses are stored only as salted tags, so you can see which accounts share one, not what it is.</p></div>
-<div class="card" style="margin-top:12px"><h3>Errors since the server started</h3><div id="errors" class="mut">Loading…</div></div>
-<div class="card" style="margin-top:12px"><h3>Email and mail</h3><div id="mailbox" class="mut">Loading…</div>
-<div class="msgrow" style="margin-top:8px"><input id="em-name" placeholder="Player name" maxlength="16"><button id="em-verify">Mark email verified</button><button id="em-clear">Remove email</button><span id="em-out" class="t"></span></div>
-<p class="mut" style="font-size:12px">Email addresses make passwords recoverable and stop one person running many accounts (each address belongs to one account). Set the <code>email_mode</code> setting to off, optional or required. With no SMTP server configured (see <code>mailer.py</code>) nothing is sent: the message, code included, appears in the list above so you can hand a code to a tester yourself.</p></div>
-<div class="card" style="margin-top:12px"><h3>Settings in effect (read only: they live in the content packs; see HOW_IT_WORKS.md section 14)</h3><div id="settings"></div></div>
-<div class="card" style="margin-top:12px"><h3>Start the game over</h3>
-<p class="mut" style="font-size:12px">Back to Day 1: every player gets the starting balance again, positions are closed, orders cancelled, trade history, medals and achievements cleared. Prices, charts, accounts and passwords stay. The old save and ledger are copied into the <code>backups</code> folder first.</p>
-<div class="msgrow"><input id="reset-word" placeholder="Type RESET" maxlength="5"><button id="reset-go">Reset the game to Day 1</button><span id="reset-out" class="t"></span></div></div>
-<div class="card" style="margin-top:12px" id="detailcard"><h3 id="dtitle">Player detail</h3><div id="detail" class="mut">Pick a player above.</div></div>
+<!-- OVERVIEW -->
+<section class="page on" data-page="overview">
+ <div class="alerts" id="alerts"></div>
+ <div class="kpis" id="cards"></div>
+ <div class="grid2"><div class="panel"><h2>Who is on (last 2 hours)</h2><div id="ch3"></div></div>
+  <div class="panel"><h2>Trades per hour <span class="mut">last 24 hours, your time</span></h2><div id="hours"></div></div></div>
+ <div class="panel"><h2>The last 7 days <span class="mut">UTC</span></h2><div id="days"></div></div>
+ <div class="grid2"><div class="panel"><h2>Total MB and fees</h2><div id="ch1"></div></div>
+  <div class="panel"><h2>Players' combined P&amp;L</h2><div id="ch2"></div></div></div>
+</section>
+<!-- PLAYERS -->
+<section class="page" data-page="players">
+ <div class="players">
+  <div class="panel"><h2><span>Players <span id="pcount" class="mut"></span></span><input id="psearch" placeholder="Search name or email" style="width:220px"></h2><div id="plist" class="scroll"><p class="empty">Loading…</p></div></div>
+  <div class="panel" id="detailcard"><h2 id="dtitle">Pick a player</h2><div id="detail" class="mut">Click a player in the list, or use <b>Find a player</b> at the top.</div></div>
+ </div>
+ <div class="grid2"><div class="panel"><h2>Top by profit <span class="mut">click for details</span></h2><div id="winners"></div></div>
+  <div class="panel"><h2>How far people get</h2><div id="funnel"></div></div></div>
+ <div class="grid2"><div class="panel"><h2>Biggest players</h2><div id="toplists"></div></div>
+  <div class="panel"><h2>Everyone's all-time return</h2><div id="dist"></div></div></div>
+ <div class="panel"><h2>Accounts</h2><div id="accts"></div></div>
+</section>
+<!-- SHOP -->
+<section class="page" data-page="shop"><div id="shop"><p class="empty">Loading…</p></div></section>
+<!-- CHAT -->
+<section class="page" data-page="chat">
+ <div class="grid2"><div class="panel"><h2>Reported messages and mutes</h2><div id="reports"><p class="empty">Loading…</p></div></div>
+  <div class="panel"><h2>Appeals from muted players</h2><div id="appeals"><p class="empty">Loading…</p></div></div></div>
+ <div class="grid2"><div class="panel"><h2>Latest messages</h2><div id="chatlog" class="scroll"><p class="empty">Loading…</p></div></div>
+  <div class="panel"><h2>Moderator log</h2><div id="modlog" class="scroll"><p class="empty">Loading…</p></div></div></div>
+</section>
+<!-- MARKET -->
+<section class="page" data-page="market">
+ <div class="kpis" id="mktcards"></div>
+ <div class="panel"><h2>The price model <span class="mut">never shown to players</span></h2><div id="model"><p class="empty">Loading…</p></div></div>
+ <div class="grid2"><div class="panel"><h2>Most traded stocks <span class="mut">last 24 hours</span></h2><div id="tickers"></div></div>
+  <div class="panel"><h2>Biggest open positions</h2><div id="bigpos"></div></div></div>
+ <div class="panel"><h2>House risk</h2><div id="risk"></div></div>
+ <div class="grid2"><div class="panel"><h2>Recent margin calls</h2><div id="calls"></div></div>
+  <div class="panel"><h2>Orders and contests</h2><div id="ordsoc"></div></div></div>
+</section>
+<!-- SYSTEM -->
+<section class="page" data-page="system">
+ <div class="kpis" id="syscards"></div>
+ <div class="panel"><h2>Errors since the server started</h2><div id="errors"><p class="empty">Loading…</p></div></div>
+ <div class="grid2"><div class="panel"><h2>Email</h2><div id="mailbox"><p class="empty">Loading…</p></div></div>
+  <div class="panel"><h2>Admin security</h2><div id="security"></div></div></div>
+ <div class="panel"><details><summary><b>Settings in effect</b> <span class="mut">read only: they live in the content packs (HOW_IT_WORKS §14)</span></summary><div id="settings" style="margin-top:10px"></div></details></div>
+ <div class="panel" style="border-color:#f25c5455"><h2 class="dn">Danger zone: start the game over</h2>
+  <p class="note" style="margin:0 0 10px">Back to Day 1: every player gets the starting balance again, positions are closed, orders cancelled, trade history, medals and achievements cleared. Prices, charts, accounts and passwords stay. The old save and ledger are backed up first.</p>
+  <div class="act"><input id="reset-word" placeholder="Type RESET" maxlength="5" style="flex:0 0 160px"><button id="reset-go" class="danger">Reset the game to Day 1</button></div></div>
+</section>
 </main></div>
+<div class="toast" id="toast"></div>
 <script>
 const $=id=>document.getElementById(id),f=(x,d=2)=>Number(x).toFixed(d);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mb=x=>Number(x).toLocaleString(undefined,{maximumFractionDigits:0});
 const sgn=(x,d=0)=>{const r=Number(Number(x).toFixed(d));return(r>0?'+':r<0?'-':'')+Math.abs(r).toLocaleString(undefined,{maximumFractionDigits:d})};
-const ago=t=>{const s=Math.max(0,Date.now()/1000-t);return s<90?Math.round(s)+'s ago':s<5400?Math.round(s/60)+'m ago':Math.round(s/3600)+'h ago'};
-let key=null,timer=null,picked=null;try{key=sessionStorage.admin_key||null}catch(e){}
-async function api(path,body){const r=await fetch(path,{method:body===undefined?'GET':'POST',headers:Object.assign({'X-Admin-Key':key},body===undefined?{}:{'Content-Type':'application/json'}),body:body===undefined?undefined:JSON.stringify(body)});if(r.status===403)throw new Error('forbidden');if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
-function line(series,fields,fmt){
- const W=560,H=190,pl=52,pr=8,pt=10,pb=22;if(series.length<2)return '<p class="mut">Collecting data…</p>';
+const cls=x=>Number(x)>0?'up':Number(x)<0?'dn':'';
+const ago=t=>{if(!t)return '-';const s=Math.max(0,Date.now()/1000-t);return s<90?Math.round(s)+'s ago':s<5400?Math.round(s/60)+'m ago':s<172800?Math.round(s/3600)+'h ago':Math.round(s/86400)+'d ago'};
+const hm=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m'};
+const small=x=>x==null?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:1});
+const kpi=(l,v,e='',c='')=>`<div class="kpi"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
+const empty=t=>`<p class="empty">${t}</p>`;
+let key=null,timer=null,picked=null,players=[],tickN=0,alertsA=[],alertsB=[];try{key=sessionStorage.admin_key||null}catch(e){}
+// talking to the server: GETs throw on an error; POSTs return the server's answer (its message), whatever the status
+async function api(path){const r=await fetch(path,{headers:{'X-Admin-Key':key}});if(r.status===403)throw new Error('forbidden');if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function post(path,body){const r=await fetch(path,{method:'POST',headers:{'X-Admin-Key':key,'Content-Type':'application/json'},body:JSON.stringify(body)});
+ if(r.status===403){lock('That key was not accepted.');throw new Error('forbidden')}const j=await r.json().catch(()=>({}));return Object.assign({_status:r.status},j)}
+let toastT=null;
+function toast(msg,ok=true){const t=$('toast');t.textContent=msg;t.className='toast '+(ok?'ok':'bad');t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',ok?4500:8000)}
+const said=r=>r.msg||r.error||(r.ok?'Done':'Not done');
+// tabs (remembered in the address: #players)
+function showTab(name){if(!document.querySelector(`[data-page="${name}"]`))name='overview';
+ document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.dataset.page===name));
+ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+ if(location.hash!=='#'+name)history.replaceState(null,'','#'+name)}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)showTab(b.dataset.tab)});
+function line(series,fields,fmt,minSpan=0){
+ const W=560,H=190,pl=52,pr=8,pt=12,pb=22;if(series.length<2)return empty('Collecting data…');
  const xs=series.map(p=>p.t),x0=xs[0],x1=xs[xs.length-1]||x0+1;let lo=Infinity,hi=-Infinity;
- fields.forEach(([k])=>series.forEach(p=>{lo=Math.min(lo,p[k]);hi=Math.max(hi,p[k])}));if(hi-lo<1e-9){hi+=1;lo-=1}const pad=(hi-lo)*.08;lo-=pad;hi+=pad;
+ fields.forEach(([k])=>series.forEach(p=>{lo=Math.min(lo,p[k]);hi=Math.max(hi,p[k])}));if(hi-lo<minSpan)hi=lo+minSpan;if(hi-lo<1e-9){hi+=1;lo-=1}const pad=(hi-lo)*.08;lo-=pad;hi+=pad;
  const X=t=>pl+(t-x0)/(x1-x0||1)*(W-pl-pr),Y=v=>pt+(1-(v-lo)/(hi-lo))*(H-pt-pb);
  let s=`<svg viewBox="0 0 ${W} ${H}">`;
- for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3,y=Y(v);s+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#21262d"/><text x="${pl-6}" y="${y+4}" fill="#8b949e" font-size="10" text-anchor="end">${fmt(v)}</text>`}
- s+=`<text x="${pl}" y="${H-6}" fill="#8b949e" font-size="10">${new Date(x0*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</text><text x="${W-pr}" y="${H-6}" fill="#8b949e" font-size="10" text-anchor="end">${new Date(x1*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</text>`;
- fields.forEach(([k,col,name],i)=>{s+=`<polyline fill="none" stroke="${col}" stroke-width="1.6" points="${series.map(p=>X(p.t).toFixed(1)+','+Y(p[k]).toFixed(1)).join(' ')}"/><text x="${pl+8+i*130}" y="${pt+8}" fill="${col}" font-size="10">${name}</text>`});
+ for(let i=0;i<=3;i++){const v=lo+(hi-lo)*i/3,y=Y(v);s+=`<line x1="${pl}" x2="${W-pr}" y1="${y}" y2="${y}" stroke="#1a1f24"/><text x="${pl-6}" y="${y+4}" fill="#7d8a93" font-size="10" text-anchor="end">${fmt(v)}</text>`}
+ s+=`<text x="${pl}" y="${H-6}" fill="#7d8a93" font-size="10">${new Date(x0*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</text><text x="${W-pr}" y="${H-6}" fill="#7d8a93" font-size="10" text-anchor="end">${new Date(x1*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</text>`;
+ fields.forEach(([k,col,name],i)=>{s+=`<polyline fill="none" stroke="${col}" stroke-width="1.8" points="${series.map(p=>X(p.t).toFixed(1)+','+Y(p[k]).toFixed(1)).join(' ')}"/><text x="${pl+8+i*140}" y="${pt+4}" fill="${col}" font-size="10.5">${name}</text>`});
  return s+'</svg>'}
-function render(o){
- const s=o.stats;$('stamp').textContent='updated '+new Date().toLocaleTimeString();
- const al=[];
- if(Math.abs(s.invariant_drift)>1e-6)al.push(['bad','Token invariant drift is '+s.invariant_drift.toExponential(2)+': money is being created or destroyed.']);
- const r=s.risk;
- if(r&&r.exposure[0]&&r.stress_loss>0&&r.exposure[0].loss>0.5*r.stress_loss&&r.exposure[0].loss>1000)al.push(['warn','Most of the risk to the house is in one stock: players are net '+(r.exposure[0].net>0?'long ':'short ')+mb(Math.abs(r.exposure[0].net))+' MB of '+r.exposure[0].ticker+'.']);
- if(s.short_shortfall>0)al.push(['warn','Gapped shorts have cost the house '+f(s.short_shortfall)+' MB so far.']);
- const top=o.winners[0];if(top&&top.ret>0.5&&top.trades>=20)al.push(['warn',top.name+' is up '+f(top.ret*100,0)+'% over '+top.trades+' trades: check their trade log for an edge.']);
- if(!al.length)al.push(['ok','No alerts: every MB is accounted for.']);
- $('alerts').innerHTML=al.map(a=>`<div class="${a[0]}">${esc(a[1])}</div>`).join('');
- $('risk').innerHTML=r?`<p class="mut" style="font-size:12px">Players hold these positions; the house is the other side. A stock held net long hurts the house when it rises, one held net short when it falls. <b>Stress loss</b> = every stock moves three of its own daily sigmas against the house at once. The reserve is topped up to ${f(r.floor,0)} MB when it falls below that floor (topped up so far: ${f(r.recapitalized,0)} MB); this changes no payout and no price.</p><p>Reserve <b>${mb(r.reserve)}</b> MB · stress loss <b class="${r.stress_loss>r.reserve?'dn':''}">${mb(r.stress_loss)}</b> MB</p>`+(r.exposure.length?`<table><tr><th>Stock</th><th>Players net (MB)</th><th>3 daily sigmas</th><th>Cost to the house</th></tr>${r.exposure.map(x=>`<tr><td>${esc(x.ticker)} <span class="mut">${esc(x.name)}</span></td><td class="${x.net>=0?'up':'dn'}">${x.net>=0?'long ':'short '}${mb(Math.abs(x.net))}</td><td>${f(x.move*100,1)}%</td><td>${mb(x.loss)}</td></tr>`).join('')}</table>`:'<p class="mut">No open positions.</p>'):'';
- const fu=o.funnel;
- if(fu){const pct=(a,b)=>b?Math.round(100*a/b)+'%':'-',max=Math.max(1,...fu.signups.map(x=>x.n)),row=(l,n)=>`<tr><td>${l}</td><td>${n}</td><td>${pct(n,fu.players)}</td></tr>`;
-  $('funnel').innerHTML=`<table><tr><th>Step</th><th>Players</th><th>Of all sign-ups</th></tr>${row('Signed up',fu.players)}${row('Added an email address',fu.with_email)}${row('Verified the email',fu.verified)}${row('Made a first trade',fu.traded)}${row('Seen in the last 24 hours',fu.seen_24h)}${row('Seen in the last 7 days',fu.seen_7d)}</table>
-  <p style="margin:10px 0 4px">Sign-ups per day (last 14 days)</p><div style="display:flex;align-items:flex-end;gap:3px;height:54px">${fu.signups.map(x=>`<div title="${new Date(x.day*1000).toLocaleDateString()}: ${x.n}" style="flex:1;background:#58a6ff;min-height:2px;height:${Math.max(2,Math.round(50*x.n/max))}px"></div>`).join('')}</div>
-  <p style="margin:10px 0 0">Fees: <b>${mb(fu.fees_total)} MB</b> from ${fu.payers} players, ${f(fu.fees_per_payer,1)} MB each on average. The top 10% of payers paid <b>${f(fu.top10_share*100,0)}%</b> of it.</p>
-  <p class="mut" style="font-size:12px">Everything here is counted from the game's own data (no tracking code). "Seen" uses each login's last-seen time, which updates about once an hour, and accounts that never logged in with a password are not counted.</p>`}
- const card=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
- const src=s.total_mb_by_source||{},other=s.player_deposits-(src.grant||0)-(src.purchase||0)-(src.challenge||0);
- $('cards').innerHTML=card('Total MB',mb(s.total_mb)+' MB','starting '+mb(src.grant||0)+' · bought '+mb(src.purchase||0)+' · rewards '+mb(src.challenge||0)+(Math.abs(other)>=0.5?' · other '+sgn(other):'')+' · players P&L '+sgn(s.players_pnl))
-  +card('Fees collected',mb(s.fees)+' MB','of which borrow '+f(s.borrow_fees,0)+' MB')
-  +card('Humans P&L',sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB deposited',Math.round(s.players_pnl)>0?'up':Math.round(s.players_pnl)<0?'dn':'')
-  +card('Players',s.humans+' humans',o.online+' online · '+(o.guests||0)+' watching')
-  +card('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' per minute (last 5 min)')
-  +card('Short interest',mb(s.short_interest)+' MB','shortfall '+f(s.short_shortfall)+' MB',s.short_shortfall>0?'warn':'')
-  +card('Margin calls',o.margin_calls,'total since start')
-  +card('Token drift',Math.abs(s.invariant_drift)<1e-6?'0':s.invariant_drift.toExponential(1),'should stay below 1e-6',Math.abs(s.invariant_drift)<1e-6?'up':'dn')
-  +(o.perf?card('Game tick time',f(o.perf.tick_ms,1)+' ms','slowest of the last 2 min: '+f(o.perf.tick_max_ms,0)+' ms',o.perf.tick_max_ms>500?'warn':'')
-  +card('Late ticks',o.perf.late_ticks,'ticks that took over a second',o.perf.late_ticks>2?'warn':'up')
-  +card('Sending updates',f(o.perf.send_ms,2)+' ms','per tick, on the event loop')
-  +card('Gateways',o.perf.gateways||0,o.perf.gateways?'processes holding the players connections':'one process (no gateways)')
-  +card('Saving state',f(o.perf.last_save_ms,0)+' ms','last snapshot (every 30 s)',o.perf.last_save_ms>800?'warn':''):'');
- $('ch1').innerHTML=line(o.series.filter(p=>p.total_mb!==undefined),[['total_mb','#58a6ff','total MB'],['fees','#3fb950','fees']],v=>mb(v));
- $('ch2').innerHTML=line(o.series,[['humans_pnl','#d29922','players P&L']],v=>sgn(v));
- const mx=Math.max(1,...o.dist.map(b=>b.count));
- $('dist').innerHTML=`<div class="bar">${o.dist.map(b=>`<div><i style="height:${Math.round(b.count/mx*90)}px;background:${b.hi<=0?'#f85149':'#3fb950'}"></i>${b.count}<br>${esc(b.label)}</div>`).join('')}</div>`;
- $('calls').innerHTML=o.margin_log.length?`<table><tr><th>When</th><th>Player</th><th>Closed</th><th>House loss</th></tr>${o.margin_log.map(c=>`<tr><td>${ago(c.t)}</td><td>${esc(c.player)}</td><td>${esc(c.tickers.join(', '))}</td><td class="${c.shortfall>0?'dn':'mut'}">${f(c.shortfall)} MB</td></tr>`).join('')}</table>`:'<span class="mut">None yet.</span>';
- $('winners').innerHTML=`<table><tr><th>Player</th><th>Equity</th><th>P&amp;L</th><th>Return</th><th>Trades</th><th>Open</th><th>Margin calls</th></tr>${o.winners.map(w=>`<tr class="pick" data-n="${esc(w.name)}"><td>${esc(w.name)}</td><td>${mb(w.equity)}</td><td class="${w.pnl>=0?'up':'dn'}">${sgn(w.pnl)}</td><td class="${w.ret>=0?'up':'dn'}">${sgn(w.ret*100,1)}%</td><td>${w.trades}</td><td>${w.positions}</td><td>${w.margin_calls}</td></tr>`).join('')||'<tr><td class="mut">No human players yet.</td></tr>'}</table>`;
- if(picked)loadPlayer(picked,true)}
-async function loadPlayer(name,quiet){
- picked=name;try{const p=await api('/api/admin/player/'+encodeURIComponent(name));
-  $('dtitle').textContent='Player detail: '+p.name;
-  const h=p.holdings.map(x=>`<tr><td>${esc(x.ticker)}</td><td>${esc(x.side)}</td><td>${f(x.shares,4)}</td><td>${f(x.avg)}</td><td>${f(x.price)}</td><td class="${x.pnl>=0?'up':'dn'}">${sgn(x.pnl,2)}</td></tr>`).join('');
-  const t=p.log.slice().reverse().map(x=>`<tr><td>${new Date(x.t*1000).toLocaleTimeString()}</td><td>${esc(x.k)}</td><td>${esc(x.tk)}</td><td>${f(x.sh,4)}</td><td>${f(x.px)}</td><td>${f(x.mb)}</td><td>${f(x.fee,3)}</td></tr>`).join('');
-  $('detail').innerHTML=`<p>Cash ${f(p.cash)} MB · equity ${f(p.equity)} MB · deposited ${f(p.deposited)} MB · P&amp;L <span class="${p.pnl>=0?'up':'dn'}">${sgn(p.pnl,2)}</span> · dividends ${f(p.divs)} · borrow fees ${f(p.borrow)}</p>
-   <h3>Open positions</h3><table><tr><th>Ticker</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>P/L</th></tr>${h||'<tr><td class="mut">None</td></tr>'}</table>
-   <h3 style="margin-top:12px">Last ${p.log.length} trades (newest first)</h3><table><tr><th>Time</th><th>Type</th><th>Ticker</th><th>Shares</th><th>Price</th><th>MB</th><th>Fee</th></tr>${t||'<tr><td class="mut">None</td></tr>'}</table>`;
- }catch(e){if(!quiet)$('detail').textContent='Could not load: '+e.message}}
-$('winners').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
-function renderChat(c){
- const row=m=>`<div class="msgrow"><small>${ago(m.t)}</small><span class="t"><b>${esc(m.name)}</b>${m.channel!=='global'?' <small>['+esc(m.channel)+']</small>':''}: ${esc(m.text)}</span><button data-del="${m.id}">Delete</button><button data-mute="${esc(m.name)}" data-s="600">Mute 10m</button><button data-mute="${esc(m.name)}" data-s="3600">1h</button></div>`;
- $('chatlog').innerHTML=c.messages.length?c.messages.slice(0,40).map(row).join(''):'<span class="mut">No messages yet.</span>';
- const byMsg=new Map();for(const r of c.reports){const g=byMsg.get(r.id)||{...r,by:[]};g.by.push(r.by);byMsg.set(r.id,g)}
- const rep=byMsg.size?[...byMsg.values()].slice(0,20).map(r=>`<div class="msgrow"><small>${ago(r.t)}</small><span class="t"><b>${esc(r.name)}</b>: ${esc(r.text)} <small>(${r.by.length} report${r.by.length===1?'':'s'}: ${r.by.map(esc).join(', ')})</small></span><button data-del="${r.id}">Delete</button><button data-mute="${esc(r.name)}" data-s="3600">Mute 1h</button></div>`).join(''):'<span class="mut">No reports. Three different players reporting a message removes it and mutes its author automatically.</span>';
- const ap=(c.appeals||[]).length?c.appeals.map(a=>`<div class="msgrow"><small>${ago(a.t)}</small><span class="t"><b>${esc(a.name)}</b>: ${esc(a.text)} <small>[${esc(a.status)}]</small></span>${a.status==='open'?`<button data-appeal="${a.id}" data-decision="lift">Lift mute</button><button data-appeal="${a.id}" data-decision="deny">Keep mute</button>`:''}</div>`).join(''):'<span class="mut">No appeals.</span>';
- $('appeals').innerHTML=ap;
- $('modlog').innerHTML=(c.mod_log||[]).length?c.mod_log.map(l=>`<div class="msgrow"><small>${ago(l.t)}</small><span class="t"><b>${esc(l.actor)}</b> ${esc(l.action)} <b>${esc(l.name)}</b> <small>${esc(l.detail)}</small></span></div>`).join(''):'<span class="mut">Nothing yet.</span>';
- const muted=c.muted.length?'<p>Muted: '+c.muted.map(m=>`${esc(m.name)} (${Math.ceil(m.left/60)}m left) <button data-mute="${esc(m.name)}" data-s="0">Unmute</button>`).join(', ')+'</p>':'<p class="mut">Nobody is muted.</p>';
- $('reports').innerHTML=rep+muted+`<p class="mut">${c.tournaments.map(t=>esc(t.id)+': '+t.entrants+' entered').join(' · ')||'no tournaments running'}</p>`}
-$('app').addEventListener('click',async e=>{
- const d=e.target.closest('[data-del]'),m=e.target.closest('[data-mute]'),ap=e.target.closest('[data-appeal]');
- try{if(ap){await api('/api/admin/appeal',{id:Number(ap.dataset.appeal),decision:ap.dataset.decision})}
-  else if(d){await api('/api/admin/chat/delete',{id:Number(d.dataset.del)})}
-  else if(m){await api('/api/admin/mute',{name:m.dataset.mute,seconds:Number(m.dataset.s)})}
-  else return;renderChat(await api('/api/admin/chat'))}catch(err){$('stamp').textContent='error: '+err.message}});
-$('reset-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset',{confirm:$('reset-word').value.trim()});$('reset-out').textContent=r.msg;$('reset-word').value='';tick()}catch(e){$('reset-out').textContent='not reset: '+e.message}});
-function renderAccounts(a){
- const g=a.shared_address.length?a.shared_address.map(x=>`<div class="msgrow"><span class="t"><b>${x.accounts} accounts</b> share an address: ${x.names.map(esc).join(', ')}</span></div>`).join(''):'<span class="mut">No accounts share an address.</span>';
- $('accts').innerHTML=`<p><b>${a.accounts}</b> player accounts: ${a.with_password} with a password, ${a.legacy} without (old accounts tied to one browser). ${a.sessions} logged-in devices. Email: <b>${a.email_verified}</b> verified, ${a.with_email} with an address (mode: <b>${esc(a.email_mode)}</b>).</p>`+g}
-function renderErrors(m){
- if(!m.kinds.length){$('errors').innerHTML='<p class="up">None since '+new Date(m.started*1000).toLocaleString()+'.</p>';return}
- const ago=t=>{const s=Math.round(Date.now()/1000-t);return s<90?s+' s ago':s<5400?Math.round(s/60)+' min ago':Math.round(s/3600)+' h ago'};
- $('errors').innerHTML=`<p class="dn"><b>${m.total}</b> error${m.total===1?'':'s'} of ${m.kinds.length} kind${m.kinds.length===1?'':'s'} since ${new Date(m.started*1000).toLocaleString()}.</p>`
-  +m.kinds.slice(0,20).map(k=>`<details class="msgrow"><summary><b>${k.count}x</b> ${esc(k.what)} at ${esc(k.where)}, last ${ago(k.last)}: ${esc(k.message)}</summary>${k.trace?'<pre style="white-space:pre-wrap;font-size:11px;margin:6px 0 0">'+esc(k.trace)+'</pre>':''}</details>`).join('')}
-function renderMail(m){
- const st=m.status,head=st.configured?`<p>Mail is sent through <b>${esc(st.host||'a test transport')}</b> as ${esc(st.sender)}: ${st.sent} sent, ${st.failed} failed, ${st.queued} waiting.</p>`:'<p class="dn"><b>No mail server is set (console mode).</b> Messages are not sent; they are listed here with their codes. Set SMTP_HOST, SMTP_USER, SMTP_PASSWORD and MAIL_FROM before real players rely on email.</p>';
- const rows=m.recent.length?m.recent.slice(0,15).map(x=>`<div class="msgrow"><span class="t">${new Date(x.t*1000).toLocaleTimeString()} ${esc(x.state)} to ${esc(x.to)}: ${esc(x.subject)}${x.error?' ('+esc(x.error)+')':''}${x.body?'<br><span class="mut">'+esc(x.body).replace(/[\r\n]+/g,' ')+'</span>':''}</span></div>`).join(''):'<span class="mut">No mail yet.</span>';
- $('mailbox').innerHTML=head+rows}
-async function emailAct(action){try{const r=await api('/api/admin/email',{name:$('em-name').value.trim(),action});$('em-out').textContent=r.msg;tick()}catch(e){$('em-out').textContent='failed: '+e.message}}
-$('em-verify').addEventListener('click',()=>emailAct('verify'));$('em-clear').addEventListener('click',()=>emailAct('clear'));
-async function mbAct(add){
- const name=$('mb-name').value.trim(),amount=parseFloat($('mb-amount').value),note=$('mb-note').value.trim();
- if(!name||!(amount>0)){$('mb-out').textContent='Give a player name and an amount above 0';return}
- if(!confirm((add?'Add ':'Take back ')+amount.toLocaleString()+' MB '+(add?'to ':'from ')+name+'?'))return;
- const r=await fetch(add?'/api/admin/credit':'/api/admin/withdraw',{method:'POST',headers:{'X-Admin-Key':key,'Content-Type':'application/json'},body:JSON.stringify({name,amount,note})});
- const j=await r.json().catch(()=>({}));
- $('mb-out').textContent=r.status===403?'That key was not accepted':j.error?j.error:(j.ok?j.msg+'. '+name+' now has '+mb(j.cash)+' MB cash':'Not done: '+j.msg);
- if(j.ok){$('mb-amount').value='';$('mb-note').value='';tick()}}
-$('mb-add').addEventListener('click',()=>mbAct(true));$('mb-take').addEventListener('click',()=>mbAct(false));
-async function proAct(give){
- const name=$('pro-name').value.trim(),days=parseFloat($('pro-days').value),note=$('pro-note').value.trim(),tier=$('pro-tier').value,label=tier==='expert'?'Expert':'Pro';
- if(!name||(give&&!(days>0))){$('pro-out').textContent='Give a player name'+(give?' and a number of days above 0':'');return}
- if(!confirm(give?`Give ${name} ${days} days of ${label}?`:`Take ${label} away from ${name} now?`))return;
- const r=await fetch('/api/admin/pro',{method:'POST',headers:{'X-Admin-Key':key,'Content-Type':'application/json'},body:JSON.stringify(give?{name,days,note,tier}:{name,remove:true,note,tier})});
- const j=await r.json().catch(()=>({}));
- $('pro-out').textContent=r.status===403?'That key was not accepted':j.error?j.error:(j.ok?name+': '+j.msg:'Not done: '+j.msg);
- if(j.ok){$('pro-note').value='';tick()}}
-$('pro-give').addEventListener('click',()=>proAct(true));$('pro-take').addEventListener('click',()=>proAct(false));
-$('del-go').addEventListener('click',async()=>{const n=$('del-name').value.trim();if(!n)return;
- const again=prompt(`Delete ${n} for good? Their positions are closed, their MB and account are removed, they are logged out, and a monthly pass is cancelled. This cannot be undone.
+function drawAlerts(){const al=[...alertsA,...alertsB],bad=al.filter(a=>a[0]!=='ok');
+ $('alerts').innerHTML=(bad.length?bad:[['ok','All good: every MB is accounted for, the server is saving and backing up, and nothing is waiting for you.']]).map(a=>`<div class="${a[0]}">${esc(a[1])}</div>`).join('')}
 
-Type the name again to confirm:`);if(again===null)return;
- try{const r=await api('/api/admin/delete_player',{name:n,confirm:again});$('del-out').textContent=r.msg;if(r.ok)$('del-name').value='';tick()}catch(e){$('del-out').textContent='failed: '+e.message}});
-$('rp-go').addEventListener('click',async()=>{try{const r=await api('/api/admin/reset_password',{name:$('rp-name').value.trim()});$('rp-out').innerHTML=esc(r.msg)+': <b>'+esc(r.password)+'</b>';tick()}catch(e){$('rp-out').textContent='failed: '+e.message}});
-const hm=s=>{s=Math.max(0,Math.round(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);return d?d+'d '+h+'h':h?h+'h '+m+'m':m+'m'};
-const cardf=(l,v,e='',c='')=>`<div class="card"><small>${l}</small><strong class="${c}">${v}</strong><em>${e}</em></div>`;
-const small=x=>x==null?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:1});
+// ---------- the overview (every 5 seconds) ----------
+function render(o){
+ const s=o.stats,r=s.risk;$('stamp').textContent='updated '+new Date().toLocaleTimeString();
+ alertsA=[];
+ if(Math.abs(s.invariant_drift)>1e-6)alertsA.push(['bad','Money is being created or destroyed: the token drift is '+s.invariant_drift.toExponential(2)+'.']);
+ if(r&&r.exposure[0]&&r.stress_loss>0&&r.exposure[0].loss>0.5*r.stress_loss&&r.exposure[0].loss>1000)alertsA.push(['warn','Most of the risk to the house is in one stock: players are net '+(r.exposure[0].net>0?'long ':'short ')+mb(Math.abs(r.exposure[0].net))+' MB of '+r.exposure[0].ticker+'.']);
+ if(s.short_shortfall>0)alertsA.push(['warn','Gapped shorts have cost the house '+f(s.short_shortfall)+' MB so far.']);
+ const top=o.winners[0];if(top&&top.ret>0.5&&top.trades>=20)alertsA.push(['warn',top.name+' is up '+f(top.ret*100,0)+'% over '+top.trades+' trades: check their trades for an edge.']);
+ drawAlerts();
+ const src=s.total_mb_by_source||{},fu=o.funnel,today=fu&&fu.signups.length?fu.signups[fu.signups.length-1].n:0;
+ $('cards').innerHTML=kpi('Players',mb(s.humans),(fu?today+' signed up today · ':'')+(fu?fu.seen_24h+' seen in 24h':''))
+  +kpi('On now',o.online,(o.guests||0)+' visitors watching')
+  +kpi('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' a minute right now')
+  +kpi('Total MB',mb(s.total_mb),'started '+mb(src.grant||0)+' · bought '+mb(src.purchase||0))
+  +kpi("Players' P&L",sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB put in',cls(Math.round(s.players_pnl)))
+  +kpi('Fees collected',mb(s.fees)+' MB','borrow fees '+mb(s.borrow_fees)+' MB')
+  +kpi('Margin calls',o.margin_calls,'since the start')
+  +kpi('Short interest',mb(s.short_interest)+' MB','shortfall '+f(s.short_shortfall)+' MB',s.short_shortfall>0?'warn':'')
+  +kpi('Books',Math.abs(s.invariant_drift)<1e-6?'Balanced':'Off by '+s.invariant_drift.toExponential(1),'every MB accounted for',Math.abs(s.invariant_drift)<1e-6?'up':'dn')
+  +(o.perf?kpi('Game tick',f(o.perf.tick_ms,1)+' ms','slowest in 2 min: '+f(o.perf.tick_max_ms,0)+' ms',o.perf.tick_max_ms>500?'warn':''):'');
+ $('ch1').innerHTML=line(o.series.filter(p=>p.total_mb!==undefined),[['total_mb','#4cc3cc','total MB'],['fees','#3ad07a','fees']],v=>mb(v));
+ $('ch2').innerHTML=line(o.series,[['humans_pnl','#e8b84a',"players' P&L"]],v=>sgn(v));
+ const mx=Math.max(1,...o.dist.map(b=>b.count));
+ $('dist').innerHTML=`<div class="bars">${o.dist.map(b=>`<div><i style="height:${Math.round(b.count/mx*90)}px;background:${b.hi<=0?'#f25c54':'#3ad07a'}"></i>${b.count}<br>${esc(b.label)}</div>`).join('')}</div>`;
+ $('calls').innerHTML=o.margin_log.length?`<table><thead><tr><th>When</th><th>Player</th><th>Closed</th><th>House loss</th></tr></thead><tbody>${o.margin_log.map(c=>`<tr class="pick" data-n="${esc(c.player)}"><td>${ago(c.t)}</td><td>${esc(c.player)}</td><td>${esc(c.tickers.join(', '))}</td><td class="${c.shortfall>0?'dn':'mut'}">${f(c.shortfall)} MB</td></tr>`).join('')}</tbody></table>`:empty('None yet.');
+ $('winners').innerHTML=`<table><thead><tr><th>Player</th><th>Equity</th><th>P&amp;L</th><th>Return</th><th>Trades</th></tr></thead><tbody>${o.winners.map(w=>`<tr class="pick" data-n="${esc(w.name)}"><td>${esc(w.name)}</td><td>${mb(w.equity)}</td><td class="${cls(w.pnl)}">${sgn(w.pnl)}</td><td class="${cls(w.ret)}">${sgn(w.ret*100,1)}%</td><td>${w.trades}</td></tr>`).join('')||'<tr><td class="mut">No players yet.</td></tr>'}</tbody></table>`;
+ $('risk').innerHTML=r?`<p class="note" style="margin:0 0 10px">Players' positions, with the house on the other side. <b>Stress loss</b>: every stock moves three of its daily sigmas against the house at once.</p><div class="kpis">${kpi('Reserve',mb(r.reserve)+' MB','topped up to '+f(r.floor,0)+' MB if it falls below')+kpi('Stress loss',mb(r.stress_loss)+' MB','',r.stress_loss>r.reserve?'dn':'')+kpi('Topped up so far',mb(r.recapitalized)+' MB')}</div>`
+  +(r.exposure.length?`<table><thead><tr><th>Stock</th><th>Players net</th><th>3 daily sigmas</th><th>Cost to the house</th></tr></thead><tbody>${r.exposure.map(x=>`<tr><td>${esc(x.ticker)} <span class="mut">${esc(x.name)}</span></td><td class="${x.net>=0?'up':'dn'}">${x.net>=0?'long ':'short '}${mb(Math.abs(x.net))} MB</td><td>${f(x.move*100,1)}%</td><td>${mb(x.loss)} MB</td></tr>`).join('')}</tbody></table>`:empty('No open positions.')):'';
+ if(fu){const pct=(a,b)=>b?Math.round(100*a/b)+'%':'-',max=Math.max(1,...fu.signups.map(x=>x.n)),row=(l,n)=>`<tr><td>${l}</td><td>${n}</td><td>${pct(n,fu.players)}</td></tr>`;
+  $('funnel').innerHTML=`<table><thead><tr><th>Step</th><th>Players</th><th>Of sign-ups</th></tr></thead><tbody>${row('Signed up',fu.players)}${row('Gave an email',fu.with_email)}${row('Verified it',fu.verified)}${row('Made a first trade',fu.traded)}${row('Seen in 24 hours',fu.seen_24h)}${row('Seen in 7 days',fu.seen_7d)}</tbody></table>
+  <h3>Sign-ups a day, last 14 days</h3><div style="display:flex;align-items:flex-end;gap:3px;height:54px">${fu.signups.map(x=>`<div title="${new Date(x.day*1000).toLocaleDateString()}: ${x.n}" style="flex:1;background:#4cc3cc;border-radius:2px 2px 0 0;min-height:2px;height:${Math.max(2,Math.round(50*x.n/max))}px"></div>`).join('')}</div>`}
+ if(picked)loadPlayer(picked,true)}
+
+// ---------- players ----------
+function drawPlayers(){
+ const q=$('psearch').value.trim().toLowerCase(),rows=players.filter(p=>!q||p.name.toLowerCase().includes(q)||(p.email||'').toLowerCase().includes(q));
+ $('pcount').textContent=players.length?`${rows.length} of ${players.length}`:'';
+ $('plist').innerHTML=rows.length?`<table><thead><tr><th>Player</th><th>Joined</th><th>Last seen</th><th>Equity</th><th>Return</th></tr></thead><tbody>${rows.map(p=>`<tr class="pick${p.name===picked?' sel':''}" data-n="${esc(p.name)}"><td><b>${esc(p.name)}</b> ${p.tier?`<span class="chip acc">${p.tier==='expert'?'Expert':'Pro'}</span>`:''}<br><span class="mut" style="font-size:11.5px">${p.email?esc(p.email)+(p.verified?' ✓':''):'no email'}</span></td><td class="mut">${ago(p.created)}</td><td class="mut">${ago(p.seen)}</td><td>${mb(p.equity)}</td><td class="${cls(p.ret)}">${sgn(p.ret*100,1)}%</td></tr>`).join('')}</tbody></table>`:empty(players.length?'Nobody matches.':'No players yet.');
+ $('names').innerHTML=players.map(p=>`<option value="${esc(p.name)}">`).join('')}
+$('psearch').addEventListener('input',drawPlayers);
+async function loadPlayer(name,quiet){
+ if(quiet&&picked===name&&($('detail').contains(document.activeElement)||['a-mb','a-mb-note','a-pass-note'].some(id=>$(id)&&$(id).value)))return;   // (not while you are typing in it)
+ picked=name;
+ try{const p=await api('/api/admin/player/'+encodeURIComponent(name));
+  $('dtitle').innerHTML=`<span>${esc(p.name)} ${p.expert?'<span class="chip acc">Expert</span>':p.pro?'<span class="chip acc">Pro</span>':''}</span>`;
+  const h=p.holdings.map(x=>`<tr><td>${esc(x.ticker)}</td><td class="${x.side==='long'?'up':'dn'}">${esc(x.side)}</td><td>${f(x.shares,4)}</td><td>${f(x.avg)}</td><td>${f(x.price)}</td><td class="${cls(x.pnl)}">${sgn(x.pnl,2)}</td></tr>`).join('');
+  const t=p.log.slice().reverse().map(x=>`<tr><td class="mut">${new Date(x.t*1000).toLocaleTimeString()}</td><td>${esc(x.k)}</td><td>${esc(x.tk)}</td><td>${f(x.sh,4)}</td><td>${f(x.px)}</td><td>${f(x.mb)}</td><td class="mut">${f(x.fee,3)}</td></tr>`).join('');
+  const subs=Object.entries(p.subs||{}).filter(([,v])=>v==='active').map(([k])=>`<span class="chip warn">monthly ${k==='expert'?'Expert':'Pro'} renewing</span>`).join('');
+  const until=p.expert_until||p.pro_until;
+  const html=`<div>${p.email?`<span class="chip ${p.verified?'up':''}">${esc(p.email)} · ${p.verified?'verified':'not verified'}</span>`:'<span class="chip">no email</span>'}<span class="chip">joined ${ago(p.created)}</span>${p.birth_date?`<span class="chip">born ${esc(p.birth_date)}</span>`:''}${p.ref?`<span class="chip">came by ${esc(p.ref)}</span>`:''}${until?`<span class="chip acc">${p.expert?'Expert':'Pro'} until ${new Date(until*1000).toLocaleDateString()}</span>`:''}${subs}</div>
+   <div class="kpis" style="margin-top:10px">${kpi('Equity',mb(p.equity)+' MB')}${kpi('Cash',mb(p.cash)+' MB')}${kpi('P&L',sgn(p.pnl,2)+' MB','on '+mb(p.deposited)+' MB put in',cls(p.pnl))}${kpi('Trades today',p.trades,p.margin_calls+' margin calls')}</div>
+   <h3>Actions</h3><div class="acts">
+    <div class="act"><b>MB</b><input id="a-mb" type="number" min="0" step="any" placeholder="Amount"><input id="a-mb-note" placeholder="Note to the player (optional)" maxlength="200"><button data-act="mb-add" class="primary">Add</button><button data-act="mb-take">Take back</button></div>
+    <div class="act"><b>Pass</b><select id="a-tier"><option value="pro">Pro</option><option value="expert">Expert</option></select><input id="a-days" type="number" min="1" max="3650" step="1" value="30"><span class="mut">days</span><input id="a-pass-note" placeholder="Note (optional)" maxlength="200"><button data-act="pass-give" class="primary">Give</button><button data-act="pass-take">Take away</button></div>
+    <div class="act"><b>Account</b><button data-act="pw">Reset password</button><button data-act="em-verify">Mark email verified</button><button data-act="em-clear">Remove email</button><button data-act="mute" data-s="3600">Mute 1 hour</button><button data-act="mute" data-s="0">Unmute</button><span class="sp"></span><button data-act="delete" class="danger">Delete account</button></div>
+   </div>
+   <p class="note">Added MB count as money put in, so they never lift a return or a rank; taking back removes only free cash. A pass adds days to what they have; taking it away ends it now. The player is told, with your note. A password reset shows a temporary password once: give it to them privately.</p>
+   <h3>Open positions</h3><table><thead><tr><th>Ticker</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>P/L</th></tr></thead><tbody>${h||'<tr><td class="mut">None</td></tr>'}</tbody></table>
+   <h3>Last ${p.log.length} trades (newest first)</h3><div class="scroll" style="max-height:320px"><table><thead><tr><th>Time</th><th>Type</th><th>Ticker</th><th>Shares</th><th>Price</th><th>MB</th><th>Fee</th></tr></thead><tbody>${t||'<tr><td class="mut">None</td></tr>'}</tbody></table></div>`;
+  const tier=$('a-tier')&&$('a-tier').value,days=$('a-days')&&$('a-days').value;
+  $('detail').className='';$('detail').innerHTML=html;
+  if(quiet&&tier){$('a-tier').value=tier;$('a-days').value=days}
+  drawPlayers();
+ }catch(e){if(!quiet){$('detail').textContent='Could not load '+name+': '+e.message}}}
+function pick(name){showTab('players');loadPlayer(name);$('detailcard').scrollIntoView({behavior:'smooth',block:'start'})}
+document.addEventListener('click',e=>{const tr=e.target.closest('tr.pick[data-n]');if(tr)pick(tr.dataset.n)});
+$('find').addEventListener('change',()=>{const n=$('find').value.trim(),p=players.find(x=>x.name.toLowerCase()===n.toLowerCase());if(p){pick(p.name);$('find').value=''}});
+$('find').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const n=$('find').value.trim().toLowerCase(),p=players.find(x=>x.name.toLowerCase()===n)||players.find(x=>x.name.toLowerCase().includes(n));if(p){pick(p.name);$('find').value=''}else toast('No player called '+$('find').value,false)});
+// the actions on the picked player
+$('detail').addEventListener('click',async e=>{
+ const b=e.target.closest('[data-act]');if(!b||!picked)return;const name=picked,a=b.dataset.act;let r=null;
+ try{
+  if(a==='mb-add'||a==='mb-take'){const amount=parseFloat($('a-mb').value),note=$('a-mb-note').value.trim(),add=a==='mb-add';
+   if(!(amount>0))return toast('Enter an amount above 0',false);
+   if(!confirm(`${add?'Add':'Take back'} ${amount.toLocaleString()} MB ${add?'to':'from'} ${name}?`))return;
+   r=await post(add?'/api/admin/credit':'/api/admin/withdraw',{name,amount,note});if(r.ok){$('a-mb').value='';$('a-mb-note').value=''}
+   if(r.ok&&r.cash!==undefined)r.msg=`${r.msg}. ${name} now has ${mb(r.cash)} MB cash`}
+  else if(a==='pass-give'||a==='pass-take'){const tier=$('a-tier').value,days=parseFloat($('a-days').value),note=$('a-pass-note').value.trim(),label=tier==='expert'?'Expert':'Pro',give=a==='pass-give';
+   if(give&&!(days>0))return toast('Enter a number of days above 0',false);
+   if(!confirm(give?`Give ${name} ${days} days of ${label}?`:`Take ${label} away from ${name} now?`))return;
+   r=await post('/api/admin/pro',give?{name,days,note,tier}:{name,remove:true,note,tier});if(r.ok)$('a-pass-note').value=''}
+  else if(a==='pw'){if(!confirm(`Give ${name} a new temporary password? Every one of their logins ends.`))return;
+   r=await post('/api/admin/reset_password',{name});if(r.password){prompt(`Temporary password for ${name}. Copy it and give it to them privately:`,r.password);r.msg='Password reset for '+name}}
+  else if(a==='em-verify'||a==='em-clear'){r=await post('/api/admin/email',{name,action:a==='em-verify'?'verify':'clear'})}
+  else if(a==='mute'){const sec=Number(b.dataset.s);r=await post('/api/admin/mute',{name,seconds:sec});if(r.ok!==false&&!r.msg)r.msg=sec?name+' is muted for an hour':name+' is unmuted'}
+  else if(a==='delete'){const again=prompt(`Delete ${name} for good? Their positions are closed, their MB and account are removed, they are logged out, and a monthly pass is cancelled. This cannot be undone.\n\nType the name again to confirm:`);if(again===null)return;
+   r=await post('/api/admin/delete_player',{name,confirm:again});if(r.ok){picked=null;$('dtitle').textContent='Pick a player';$('detail').className='mut';$('detail').textContent='Deleted.'}}
+  if(r){toast(said(r),r.ok!==false&&!r.error&&r._status<400);if(picked)loadPlayer(picked,true);refreshPlayers()}
+ }catch(err){if(err.message!=='forbidden')toast('Failed: '+err.message,false)}});
+function renderAccounts(a){
+ const g=a.shared_address.length?a.shared_address.map(x=>`<div class="row"><span class="t"><b>${x.accounts} accounts</b> share an address: ${x.names.map(n=>`<a href="#" data-p="${esc(n)}">${esc(n)}</a>`).join(', ')}</span></div>`).join(''):empty('No accounts share an address.');
+ $('accts').innerHTML=`<div class="kpis">${kpi('Accounts',a.accounts,a.with_password+' with a password')}${kpi('Logged-in devices',a.sessions)}${kpi('Email',a.with_email+' given',a.email_verified+' verified · mode '+esc(a.email_mode))}</div><h3>Accounts that share an address (one person, several accounts?)</h3>`+g}
+$('accts').addEventListener('click',e=>{const l=e.target.closest('[data-p]');if(l){e.preventDefault();pick(l.dataset.p)}});
+
+// ---------- chat ----------
+function renderChat(c){
+ const row=m=>`<div class="row"><small>${ago(m.t)}</small><span class="t"><a href="#" data-p="${esc(m.name)}"><b>${esc(m.name)}</b></a>${m.channel!=='global'?' <small>['+esc(m.channel)+']</small>':''}: ${esc(m.text)}</span><button data-del="${m.id}">Delete</button><button data-mute="${esc(m.name)}" data-s="600">Mute 10m</button><button data-mute="${esc(m.name)}" data-s="3600">1h</button></div>`;
+ $('chatlog').innerHTML=c.messages.length?c.messages.slice(0,60).map(row).join(''):empty('No messages yet.');
+ const byMsg=new Map();for(const r of c.reports){const g=byMsg.get(r.id)||{...r,by:[]};g.by.push(r.by);byMsg.set(r.id,g)}
+ const rep=byMsg.size?[...byMsg.values()].slice(0,20).map(r=>`<div class="row"><small>${ago(r.t)}</small><span class="t"><b>${esc(r.name)}</b>: ${esc(r.text)} <small>(${r.by.length} report${r.by.length===1?'':'s'}: ${r.by.map(esc).join(', ')})</small></span><button data-del="${r.id}" class="danger">Delete</button><button data-mute="${esc(r.name)}" data-s="3600">Mute 1h</button></div>`).join(''):empty('No reports. Three players reporting a message removes it and mutes its author by itself.');
+ const muted=c.muted.length?'<h3>Muted now</h3>'+c.muted.map(m=>`<div class="row"><span class="t"><b>${esc(m.name)}</b> <small>${Math.ceil(m.left/60)} min left</small></span><button data-mute="${esc(m.name)}" data-s="0">Unmute</button></div>`).join(''):'<p class="note">Nobody is muted.</p>';
+ $('reports').innerHTML=rep+muted;
+ $('appeals').innerHTML=(c.appeals||[]).length?c.appeals.map(a=>`<div class="row"><small>${ago(a.t)}</small><span class="t"><b>${esc(a.name)}</b>: ${esc(a.text)} <small>[${esc(a.status)}]</small></span>${a.status==='open'?`<button data-appeal="${a.id}" data-decision="lift" class="primary">Lift mute</button><button data-appeal="${a.id}" data-decision="deny">Keep mute</button>`:''}</div>`).join(''):empty('No appeals.');
+ $('modlog').innerHTML=(c.mod_log||[]).length?c.mod_log.map(l=>`<div class="row"><small>${ago(l.t)}</small><span class="t"><b>${esc(l.actor)}</b> ${esc(l.action)} <b>${esc(l.name)}</b> <small>${esc(l.detail)}</small></span></div>`).join(''):empty('Nothing yet.');
+ const open=byMsg.size+(c.appeals||[]).filter(a=>a.status==='open').length;$('chat-badge').textContent=open||'';
+ $('ordsoc').innerHTML=`<p class="note" style="margin:0">${c.tournaments.map(t=>esc(t.id)+': '+t.entrants+' entered').join(' · ')||'No contests running.'}</p>`+($('ordsoc').dataset.orders||'')}
+document.querySelector('[data-page="chat"]').addEventListener('click',async e=>{
+ const d=e.target.closest('[data-del]'),m=e.target.closest('[data-mute]'),ap=e.target.closest('[data-appeal]'),pl=e.target.closest('[data-p]');
+ if(pl){e.preventDefault();pick(pl.dataset.p);return}
+ try{let r;if(ap)r=await post('/api/admin/appeal',{id:Number(ap.dataset.appeal),decision:ap.dataset.decision});
+  else if(d)r=await post('/api/admin/chat/delete',{id:Number(d.dataset.del)});
+  else if(m)r=await post('/api/admin/mute',{name:m.dataset.mute,seconds:Number(m.dataset.s)});
+  else return;toast(r.msg||'Done',r.ok!==false&&!r.error);renderChat(await api('/api/admin/chat'))}catch(err){if(err.message!=='forbidden')toast('Failed: '+err.message,false)}});
+
+// ---------- the deeper numbers (every 20 seconds) ----------
 function renderInsights(i){
- const o=i.ops,g=i.game,pos=i.positions,so=i.social,od=i.orders,cn=i.connections,sec=i.security,al=[];
- if(o.disk_free_pct!=null&&o.disk_free_pct<5)al.push(['bad','The disk is almost full: '+f(o.disk_free_gb,1)+' GB free ('+f(o.disk_free_pct,0)+'%). The game cannot save when it is full.']);
- else if(o.disk_free_pct!=null&&o.disk_free_pct<15)al.push(['warn','The disk is getting full: '+f(o.disk_free_gb,1)+' GB free ('+f(o.disk_free_pct,0)+'%).']);
- if(o.saved_ago_s!=null&&o.saved_ago_s>120)al.push(['bad','The game has not saved for '+hm(o.saved_ago_s)+' (it saves every 30 seconds). A crash now would lose that much, apart from what the ledger replays.']);
- if(o.backup.found&&o.backup.age_s!=null){if(o.backup.age_s>86400)al.push(['bad','The newest backup is '+hm(o.backup.age_s)+' old: the backup job (every 6 hours) is not working.']);else if(o.backup.age_s>8*3600)al.push(['warn','The newest backup is '+hm(o.backup.age_s)+' old (the job runs every 6 hours).'])}
- if(sec.lockouts_last_hour>0)al.push(['bad','Someone was locked out of the admin interface in the last hour after '+sec.limit+' wrong keys: see Admin security.']);
- else if(sec.wrong_last_hour>=5)al.push(['warn',sec.wrong_last_hour+' wrong admin keys in the last hour.']);
- if(so.reported_messages>0)al.push(['warn',so.reported_messages+' reported chat message'+(so.reported_messages===1?'':'s')+' still in the list: see Chat moderation below.']);
- if(so.appeals_open>0)al.push(['warn',so.appeals_open+' mute appeal'+(so.appeals_open===1?' is':'s are')+' waiting for a decision.']);
- $('alerts2').innerHTML=al.map(a=>`<div class="${a[0]}">${esc(a[1])}</div>`).join('');
- const b=o.backup,diskc=o.disk_free_pct!=null&&o.disk_free_pct<15?'warn':'';
- $('cards2').innerHTML=cardf('Server up for',hm(o.uptime_s),'Python '+esc(o.python)+', CPU used '+hm(o.cpu_seconds)+' in total')
-  +cardf('Memory',o.memory_mb==null?'-':f(o.memory_mb,0)+' MB','this game process')
-  +cardf('Disk free',o.disk_free_gb==null?'-':f(o.disk_free_gb,1)+' GB',o.disk_free_pct==null?'':f(o.disk_free_pct,0)+'% of the disk',diskc)
-  +cardf('Last save',o.saved_ago_s==null?'-':hm(o.saved_ago_s)+' ago','save '+f(o.state_mb,1)+' MB, charts '+f(o.charts_mb,1)+' MB',o.saved_ago_s>120?'dn':'')
-  +cardf('Last backup',b.found?(b.age_s==null?'none yet':hm(b.age_s)+' ago'):'no folder','copies kept: '+b.copies+' ('+esc(b.folder)+')',b.found&&b.age_s>8*3600?'warn':'')
-  +cardf('Ledger',small(i.ledger_events)+' events',f(o.ledger_mb,1)+' MB on disk')
-  +cardf('Connected now',cn.players+' pages',cn.visitors+' visitors watching, '+cn.gateways+' gateways')
-  +cardf('Game day',g.day,'ends in '+hm(g.day_left)+' · session: '+esc(g.session))
-  +cardf('MSI 50',f(g.index,2),(g.index_chg>=0?'+':'')+f(g.index_chg*100,1)+'% over 30 min · '+g.index_members+' members',g.index_chg>=0?'up':'dn')
-  +cardf('Listings',g.listings,g.companies+' companies, '+g.moonshots+' moonshots, '+g.funds_commodities+' funds and commodities, '+g.indices_etfs+' indices and ETFs')
-  +cardf('News in the last hour',g.news_last_hour,Object.entries(g.news_by_kind).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,n])=>esc(k)+' '+n).join(' · ')||'none')
-  +cardf('Next scheduled event',g.next_event?esc(g.next_event.ticker)+' '+esc(g.next_event.kind):'none',g.next_event?'in '+hm(g.next_event.in_seconds):'')
-  +cardf('Delisted so far',g.delisted,'reserve topped up by '+mb(g.reserve_recapitalized)+' MB')
-  +cardf('Open orders',od.open,od.players+' players'+(Object.keys(od.by_kind).length?' · '+Object.entries(od.by_kind).map(([k,n])=>esc(k)+' '+n).join(', '):''))
-  +cardf('Positions',pos.holders+' holders','long '+mb(pos.long_value)+' MB · short '+mb(pos.short_value)+' MB')
-  +cardf('Chat',so.chat_last_hour+' last hour',so.reported_messages+' reported · '+so.muted+' muted · '+so.appeals_open+' appeals',so.reported_messages||so.appeals_open?'warn':'')
-  +cardf('Contests',so.contests_running+' running',so.contest_entrants+' entered');
- $('ch3').innerHTML=line(cn.series,[['online','#58a6ff','player pages'],['guests','#d29922','visitors']],v=>Math.round(v));
+ const o=i.ops,g=i.game,pos=i.positions,so=i.social,od=i.orders,cn=i.connections,sec=i.security,b=o.backup;
+ alertsB=[];
+ if(o.disk_free_pct!=null&&o.disk_free_pct<5)alertsB.push(['bad','The disk is almost full: '+f(o.disk_free_gb,1)+' GB free. The game cannot save when it is full.']);
+ else if(o.disk_free_pct!=null&&o.disk_free_pct<15)alertsB.push(['warn','The disk is getting full: '+f(o.disk_free_gb,1)+' GB free.']);
+ if(o.saved_ago_s!=null&&o.saved_ago_s>120)alertsB.push(['bad','The game has not saved for '+hm(o.saved_ago_s)+' (it saves every 30 seconds).']);
+ if(b.found&&b.age_s!=null){if(b.age_s>86400)alertsB.push(['bad','The newest backup is '+hm(b.age_s)+' old: the backup job (every 6 hours) is not working.']);else if(b.age_s>8*3600)alertsB.push(['warn','The newest backup is '+hm(b.age_s)+' old (the job runs every 6 hours).'])}
+ if(sec.lockouts_last_hour>0)alertsB.push(['bad','Someone was locked out of the admin pages in the last hour after '+sec.limit+' wrong keys (System tab).']);
+ else if(sec.wrong_last_hour>=5)alertsB.push(['warn',sec.wrong_last_hour+' wrong admin keys in the last hour.']);
+ if(so.reported_messages>0)alertsB.push(['warn',so.reported_messages+' reported chat message'+(so.reported_messages===1?'':'s')+' waiting (Chat tab).']);
+ if(so.appeals_open>0)alertsB.push(['warn',so.appeals_open+' mute appeal'+(so.appeals_open===1?' is':'s are')+' waiting for a decision (Chat tab).']);
+ drawAlerts();
+ const sysWarn=alertsB.filter(a=>!/Chat tab/.test(a[1])).length;$('sys-badge').textContent=sysWarn||'';
+ const diskc=o.disk_free_pct!=null&&o.disk_free_pct<15?'warn':'';
+ $('syscards').innerHTML=kpi('Server up for',hm(o.uptime_s),'Python '+esc(o.python)+' · CPU '+hm(o.cpu_seconds))
+  +kpi('Memory',o.memory_mb==null?'-':f(o.memory_mb,0)+' MB','the game process')
+  +kpi('Disk free',o.disk_free_gb==null?'-':f(o.disk_free_gb,1)+' GB',o.disk_free_pct==null?'':f(o.disk_free_pct,0)+'% of the disk',diskc)
+  +kpi('Last save',o.saved_ago_s==null?'-':hm(o.saved_ago_s)+' ago','save '+f(o.state_mb,1)+' MB · charts '+f(o.charts_mb,1)+' MB',o.saved_ago_s>120?'dn':'')
+  +kpi('Last backup',b.found?(b.age_s==null?'none yet':hm(b.age_s)+' ago'):'no folder',b.copies+' copies kept',b.found&&b.age_s>8*3600?'warn':'')
+  +kpi('Ledger',small(i.ledger_events)+' events',f(o.ledger_mb,1)+' MB on disk')
+  +kpi('Connected now',cn.players+' pages',cn.visitors+' visitors · '+cn.gateways+' gateways');
+ $('mktcards').innerHTML=kpi('Game day',g.day,'ends in '+hm(g.day_left)+' · '+esc(g.session))
+  +kpi('MSI 50',f(g.index,2),(g.index_chg>=0?'+':'')+f(g.index_chg*100,1)+'% in 30 min · '+g.index_members+' members',g.index_chg>=0?'up':'dn')
+  +kpi('Listings',g.listings,g.companies+' companies · '+g.indices_etfs+' indices and ETFs')
+  +kpi('News in the last hour',g.news_last_hour,Object.entries(g.news_by_kind).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,n])=>esc(k)+' '+n).join(' · ')||'none')
+  +kpi('Next event',g.next_event?esc(g.next_event.ticker||'')+' '+esc(g.next_event.kind):'none',g.next_event?'in '+hm(g.next_event.in_seconds):'')
+  +kpi('Delisted so far',g.delisted,'bankruptcies and takeovers')
+  +kpi('Open orders',od.open,od.players+' players')
+  +kpi('Positions',pos.holders+' holders','long '+mb(pos.long_value)+' · short '+mb(pos.short_value)+' MB');
+ $('ch3').innerHTML=line(cn.series,[['online','#4cc3cc','player pages'],['guests','#e8b84a','visitors']],v=>Math.round(v),6);
  const a=i.activity;
- if(a){
-  const mx=Math.max(1,...a.hours.map(h=>h.trades));
-  $('hours').innerHTML=`<div class="bar">${a.hours.map(h=>`<div title="${new Date(h.t*1000).toLocaleString()}: ${h.trades} trades, ${mb(h.volume)} MB traded, ${f(h.fees,1)} MB fees"><i style="height:${Math.round(h.trades/mx*80)}px;background:#58a6ff"></i>${h.trades||''}<br>${String(new Date(h.t*1000).getHours()).padStart(2,'0')}</div>`).join('')}</div><p class="mut" style="font-size:12px;margin:6px 0 0">${Object.entries(a.kinds).map(([k,n])=>esc(k)+' '+n).join(' · ')||'no trades in the last 24 hours'}</p>`;
-  $('days').innerHTML=`<table><tr><th>Day</th><th>Sign-ups</th><th>Traders</th><th>Trades</th><th>Money traded</th><th>Fees</th></tr>${a.days.slice().reverse().map(d=>`<tr><td>${new Date(d.day*1000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'})}</td><td>${d.signups}</td><td>${d.traders}</td><td>${d.trades}</td><td>${mb(d.volume)} MB</td><td>${f(d.fees,1)} MB</td></tr>`).join('')}</table>`;
-  $('tickers').innerHTML=a.tickers.length?`<table><tr><th>Stock</th><th>Trades</th><th>Money traded</th><th>Buys</th><th>Players</th></tr>${a.tickers.map(t=>`<tr><td>${esc(t.ticker)}</td><td>${t.trades}</td><td>${mb(t.volume)} MB</td><td class="${t.buy_share>=0.5?'up':'dn'}">${f(t.buy_share*100,0)}%</td><td>${t.traders}</td></tr>`).join('')}</table><p class="mut" style="font-size:12px;margin:6px 0 0">"Buys" is the share of the money that was buying or covering; the rest was selling or shorting.</p>`:'<span class="mut">No trades in the last 24 hours.</span>'}
- const list=(title,rows,fmt)=>`<div style="margin-bottom:10px"><b>${title}</b>${rows.length?`<table>${rows.map(r=>`<tr class="pick" data-n="${esc(r.name)}"><td>${esc(r.name)}</td><td>${fmt(r.value)}</td></tr>`).join('')}</table>`:'<br><span class="mut">nobody yet</span>'}</div>`;
- $('toplists').innerHTML=list('Richest (equity)',i.players.by_equity,v=>mb(v)+' MB')+list('Most fees paid',i.players.by_fees,v=>f(v,1)+' MB')+list('Most trades today',i.players.by_trades,v=>v)+`<p class="mut" style="margin:0">All players hold ${mb(i.players.total_equity)} MB in total (${mb(i.players.total_cash)} MB of it as cash).</p>`;
- $('bigpos').innerHTML=pos.biggest.length?`<table><tr><th>Player</th><th>Stock</th><th>Side</th><th>Value</th></tr>${pos.biggest.map(p=>`<tr class="pick" data-n="${esc(p.player)}"><td>${esc(p.player)}</td><td>${esc(p.ticker)}</td><td class="${p.side==='long'?'up':'dn'}">${p.side}</td><td>${mb(p.value)} MB</td></tr>`).join('')}</table>`:'<span class="mut">No open positions.</span>';
- $('ordsoc').innerHTML=`<p>Open orders: <b>${od.open}</b> from ${od.players} players${Object.keys(od.by_kind).length?' ('+Object.entries(od.by_kind).map(([k,n])=>esc(k)+' '+n).join(', ')+')':''}.</p><p>Chat: <b>${so.chat_last_hour}</b> messages in the last hour (${so.chat_kept} kept), <b>${so.reported_messages}</b> reported, <b>${so.muted}</b> players muted, <b>${so.appeals_open}</b> appeals open.</p><p>Contests: ${so.contests_running} running with ${so.contest_entrants} entries.</p>`;
- $('security').innerHTML=`<p><b>${sec.wrong_last_hour}</b> wrong key${sec.wrong_last_hour===1?'':'s'} and <b class="${sec.lockouts_last_hour?'dn':''}">${sec.lockouts_last_hour}</b> blocked request${sec.lockouts_last_hour===1?'':'s'} in the last hour. ${sec.limit} wrong keys within ${Math.round(sec.window_s/60)} minutes from one address lock that address out of the admin interface until the oldest has aged out, even with the right key.</p>`+(sec.recent.length?`<table><tr><th>When</th><th>Address</th><th>What</th></tr>${sec.recent.map(x=>`<tr><td>${ago(x.t)}</td><td>${esc(x.addr)}</td><td class="${x.what==='locked out'?'dn':'warn'}">${esc(x.what)}</td></tr>`).join('')}</table>`:'<span class="mut">Nobody has tried a wrong key since the server started.</span>');
- $('settings').innerHTML=`<table><tr>${Object.entries(i.settings).map(([k,v])=>`<td style="text-align:left"><span class="mut">${esc(k)}</span> <b>${esc(typeof v==='number'?Number(v).toLocaleString(undefined,{maximumFractionDigits:6}):String(v))}</b></td>`).reduce((acc,c,n)=>acc+c+((n+1)%3===0?'</tr><tr>':''),'')}</tr></table>`}
-$('toplists').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
-$('bigpos').addEventListener('click',e=>{const tr=e.target.closest('tr[data-n]');if(tr){loadPlayer(tr.dataset.n);$('detailcard').scrollIntoView({behavior:'smooth'})}});
-let tickN=0;
-const REGIME_TEXT={bull:'Bull market: drifting up, calm',sideways:'Sideways: little direction, quiet, ranges are likelier',correction:'Correction: a short, sharp fall',bear:'Bear market: falling, volatile',recovery:'Recovery: rising after a fall'};
+ if(a){const mx=Math.max(1,...a.hours.map(h=>h.trades));
+  $('hours').innerHTML=`<div class="bars">${a.hours.map(h=>`<div title="${new Date(h.t*1000).toLocaleString()}: ${h.trades} trades, ${mb(h.volume)} MB, ${f(h.fees,1)} MB fees"><i style="height:${Math.round(h.trades/mx*90)}px;background:#4cc3cc"></i>${h.trades||''}<br>${String(new Date(h.t*1000).getHours()).padStart(2,'0')}</div>`).join('')}</div>`;
+  $('days').innerHTML=`<table><thead><tr><th>Day</th><th>Sign-ups</th><th>Traders</th><th>Trades</th><th>Money traded</th><th>Fees</th></tr></thead><tbody>${a.days.slice().reverse().map(d=>`<tr><td>${new Date(d.day*1000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'})}</td><td>${d.signups}</td><td>${d.traders}</td><td>${d.trades}</td><td>${mb(d.volume)} MB</td><td>${f(d.fees,1)} MB</td></tr>`).join('')}</tbody></table>`;
+  $('tickers').innerHTML=a.tickers.length?`<table><thead><tr><th>Stock</th><th>Trades</th><th>Money traded</th><th>Buying</th><th>Players</th></tr></thead><tbody>${a.tickers.map(t=>`<tr><td>${esc(t.ticker)}</td><td>${t.trades}</td><td>${mb(t.volume)} MB</td><td class="${t.buy_share>=0.5?'up':'dn'}">${f(t.buy_share*100,0)}%</td><td>${t.traders}</td></tr>`).join('')}</tbody></table>`:empty('No trades in the last 24 hours.')}
+ const list=(title,rows,fmt)=>`<h3 style="margin-top:0">${title}</h3>${rows.length?`<table><tbody>${rows.map(r=>`<tr class="pick" data-n="${esc(r.name)}"><td>${esc(r.name)}</td><td>${fmt(r.value)}</td></tr>`).join('')}</tbody></table>`:empty('Nobody yet.')}`;
+ $('toplists').innerHTML=`<div class="grid2" style="gap:14px">${['<div>'+list('Richest',i.players.by_equity,v=>mb(v)+' MB')+'</div>','<div>'+list('Most trades today',i.players.by_trades,v=>v)+'</div>'].join('')}</div>`+list('Most fees paid',i.players.by_fees,v=>f(v,1)+' MB')+`<p class="note">All players hold ${mb(i.players.total_equity)} MB (${mb(i.players.total_cash)} MB of it in cash).</p>`;
+ $('bigpos').innerHTML=pos.biggest.length?`<table><thead><tr><th>Player</th><th>Stock</th><th>Side</th><th>Value</th></tr></thead><tbody>${pos.biggest.map(p=>`<tr class="pick" data-n="${esc(p.player)}"><td>${esc(p.player)}</td><td>${esc(p.ticker)}</td><td class="${p.side==='long'?'up':'dn'}">${p.side}</td><td>${mb(p.value)} MB</td></tr>`).join('')}</tbody></table>`:empty('No open positions.');
+ $('ordsoc').dataset.orders=`<p style="margin:10px 0 0">Open orders: <b>${od.open}</b> from ${od.players} players${Object.keys(od.by_kind).length?' ('+Object.entries(od.by_kind).map(([k,n])=>esc(k)+' '+n).join(', ')+')':''}. Contests: ${so.contests_running} running, ${so.contest_entrants} entries.</p>`;
+ $('security').innerHTML=`<p style="margin:0 0 8px"><b>${sec.wrong_last_hour}</b> wrong key${sec.wrong_last_hour===1?'':'s'} and <b class="${sec.lockouts_last_hour?'dn':''}">${sec.lockouts_last_hour}</b> blocked in the last hour. ${sec.limit} wrong keys in ${Math.round(sec.window_s/60)} minutes from one address lock it out.</p>`+(sec.recent.length?`<table><thead><tr><th>When</th><th>Address</th><th>What</th></tr></thead><tbody>${sec.recent.map(x=>`<tr><td>${ago(x.t)}</td><td>${esc(x.addr)}</td><td class="${x.what==='locked out'?'dn':'warn'}">${esc(x.what)}</td></tr>`).join('')}</tbody></table>`:empty('Nobody has tried a wrong key since the server started.'));
+ $('settings').innerHTML=`<table><tbody><tr>${Object.entries(i.settings).map(([k,v])=>`<td style="text-align:left"><span class="mut">${esc(k)}</span> <b>${esc(typeof v==='number'?Number(v).toLocaleString(undefined,{maximumFractionDigits:6}):String(v))}</b></td>`).reduce((acc,c,n)=>acc+c+((n+1)%3===0?'</tr><tr>':''),'')}</tr></tbody></table>`}
+const REGIME_TEXT={bull:'Bull market: drifting up, calm',sideways:'Sideways: little direction, ranges likelier',correction:'Correction: a short, sharp fall',bear:'Bear market: falling, volatile',recovery:'Recovery: rising after a fall'};
 function renderModel(m){
- if(!m.on){$('model').innerHTML='<p class="mut">The old zero-drift market is running (set <code>market_model</code> to 2 in base.json for the new one).</p>';return}
+ if(!m.on){$('model').innerHTML=empty('The old zero-drift market is running (market_model is not 2).');return}
  const e=m.economy,md=m.modes||{};
- $('model').innerHTML=`<div class="cards">${[['Market phase',m.regime,REGIME_TEXT[m.regime]||''],['Phase changes in',m.regime_left_days+' game days','random; players never see the phase'],['Policy rate',f(e.rate,2)+'%','the rule says '+f(e.taylor,2)+'%'],['Inflation',f(e.inflation,2)+'%','hidden; CPI reports it'],['Growth',f(e.growth,2)+'%','hidden; GDP reports it'],['Unemployment',f(e.unemployment,2)+'%','hidden; the jobs report shows it'],['Listings trending',md.trend||0,'in a range: '+(md.range||0)+' · free: '+(md.free||0)],['Levels being tested',m.tests_now,'support or resistance right now']].map(([l,v,x])=>`<div class="card"><small>${l}</small><strong>${esc(v)}</strong><em>${esc(x)}</em></div>`).join('')}</div><p class="mut" style="font-size:12px">See market_model.py and HOW_IT_WORKS.md. The phase, the economy and each listing's swing are drawn at random; the economy only shifts the odds of the next phase.</p>`}
+ $('model').innerHTML=`<div class="kpis" style="margin:0">${[['Market phase',m.regime,REGIME_TEXT[m.regime]||''],['Phase changes in',m.regime_left_days+' game days','random'],['Policy rate',f(e.rate,2)+'%','the rule says '+f(e.taylor,2)+'%'],['Inflation',f(e.inflation,2)+'%','CPI reports it'],['Growth',f(e.growth,2)+'%','GDP reports it'],['Unemployment',f(e.unemployment,2)+'%','the jobs report shows it'],['Trending',md.trend||0,'in a range '+(md.range||0)+' · free '+(md.free||0)],['Levels being tested',m.tests_now,'support or resistance now']].map(([l,v,x])=>kpi(l,esc(v),esc(x))).join('')}</div>`}
+function renderErrors(m){
+ if(!m.kinds.length){$('errors').innerHTML=`<p class="up" style="margin:0">None since ${new Date(m.started*1000).toLocaleString()}.</p>`;return}
+ $('errors').innerHTML=`<p class="dn" style="margin:0 0 8px"><b>${m.total}</b> error${m.total===1?'':'s'} of ${m.kinds.length} kind${m.kinds.length===1?'':'s'} since ${new Date(m.started*1000).toLocaleString()}.</p>`
+  +m.kinds.slice(0,20).map(k=>`<details class="row"><summary><b>${k.count}x</b> ${esc(k.what)} at ${esc(k.where)}, last ${ago(k.last)}: ${esc(k.message)}</summary>${k.trace?'<pre style="white-space:pre-wrap;font-size:11px;margin:6px 0 0">'+esc(k.trace)+'</pre>':''}</details>`).join('')}
+function renderMail(m){
+ const st=m.status,head=st.configured?`<p style="margin:0 0 8px">Mail goes through <b>${esc(st.host||'a test transport')}</b> as ${esc(st.sender)}: ${st.sent} sent, ${st.failed} failed, ${st.queued} waiting.</p>`:'<p class="warn" style="margin:0 0 8px"><b>Email is not set up</b>, so nothing is sent: messages (and their codes) are only listed here. Set it up with <code>deploy\\set_mail.ps1</code>.</p>';
+ const rows=m.recent.length?m.recent.slice(0,15).map(x=>`<div class="row"><span class="t">${new Date(x.t*1000).toLocaleTimeString()} ${esc(x.state)} to ${esc(x.to)}: ${esc(x.subject)}${x.error?' ('+esc(x.error)+')':''}${x.body?'<br><span class="mut">'+esc(x.body).replace(/[\r\n]+/g,' ')+'</span>':''}</span></div>`).join(''):empty('No mail yet.');
+ $('mailbox').innerHTML=head+rows}
+// ---------- the shop ----------
 const SRC={grant:'Starting balances',purchase:'Bought',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
 function renderShop(d){
- const mode={off:'Off: the shop shows prices and sells nothing',test:'TEST: a pretend checkout, no money is taken. Never use this on the public site.',stripe:'Stripe: real payments'}[d.mode]||d.mode;
- const max=Math.max(1,...d.revenue_by_day.map(x=>x.cents)),src=Object.entries(d.mb_by_source||{});
- const pc=d.pay_check;
- $('shop').innerHTML=`<p>Payments: <b class="${d.mode==='test'?'warn':''}">${esc(mode)}</b></p>
- ${d.mode==='stripe'?`<p class="mut" style="font-size:12px">Payment check (every 6 hours, Stripe's list of paid checkouts against our orders): ${pc?(pc.error?`<b class="dn">${esc(pc.error)}</b>`:`${ago(pc.at)}, ${pc.checked} checked, <b class="${pc.fixed.length?'warn':''}">${pc.fixed.length} completed late</b>, <b class="${pc.problems.length?'dn':''}">${pc.problems.length} problem${pc.problems.length===1?'':'s'}</b>`)+(pc&&pc.problems.length?': '+pc.problems.map(x=>esc(x.order+' '+x.msg)).join('; '):''):'not run yet'} <button data-paycheck>Check now</button></p>`:''}
- ${d.since?`<p class="mut" style="font-size:12px">Counted since the game was reset to Day 1 on ${new Date(d.since*1000).toLocaleString()}.${d.earlier?` Before that: ${d.earlier.orders} paid order${d.earlier.orders===1?'':'s'}, ${esc(d.earlier.revenue_text)} (kept; an order from then can still be refunded by its id).`:''}</p>`:''}
- <div class="cards">${[[d.since?'Revenue since Day 1':'Revenue (all time)',d.revenue_text],['Revenue (30 days)',d.revenue_30d_text],['Paid orders',d.orders_paid],['Buyers',d.buyers],['Pro members now',d.pro_members],['Expert members now',d.expert_members??0],['Refunded',d.refunded],['Waiting for payment',d.pending]].map(([l,v])=>`<div class="card"><small>${l}</small><strong>${esc(v)}</strong></div>`).join('')}</div>
- ${d.revenue_by_day.length?`<p style="margin:10px 0 4px">Revenue per day (UTC)</p><div style="display:flex;align-items:flex-end;gap:3px;height:54px">${d.revenue_by_day.map(x=>`<div title="${new Date(x.day*1000).toLocaleDateString()}: ${(x.cents/100).toFixed(2)}" style="flex:1;background:#3fb950;min-height:2px;height:${Math.max(2,Math.round(50*x.cents/max))}px"></div>`).join('')}</div>`:''}
- <div class="grid2" style="margin-top:10px"><div><h3>Where the players' MB came from</h3><table><tr><th>Source</th><th>MB</th></tr>${src.map(([k,v])=>`<tr><td>${esc(SRC[k]||k)}</td><td>${mb(v)}</td></tr>`).join('')||'<tr><td class="mut">Nothing yet.</td></tr>'}</table></div>
- <div><h3>Where players came from</h3><p class="mut" style="font-size:12px">Links like <code>memestreet.net/?ref=ig_story1</code>: the first one a visitor arrives by is kept until they sign up.</p><table><tr><th>Link</th><th>Sign-ups</th><th>Buyers</th><th>Revenue</th></tr>${(d.by_ref||[]).map(r=>`<tr><td>${r.ref?esc(r.ref):'<span class="mut">no link</span>'}</td><td>${r.signups}</td><td>${r.buyers}</td><td>${esc(r.revenue_text)}</td></tr>`).join('')||'<tr><td class="mut">No players yet.</td></tr>'}</table></div>
- <div><h3>Latest orders</h3><table><tr><th>When</th><th>Player</th><th>Item</th><th>Price</th><th>Status</th><th></th></tr>${d.recent.map(o=>`<tr><td>${ago(o.at)}</td><td>${esc(o.name)}</td><td>${esc(o.sku)}</td><td>${esc(o.price)}</td><td>${esc(o.status)}${o.provider==='test'?' <span class="mut">(test)</span>':''}</td><td>${o.status==='paid'?`<button data-refund="${esc(o.id)}" title="Use this after giving the money back at the payment provider">Refund</button>`:''}</td></tr>`).join('')||'<tr><td class="mut">No orders yet.</td></tr>'}</table>
- <p class="mut" style="font-size:12px">Refund here only after refunding the payment at the provider. It takes back the MB the player still has free (never more than the order gave), or the Pro time.</p></div></div>`}
-$('shop').addEventListener('click',async e=>{if(e.target.closest('[data-paycheck]')){try{const r=await api('/api/admin/payment_check',{});alert(r.msg);renderShop(await api('/api/admin/shop'))}catch(err){alert('failed: '+err.message)}return}
- const b=e.target.closest('[data-refund]');if(!b)return;if(!confirm('Mark order '+b.dataset.refund+' as refunded and take back what it gave?'))return;
- try{const r=await api('/api/admin/refund',{id:b.dataset.refund});alert(r.msg);renderShop(await api('/api/admin/shop'))}catch(err){alert('failed: '+err.message)}});
-async function tick(){try{render(await api('/api/admin/overview'));if(tickN%4===0){renderShop(await api('/api/admin/shop'));renderModel(await api('/api/admin/model'))}if(tickN++%4===0)renderInsights(await api('/api/admin/insights'));renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'));renderErrors(await api('/api/admin/errors'))}catch(e){if(e.message==='forbidden'){lock('That key was not accepted.')}else{$('stamp').textContent='error: '+e.message}}}
+ const mode={off:'Off: prices are shown, nothing is sold',test:'TEST: a pretend checkout, no money taken. Never on the public site.',stripe:'Stripe: real payments'}[d.mode]||d.mode;
+ const max=Math.max(1,...d.revenue_by_day.map(x=>x.cents)),src=Object.entries(d.mb_by_source||{}),pc=d.pay_check;
+ $('shop').innerHTML=`<div class="panel"><h2><span>Payments: <span class="${d.mode==='test'?'warn':d.mode==='stripe'?'up':'mut'}">${esc(mode)}</span></span>${d.mode==='stripe'?'<button data-paycheck>Check payments now</button>':''}</h2>
+  ${d.mode==='stripe'?`<p class="note" style="margin:0 0 12px">Payment check (every 6 hours: Stripe's paid checkouts against our orders): ${pc?(pc.error?`<b class="dn">${esc(pc.error)}</b>`:`${ago(pc.at)}, ${pc.checked} checked, <b class="${pc.fixed.length?'warn':''}">${pc.fixed.length} completed late</b>, <b class="${pc.problems.length?'dn':''}">${pc.problems.length} problem${pc.problems.length===1?'':'s'}</b>`)+(pc&&pc.problems.length?': '+pc.problems.map(x=>esc(x.order+' '+x.msg)).join('; '):''):'not run yet'}</p>`:''}
+  ${d.since?`<p class="note" style="margin:0 0 12px">Counted since the reset to Day 1 on ${new Date(d.since*1000).toLocaleString()}.${d.earlier?` Before that: ${d.earlier.orders} paid order${d.earlier.orders===1?'':'s'}, ${esc(d.earlier.revenue_text)}.`:''}</p>`:''}
+  <div class="kpis" style="margin:0">${[[d.since?'Revenue since Day 1':'Revenue',d.revenue_text],['Last 30 days',d.revenue_30d_text],['Paid orders',d.orders_paid],['Buyers',d.buyers],['Pro members',d.pro_members],['Expert members',d.expert_members??0],['Refunded',d.refunded],['Waiting for payment',d.pending]].map(([l,v])=>kpi(l,esc(v))).join('')}</div>
+  ${d.revenue_by_day.length?`<h3>Revenue a day (UTC)</h3><div style="display:flex;align-items:flex-end;gap:3px;height:60px">${d.revenue_by_day.map(x=>`<div title="${new Date(x.day*1000).toLocaleDateString()}: ${(x.cents/100).toFixed(2)}" style="flex:1;background:#3ad07a;border-radius:2px 2px 0 0;min-height:2px;height:${Math.max(2,Math.round(56*x.cents/max))}px"></div>`).join('')}</div>`:''}</div>
+  <div class="panel"><h2>Latest orders</h2><table><thead><tr><th>When</th><th>Player</th><th>Item</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>${d.recent.map(o=>`<tr><td class="mut">${ago(o.at)}</td><td><a href="#" data-p="${esc(o.name)}">${esc(o.name)}</a></td><td>${esc(o.sku)}</td><td>${esc(o.price)}</td><td class="${o.status==='paid'?'up':o.status==='refunded'?'warn':'mut'}">${esc(o.status)}${o.provider==='test'?' <span class="mut">(test)</span>':''}</td><td>${o.status==='paid'?`<button data-refund="${esc(o.id)}">Refund</button>`:''}</td></tr>`).join('')||'<tr><td class="mut">No orders yet.</td></tr>'}</tbody></table>
+  <p class="note">Refund here only after refunding the payment in Stripe. It takes back the MB the player still has free (never more than the order gave), or the pass time.</p></div>
+  <div class="grid2"><div class="panel"><h2>Where players came from <span class="mut">?ref= links</span></h2><table><thead><tr><th>Link</th><th>Sign-ups</th><th>Buyers</th><th>Revenue</th></tr></thead><tbody>${(d.by_ref||[]).map(r=>`<tr><td>${r.ref?esc(r.ref):'<span class="mut">no link</span>'}</td><td>${r.signups}</td><td>${r.buyers}</td><td>${esc(r.revenue_text)}</td></tr>`).join('')||'<tr><td class="mut">No players yet.</td></tr>'}</tbody></table><p class="note">Use links like <code>memestreet.net/?ref=ig_story1</code> in ads; the first one a visitor arrives by is kept until they sign up.</p></div>
+  <div class="panel"><h2>Where the players' MB came from</h2><table><thead><tr><th>Source</th><th>MB</th></tr></thead><tbody>${src.map(([k,v])=>`<tr><td>${esc(SRC[k]||k)}</td><td>${mb(v)}</td></tr>`).join('')||'<tr><td class="mut">Nothing yet.</td></tr>'}</tbody></table></div></div>`}
+$('shop').addEventListener('click',async e=>{
+ const pl=e.target.closest('[data-p]');if(pl){e.preventDefault();pick(pl.dataset.p);return}
+ try{if(e.target.closest('[data-paycheck]')){const r=await post('/api/admin/payment_check',{});toast(said(r),r.ok!==false);renderShop(await api('/api/admin/shop'));return}
+  const b=e.target.closest('[data-refund]');if(!b)return;if(!confirm('Mark order '+b.dataset.refund+' as refunded and take back what it gave?'))return;
+  const r=await post('/api/admin/refund',{id:b.dataset.refund});toast(said(r),r.ok!==false&&!r.error);renderShop(await api('/api/admin/shop'))}catch(err){if(err.message!=='forbidden')toast('Failed: '+err.message,false)}});
+$('reset-go').addEventListener('click',async()=>{if($('reset-word').value.trim()!=='RESET')return toast('Type RESET first',false);
+ if(!confirm('Reset the whole game to Day 1? Every player goes back to the starting balance.'))return;
+ try{const r=await post('/api/admin/reset',{confirm:'RESET'});toast(said(r),!!r.ok);$('reset-word').value='';tick()}catch(err){if(err.message!=='forbidden')toast('Not reset: '+err.message,false)}});
+
+// ---------- refreshing ----------
+async function refreshPlayers(){try{players=(await api('/api/admin/players')).players;drawPlayers()}catch(e){}}
+async function tick(){try{
+ render(await api('/api/admin/overview'));
+ if(tickN%4===0){renderInsights(await api('/api/admin/insights'));renderShop(await api('/api/admin/shop'));renderModel(await api('/api/admin/model'))}
+ tickN++;
+ renderChat(await api('/api/admin/chat'));renderAccounts(await api('/api/admin/accounts'));renderMail(await api('/api/admin/mail'));renderErrors(await api('/api/admin/errors'));
+ await refreshPlayers()}
+ catch(e){if(e.message==='forbidden')lock('That key was not accepted.');else $('stamp').textContent='error: '+e.message}}
 function lock(msg){clearInterval(timer);try{sessionStorage.removeItem('admin_key')}catch(e){}key=null;$('app').style.display='none';$('login').style.display='block';$('err').textContent=msg||''}
-function open_(){$('login').style.display='none';$('app').style.display='block';tick();clearInterval(timer);timer=setInterval(tick,5000)}
+function open_(){$('login').style.display='none';$('app').style.display='block';showTab(location.hash.slice(1)||'overview');tickN=0;tick();clearInterval(timer);timer=setInterval(tick,5000)}
 $('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};
 $('key').onkeydown=e=>{if(e.key==='Enter')$('go').click()};$('out').onclick=()=>lock('');
 if(key)open_();
