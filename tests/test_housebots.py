@@ -38,11 +38,11 @@ class HouseBotTests(unittest.TestCase):
         self.assertEqual({b.hb["style"] for b in bots}, set(housebots.STYLES))
         self.assertEqual([r["name"] for r in e.admin_players()], ["realperson"])
         o = e.admin_overview()
-        self.assertEqual((o["bots"]["total"], o["stats"]["humans"], o["stats"]["bots"]), (32, 1, 32))
+        self.assertEqual((o["bots"]["total"], o["stats"]["humans"], o["stats"]["bots"]), (len(housebots.NAMES), 1, len(housebots.NAMES)))
         self.assertEqual(o["funnel"]["players"], 1)
-        self.assertGreaterEqual(o["stats"]["total_mb"], 33 * 1000 - 1)              # their MB count in the totals
+        self.assertGreaterEqual(o["stats"]["total_mb"], (len(housebots.NAMES) + 1) * 1000 - 1)              # their MB count in the totals
         e.tick(now=e.now + 1)
-        self.assertEqual(len(e.house_bots()), 32)                                   # made once
+        self.assertEqual(len(e.house_bots()), len(housebots.NAMES))                                   # made once
         self.assertIsNotNone(person)
 
     def test_they_trade_by_the_rules_and_every_mb_is_kept(self):

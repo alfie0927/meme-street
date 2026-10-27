@@ -1,4 +1,4 @@
-"""House bots: 32 computer players with ordinary usernames that trade the market and play the Daily Chart the way
+"""House bots: 72 computer players with ordinary usernames that trade the market and play the Daily Chart the way
 people do (since 2026-10-27, on request). They are switched on by the `house_bots` setting or `HOUSE_BOTS=1` in the
 environment (the live server sets it in /etc/memestreet.env); tests and new games have none.
 
@@ -28,7 +28,13 @@ import drills
 NAMES = ["jake_trades", "ThetaGang99", "bearmarketbecky", "MrStopLoss", "noah.b", "dannyboy_7", "priya_s", "freddie_m",
          "mia.k", "Rayan07", "lukeyp", "Marco.R", "chloe2k4", "Ines_V", "Dave M", "kofi_k", "sunnyside_em", "otterly_owen",
          "theo.w", "NovaSkye", "jakub_p", "Lina88", "maxwellh", "bluefinch", "samokay", "hazel.x", "mattw_", "rubyy_",
-         "Kenji_T", "frostbyte", "aisha.m", "pipsqueak_"]
+         "Kenji_T", "frostbyte", "aisha.m", "pipsqueak_",
+         # 40 more (2026-10-27, on request); "luna<3" became "luna3" (names allow letters, digits, _ - . and spaces)
+         "sleepytoad", "Benji_77", "moonpiefan", "kx_ellie", "ToastLord", "j4yden", "waffle.nina", "Riko_02",
+         "gremlin_matt", "peachy.kai", "Nova_2k9", "lilypadz", "ollie.exe", "Miko_V", "sourapple_sam", "jj_2008",
+         "cloudboy_", "Tia.Mx", "rocketraccoon7", "ezra.wtf", "honeydew_hana", "Kieran99", "mochi_milo", "vxne",
+         "bubbly.bee", "Dario_04", "froggo_finn", "luna3", "pixel_pip", "Jules_2k7", "saltycrisp", "amara_xo",
+         "noodle_nate", "Rhea.88", "sleepy_sora", "kobe_2", "minty.mae", "Ziggy_V", "crumbcat", "eli_not_elias"]
 STYLES = ["trend", "dip", "breakout", "levels", "rsi", "holder", "scalper", "random", "shorter"]
 FIXED = {"jake_trades": ("scalper", 0.45), "ThetaGang99": ("trend", 0.7), "bearmarketbecky": ("shorter", 0.55),
          "MrStopLoss": ("trend", 0.92)}
