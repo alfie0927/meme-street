@@ -141,12 +141,28 @@ input[type=date]{color-scheme:dark}#dly-pop,#buy-pop,#dob-pop{display:none;posit
 @media(max-width:760px){.bot-rules thead{display:none}.bot-rules tr{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);padding:4px 0}.bot-rules td{padding:0;border:0}.bot-rules td:first-child{flex-basis:100%}.bot-rules .r-when{min-width:0}}
 .cal-kind{font-weight:600}
 .page-learn #learn-card{display:block}
-.lesson-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0 14px}
-.lesson-item{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:2px;color:var(--txt);text-decoration:none}
-.lesson-item:hover{border-color:var(--acc)}.lesson-item b{display:block;margin:2px 0 4px}.lesson-item small{color:var(--mut);font-size:12px}
-.lesson-item .done{color:var(--up);font-weight:600;font-size:12px;float:right}
-#learn-card.reading{max-width:860px;margin-left:auto;margin-right:auto}.lesson-body{max-width:78ch;line-height:1.7;font-size:13.5px}.lesson-body h4{margin:20px 0 4px;font-size:14px}.lesson-body p{margin:6px 0;color:#b9c3ca}
 .lesson-body .tip{border-left:3px solid var(--acc);background:#4cc3cc10;padding:8px 12px;border-radius:3px;margin:12px 0}
+#learn-card.reading{max-width:900px;margin-left:auto;margin-right:auto}.lesson-body{line-height:1.7;font-size:13.5px}.lesson-body h4{margin:22px 0 4px;font-size:14px}.lesson-body p,.lesson-body li{color:#b9c3ca}.lesson-body p{margin:6px 0;max-width:80ch}
+.lesson-body ul{margin:6px 0 6px 20px;padding:0;max-width:78ch}.lesson-body li{margin:3px 0}.lesson-body b{color:var(--txt)}
+.lrn-top{display:grid;grid-template-columns:1fr 250px;gap:18px;align-items:start}.lrn-prog{border:1px solid var(--line);padding:10px 12px;border-radius:2px;font-size:13px}.lrn-prog .pbar{margin:6px 0}.lrn-prog span{display:block;font-size:12px}
+.lrn-tests{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:8px 0 6px}.lrn-test{display:flex;flex-direction:column;gap:3px;padding:9px 11px;border:1px solid var(--line);border-radius:2px;color:var(--txt);text-decoration:none}
+.lrn-test:hover,.lrn-track:hover{border-color:#4cc3cc88}.lrn-test small{color:var(--mut);font-size:12px;flex:1}.lrn-test span{font-size:11.5px}
+.lrn-tracks{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px;margin-top:8px}.lrn-track{border:1px solid var(--line);border-radius:2px;padding:12px 14px}
+.lrn-th{display:flex;gap:10px;align-items:center}.lrn-th small{display:block;color:var(--mut);font-size:12px}.lrn-track>p{font-size:12.5px;margin:8px 0;line-height:1.5}
+.lrn-n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:1px solid var(--acc);color:var(--acc);font-weight:700;border-radius:2px;flex:none}
+.lrn-ls{margin:10px 0 0;padding:0;list-style:none;counter-reset:lrn;font-size:13px}.lrn-ls li{counter-increment:lrn;display:grid;grid-template-columns:24px 1fr auto;gap:6px;margin:4px 0;color:var(--mut)}.lrn-ls li::before{content:counter(lrn) '.'}.lrn-ls li small{font-size:11.5px;white-space:nowrap}.lrn-ls li.done a,.lrn-ls li.done small{color:var(--up)}
+.lrn-crumb{font-size:12.5px;color:var(--mut)}
+.lrn-here{border-left:3px solid var(--avg);background:#e8b84a0d;padding:8px 12px;border-radius:3px;margin:12px 0;color:#c9d1d6}.lrn-here b{display:block;color:var(--avg);font-size:12px;margin-bottom:2px}
+.lrn-warn{border-left:3px solid var(--dn);background:#f25c540d;padding:8px 12px;border-radius:3px;margin:12px 0;color:#c9d1d6}
+.lrn-tw{overflow-x:auto;margin:10px 0}.lrn-t{border-collapse:collapse;font-size:12.5px;min-width:60%}.lrn-t th,.lrn-t td{border-bottom:1px solid var(--line2);padding:5px 10px 5px 0;text-align:left;vertical-align:top;color:#b9c3ca}.lrn-t th{color:var(--mut);font-weight:600}
+.lrn-try{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1px dashed #4cc3cc88;padding:9px 12px;border-radius:3px;margin:12px 0}.lrn-try b{color:var(--acc);margin-right:8px}
+.lrn-try a{flex:none;border:1px solid var(--acc);padding:4px 12px;border-radius:2px;text-decoration:none}.lrn-try a:hover{background:var(--acc);color:#021012}
+.lrn-box{border:1px solid var(--line);border-radius:3px;padding:10px 12px;margin:16px 0;background:var(--card2)}.lrn-box.big{margin-top:14px}
+.lrn-qh{display:flex;justify-content:space-between;gap:4px 10px;flex-wrap:wrap;font-size:13px;margin-bottom:6px}.lrn-qh .mut{font-size:12px}.lrn-q{margin:8px 0 6px;font-size:13.5px}
+.lrn-opts{display:flex;flex-wrap:wrap;gap:6px}.lrn-opts button{flex:1 1 220px;text-align:left;white-space:normal}.lrn-opts button:disabled{opacity:1;cursor:default}.lrn-opts button.right{border-color:var(--up);color:var(--up)}.lrn-opts button.wrong{border-color:var(--dn);color:var(--dn)}
+.lrn-out p{margin:8px 0 4px}.lrn-nav{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding-top:12px;border-top:1px solid var(--line2);font-size:13px}
+.quiz-q.right{border-color:#3ad07a88}.quiz-q.wrong{border-color:#f25c5488}
+@media(max-width:760px){.lrn-top{grid-template-columns:1fr}.lrn-tracks{grid-template-columns:1fr}.lrn-try{flex-direction:column;align-items:flex-start}}
 .quiz-q{margin:14px 0;padding:10px 12px;border:1px solid var(--line2);border-radius:3px;background:var(--card2)}
 .quiz-q label{display:block;margin:5px 0;cursor:pointer}.quiz-q input{width:auto;margin:0 8px 0 0}
 .quiz-q .why{font-size:13px;margin-top:6px}.chal{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:9px 0;border-bottom:1px solid var(--line2)}
@@ -214,7 +230,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
 #guest-actions,#guest-hero{display:none}
 body.guest #guest-actions{display:flex;gap:8px;align-items:center}
 body.guest.page-market #guest-hero{display:block}
-body.guest #nav a:not([data-page=market]){display:none}
+body.guest #nav a:not([data-page=market]):not([data-page=learn]){display:none}
 body.guest .stats .stat:nth-child(n+2):nth-child(-n+6){display:none}
 body.guest .ticket,body.guest .hold-act,body.guest .detail-actions,body.guest .orders,body.guest #d-limits,body.guest #d-pos{display:none!important}
 .guest-cta{display:none;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding:8px 12px;margin:10px 0;border-left:2px solid var(--acc);background:var(--card2)}
@@ -615,7 +631,7 @@ if(!token&&location.hash==='#join')setTimeout(()=>openSignin('register'),60);   
 $('joinbtn').onclick=join;$('nm').onkeydown=e=>{if(e.key==='Enter')join()};$('pw').onkeydown=$('pw2').onkeydown=e=>{if(e.key==='Enter')join()};
 function connect(){
  if(!token){
-  if((page==='market'||page==='stock')&&!noGuest)guest=true;
+  if((page==='market'||page==='stock'||page==='learn')&&!noGuest)guest=true;
   else{guest=false;document.body.classList.remove('guest');$('login-close').style.display='none';$('login').style.display='flex';return}}
  else guest=false;
  document.body.classList.toggle('guest',guest);
@@ -721,7 +737,7 @@ function renderHeader(){
  setText($('left'),dur(S.season_left));
  const lnb=$('learn-banner'),newbie=!guest&&S.lessons===0&&!lsGet('ms_learn_hide',false)&&page==='market'&&!S.low;
  if(lnb._on!==newbie){lnb._on=newbie;lnb.style.display=newbie?'flex':'none';
-  if(newbie)lnb.innerHTML='<span><b>New to trading?</b> Start with the first lesson: it takes about four minutes.</span><span class="bar" style="margin:0"><a href="/learn?l=basics">Start lesson 1</a><span class="mut">·</span><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>'}
+  if(newbie)lnb.innerHTML='<span><b>New to trading?</b> Start with the first lesson: it takes about four minutes.</span><span class="bar" style="margin:0"><a href="/learn?l=welcome">Start lesson 1</a><span class="mut">·</span><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>'}
  const pb=$('pro-badge'),pro=!!S.pro&&!guest,tier=S.expert?'EXPERT':'PRO';if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}if(pb.textContent!==tier){pb.textContent=tier;pb.title='Meme Street '+(S.expert?'Expert':'Pro')}
  const lb=$('low-banner'),low=!!S.low&&!guest&&!lowHidden&&page!=='shop';
  if(lb._on!==low){lb._on=low;lb.style.display=low?'flex':'none';
@@ -1576,38 +1592,8 @@ $('calendar-card').addEventListener('click',e=>{
  else if(e.target.id==='cal-next'){calOffset=Math.min(24,calOffset+1);calSel=null;loadCalMonth(true)}
  else if(e.target.id==='cal-today'){calOffset=0;calSel=null;loadCalMonth(true)}});
 
-// ---------- learn: lessons, quizzes (switched off for now: the `quizzes` setting) and challenges (learning.py) ----------
-let learnData=null,lessonOpen=null;
-async function loadLearn(){
- const m=location.pathname.match(/^\/learn\/?$/)&&new URLSearchParams(location.search).get('l');
- if(m&&(!lessonOpen||lessonOpen.id!==m)){const r=await fetch('/api/learn/lesson/'+encodeURIComponent(m));const d=await r.json().catch(()=>null);if(d&&!d.error){lessonOpen=d;drawLesson()}return}
- if(m)return;
- const d=await api('/api/learn');if(!d||d.slow||d.notfound||d.error)return;learnData=d;drawLearn()}
-function drawLearn(){
- const d=learnData;if(!d)return;const w=d.week;$('learn-card').classList.remove('reading');
- const groups={};d.lessons.forEach(l=>(groups[l.level]=groups[l.level]||[]).push(l));
- setHtml($('learn-body'),`<h3>Learn to trade</h3><p class="about" style="margin-top:0">Short lessons on how markets move and how traders manage risk${d.quizzes?', each with a quiz':''}. Read them in any order; each takes a few minutes.</p>`
-  +Object.entries(groups).map(([g,ls])=>`<h3 class="sp">${esc(g)}</h3><div class="lesson-list">${ls.map(l=>`<a class="lesson-item" href="/learn?l=${encodeURIComponent(l.id)}">${l.passed?'<span class="done">Passed</span>':''}<small>${l.minutes} min${l.questions?` · ${l.questions} questions`:''}</small><b>${esc(l.title)}</b><small>${esc(l.summary)}</small></a>`).join('')}</div>`).join('')
-  +(d.challenges.length?`<h3 class="sp">Challenges</h3><p class="hint" style="margin-top:0">Paid for good habits. The weekly ones start again each Monday (UTC).</p>`:'')
-  +d.challenges.map(c=>`<div class="chal ${c.done?'q-done':''}"><div><b>${esc(c.title)}</b> <small>${c.period==='week'?'this week':'once'}</small><br><small>${esc(c.how)}</small></div><div class="chal-r">${c.done?'<span class="up">Done</span>':`<span class="mut">${c.n} / ${c.target}</span>`} · <b>+${numText(c.reward,0)} MB</b></div>${pbar(c.done?1:c.n,c.done?1:c.target)}</div>`).join(''))}
-function lessonBlock(b){if(b.h)return `<h4>${esc(b.h)}</h4>`;if(b.tip)return `<div class="tip">${esc(b.tip)}</div>`;return `<p>${esc(b.p||'')}</p>`}
-function drawLesson(){
- const L=lessonOpen;$('learn-card').classList.add('reading');
- setHtml($('learn-body'),`<a href="/learn" style="font-size:13px">All lessons</a><h3 style="margin-top:10px">${esc(L.title)}</h3><p class="mut" style="margin:0">${esc(L.level)} · ${L.minutes} minutes</p><div class="lesson-body">${L.body.map(lessonBlock).join('')}</div>
- ${L.quiz.length?`<h3 class="sp">Quiz</h3><div id="quiz">${L.quiz.map((q,i)=>`<div class="quiz-q" data-q="${i}"><b>${i+1}. ${esc(q.q)}</b>${q.options.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${esc(o)}</label>`).join('')}<div class="why"></div></div>`).join('')}</div>
- <div class="bar"><button class="buy" id="quiz-go">${token?'Check my answers':'Sign in to take the quiz'}</button><span id="quiz-out" class="hint"></span></div>`:''}`)}
-$('learn-card').addEventListener('click',async e=>{
- if(e.target.id!=='quiz-go')return;
- if(!token){openSignin('register','Create an account to take the quiz');return}
- const L=lessonOpen,answers=L.quiz.map((_,i)=>{const c=document.querySelector(`input[name=q${i}]:checked`);return c?Number(c.value):-1});
- if(answers.includes(-1)){setText($('quiz-out'),'Answer every question first');return}
- const r=await postJson('/api/learn/quiz',{lesson:L.id,answers},{'X-Token':token||''});
- if(!r.ok){setText($('quiz-out'),r.error||'Error');return}
- r.marks.forEach((m,i)=>{const box=document.querySelector(`.quiz-q[data-q="${i}"]`);box.style.borderColor=m.right?'#3ad07a88':'#f25c5488';box.querySelector('.why').innerHTML=(m.right?'<span class="up">Right.</span> ':'<span class="dn">Not quite.</span> ')+esc(m.why)});
- setText($('quiz-out'),r.passed?(r.first?`Passed: ${r.score} of ${r.of}.`+(r.paid?` +${numText(r.paid,0)} MB`:''):`All ${r.of} right again.`):`${r.score} of ${r.of} right. Read the notes and try again.`)});
-
 document.addEventListener('click',e=>{if(e.target.id==='learn-hide'){lsSet('ms_learn_hide',true);$('learn-banner').style.display='none';$('learn-banner')._on=false}});
-const refreshers={learn:loadLearn,portfolio:loadPortfolio,leaders:loadBoards,profile:loadMe,social:loadSocial,player:loadPlayer,shop:loadShop,calendar:loadCalendar};
+const refreshers={learn:()=>loadLearn(),portfolio:loadPortfolio,leaders:loadBoards,profile:loadMe,social:loadSocial,player:loadPlayer,shop:loadShop,calendar:loadCalendar};
 function refreshPage(){if(!S||document.hidden)return;const fn=refreshers[page];if(fn)fn();if(page==='history'&&hEvents.length<=50&&!hLoading)loadHistory(true)}
 let firstData=false;
 function onFirstData(){
@@ -1619,4 +1605,4 @@ setInterval(refreshPage,page==='history'?15000:5000);
 // (connect once chart.js has run too: a message could otherwise arrive while it is still loading)
 document.addEventListener('DOMContentLoaded',()=>{drawChips();connect()});
 </script>
-<script src="/js/chart.js"></script><script src="/js/bots.js"></script><script src="/js/daily.js"></script></body></html>
+<script src="/js/chart.js"></script><script src="/js/bots.js"></script><script src="/js/daily.js"></script><script src="/js/learn.js"></script></body></html>

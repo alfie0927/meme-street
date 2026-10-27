@@ -8,7 +8,7 @@ import paths
 from netutil import TICKER_RENAMES
 
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png"}
-SCRIPTS = {"chart.js", "bots.js", "daily.js"}        # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart)
+SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart; the Learn page)
 
 
 def add_pages(app):

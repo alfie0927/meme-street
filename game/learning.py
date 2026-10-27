@@ -1,31 +1,34 @@
-"""Learning (ROADMAP.md track L): lessons with quizzes, and challenges that award MB.
+"""Learning (ROADMAP.md tracks TA-C and L): the Learn page's curriculum, its quizzes and its chart tests, and the
+challenges (switched off).
 
-* **Lessons** live in `content/lessons.json`. A lesson's quiz is marked here: the right answers never reach the page
-  before the player has answered. Passing a lesson (every answer right) for the first time is worth `lesson_reward` MB.
-  **Quizzes are switched off for now** (`quizzes: false` in base.json): the lessons are plain reading, there is no
-  quiz, no lesson reward, and the challenges that need quizzes (first lesson, the basics, graduate) are not offered.
-  The questions stay in lessons.json, so `quizzes: true` brings it all back.
+* **The curriculum** lives in `content/learn-*.md`, one file per track, read in file-name order (`parse_learn` below
+  has the format). A lesson's quiz is marked here, so the right answers never reach the page before the player
+  has answered. Passing a quiz (every answer right) is recorded (`lessons_passed`); **nothing on the Learn page pays MB**
+  (since 2026-10-23). Visitors can read and answer too; only a player's progress is kept.
+* **Chart tests** (`drills.py`): a real chart from the game's own history, stopped at a moment worth asking about
+  (a level test, a breakout, a pattern...), and then the candles that came next. The right answer is kept here until
+  the player answers (`_drill_q`, in memory only: a restart forgets a test still open), and a player's score per kind
+  is kept (`drills`).
 * **Challenges** reward the habits the lessons teach (protecting a trade with a stop, closing positions that had one),
-  never volume or luck. Some can be won once, some once a week. Every MB from a lesson or a challenge counts
-  as `challenge` MB, and at most `challenge_week_cap` of them are paid in one week (a week runs Monday to Sunday, UTC).
+  never volume or luck. They are switched off (the `challenges` setting); when on, every MB they pay counts as
+  `challenge` MB, at most `challenge_week_cap` in a week (Monday to Sunday, UTC).
 
-Nothing here changes prices or trading: challenges only ever credit MB (counted as money put in, so they never lift a
-return). (A trading journal lived here until 2026-10-20; it was removed, and old saves' entries are dropped on load.)
+Nothing here changes prices or trading. (A trading journal lived here until 2026-10-20; it was removed, and old saves'
+entries are dropped on load. The lesson rewards and the challenges for passing lessons went on 2026-10-27.)
 """
+import collections
 import datetime
-import json
+import glob
 import os
+import random
+import re
+import secrets
 
+import drills
 import paths
 
-LESSONS_FILE = os.path.join(paths.CONTENT, "lessons.json")
+LEARN_FILES = os.path.join(paths.CONTENT, "learn-*.md")
 CHALLENGES = [
-    {"id": "first_lesson", "title": "First lesson", "how": "Pass the quiz of any lesson.", "period": "once", "target": 1,
-     "reward": 25, "counter": "lessons"},
-    {"id": "basics", "title": "The basics", "how": "Pass the quizzes of the four Start here lessons.", "period": "once",
-     "target": 4, "reward": 100, "counter": "basics"},
-    {"id": "graduate", "title": "Graduate", "how": "Pass every lesson's quiz.", "period": "once", "target": 0,
-     "reward": 250, "counter": "lessons"},
     {"id": "first_stop", "title": "Protect a trade", "how": "Put a stop-loss (or a bracket) on an open position.",
      "period": "once", "target": 1, "reward": 25, "counter": "stops"},
     {"id": "first_target", "title": "Set a target", "how": "Put a take-profit on an open position.",
@@ -38,14 +41,18 @@ CHALLENGES = [
     {"id": "week_targets", "title": "Every trade has a target", "how": "Put a take-profit on 5 positions this week.",
      "period": "week", "target": 5, "reward": 50, "counter": "targets"},
 ]
-QUIZ_COUNTERS = ("lessons", "basics")      # challenges won by passing quizzes (not offered while quizzes are off)
-PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen")
+PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen", "drills")
+TEST_TIMEFRAMES = {"1m": "1-minute", "5m": "5-minute", "15m": "15-minute", "1h": "1-hour"}
+TEST_PENDING = 3000          # chart tests waiting for an answer, at most (the oldest go first)
+TEST_KEEP = 3 * 3600         # and for at most this long
+EXAMPLE_KEEP = 900           # a lesson's example chart is found again after this long
 
 
 def init_player(p):
     p.lessons_passed = {}      # lesson id -> when it was passed
     p.chal = {}                # challenge id -> {"n": progress, "key": period key, "done": [period keys won]}
     p.stop_seen = []           # tickers whose open position has had a stop-loss (for "planned" trades)
+    p.drills = {}              # chart test kind -> [right, answered]
 
 
 def dump_player(p):
@@ -59,32 +66,162 @@ def load_player(p, x):
     p.lessons_passed = dict(p.lessons_passed or {})
     p.chal = dict(p.chal or {})
     p.stop_seen = list(p.stop_seen or [])
+    p.drills = {k: list(v) for k, v in (getattr(p, "drills", None) or {}).items()}
 
 
-def load_lessons(path=LESSONS_FILE):
-    try:
+BOXES = {"TIP": "tip", "HERE": "here", "WARN": "warn"}
+
+
+def parse_learn(text, tracks=None, lessons=None):
+    """A track file of the curriculum. Line by line:
+
+        # Track title {id}                 a track; the lines up to its first lesson are its blurb
+        ## Lesson title {id} [6]           a lesson (and how many minutes it takes to read)
+        SUMMARY: one line                  what the lesson covers (on the track list)
+        ### Heading                        a heading in the lesson
+        plain lines                        a paragraph (a blank line ends it); **bold** and [text](/path) are allowed
+        - item                             a bulleted list (or, in a quiz, a wrong answer)
+        TIP: / HERE: / WARN: text          a tip, how Meme Street does it, a warning
+        | cell | cell |                    a table row (the first row is the header)
+        [chart kind] / [test kind]         a real game chart with its answer / a chart test (drills.KINDS; a test
+                                           can also be "any")
+        [try /path] text                   a practice box with a link
+        Q: question                        a quiz question, then its answers: "- wrong", "+ right", then "WHY: ..."
+    Raises ValueError on anything it does not understand, with the line number."""
+    tracks, lessons = ([] if tracks is None else tracks), ([] if lessons is None else lessons)
+    track = lesson = quiz = None
+    para = []
+
+    def flush():
+        if para:
+            lesson["body"].append({"p": " ".join(para)})
+            para.clear()
+
+    def head(rest, n):
+        m = re.fullmatch(r"(.+?)\s*\{([a-z0-9-]+)\}\s*(?:\[(\d+)\])?", rest)
+        if not m:
+            raise ValueError(f"line {n}: want 'Title {{id}}', got {rest!r}")
+        return m.group(1), m.group(2), int(m.group(3) or 5)
+
+    for n, raw in enumerate(text.splitlines(), 1):
+        line = raw.strip()
+        if line.startswith("# "):
+            title, tid, _ = head(line[2:], n)
+            track, lesson, quiz = {"id": tid, "title": title, "blurb": ""}, None, None
+            tracks.append(track)
+            continue
+        if track is None:
+            if line:
+                raise ValueError(f"line {n}: text before the first track")
+            continue
+        if line.startswith("## "):
+            if lesson:
+                flush()
+            title, lid, minutes = head(line[3:], n)
+            lesson, quiz = {"id": lid, "track": track["id"], "title": title, "minutes": minutes, "summary": "",
+                            "body": [], "quiz": []}, None
+            lessons.append(lesson)
+            continue
+        if lesson is None:
+            track["blurb"] = (track["blurb"] + " " + line).strip()
+            continue
+        if line.startswith("Q: "):
+            flush()
+            quiz = {"q": line[3:], "options": [], "answer": None, "why": ""}
+            lesson["quiz"].append(quiz)
+            continue
+        if quiz is not None:
+            if line.startswith(("- ", "+ ")):
+                if line[0] == "+":
+                    if quiz["answer"] is not None:
+                        raise ValueError(f"line {n}: two right answers")
+                    quiz["answer"] = len(quiz["options"])
+                quiz["options"].append(line[2:])
+            elif line.startswith("WHY: "):
+                quiz["why"] = line[5:]
+            elif line:
+                raise ValueError(f"line {n}: inside a quiz, want '- ', '+ ', 'WHY: ' or 'Q: ', got {line[:40]!r}")
+            continue
+        body = lesson["body"]
+        if not line:
+            flush()
+        elif line.startswith("SUMMARY: "):
+            lesson["summary"] = line[9:]
+        elif line.startswith("### "):
+            flush()
+            body.append({"h": line[4:]})
+        elif line.startswith("- "):
+            flush()
+            if body and "list" in body[-1]:
+                body[-1]["list"].append(line[2:])
+            else:
+                body.append({"list": [line[2:]]})
+        elif line.split(":")[0] in BOXES and ": " in line:
+            flush()
+            k, _, txt = line.partition(": ")
+            body.append({BOXES[k]: txt})
+        elif line.startswith("|"):
+            flush()
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            if body and "table" in body[-1]:
+                body[-1]["table"].append(cells)
+            else:
+                body.append({"table": [cells]})
+        elif re.fullmatch(r"\[(chart|test) [a-z]+\]", line):
+            flush()
+            k, kind = line[1:-1].split()
+            if kind not in drills.KINDS and not (k == "test" and kind == "any"):
+                raise ValueError(f"line {n}: no chart test called {kind!r}")
+            body.append({k: kind})
+        elif line.startswith("[try "):
+            flush()
+            m = re.fullmatch(r"\[try (/\S*)\]\s*(.+)", line)
+            if not m:
+                raise ValueError(f"line {n}: want '[try /path] text'")
+            body.append({"try": m.group(2), "href": m.group(1)})
+        else:
+            para.append(line)
+    if lesson:
+        flush()
+    for x in lessons:
+        for k, q in enumerate(x["quiz"]):
+            if q["answer"] is None or len(q["options"]) < 2 or not q["why"]:
+                raise ValueError(f"{x['id']}: a question needs answers, one marked '+', and a WHY: {q['q'][:50]!r}")
+            if "order" not in q:                    # the answers in a fixed shuffled order, so the right one could be anywhere
+                order = list(range(len(q["options"])))
+                random.Random(f"{x['id']}:{k}").shuffle(order)
+                q["options"], q["answer"], q["order"] = [q["options"][i] for i in order], order.index(q["answer"]), order
+    return tracks, lessons
+
+
+def load_content(pattern=LEARN_FILES):
+    """The tracks and the lessons, in order, from every track file."""
+    tracks, lessons = [], []
+    for path in sorted(glob.glob(pattern)):
         with open(path, encoding="utf-8") as fh:
-            return json.load(fh).get("lessons", [])
-    except (OSError, ValueError):
-        return []
+            try:
+                parse_learn(fh.read(), tracks, lessons)
+            except ValueError as e:
+                raise ValueError(f"{os.path.basename(path)}: {e}") from None
+    ids = [x["id"] for x in lessons] + [t["id"] for t in tracks]
+    dup = {i for i in ids if ids.count(i) > 1}
+    if dup:
+        raise ValueError(f"the same id twice: {sorted(dup)}")
+    return tracks, lessons
 
 
 class LearningMixin:
     """Mixed into the Engine. Uses `self.now`, `self.settings`, `self.credit`, `self._notify`, `self.stocks`, `self.is_pro`."""
 
     def _init_learning(self):
-        self.lessons = load_lessons(LESSONS_FILE)
+        self.tracks, self.lessons = load_content()
         self._lesson_by_id = {x["id"]: x for x in self.lessons}
-
-    def quizzes_on(self):
-        return bool(self.settings.get("quizzes", False))
+        self._drill_q = collections.OrderedDict()       # test id -> (kind, answer, the reveal, when asked)
+        self._drill_ex = {}                              # kind -> (when found, a lesson's example chart)
 
     def _challenges(self):
-        """The challenges on offer: none while they are switched off (the `challenges` setting, off since 2026-10-23: the
-        Learn page is lessons only, and nothing there pays MB); without quizzes, the ones won by passing them are left out."""
-        if not self.settings.get("challenges", False):
-            return []
-        return CHALLENGES if self.quizzes_on() else [c for c in CHALLENGES if c["counter"] not in QUIZ_COUNTERS]
+        """The challenges on offer: none while they are switched off (the `challenges` setting, off since 2026-10-23)."""
+        return CHALLENGES if self.settings.get("challenges", False) else []
 
     # ------------------------------------------------------------------ periods and rewards
     def _week_key(self, t=None):
@@ -120,7 +257,7 @@ class LearningMixin:
         """Count progress on every challenge that uses this counter, and pay the ones that are now complete."""
         week = self._week_key()
         for c in self._challenges():
-            if c["counter"] != counter and not (counter == "lessons" and c["counter"] == "basics"):
+            if c["counter"] != counter:
                 continue
             st = p.chal.setdefault(c["id"], {"n": 0, "key": None, "done": []})
             key = week if c["period"] == "week" else "once"
@@ -128,54 +265,58 @@ class LearningMixin:
                 st["key"], st["n"] = key, 0
             if key in st["done"]:
                 continue
-            if c["counter"] in ("lessons", "basics"):
-                st["n"] = self._lesson_progress(p, c)
-            else:
-                st["n"] += by
-            if st["n"] >= self._target(c):
+            st["n"] += by
+            if st["n"] >= c["target"]:
                 st["done"] = (st["done"] + [key])[-12:]
                 self._reward(p, c["reward"], f"Challenge complete: {c['title']}")
 
-    def _target(self, c):
-        return c["target"] or len(self.lessons)
-
-    def _lesson_progress(self, p, c):
-        if c["counter"] == "basics":
-            return sum(1 for x in self.lessons if x.get("level") == "Start here" and x["id"] in p.lessons_passed)
-        return sum(1 for x in self.lessons if x["id"] in p.lessons_passed)
-
-    # ------------------------------------------------------------------ lessons
-    def lessons_view(self, p):
-        cw = self.challenge_week_status(p)
-        week = self._week_key()
-        chal = []
-        for c in self._challenges():
-            st = p.chal.get(c["id"], {})
-            key = week if c["period"] == "week" else "once"
-            done = key in st.get("done", [])
-            n = st.get("n", 0) if st.get("key") == key else 0
-            if c["counter"] in ("lessons", "basics"):
-                n = self._lesson_progress(p, c)
-            chal.append({"id": c["id"], "title": c["title"], "how": c["how"], "period": c["period"],
-                         "target": self._target(c), "n": min(n, self._target(c)), "done": done, "reward": c["reward"]})
-        quiz = self.quizzes_on()
-        return {"lessons": [{"id": x["id"], "title": x["title"], "level": x.get("level", ""), "minutes": x.get("minutes", 5),
-                             "summary": x.get("summary", ""), "passed": quiz and x["id"] in p.lessons_passed,
-                             "questions": len(x.get("quiz", [])) if quiz else 0} for x in self.lessons],
-                "challenges": chal, "week": cw, "quizzes": quiz,
-                "lesson_reward": float(self.settings.get("lesson_reward", 20)) if quiz else 0.0}
+    # ------------------------------------------------------------------ lessons and quizzes
+    def lessons_view(self, p=None):
+        """The Learn page: every track with its lessons (and which ones `p` has passed), the chart tests (with `p`'s
+        score), and the challenges when they are on. `p` is None for a visitor."""
+        done = p.lessons_passed if p else {}
+        by_track = {}
+        for x in self.lessons:
+            by_track.setdefault(x["track"], []).append(
+                {"id": x["id"], "title": x["title"], "minutes": x.get("minutes", 5), "summary": x.get("summary", ""),
+                 "passed": x["id"] in done, "questions": len(x.get("quiz", []))})
+        tracks = [{"id": t["id"], "title": t["title"], "blurb": t.get("blurb", ""), "lessons": by_track.get(t["id"], [])}
+                  for t in self.tracks]
+        score = p.drills if p else {}
+        tests = [{"kind": k, "title": drills.TITLES[k], "about": drills.ABOUT[k], "right": score.get(k, [0, 0])[0],
+                  "n": score.get(k, [0, 0])[1]} for k in drills.KINDS]
+        out = {"tracks": tracks, "passed": sum(1 for x in self.lessons if x["id"] in done), "total": len(self.lessons),
+               "tests": tests, "challenges": []}
+        if p is not None:
+            week = self._week_key()
+            for c in self._challenges():
+                st = p.chal.get(c["id"], {})
+                key = week if c["period"] == "week" else "once"
+                n = st.get("n", 0) if st.get("key") == key else 0
+                out["challenges"].append({"id": c["id"], "title": c["title"], "how": c["how"], "period": c["period"],
+                                          "target": c["target"], "n": min(n, c["target"]),
+                                          "done": key in st.get("done", []), "reward": c["reward"]})
+            out["week"] = self.challenge_week_status(p)
+        return out
 
     def lesson(self, lesson_id):
+        """One lesson to read: its blocks and its quiz questions (never the answers), its track, and the lessons
+        before and after it in the curriculum."""
         x = self._lesson_by_id.get(lesson_id)
         if not x:
             return None
-        quiz = x.get("quiz", []) if self.quizzes_on() else []
-        return {"id": x["id"], "title": x["title"], "level": x.get("level", ""), "minutes": x.get("minutes", 5),
-                "body": x.get("body", []), "quiz": [{"q": q["q"], "options": q["options"]} for q in quiz]}
+        k = self.lessons.index(x)
+        track = next((t for t in self.tracks if t["id"] == x["track"]), {"title": ""})
+
+        def near(j):
+            return {"id": self.lessons[j]["id"], "title": self.lessons[j]["title"]} if 0 <= j < len(self.lessons) else None
+        return {"id": x["id"], "title": x["title"], "track": x["track"], "track_title": track["title"],
+                "minutes": x.get("minutes", 5), "summary": x.get("summary", ""), "body": x.get("body", []),
+                "quiz": [{"q": q["q"], "options": q["options"]} for q in x.get("quiz", [])],
+                "prev": near(k - 1), "next": near(k + 1)}
 
     def answer_quiz(self, p, lesson_id, answers):
-        if not self.quizzes_on():
-            return {"ok": False, "error": "Quizzes are switched off for now"}
+        """Mark a quiz. A pass (every answer right) is recorded for a player; a visitor (`p` None) just gets the marks."""
         x = self._lesson_by_id.get(lesson_id)
         if not x:
             return {"ok": False, "error": "Unknown lesson"}
@@ -187,14 +328,106 @@ class LearningMixin:
             right = isinstance(a, int) and not isinstance(a, bool) and a == q["answer"]
             marks.append({"right": right, "answer": q["answer"], "why": q.get("why", "")})
         passed = all(m["right"] for m in marks)
-        first = passed and lesson_id not in p.lessons_passed
-        paid = 0.0
+        first = passed and p is not None and lesson_id not in p.lessons_passed
         if first:
             p.lessons_passed[lesson_id] = self.now
-            paid = self._reward(p, float(self.settings.get("lesson_reward", 20)), f"Lesson passed: {x['title']}")
-            self._bump(p, "lessons", 0)
-        return {"ok": True, "passed": passed, "first": first, "paid": paid, "marks": marks,
+        return {"ok": True, "passed": passed, "first": first, "marks": marks,
                 "score": sum(m["right"] for m in marks), "of": len(quiz)}
+
+    # ------------------------------------------------------------------ chart tests (drills.py)
+    def _drill_find(self, kind, rng):
+        """A test of `kind` on a real chart: a company or commodity and a candle size picked at random, up to 40 tries,
+        from the candles in memory (the newest 500 of each size; the one still forming is left out). A game too new to
+        have enough candles gets a chart from the price model instead (the Daily Chart's maker)."""
+        pool = [s for s in self.stocks.values() if s.asset_type in ("equity", "commodity")]
+        for _ in range(40 if pool else 0):
+            s, tf = rng.choice(pool), rng.choice(list(TEST_TIMEFRAMES))
+            rows = list(s.tf.get(tf, ()))[-401:-1]
+            if len(rows) < 150:
+                continue
+            cs = [[r[1], r[2], r[3], r[4], r[5] if len(r) > 5 else 0.0] for r in rows]
+            t = drills.make(kind, cs, rng)
+            if t:
+                return t, cs, {"ticker": s.ticker, "name": s.name, "tf": TEST_TIMEFRAMES[tf], "end": rows[t["upto"]][0]}
+        import daily                                     # (only for a new game: the model's own chart)
+        for _ in range(6):
+            cs = [list(c) for c in daily.make_chart(rng.getrandbits(48))["candles"]]
+            t = drills.make(kind, cs, rng)
+            if t:
+                return t, cs, {"ticker": None, "name": "A chart from the market model", "tf": "short", "end": None}
+        return None, None, None
+
+    @staticmethod
+    def _drill_pack(t, cs):
+        """The question (the candles up to the moment) and the answer (the candles after it), on a window of the chart
+        that starts early enough for a 50-candle average and every line and mark."""
+        up = t["upto"]
+        first = min([up - 90] + [x["from"] - 10 for x in t["lines"]] + [m["i"] - 10 for m in t["marks"]])
+        start, end = max(0, first, up - 160), min(len(cs), up + 1 + t["show"])
+        nd = 4 if min(x[2] for x in cs[start:end]) < 1 else 2
+
+        def candle(x):
+            return [round(x[0], nd), round(x[1], nd), round(x[2], nd), round(x[3], nd), int(x[4])]
+        lines = [{"price": round(x["price"], nd), "label": x["label"], "tone": x["tone"], "from": max(0, x["from"] - start),
+                  "after": x["after"]} for x in t["lines"]]
+        marks = [{"i": m["i"] - start, "price": round(m["price"], nd), "label": m["label"], "after": m["after"]}
+                 for m in t["marks"] if m["i"] >= start]
+        q = {"kind": t["kind"], "title": t["title"], "q": t["q"], "options": t["options"], "overlay": t["overlay"],
+             "panel": t["panel"], "candles": [candle(x) for x in cs[start:up + 1]],
+             "lines": [x for x in lines if not x["after"]], "marks": [m for m in marks if not m["after"]]}
+        a = {"answer": t["answer"], "result": t["result"], "explain": t["explain"],
+             "candles": [candle(x) for x in cs[up + 1:end]], "lines": lines, "marks": marks}
+        return q, a
+
+    def drill_new(self, kind):
+        """A new chart test of `kind` (one of drills.KINDS, or "any"): the question, with an id to answer it by."""
+        rng = random.Random(secrets.randbits(64))
+        if kind == "any":
+            kind = rng.choice(drills.KINDS)
+        if kind not in drills.KINDS:
+            return {"error": "Unknown kind of test"}
+        t, cs, where = self._drill_find(kind, rng)
+        if not t:
+            return {"error": "No chart has one of these right now: try another kind"}
+        q, a = self._drill_pack(t, cs)
+        tid = secrets.token_urlsafe(9)
+        self._drill_q[tid] = (kind, t["answer"], dict(a, where=where), self.now)
+        while len(self._drill_q) > TEST_PENDING:
+            self._drill_q.popitem(last=False)
+        return dict(q, id=tid, tf=where["tf"])
+
+    def drill_answer(self, p, tid, choice):
+        """Mark a chart test and show what happened next. A player's score for the kind is kept."""
+        got = self._drill_q.pop(tid, None) if isinstance(tid, str) else None
+        if not got or self.now - got[3] > TEST_KEEP:
+            return {"error": "This test has expired: here is a new one", "expired": True}
+        kind, answer, reveal, _ = got
+        right = isinstance(choice, int) and not isinstance(choice, bool) and choice == answer
+        out = dict(reveal, right=right)
+        if p is not None:
+            sc = p.drills.setdefault(kind, [0, 0])
+            sc[0] += int(right)
+            sc[1] += 1
+            out["score"] = list(sc)
+        return out
+
+    def drill_example(self, kind):
+        """A lesson's example: a test of `kind` with its answer, all at once (the same one for everyone for a quarter
+        of an hour, then a fresh one)."""
+        if kind not in drills.KINDS:
+            return {"error": "Unknown kind of chart"}
+        got = self._drill_ex.get(kind)
+        if got and self.now - got[0] < EXAMPLE_KEEP:
+            return got[1]
+        rng = random.Random(secrets.randbits(64))
+        t, cs, where = self._drill_find(kind, rng)
+        if not t:
+            return {"error": "No example right now"}
+        q, a = self._drill_pack(t, cs)
+        ex = dict(q, tf=where["tf"], upto=len(q["candles"]) - 1, candles=q["candles"] + a["candles"], lines=a["lines"],
+                  marks=a["marks"], answer=a["answer"], result=a["result"], explain=a["explain"], where=where)
+        self._drill_ex[kind] = (self.now, ex)
+        return ex
 
     # ------------------------------------------------------------------ hooks from trading
     def _learn_order(self, p, ticker, kind):

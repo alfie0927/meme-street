@@ -1435,10 +1435,28 @@ class Quiz(BaseModel):
     answers: list
 
 
+class TestAnswer(BaseModel):
+    id: str
+    choice: int
+
+
+def learner(x_token):
+    """The player behind a token, or None for a visitor: the Learn page works without an account."""
+    p = engine.player_for(x_token) if x_token else None
+    return None if p is None or getattr(p, "guest", False) else p
+
+
+def learn_slow(request, x_token, key, interval):
+    return not rate_ok(x_token or client_ip(request), key, interval)
+
+
 @app.get("/api/learn")
-async def learn(x_token: str = Header("")):
-    """The lessons (with which ones the player has passed), the challenges and this week's reward cap."""
-    return await with_player(x_token, "learn", engine.lessons_view)
+async def learn(request: Request, x_token: str = Header("")):
+    """The curriculum (with which lessons the player has passed), the chart tests with the player's scores, and the
+    challenges when they are on. Public."""
+    if learn_slow(request, x_token, "learn", 0.25):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.lessons_view, learner(x_token))
 
 
 @app.get("/api/learn/lesson/{lesson_id}")
@@ -1449,9 +1467,28 @@ async def learn_lesson(lesson_id: str):
 
 
 @app.post("/api/learn/quiz")
-async def learn_quiz(b: Quiz, x_token: str = Header("")):
-    """Mark a quiz. Passing a lesson for the first time pays its reward (within the weekly cap)."""
-    return await with_player(x_token, "quiz", engine.answer_quiz, b.lesson, b.answers, interval=1.0)
+async def learn_quiz(b: Quiz, request: Request, x_token: str = Header("")):
+    """Mark a quiz; a player's pass is recorded. Public (a visitor just gets the marks)."""
+    if learn_slow(request, x_token, "quiz", 1.0):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.answer_quiz, learner(x_token), b.lesson, b.answers)
+
+
+@app.get("/api/learn/test")
+async def learn_test(request: Request, kind: str = "any", example: int = 0, x_token: str = Header("")):
+    """A chart test on a real game chart: the question (answer it with POST), or with `example=1` a lesson's example,
+    answer included. Public."""
+    if learn_slow(request, x_token, "example" if example else "test", 0.3):     # (a lesson loads one of each at once)
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.drill_example if example else engine.drill_new, kind)
+
+
+@app.post("/api/learn/test")
+async def learn_test_answer(b: TestAnswer, request: Request, x_token: str = Header("")):
+    """Mark a chart test: right or wrong, the candles that came next, and the player's score for the kind."""
+    if learn_slow(request, x_token, "test_answer", 0.3):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.drill_answer, learner(x_token), b.id, b.choice)
 
 
 class OptionBuy(BaseModel):
@@ -1653,7 +1690,7 @@ async def admin_overview(x_admin_key: str = Header("")):
     if not admin_ok(x_admin_key):
         return JSONResponse({"error": "forbidden"}, status_code=403)
     guests = sum(1 for c in clients.values() if c.token == GUEST_KEY)      # logged-out visitors watching the market
-    tabs = {}                                                               # who is on: account key -> pages open
+    tabs: dict = {}                                                         # who is on: account key -> pages open
     for c in clients.values():
         if c.token != GUEST_KEY:
             tabs[c.token] = tabs.get(c.token, 0) + 1

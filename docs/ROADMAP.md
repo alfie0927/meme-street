@@ -47,7 +47,7 @@ server, copied to this computer every day at 09:00; `/api/health` checked every 
 | The market | Drift, regimes, trends in legs, ranges and breakouts, support and resistance of many kinds, volume that confirms, wicks, engulfing turns, squeezes, gaps, ten named chart patterns, volatility clustering and fat tails, sessions; the MSI 50 by market value (sizes on a smooth curve since 2026-10-24); realism and no-free-money checks | P8 psychology, P9 factors, P10 asset classes, P12, P13 |
 | Charts and trading | Crosshair, five chart types, log scale, 49 indicators with saved settings, 16 drawing tools saved on the server, your trades and orders on the chart, **2,000 candles in every timeframe**; options for everyone, leverage up to 10x (Pro), trading bots and backtests (Expert) with a guide | TA-B5, TA-B7, TA-B8, TA-B10, TA-B11, TA-B12 |
 | The Daily Chart | A numbered mystery chart a day, the same for everyone; two minutes, one go; streaks, stats, a result grid, sharing as text and as a story picture | TA-D5 to TA-D9 |
-| Learning | Twelve lessons; challenges built but switched off; the quest ladder | TA-C1 to TA-C5, TA-C7, L8 |
+| Learning | A 96-lesson course in 17 tracks with quizzes, eleven kinds of chart test on real charts, a glossary; challenges switched off; the quest ladder | TA-C5, TA-C7, L8, L11 |
 | Community | Four leaderboards (today or all time, by return or by profit), chat with moderation, follows, public profiles, a daily paper-money contest | S1-S4, TA-D2, TA-D3 |
 | Money | 1,000 MB start, MB by source, five packages, Pro and Expert monthly (renewing) or yearly, refunds, spending limits, the free restart, tracking links | M4, M8, M9, B4, B5 |
 | Rules | Terms and privacy (version of 24 October 2026), a date of birth at sign-up (13 or older), the right-to-cancel waiver at checkout | R4, R5, R7-R9 |
@@ -80,7 +80,7 @@ sharing (TA-D4), purchases credited at once (O7), a date of birth at sign-up, th
 | 1 (now) | **The launch** | G1-G8 | Players arrive from ads, can recover their accounts, and every purchase is credited |
 | 2 | **The Daily Chart as the hook** | TA-D5 play without an account, TA-D6 past charts, TA-D7 friends and groups, TA-D8 streak badges, TA-D9 reminders | A shared result turns into a played game and a sign-up |
 | 3 | **Trading on the chart** | TA-B5 trade from the chart, TA-B7 alerts, TA-B12 the trading screen, TA-E4 why it moved | From spotting a setup to a sized, bracketed order without leaving the chart |
-| 4 | **Learning around the chart** | TA-C1 to TA-C5, TA-C7, L8 | Lessons are technical first, show real game charts, and the coach comments on trades |
+| 4 | **Learning around the chart** | TA-C5, TA-C7, L8, L11 | The course and chart tests are built (2026-10-27); next the coach comments on trades, tooltips, onboarding and more tests |
 | 5 | **Depth and groups** | TA-B8 screener, TA-B10 layouts, TA-B11 replay, TA-D2, TA-D3, S1 classrooms | Players find, rehearse and compete on setups |
 | Alongside | **Running it** | O4, O8, E2, E5, E6, E9-E11, E14, M8, M9, R5, R7, R8, X2, X7 | |
 
@@ -127,16 +127,16 @@ one order. Next for bots: alerts from a rule, sharing bots, walk-forward backtes
 
 | # | Change | Why | How | Size |
 |---|---|---|---|---|
-| TA-C1 | A technical-analysis curriculum | The order and depth should follow the chart. | Candles and volume, trend and structure, support and resistance, patterns, indicators, timeframes, risk, a trading plan; macro and earnings as an optional group. | M |
-| TA-C2 | Lessons on the game's own charts | A lesson should show the setup on a real chart. | Each lesson shows charts from the game's history, picked by the pattern finder ("here NVXA's support held twice and broke the third time"). | M |
-| TA-C3 | Spot-the-setup exercises | Pattern recognition is learnt by doing. | A past chart: "mark the support", "bounce or break?", "where does the stop go?", then what happened. | M |
-| TA-C4 | Technical challenges | Practise chart skills. | Challenges are switched off (2026-10-23); bring them back as exercises inside lessons, without MB rewards, if wanted. | M |
 | TA-C5 | A coach that reads the chart | Feedback turns mistakes into lessons. | Rule-based remarks: "you bought into resistance", "your stop was inside normal noise". | M |
-| TA-C7 | A glossary and tooltips | "R", "VWAP" and "divergence" stop beginners. | Tooltips on every indicator and tool, a glossary page. | S |
-| L8 | Onboarding | New players need a first good trade, with a stop. | A short first-run path: what MB are, a first trade with a stop, the Daily Chart. | S |
-| L10 | Content tooling | Lessons are written often. | A validator for the lesson files and a preview command. | S |
+| TA-C7 | Tooltips | "R", "VWAP" and "divergence" stop beginners. | Tooltips on every indicator and tool, linking to its lesson (the glossary lesson exists). | S |
+| L8 | Onboarding | New players need a first good trade, with a stop. | A guided first run on the stock page itself (the *Start here* lessons cover it in words). | S |
+| L11 | More chart tests | Tests are the stickiest part of the course. | Volume reading, gaps and fair value gaps, divergences, multi-timeframe agreement; a daily set of five with a streak. | M |
 
-Done or dropped: twelve lessons; **L3** challenges (built, switched off 2026-10-23); the quest ladder; **L4** journal and
+Done: **the course rebuilt** (2026-10-27): 17 tracks and 96 lessons from market basics to derivatives, macro, testing and real
+life, each with a quiz marked on the server (no MB), **TA-C1** curriculum, **TA-C2** example charts from the game's own
+history, **TA-C3** and **TA-C4** eleven kinds of chart test on real charts (bounce or break, breakouts, patterns, candles,
+RSI, crosses, Fibonacci, reward to risk, stops, trends, up or down), a glossary, and **L10** the lesson files checked by
+a test (HOW_IT_WORKS §10.10). Dropped or earlier: the twelve old lessons; **L3** challenges (built, switched off 2026-10-23); the quest ladder; **L4** journal and
 **TA-C6** removed 2026-10-20; **L5** skill profile dropped with it.
 
 ### P and TA-A. The market

@@ -67,7 +67,7 @@ if ($WithGame) {
 
 # --- the code
 $files = @("requirements.txt")
-foreach ($part in @(@("game", "*.py"), @("web", "*.html"), @("web", "*.js"), @("content", "*.json"), @("tools", "*.py"), @("deploy", "*"))) {
+foreach ($part in @(@("game", "*.py"), @("web", "*.html"), @("web", "*.js"), @("content", "*.json"), @("content", "*.md"), @("tools", "*.py"), @("deploy", "*"))) {
     $files += Get-ChildItem -File -Path $part[0] -Filter $part[1] | ForEach-Object { $part[0] + "/" + $_.Name }
 }
 foreach ($logo in "brand/memestreet_logo_peaks.png", "brand/memestreet_header_peaks.png") {

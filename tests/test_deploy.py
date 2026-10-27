@@ -159,7 +159,7 @@ class UploadTests(unittest.TestCase):
         files = self.listing()
         needed = {"game/" + m + ".py" for m in local_imports(os.path.join(GAME, "server.py")) | local_imports(os.path.join(GAME, "gateway.py"))}
         needed |= {"game/server.py", "game/gateway.py", "game/paths.py", "web/index.html", "web/admin.html", "web/about.html",
-                   "web/shop_pay.html", "requirements.txt", "content/base.json", "content/lessons.json", "tools/reset_game.py",
+                   "web/shop_pay.html", "requirements.txt", "content/base.json", "content/learn-00-start.md", "tools/reset_game.py",
                    "deploy/update_server.sh", "game/history.py", "game/errortrack.py"}
         import pages
         needed |= {"web/" + name for name in pages.SCRIPTS}                    # the page's own scripts (web/chart.js)
