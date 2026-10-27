@@ -18,17 +18,6 @@ Say you own that 5% bond, and interest rates rise so new bonds pay 6%. Nobody wi
 
 HERE: **BOND** (Steady Bonds) is a fund of short-dated government bonds, built to hold its value when markets panic: a safe haven, with small moves. There are no individual bonds to trade.
 
-Q: Rates rise from 3% to 5%. What happens to the price of a bond you hold paying 3%?
-+ It falls
-- It rises
-- It stays at face value
-WHY: Its fixed payments are now worth less than new bonds' higher payments, so its price drops.
-Q: Which bond's price is most sensitive to a change in rates?
-- A 1-year bond
-+ A 30-year bond
-- They are equally sensitive
-WHY: Longer maturity means longer duration: more of its value is affected by the new rate.
-
 ## Commodities {commodities} [6]
 SUMMARY: Oil, gas, metals and crops: what drives them, and how they differ from shares.
 **Commodities** are raw materials: energy (crude oil, natural gas), metals (gold, copper), and agricultural goods (wheat, corn). They have no earnings and pay no dividends; their prices come from **supply and demand**.
@@ -47,22 +36,6 @@ HERE: Five commodities trade at their spot price like shares: **CRUDE** (crude o
 
 [try /stock/CRUDE] Open crude oil and Ostrava Oil (OILX) side by side: how closely does the oil company follow the oil price?
 
-Q: Which commodity is known as a gauge of the world economy?
-+ Copper
-- Gold
-- Wheat
-WHY: Copper is used everywhere in industry and building, so its demand tracks growth.
-Q: When does gold tend to do well?
-- When everyone is confident
-+ In fear, high inflation, or when real interest rates fall
-- Only when oil falls
-WHY: Gold is a store of value, sought in uncertain times.
-Q: Oil prices jump. Which company is most likely hurt?
-- An oil producer
-+ An airline
-- A gold miner
-WHY: Fuel is one of an airline's biggest costs.
-
 ## Currencies and forex {forex} [6]
 SUMMARY: How currency pairs work, what moves them, and why forex is a leveraged game.
 The **foreign exchange (forex)** market is the biggest in the world: trillions of dollars a day. Currencies trade in **pairs**: EUR/USD at 1.10 means one euro costs 1.10 dollars. Buying EUR/USD is betting the euro rises against the dollar.
@@ -80,17 +53,6 @@ Major pairs move less than 1% on most days, so forex is traded with high leverag
 Buying foreign shares is also a bet on the currency: a 10% gain in a foreign stock can be wiped out by a 10% fall in its currency.
 
 HERE: Everything here is priced in MB, so there is no currency trading and no currency risk. What carries over: interest-rate surprises move currencies the way they move the market here.
-
-Q: EUR/USD rises from 1.08 to 1.12. What happened?
-+ The euro strengthened against the dollar
-- The dollar strengthened against the euro
-- Both fell
-WHY: One euro now buys more dollars.
-Q: The central bank raises rates more than expected. What does its currency tend to do?
-- Fall
-+ Rise
-- Nothing
-WHY: Higher rates attract money into the currency.
 
 ## Crypto: what is different {crypto} [6]
 SUMMARY: Digital assets, how they differ from shares, and the extra risks.
@@ -113,17 +75,6 @@ Exchanges, miners and wallet makers are ordinary companies whose fortunes follow
 
 HERE: There are no coins here, but the **crypto industry** has eight companies (an exchange, a miner, a payments app, a stablecoin issuer, a wallet maker...), an index (**XCRYP**) and a themed fund (**FINX**, fintech and crypto). They are among the most rate-sensitive and most volatile industries.
 
-Q: What is behind the price of most cryptocurrencies?
-- Their quarterly earnings
-+ What buyers will pay: adoption, scarcity and sentiment
-- A government guarantee
-WHY: Most tokens have no cash flows; their value is set by demand.
-Q: You lose the private key to a self-held wallet. What happens?
-+ The coins are almost certainly gone for good
-- The bank resets it
-- The coins return to the exchange
-WHY: Without the key nobody can move the coins.
-
 ## REITs, and index funds against stock picking {reits-index} [6]
 SUMMARY: Property through the stock market, and why most investors are better off owning the whole market.
 ### REITs
@@ -141,14 +92,3 @@ Owning the index is a strong default for long-term money. Picking stocks or trad
 HERE: The real estate industry here has office, residential, retail and logistics REITs, a hotel owner, a homebuilder and data centres, with an index (**XREAL**). The **MSI 50** is the market's index: compare your own returns with simply holding it.
 
 [try /stock/SKOF] Open Skyline Office REIT and look at its dividend yield and its industry.
-
-Q: Why are REITs hurt by rising interest rates?
-+ Their steady income is valued like a bond's, and their borrowing costs rise
-- They pay no dividends
-- Their properties disappear
-WHY: Higher rates make bond-like income less attractive and debt more expensive.
-Q: What have long-term studies found about most actively managed funds?
-- They easily beat their index
-+ Most fail to beat their index after fees over long periods
-- They always match the index exactly
-WHY: Costs and competition make beating the index hard to sustain.

@@ -27,17 +27,6 @@ Not every trade happens on a public exchange. Big orders often go to **dark pool
 
 HERE: There is no order book: every trade is against the house at the displayed price, so no order, however big, moves the price or walks a book. That keeps the game fair for small and large accounts alike; in real markets, size and speed matter.
 
-Q: Using the book above, a market order buys 1,500 shares. What is the worst price paid?
-+ 100.03
-- 100.02
-- 100.04
-WHY: It takes all 1,200 at 100.02 and then 300 at 100.03.
-Q: How do market makers earn a living?
-- From commissions on every trade
-+ Mostly from the spread between their bid and ask
-- From the exchange's profits
-WHY: Buying at the bid and selling at the ask, many times a day.
-
 ## IPOs, splits, dividend dates and other corporate actions {corporate-actions} [7]
 SUMMARY: The events that change a company's shares, and what each means for a holder.
 ### IPOs
@@ -59,17 +48,6 @@ One company buys another, for cash or shares, usually at a **premium** to the ma
 
 HERE: New companies list through **IPOs** about 15 times a game year, announced half an hour ahead, at their announced price with **no first-day pop**. When the market is full, the smallest company outside the MSI 50 is **taken over** for cash by the biggest in its industry, at the market price with **no premium** (a premium that always came would be free money for holding small companies). **There are no stock splits.** Companies do announce share **offerings** (more shares, no price move on their own) and **buybacks**, and dividend payers go ex-dividend five minutes after their report.
 
-Q: A stock at 80 splits 2-for-1. You owned 10 shares. What do you own now?
-+ 20 shares at about 40
-- 10 shares at 160
-- 20 shares at 80
-WHY: Twice the shares at half the price: the same value.
-Q: A company agrees to be bought at 50 a share. Its stock trades at 48. Why the gap?
-- An error
-+ The risk the deal fails, and the time until it closes
-- The buyer is overpaying
-WHY: The discount is the market's price for the deal's risk and the wait.
-
 ## Brokers, fees and regulation {brokers} [6]
 SUMMARY: How to choose a broker, the costs to compare, and who protects your money.
 ### What a broker does
@@ -90,17 +68,6 @@ An unregulated broker, pressure to deposit more, difficulty withdrawing money, "
 
 HERE: Meme Street's fee is a flat 0.1% of every trade, like a modest broker's commission, with no spread on shares, no account fees and no currency to convert. MB are practice money: there is no broker, no deposit protection and nothing to withdraw.
 
-Q: What does investor protection such as SIPC or the FSCS cover?
-- Losses from bad investments
-+ Your assets if a regulated broker fails, up to a limit
-- Any losing trade
-WHY: It protects against the broker's failure, not against market losses.
-Q: How do many "commission-free" brokers earn money?
-+ Payment for order flow, spreads, currency fees and lending
-- They do not need to
-- From the government
-WHY: Zero commission rarely means zero cost.
-
 ## Taxes: a general overview {taxes} [5]
 SUMMARY: The usual ways trading and investing are taxed, in general terms only.
 Tax rules differ a great deal between countries and change often. This is a general picture, not advice: check the rules where you live, or ask a qualified adviser.
@@ -117,14 +84,3 @@ Tax rules differ a great deal between countries and change often. This is a gene
 Frequent trading turns every gain into a taxable event; a long-term holder can defer tax for years. After tax, the gap between an active trader and a buy-and-hold investor usually widens in the investor's favour.
 
 HERE: MB have no cash value and are never paid out, so nothing here is taxed. The History page's CSV download is the kind of record a real trader keeps for tax.
-
-Q: In many countries, what usually happens with losses on investments?
-+ They can be set against gains to reduce the tax
-- They are taxed as income
-- They must be repaid
-WHY: Offsetting losses against gains is common, within each country's rules.
-Q: Why does frequent trading often cost more tax than buying and holding?
-- Traders pay a special penalty
-+ Every gain is realised and taxed each year, often at higher short-term rates
-- Holding is never taxed
-WHY: Holding defers tax until sale and often qualifies for lower long-term rates.

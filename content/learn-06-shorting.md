@@ -23,22 +23,6 @@ HERE: Press **Sell** on a stock you do not hold and the button says **Short**. T
 
 [try /stock/DOGO] Open DOGO Inc and read the costs line under the trade buttons: it shows the borrow fee per hour.
 
-Q: You short 100 MB of a stock and it rises 30%. Roughly what have you lost?
-- Nothing until you cover
-+ About 30 MB, plus fees
-- 100 MB
-WHY: The loss is the rise on the amount shorted: 30% of 100 MB, plus the trading and borrow fees.
-Q: What is the most a short can lose in theory?
-- 100%
-+ Without limit, because a price can keep rising
-- Only the borrow fee
-WHY: A price has no ceiling, so neither does a short's loss.
-Q: Why does holding a short cost money over time?
-+ You pay a borrow fee for the shares, and any dividends
-- You do not, shorts are free
-- The exchange charges a holding tax
-WHY: Borrowed shares cost a fee, and dividends go to the lender.
-
 ## Short squeezes {squeezes} [5]
 SUMMARY: How short sellers rushing to cover can send a price flying.
 A **short squeeze** happens when a heavily shorted stock rises and the short sellers rush to buy it back: to cut their losses, or because their margin calls force them to. Their buying pushes the price higher, which forces more shorts to cover, which pushes it higher still.
@@ -54,17 +38,6 @@ A **short squeeze** happens when a heavily shorted stock rises and the short sel
 - Always use a stop, and expect it to gap.
 
 HERE: Players' trades never move prices, so a squeeze cannot be caused by players covering. Prices can still jump hard against a short on news, an earnings surprise or a burst of buying in the price model, and the **borrow fee rises** as more players short the same stock (up to four times when it is very crowded), so a crowded short is expensive to hold.
-
-Q: What drives a short squeeze higher?
-+ Short sellers buying back their shares at the same time
-- Companies issuing new shares
-- Low volume
-WHY: Covering a short means buying; many at once push the price up, forcing more to cover.
-Q: Which stock is most at risk of a squeeze?
-- One with very few shares sold short
-+ One with very high short interest and several days' volume to cover
-- An index fund
-WHY: The more shorts and the longer they would take to cover, the more violent the rush.
 
 ## Margin, leverage, margin calls and liquidation {margin-leverage} [7]
 SUMMARY: Trading with borrowed money: margin, maintenance, margin calls and forced closing.
@@ -89,22 +62,6 @@ Real brokers close you out before that, at the maintenance level.
 
 HERE: Leverage is part of **Pro**: 1x, 2x, 3x, 5x or 10x on any listing except the leveraged funds. Each position stands on its own margin: when its equity falls to **half the margin it started with**, it is closed at the market price (after a 25% move against you at 2x, 10% at 5x, 5% at 10x). The position box and the Holdings page show the leverage, the loan and **the price where it closes by itself**. The loan costs about 0.06% a real hour. A gap past that price takes the rest from your cash. Plain shorts have their own margin call (previous lesson).
 
-Q: At 5x, how much stock does 200 MB of your own control?
-+ 1,000 MB
-- 200 MB
-- 40 MB
-WHY: 5 × 200 = 1,000 MB, with 800 MB borrowed.
-Q: At 10x, roughly what move against you wipes out your margin?
-- 50%
-+ 10%
-- 1%
-WHY: Your money is a tenth of the position; a 10% fall loses all of it (here the position closes earlier, at half the margin).
-Q: What does liquidation mean?
-- The company goes bust
-+ The broker closes your position at the market price because your margin ran out
-- Your stop-loss is moved
-WHY: When equity falls below what is required, the position is closed for you.
-
 ## Why leverage magnifies losses {leverage-maths} [5]
 SUMMARY: Leverage changes the size of the bet, never the odds, and makes recovery harder.
 ### The same move, multiplied
@@ -120,19 +77,3 @@ With 10x leverage, the drawdown table from the *Risk* track is reached ten times
 Professionals use leverage with **small risk per trade**: a tight, logical stop and a position sized so the loss at the stop is still 1% of the account. Leverage then lets a small stop-distance trade be big enough to matter, without risking more. Using leverage to make every trade bigger is the opposite: it raises the risk on every trade.
 
 HERE: Leverage on Meme Street changes how big your bet is, never the odds: a leveraged position wins and loses the same price moves, several times as hard, and on average loses the interest and fees several times as fast.
-
-Q: At 3x, the stock rises 4%. What happens to your money in the position, before costs?
-- +4%
-+ +12%
-- +1.3%
-WHY: 3 × 4% = 12%.
-Q: A stock falls 20% then rises 25% (back to the start). What happened to a 3x leveraged position over those two moves, ignoring costs and margin calls?
-- It is back to the start
-+ It is down: -60% then +75% leaves 70% of the money
-- It is up
-WHY: 0.4 × 1.75 = 0.7: leverage turns the same round trip into a 30% loss.
-Q: Does leverage improve a trade's chance of winning?
-- Yes
-+ No: it only makes wins and losses bigger
-- Only in uptrends
-WHY: Leverage changes the size of the outcome, not its probability.

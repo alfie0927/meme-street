@@ -1,6 +1,6 @@
-"""Learning (learning.py, content/learn-*.md, drills.py): the course (tracks of lessons with quizzes), the chart tests on
+"""Learning (learning.py, content/learn-*.md, drills.py): the course (tracks of lessons), the chart tests on
 real game charts, and the challenges (switched off). Nothing on the Learn page pays MB. (The trading journal was removed
-on 2026-10-20; the lesson rewards and the lesson challenges on 2026-10-27.)"""
+on 2026-10-20; the lesson rewards, the lesson challenges and then the quizzes on 2026-10-27.)"""
 import asyncio
 import json
 import time
@@ -16,10 +16,6 @@ from test_server import http
 
 ROUTES = ("/", "/learn", "/holdings", "/portfolio", "/history", "/leaders", "/social", "/profile", "/shop", "/calendar",
           "/bots", "/bots/guide", "/daily")
-
-
-def right_answers(e, lesson_id):
-    return [q["answer"] for q in e._lesson_by_id[lesson_id]["quiz"]]
 
 
 class CourseTests(unittest.TestCase):
@@ -41,10 +37,6 @@ class CourseTests(unittest.TestCase):
         for x in self.lessons:
             self.assertIn(x["track"], track_ids)
             self.assertTrue(x["summary"] and len(x["body"]) >= 3, x["id"])
-            self.assertGreaterEqual(len(x["quiz"]), 2, x["id"])
-            for q in x["quiz"]:
-                self.assertTrue(0 <= q["answer"] < len(q["options"]) and q["why"], (x["id"], q["q"]))
-                self.assertEqual(len(set(q["options"])), len(q["options"]), (x["id"], q["q"]))
 
     def test_every_block_is_known_and_every_link_goes_somewhere(self):
         kinds = set(drills.KINDS)
@@ -60,14 +52,9 @@ class CourseTests(unittest.TestCase):
                     href = b["href"]
                     self.assertTrue(href in ROUTES or href.startswith("/stock/"), (x["id"], href))
 
-    def test_the_right_answers_are_spread_over_the_places(self):
-        places = [q["answer"] for x in self.lessons for q in x["quiz"]]
-        for k in range(3):
-            self.assertGreater(places.count(k), len(places) / 5, k)
-
     def test_a_bad_file_is_refused_with_its_line(self):
-        for text in ("## A lesson {a}\n", "# T {t}\n## L {l}\nQ: q?\n- a\n- b\nWHY: no right answer\n",
-                     "# T {t}\n## L {l}\n[test nope]\n", "# T {t}\n## L {l}\nQ: q?\n+ a\n+ b\nWHY: two\n"):
+        for text in ("## A lesson {a}\n", "# T {t}\n## L {l}\n[test nope]\n", "# T {t}\n## L {l}\n[chart any]\n",
+                     "# T {t}\n## L {l}\n[try nowhere] text\n", "# Track with no id\n"):
             with self.assertRaises(ValueError):
                 learning.parse_learn(text)
 
@@ -77,42 +64,35 @@ class LessonTests(unittest.TestCase):
         self.e = make_engine(21)
         self.p = join(self.e, "student")
 
-    def test_the_page_never_gets_the_answers_before_marking(self):
+    def test_a_lesson_comes_with_its_track_and_neighbours(self):
         les = self.e.lesson("support-resistance")
-        self.assertTrue(les["quiz"])
-        self.assertNotIn("answer", json.dumps(les["quiz"]))
-        self.assertNotIn("why", json.dumps(les["quiz"]))
+        self.assertTrue(les["body"])
+        self.assertNotIn("quiz", les)
         self.assertEqual(les["track_title"], "Reading charts")
         self.assertIsNone(self.e.lesson("welcome")["prev"])
         self.assertEqual(self.e.lesson("welcome")["next"]["id"], "first-trade")
         self.assertIsNone(self.e.lesson("nope"))
 
-    def test_passing_a_quiz_is_recorded_and_pays_nothing(self):
+    def test_opening_a_lesson_counts_it_as_read_and_pays_nothing(self):
         e, p = self.e, self.p
-        right = right_answers(e, "welcome")
-        wrong = [(a + 1) % 3 for a in right]
-        r = e.answer_quiz(p, "welcome", wrong)
-        self.assertTrue(r["ok"] and not r["passed"])
-        self.assertEqual(r["score"], 0)
-        r = e.answer_quiz(p, "welcome", right)
-        self.assertTrue(r["passed"] and r["first"])
-        self.assertIn("welcome", p.lessons_passed)
-        self.assertFalse(e.answer_quiz(p, "welcome", right)["first"])
+        e.lesson("welcome", p)
+        first = p.lessons_passed["welcome"]
+        e.now += 60
+        e.lesson("welcome", p)
+        self.assertEqual(p.lessons_passed, {"welcome": first})                    # the first read is kept
+        self.assertIsNone(e.lesson("nope", p))
         self.assertEqual(p.cash, 1000.0)
         self.assertEqual(p.mb_by_source.get("challenge", 0.0), 0.0)
-        self.assertFalse(e.answer_quiz(p, "welcome", [0])["ok"])               # every question needs an answer
-        self.assertFalse(e.answer_quiz(p, "welcome", [True] * len(right))["passed"])
         view = e.lessons_view(p)
-        self.assertEqual(view["passed"], 1)
-        self.assertTrue(view["tracks"][0]["lessons"][0]["passed"])
+        self.assertEqual(view["read"], 1)
+        self.assertTrue(view["tracks"][0]["lessons"][0]["read"])
         self.assertLess(abs(drift(e)), 1e-6)
 
-    def test_a_visitor_gets_marks_and_nothing_is_kept(self):
+    def test_a_visitor_reads_and_nothing_is_kept(self):
         e = self.e
-        r = e.answer_quiz(None, "welcome", right_answers(e, "welcome"))
-        self.assertTrue(r["passed"] and not r["first"])
+        self.assertTrue(e.lesson("welcome")["body"])
         view = e.lessons_view(None)
-        self.assertEqual(view["passed"], 0)
+        self.assertEqual(view["read"], 0)
         self.assertNotIn("week", view)
         self.assertEqual(len(view["tests"]), len(drills.KINDS))
 
@@ -250,18 +230,15 @@ class LearningServerTests(unittest.TestCase):
             d = json.loads(http(srv, "/api/learn")[1])                              # public: a visitor sees the course
             self.assertGreaterEqual(d["total"], 90)
             self.assertEqual(d["challenges"], [])
-            les = json.loads(http(srv, "/api/learn/lesson/welcome")[1])
-            self.assertTrue(les["body"] and les["quiz"])
-            self.assertNotIn("answer", json.dumps(les))
-            ans = [q["answer"] for q in next(x for x in learning.load_content()[1] if x["id"] == "welcome")["quiz"]]
-            r = json.loads(http(srv, "/api/learn/quiz", "POST", {"lesson": "welcome", "answers": ans})[1])
-            self.assertTrue(r["passed"] and not r["first"])                        # a visitor: marked, not kept
+            les = json.loads(http(srv, "/api/learn/lesson/welcome")[1])            # a visitor reads it
+            self.assertTrue(les["body"] and les["next"])
+            self.assertEqual(http(srv, "/api/learn/lesson/nope")[0], 404)
+            self.assertIn(http(srv, "/api/learn/quiz", "POST", {"lesson": "welcome", "answers": [0]})[0], (404, 405))
             a = http_join(srv.url, "HttpStudent")
             h = {"X-Token": a["token"]}
-            r = json.loads(http(srv, "/api/learn/quiz", "POST", {"lesson": "welcome", "answers": ans}, headers=h)[1])
-            self.assertTrue(r["passed"] and r["first"])
+            http(srv, "/api/learn/lesson/welcome", headers=h)                       # a player reads it
             time.sleep(0.3)
-            self.assertEqual(json.loads(http(srv, "/api/learn", headers=h)[1])["passed"], 1)
+            self.assertEqual(json.loads(http(srv, "/api/learn", headers=h)[1])["read"], 1)
             q = json.loads(http(srv, "/api/learn/test?kind=level", headers=h)[1])
             self.assertTrue(q["id"] and q["candles"] and q["options"])
             self.assertNotIn("answer", q)
@@ -315,10 +292,11 @@ class LearningBrowserTests(unittest.TestCase):
             await d.check("an answer shows what came next", "document.querySelector('[data-lrn-test] .lrn-out').innerText",
                           lambda t: "Another chart" in t and ("Right." in t or "Not this time." in t), wait=8)
             await d.check("and marks the right choice", "document.querySelectorAll('[data-lrn-test] .lrn-opts button.right').length", 1)
-            await pg.js("document.querySelectorAll('.quiz-q').forEach(q=>q.querySelector('input').checked=true);document.getElementById('quiz-go').click()")
-            await d.check("the quiz is marked", "document.getElementById('quiz-out').innerText",
-                          lambda t: "right" in t, wait=6)
-            await d.check("with a note under each question", "[...document.querySelectorAll('.quiz-q .why')].every(w=>w.innerText.length>10)", True)
+            await d.check("with no quiz", "document.querySelectorAll('.quiz-q,#quiz-go').length+'|'+document.getElementById('learn-body').innerText",
+                          lambda t: t.startswith("0|") and "Check what you learnt" not in t)
+            await pg.goto(base + "/learn", 3)
+            await d.check("and the lesson now counts as read", "document.querySelector('.lrn-prog').innerText",
+                          lambda t: "1 of" in t and "read" in t, wait=10)
             await pg.goto(base + "/learn?test=rsi", 3)
             await d.check("a page of chart tests opens", "document.querySelectorAll('[data-lrn-test] svg').length", 1, wait=10)
             await d.check("there is no Journal in the menu", "!document.querySelector('#nav a[href=\"/journal\"]')", True)

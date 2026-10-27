@@ -33,17 +33,6 @@ A **trading plan** is the set of decisions you make once, calmly, so you do not 
 
 [try /stock/MSI] Open the MSI 50 and write your own one-page plan for trading it.
 
-Q: When should you change your trading plan?
-+ During a scheduled review, never in the middle of a trade
-- Whenever a trade goes against you
-- Every morning
-WHY: Changes made under pressure are usually emotional; reviews are calm.
-Q: A great-looking trade appears that is not one of your setups. What does the plan say?
-- Take it, it looks great
-+ Do not take it
-- Take it at double size
-WHY: The plan's value comes from following it; exceptions are where discipline leaks.
-
 ## A checklist before every trade {checklist} [5]
 SUMMARY: Ten questions to answer before pressing Buy.
 Pilots use checklists because skilled people skip steps under pressure. So do traders. Before every trade:
@@ -64,17 +53,6 @@ If any answer is "I don't know", that is the answer: no trade yet.
 [test any]
 
 HERE: The tools for the list are all on a stock's page: the chart and its levels, the calendar link in *Upcoming events*, the order panel's bracket, and the **Position size and risk** tool for questions 5 to 7.
-
-Q: You cannot say where your stop would go. What does the checklist say?
-+ No trade yet
-- Trade without a stop this time
-- Use a 10% stop
-WHY: An unanswered question means the trade is not ready.
-Q: The company reports earnings in 20 minutes. Which checklist item does that affect?
-- None
-+ The calendar question: a gap could jump past the stop
-- Only the target
-WHY: Known events change the risk of the trade.
 
 ## Reviewing your trades {review} [5]
 SUMMARY: A weekly review that turns trades into lessons.
@@ -100,17 +78,6 @@ A week is a small sample. Look for patterns over a month or more before deciding
 HERE: The Portfolio page shows your equity curve, realised profit, fees, and best and worst trades; the History page downloads every trade; the Leaders page shows your worst drawdown. The quest ladder on your profile tracks stops, planned exits and other good habits over time.
 
 [try /portfolio] Open your portfolio and write down three numbers: your return, your fees, and your worst trade.
-
-Q: How many things should you change after a weekly review?
-+ One, so you can tell whether it helped
-- Everything that went wrong
-- Nothing, ever
-WHY: One change at a time keeps the cause and effect clear.
-Q: Which matters most in a review?
-- How much money the best trade made
-+ Whether trades followed the plan, and which mistakes repeat
-- The colour of the chart
-WHY: Behaviour and process are what you can control and improve.
 
 ## Glossary {glossary} [10]
 SUMMARY: Every term in the course, in a sentence each.
@@ -191,14 +158,3 @@ The words of the course, from A to Z. Each one is explained properly in its less
 | Yield curve | interest rates for different lengths of loan, from short to long |
 
 TIP: If a word stops you anywhere on the site, it is almost certainly here, and its lesson explains it with an example.
-
-Q: What is R?
-+ The amount risked on a trade, used to measure results
-- The return on the market
-- The RSI's value
-WHY: Results in multiples of R make trades of different sizes comparable.
-Q: What is the spread?
-- The difference between the high and the low
-+ The gap between the bid and the ask
-- The profit on a trade
-WHY: The bid-ask spread is a cost on every round trip in real markets.

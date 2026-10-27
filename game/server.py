@@ -1430,11 +1430,6 @@ def ops_info():
 
 
 # ------------------------------------------------------------------------------------------ learning (learning.py)
-class Quiz(BaseModel):
-    lesson: str
-    answers: list
-
-
 class TestAnswer(BaseModel):
     id: str
     choice: int
@@ -1460,18 +1455,10 @@ async def learn(request: Request, x_token: str = Header("")):
 
 
 @app.get("/api/learn/lesson/{lesson_id}")
-async def learn_lesson(lesson_id: str):
-    """One lesson's text and quiz questions (never the answers). Public: visitors can read the lessons too."""
-    data = await run(engine.lesson, lesson_id)
+async def learn_lesson(lesson_id: str, x_token: str = Header("")):
+    """One lesson to read; a player who opens it has read it. Public: visitors can read the lessons too."""
+    data = await run(engine.lesson, lesson_id, learner(x_token))
     return data if data else JSONResponse({"error": "unknown lesson"}, status_code=404)
-
-
-@app.post("/api/learn/quiz")
-async def learn_quiz(b: Quiz, request: Request, x_token: str = Header("")):
-    """Mark a quiz; a player's pass is recorded. Public (a visitor just gets the marks)."""
-    if learn_slow(request, x_token, "quiz", 1.0):
-        return JSONResponse({"error": "slow down"}, status_code=429)
-    return await run(engine.answer_quiz, learner(x_token), b.lesson, b.answers)
 
 
 @app.get("/api/learn/test")

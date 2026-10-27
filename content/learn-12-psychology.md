@@ -28,22 +28,6 @@ Once you own a stock, you notice the news that agrees with you and ignore the re
 
 HERE: The quest ladder on your profile rewards the habits that fight these biases: putting a stop-loss on positions, closing trades that had a stop (win or lose), setting take-profits, holding winners for an hour. It never rewards volume or luck.
 
-Q: You have lost three trades today and feel you must make it back now. What is this?
-+ The urge to revenge trade: time to stop for the day
-- A good time to double the size
-- Recency bias in a winning strategy
-WHY: Trading to recover a loss is driven by emotion, and usually makes it worse.
-Q: Why do traders tend to sell winners early and hold losers?
-- Winners are riskier
-+ Loss aversion: losses hurt more than gains please, so people avoid realising them
-- It is the best strategy
-WHY: The pain of admitting a loss keeps losers open; the relief of a gain closes winners too soon.
-Q: You are down 40% on a stock. What is the right question?
-- How do I get back to break-even?
-+ Would I buy it today, at this price, with what I know now?
-- How long until it recovers?
-WHY: What you paid is a sunk cost; only the future matters for the decision.
-
 ## Process over outcome {process} [6]
 SUMMARY: Good decisions can lose and bad ones can win: judge the decision, not the result.
 In a world with randomness, a good decision can have a bad outcome and a bad one a good outcome. Running a red light and arriving safely does not make it a good decision.
@@ -66,17 +50,6 @@ After each trade, ask: did I follow my rules? A trade that followed the rules an
 [test next]
 
 HERE: The *Up or down next?* chart test above makes the point: over many tries your score drifts towards 50%, because nobody can call the next few candles. Results come from many trades with small losses and bigger wins, not from calling every move.
-
-Q: You bought on a whim, with no stop, and made 20%. How should you rate the trade?
-+ A bad trade with a lucky outcome
-- An excellent trade
-- A good trade, because it made money
-WHY: Bad process; the profit was luck and teaches a dangerous habit.
-Q: You followed your plan exactly and the stop was hit. How should you rate it?
-- A bad trade
-+ A good trade with a bad outcome
-- A reason to abandon the plan
-WHY: Following a sound plan is the job; losses are part of any edge.
 
 ## Trading journals and routines {journal} [6]
 SUMMARY: Writing down every trade, reviewing them, and the routines that keep you consistent.
@@ -104,17 +77,6 @@ HERE: The **History** page lists every trade, and **Download CSV** gives you all
 
 [try /history] Open your trade history and download it: add columns for the setup, the plan and whether you followed it.
 
-Q: What is the most useful thing a journal reveals?
-+ Repeating patterns in your mistakes and your best setups
-- The future price of a stock
-- How much tax you owe
-WHY: Reviewing many trades together shows patterns a single trade never does.
-Q: Which of these belongs in a journal entry?
-- Only the profit
-+ The setup, the plan, the result in R, whether the plan was followed, and how you felt
-- Only the losing trades
-WHY: Context and behaviour are what make a journal useful for improving.
-
 ## Knowing when to stop {stopping} [5]
 SUMMARY: Daily loss limits, signs of tilt, and why not trading is a position too.
 ### A daily loss limit
@@ -135,14 +97,3 @@ No trade means no loss. Choppy, directionless markets, the minutes around a big 
 After a big winning day, the temptation is to keep going while "hot". Overconfidence after wins is as costly as revenge after losses. Some traders stop after reaching a daily target.
 
 HERE: The market here never closes and a game day is 30 minutes, so there is always another session. That makes a personal stopping rule more important, not less.
-
-Q: What is a daily loss limit for?
-+ To stop trading before emotion turns a bad day into a disaster
-- To guarantee a profit
-- To meet a legal requirement
-WHY: Set while calm, it protects you from decisions made on tilt.
-Q: Which is a sign of being on tilt?
-- Following your plan exactly
-+ Trading bigger and faster after losses
-- Journaling your trades
-WHY: Escalating size and pace after losses is the classic tilt pattern.

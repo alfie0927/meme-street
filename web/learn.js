@@ -1,6 +1,7 @@
-// ---------- the Learn page (learning.py, drills.py): tracks of lessons with quizzes, and chart tests on real game charts ----------
+// ---------- the Learn page (learning.py, drills.py): tracks of lessons, and chart tests on real game charts ----------
 // /learn lists the tracks and the chart tests, /learn?l=<id> is a lesson, /learn?test=<kind> a run of chart tests.
-// Each view is drawn once when it opens (never redrawn under the reader); visitors can read, answer and test too.
+// Each view is drawn once when it opens (never redrawn under the reader); visitors can read and test too. A lesson a
+// signed-in player opens counts as read.
 let lrnData=null,lrnLesson=null,lrnView=null;
 const LRN_TONE={level:'#4cc3cc',stop:'#f25c54',target:'#3ad07a',entry:'#e8b84a',trigger:'#d2a8ff'};
 const lrnPx=v=>numText(v,v<1?4:2);
@@ -9,7 +10,7 @@ const lrnText=s=>esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*([^*\s]
 async function loadLearn(){
  const q=new URLSearchParams(location.search),l=q.get('l'),t=q.get('test'),key=l?'l:'+l:t?'t:'+t:'list';
  if(lrnView===key)return;lrnView=key;
- if(l){let d=null;try{d=await (await fetch('/api/learn/lesson/'+encodeURIComponent(l))).json()}catch(e){}
+ if(l){let d=null;try{d=await (await fetch('/api/learn/lesson/'+encodeURIComponent(l),{headers:{'X-Token':token||''}})).json()}catch(e){}
   if(!d||d.error){setHtml($('learn-body'),'<p>There is no such lesson. <a href="/learn">All lessons</a></p>');return}
   lrnLesson=d;drawLesson();return}
  if(t){drawTestPage(t);return}
@@ -21,14 +22,14 @@ function drawLearn(){
  const d=lrnData;$('learn-card').classList.remove('reading');
  const tr=d.tests.reduce((a,t)=>[a[0]+t.right,a[1]+t.n],[0,0]);
  setHtml($('learn-body'),`<div class="lrn-top"><div><h3 style="margin:0 0 6px">Learn to trade</h3>
-  <p class="about" style="margin:0">Everything a trader needs, from what a share is to options, macro and building a trading bot, in ${d.total} short lessons. Each ends with a few questions, and the chart tests use real charts from this market: answer, then see what happened next. Nothing here costs or pays MB.</p></div>
-  <div class="lrn-prog"><b>${d.passed}</b> of ${d.total} lessons passed${pbar(d.passed,d.total||1)}<span class="mut">${tr[1]?`Chart tests: ${tr[0]} of ${tr[1]} right`:'No chart tests yet'}</span></div></div>
-  ${token?'':'<p class="hint">You are not signed in: you can read everything and answer every question, but your progress is not kept. <a href="/#join">Create an account</a> to keep it.</p>'}
+  <p class="about" style="margin:0">Everything a trader needs, from what a share is to options, macro and building a trading bot, in ${d.total} short lessons, and chart tests on real charts from this market: answer, then see what happened next. Nothing here costs or pays MB.</p></div>
+  <div class="lrn-prog"><b>${d.read}</b> of ${d.total} lessons read${pbar(d.read,d.total||1)}<span class="mut">${tr[1]?`Chart tests: ${tr[0]} of ${tr[1]} right`:'No chart tests yet'}</span></div></div>
+  ${token?'':'<p class="hint">You are not signed in: you can read everything and take every test, but your progress is not kept. <a href="/#join">Create an account</a> to keep it.</p>'}
   <h3 class="sp">Chart tests</h3><p class="hint" style="margin-top:0">A real chart from the game, stopped at a moment worth asking about. Pick your answer, then the chart shows what came next.</p>
   <div class="lrn-tests">${d.tests.map(t=>`<a class="lrn-test" href="/learn?test=${t.kind}"><b>${esc(t.title)}</b><small>${esc(t.about)}</small><span class="mut">${t.n?`${t.right} of ${t.n} right`:'Not tried yet'}</span></a>`).join('')}<a class="lrn-test" href="/learn?test=any"><b>Mixed</b><small>Any of the above, at random.</small><span class="mut">&nbsp;</span></a></div>
-  <h3 class="sp">The course</h3><div class="lrn-tracks">${d.tracks.map((t,k)=>{const done=t.lessons.filter(x=>x.passed).length;
-   return `<section class="lrn-track"><div class="lrn-th"><span class="lrn-n">${k||'S'}</span><div><b>${esc(t.title)}</b><small>${done} of ${t.lessons.length} passed</small></div></div><p class="mut">${lrnText(t.blurb)}</p>${pbar(done,t.lessons.length||1)}
-    <ol class="lrn-ls">${t.lessons.map(x=>`<li class="${x.passed?'done':''}"><a href="/learn?l=${encodeURIComponent(x.id)}" title="${esc(x.summary)}">${esc(x.title)}</a><small>${x.passed?'Passed':x.minutes+' min'}</small></li>`).join('')}</ol></section>`}).join('')}</div>`)}
+  <h3 class="sp">The course</h3><div class="lrn-tracks">${d.tracks.map((t,k)=>{const done=t.lessons.filter(x=>x.read).length;
+   return `<section class="lrn-track"><div class="lrn-th"><span class="lrn-n">${k||'S'}</span><div><b>${esc(t.title)}</b><small>${done} of ${t.lessons.length} read</small></div></div><p class="mut">${lrnText(t.blurb)}</p>${pbar(done,t.lessons.length||1)}
+    <ol class="lrn-ls">${t.lessons.map(x=>`<li class="${x.read?'done':''}"><a href="/learn?l=${encodeURIComponent(x.id)}" title="${esc(x.summary)}">${esc(x.title)}</a><small>${x.read?'Read':x.minutes+' min'}</small></li>`).join('')}</ol></section>`}).join('')}</div>`)}
 
 // ---- a lesson
 function lrnBlock(b){
@@ -44,21 +45,11 @@ function lrnBlock(b){
  return `<p>${lrnText(b.p||'')}</p>`}
 function drawLesson(){
  const L=lrnLesson;$('learn-card').classList.add('reading');
- const quiz=L.quiz.length?`<h3 class="sp">Check what you learnt</h3><div id="quiz">${L.quiz.map((q,i)=>`<div class="quiz-q" data-q="${i}"><b>${i+1}. ${lrnText(q.q)}</b>${q.options.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${lrnText(o)}</label>`).join('')}<div class="why"></div></div>`).join('')}</div>
-  <div class="bar"><button class="buy" id="quiz-go">Check my answers</button><span id="quiz-out" class="hint"></span></div>${token?'':'<p class="hint">Not signed in: your answers are marked, but your progress is not kept.</p>'}`:'';
  const nav=`<div class="lrn-nav">${L.prev?`<a href="/learn?l=${encodeURIComponent(L.prev.id)}">← ${esc(L.prev.title)}</a>`:'<span></span>'}${L.next?`<a href="/learn?l=${encodeURIComponent(L.next.id)}">${esc(L.next.title)} →</a>`:''}</div>`;
  setHtml($('learn-body'),`<div class="lrn-crumb"><a href="/learn">Learn</a> › ${esc(L.track_title)}</div><h3 style="margin:8px 0 2px">${esc(L.title)}</h3><p class="mut" style="margin:0">${L.minutes} minutes</p>
-  <div class="lesson-body">${L.body.map(lrnBlock).join('')}</div>${quiz}${nav}`);
+  <div class="lesson-body">${L.body.map(lrnBlock).join('')}</div>${nav}`);
  document.querySelectorAll('#learn-body [data-lrn-ex]').forEach(el=>lrnExample(el,el.dataset.lrnEx));
  document.querySelectorAll('#learn-body [data-lrn-test]').forEach(el=>lrnTest(el,el.dataset.lrnTest))}
-async function lrnQuiz(){
- const L=lrnLesson,answers=L.quiz.map((_,i)=>{const c=document.querySelector(`input[name=q${i}]:checked`);return c?Number(c.value):-1});
- if(answers.includes(-1)){setText($('quiz-out'),'Answer every question first');return}
- const r=await postJson('/api/learn/quiz',{lesson:L.id,answers},{'X-Token':token||''});
- if(!r.ok){setText($('quiz-out'),r.error||'Error');return}
- r.marks.forEach((m,i)=>{const box=document.querySelector(`.quiz-q[data-q="${i}"]`);box.classList.toggle('right',m.right);box.classList.toggle('wrong',!m.right);
-  box.querySelector('.why').innerHTML=(m.right?'<span class="up">Right.</span> ':'<span class="dn">Not quite.</span> ')+lrnText(m.why)});
- setText($('quiz-out'),r.passed?(r.first?`Passed: all ${r.of} right.`:`All ${r.of} right.`)+(L.next?' On to the next lesson.':''):`${r.score} of ${r.of} right. Read the notes and try again.`)}
 
 // ---- a page of chart tests
 function drawTestPage(kind){
@@ -132,7 +123,6 @@ function lrnSvg(o,slots){
 
 $('learn-card').addEventListener('click',e=>{
  const t=e.target;
- if(t.id==='quiz-go'){lrnQuiz();return}
  const box=t.closest('[data-lrn-test],[data-lrn-ex]');if(!box)return;
  if(t.dataset.lrnPick!==undefined)lrnPick(box,+t.dataset.lrnPick);
  else if(t.dataset.lrnAgain!==undefined)lrnTest(box,box._kind);

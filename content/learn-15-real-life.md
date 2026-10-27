@@ -24,17 +24,6 @@ Treat trading as a skill to build slowly, with small amounts you can afford to l
 
 HERE: The game's market is built to give no free money: no simple rule beats holding the MSI 50, costs included. If you beat it over hundreds of trades with sensible risk, that is skill worth something; if you do not, that is what most people find in real markets too, and it cost you nothing to learn.
 
-Q: What do large studies of real day traders find?
-+ The large majority lose money, and very few are consistently profitable
-- Most make a steady living
-- About half win and half lose
-WHY: Study after study finds only a small minority profit after costs over time.
-Q: What is a sensible approach to learning to trade with real money?
-- Use savings and leverage to learn quickly
-+ Small amounts you can afford to lose, while long-term money is invested simply
-- Quit your job and trade full time from the start
-WHY: Learning is expensive; keep the cost of the lessons small.
-
 ## Spotting scams {scams} [6]
 SUMMARY: The warning signs of investment fraud, and the most common schemes.
 Wherever there is money and hope, there are scams. The warning signs repeat:
@@ -59,17 +48,6 @@ Use regulated firms you found yourself, never share passwords or codes, never mo
 
 HERE: Meme Street's MB have no cash value and can never be withdrawn or sold, and nobody from the game will ever ask for your password, offer you "signals", or offer to trade for you. Anyone who does is not us.
 
-Q: A message offers "a guaranteed 3% a week, withdraw any time". What is it most likely to be?
-+ A scam
-- A government bond
-- A normal investment
-WHY: Guaranteed high returns do not exist in markets.
-Q: You are asked to pay a "release fee" before you can withdraw your profits. What should you think?
-- That is normal
-+ It is a classic sign of a fake platform: the profits are not real
-- You should pay it quickly
-WHY: Real brokers do not hold your money hostage for fees.
-
 ## The basics first {basics-first} [6]
 SUMMARY: An emergency fund, paying off expensive debt, and long-term index investing before any trading.
 Before risking money in markets, the boring basics do more for most people than any trading strategy.
@@ -92,17 +70,6 @@ With money you can afford to lose, as a skill to build.
 TIP: The rule of 72: divide 72 by the yearly return to get roughly how many years money takes to double. At 6%, about 12 years; at 9%, about 8.
 
 HERE: None of this applies to MB, which are practice money. It is the order real money should go in.
-
-Q: You have a credit card debt at 25% a year and some savings. What is usually the best first use of the savings?
-+ Paying off the credit card
-- Day trading to earn more than 25%
-- Buying options
-WHY: Clearing the debt is a certain 25% return; trading is not.
-Q: Roughly how long does money take to double at 8% a year?
-- 4 years
-+ 9 years
-- 20 years
-WHY: The rule of 72: 72 ÷ 8 = 9.
 
 ## What carries over from Meme Street {what-carries-over} [6]
 SUMMARY: The skills that transfer to real markets, and the differences to remember.
@@ -130,14 +97,3 @@ SUMMARY: The skills that transfer to real markets, and the differences to rememb
 Real money feels different. Traders who were calm in practice freeze or panic with their savings at stake. Start real trading much smaller than you practised, and grow only as your behaviour holds up.
 
 [try /daily] Play today's Daily Chart: two minutes, one go, the same chart for everyone. It is the quickest practice of reading a chart under a little pressure.
-
-Q: Which skill carries over from Meme Street to real markets unchanged?
-+ Sizing positions from the stop and managing risk
-- Assuming trades never move prices
-- Trading through halts
-WHY: Risk maths is the same everywhere; market structure details differ.
-Q: You were consistently calm and profitable in practice. What is a sensible first step with real money?
-- Start with the same size you used in practice
-+ Start much smaller, and grow as your behaviour holds up
-- Use leverage to make it worthwhile
-WHY: Real money changes behaviour; prove you can stay disciplined first.

@@ -28,22 +28,6 @@ HERE: Every company and commodity has options, for every player, free ones inclu
 
 [try /stock/NVXA] Open Novaxis's Options tab, click a call near the price, and read its breakeven and its profit-or-loss chart.
 
-Q: You buy a 50 put for 2. The stock ends at 44. What is your profit per share?
-+ 4
-- 6
-- -2
-WHY: The put pays 50 - 44 = 6; minus the 2 premium: 4.
-Q: You buy a 120 call for 5. The stock ends at 118. What happens?
-- You make 2
-+ The call expires worthless and you lose the 5 premium
-- You must buy the stock at 120
-WHY: Below the strike a call pays nothing; the buyer's loss is limited to the premium.
-Q: A premium of 2.40 a share. What does one contract cost?
-- 2.40
-+ 240
-- 24,000
-WHY: One contract is on 100 shares: 100 × 2.40.
-
 ## How options are priced: intrinsic and time value {options-pricing} [7]
 SUMMARY: What an option's price is made of, and moneyness.
 An option's premium has two parts.
@@ -72,22 +56,6 @@ A call minus a put at the same strike and expiry is worth about the expected pri
 
 HERE: Options are priced with Black-Scholes on the **expected price at expiry** (the forward: today's price, less any dividend before expiry, plus the stock's expected drift). Nothing is discounted, because MB cash earns no interest here, so put-call parity holds exactly at every strike. The chain shades in-the-money options, and the details panel shows the chance of finishing in the money.
 
-Q: The stock is at 80. What is the intrinsic value of a 70 call?
-+ 10
-- 0
-- 70
-WHY: 80 - 70 = 10.
-Q: The stock is at 80. What is the intrinsic value of a 70 put?
-- 10
-+ 0
-- -10
-WHY: A put pays the strike minus the price only if positive; 70 - 80 is negative, so 0.
-Q: Which option has the most time value, all else equal?
-- Deep in the money
-+ At the money
-- Far out of the money
-WHY: The outcome is most uncertain at the money, so the "chance" part of the price is largest there.
-
 ## The Greeks {greeks} [8]
 SUMMARY: Delta, gamma, theta and vega: how an option's price reacts to the stock, time and volatility.
 The **Greeks** measure how an option's price changes when one thing changes and the rest stay put.
@@ -115,22 +83,6 @@ Sensitivity to interest rates (here, to the expected drift). Small for short-dat
 
 HERE: The chain can show any Greek in its extra column, and the details panel lists them all, each **a share and for one contract**, with a sentence on what it means ("moves like 32.7 shares"). Your contracts list their total delta and their theta a game day, so you can see what time is costing you.
 
-Q: A call has a delta of 0.6. The stock rises 2. Roughly how much does the call gain?
-+ 1.2
-- 2
-- 0.6
-WHY: Delta × move = 0.6 × 2.
-Q: Which Greek measures time decay?
-- Delta
-+ Theta
-- Vega
-WHY: Theta is the value lost per day as expiry approaches.
-Q: Implied volatility falls sharply while the stock stays put. What happens to options?
-- Nothing
-+ They get cheaper, especially long-dated ones (vega)
-- Calls rise and puts fall
-WHY: Lower expected volatility lowers every option's value through vega.
-
 ## Implied volatility and the IV crush {implied-vol} [6]
 SUMMARY: The volatility priced into options, why it jumps before earnings, and why it collapses after.
 **Implied volatility (IV)** is the volatility that, put into the pricing formula, gives the option's market price. It is the market's estimate of how much the stock will move, expressed as a yearly percentage. High IV: big moves expected, expensive options.
@@ -151,22 +103,6 @@ Before an earnings report, IV rises: everyone knows a big move is coming, so opt
 At-the-money options tell you the move the market expects: roughly, the price of an at-the-money straddle (a call plus a put) is the expected size of the move by expiry.
 
 HERE: IV here comes from what the stock has really been doing (its realised volatility, the bigger of a short and a long window), scaled by the current calm or storm, plus a 15% premium. Ordinary stocks have a put skew, the wildest a call skew, commodities none. When a report falls before an expiry, that expiry's IV includes the earnings jump, and it vanishes once the report is out: the **IV crush**. The Options tab shows each expiry's IV and the move the options expect.
-
-Q: Before earnings, an option's IV is 80%; after, 40%. What has happened to the option's price, all else equal?
-+ It has fallen a lot: the IV crush
-- It has doubled
-- Nothing
-WHY: Lower IV means cheaper options; the earnings premium disappears with the uncertainty.
-Q: You buy calls before earnings; the stock rises 2%; the calls lose money. Why?
-- The broker made an error
-+ The move was smaller than the options had priced in, and IV collapsed
-- Calls always lose after earnings
-WHY: Being right on direction is not enough if the move is smaller than expected.
-Q: Why do puts below the price usually have higher IV than calls above it?
-- They are rarer
-+ Investors pay extra for crash insurance
-- Because of dividends
-WHY: Demand for protection against falls pushes put prices, and their IV, up.
 
 ## Option strategies {option-strategies} [9]
 SUMMARY: Covered calls, protective puts, spreads, straddles and strangles, and iron condors.
@@ -196,22 +132,6 @@ Buyers have limited losses and pay time decay; sellers collect time decay and ca
 
 HERE: On Meme Street you can **buy** calls and puts and sell back what you hold; you cannot sell (write) options you do not own. So **protective puts**, long calls and puts, **long straddles** and **long strangles** can all be built here; covered calls, spreads that sell an option, and iron condors need a real broker. A check on the engine found that buying straddles and strangles at random loses on average, whatever the expiry and the mood, as theory says.
 
-Q: Which strategy profits from a big move in either direction?
-+ A long straddle
-- A covered call
-- An iron condor
-WHY: Owning both a call and a put pays off if the stock moves far, up or down.
-Q: What does a protective put do for a shareholder?
-- Increases the dividend
-+ Caps the loss below the put's strike for its life, at the cost of the premium
-- Removes the upside
-WHY: The put pays when the price falls below its strike, offsetting the loss on the shares.
-Q: Who collects time decay?
-- Option buyers
-+ Option sellers
-- Nobody
-WHY: Time value melts in the seller's favour; buyers pay it.
-
 ## Exercise and assignment: European and American {exercise} [5]
 SUMMARY: When an option can be used, what happens at expiry, and cash settlement.
 ### Exercising
@@ -231,17 +151,6 @@ In-the-money options are usually exercised automatically; out-of-the-money ones 
 
 HERE: Options here are **European and cash-settled**: no shares ever change hands. At expiry an in-the-money contract pays its intrinsic value (times 100) into your cash with no fee, and an out-of-the-money one expires worthless. Before then you can sell it back at the bid at any time, which is how you take a profit early. A contract can be bought until a minute before it expires.
 
-Q: Your European call is deep in the money a week before expiry. Can you exercise it now?
-- Yes, any time
-+ No, only at expiry, but you can sell it
-- Only if the stock pays a dividend
-WHY: European options are exercised only at expiry; selling captures the value before then.
-Q: A cash-settled 50 call expires with the stock at 58. What do you receive per share?
-+ 8 in cash
-- 100 shares
-- Nothing
-WHY: Cash settlement pays the intrinsic value: 58 - 50.
-
 ## Futures: contracts, margin, contango and backwardation {futures} [6]
 SUMMARY: Agreements to buy or sell later, how their margin works, and the shape of a futures curve.
 A **futures contract** is an agreement to buy or sell something (oil, wheat, gold, an index, a currency) at a set price on a set future date. Unlike an option, **both sides are obliged**.
@@ -259,17 +168,6 @@ Futures for different months trade at different prices.
 A fund that holds futures and **rolls** them each month (sells the expiring one, buys the next) loses a little on each roll in contango: this "roll yield" can make a commodity fund trail the commodity's spot price badly over years.
 
 HERE: There are no futures here. The five commodities (crude oil, natural gas, wheat, copper and gold) trade at their **spot** price, like shares, with no expiry and no roll. Real commodity funds that hold futures can behave quite differently from the spot price.
-
-Q: What is the key difference between a future and an option for the buyer?
-+ The future is an obligation; the option is a right
-- Futures cannot lose money
-- Options have no expiry
-WHY: Both sides of a future must complete it; an option buyer can walk away.
-Q: In contango, how do later futures compare with the spot price?
-- Lower
-+ Higher
-- The same
-WHY: Contango is an upward-sloping futures curve.
 
 ## CFDs, swaps, and leveraged fund decay {other-products} [6]
 SUMMARY: Contracts for difference, swaps in one paragraph, and why leveraged and inverse funds lose value over time.
@@ -292,14 +190,3 @@ The index is back to 100; the 2x fund is down 1.8%. Repeat that over months of u
 HERE: **2LMSI** and **3LMSI** move two and three times the MSI 50, **2SMSI** and **3SMSI** two and three times the opposite, with the multiple reset **every second**. Their expected price stays level, but in a jittery market the typical path drifts down while a few soar: exactly the decay above. You cannot add leverage on top of them.
 
 [try /stock/3LMSI] Compare 3LMSI's chart with the MSI 50's over a long timeframe.
-
-Q: The index goes +5% then -5%. Roughly what does a 3x daily fund do over the two days?
-- +0%
-+ About -2.3%
-- +15%
-WHY: 1.15 × 0.85 = 0.9775; the index itself is down only 0.25%.
-Q: Why are CFDs risky for beginners?
-+ They are leveraged, so small moves make big gains and losses, and most retail accounts lose
-- They are illegal everywhere
-- They never pay out
-WHY: Leverage magnifies losses; regulators' own figures show most retail CFD traders lose.

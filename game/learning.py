@@ -1,10 +1,10 @@
-"""Learning (ROADMAP.md tracks TA-C and L): the Learn page's curriculum, its quizzes and its chart tests, and the
-challenges (switched off).
+"""Learning (ROADMAP.md tracks TA-C and L): the Learn page's curriculum and its chart tests, and the challenges
+(switched off).
 
 * **The curriculum** lives in `content/learn-*.md`, one file per track, read in file-name order (`parse_learn` below
-  has the format). A lesson's quiz is marked here, so the right answers never reach the page before the player
-  has answered. Passing a quiz (every answer right) is recorded (`lessons_passed`); **nothing on the Learn page pays MB**
-  (since 2026-10-23). Visitors can read and answer too; only a player's progress is kept.
+  has the format). A lesson a player opens counts as read (`lessons_passed`, the name from when lessons had quizzes;
+  the quizzes were taken out on 2026-10-27, on request). **Nothing on the Learn page pays MB** (since 2026-10-23).
+  Visitors can read and take the tests too; only a player's progress is kept.
 * **Chart tests** (`drills.py`): a real chart from the game's own history, stopped at a moment worth asking about
   (a level test, a breakout, a pattern...), and then the candles that came next. The right answer is kept here until
   the player answers (`_drill_q`, in memory only: a restart forgets a test still open), and a player's score per kind
@@ -49,7 +49,7 @@ EXAMPLE_KEEP = 900           # a lesson's example chart is found again after thi
 
 
 def init_player(p):
-    p.lessons_passed = {}      # lesson id -> when it was passed
+    p.lessons_passed = {}      # lesson id -> when it was first read
     p.chal = {}                # challenge id -> {"n": progress, "key": period key, "done": [period keys won]}
     p.stop_seen = []           # tickers whose open position has had a stop-loss (for "planned" trades)
     p.drills = {}              # chart test kind -> [right, answered]
@@ -80,16 +80,15 @@ def parse_learn(text, tracks=None, lessons=None):
         SUMMARY: one line                  what the lesson covers (on the track list)
         ### Heading                        a heading in the lesson
         plain lines                        a paragraph (a blank line ends it); **bold** and [text](/path) are allowed
-        - item                             a bulleted list (or, in a quiz, a wrong answer)
+        - item                             a bulleted list
         TIP: / HERE: / WARN: text          a tip, how Meme Street does it, a warning
         | cell | cell |                    a table row (the first row is the header)
         [chart kind] / [test kind]         a real game chart with its answer / a chart test (drills.KINDS; a test
                                            can also be "any")
         [try /path] text                   a practice box with a link
-        Q: question                        a quiz question, then its answers: "- wrong", "+ right", then "WHY: ..."
     Raises ValueError on anything it does not understand, with the line number."""
     tracks, lessons = ([] if tracks is None else tracks), ([] if lessons is None else lessons)
-    track = lesson = quiz = None
+    track = lesson = None
     para = []
 
     def flush():
@@ -107,7 +106,7 @@ def parse_learn(text, tracks=None, lessons=None):
         line = raw.strip()
         if line.startswith("# "):
             title, tid, _ = head(line[2:], n)
-            track, lesson, quiz = {"id": tid, "title": title, "blurb": ""}, None, None
+            track, lesson = {"id": tid, "title": title, "blurb": ""}, None
             tracks.append(track)
             continue
         if track is None:
@@ -118,29 +117,11 @@ def parse_learn(text, tracks=None, lessons=None):
             if lesson:
                 flush()
             title, lid, minutes = head(line[3:], n)
-            lesson, quiz = {"id": lid, "track": track["id"], "title": title, "minutes": minutes, "summary": "",
-                            "body": [], "quiz": []}, None
+            lesson = {"id": lid, "track": track["id"], "title": title, "minutes": minutes, "summary": "", "body": []}
             lessons.append(lesson)
             continue
         if lesson is None:
             track["blurb"] = (track["blurb"] + " " + line).strip()
-            continue
-        if line.startswith("Q: "):
-            flush()
-            quiz = {"q": line[3:], "options": [], "answer": None, "why": ""}
-            lesson["quiz"].append(quiz)
-            continue
-        if quiz is not None:
-            if line.startswith(("- ", "+ ")):
-                if line[0] == "+":
-                    if quiz["answer"] is not None:
-                        raise ValueError(f"line {n}: two right answers")
-                    quiz["answer"] = len(quiz["options"])
-                quiz["options"].append(line[2:])
-            elif line.startswith("WHY: "):
-                quiz["why"] = line[5:]
-            elif line:
-                raise ValueError(f"line {n}: inside a quiz, want '- ', '+ ', 'WHY: ' or 'Q: ', got {line[:40]!r}")
             continue
         body = lesson["body"]
         if not line:
@@ -183,14 +164,6 @@ def parse_learn(text, tracks=None, lessons=None):
             para.append(line)
     if lesson:
         flush()
-    for x in lessons:
-        for k, q in enumerate(x["quiz"]):
-            if q["answer"] is None or len(q["options"]) < 2 or not q["why"]:
-                raise ValueError(f"{x['id']}: a question needs answers, one marked '+', and a WHY: {q['q'][:50]!r}")
-            if "order" not in q:                    # the answers in a fixed shuffled order, so the right one could be anywhere
-                order = list(range(len(q["options"])))
-                random.Random(f"{x['id']}:{k}").shuffle(order)
-                q["options"], q["answer"], q["order"] = [q["options"][i] for i in order], order.index(q["answer"]), order
     return tracks, lessons
 
 
@@ -270,22 +243,22 @@ class LearningMixin:
                 st["done"] = (st["done"] + [key])[-12:]
                 self._reward(p, c["reward"], f"Challenge complete: {c['title']}")
 
-    # ------------------------------------------------------------------ lessons and quizzes
+    # ------------------------------------------------------------------ lessons
     def lessons_view(self, p=None):
-        """The Learn page: every track with its lessons (and which ones `p` has passed), the chart tests (with `p`'s
+        """The Learn page: every track with its lessons (and which ones `p` has read), the chart tests (with `p`'s
         score), and the challenges when they are on. `p` is None for a visitor."""
         done = p.lessons_passed if p else {}
         by_track = {}
         for x in self.lessons:
             by_track.setdefault(x["track"], []).append(
                 {"id": x["id"], "title": x["title"], "minutes": x.get("minutes", 5), "summary": x.get("summary", ""),
-                 "passed": x["id"] in done, "questions": len(x.get("quiz", []))})
+                 "read": x["id"] in done})
         tracks = [{"id": t["id"], "title": t["title"], "blurb": t.get("blurb", ""), "lessons": by_track.get(t["id"], [])}
                   for t in self.tracks]
         score = p.drills if p else {}
         tests = [{"kind": k, "title": drills.TITLES[k], "about": drills.ABOUT[k], "right": score.get(k, [0, 0])[0],
                   "n": score.get(k, [0, 0])[1]} for k in drills.KINDS]
-        out = {"tracks": tracks, "passed": sum(1 for x in self.lessons if x["id"] in done), "total": len(self.lessons),
+        out = {"tracks": tracks, "read": sum(1 for x in self.lessons if x["id"] in done), "total": len(self.lessons),
                "tests": tests, "challenges": []}
         if p is not None:
             week = self._week_key()
@@ -299,12 +272,14 @@ class LearningMixin:
             out["week"] = self.challenge_week_status(p)
         return out
 
-    def lesson(self, lesson_id):
-        """One lesson to read: its blocks and its quiz questions (never the answers), its track, and the lessons
-        before and after it in the curriculum."""
+    def lesson(self, lesson_id, p=None):
+        """One lesson to read: its blocks, its track, and the lessons before and after it in the curriculum. A player
+        who opens it has read it."""
         x = self._lesson_by_id.get(lesson_id)
         if not x:
             return None
+        if p is not None and lesson_id not in p.lessons_passed:
+            p.lessons_passed[lesson_id] = self.now
         k = self.lessons.index(x)
         track = next((t for t in self.tracks if t["id"] == x["track"]), {"title": ""})
 
@@ -312,27 +287,7 @@ class LearningMixin:
             return {"id": self.lessons[j]["id"], "title": self.lessons[j]["title"]} if 0 <= j < len(self.lessons) else None
         return {"id": x["id"], "title": x["title"], "track": x["track"], "track_title": track["title"],
                 "minutes": x.get("minutes", 5), "summary": x.get("summary", ""), "body": x.get("body", []),
-                "quiz": [{"q": q["q"], "options": q["options"]} for q in x.get("quiz", [])],
                 "prev": near(k - 1), "next": near(k + 1)}
-
-    def answer_quiz(self, p, lesson_id, answers):
-        """Mark a quiz. A pass (every answer right) is recorded for a player; a visitor (`p` None) just gets the marks."""
-        x = self._lesson_by_id.get(lesson_id)
-        if not x:
-            return {"ok": False, "error": "Unknown lesson"}
-        quiz = x.get("quiz", [])
-        if not isinstance(answers, list) or len(answers) != len(quiz):
-            return {"ok": False, "error": "Answer every question"}
-        marks = []
-        for q, a in zip(quiz, answers):
-            right = isinstance(a, int) and not isinstance(a, bool) and a == q["answer"]
-            marks.append({"right": right, "answer": q["answer"], "why": q.get("why", "")})
-        passed = all(m["right"] for m in marks)
-        first = passed and p is not None and lesson_id not in p.lessons_passed
-        if first:
-            p.lessons_passed[lesson_id] = self.now
-        return {"ok": True, "passed": passed, "first": first, "marks": marks,
-                "score": sum(m["right"] for m in marks), "of": len(quiz)}
 
     # ------------------------------------------------------------------ chart tests (drills.py)
     def _drill_find(self, kind, rng):

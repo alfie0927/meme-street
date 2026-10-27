@@ -22,22 +22,6 @@ HERE: Free on every chart: SMA 10, 20, 50, 100 and 200, and EMA 9, 12, 20, 26, 5
 
 [test ma]
 
-Q: Which average reacts faster to the latest price?
-- A 200 SMA
-+ A 20 EMA
-- They react the same
-WHY: Shorter, and exponentially weighted towards recent closes: the 20 EMA turns first.
-Q: What is a golden cross?
-+ A short average crossing above a long one
-- The price crossing a round number
-- A long average crossing above a short one
-WHY: The fast average moving above the slow one is the golden cross; the opposite is a death cross.
-Q: Why do crossover systems lose money in a range?
-- Ranges have no volume
-+ The averages flatten and cross back and forth, each signal a small loss
-- They work best in ranges
-WHY: Whipsaws: a flat market makes averages cross repeatedly with no follow-through.
-
 ## Momentum: RSI, MACD and stochastic {momentum} [8]
 SUMMARY: Oscillators that measure the speed of a move, overbought and oversold, and divergences.
 **Momentum** indicators measure how fast the price is moving, not where it is. They swing (oscillate) between fixed bounds, in a panel under the chart.
@@ -61,22 +45,6 @@ HERE: Free: **RSI 14**, the **Stochastic** (14, 3, 3) and **Momentum** (10). Pro
 
 [test rsi]
 
-Q: The RSI is 78 in a strong uptrend. What does that tell you on its own?
-- Sell now
-+ The price has risen fast; it is not a sell signal by itself
-- The trend has ended
-WHY: Overbought describes the speed of the rise. Strong trends stay overbought for long stretches.
-Q: The price makes a higher high but the RSI makes a lower high. What is this?
-+ Bearish divergence: the rise is losing momentum
-- Bullish divergence
-- A golden cross
-WHY: Price up, momentum down: the move is tiring.
-Q: What is the MACD line?
-- The 200-day average
-+ The difference between a 12 and a 26-candle EMA
-- The RSI smoothed
-WHY: MACD = EMA 12 minus EMA 26; its 9-candle EMA is the signal line.
-
 ## Volatility: Bollinger Bands and ATR {volatility} [6]
 SUMMARY: Measuring how much a price moves, the squeeze, and sizing stops by volatility.
 **Volatility** is how much a price moves, whichever way. It matters for where you put stops, how big your position is, and when quiet markets are about to wake up.
@@ -93,22 +61,6 @@ The average size of a candle's full range (including gaps) over the last 14 cand
 - **Position size**: a more volatile stock means a wider stop, so a smaller position for the same risk.
 
 HERE: Bollinger Bands, Keltner Channels, Donchian Channels, ATR, historical volatility and Bollinger bandwidth and %B are Pro indicators. The long and short **position** drawing tools (free) place their stop and target 1.5 and 3 ATR from the entry. Volatility here clusters as it does in real markets: calm spells and storms, with volatility rising more after falls than after rises, and the end of a range is quieter than its start.
-
-Q: Bollinger Bands are at their narrowest in weeks. What does that suggest?
-+ The market is quiet, and a bigger move may follow, in either direction
-- The price will fall
-- Nothing ever happens after a squeeze
-WHY: Volatility comes in waves; the squeeze says a move may come, not which way.
-Q: A stock's ATR is 3 MB. Where would a 0.5 MB stop most likely be?
-- Safely outside the noise
-+ Inside normal noise, likely to be hit by chance
-- Exactly right
-WHY: A typical candle moves 3 MB; a 0.5 MB stop will be touched by ordinary wobbles.
-Q: Two stocks, the same risk budget. Stock B's ATR is twice stock A's. How should the positions compare?
-- B's should be twice as big
-+ B's should be about half as big, because its stop is twice as far
-- The same
-WHY: Risk = size × stop distance. A stop twice as far needs half the size for the same risk.
 
 ## Volume tools: VWAP, OBV and money flow {volume-tools} [5]
 SUMMARY: Indicators built from volume, and the one the professionals watch most.
@@ -128,17 +80,6 @@ Like the RSI, but with volume included (MFI), or a measure of whether candles cl
 The simplest volume tool: a moving average over the volume bars, so you can see at a glance whether today's volume is above or below normal.
 
 HERE: The 20-candle **volume average** is free. VWAP (on intraday charts, starting each game day), OBV, the Money Flow Index and Chaikin Money Flow are Pro. The Daily Chart has its own VWAP and 20 EMA switches for everyone.
-
-Q: The price is above the session's VWAP. What does that suggest?
-+ Buyers have been in control so far this session
-- The stock is overvalued
-- Volume is low
-WHY: Above the average price paid today, today's buyers are on average in profit; it is read as strength.
-Q: The price is flat but the OBV keeps rising. What might be happening?
-- Nothing
-+ Volume is coming in on up candles: possible quiet buying
-- The stock is about to be delisted
-WHY: OBV adds up-candle volume and subtracts down-candle volume, so it can rise while the price is flat.
 
 ## Fibonacci retracements and extensions {fibonacci} [6]
 SUMMARY: The retracement levels, how traders use them in pullbacks, and extensions as targets.
@@ -160,17 +101,6 @@ HERE: **Auto Fibonacci** (free) draws the retracement levels between the highest
 
 [test fib]
 
-Q: A stock rises from 100 to 150. Where is the 61.8% retracement?
-- 130.90
-+ 119.10
-- 161.80
-WHY: 61.8% of the 50-point swing is 30.9; 150 - 30.9 = 119.1.
-Q: In a healthy uptrend, where do pullbacks often stop?
-+ Between 38.2% and 61.8% of the swing
-- Below 100% of the swing
-- Never at any Fibonacci level
-WHY: That middle zone is where traders most often see trend pullbacks end.
-
 ## Trend strength: ADX, SuperTrend and Ichimoku {trend-strength} [5]
 SUMMARY: Indicators that say whether a market is trending at all, and trend-following lines.
 Many indicators work in trends and fail in ranges (moving averages) or the other way round (oscillators at extremes). Knowing **whether** the market is trending is half the battle.
@@ -188,17 +118,6 @@ Trailing lines under the price in an uptrend and above it in a downtrend. When t
 A Japanese system on one chart: two averages of the highs and lows (the conversion and base lines), a "cloud" between two lines drawn 26 candles ahead, and a lagging line. Price above the cloud is an uptrend, below it a downtrend, inside it no clear trend; the cloud's edges act as support and resistance.
 
 HERE: ADX with +DI and -DI, Aroon, the Parabolic SAR, SuperTrend and the Ichimoku Cloud are Pro indicators. Trends here come and go: a stock trends for a spell, ranges for a spell, and sometimes just drifts.
-
-Q: The ADX reads 14. What does it suggest?
-+ No strong trend: range tools may work better
-- A very strong uptrend
-- A very strong downtrend
-WHY: ADX measures strength, not direction, and readings under about 20 mean no real trend.
-Q: How do traders often use SuperTrend or the Parabolic SAR?
-- As a price target
-+ As a trailing stop that follows the trend
-- To measure volume
-WHY: The line trails the price and flips when the trend turns, which makes it a natural trailing stop.
 
 ## Combining indicators, and false signals {combining-indicators} [6]
 SUMMARY: Why more indicators is not better, how to combine them sensibly, and living with false signals.
@@ -220,19 +139,3 @@ Each one is a summary of past prices. In the right conditions it helps; in the w
 Not the indicator: the plan around it. A modest signal with a sensible stop, a target bigger than the risk, and a position sized so one loss does not hurt, beats a brilliant signal traded carelessly.
 
 [try /stock/NVXA] On Novaxis, switch on one moving average, the RSI and the volume average. Leave everything else off and read the chart for ten minutes.
-
-Q: RSI, stochastic and Williams %R all say "oversold". How much confirmation is that?
-- Three independent confirmations
-+ Little more than one: they are built from the same recent prices
-- None at all
-WHY: Indicators from one family repeat the same information.
-Q: Which set covers different kinds of information?
-+ A moving average, the RSI, ATR and volume
-- RSI, stochastic and CCI
-- Five moving averages of different lengths
-WHY: Trend, momentum, volatility and volume are four different questions.
-Q: How do you get rid of all false signals?
-- Find the perfect settings
-- Use more indicators
-+ You cannot: you manage them with stops and position size
-WHY: Every indicator misleads sometimes; risk management is what keeps the false signals cheap.

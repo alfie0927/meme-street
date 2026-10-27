@@ -25,22 +25,6 @@ HERE: You can place **limit buys** (the price falls to your trigger), **limit se
 
 [try /stock/NVXA] Open the order panel under Novaxis's chart and look at each kind of order (you do not have to place one).
 
-Q: You want to buy only if the price falls to 95. Which order?
-+ A limit buy at 95
-- A market buy
-- A stop-loss at 95
-WHY: A limit buy waits for the price to come down to your level.
-Q: A stock closes at 50; your stop-loss is at 48. Bad news overnight and it opens at 40. Where does your stop fill?
-- 48
-+ Around 40, the first price available
-- It does not fill
-WHY: A stop becomes a market order when triggered; a gap past it fills at the new price.
-Q: What is the main risk of a stop-limit order?
-- It fills at a terrible price
-+ In a gap past the limit it does not fill at all, and you are still in the trade
-- It costs more fees
-WHY: The limit protects the price but removes the guarantee of getting out.
-
 ## Brackets: a stop-loss and a take-profit together {brackets} [5]
 SUMMARY: Setting both exits at once, one-cancels-other, and why every trade should have both.
 A **bracket** is two exit orders around a position: a **stop-loss** below (for a long) and a **take-profit** above. When one fills, the other is cancelled automatically (**one-cancels-other**, OCO).
@@ -58,17 +42,6 @@ A **bracket** is two exit orders around a position: a **stop-loss** below (for a
 HERE: The order panel has a one-click **bracket**. On the Holdings page, every position has *Take profit* and *Stop-loss* columns you can click to set or move them; when both are set they are paired as a bracket. The **Position size and risk** tool works out the size from the stop and fills in the trade and the bracket for you.
 
 [test rr]
-
-Q: Your bracket's take-profit fills. What happens to the stop-loss?
-- It stays open
-+ It is cancelled automatically
-- It moves to break-even
-WHY: One-cancels-other: the first exit to fill removes the other.
-Q: Where should the stop of a bracket go?
-- At a round 5% below, always
-+ Where the trade idea is proved wrong, outside normal noise
-- As close as possible to the entry
-WHY: The stop marks the point where your reason for the trade no longer holds.
 
 ## Trailing stops, partial exits and scaling {trailing-scaling} [6]
 SUMMARY: Letting winners run, taking some profit, and building or reducing a position in steps.
@@ -91,22 +64,6 @@ Building a position in steps: half at the first signal, the rest when the trade 
 
 HERE: There is no automatic trailing stop: you trail by hand, moving the stop-loss up on the Holdings page or by dragging your plan along. Sell part of a position with the size chips (25%, 50%...) or by typing an amount in MB. Adding to a position averages your entry price, shown as the amber dotted line on the chart.
 
-Q: You are long from 100, the price is 120 and your trailing stop is 8% below the high. Where is it?
-- 92
-+ About 110.40
-- 120
-WHY: 8% below the high of 120 is 120 × 0.92 = 110.40.
-Q: What is the danger of averaging down on a losing position?
-+ The position grows exactly when the trade is going wrong
-- You pay lower fees
-- There is no danger
-WHY: Adding to a loser increases your exposure to an idea the market is already disagreeing with.
-Q: Why take a partial profit and trail the rest?
-- To pay fewer fees
-+ To bank some profit while keeping a chance of a bigger move
-- Because the rules require it
-WHY: It balances the fear of giving back a profit against the hope of catching a big trend.
-
 ## Slippage, gaps through stops, and fees {costs} [5]
 SUMMARY: The costs that do not show on the chart, and how they add up.
 ### Slippage
@@ -127,14 +84,3 @@ A trader making 500 round trips a year at 0.2% each pays 100% of the money trade
 HERE: Every trade costs **0.1%** each way; shares have no spread and no slippage (you get the price on the screen), but orders fill at the market price when they trigger, so a jump at the open or on earnings can carry the price past your stop. Shorts pay a borrow fee and leveraged positions pay interest. The Portfolio page shows the fees you have paid.
 
 [try /portfolio] Open your portfolio and find how much you have paid in fees so far.
-
-Q: You trade 20 times a day, each round trip costing 0.2%. Roughly what do you pay in a day, as a share of the money traded each time?
-- 0.2%
-+ About 4%
-- Nothing
-WHY: 20 × 0.2% = 4%. Frequent trading needs a real edge just to cover costs.
-Q: Why can a loss be bigger than the stop distance?
-+ The price can gap past the stop, and the stop fills at the next price
-- Stops are optional
-- Brokers move stops
-WHY: A stop is not a guaranteed price: a gap fills it at whatever price comes next.

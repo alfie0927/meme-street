@@ -28,22 +28,6 @@ Robust strategies tend to have few rules, round settings, and work across many s
 
 HERE: With the **Expert** pass, the Bots page backtests any bot on the candles the game keeps (up to 5,000 per candle size), with orders filled at the next candle's open, the same 0.1% fee, leverage costs and options priced as the game prices them. The result compares the bot with simply holding the stock. The market has no free money in it, so a rule that did well over a few days has usually found luck: the result says so.
 
-Q: You try 500 combinations of settings and pick the best. What is the main danger?
-+ The best one looks good mostly by luck: overfitting
-- It will be too slow
-- None, more tests mean more certainty
-WHY: With enough tries, some settings fit the past's noise perfectly and fail on new data.
-Q: A backtest buys at the open using that day's closing price to decide. What is wrong?
-- Nothing
-+ Look-ahead bias: the close was not known at the open
-- Survivorship bias
-WHY: The rule uses information from the future.
-Q: Which strategy is more likely to be robust?
-- Twelve rules with very precise settings that win on one stock
-+ Three simple rules that work on many stocks with round settings
-- One that never had a losing month in the test
-WHY: Simplicity and breadth are signs of a real effect; precision and perfection are signs of fitting noise.
-
 ## Walk-forward and out-of-sample testing {walk-forward} [6]
 SUMMARY: Keeping some data back, and testing the way you would really trade.
 ### In-sample and out-of-sample
@@ -62,17 +46,6 @@ After testing, trade it with no real money (or tiny size) for a while. Live mark
 A strategy that works on one stock should be tried on others and in other conditions (rising, falling, flat). An edge that exists only in one place and one period is probably not an edge.
 
 HERE: A backtest here can run on any of a bot's stocks and at any of its candle sizes: design a bot on one stock, then test it unchanged on others. Meme Street itself is paper trading: real prices, practice money.
-
-Q: You tuned a strategy on 2019 to 2022 and kept 2023 untouched. What is 2023?
-+ Out-of-sample data
-- In-sample data
-- Useless
-WHY: Data not used in designing the strategy tests whether it generalises.
-Q: You test on the out-of-sample data, tweak, and test again, ten times. What has happened?
-- The strategy is now ten times more reliable
-+ The out-of-sample data has been used for fitting, so it no longer tests anything
-- Nothing
-WHY: Each look leaks information into the design.
 
 ## Sharpe, drawdown and profit factor {performance-stats} [6]
 SUMMARY: The numbers that judge a strategy beyond its total return.
@@ -97,17 +70,6 @@ Return alone says little: how much risk was taken to get it?
 Every statistic should be compared with buying and holding the same thing over the same period.
 
 HERE: A backtest on the Bots page reports the return against holding the stock, the trades, the win rate, the average win and loss, the **profit factor**, the **worst drawdown**, the fees, the time in the market and the equity curve.
-
-Q: Gross profit 3,000 MB, gross loss 2,000 MB. What is the profit factor?
-+ 1.5
-- 1,000
-- 0.67
-WHY: 3,000 ÷ 2,000 = 1.5.
-Q: A backtest shows a Sharpe ratio of 6. What is the most likely explanation?
-- A genius strategy
-+ An error, look-ahead bias or overfitting
-- A normal result
-WHY: Sharpe ratios that high are extremely rare in real trading; suspect the test first.
 
 ## Building and judging a trading bot {bots} [7]
 SUMMARY: Turning a strategy into rules a computer can follow, and testing it honestly.
@@ -137,14 +99,3 @@ Markets change. A bot that worked for months can stop working. Decide in advance
 HERE: With the **Expert** pass you can run up to five bots, each on up to ten stocks at one candle size, with up to ten rules written in a small language: candles, indicators (moving averages, RSI, MACD, ATR, Bollinger Bands, the stochastic, VWAP, highest and lowest), crosses, your position and a news score from words you choose. The bot guide lists every word a rule can use, with examples.
 
 [try /bots/guide] Read the bot guide and write down, in its rule language, the pullback strategy described above.
-
-Q: A bot buys every time the RSI drops below 30, with no stop. What is the biggest risk?
-+ A falling stock stays oversold and the bot keeps buying with no exit
-- It trades too rarely
-- RSI cannot be used by bots
-WHY: Without a stop or a trend filter, a mean-reversion bot can ride a collapse all the way down.
-Q: What is a bot better at than a person?
-- Understanding the news in context
-+ Following the rules every time, without fear or fatigue
-- Knowing when the market has changed
-WHY: Consistency is a bot's strength; judgement and context are not.
