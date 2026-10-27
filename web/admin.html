@@ -183,6 +183,7 @@ function render(o){
  const src=s.total_mb_by_source||{},fu=o.funnel,today=fu&&fu.signups.length?fu.signups[fu.signups.length-1].n:0;
  $('cards').innerHTML=kpi('Players',mb(s.humans),(fu?today+' signed up today · ':'')+(fu?fu.seen_24h+' seen in 24h':''))
   +kpi('On now',(o.online_players||[]).length,(o.guests||0)+' visitors watching')
+  +(o.bots&&o.bots.total?kpi('Bots',o.bots.total,`${o.bots.active} active · ${o.bots.daily_today} played the Daily today · ${mb(o.bots.equity)} MB`):'')
   +kpi('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' a minute right now')
   +kpi('Total MB',mb(s.total_mb),'started '+mb(src.grant||0)+' · bought '+mb(src.purchase||0))
   +kpi("Players' P&L",sgn(s.players_pnl)+' MB','on '+mb(s.player_deposits)+' MB put in',cls(Math.round(s.players_pnl)))

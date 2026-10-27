@@ -10,6 +10,7 @@ import ladder
 import chartprefs
 import bots
 import daily
+import housebots
 import history
 import options
 import market_model
@@ -292,10 +293,12 @@ class Player:
         chartprefs.init_player(self)   # indicators, chart type and drawings, kept on the server (chartprefs.py)
         options.init_player(self)      # option positions (options.py)
         bots.init_player(self)         # trading bots (Expert, bots.py)
+        housebots.init_player(self)    # a house bot's persona (housebots.py); None for a person
 
 
 class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin,
-             chartprefs.ChartsMixin, options.OptionsMixin, bots.BotsMixin, daily.DailyMixin):
+             chartprefs.ChartsMixin, options.OptionsMixin, bots.BotsMixin, daily.DailyMixin,
+             housebots.HouseBotsMixin):
     def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None,
                  history_path=None, minutes_path=None):
         self._init_social()
@@ -3271,6 +3274,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self._orders_tick()
         self._settle_options()
         self._bots_tick()
+        self._house_tick()
         if int(self.now) % 60 == 0:
             self._expire_orders()
         self._update_index()
@@ -3689,7 +3693,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "indices_etfs": count(lambda s: s.asset_type == "index"), "delisted": len(self.delisted),
                 "index_members": len(self.index_members), "news_last_hour": len(news_hour), "news_by_kind": kinds,
                 "next_event": upcoming[0] if upcoming else None, "reserve_recapitalized": self.recapitalized}
-        humans = list(self.players.values())
+        humans = self.humans()
         order_kinds, with_orders = {}, 0
         for p in humans:
             if p.orders:
@@ -3737,7 +3741,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         an email and a verified one, how many ever traded, who was seen in the last day and week (a session's last-seen
         time, which is updated about hourly, so accounts with no session are never counted), and how the fees are spread
         (a few heavy traders usually pay most of them)."""
-        players = list(self.players.values())
+        players = self.humans()
         day = 86400.0
         today = int(self.now // day)
         signups = [{"day": (today - d) * day, "n": sum(1 for p in players if p.created and int(p.created // day) == today - d)}
@@ -3756,8 +3760,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "fees_per_payer": total / len(fees) if fees else 0.0, "top10_share": sum(fees[:top]) / total if total else 0.0}
 
     def admin_overview(self, online=0, guests=0, tabs=None):
-        """Everything the admin page shows, in one call. `tabs`: account key -> pages that account has open now."""
-        humans = list(self.players.values())
+        """Everything the admin page shows, in one call. `tabs`: account key -> pages that account has open now. The
+        player figures are people only; `bots` counts the house bots (housebots.py)."""
+        humans = self.humans()
         on = []
         for tok, n in (tabs or {}).items():
             p = self.players.get(tok)
@@ -3785,7 +3790,12 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             old = next((x for x in series if x["t"] >= last["t"] - 300), series[0])
             span = max(last["t"] - old["t"], 1.0)
             per_min = (last["trades"] - old["trades"]) / span * 60
+        bots = self.house_bots()
+        today = int(self.now // 86400)
         return {"stats": self.house_stats(), "series": series, "online": online, "guests": guests, "online_players": on,
+                "bots": {"total": len(bots), "active": sum(1 for b in bots if b.hb.get("state") == "active"),
+                         "daily_today": sum(1 for b in bots if b.token in (getattr(self, "daily_game", None) or {}).get("plays", {})),
+                         "equity": round(sum(self.equity(b) for b in bots), 2), "today": today},
                 "funnel": self.funnel_stats(),
                 "trades_total": self.trades_total,
                 "trades_per_min": per_min, "margin_calls": self.margin_calls,
@@ -3887,7 +3897,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         names = {p.token: p.name for p in self.players.values()}
         invited = Counter(p.invited_by for p in self.players.values() if p.invited_by)
         rows = []
-        for p in self.players.values():
+        for p in self.humans():
             eq = self.equity(p)
             pnl = eq - p.deposited
             rows.append({"name": p.name, "created": p.created or None, "seen": seen.get(p.token) or None,
@@ -3930,7 +3940,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         every MB they started with, bought or were given (`player_deposits`, split by source in `total_mb_by_source`)
         plus their combined profit and loss (`players_pnl`), so it moves as people trade. Players' P&L is the mirror
         image of the house's (zero-sum)."""
-        humans = list(self.players.values())
+        humans = list(self.players.values())          # (every account's money, the house bots' too)
+        bots = self.house_bots()
         human_equity = sum(self.equity(p) for p in humans)
         human_in = sum(p.deposited for p in humans)
         players_pnl = human_equity - human_in
@@ -3948,7 +3959,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "minted": self.minted, "invariant_drift": self.total_tokens() - self.minted,
                 "borrow_fees": self.borrow_fees, "short_shortfall": self.short_shortfall,
                 "short_interest": sum(self.short_interest_map().values()),
-                "humans": len(humans), "recapitalized": self.recapitalized, "risk": self.house_risk()}
+                "humans": len(humans) - len(bots), "bots": len(bots), "recapitalized": self.recapitalized,
+                "risk": self.house_risk()}
 
     @staticmethod
     def _fit_financials(s, old_cap):
@@ -4037,7 +4049,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                           "learning": learning.dump_player(p), "ladder": ladder.dump_player(p),
                           "chart": chartprefs.dump_player(p),
                           "lev": p.lev, "loan": p.loan, "loan_int": p.loan_int, "collat": p.collat,
-                          "options": options.dump_player(p), "bots": bots.dump_player(p),
+                          "options": options.dump_player(p), "bots": bots.dump_player(p), "house": housebots.dump_player(p),
                           } for p in self.players.values()],
              "generated": [dict(x.cfg) for x in self.stocks.values() if x.cfg.get("generated")],
              "relations": self.relations.to_json(), "archive": self.archive,
@@ -4437,6 +4449,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     setattr(p, key, {tk: float(c) for tk, c in (x.get(key) or {}).items() if tk in p.hold})
                 options.load_player(p, x.get("options"))
                 bots.load_player(p, x.get("bots"))
+                housebots.load_player(p, x.get("house"))
                 p.divs = {tk: float(c) for tk, c in x.get("divs", {}).items()}
                 p.borrow = {tk: float(c) for tk, c in x.get("borrow", {}).items()}
                 p.orders = [o for o in x.get("orders", []) if isinstance(o, dict) and o.get("kind") in self.ORDER_KINDS
