@@ -238,6 +238,7 @@ async def join(j: Join):
         return JSONResponse({"error": err}, status_code=400)
     if p.ref is None:                                   # (joining again under the same name keeps the first link)
         p.ref = clean_ref(j.ref)
+        await run(engine.note_invite, p)
     return {"token": p.token, "name": p.name}
 
 
@@ -273,6 +274,7 @@ async def register(j: Register, request: Request):
     if not p:
         return JSONResponse({"error": err}, status_code=400)
     p.ref = clean_ref(j.ref)
+    await run(engine.note_invite, p)
     p.birth_date = j.birth_date.strip() or None
     p.birth_year = int(p.birth_date[:4]) if p.birth_date else int(j.birth_year)
     limits.add(("signup", ip), now)
@@ -1137,6 +1139,8 @@ async def shop_checkout(b: Checkout, x_token: str = Header("")):
     item = engine._sku(order["sku"])
     name = (f"{order['mb']:,} MB" if order["kind"] == "package" else f"Meme Street {order['kind'].title()}, monthly" if order.get("renews")
             else f"Meme Street {order['kind'].title()}, {'1 year' if order['days'] == 365 else str(order['days']) + ' days'}")
+    if item and item.get("deal"):
+        name += " (New Launch Deal)"
     url, ref, err = await asyncio.get_running_loop().run_in_executor(pool, payments.checkout, order, name)
     if not url:
         await run(lambda: engine.shop_orders[order["id"]].update(status="failed"))

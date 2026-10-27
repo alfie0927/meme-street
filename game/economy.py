@@ -18,8 +18,14 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
   works at once, raising after 24 hours), and at most `purchases_per_day` purchases a day.
 * **The free restart.** An account whose equity is below `restart_below` MB, with no open positions, can top its cash
   back up to the starting balance once every `restart_days` days, for nothing.
+* **Invites** (2026-10-27): every account has its own invite code, so its link is `memestreet.net/?ref=<code>` (the
+  same `?ref=` as the tracking links). Someone who signs up through it is counted as invited by that player
+  (`invited_by`), for the admin page; rewards for inviting may come later.
+* **The New Launch Deal** (2026-10-27): two big packages (`LAUNCH_DEALS`) that an account can buy once, in its first
+  `launch_deal_days` (30) days.
 """
 import datetime
+import secrets
 import uuid
 
 SOURCES = ("grant", "purchase", "challenge", "restart", "refund", "admin")
@@ -56,17 +62,25 @@ EXPERT_FEATURES = [
     "did against just holding the stock",
     "An Expert badge on your profile",
 ]
+# the New Launch Deal: one of these, once, in an account's first `launch_deal_days` days
+LAUNCH_DEALS = [
+    {"sku": "launch9000", "mb": 9000, "price_cents": 499},
+    {"sku": "launch99000", "mb": 99000, "price_cents": 2999},
+]
+INVITE_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"   # (no 0, 1, i, l or o: easy to read out)
 TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
 TERMS_VERSION = "2026-10-24"  # the date of web/terms.html; an account records the version it signed up under
 PLAYER_FIELDS = ("birth_year", "birth_date", "ref", "pro_until", "expert_until", "last_restart", "mb_by_source",
-                 "challenge_mb", "terms", "subs")
+                 "challenge_mb", "terms", "subs", "invite", "invited_by")
 
 
 def init_player(p):
     p.birth_year = None          # the year of birth (all an account from before 2026-10-24 has)
     p.birth_date = None          # the date of birth, "YYYY-MM-DD", asked at sign-up since 2026-10-24
     p.ref = None                 # the tracking link the player first arrived by (?ref=ig_story1), for the admin page
+    p.invite = None              # the player's own invite code (made when first needed): their link is /?ref=<code>
+    p.invited_by = None          # the account key of the player whose invite link they signed up through
     p.pro_until = 0.0            # real time until which the Pro tools are on
     p.expert_until = 0.0         # real time until which Expert (which includes Pro) is on
     p.last_restart = 0.0         # when the player last used the free restart
@@ -116,7 +130,8 @@ class EconomyMixin:
         pro = [dict(x) for x in self.settings.get("shop_pro", DEFAULT_PRO)]
         expert = [dict(x) for x in self.settings.get("shop_expert", DEFAULT_EXPERT)]
         cur = self.shop_currency()
-        for x in packages:
+        deals = [dict(x, deal=True) for x in LAUNCH_DEALS]
+        for x in packages + deals:
             x["kind"] = "package"
             x["price"] = money_text(int(x["price_cents"]), cur)
             x["per_1000"] = money_text(round(int(x["price_cents"]) * 1000 / max(int(x["mb"]), 1)), cur)
@@ -125,12 +140,45 @@ class EconomyMixin:
                 x["kind"] = kind
                 x["renews"] = bool(x.get("renews"))
                 x["price"] = money_text(int(x["price_cents"]), cur)
-        return {"packages": packages, "pro": pro, "expert": expert, "currency": cur, "pro_features": PRO_FEATURES,
-                "expert_features": EXPERT_FEATURES}
+        return {"packages": packages, "deals": deals, "pro": pro, "expert": expert, "currency": cur,
+                "pro_features": PRO_FEATURES, "expert_features": EXPERT_FEATURES}
 
     def _sku(self, sku):
         cat = self.shop_catalog()
-        return next((x for x in cat["packages"] + cat["pro"] + cat["expert"] if x["sku"] == sku), None)
+        return next((x for x in cat["packages"] + cat["deals"] + cat["pro"] + cat["expert"] if x["sku"] == sku), None)
+
+    # ------------------------------------------------------------------ the New Launch Deal
+    def deal_until(self, p):
+        """When `p`'s chance at the New Launch Deal ends, or None if it has (the account is older than
+        `launch_deal_days`, or it has bought or is paying for one already)."""
+        until = (p.created or 0.0) + float(self.settings.get("launch_deal_days", 30)) * 86400
+        skus = {x["sku"] for x in LAUNCH_DEALS}
+        if not p.created or self.now >= until or any(o["token"] == p.token and o["sku"] in skus and o["status"] in ("paid", "refunded")
+                                                     for o in self.shop_orders.values()):
+            return None
+        return until
+
+    # ------------------------------------------------------------------ invites
+    def invite_code(self, p):
+        """`p`'s own invite code, made the first time it is needed and kept: 7 easy-to-read characters, never a code
+        or a tracking link anyone already has."""
+        if not p.invite:
+            taken = {q.invite for q in self.players.values()} | {q.ref for q in self.players.values()}
+            code = None
+            while code is None or code in taken:
+                code = "".join(secrets.choice(INVITE_ALPHABET) for _ in range(7))
+            p.invite = code
+        return p.invite
+
+    def note_invite(self, p):
+        """At sign-up: a `?ref=` that is another player's invite code makes that player the inviter."""
+        if p.ref and not p.invited_by:
+            inviter = next((q for q in self.players.values() if q.invite == p.ref and q is not p), None)
+            if inviter is not None:
+                p.invited_by = inviter.token
+
+    def invited_count(self, p):
+        return sum(1 for q in self.players.values() if q.invited_by == p.token)
 
     # ------------------------------------------------------------------ age
     def _year(self):
@@ -203,6 +251,8 @@ class EconomyMixin:
         if item.get("kind") in TIERS and (p.subs.get(item["kind"]) or {}).get("status") == "active":
             return (f"You have a monthly {item['kind'].title()} that renews by itself: cancel it first (it stays on to the end "
                     "of the month you paid for)")
+        if item.get("deal") and self.deal_until(p) is None:
+            return "The New Launch Deal is for an account's first 30 days, once"
         if not consent:
             return "Tick the box to confirm the card and that you want it added straight away"
         if self.spent_cents(p) + int(item["price_cents"]) > self.spend_cap(p):
@@ -489,7 +539,7 @@ class EconomyMixin:
                 if v.get("status") in ("active", "cancelled")}
         return {"catalog": cat, "subs": subs, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
                 "expert": self.is_expert(p), "expert_until": p.expert_until if self.is_expert(p) else None,
-                "min_age": int(self.settings.get("min_age", 13)),
+                "min_age": int(self.settings.get("min_age", 13)), "deal_until": self.deal_until(p),
                 "orders": [{"id": o["id"], "sku": o["sku"], "kind": o["kind"], "mb": o["mb"], "days": o["days"],
                             "price": money_text(o["price_cents"], o["currency"]), "status": o["status"],
                             "at": o.get("paid_at", o["created"])} for o in mine],
@@ -498,10 +548,11 @@ class EconomyMixin:
     def _by_ref(self, paid):
         """Sign-ups, buyers and revenue per tracking link (`?ref=`), most sign-ups first; "" is no link."""
         rows = {}
+        codes = {p.invite for p in self.players.values() if p.invite}
+        refs = {p.token: ("invited by a player" if p.invited_by or p.ref in codes else p.ref or "") for p in self.players.values()}
         for p in self.players.values():
-            r = rows.setdefault(p.ref or "", {"ref": p.ref or "", "signups": 0, "buyers": set(), "cents": 0})
+            r = rows.setdefault(refs[p.token], {"ref": refs[p.token], "signups": 0, "buyers": set(), "cents": 0})
             r["signups"] += 1
-        refs = {p.token: p.ref or "" for p in self.players.values()}
         for o in paid:
             r = rows.get(refs.get(o["token"], ""))
             if r is not None:

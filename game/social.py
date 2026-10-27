@@ -892,4 +892,5 @@ class SocialMixin:
                 "chat_ready": self._chat_gate(p) is None, "chat_gate": self._chat_gate(p),
                 "chat_trades_left": max(0, int(self.settings.get("chat_min_trades", 3)) - int(p.counters.get("trades", 0))),
                 "counters": dict(p.counters), "dd": p.maxdd, "ladder": self.ladder_view(p),
+                "invite": self.invite_code(p), "invited": self.invited_count(p),
                 "rank": {"season": self.rank.get(p.token), "pnl": self.rank_pnl.get(p.token)}}

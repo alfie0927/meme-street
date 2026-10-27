@@ -409,6 +409,79 @@ class TrackingLinkTests(unittest.TestCase):
             self.assertNotIn("<script>", rows)
 
 
+class InviteTests(unittest.TestCase):
+    """Every account's own invite code (its ?ref= link) and who signed up through whose."""
+
+    def test_codes_are_unique_kept_and_readable(self):
+        e = make_engine(10)
+        ps = [adult(e, f"inv{k}") for k in range(30)]
+        codes = [e.invite_code(p) for p in ps]
+        self.assertEqual(len(set(codes)), 30)
+        self.assertEqual(e.invite_code(ps[0]), codes[0])                       # made once, then kept
+        self.assertTrue(all(len(c) == 7 and set(c) <= set("23456789abcdefghjkmnpqrstuvwxyz") for c in codes))
+
+    def test_signing_up_through_a_code_counts_for_the_inviter(self):
+        e = make_engine(11)
+        host = adult(e, "host")
+        code = e.invite_code(host)
+        guest1, guest2, other = adult(e, "friend1"), adult(e, "friend2"), adult(e, "fromad")
+        guest1.ref, guest2.ref, other.ref = code, code, "ig_story1"
+        for p in (guest1, guest2, other):
+            e.note_invite(p)
+        host.ref = code
+        e.note_invite(host)                                                      # nobody invites themselves
+        self.assertEqual((guest1.invited_by, other.invited_by, host.invited_by), (host.token, None, None))
+        self.assertEqual(e.invited_count(host), 2)
+        rows = {r["name"]: r for r in e.admin_players()}
+        self.assertEqual((rows["host"]["invited"], rows["friend1"]["invited_by"]), (2, "host"))
+        self.assertEqual(e.admin_player("host")["invited"], ["friend1", "friend2"])
+        refs = {r["ref"]: r["signups"] for r in e.economy_stats()["by_ref"]}
+        self.assertEqual((refs["invited by a player"], refs["ig_story1"]), (3, 1))    # (with the host's own code)
+        self.assertNotIn(code, refs)
+
+    def test_a_sign_up_over_http_with_a_code(self):
+        with IsolatedServer() as srv:
+            host = http_join(srv.url, "HostOne")
+            me = json.loads(http(srv, "/api/me", headers={"X-Token": host["token"]})[1])
+            http(srv, "/api/join", "POST", {"name": "GuestOne", "ref": me["invite"].upper()})   # (links are case-blind)
+            rows = {r["name"]: r for r in json.loads(http(srv, "/api/admin/players", headers={"X-Admin-Key": "testkey"})[1])["players"]}
+            self.assertEqual(rows["GuestOne"]["invited_by"], "HostOne")
+            time.sleep(0.3)
+            self.assertEqual(json.loads(http(srv, "/api/me", headers={"X-Token": host["token"]})[1])["invited"], 1)
+
+
+class LaunchDealTests(unittest.TestCase):
+    """The New Launch Deal: one of two big packages, once, in an account's first 30 days."""
+
+    def setUp(self):
+        self.e = make_engine(12)
+        self.p = adult(self.e, "newbie")
+
+    def test_a_new_account_can_buy_one_deal_once(self):
+        e, p = self.e, self.p
+        cat = e.shop_catalog()
+        self.assertEqual([(x["mb"], x["price"]) for x in cat["deals"]], [(9000, "US$4.99"), (99000, "US$29.99")])
+        self.assertIsNotNone(e.economy_view(p)["deal_until"])
+        o, err = e.create_order(p, "launch9000", "test", consent=True)
+        self.assertIsNotNone(o, err)
+        self.assertIsNotNone(e.create_order(p, "launch99000", "test", consent=True)[0])  # (not paid yet: still offered)
+        e.complete_order(o["id"])
+        self.assertEqual(p.cash, 10000.0)
+        self.assertEqual(p.mb_by_source["purchase"], 9000.0)
+        self.assertIsNone(e.economy_view(p)["deal_until"])
+        o2, err = e.create_order(p, "launch99000", "test", consent=True)
+        self.assertIsNone(o2)
+        self.assertIn("New Launch Deal", err)
+        self.assertLess(abs(drift(e)), 1e-6)
+
+    def test_the_deal_ends_after_30_days(self):
+        e, p = self.e, self.p
+        e.now = p.created + 30 * 86400 + 1
+        self.assertIsNone(e.economy_view(p)["deal_until"])
+        self.assertIsNone(e.create_order(p, "launch9000", "test", consent=True)[0])
+        self.assertIsNotNone(e.create_order(p, "mb10000", "test", consent=True)[0])  # the regular packs stay
+
+
 class ShopBrowserTests(unittest.TestCase):
     """The shop page in a real browser: the age question, the confirmation, the test checkout and the way back."""
 

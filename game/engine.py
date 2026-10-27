@@ -1,5 +1,5 @@
 import bisect, datetime, glob, itertools, json, logging, math, os, random, shutil, time, uuid
-from collections import deque
+from collections import Counter, deque
 from time import sleep as _sleep               # (a name of its own: the tests replace `time` with a fake clock)
 
 import newsgen
@@ -3614,7 +3614,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         never change, so that the per-tick updates can be small."""
         d = self.state_for(p)
         d.update({"type": "init", "t": self.now, "seq": self.wire_seq, "static_v": self.static_v,
-                  "chat": [] if p.guest else self.chat_history(p)})
+                  "chat": [] if p.guest else self.chat_history(p), "invite": None if p.guest else self.invite_code(p)})
         return d
 
     NEWS_WINDOW = 5    # seconds of headlines repeated in each tick, so a skipped tick loses nothing
@@ -3884,6 +3884,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         seen = {}
         for v in self.sessions.values():
             seen[v["p"]] = max(seen.get(v["p"], 0.0), v.get("seen", 0.0))
+        names = {p.token: p.name for p in self.players.values()}
+        invited = Counter(p.invited_by for p in self.players.values() if p.invited_by)
         rows = []
         for p in self.players.values():
             eq = self.equity(p)
@@ -3892,7 +3894,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                          "email": p.email, "verified": bool(p.email_verified),
                          "tier": "expert" if self.is_expert(p) else "pro" if self.is_pro(p) else "",
                          "equity": round(eq, 2), "pnl": round(pnl, 2), "ret": round(pnl / p.deposited, 6) if p.deposited > 0 else 0.0,
-                         "trades": p.trades, "positions": len(p.hold), "ref": p.ref})
+                         "trades": p.trades, "positions": len(p.hold), "ref": p.ref, "invite": self.invite_code(p),
+                         "invited": invited.get(p.token, 0), "invited_by": names.get(p.invited_by)})
         rows.sort(key=lambda r: -(r["created"] or 0))
         return rows
 
@@ -3918,6 +3921,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 "pnl": eq - p.deposited, "divs": sum(p.divs.values()), "borrow": sum(p.borrow.values()),
                 "trades": p.trades, "margin_calls": p.margin_calls, "holdings": holdings, "log": list(p.log),
                 "email": p.email, "verified": bool(p.email_verified), "created": p.created or None, "ref": p.ref,
+                "invite": self.invite_code(p), "invited_by": self.by_token[p.invited_by].name if p.invited_by in self.by_token else None,
+                "invited": sorted(q.name for q in self.players.values() if q.invited_by == p.token),
                 "birth_date": p.birth_date, "subs": {k: v.get("status") for k, v in (p.subs or {}).items()}}
 
     def house_stats(self):

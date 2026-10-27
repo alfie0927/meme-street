@@ -97,6 +97,7 @@ details summary{cursor:pointer}
   <div class="panel"><h2>How far people get</h2><div id="funnel"></div></div></div>
  <div class="grid2"><div class="panel"><h2>Biggest players</h2><div id="toplists"></div></div>
   <div class="panel"><h2>Everyone's all-time return</h2><div id="dist"></div></div></div>
+ <div class="panel"><h2>Invites <span class="mut">who brought whom (each account's own ?ref= link)</span></h2><div id="invites"></div></div>
  <div class="panel"><h2>Accounts</h2><div id="accts"></div></div>
 </section>
 <!-- SHOP -->
@@ -209,8 +210,12 @@ function render(o){
 function drawPlayers(){
  const q=$('psearch').value.trim().toLowerCase(),rows=players.filter(p=>!q||p.name.toLowerCase().includes(q)||(p.email||'').toLowerCase().includes(q));
  $('pcount').textContent=players.length?`${rows.length} of ${players.length}`:'';
- setHtml($('plist'),rows.length?`<table><thead><tr><th>Player</th><th>Joined</th><th>Last seen</th><th>Equity</th><th>Return</th></tr></thead><tbody>${rows.map(p=>`<tr class="pick${p.name===picked?' sel':''}" data-n="${esc(p.name)}"><td><b>${esc(p.name)}</b> ${p.tier?`<span class="chip acc">${p.tier==='expert'?'Expert':'Pro'}</span>`:''}<br><span class="mut" style="font-size:11.5px">${p.email?esc(p.email)+(p.verified?' ✓':''):'no email'}</span></td><td class="mut">${ago(p.created)}</td><td class="mut">${ago(p.seen)}</td><td>${mb(p.equity)}</td><td class="${cls(p.ret)}">${sgn(p.ret*100,1)}%</td></tr>`).join('')}</tbody></table>`:empty(players.length?'Nobody matches.':'No players yet.'));
- setHtml($('names'),players.map(p=>`<option value="${esc(p.name)}">`).join(''))}
+ setHtml($('plist'),rows.length?`<table><thead><tr><th>Player</th><th>Joined</th><th>Last seen</th><th>Equity</th><th>Return</th><th title="People who signed up through their invite link">Invited</th></tr></thead><tbody>${rows.map(p=>`<tr class="pick${p.name===picked?' sel':''}" data-n="${esc(p.name)}"><td><b>${esc(p.name)}</b> ${p.tier?`<span class="chip acc">${p.tier==='expert'?'Expert':'Pro'}</span>`:''}<br><span class="mut" style="font-size:11.5px">${p.email?esc(p.email)+(p.verified?' ✓':''):'no email'}</span></td><td class="mut">${ago(p.created)}</td><td class="mut">${ago(p.seen)}</td><td>${mb(p.equity)}</td><td class="${cls(p.ret)}">${sgn(p.ret*100,1)}%</td><td class="${p.invited?'up':'mut'}">${p.invited||'-'}</td></tr>`).join('')}</tbody></table>`:empty(players.length?'Nobody matches.':'No players yet.'));
+ setHtml($('names'),players.map(p=>`<option value="${esc(p.name)}">`).join(''));
+ const inv=players.filter(p=>p.invited).sort((a,b)=>b.invited-a.invited||a.name.localeCompare(b.name)),by={};
+ players.forEach(p=>{if(p.invited_by)(by[p.invited_by]=by[p.invited_by]||[]).push(p.name)});
+ setHtml($('invites'),inv.length?`<table><thead><tr><th>Player</th><th>Code</th><th>Invited</th><th>Who joined</th></tr></thead><tbody>${inv.map(p=>`<tr class="pick" data-n="${esc(p.name)}"><td><b>${esc(p.name)}</b></td><td class="mut">${esc(p.invite)}</td><td>${p.invited}</td><td class="mut">${esc((by[p.name]||[]).join(', '))}</td></tr>`).join('')}</tbody></table>`
+  :empty('Nobody has joined through an invite link yet. Every account has one on its profile, and the Daily Chart share uses it.'))}
 $('psearch').addEventListener('input',drawPlayers);
 async function loadPlayer(name,quiet){
  if(quiet&&picked===name&&($('detail').contains(document.activeElement)||['a-mb','a-mb-note','a-pass-note'].some(id=>$(id)&&$(id).value)))return;   // (not while you are typing in it)
@@ -221,7 +226,7 @@ async function loadPlayer(name,quiet){
   const t=p.log.slice().reverse().map(x=>`<tr><td class="mut">${new Date(x.t*1000).toLocaleTimeString()}</td><td>${esc(x.k)}</td><td>${esc(x.tk)}</td><td>${f(x.sh,4)}</td><td>${f(x.px)}</td><td>${f(x.mb)}</td><td class="mut">${f(x.fee,3)}</td></tr>`).join('');
   const subs=Object.entries(p.subs||{}).filter(([,v])=>v==='active').map(([k])=>`<span class="chip warn">monthly ${k==='expert'?'Expert':'Pro'} renewing</span>`).join('');
   const until=p.expert_until||p.pro_until;
-  const html=`<div>${p.email?`<span class="chip ${p.verified?'up':''}">${esc(p.email)} · ${p.verified?'verified':'not verified'}</span>`:'<span class="chip">no email</span>'}<span class="chip">joined ${ago(p.created)}</span>${p.birth_date?`<span class="chip">born ${esc(p.birth_date)}</span>`:''}${p.ref?`<span class="chip">came by ${esc(p.ref)}</span>`:''}${until?`<span class="chip acc">${p.expert?'Expert':'Pro'} until ${new Date(until*1000).toLocaleDateString()}</span>`:''}${subs}</div>
+  const html=`<div>${p.email?`<span class="chip ${p.verified?'up':''}">${esc(p.email)} · ${p.verified?'verified':'not verified'}</span>`:'<span class="chip">no email</span>'}<span class="chip">joined ${ago(p.created)}</span>${p.birth_date?`<span class="chip">born ${esc(p.birth_date)}</span>`:''}${p.invited_by?`<span class="chip acc">invited by ${esc(p.invited_by)}</span>`:p.ref?`<span class="chip">came by ${esc(p.ref)}</span>`:''}<span class="chip">invite code ${esc(p.invite)}</span>${p.invited&&p.invited.length?`<span class="chip up">invited ${p.invited.length}: ${esc(p.invited.join(', '))}</span>`:''}${until?`<span class="chip acc">${p.expert?'Expert':'Pro'} until ${new Date(until*1000).toLocaleDateString()}</span>`:''}${subs}</div>
    <div class="kpis" style="margin-top:10px">${kpi('Equity',mb(p.equity)+' MB')}${kpi('Cash',mb(p.cash)+' MB')}${kpi('P&L',sgn(p.pnl,2)+' MB','on '+mb(p.deposited)+' MB put in',cls(p.pnl))}${kpi('Trades today',p.trades,p.margin_calls+' margin calls')}</div>
    <h3>Actions</h3><div class="acts">
     <div class="act"><b>MB</b><input id="a-mb" type="number" min="0" step="any" placeholder="Amount"><input id="a-mb-note" placeholder="Note to the player (optional)" maxlength="200"><button data-act="mb-add" class="primary">Add</button><button data-act="mb-take">Take back</button></div>

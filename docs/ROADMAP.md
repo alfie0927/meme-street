@@ -49,7 +49,7 @@ server, copied to this computer every day at 09:00; `/api/health` checked every 
 | The Daily Chart | A numbered mystery chart a day, the same for everyone; two minutes, one go; streaks, stats, a result grid, sharing as text and as a story picture | TA-D5 to TA-D9 |
 | Learning | A 96-lesson course in 17 tracks, eleven kinds of chart test on real charts, a glossary; challenges switched off; the quest ladder | TA-C5, TA-C7, L8, L11 |
 | Community | Four leaderboards (today or all time, by return or by profit), chat with moderation, follows, public profiles, a daily paper-money contest | S1-S4, TA-D2, TA-D3 |
-| Money | 1,000 MB start, MB by source, five packages, Pro and Expert monthly (renewing) or yearly, refunds, spending limits, the free restart, tracking links | M4, M8, M9, B4, B5 |
+| Money | 1,000 MB start, MB by source, five packages, the New Launch Deal (first 30 days, once), Pro and Expert monthly (renewing) or yearly, refunds, spending limits, the free restart, tracking links, invite links per account | M4, M8, M9, B4, B5 |
 | Rules | Terms and privacy (version of 24 October 2026), a date of birth at sign-up (13 or older), the right-to-cancel waiver at checkout | R4, R5, R7-R9 |
 | Running it | Staging copy, rollback, backups off the server, uptime check, CI with lint and types, an error tracker, capacity measured (about 1,000 players at once is comfortable) | O1 email, O4 Cloudflare, O8, O11, E2, E5, E6, E14 |
 
@@ -176,7 +176,7 @@ forecasts, the calendar).
 | M8 | Trading costs that teach | Costs decide whether a pattern pays. | Keep 0.1% a side, or a commission and a spread that widens in thin and fast markets; checked with the realism suite. | M |
 | M9 | Simplify the house | Nobody is paid out, so the house carries no risk. | Retire the capital rule, reserve floors, top-ups and alarms; the house-risk panel becomes "where players are positioned". | S |
 | B4 | The funnel with purchases | Know what the ads bring. | **Tracking links done (2026-10-24): sign-ups, buyers and revenue per `?ref=` link on the admin page.** Still to do: buyers per 1,000 sign-ups, spend per buyer, out-of-money to purchase, cohorts by week. | S |
-| B5 | Referrals | Word of mouth. | Invite links with a capped MB reward for both once the friend verifies and plays. | M |
+| B5 | Referral rewards | Word of mouth. | Every account has an invite link and the admin page counts who invited whom (2026-10-27); next, a capped MB reward for both once the friend verifies and plays. | S |
 | B6 | Email that brings people back | Value, not spam. | Welcome, a weekly review, the Daily Chart reminder (TA-D9), receipts, an unsubscribe link (needs O1). | M |
 | B7 | Community | Somewhere to talk and announce. | A Discord or Instagram broadcast channel with the daily winners. | S |
 | B8 | Teachers and creators | Each brings a group. | Classrooms (S1) with a free trial, a creator programme. | M |
