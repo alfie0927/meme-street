@@ -1509,7 +1509,7 @@ function drawShop(){
  const d=shopData;if(!d)return;const c=d.catalog;
  setHtml($('shop-mode'),d.mode==='test'?'<div class="notice-box">Test mode: purchases go through a pretend checkout and no money is taken.</div>':!d.selling?'<div class="notice-box">The shop is not open yet. The prices below are what it will charge.</div>':'');
  const buyBtn=x=>`<button class="buy" data-sku="${esc(x.sku)}" ${d.selling?'':'disabled'}>Buy</button>`;
- setHtml($('shop-deal'),dealOn()?`<div class="deal-strip"><span><span class="deal-tag">NEW LAUNCH DEAL</span> ${c.deals.map(x=>`<b>${numText(x.mb,0)} MB</b> for <b>${esc(x.price)}</b>`).join(' or ')}, once, in your first 30 days (${dealLeft()}).</span><button class="buy" data-deal-open>See the deal</button></div>`:'');
+ setHtml($('shop-deal'),dealOn()?`<div class="deal-strip"><span><span class="deal-tag">NEW LAUNCH DEAL</span> ${c.deals.map(x=>`<b>${numText(x.mb,0)} MB</b> for <b>${esc(x.price)}</b>`).join(' or ')}, once, in your first ${shopData.deal_days} days (${dealLeft()}).</span><button class="buy" data-deal-open>See the deal</button></div>`:'');
  if(dealOn()&&!sessGet('ms_deal_seen')){sessSet('ms_deal_seen',1);dealPop()}
  setHtml($('shop-pkgs'),c.packages.map(x=>`<div class="pkg"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${esc(x.per_1000)} per 1,000 MB</small>${buyBtn(x)}</div>`).join(''));
  const passes=list=>`<div class="pkg-grid">${list.map(x=>`<div class="pkg"><b>${x.renews?'Monthly':x.days===365?'Yearly':x.days+' days'}</b><span class="price">${esc(x.price)}<small class="per"> / ${passLen(x)}</small></span><small>${x.renews?'Renews monthly until you cancel.':`One payment for ${x.days===365?'12 months':x.days+' days'}.`}</small>${buyBtn(x)}</div>`).join('')}</div>`;
@@ -1522,7 +1522,7 @@ function drawShop(){
  setHtml($('shop-expert'),`<p class="hint" style="margin-top:0">For traders who want to automate and test their ideas. Expert includes everything in Pro.</p><ul class="hint">${c.expert_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
   +status('expert',d.expert_until,d.expert?' Your bots are on the <a href="/bots">Bots</a> page.':'')+passes(c.expert));
  setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='package'?numText(o.mb,0)+' MB':(o.kind==='pro'?'Pro':'Expert')+', '+(o.days===365?'1 year':o.days+' days')}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
-// the New Launch Deal (economy.LAUNCH_DEALS): for an account's first 30 days, once; shown as a strip in the shop and as a
+// the New Launch Deal (economy.LAUNCH_DEALS): for an account's first `launch_deal_days` (7) days, once; shown as a strip in the shop and as a
 // pop-up the first time the shop opens in a visit. Each deal says how much less per MB it is than the regular pack of
 // about the same size.
 const sessGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},sessSet=(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}};
@@ -1533,7 +1533,7 @@ function dealSaving(x){const reg=shopData.catalog.packages.reduce((a,p)=>Math.ab
 function dealPop(){
  const c=shopData.catalog;let box=$('deal-pop');if(!box){box=document.createElement('div');box.id='deal-pop';document.body.appendChild(box)}
  setHtml(box,`<div class="dly-pop-in" role="dialog" aria-label="New Launch Deal"><div class="bar" style="justify-content:space-between;margin:0"><span class="deal-tag">NEW LAUNCH DEAL</span><button data-deal-close aria-label="Close">&times;</button></div>
-  <h2 class="deal-h">Welcome to Meme Street</h2><p class="hint" style="margin:0">A one-time offer for new players: pick one, once, in your first 30 days. ${dealLeft()}.</p>
+  <h2 class="deal-h">Welcome to Meme Street</h2><p class="hint" style="margin:0">A one-time offer for new players: pick one, once, in your first ${shopData.deal_days} days. ${dealLeft()}.</p>
   <div class="deal-grid">${c.deals.map(x=>{const s=dealSaving(x);return `<div class="deal"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${s.pct}% less per MB than the ${numText(s.reg.mb,0)} MB pack</small><button class="buy" data-deal-sku="${esc(x.sku)}">Get it</button></div>`}).join('')}</div>
   <p class="hint" style="margin:0">MB are practice money with no cash value, and buying them never lifts your rank.</p></div>`);
  box.style.display='flex'}

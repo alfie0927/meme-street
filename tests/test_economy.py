@@ -451,7 +451,7 @@ class InviteTests(unittest.TestCase):
 
 
 class LaunchDealTests(unittest.TestCase):
-    """The New Launch Deal: one of two big packages, once, in an account's first 30 days."""
+    """The New Launch Deal: one of two big packages, once, in an account's first 7 days."""
 
     def setUp(self):
         self.e = make_engine(12)
@@ -474,9 +474,12 @@ class LaunchDealTests(unittest.TestCase):
         self.assertIn("New Launch Deal", err)
         self.assertLess(abs(drift(e)), 1e-6)
 
-    def test_the_deal_ends_after_30_days(self):
+    def test_the_deal_ends_after_7_days(self):
         e, p = self.e, self.p
-        e.now = p.created + 30 * 86400 + 1
+        e.now = p.created + 7 * 86400 - 60
+        self.assertIsNotNone(e.economy_view(p)["deal_until"])
+        self.assertEqual(e.economy_view(p)["deal_days"], 7)
+        e.now = p.created + 7 * 86400 + 1
         self.assertIsNone(e.economy_view(p)["deal_until"])
         self.assertIsNone(e.create_order(p, "launch9000", "test", consent=True)[0])
         self.assertIsNotNone(e.create_order(p, "mb10000", "test", consent=True)[0])  # the regular packs stay

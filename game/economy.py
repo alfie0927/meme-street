@@ -22,7 +22,7 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
   same `?ref=` as the tracking links). Someone who signs up through it is counted as invited by that player
   (`invited_by`), for the admin page; rewards for inviting may come later.
 * **The New Launch Deal** (2026-10-27): two big packages (`LAUNCH_DEALS`) that an account can buy once, in its first
-  `launch_deal_days` (30) days.
+  `launch_deal_days` (7) days (30 until 2026-10-27, on request).
 """
 import datetime
 import secrets
@@ -148,10 +148,13 @@ class EconomyMixin:
         return next((x for x in cat["packages"] + cat["deals"] + cat["pro"] + cat["expert"] if x["sku"] == sku), None)
 
     # ------------------------------------------------------------------ the New Launch Deal
+    def deal_days(self):
+        return float(self.settings.get("launch_deal_days", 7))
+
     def deal_until(self, p):
         """When `p`'s chance at the New Launch Deal ends, or None if it has (the account is older than
         `launch_deal_days`, or it has bought or is paying for one already)."""
-        until = (p.created or 0.0) + float(self.settings.get("launch_deal_days", 30)) * 86400
+        until = (p.created or 0.0) + self.deal_days() * 86400
         skus = {x["sku"] for x in LAUNCH_DEALS}
         if not p.created or self.now >= until or any(o["token"] == p.token and o["sku"] in skus and o["status"] in ("paid", "refunded")
                                                      for o in self.shop_orders.values()):
@@ -252,7 +255,7 @@ class EconomyMixin:
             return (f"You have a monthly {item['kind'].title()} that renews by itself: cancel it first (it stays on to the end "
                     "of the month you paid for)")
         if item.get("deal") and self.deal_until(p) is None:
-            return "The New Launch Deal is for an account's first 30 days, once"
+            return f"The New Launch Deal is for an account's first {self.deal_days():g} days, once"
         if not consent:
             return "Tick the box to confirm the card and that you want it added straight away"
         if self.spent_cents(p) + int(item["price_cents"]) > self.spend_cap(p):
@@ -539,7 +542,7 @@ class EconomyMixin:
                 if v.get("status") in ("active", "cancelled")}
         return {"catalog": cat, "subs": subs, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
                 "expert": self.is_expert(p), "expert_until": p.expert_until if self.is_expert(p) else None,
-                "min_age": int(self.settings.get("min_age", 13)), "deal_until": self.deal_until(p),
+                "min_age": int(self.settings.get("min_age", 13)), "deal_until": self.deal_until(p), "deal_days": self.deal_days(),
                 "orders": [{"id": o["id"], "sku": o["sku"], "kind": o["kind"], "mb": o["mb"], "days": o["days"],
                             "price": money_text(o["price_cents"], o["currency"]), "status": o["status"],
                             "at": o.get("paid_at", o["created"])} for o in mine],
