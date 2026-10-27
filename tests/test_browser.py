@@ -357,15 +357,16 @@ class BrowserPages(unittest.TestCase):
                           lambda t: t.startswith("time_utc,type,ticker"))
             # leaders
             await pg.goto(base + "/leaders", 3)
-            await d.check("the day board lists me (I have traded today)", "document.getElementById('board-table').innerText",
+            await d.check("the day board lists me (I have traded today)", "document.querySelector('.lb[data-by=ret] .lb-table').innerText",
                           lambda t: "pages" in t, wait=10)
-            await d.check("and says where I am", "document.getElementById('board-me').innerText",
+            await d.check("and says where I am", "document.querySelector('.lb[data-by=ret] .lb-me').innerText",
                           lambda t: "You are #" in t and "on this board" in t, wait=8)
-            await d.check("there is no risk-adjusted board", "document.querySelectorAll('#board-tabs [data-b=risk]').length", 0)
-            await d.check("the board tabs are Day return and All-time P&L", "document.querySelectorAll('#board-tabs .chip').length", 2)
-            await pg.js("document.querySelector('#board-tabs [data-b=pnl]').click()")
-            await d.check("all-time board", "document.getElementById('board-table').innerText", lambda t: "profit" in t.lower())
-            await d.check("my row is highlighted", "document.querySelectorAll('#board-table tr.me').length", 1)
+            await d.check("two boards, by return and by profit, each with Today and All time", "document.querySelectorAll('.lb').length+'|'+document.querySelectorAll('.lb-tabs .chip').length", "2|4")
+            await d.check("and no equity column", "document.getElementById('leaders-card').innerText.includes('Equity')", False)
+            await pg.js("document.querySelector('.lb[data-by=pnl] .lb-tabs [data-b=all]').click()")
+            await d.check("the profit board shows all time", "document.querySelector('.lb[data-by=pnl] .lb-hint').innerText", lambda t: t.startswith("All-time profit"))
+            await d.check("while the return board stays on today", "document.querySelector('.lb[data-by=ret] .lb-hint').innerText", lambda t: t.startswith("Today"))
+            await d.check("my row is highlighted on both", "document.querySelectorAll('.lb-table tr.me').length", 2)
             # profile
             await pg.goto(base + "/profile", 3)
             await d.check("three quests", "document.querySelectorAll('#quests .quest').length", 3, wait=10)
@@ -403,8 +404,8 @@ class BrowserPages(unittest.TestCase):
                           lambda t: "No such player" in t)
             # another player's page, here my own
             await pg.goto(base + "/leaders", 3)
-            await d.check("my name is a link", "!!document.querySelector('#board-table tr.me a')", wait=8)
-            await pg.js("document.querySelector('#board-table tr.me a').click()")
+            await d.check("my name is a link", "!!document.querySelector('.lb-table tr.me a')", wait=8)
+            await pg.js("document.querySelector('.lb-table tr.me a').click()")
             await asyncio.sleep(3)
             await d.check("player page shows who it is", "document.getElementById('player-body').innerText",
                           lambda t: "This is you" in t and "Day return" in t, wait=8)
