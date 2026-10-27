@@ -79,6 +79,18 @@ class Payments:
         if order.get("renews"):                              # every month, until cancelled
             form["line_items[0][price_data][recurring][interval]"] = "month"
             form["subscription_data[metadata][order]"] = order["id"]
+        full = int(order.get("renew_cents") or order["price_cents"])
+        if order.get("renews") and full != order["price_cents"]:
+            # a first month at a deal price (the New Launch Deal): the subscription at the full price starts with a
+            # 30-day trial, and the first month is a one-time item on the first invoice, paid now; the trial's end is the
+            # first full-price renewal (no coupon needed, so the shop's restricted key is enough)
+            form["line_items[0][price_data][unit_amount]"] = str(full)
+            form["subscription_data[trial_period_days]"] = "30"
+            form.update({"line_items[1][quantity]": "1", "line_items[1][price_data][currency]": order["currency"],
+                         "line_items[1][price_data][unit_amount]": str(order["price_cents"]),
+                         "line_items[1][price_data][product_data][name]": item_name + ": the first month",
+                         "line_items[1][price_data][product_data][tax_code]": TAX_CODE_SUBSCRIPTION,
+                         "line_items[1][price_data][tax_behavior]": "inclusive"})
         req = urllib.request.Request(STRIPE_API, data=urllib.parse.urlencode(form).encode(), method="POST",
                                      headers={"Authorization": "Bearer " + self.secret_key,
                                               "Content-Type": "application/x-www-form-urlencoded"})

@@ -49,7 +49,7 @@ server, copied to this computer every day at 09:00; `/api/health` checked every 
 | The Daily Chart | A numbered mystery chart a day, the same for everyone; two minutes, one go; streaks, stats, a result grid, sharing as text and as a story picture | TA-D5 to TA-D9 |
 | Learning | A 96-lesson course in 17 tracks, eleven kinds of chart test on real charts, a glossary; challenges switched off; the quest ladder | TA-C5, TA-C7, L8, L11 |
 | Community | Four leaderboards (today or all time, by return or by profit), chat with moderation, follows, public profiles, a daily paper-money contest | S1-S4, TA-D2, TA-D3 |
-| Money | 1,000 MB start, MB by source, five packages, the New Launch Deal (first 7 days, once), Pro and Expert monthly (renewing) or yearly, refunds, spending limits, the free restart, tracking links, invite links per account | M4, M8, M9, B4, B5 |
+| Money | 1,000 MB start, MB by source, five packages, the New Launch Deal (first 7 days: a big MB pack once, the first month of Pro or Expert at half price), Pro and Expert monthly (renewing) or yearly, refunds, spending limits, the free restart, tracking links, invite links per account | M4, M8, M9, B4, B5 |
 | Rules | Terms and privacy (version of 24 October 2026), a date of birth at sign-up (13 or older), the right-to-cancel waiver at checkout | R4, R5, R7-R9 |
 | Running it | Staging copy, rollback, backups off the server, uptime check, CI with lint and types, an error tracker, capacity measured (about 1,000 players at once is comfortable) | O1 email, O4 Cloudflare, O8, O11, E2, E5, E6, E14 |
 

@@ -21,8 +21,9 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
 * **Invites** (2026-10-27): every account has its own invite code, so its link is `memestreet.net/?ref=<code>` (the
   same `?ref=` as the tracking links). Someone who signs up through it is counted as invited by that player
   (`invited_by`), for the admin page; rewards for inviting may come later.
-* **The New Launch Deal** (2026-10-27): two big packages (`LAUNCH_DEALS`) that an account can buy once, in its first
-  `launch_deal_days` (7) days (30 until 2026-10-27, on request).
+* **The New Launch Deal** (2026-10-27): in an account's first `launch_deal_days` (7) days (30 at first, the same day),
+  one of two big packages (`LAUNCH_DEALS`), once, and the first month of a monthly Pro or Expert at half price, once each
+  (`pass_deals`): it then renews at the full price.
 """
 import datetime
 import secrets
@@ -140,6 +141,7 @@ class EconomyMixin:
                 x["kind"] = kind
                 x["renews"] = bool(x.get("renews"))
                 x["price"] = money_text(int(x["price_cents"]), cur)
+        deals += self.pass_deals(pro + expert, cur)
         return {"packages": packages, "deals": deals, "pro": pro, "expert": expert, "currency": cur,
                 "pro_features": PRO_FEATURES, "expert_features": EXPERT_FEATURES}
 
@@ -148,18 +150,44 @@ class EconomyMixin:
         return next((x for x in cat["packages"] + cat["deals"] + cat["pro"] + cat["expert"] if x["sku"] == sku), None)
 
     # ------------------------------------------------------------------ the New Launch Deal
+    @staticmethod
+    def pass_deals(passes, cur):
+        """The first month of each monthly pass at half price (rounded down to the cent: US$4.99 for US$9.99), renewing at
+        the full price (`renew_cents`)."""
+        out = []
+        for x in passes:
+            if x.get("renews") and x.get("kind") in TIERS:
+                half = int(x["price_cents"]) // 2
+                out.append({"sku": x["kind"] + "_month_deal", "kind": x["kind"], "days": 30, "renews": True, "deal": True,
+                            "price_cents": half, "renew_cents": int(x["price_cents"]), "price": money_text(half, cur),
+                            "renew_price": money_text(int(x["price_cents"]), cur)})
+        return out
+
+    @staticmethod
+    def _deal_group(sku):
+        """The deals that count as one: either MB package, and each pass on its own."""
+        return "mb" if sku.startswith("launch") else sku.split("_")[0]
+
+    def deals_left(self, p):
+        """The deal skus `p` can still buy: none outside their first `launch_deal_days`, none from a group (the MB
+        packages, Pro, Expert) they have already bought (or had refunded), and no pass whose monthly one is running."""
+        if self.deal_until(p) is None:
+            return []
+        deals = self.shop_catalog()["deals"]
+        skus = {x["sku"] for x in deals}
+        had = {self._deal_group(o["sku"]) for o in self.shop_orders.values()
+               if o["token"] == p.token and o["sku"] in skus and o["status"] in ("paid", "refunded")}
+        had |= {k for k, v in (p.subs or {}).items() if v.get("status") == "active"}     # (a monthly pass already running)
+        return [x["sku"] for x in deals if self._deal_group(x["sku"]) not in had]
+
     def deal_days(self):
         return float(self.settings.get("launch_deal_days", 7))
 
     def deal_until(self, p):
         """When `p`'s chance at the New Launch Deal ends, or None if it has (the account is older than
-        `launch_deal_days`, or it has bought or is paying for one already)."""
+        `launch_deal_days`, or has no joining time)."""
         until = (p.created or 0.0) + self.deal_days() * 86400
-        skus = {x["sku"] for x in LAUNCH_DEALS}
-        if not p.created or self.now >= until or any(o["token"] == p.token and o["sku"] in skus and o["status"] in ("paid", "refunded")
-                                                     for o in self.shop_orders.values()):
-            return None
-        return until
+        return until if p.created and self.now < until else None
 
     # ------------------------------------------------------------------ invites
     def invite_code(self, p):
@@ -254,8 +282,8 @@ class EconomyMixin:
         if item.get("kind") in TIERS and (p.subs.get(item["kind"]) or {}).get("status") == "active":
             return (f"You have a monthly {item['kind'].title()} that renews by itself: cancel it first (it stays on to the end "
                     "of the month you paid for)")
-        if item.get("deal") and self.deal_until(p) is None:
-            return f"The New Launch Deal is for an account's first {self.deal_days():g} days, once"
+        if item.get("deal") and item["sku"] not in self.deals_left(p):
+            return f"The New Launch Deal is for an account's first {self.deal_days():g} days, once each"
         if not consent:
             return "Tick the box to confirm the card and that you want it added straight away"
         if self.spent_cents(p) + int(item["price_cents"]) > self.spend_cap(p):
@@ -277,6 +305,7 @@ class EconomyMixin:
                  "mb": int(item.get("mb", 0)), "days": int(item.get("days", 0)), "price_cents": int(item["price_cents"]),
                  "currency": self.shop_currency(), "status": "pending", "created": self.now, "provider": provider,
                  "provider_ref": None, "renews": bool(item.get("renews")),
+                 "deal": bool(item.get("deal")), "renew_cents": int(item.get("renew_cents", item["price_cents"])),
                  "consent": "own card or the holder's permission, delivery now (no 14-day cancellation)"
                             + (", renews monthly until cancelled" if item.get("renews") else "")}
         self.shop_orders[oid] = order
@@ -301,7 +330,8 @@ class EconomyMixin:
         self._apply_purchase(p, o)
         if o.get("renews"):
             p.subs[o["kind"]] = {"order": oid, "sub": sub_id, "provider": o["provider"], "status": "active",
-                                 "price_cents": o["price_cents"], "sku": o["sku"], "since": self.now, "renewals": 0}
+                                 "price_cents": int(o.get("renew_cents") or o["price_cents"]), "sku": o["sku"],
+                                 "since": self.now, "renewals": 0}          # (a deal's first month renews at the full price)
         self._emit("purchase", p, cash=float(o["mb"]), notional=float(o["mb"]), order=oid, sku=o["sku"], days=o["days"],
                    price_cents=o["price_cents"], source="purchase", renews=bool(o.get("renews")), sub=sub_id,
                    provider=o["provider"])
@@ -542,7 +572,8 @@ class EconomyMixin:
                 if v.get("status") in ("active", "cancelled")}
         return {"catalog": cat, "subs": subs, "pro": self.is_pro(p), "pro_until": p.pro_until if p.pro_until > self.now else None,
                 "expert": self.is_expert(p), "expert_until": p.expert_until if self.is_expert(p) else None,
-                "min_age": int(self.settings.get("min_age", 13)), "deal_until": self.deal_until(p), "deal_days": self.deal_days(),
+                "min_age": int(self.settings.get("min_age", 13)), "deal_until": self.deal_until(p) if self.deals_left(p) else None, "deal_days": self.deal_days(),
+                "deals_left": self.deals_left(p),
                 "orders": [{"id": o["id"], "sku": o["sku"], "kind": o["kind"], "mb": o["mb"], "days": o["days"],
                             "price": money_text(o["price_cents"], o["currency"]), "status": o["status"],
                             "at": o.get("paid_at", o["created"])} for o in mine],

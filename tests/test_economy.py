@@ -10,6 +10,7 @@ import random
 import tempfile
 import time
 import unittest
+import urllib.parse
 
 from _cdp import find_browser, open_page
 from _helpers import IsolatedServer, _raw_read, drift, engine, join, make_engine
@@ -309,6 +310,35 @@ class StripeSignatureTests(unittest.TestCase):
         self.assertIn("unit_amount%5D=699", sent["data"])
         self.assertEqual(sent["auth"], "Bearer sk_test_x")
 
+    def test_a_half_price_first_month_is_a_trial_and_a_one_time_item(self):
+        sent = {}
+
+        class Reply:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *a):
+                return False
+
+            def read(self):
+                return json.dumps({"id": "cs_8", "url": "https://checkout.stripe.com/c/pay/cs_8"}).encode()
+
+        def opener(req, timeout=0):
+            sent.update(urllib.parse.parse_qs(req.data.decode()))
+            return Reply()
+        order = {"id": "ord8", "price_cents": 499, "renew_cents": 999, "renews": True, "currency": "usd"}
+        self.assertEqual(self.pay.checkout(order, "Meme Street Pro, monthly", opener=opener)[2], "")
+        self.assertEqual(sent["mode"], ["subscription"])
+        self.assertEqual(sent["line_items[0][price_data][unit_amount]"], ["999"])          # renews at the full price
+        self.assertEqual(sent["line_items[0][price_data][recurring][interval]"], ["month"])
+        self.assertEqual(sent["subscription_data[trial_period_days]"], ["30"])             # after the month paid now
+        self.assertEqual(sent["line_items[1][price_data][unit_amount]"], ["499"])          # the first month, paid now
+        self.assertNotIn("line_items[1][price_data][recurring][interval]", sent)
+        sent.clear()
+        self.pay.checkout(dict(order, renew_cents=499, price_cents=499), "x", opener=opener)   # an ordinary month
+        self.assertNotIn("subscription_data[trial_period_days]", sent)
+        self.assertNotIn("line_items[1][quantity]", sent)
+
 
 class ShopServerTests(unittest.TestCase):
     """The shop through the real server in test mode."""
@@ -460,7 +490,7 @@ class LaunchDealTests(unittest.TestCase):
     def test_a_new_account_can_buy_one_deal_once(self):
         e, p = self.e, self.p
         cat = e.shop_catalog()
-        self.assertEqual([(x["mb"], x["price"]) for x in cat["deals"]], [(9000, "US$4.99"), (99000, "US$29.99")])
+        self.assertEqual([(x["mb"], x["price"]) for x in cat["deals"] if x["kind"] == "package"], [(9000, "US$4.99"), (99000, "US$29.99")])
         self.assertIsNotNone(e.economy_view(p)["deal_until"])
         o, err = e.create_order(p, "launch9000", "test", consent=True)
         self.assertIsNotNone(o, err)
@@ -468,11 +498,34 @@ class LaunchDealTests(unittest.TestCase):
         e.complete_order(o["id"])
         self.assertEqual(p.cash, 10000.0)
         self.assertEqual(p.mb_by_source["purchase"], 9000.0)
-        self.assertIsNone(e.economy_view(p)["deal_until"])
+        self.assertFalse({"launch9000", "launch99000"} & set(e.economy_view(p)["deals_left"]))   # one MB deal, once
         o2, err = e.create_order(p, "launch99000", "test", consent=True)
         self.assertIsNone(o2)
         self.assertIn("New Launch Deal", err)
         self.assertLess(abs(drift(e)), 1e-6)
+
+    def test_the_first_month_of_a_pass_at_half_price_then_the_full_price(self):
+        e, p = self.e, self.p
+        deals = {x["sku"]: x for x in e.shop_catalog()["deals"]}
+        self.assertEqual((deals["pro_month_deal"]["price"], deals["pro_month_deal"]["renew_price"]), ("US$4.99", "US$9.99"))
+        self.assertEqual((deals["expert_month_deal"]["price"], deals["expert_month_deal"]["renew_price"]), ("US$14.99", "US$29.99"))
+        self.assertIsNone(e.create_order(p, "pro_month_deal", "test", True)[0])          # the renewal must be agreed
+        o, err = e.create_order(p, "pro_month_deal", "test", True, renew_ok=True)
+        self.assertIsNotNone(o, err)
+        self.assertEqual((o["price_cents"], o["renew_cents"]), (499, 999))
+        e.complete_order(o["id"], amount_cents=499)
+        self.assertTrue(e.is_pro(p))
+        self.assertEqual(p.subs["pro"]["price_cents"], 999)                               # the next months: full price
+        left = e.deals_left(p)
+        self.assertNotIn("pro_month_deal", left)
+        self.assertIn("expert_month_deal", left)
+        self.assertIn("launch9000", left)                                                 # the MB deal is separate
+        e.renew_subscription(p, "pro", "inv-2")
+        self.assertEqual(e.shop_orders["renew-inv-2"]["price_cents"], 999)
+        e.mark_cancelled(p, "pro")
+        p.subs["pro"]["status"] = "ended"
+        self.assertNotIn("pro_month_deal", e.deals_left(p))                               # once only
+        self.assertIsNone(e.create_order(p, "pro_month_deal", "test", True, renew_ok=True)[0])
 
     def test_the_deal_ends_after_7_days(self):
         e, p = self.e, self.p

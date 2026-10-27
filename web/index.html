@@ -1509,7 +1509,8 @@ function drawShop(){
  const d=shopData;if(!d)return;const c=d.catalog;
  setHtml($('shop-mode'),d.mode==='test'?'<div class="notice-box">Test mode: purchases go through a pretend checkout and no money is taken.</div>':!d.selling?'<div class="notice-box">The shop is not open yet. The prices below are what it will charge.</div>':'');
  const buyBtn=x=>`<button class="buy" data-sku="${esc(x.sku)}" ${d.selling?'':'disabled'}>Buy</button>`;
- setHtml($('shop-deal'),dealOn()?`<div class="deal-strip"><span><span class="deal-tag">NEW LAUNCH DEAL</span> ${c.deals.map(x=>`<b>${numText(x.mb,0)} MB</b> for <b>${esc(x.price)}</b>`).join(' or ')}, once, in your first ${shopData.deal_days} days (${dealLeft()}).</span><button class="buy" data-deal-open>See the deal</button></div>`:'');
+ const left=dealList(),mbd=left.filter(x=>x.kind==='package'),pd=left.filter(x=>x.kind!=='package');
+ setHtml($('shop-deal'),dealOn()?`<div class="deal-strip"><span><span class="deal-tag">NEW LAUNCH DEAL</span> ${[mbd.length?mbd.map(x=>`<b>${numText(x.mb,0)} MB</b> for <b>${esc(x.price)}</b>`).join(' or '):'',pd.length?`<b>half price</b> on your first month of ${pd.map(x=>x.kind==='pro'?'Pro':'Expert').join(' or ')}`:''].filter(Boolean).join(', and ')}, in your first ${shopData.deal_days} days (${dealLeft()}).</span><button class="buy" data-deal-open>See the deal</button></div>`:'');
  if(dealOn()&&!sessGet('ms_deal_seen')){sessSet('ms_deal_seen',1);dealPop()}
  setHtml($('shop-pkgs'),c.packages.map(x=>`<div class="pkg"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${esc(x.per_1000)} per 1,000 MB</small>${buyBtn(x)}</div>`).join(''));
  const passes=list=>`<div class="pkg-grid">${list.map(x=>`<div class="pkg"><b>${x.renews?'Monthly':x.days===365?'Yearly':x.days+' days'}</b><span class="price">${esc(x.price)}<small class="per"> / ${passLen(x)}</small></span><small>${x.renews?'Renews monthly until you cancel.':`One payment for ${x.days===365?'12 months':x.days+' days'}.`}</small>${buyBtn(x)}</div>`).join('')}</div>`;
@@ -1526,15 +1527,17 @@ function drawShop(){
 // pop-up the first time the shop opens in a visit. Each deal says how much less per MB it is than the regular pack of
 // about the same size.
 const sessGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},sessSet=(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}};
-const dealOn=()=>!!(shopData&&shopData.deal_until&&shopData.selling&&shopData.catalog.deals&&shopData.deal_until>engineNow());
+const dealOn=()=>!!(shopData&&shopData.deal_until&&shopData.selling&&dealList().length&&shopData.deal_until>engineNow());
+const dealList=()=>shopData&&shopData.catalog.deals?shopData.catalog.deals.filter(x=>(shopData.deals_left||[]).includes(x.sku)):[];
 function dealLeft(){const s=shopData.deal_until-engineNow(),days=Math.floor(s/86400);return days>=1?`${days} day${days===1?'':'s'} left`:`${Math.max(1,Math.floor(s/3600))} hour${s<7200?'':'s'} left`}
 function dealSaving(x){const reg=shopData.catalog.packages.reduce((a,p)=>Math.abs(Math.log(p.mb/x.mb))<Math.abs(Math.log(a.mb/x.mb))?p:a);
  return {pct:Math.round(100*(1-(x.price_cents/x.mb)/(reg.price_cents/reg.mb))),reg}}
 function dealPop(){
  const c=shopData.catalog;let box=$('deal-pop');if(!box){box=document.createElement('div');box.id='deal-pop';document.body.appendChild(box)}
  setHtml(box,`<div class="dly-pop-in" role="dialog" aria-label="New Launch Deal"><div class="bar" style="justify-content:space-between;margin:0"><span class="deal-tag">NEW LAUNCH DEAL</span><button data-deal-close aria-label="Close">&times;</button></div>
-  <h2 class="deal-h">Welcome to Meme Street</h2><p class="hint" style="margin:0">A one-time offer for new players: pick one, once, in your first ${shopData.deal_days} days. ${dealLeft()}.</p>
-  <div class="deal-grid">${c.deals.map(x=>{const s=dealSaving(x);return `<div class="deal"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${s.pct}% less per MB than the ${numText(s.reg.mb,0)} MB pack</small><button class="buy" data-deal-sku="${esc(x.sku)}">Get it</button></div>`}).join('')}</div>
+  <h2 class="deal-h">Welcome to Meme Street</h2><p class="hint" style="margin:0">One-time offers for new players, in your first ${shopData.deal_days} days: one MB pack, and half price on the first month of Pro or Expert. ${dealLeft()}.</p>
+  <div class="deal-grid">${dealList().map(x=>{if(x.kind!=='package')return `<div class="deal"><b>${x.kind==='pro'?'Pro':'Expert'}, monthly</b><span class="price">${esc(x.price)}<small class="per" style="color:var(--mut)"> first month</small></span><small>50% off, then ${esc(x.renew_price)} a month until you cancel</small><button class="buy" data-deal-sku="${esc(x.sku)}">Get it</button></div>`;
+   const s=dealSaving(x);return `<div class="deal"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${s.pct}% less per MB than the ${numText(s.reg.mb,0)} MB pack</small><button class="buy" data-deal-sku="${esc(x.sku)}">Get it</button></div>`}).join('')}</div>
   <p class="hint" style="margin:0">MB are practice money with no cash value, and buying them never lifts your rank.</p></div>`);
  box.style.display='flex'}
 document.addEventListener('click',e=>{
@@ -1544,12 +1547,12 @@ document.addEventListener('click',e=>{
 // Buy opens a small box: what it is and costs, and the one tick the law asks for (own card or the holder's permission,
 // delivered at once so no 14-day cancellation; for a monthly pass, that it renews)
 function buyBox(x){
- const d=shopData,renew=!!x.renews,name=x.kind==='package'?numText(x.mb,0)+' MB'+(x.deal?' · New Launch Deal':''):`Meme Street ${x.kind==='pro'?'Pro':'Expert'}, ${renew?'monthly':x.days===365?'yearly':x.days+' days'}`;
+ const d=shopData,renew=!!x.renews,full=x.renew_price||x.price,name=(x.kind==='package'?numText(x.mb,0)+' MB':`Meme Street ${x.kind==='pro'?'Pro':'Expert'}, ${renew?'monthly':x.days===365?'yearly':x.days+' days'}`)+(x.deal?' · New Launch Deal':'');
  let box=$('buy-pop');if(!box){box=document.createElement('div');box.id='buy-pop';document.body.appendChild(box)}
  setHtml(box,`<div class="dly-pop-in" role="dialog" aria-label="Buy ${esc(name)}"><div class="bar" style="justify-content:space-between;margin:0"><b>${esc(name)}</b><button data-buy-close aria-label="Close">&times;</button></div>
-  <div class="dly-big" style="font-size:30px">${esc(x.price)}${renew?'<small class="mut" style="font-size:14px"> a month</small>':''}</div>
-  <p class="hint" style="margin:0 0 10px">${renew?`Charged now and then every month until you cancel. Cancel any time in the Shop: it stays on to the end of the month you paid for.`:x.kind==='package'?'One payment. MB are practice money with no cash value: they can\'t be withdrawn, sold or given to other players.':'One payment. It does not renew.'}</p>
-  <label class="hint" style="display:flex;gap:8px;align-items:flex-start;margin:0 0 12px"><input type="checkbox" id="bp-ok" style="width:auto;margin:3px 0 0">The card I pay with is mine or I have the card holder's permission, and I want it added straight away, so I lose the 14-day right to cancel.${renew?` I agree it renews every month at ${esc(x.price)} until I cancel.`:''}</label>
+  <div class="dly-big" style="font-size:30px">${esc(x.price)}${renew?`<small class="mut" style="font-size:14px"> ${x.renew_price?'for the first month':'a month'}</small>`:''}</div>
+  <p class="hint" style="margin:0 0 10px">${x.renew_price?`${esc(x.price)} now for the first month (50% off), then ${esc(full)} every month until you cancel. Cancel any time in the Shop: it stays on to the end of the month you paid for.`:renew?`Charged now and then every month until you cancel. Cancel any time in the Shop: it stays on to the end of the month you paid for.`:x.kind==='package'?'One payment. MB are practice money with no cash value: they can\'t be withdrawn, sold or given to other players.':'One payment. It does not renew.'}</p>
+  <label class="hint" style="display:flex;gap:8px;align-items:flex-start;margin:0 0 12px"><input type="checkbox" id="bp-ok" style="width:auto;margin:3px 0 0">The card I pay with is mine or I have the card holder's permission, and I want it added straight away, so I lose the 14-day right to cancel.${renew?` I agree it renews every month at ${esc(full)} until I cancel.`:''}</label>
   <div class="bar" style="margin:0"><button class="buy" id="bp-go" data-sku="${esc(x.sku)}" disabled>Continue to payment</button><button data-buy-close>Not now</button></div></div>`);
  box.style.display='flex'}
 $('shop-card').addEventListener('click',async e=>{
