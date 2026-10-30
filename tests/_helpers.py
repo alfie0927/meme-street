@@ -18,6 +18,7 @@ sys.path.insert(1, os.path.join(ROOT, "tools"))        # (launch.py and share.py
 os.chdir(ROOT)
 
 import engine  # noqa: E402
+import pages  # noqa: E402
 
 # The market has pre-market, regular and after-hours sessions on the real clock, which change how big the noise is.
 # Tests that are not about sessions want the plain, flat market, so (in this process only) the engine reads
@@ -136,7 +137,7 @@ def copy_project(dest, settings=None):
     for folder in PROJECT_FOLDERS:
         shutil.copytree(os.path.join(ROOT, folder), os.path.join(dest, folder), ignore=skip, dirs_exist_ok=True)
     os.makedirs(os.path.join(dest, "brand"), exist_ok=True)
-    for logo in ("memestreet_logo_peaks.png", "memestreet_header_peaks.png"):
+    for logo in pages.BRAND_FILES:                         # (the logos and the site icons)
         shutil.copy(os.path.join(ROOT, "brand", logo), os.path.join(dest, "brand"))
     os.makedirs(os.path.join(dest, "data"), exist_ok=True)
     if settings:

@@ -70,7 +70,7 @@ $files = @("requirements.txt")
 foreach ($part in @(@("game", "*.py"), @("web", "*.html"), @("web", "*.js"), @("content", "*.json"), @("content", "*.md"), @("tools", "*.py"), @("deploy", "*"))) {
     $files += Get-ChildItem -File -Path $part[0] -Filter $part[1] | ForEach-Object { $part[0] + "/" + $_.Name }
 }
-foreach ($logo in "brand/memestreet_logo_peaks.png", "brand/memestreet_header_peaks.png") {
+foreach ($logo in "brand/memestreet_logo_peaks.png", "brand/memestreet_header_peaks.png", "brand/favicon.ico", "brand/icon-48.png", "brand/icon-192.png", "brand/icon-512.png", "brand/apple-touch-icon.png") {
     if (Test-Path $logo) { $files += $logo }
 }
 $files = $files | Sort-Object -Unique

@@ -126,6 +126,10 @@ class ServerTests(unittest.TestCase):
         status, body, headers = http(self.srv, "/brand/memestreet_logo_peaks.png")
         self.assertEqual(status, 200)
         self.assertTrue(body.startswith("PNG") or len(body) > 1000)
+        status, body, headers = http(self.srv, "/favicon.ico")                  # the site icon, for tabs and search results
+        self.assertEqual(status, 200)
+        self.assertGreater(len(body), 1000)
+        self.assertEqual(http(self.srv, "/brand/icon-192.png")[0], 200)
         self.assertEqual(http(self.srv, "/brand/state.json")[0], 404)
         self.assertEqual(http(self.srv, "/brand/..%2Fserver.py")[0], 404)
 

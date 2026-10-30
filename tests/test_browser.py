@@ -741,7 +741,7 @@ class BrowserGuest(unittest.TestCase):
             await d.check("the live table is full", "document.querySelectorAll('#rows tr').length", lambda n: n > 100, wait=8)
             await d.check("a welcome card says what this is", shown("#guest-hero"))
             await d.check("there are no buy/sell controls to tap", "[...document.querySelectorAll('.ticket,#rows .hold-act')].every(e=>getComputedStyle(e).display==='none')")
-            await d.check("the menu offers only the market", "[...document.querySelectorAll('#nav a')].filter(a=>getComputedStyle(a).display!=='none').length", 1)
+            await d.check("the menu offers the market and the lessons", "[...document.querySelectorAll('#nav a')].filter(a=>getComputedStyle(a).display!=='none').length", 2)
             await d.check("their own money is not shown", "getComputedStyle(document.getElementById('cash').closest('.stat')).display", "none")
             await d.check("prices are moving (live)", "(()=>{const a=document.querySelector('#rows tr[data-k=NVXA] .px').textContent;return new Promise(r=>setTimeout(()=>r(a),6000)).then(a=>a.length>0)})()")
             await pg.js("document.querySelector('#rows tr[data-k=NVXA] .tick-cell').click()")

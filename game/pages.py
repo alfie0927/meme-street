@@ -7,7 +7,8 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 import paths
 from netutil import TICKER_RENAMES
 
-BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png"}
+BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
+               "icon-512.png", "apple-touch-icon.png"}   # (the small icons: browser tabs, phones and search results)
 SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart; the Learn page)
 
 
@@ -20,13 +21,18 @@ def add_pages(app):
 
     @app.get("/brand/{name}")
     async def brand_file(name: str):
-        """The logo (only the two named brand images are served)."""
+        """The logo and the site icons (only the named brand images are served)."""
         if name not in BRAND_FILES:
             return JSONResponse({"error": "not found"}, status_code=404)
         path = os.path.join(paths.BRAND, name)
         if os.path.exists(path):
             return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
         return JSONResponse({"error": "not found"}, status_code=404)
+
+    @app.get("/favicon.ico")
+    async def favicon():
+        """Where browsers and search engines look for a site's icon first."""
+        return await brand_file("favicon.ico")
 
     @app.get("/js/{name}")
     async def script_file(name: str):

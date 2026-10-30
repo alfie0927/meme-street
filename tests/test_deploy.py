@@ -181,6 +181,7 @@ class UploadTests(unittest.TestCase):
         for name in ("base.json", "expansion.json", "pack_growth.json", "pack_fiction.json", "events_pack.json", "market_profiles.json"):
             self.assertIn("content/" + name, files)
         self.assertIn("brand/memestreet_logo_peaks.png", files)
+        self.assertIn("brand/favicon.ico", files)
 
 
 if __name__ == "__main__":
