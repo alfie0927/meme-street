@@ -165,7 +165,10 @@ input[type=date]{color-scheme:dark}#dly-pop,#buy-pop,#dob-pop,#deal-pop{display:
 .chal{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:9px 0;border-bottom:1px solid var(--line2)}
 .chal small{color:var(--mut)}.chal .pbar{grid-column:1/-1;margin-top:4px}.chal-r{text-align:right;white-space:nowrap}.chal-r b{color:var(--up)}
 #learn-banner{display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:9px 18px;font-size:13px;border-bottom:1px solid #4cc3cc44;background:#4cc3cc10}
-.page-shop #shop-card{display:block}.boards2{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px}.boards2 .lb{min-width:0}@media(max-width:900px){.boards2{grid-template-columns:1fr}}
+.page-shop #shop-card{display:block}.boards2{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;align-items:stretch}.boards2 .lb{min-width:0;border:1px solid var(--line);border-radius:6px;background:var(--card2);padding:12px 14px}
+.lb>.bar b{font-size:14px}.lb-table{width:100%;margin-top:6px}.lb-table th:last-child,.lb-table td:last-child{text-align:right}.lb-table td{padding:9px 6px}.lb-table tr:hover td{background:#ffffff06}
+.lb-rk{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-weight:700;font-size:12px;color:var(--mut)}.lb-rk.r1{background:#e8b84a;color:#1a1305}.lb-rk.r2{background:#c0c7cc;color:#14181b}.lb-rk.r3{background:#c9875a;color:#1a0f07}
+.lb-v{font-weight:700;font-variant-numeric:tabular-nums}.lb-me{margin:8px 0 0}@media(max-width:900px){.boards2{grid-template-columns:1fr}}
 #low-banner{display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 14px;padding:9px 18px;font-size:13px;border-bottom:1px solid #f25c5455;background:#f25c5412;color:#ffc2c7}
 #low-banner a{color:#ffd990}
 .pro-badge{display:none;margin-left:8px;padding:0 5px;border:1px solid var(--avg);border-radius:2px;font-size:10.5px;font-weight:700;color:var(--avg);vertical-align:middle}
@@ -444,7 +447,7 @@ body.guest .guest-cta{display:flex}
 <table><thead><tr><th>Time</th><th>Type</th><th>Ticker</th><th>Shares</th><th>Price</th><th>Amount</th><th>Fee</th><th>Realised P/L</th><th>Cash change</th></tr></thead><tbody id="hist-rows"></tbody></table>
 <p id="hist-empty" class="mut" style="display:none">Nothing here yet.</p><div class="bar" style="margin-top:8px"><button id="hist-more" style="display:none">Load older</button></div></div>
 <div class="card" id="leaders-card"><h3>Leaderboards</h3>
-<p class="hint" id="board-dd" style="margin-top:0"></p><div class="boards2"><div class="lb" data-by="ret"><div class="bar" style="justify-content:space-between;margin-top:0"><b>By return</b><div class="tabs lb-tabs" style="margin:0"><button class="chip on" data-b="day">Today</button><button class="chip" data-b="all">All time</button></div></div><p class="hint lb-hint"></p><table class="lb-table"></table><p class="hint lb-me"></p></div><div class="lb" data-by="pnl"><div class="bar" style="justify-content:space-between;margin-top:0"><b>By profit</b><div class="tabs lb-tabs" style="margin:0"><button class="chip on" data-b="day">Today</button><button class="chip" data-b="all">All time</button></div></div><p class="hint lb-hint"></p><table class="lb-table"></table><p class="hint lb-me"></p></div></div></div>
+<p class="hint" id="board-dd" style="margin-top:0"></p><div class="boards2"><div class="lb" data-by="ret"><div class="bar" style="justify-content:space-between;margin-top:0"><b>By return</b><div class="tabs lb-tabs" style="margin:0"><button class="chip on" data-b="day">Today</button><button class="chip" data-b="all">All time</button></div></div><table class="lb-table"></table><p class="hint lb-me"></p></div><div class="lb" data-by="pnl"><div class="bar" style="justify-content:space-between;margin-top:0"><b>By profit</b><div class="tabs lb-tabs" style="margin:0"><button class="chip on" data-b="day">Today</button><button class="chip" data-b="all">All time</button></div></div><table class="lb-table"></table><p class="hint lb-me"></p></div></div></div>
 <div class="card" id="social-card"><div class="tabs" id="soc-tabs"><button class="chip on" data-tab="chat">Chat</button><button class="chip" data-tab="follow">Following</button></div>
 <div id="tab-chat"><div class="bar"><span class="mut" id="chat-note"></span></div>
 <div class="chatlog" id="chat-log"></div>
@@ -1303,19 +1306,14 @@ const boardKey=by=>boardTab[by]==='day'?(by==='ret'?'season':'day_pnl'):by;
 const COLOR_OK=/^#[0-9a-f]{6}$/i;
 function nameHtml(name,st){const c=st&&COLOR_OK.test(st.c||'')?` style="color:${st.c}"`:'';return `<span class="pname"${c}>${esc(name)}</span>${st&&st.t?` <span class="ptitle">${esc(st.t)}</span>`:''}`}
 const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${nameHtml(r.name,r.style)}</a>`;
-const HINTS={season:'Today\'s return: the gain on what your account was worth when the day began (money paid in does not count). A day lasts 24 hours and ends at midnight UTC; balances carry over.',
- day_pnl:'Today\'s profit: how many MB your account has gained or lost since the day began (money paid in does not count). A day ends at midnight UTC.',
- ret:'All-time return: your profit as a share of all the money you have put in (the starting balance, purchases and rewards).',
- pnl:'All-time profit: how many MB you have made or lost since you joined, counting everything you have closed or still hold.'};
 function drawBoards(){
  const b=boardsData;if(!b)return;const mine=b.mine||{};
  document.querySelectorAll('#leaders-card .lb').forEach(el=>{
   const by=el.dataset.by,k=boardKey(by),rows=b[k]||[],today=boardTab[by]==='day';
   el.querySelectorAll('.lb-tabs .chip').forEach(c=>c.classList.toggle('on',c.dataset.b===boardTab[by]));
-  setText(el.querySelector('.lb-hint'),HINTS[k]);
-  const gain=r=>today?r.gain:r.pnl,head=['#','Trader',...(by==='ret'?['Return','Profit']:['Profit','Return'])];
-  const cells=r=>{const ret=`<td class="${clsP(r.ret)}">${pc(r.ret)}</td>`,pr=`<td class="${cls(gain(r))}">${signed(gain(r))} MB</td>`;return by==='ret'?ret+pr:pr+ret};
-  setHtml(el.querySelector('.lb-table'),tbl(head,rows.map(r=>`<tr class="${r.me?'me':''}"><td>${r.rank}</td><td>${nameLink(r)}</td>${cells(r)}</tr>`),today?'Nobody has made a trade today.':'Nobody has made a trade yet.'));
+  const gain=r=>today?r.gain:r.pnl,head=['#','Trader',by==='ret'?'Return':'Profit'];
+  const val=r=>by==='ret'?`<td class="lb-v ${clsP(r.ret)}">${pc(r.ret)}</td>`:`<td class="lb-v ${cls(gain(r))}">${signed(gain(r))} MB</td>`;
+  setHtml(el.querySelector('.lb-table'),tbl(head,rows.map(r=>`<tr class="${r.me?'me':''}"><td><span class="lb-rk${r.rank<=3?' r'+r.rank:''}">${r.rank}</span></td><td>${nameLink(r)}</td>${val(r)}</tr>`),today?'Nobody has made a trade today.':'Nobody has made a trade yet.'));
   const n=(b.counts||{})[k]??b.players;
   setText(el.querySelector('.lb-me'),mine[k]?`You are #${mine[k]} of ${n} on this board.`:`You are not on this board yet: it lists only people who have made a trade ${today?'today':'since the game began'}.`)});
  setText($('board-dd'),`Your worst drawdown today: ${((mine.dd||0)*100).toFixed(1)}%.`)}

@@ -363,9 +363,12 @@ class BrowserPages(unittest.TestCase):
                           lambda t: "You are #" in t and "on this board" in t, wait=8)
             await d.check("two boards, by return and by profit, each with Today and All time", "document.querySelectorAll('.lb').length+'|'+document.querySelectorAll('.lb-tabs .chip').length", "2|4")
             await d.check("and no equity column", "document.getElementById('leaders-card').innerText.includes('Equity')", False)
+            await d.check("each board shows only its own figure", "[...document.querySelectorAll('.lb')].map(l=>[...l.querySelectorAll('th')].map(h=>h.textContent).join(',')).join('|')",
+                          "#,Trader,Return|#,Trader,Profit")
             await pg.js("document.querySelector('.lb[data-by=pnl] .lb-tabs [data-b=all]').click()")
-            await d.check("the profit board shows all time", "document.querySelector('.lb[data-by=pnl] .lb-hint').innerText", lambda t: t.startswith("All-time profit"))
-            await d.check("while the return board stays on today", "document.querySelector('.lb[data-by=ret] .lb-hint').innerText", lambda t: t.startswith("Today"))
+            await d.check("the profit board shows all time while the return board stays on today",
+                          "document.querySelector('.lb[data-by=pnl] .chip.on').dataset.b+'|'+document.querySelector('.lb[data-by=ret] .chip.on').dataset.b", "all|day")
+            await d.check("with no explanations", "document.querySelectorAll('#leaders-card .lb .hint').length", 2)   # (only the "You are #..." lines)
             await d.check("my row is highlighted on both", "document.querySelectorAll('.lb-table tr.me').length", 2)
             # profile
             await pg.goto(base + "/profile", 3)
