@@ -142,6 +142,18 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertIn("/learn</loc>", body)
 
+    def test_the_daily_chart_has_its_own_title_description_and_address(self):
+        status, body, _ = http(self.srv, "/daily")
+        self.assertEqual(status, 200)
+        self.assertIn("<title>Daily Chart: the daily stock market game | Meme Street</title>", body)
+        self.assertEqual(body.count('name="description"'), 1)
+        self.assertEqual(body.count('property="og:title"'), 1)
+        self.assertIn('rel="canonical" href="https://memestreet.net/daily"', body)
+        self.assertIn('"WebApplication"', body)
+        status, body, _ = http(self.srv, "/")
+        self.assertIn("<title>Meme Street</title>", body)
+        self.assertNotIn("canonical", body)
+
     def test_bad_token_is_rejected(self):
         with connect(f"ws://127.0.0.1:{self.srv.port}/ws?token=nope") as ws:
             m = json.loads(ws.recv(timeout=5))

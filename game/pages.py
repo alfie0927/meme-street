@@ -1,14 +1,19 @@
 """The pages of the site (the game, the admin page, the logo). Served by the game server, and by every gateway in a
 multi-process set-up, so both look the same."""
+import html
+import json
 import os
 
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 
 import paths
 from netutil import TICKER_RENAMES
 
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
                "icon-512.png", "apple-touch-icon.png"}   # (the small icons: browser tabs, phones and search results)
+DAILY_TEXT = ("A free daily stock market game: one new chart a day, the same for everyone. Two minutes to buy, sell and "
+              "short as the candles print, then see how your return ranks against every other player. Like Wordle, "
+              "for trading.")
 SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart; the Learn page)
 
 
@@ -18,6 +23,36 @@ def add_pages(app):
 
     def page():
         return FileResponse(os.path.join(web, "index.html"), headers={"Cache-Control": "no-store"})
+
+    cache = {}
+
+    def page_as(path, title, description, extra=""):
+        """index.html with its own title, description, preview and address for a page search engines should list on
+        its own (the Daily Chart): the same file, so nothing else changes."""
+        f = os.path.join(web, "index.html")
+        key = (path, os.path.getmtime(f))
+        if key not in cache:
+            s = open(f, encoding="utf-8").read()
+            t, d = html.escape(title), html.escape(description)
+            head = (f'<title>{t}</title><meta name="description" content="{d}"><link rel="canonical" href="{site}{path}">'
+                    f'<meta property="og:title" content="{t}"><meta property="og:description" content="{d}">'
+                    f'<meta property="og:url" content="{site}{path}"><meta name="twitter:card" content="summary_large_image">' + extra)
+            s = s.replace("<title>Meme Street</title>", head, 1)
+            for tag in ('<meta name="description"', '<meta property="og:title"', '<meta property="og:description"'):
+                i = s.index(tag)                               # the home page's own copies go
+                s = s[:i] + s[s.index(">", i) + 1:]
+            cache.clear()
+            cache[key] = s
+        return HTMLResponse(cache[key], headers={"Cache-Control": "no-store"})
+
+    def daily_page():
+        """The Daily Chart, for searches such as "daily stock market game" (2026-10-31)."""
+        data = {"@context": "https://schema.org", "@type": "WebApplication", "name": "Daily Chart by Meme Street",
+                "url": site + "/daily", "applicationCategory": "GameApplication", "operatingSystem": "Any",
+                "description": DAILY_TEXT, "image": site + "/brand/memestreet_logo_peaks.png",
+                "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
+        return page_as("/daily", "Daily Chart: the daily stock market game | Meme Street", DAILY_TEXT,
+                       '<script type="application/ld+json">' + json.dumps(data) + "</script>")
 
     @app.get("/brand/{name}")
     async def brand_file(name: str):
@@ -35,7 +70,7 @@ def add_pages(app):
         return await brand_file("favicon.ico")
 
     site = os.environ.get("SITE_URL", "https://memestreet.net").rstrip("/")
-    public = ("/", "/about", "/learn", "/daily", "/leaders", "/bots/guide", "/terms", "/privacy")
+    public = ("/daily", "/", "/about", "/learn", "/daily", "/leaders", "/bots/guide", "/terms", "/privacy")
 
     @app.get("/robots.txt")
     async def robots():
@@ -65,6 +100,10 @@ def add_pages(app):
     @app.get("/")
     async def index():
         return page()
+
+    @app.get("/daily")
+    async def daily():
+        return daily_page()
 
     @app.get("/about")
     async def about_page():
@@ -100,5 +139,5 @@ def add_pages(app):
         the order and refuses if the shop is not in test mode."""
         return FileResponse(os.path.join(web, "shop_pay.html"), headers={"Cache-Control": "no-store"})
 
-    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar", "bots", "daily"):
+    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar", "bots"):
         app.add_api_route("/" + route, lambda: page(), methods=["GET"], include_in_schema=False)

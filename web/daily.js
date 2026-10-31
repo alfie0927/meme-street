@@ -104,7 +104,9 @@ function dlyCountdown(){if(dlyCd)return;dlyCd=setInterval(()=>{const els=documen
 function drawDailyGuest(){
  const el=$('daily-body');if(!el)return;el._st='guest';
  setHtml(el,`<div class="dly-wrap"><div class="dly-head"><div><div class="dly-title">Daily Chart</div><div class="dly-sub">A new chart every day</div></div><div class="dly-icons"><button class="dly-ic" data-dly-help aria-label="How to play">?</button></div></div>
-  <div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p><button class="dly-go" data-dly-join>Create an account to play</button><p class="dly-small">Free · one go a day · practice money</p></div></div>`)}
+  <div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p><button class="dly-go" data-dly-join>Create an account to play</button><p class="dly-small">Free · one go a day · practice money</p></div>
+  <div class="dly-about"><h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how every other player did.</p>
+  <p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p></div></div>`)}
 function drawDaily(){
  const el=$('daily-body'),d=dly;if(!el||!d)return;
  const st=d.status==='running'&&dlyG&&dlyG.done?'done':d.status;
