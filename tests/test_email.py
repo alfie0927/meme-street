@@ -530,6 +530,42 @@ class HttpEmailTests(unittest.TestCase):
         self.assertIn("mail", data)
 
 
+class SignupCodeTests(HttpEmailTests):
+    """With `signup_verify` (on by itself once mail works) the address is proved before the account exists."""
+    @classmethod
+    def setUpClass(cls):
+        cls.srv = IsolatedServer(settings={"require_password": True, "signups_per_ip_hour": 1000, "signup_verify": True,
+                                           "email_resend_seconds": 2}).__enter__()
+
+    def test_no_account_until_the_mailed_code_is_typed(self):
+        status, data = self.register("SuCode", "su.code@example.com")
+        self.assertEqual(status, 200, data)
+        self.assertTrue(data["need_code"])
+        self.assertNotIn("token", data)
+        self.assertEqual(self.post("/api/login", {"name": "SuCode", "password": GOOD})[0], 401)      # nothing made yet
+        body = {"name": "SuCode", "password": GOOD, "email": "su.code@example.com", "birth_year": 1990}
+        status, data = self.post("/api/register", dict(body, code="000000"))
+        self.assertEqual(status, 400)
+        self.assertTrue(data["need_code"])
+        status, data = self.post("/api/register", dict(body, code=self.last_code("su.code@example.com")))
+        self.assertEqual(status, 200, data)
+        info = json.loads(http(self.srv, "/api/me", headers={"X-Token": data["token"]})[1])["account"]
+        self.assertTrue(info["email_verified"])
+        self.assertEqual(self.register("SuCode2", "su.code@example.com")[0], 400)                  # the address is taken now
+
+    def test_bad_details_are_refused_before_any_code_is_sent(self):
+        before = len(self.mail()["recent"])
+        self.assertEqual(self.register("SuWeak", "su.weak@example.com", password="short")[0], 400)
+        self.assertEqual(len(self.mail()["recent"]), before)
+
+    # (the inherited tests are for the code-after-sign-up flow)
+    test_the_login_box_is_told_the_mode_and_whether_mail_works = test_registering_needs_a_good_address_in_required_mode = None
+    test_the_whole_flow_register_verify_trade = test_one_address_one_account_whatever_the_spelling = None
+    test_a_player_can_add_an_address_later_and_ask_for_another_code = None
+    test_forgot_password_answers_alike_and_only_mails_a_verified_address = None
+    test_the_admin_endpoints_need_the_key_and_can_verify_or_clear = None
+
+
 class ShareThroughATunnelTests(unittest.TestCase):
     """When the game is shared from a home computer through a tunnel, every visitor reaches the server from the same
     local address. The sign-up limit has to see the visitor's real address, which the tunnel passes in a header."""

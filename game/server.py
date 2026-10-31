@@ -9,7 +9,7 @@ import paths
 import errortrack
 import bots as botlib
 from engine import GUEST_KEY, Engine
-from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, password_problem, verify_password
+from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, mask_email, password_problem, verify_password
 from mailer import Mailer
 from payments import Payments
 from netutil import caller_address
@@ -162,6 +162,7 @@ class Register(BaseModel):
     email: str = ""
     ref: str = ""              # the tracking link the visitor arrived by (?ref=), kept by the page until sign-up
     website: str = ""          # a field people never see: a bot that fills in every box fills this one too
+    code: str = ""             # the code mailed to `email` (needed once mail works: the address is verified before the account exists)
 
 
 class EmailIn(BaseModel):
@@ -262,13 +263,31 @@ async def register(j: Register, request: Request):
     mode = engine.email_mode()
     need = bool(engine.settings.get("signup_email", True))        # an address is part of signing up (2026-10-25)
     addr = None
-    if need or (mode != "off" and (j.email.strip() or mode == "required")):     # check the address before the account exists
+    verify = bool(engine.settings.get("signup_verify", mailer.configured))   # the address proved before the account exists (2026-10-31)
+    if need or verify or (mode != "off" and (j.email.strip() or mode == "required")):     # check the address before the account exists
         addr, err = engine.email_check(j.email)
         if err:
             return JSONResponse({"error": err}, status_code=400)
         canon = canonical_email(addr)
         if canon in engine.email_owner or any(q.email and canonical_email(q.email) == canon for q in engine.players.values()):
             return JSONResponse({"error": "That email address is already used by another account"}, status_code=400)
+    if verify:
+        key = "@" + canonical_email(addr)          # (the code waits under the address, not an account: there is none yet)
+        if not j.code.strip():                     # step 1: everything else is fine, so mail a code
+            wait = await run(engine._mail_wait, "verify", key, key[1:])
+            if wait:
+                return {"need_code": True, "email_msg": f"We already sent a code to {mask_email(addr)}. You can ask for another in {wait} s."}
+            if limits.count(("email-ip", ip), 3600, now) >= 12:
+                return too_many(limits.retry_after(("email-ip", ip), 3600, now))
+            if not mail_allowed(now):
+                return JSONResponse({"error": "Mail is busy right now. Try again in a few minutes."}, status_code=503)
+            limits.add(("email-ip", ip), now)
+            code = await run(engine._issue_code, "verify", key, addr)
+            mail_code(addr, code)
+            return {"need_code": True, "email_msg": f"We sent a 6-digit code to {mask_email(addr)}"}
+        ok, err = await run(engine._check_code, "verify", key, j.code)    # step 2: the code from the email
+        if not ok:
+            return JSONResponse({"error": err, "need_code": True}, status_code=400)
     record = await hashed(j.password)
     p, err = await run(engine.register, j.name, record, ip)
     if not p:
@@ -280,7 +299,11 @@ async def register(j: Register, request: Request):
     limits.add(("signup", ip), now)
     token = await run(engine.new_session, p, ip)
     out = {"token": token, "name": p.name}
-    if addr:
+    if addr and verify:
+        p.email, p.email_verified = addr, True
+        engine.email_owner[canonical_email(addr)] = p.token
+        engine.mail_codes.pop("verify:@" + canonical_email(addr), None)
+    elif addr:
         p.email, p.email_verified = addr, False      # kept from the start; verified from Profile once mail works
         if mode != "off":
             out.update(await start_verification(p, addr))
@@ -316,11 +339,15 @@ async def start_verification(p, addr):
         return {"email_msg": "Mail is busy right now. Open Profile in a few minutes and ask for the code again."}
     ok, msg, code, to, _ = await run(engine.email_begin, p, addr)
     if ok:
-        send_mail(to, f"Your Meme Street code: {code}",
-                  f"Your Meme Street verification code is:\n\n    {code}\n\nIt works for {minutes()} minutes. Type it into the "
-                  "game to confirm this email address.\n\nIf you did not ask for this, ignore this email: nothing will "
-                  "change on any account.\n")
+        mail_code(to, code)
     return {"email_msg": msg, "email_sent": bool(ok)}
+
+
+def mail_code(to, code):
+    send_mail(to, f"Your Meme Street code: {code}",
+              f"Your Meme Street verification code is:\n\n    {code}\n\nIt works for {minutes()} minutes. Type it into the "
+              "game to confirm this email address.\n\nIf you did not ask for this, ignore this email: nothing will "
+              "change on any account.\n")
 
 
 @app.post("/api/account/email")

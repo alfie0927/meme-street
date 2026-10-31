@@ -590,7 +590,8 @@ class BrowserPages(unittest.TestCase):
         return d, errors
 
     def test_email_sign_up_verify_and_recover_a_forgotten_password(self):
-        with IsolatedServer(settings={"require_password": True, "email_mode": "required", "signups_per_ip_hour": 100}) as srv:
+        with IsolatedServer(settings={"require_password": True, "email_mode": "required", "signups_per_ip_hour": 100,
+                                      "signup_verify": True}) as srv:
             d, errors = asyncio.run(self._email(srv.url))
         d.verdict(self, errors)
 
@@ -622,14 +623,15 @@ class BrowserPages(unittest.TestCase):
                           lambda t: "email" in t.lower(), wait=8)
             await pg.js(fill % (name, "correct-horse-battery", "correct-horse-battery", addr))
             await pg.js("document.getElementById('joinbtn').click()")
-            await d.check("registering takes you to the code box on the profile page", "location.pathname + location.hash",
-                          "/profile#verify", wait=12)
-            await d.check("the page says it is waiting for the code", "document.getElementById('email-note').innerText",
-                          lambda t: "Waiting for the code" in t, wait=10)
-            await d.check("the code box is showing", "document.getElementById('email-code-bar').style.display", "flex")
+            await d.check("a code is mailed first and a box for it pops up", "document.getElementById('code-pop').style.display", "flex", wait=10)
+            await d.check("it says where the code went", "document.getElementById('code-msg').textContent", lambda t: "e***@example.com" in t)
+            await pg.js("(()=>{document.getElementById('code-in').value='000000';document.getElementById('code-go').click()})()")
+            await d.check("a wrong code is refused", "document.getElementById('code-err').textContent", lambda t: "not right" in t, wait=8)
             code = self._latest_code(base, addr)
-            await pg.js("(()=>{document.getElementById('email-code').value='%s';document.getElementById('email-confirm').click()})()" % code)
-            await d.check("the right code verifies the address", "document.getElementById('email-note').innerText",
+            await pg.js("(()=>{document.getElementById('code-in').value='%s';document.getElementById('code-go').click()})()" % code)
+            await d.check("the right code creates the account and logs in", "localStorage.ms_token||''", lambda t: len(t) > 20, wait=10)
+            await pg.goto(base + "/profile", 3)
+            await d.check("the address is verified already", "document.getElementById('email-note').innerText",
                           lambda t: "Email verified" in t, wait=10)
             await pg.js("document.getElementById('acct-out').click()")
             await asyncio.sleep(2.5)

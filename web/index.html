@@ -221,7 +221,7 @@ aside .card.fold.shut>h3{margin:0;padding-bottom:0;border-bottom:0}aside .card.f
 aside .news{max-height:260px;overflow-y:auto}
 .news div{padding:6px 0;border-bottom:1px solid var(--line2);font-size:12.5px;line-height:1.45}.news small{color:var(--mut);margin-right:6px}.news a{text-decoration:underline;text-decoration-color:#4cc3cc66;text-underline-offset:2px}.news a:hover{text-decoration-color:currentColor}
 .k-rumor{color:#e5b34d}.k-breaking{color:var(--acc)}.k-confirm{color:var(--up)}.k-correction{color:var(--dn)}.k-ipo{color:#c3a3ff}.k-season{color:#ff9f5c}.k-macro{color:#d2a8ff}.k-earnings{color:#4fd1d9}.k-dividend{color:#7ee787}.k-rating{color:#a5a5ff}
-#login{position:fixed;inset:0;background:#000d;display:flex;align-items:center;justify-content:center;z-index:9}
+#login{position:fixed;inset:0;background:#000d;display:flex;align-items:center;justify-content:center;z-index:9}#code-pop{display:none;position:fixed;inset:0;z-index:80;background:#000000b3;align-items:center;justify-content:center;padding:16px}#code-pop .dly-pop-in{width:min(380px,100%)}#code-in{font-size:24px;letter-spacing:.3em;text-align:center;margin:10px 0 8px}
 #login>div{background:var(--card);padding:26px;border-radius:3px;border:1px solid var(--line);width:340px}
 input,select,textarea{font:inherit;width:100%;padding:7px 9px;margin:10px 0;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:2px}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
@@ -405,6 +405,10 @@ body.guest .guest-cta{display:flex}
 <input id="rec-code" maxlength="12" placeholder="Code from the email" autocomplete="one-time-code" style="margin-bottom:8px">
 <input id="rec-pw" type="password" maxlength="128" placeholder="New password (8+ characters)" autocomplete="new-password" style="margin-bottom:8px">
 <button class="buy" style="width:100%;padding:8px" id="rec-go">Set the new password</button><p id="rec-msg" class="hint"></p></div>
+<div id="code-pop" role="dialog" aria-modal="true" aria-labelledby="code-h"><div class="dly-pop-in"><h2 id="code-h" style="margin:0 0 4px">Check your email</h2><p id="code-msg" class="hint" style="margin:0"></p>
+<input id="code-in" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
+<button class="buy" style="width:100%;padding:8px" id="code-go">Verify and create account</button><p id="code-err" class="dn"></p>
+<p class="hint" style="display:flex;justify-content:space-between;margin:8px 0 0"><a href="#" id="code-again">Send a new code</a><a href="#" id="code-back">Change the email</a></p></div></div>
 <p id="auth-hint" class="hint" style="display:none"></p><button id="login-close" style="display:none;width:100%;margin-top:8px">Keep watching the market</button></div></div>
 <header>
 <div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
@@ -600,7 +604,7 @@ function drawAuth(){
  document.querySelectorAll('#auth-tabs [data-mode]').forEach(c=>c.classList.toggle('on',c.dataset.mode===authMode))}
 fetch('/api/auth_mode').then(r=>r.json()).then(j=>{authPasswords=!!j.passwords;authEmail=j.email||'off';emailSignup=!!j.email_signup;mailReady=!!j.mail_ready;minAge=j.min_age||13;if(authPasswords&&!lsGet('ms_seen_login',false))authMode='register';drawAuth()}).catch(()=>{});
 $('auth-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(!b)return;authMode=b.dataset.mode;$('lerr').textContent='';drawAuth()});
-async function join(){
+async function join(code){
  const b=$('joinbtn'),err=$('lerr');err.textContent='';
  let url='/api/join',body={name:$('nm').value,ref:(()=>{try{return localStorage.ms_ref||''}catch(e){return ''}})()};
  if(authPasswords){
@@ -609,14 +613,23 @@ async function join(){
    if($('pw').value!==$('pw2').value){err.textContent='The two passwords are not the same';return}
    if(authEmail!=='off'||emailSignup){body.email=$('em').value;if(emailSignup&&!body.email.trim()){err.textContent='Please give your email address';return}}
    body.birth_date=$('by-d').value;if(!body.birth_date){err.textContent='Please give your date of birth';return}
-   body.website=$('hp').value}}
+   body.website=$('hp').value;if(code)body.code=code}}
  b.disabled=true;
  try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
+  if(j.need_code){codePop(j.email_msg||j.error,j.error?j.error:'');b.disabled=false;return}
+  $('code-pop').style.display='none';
   if(j.token){token=j.token;try{localStorage.ms_token=token}catch(e){}lsSet('ms_seen_login',true);$('pw').value=$('pw2').value='';
-   if(authMode==='register'&&authEmail!=='off'&&body.email&&body.email.trim()){location.href='/profile#verify';return}   // the code box is on the Profile page
+   if(authMode==='register'&&authEmail!=='off'&&body.email&&body.email.trim()&&!code){location.href='/profile#verify';return}   // (no code at sign-up: the code box is on the Profile page)
    connect()}else err.textContent=j.error||'Error'}
  catch(e){err.textContent='Could not reach the server'}
  b.disabled=false}
+// sign-up with mail working: the server mails a code first and makes the account only with it (2026-10-31)
+function codePop(msg,err){const p=$('code-pop');if(p.style.display!=='flex'){$('code-in').value='';p.style.display='flex'}
+ if(!err)$('code-msg').textContent=msg||'';$('code-err').textContent=err||'';$('code-in').focus()}
+$('code-go').onclick=()=>{const c=$('code-in').value.replace(/\D/g,'');if(c.length!==6){$('code-err').textContent='Type the 6-digit code from the email';return}join(c)};
+$('code-in').onkeydown=e=>{if(e.key==='Enter')$('code-go').click()};
+$('code-again').onclick=e=>{e.preventDefault();join()};
+$('code-back').onclick=e=>{e.preventDefault();$('code-pop').style.display='none';$('em').focus()};
 async function postJson(url,body,hdr){
  try{const r=await fetch(url,{method:'POST',headers:Object.assign({'Content-Type':'application/json'},hdr||{}),body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));j._status=r.status;return j}
  catch(e){return{error:'Could not reach the server'}}}
@@ -629,7 +642,7 @@ $('rec-go').onclick=async()=>{
 $('g-login').onclick=$('gh-login').onclick=()=>openSignin('login');$('g-join').onclick=$('gh-join').onclick=()=>openSignin('register');
 $('login-close').onclick=()=>{$('login').style.display='none'};
 if(!token&&location.hash==='#join')setTimeout(()=>openSignin('register'),60);   // (the /about page's button)
-$('joinbtn').onclick=join;$('nm').onkeydown=e=>{if(e.key==='Enter')join()};$('pw').onkeydown=$('pw2').onkeydown=e=>{if(e.key==='Enter')join()};
+$('joinbtn').onclick=()=>join();$('nm').onkeydown=e=>{if(e.key==='Enter')join()};$('pw').onkeydown=$('pw2').onkeydown=e=>{if(e.key==='Enter')join()};
 function connect(){
  if(!token){
   if((page==='market'||page==='stock'||page==='learn')&&!noGuest)guest=true;
