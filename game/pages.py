@@ -2,7 +2,7 @@
 multi-process set-up, so both look the same."""
 import os
 
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 
 import paths
 from netutil import TICKER_RENAMES
@@ -33,6 +33,21 @@ def add_pages(app):
     async def favicon():
         """Where browsers and search engines look for a site's icon first."""
         return await brand_file("favicon.ico")
+
+    site = os.environ.get("SITE_URL", "https://memestreet.net").rstrip("/")
+    public = ("/", "/about", "/learn", "/daily", "/leaders", "/bots/guide", "/terms", "/privacy")
+
+    @app.get("/robots.txt")
+    async def robots():
+        """For search engines: everything but the admin page and the API, and where the sitemap is."""
+        return PlainTextResponse(f"User-agent: *\nDisallow: /admin\nDisallow: /api/\nSitemap: {site}/sitemap.xml\n")
+
+    @app.get("/sitemap.xml")
+    async def sitemap():
+        """The public pages, so search engines find them all."""
+        urls = "".join(f"<url><loc>{site}{u}</loc></url>" for u in public)
+        return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                        + urls + "</urlset>", media_type="application/xml")
 
     @app.get("/js/{name}")
     async def script_file(name: str):

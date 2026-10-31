@@ -191,6 +191,7 @@ last results are kept in §17 as history.
 | `daily.js` | The Daily page (served at `/js/daily.js`): the start screen, the chart painting one candle a second, the buy and sell buttons, the result and the board (§10.13). |
 | `admin.html` | The admin dashboard page, served at `/admin` (§12; in tabs since 2026-10-26: Overview, Players with every action on the picked player, Shop, Chat, Market, System): the total MB in the game, the shop, the price model, server timings, chat moderation with appeals, accounts, the errors the server logged, email and mail, adding or taking back MB, and the reset button. |
 | `about.html` | The public "what is Meme Street" page, served at `/about` (no game connection; §11). |
+| (search engines) | `pages.py` serves `/robots.txt` (keeps `/admin` and `/api/` out) and `/sitemap.xml` (the public pages, on `SITE_URL`, default memestreet.net); `index.html` names the site "Meme Street" in schema.org `WebSite` data, for the site name Google shows (2026-10-31). |
 | `shop_pay.html` | The pretend checkout used while the shop is in test mode (`/shop/pay`, §10.9). |
 
 ### The content (`content/`)

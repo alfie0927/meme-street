@@ -133,6 +133,15 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(http(self.srv, "/brand/state.json")[0], 404)
         self.assertEqual(http(self.srv, "/brand/..%2Fserver.py")[0], 404)
 
+    def test_search_engines_get_robots_and_a_sitemap(self):
+        status, body, _ = http(self.srv, "/robots.txt")
+        self.assertEqual(status, 200)
+        self.assertIn("Disallow: /admin", body)
+        self.assertIn("/sitemap.xml", body)
+        status, body, _ = http(self.srv, "/sitemap.xml")
+        self.assertEqual(status, 200)
+        self.assertIn("/learn</loc>", body)
+
     def test_bad_token_is_rejected(self):
         with connect(f"ws://127.0.0.1:{self.srv.port}/ws?token=nope") as ws:
             m = json.loads(ws.recv(timeout=5))
