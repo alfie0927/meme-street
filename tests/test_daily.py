@@ -333,6 +333,7 @@ class VisitorTests(unittest.TestCase):
         self.assertEqual((t["people"], t["visitors"], t["signed_up"], t["finished"]), (2, 2, 1, 2))
         self.assertEqual(t["visitors_finished"], 2)
         self.assertEqual(t["sat_out"], 1)
+        self.assertIsNotNone(t["avg_all"])                                          # (the visitor who did not sign up counts there)
         e.now += daily.DAY_SECONDS                                                  # the next day: yesterday goes in the log
         out = e.daily_admin()
         self.assertEqual(out["days"][0]["people"], 2)

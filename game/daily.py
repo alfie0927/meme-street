@@ -259,11 +259,14 @@ class DailyMixin:
         claimed = [x for x in people if x.get("claimed")]
         done = [x for x in people if x.get("done")]
         rets = sorted(x["ret"] for x in done)
+        for x in visits:
+            self._daily_finish(x)                                          # (a visitor's game is finished like any other; it records nothing)
+        every = rets + [x["ret"] for x in visits if x.get("done")]
         return {"day": d["day"], "number": d["day"] - EPOCH_DAY + 1, "people": len(people), "finished": len(done),
                 "bots": len(d["plays"]) - len(people), "visitors": len(visits) + len(claimed),
                 "visitors_finished": sum(1 for x in visits if over(x)) + sum(1 for x in claimed if over(x)),
                 "signed_up": len(claimed), "hold": hold,
-                "avg": sum(rets) / len(rets) if rets else None, "median": rets[len(rets) // 2] if rets else None,
+                "avg": sum(rets) / len(rets) if rets else None, "avg_all": sum(every) / len(every) if every else None, "median": rets[len(rets) // 2] if rets else None,
                 "best": rets[-1] if rets else None, "worst": rets[0] if rets else None,
                 "beat": sum(1 for r in rets if r > hold + 1e-9), "sat_out": sum(1 for x in done if not x["trades"]),
                 "trades": sum(len(x["trades"]) for x in done) / len(done) if done else None}

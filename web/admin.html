@@ -30,7 +30,7 @@ main{max-width:1280px;margin:0 auto;padding:18px 20px 40px}
 .page{display:none}.page.on{display:block}
 /* building blocks */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.k5{grid-template-columns:repeat(5,1fr)}@media(max-width:900px){.k5{grid-template-columns:repeat(2,1fr)}}.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
 .kpi small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
 .kpi strong{display:block;font-size:21px;margin-top:3px;font-variant-numeric:tabular-nums}.kpi em{display:block;font-style:normal;color:var(--mut);font-size:11.5px;margin-top:2px}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:16px;min-width:0}
@@ -353,24 +353,25 @@ function renderMail(m){
 function renderDaily(d){
  const t=d.today,a=d.all_time,pcx=x=>x===null||x===undefined?'-':sgn(x*100,1)+'%',pct=(n,of)=>of?Math.round(n/of*100)+'%':'-';
  const dd=day=>new Date(day*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
- const row=x=>`<tr><td>#${x.number} <span class="mut">${dd(x.day)}</span></td><td>${x.people}</td><td>${x.visitors}</td><td>${x.signed_up} <span class="mut">${pct(x.signed_up,x.visitors)}</span></td><td>${x.people-x.signed_up+x.visitors}</td><td class="mut">${x.bots}</td><td class="${cls(x.avg)}">${pcx(x.avg)}</td><td>${pct(x.beat,x.finished)}</td><td class="${cls(x.hold)}">${pcx(x.hold)}</td></tr>`;
+ const row=x=>`<tr><td>#${x.number} <span class="mut">${dd(x.day)}</span></td><td>${x.people}</td><td>${x.visitors}</td><td>${x.signed_up} <span class="mut">${pct(x.signed_up,x.visitors)}</span></td><td>${x.people-x.signed_up+x.visitors}</td><td class="mut">${x.bots}</td><td class="${cls(x.avg)}">${pcx(x.avg)}</td><td class="${cls(x.avg_all)}">${pcx(x.avg_all)}</td><td>${pct(x.beat,x.finished)}</td><td class="${cls(x.hold)}">${pcx(x.hold)}</td></tr>`;
  $('daily').innerHTML=`<div class="panel"><h2><span>Today: Daily Chart #${t.number} <span class="mut">next chart in ${f(Math.max(0,d.next-Date.now()/1000)/3600,1)} h</span></span></h2>
-  <div class="kpis" style="margin:0">${[
-   ['Played with an account',t.people,`${t.finished} finished · bots apart`],
-   ['Played without signing up',t.visitors,`${t.visitors_finished} finished`],
-   ['Visitors who then signed up',t.signed_up,`${pct(t.signed_up,t.visitors)} of visitors`,t.signed_up?'up':''],
-   ['Everyone who played',t.people-t.signed_up+t.visitors,'people, visitors counted once'],
-   ['House bots',t.bots,'not in any count above'],
-   ['Average return',pcx(t.avg),`median ${pcx(t.median)}`,cls(t.avg)],
+  <div class="kpis k5" style="margin:0">${[
+   ['Accounts',t.people,`${t.finished} finished`],
+   ['Visitors',t.visitors,`${t.visitors_finished} finished, no account`],
+   ['Visitors signed up',t.signed_up,`${pct(t.signed_up,t.visitors)} of visitors`,t.signed_up?'up':''],
+   ['Everyone',t.people-t.signed_up+t.visitors,'each person once'],
+   ['House bots',t.bots,'not counted above'],
+   ['Avg, accounts',pcx(t.avg),`median ${pcx(t.median)}`,cls(t.avg)],
+   ['Avg, everyone',pcx(t.avg_all),'visitors included',cls(t.avg_all)],
    ['Beat the stock',pct(t.beat,t.finished),`the stock did ${pcx(t.hold)}`],
    ['Best / worst',`${pcx(t.best)} / ${pcx(t.worst)}`,''],
    ['Trades a game',t.trades===null?'-':f(t.trades,1),`${t.sat_out} sat it out`]].map(([l,v,e,c])=>kpi(l,v,esc(e),c)).join('')}</div></div>
   <div class="panel"><h2>All time <span class="mut">accounts only, bots apart</span></h2><div class="kpis" style="margin:0">${[
    ['Players',a.players,''],['Games',a.games,a.players?f(a.games/a.players,1)+' each':''],['Came back',a.returning,pct(a.returning,a.players)+' played 2+ days'],
    ['Regulars',a.regulars,'played 5+ days'],['On a streak now',a.on_streak,'2+ days in a row'],['Longest streak',a.best_streak,'days']].map(([l,v,e])=>kpi(l,v,esc(e))).join('')}</div></div>
-  <div class="grid2"><div class="panel"><h2>Day by day <span class="mut">UTC, the last 30</span></h2><table><thead><tr><th>Chart</th><th>Accounts</th><th>Visitors</th><th>Signed up</th><th>Everyone</th><th>Bots</th><th>Avg</th><th>Beat</th><th>Stock</th></tr></thead><tbody>${row(t)}${d.days.map(row).join('')}</tbody></table>
-   <p class="note">Kept from ${dd(d.log_since)} on. "Signed up": visitors who made an account after playing, so their game moved onto it. "Everyone": accounts plus visitors, each person once.</p></div>
-  <div class="panel"><h2>Longest streaks now</h2>${d.streaks.length?`<table><thead><tr><th>Player</th><th>Streak</th><th>Best</th><th>Games</th></tr></thead><tbody>${d.streaks.map(([n,s,m,p])=>`<tr><td><a href="#" data-p="${esc(n)}">${esc(n)}</a></td><td>${s}</td><td class="mut">${m}</td><td class="mut">${p}</td></tr>`).join('')}</tbody></table>`:empty('Nobody is on a streak of 2+ days.')}</div></div>`}
+  <div class="panel"><h2>Day by day <span class="mut">UTC, the last 30</span></h2><div style="overflow-x:auto"><table><thead><tr><th>Chart</th><th>Accounts</th><th>Visitors</th><th>Signed up</th><th>Everyone</th><th>Bots</th><th>Avg, accounts</th><th>Avg, everyone</th><th>Beat the stock</th><th>Stock</th></tr></thead><tbody>${row(t)}${d.days.map(row).join('')}</tbody></table></div>
+   <p class="note">Kept from ${dd(d.log_since)} on. "Signed up": visitors who made an account after playing, so their game moved onto it. "Everyone": accounts plus visitors, each person once. "Avg, accounts": games on accounts (visitors who signed up included); "Avg, everyone": visitors who did not sign up too.</p></div>
+  <div class="panel"><h2>Longest streaks now</h2>${d.streaks.length?`<table><thead><tr><th>Player</th><th>Streak</th><th>Best</th><th>Games</th></tr></thead><tbody>${d.streaks.map(([n,s,m,p])=>`<tr><td><a href="#" data-p="${esc(n)}">${esc(n)}</a></td><td>${s}</td><td class="mut">${m}</td><td class="mut">${p}</td></tr>`).join('')}</tbody></table>`:empty('Nobody is on a streak of 2+ days.')}</div>`}
 $('daily').addEventListener('click',e=>{const pl=e.target.closest('[data-p]');if(pl){e.preventDefault();pick(pl.dataset.p)}});
 // ---------- the shop ----------
 const SRC={grant:'Starting balances',purchase:'Bought',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
