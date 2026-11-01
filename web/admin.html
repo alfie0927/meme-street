@@ -73,7 +73,7 @@ details summary{cursor:pointer}
  <div class="bar1"><span class="brand"><img src="/brand/memestreet_logo_peaks.png" alt="">Admin</span>
   <span class="sp"></span><input id="find" list="names" placeholder="Find a player…" autocomplete="off"><datalist id="names"></datalist>
   <span id="stamp" class="mut"></span><a href="/" target="_blank">Open the site</a><button id="out" class="ghost">Lock</button></div>
- <nav id="tabs"><button data-tab="overview" class="on">Overview</button><button data-tab="players">Players</button><button data-tab="shop">Shop</button><button data-tab="chat">Chat<span class="badge" id="chat-badge"></span></button><button data-tab="market">Market</button><button data-tab="system">System<span class="badge" id="sys-badge"></span></button></nav>
+ <nav id="tabs"><button data-tab="overview" class="on">Overview</button><button data-tab="players">Players</button><button data-tab="daily">Daily</button><button data-tab="shop">Shop</button><button data-tab="chat">Chat<span class="badge" id="chat-badge"></span></button><button data-tab="market">Market</button><button data-tab="system">System<span class="badge" id="sys-badge"></span></button></nav>
 </div>
 <main>
 <!-- OVERVIEW -->
@@ -100,6 +100,8 @@ details summary{cursor:pointer}
  <div class="panel"><h2>Invites <span class="mut">who brought whom (each account's own ?ref= link)</span></h2><div id="invites"></div></div>
  <div class="panel"><h2>Accounts</h2><div id="accts"></div></div>
 </section>
+<!-- DAILY -->
+<section class="page" data-page="daily"><div id="daily"><p class="empty">Loading…</p></div></section>
 <!-- SHOP -->
 <section class="page" data-page="shop"><div id="shop"><p class="empty">Loading…</p></div></section>
 <!-- CHAT -->
@@ -347,6 +349,29 @@ function renderMail(m){
  const st=m.status,head=st.configured?`<p style="margin:0 0 8px">Mail goes through <b>${esc(st.host||'a test transport')}</b> as ${esc(st.sender)}: ${st.sent} sent, ${st.failed} failed, ${st.queued} waiting.</p>`:'<p class="warn" style="margin:0 0 8px"><b>Email is not set up</b>, so nothing is sent: messages (and their codes) are only listed here. Set it up with <code>deploy\\set_mail.ps1</code>.</p>';
  const rows=m.recent.length?m.recent.slice(0,15).map(x=>`<div class="row"><span class="t">${new Date(x.t*1000).toLocaleTimeString()} ${esc(x.state)} to ${esc(x.to)}: ${esc(x.subject)}${x.error?' ('+esc(x.error)+')':''}${x.body?'<br><span class="mut">'+esc(x.body).replace(/[\r\n]+/g,' ')+'</span>':''}</span></div>`).join(''):empty('No mail yet.');
  $('mailbox').innerHTML=head+rows}
+// ---------- the Daily Chart ----------
+function renderDaily(d){
+ const t=d.today,a=d.all_time,pcx=x=>x===null||x===undefined?'-':sgn(x*100,1)+'%',pct=(n,of)=>of?Math.round(n/of*100)+'%':'-';
+ const dd=day=>new Date(day*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
+ const row=x=>`<tr><td>#${x.number} <span class="mut">${dd(x.day)}</span></td><td>${x.people}</td><td>${x.visitors}</td><td>${x.signed_up} <span class="mut">${pct(x.signed_up,x.visitors)}</span></td><td>${x.people-x.signed_up+x.visitors}</td><td class="mut">${x.bots}</td><td class="${cls(x.avg)}">${pcx(x.avg)}</td><td>${pct(x.beat,x.finished)}</td><td class="${cls(x.hold)}">${pcx(x.hold)}</td></tr>`;
+ $('daily').innerHTML=`<div class="panel"><h2><span>Today: Daily Chart #${t.number} <span class="mut">next chart in ${f(Math.max(0,d.next-Date.now()/1000)/3600,1)} h</span></span></h2>
+  <div class="kpis" style="margin:0">${[
+   ['Played with an account',t.people,`${t.finished} finished · bots apart`],
+   ['Played without signing up',t.visitors,`${t.visitors_finished} finished`],
+   ['Visitors who then signed up',t.signed_up,`${pct(t.signed_up,t.visitors)} of visitors`,t.signed_up?'up':''],
+   ['Everyone who played',t.people-t.signed_up+t.visitors,'people, visitors counted once'],
+   ['House bots',t.bots,'not in any count above'],
+   ['Average return',pcx(t.avg),`median ${pcx(t.median)}`,cls(t.avg)],
+   ['Beat the stock',pct(t.beat,t.finished),`the stock did ${pcx(t.hold)}`],
+   ['Best / worst',`${pcx(t.best)} / ${pcx(t.worst)}`,''],
+   ['Trades a game',t.trades===null?'-':f(t.trades,1),`${t.sat_out} sat it out`]].map(([l,v,e,c])=>kpi(l,v,esc(e),c)).join('')}</div></div>
+  <div class="panel"><h2>All time <span class="mut">accounts only, bots apart</span></h2><div class="kpis" style="margin:0">${[
+   ['Players',a.players,''],['Games',a.games,a.players?f(a.games/a.players,1)+' each':''],['Came back',a.returning,pct(a.returning,a.players)+' played 2+ days'],
+   ['Regulars',a.regulars,'played 5+ days'],['On a streak now',a.on_streak,'2+ days in a row'],['Longest streak',a.best_streak,'days']].map(([l,v,e])=>kpi(l,v,esc(e))).join('')}</div></div>
+  <div class="grid2"><div class="panel"><h2>Day by day <span class="mut">UTC, the last 30</span></h2><table><thead><tr><th>Chart</th><th>Accounts</th><th>Visitors</th><th>Signed up</th><th>Everyone</th><th>Bots</th><th>Avg</th><th>Beat</th><th>Stock</th></tr></thead><tbody>${row(t)}${d.days.map(row).join('')}</tbody></table>
+   <p class="note">Kept from ${dd(d.log_since)} on. "Signed up": visitors who made an account after playing, so their game moved onto it. "Everyone": accounts plus visitors, each person once.</p></div>
+  <div class="panel"><h2>Longest streaks now</h2>${d.streaks.length?`<table><thead><tr><th>Player</th><th>Streak</th><th>Best</th><th>Games</th></tr></thead><tbody>${d.streaks.map(([n,s,m,p])=>`<tr><td><a href="#" data-p="${esc(n)}">${esc(n)}</a></td><td>${s}</td><td class="mut">${m}</td><td class="mut">${p}</td></tr>`).join('')}</tbody></table>`:empty('Nobody is on a streak of 2+ days.')}</div></div>`}
+$('daily').addEventListener('click',e=>{const pl=e.target.closest('[data-p]');if(pl){e.preventDefault();pick(pl.dataset.p)}});
 // ---------- the shop ----------
 const SRC={grant:'Starting balances',purchase:'Bought',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
 function renderShop(d){
@@ -376,7 +401,7 @@ $('reset-go').addEventListener('click',async()=>{if($('reset-word').value.trim()
 // Every 5 seconds: the overview and the chat (and every 20 s the deeper numbers), which feed the alerts and the counts on
 // the tabs, plus what the open tab shows; all at once, and never a new round before the last one is back
 const gotPlayers=d=>{players=d.players;drawPlayers()};
-const TAB_DATA={players:[['/api/admin/players',gotPlayers],['/api/admin/accounts',renderAccounts]],shop:[['/api/admin/shop',renderShop]],
+const TAB_DATA={players:[['/api/admin/players',gotPlayers],['/api/admin/accounts',renderAccounts]],shop:[['/api/admin/shop',renderShop]],daily:[['/api/admin/daily',renderDaily]],
  market:[['/api/admin/model',renderModel]],system:[['/api/admin/mail',renderMail],['/api/admin/errors',renderErrors]]};
 async function fetchAll(jobs){const res=await Promise.all(jobs.map(([u])=>api(u)));res.forEach((d,i)=>jobs[i][1](d))}
 async function loadTab(name){try{await fetchAll(TAB_DATA[name]||[])}catch(e){if(e.message==='forbidden')lock('That key was not accepted.')}}

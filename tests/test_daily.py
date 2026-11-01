@@ -318,6 +318,27 @@ class VisitorTests(unittest.TestCase):
         self.assertEqual(view["stats"]["streak"], 1)
         self.assertFalse(e.daily_claim(p, "abcdefabcdef0123"))                    # only once
 
+    def test_the_admin_numbers(self):
+        from types import SimpleNamespace
+        e = make_engine(5)
+        v = SimpleNamespace(token="v:visitor0000000001", name="You", visitor=True)
+        e.daily_start(v)
+        e.daily_start(SimpleNamespace(token="v:visitor0000000002", name="You", visitor=True))
+        a, b = join(e, "adminone"), join(e, "admintwo")
+        e.daily_start(a)
+        e.daily_trade(a, "buy", 1)
+        e.now += daily.LIVE + 1
+        e.daily_claim(b, "visitor0000000001")
+        t = e.daily_admin()["today"]
+        self.assertEqual((t["people"], t["visitors"], t["signed_up"], t["finished"]), (2, 2, 1, 2))
+        self.assertEqual(t["visitors_finished"], 2)
+        self.assertEqual(t["sat_out"], 1)
+        e.now += daily.DAY_SECONDS                                                  # the next day: yesterday goes in the log
+        out = e.daily_admin()
+        self.assertEqual(out["days"][0]["people"], 2)
+        self.assertEqual(out["today"]["people"], 0)
+        self.assertEqual(out["all_time"]["players"], 2)
+
 
 class ServerTests(unittest.TestCase):
     def test_visitors_play_through_the_site_a_few_times_a_day(self):
@@ -330,6 +351,10 @@ class ServerTests(unittest.TestCase):
             self.assertIn("candles", json.loads(http(srv, "/api/daily/start", "POST", {}, headers={"X-Visitor": "b" * 20})[1]))
             self.assertIn("account", json.loads(http(srv, "/api/daily/start", "POST", {}, headers={"X-Visitor": "c" * 20})[1])["error"])
             self.assertEqual(http(srv, "/api/daily", headers={"X-Visitor": "short"})[0], 401)
+            self.assertEqual(http(srv, "/api/admin/daily")[0], 403)
+            status, text, _ = http(srv, "/api/admin/daily", headers={"X-Admin-Key": "testkey"})
+            self.assertEqual(status, 200, text)
+            self.assertEqual(json.loads(text)["today"]["visitors"], 2)
 
     def test_on_the_site_and_switchable_off(self):
         """Back on the site (2026-10-24): the page, the script and the header button; with `daily_chart` off the endpoints

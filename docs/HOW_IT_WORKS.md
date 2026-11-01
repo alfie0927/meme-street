@@ -1365,6 +1365,8 @@ What follows is the game itself, as before.
 
 **Visitors play too** (2026-11-01): a logged-out page on `/daily` is in visitor mode and plays under an id its browser makes (`localStorage.ms_vid`, sent as `X-Visitor`; `server.daily_player`, forwarded by the gateways). A visitor's game is kept in `daily_game.visits`, not `plays`: it is not on the board, its place is where it would be (`rank`/`of` with the visitor counted in), and it counts for no stats. At most `daily_visits_per_ip` (3) visitor games a day from one address, so a new browser id is no free retry. The result shows a "Save your result" box (`DLY_SAVE`) that opens the sign-up; `POST /api/register` carries `visitor`, and `daily_claim` moves that game onto the new account: it goes on the board and starts the streak.
 
+**The admin page's Daily tab** (2026-11-01, `GET /api/admin/daily`, `daily_admin`): today so far (`_daily_summary`: games by accounts, by visitors, visitors who then signed up, everyone counted once, house bots apart, the average and median return, how many beat the stock, best and worst, trades a game, who sat it out), the same numbers for each past day (`daily_game.log`, written when the day turns, the last 90 kept; it starts on 2026-11-01), all-time counts from the streak stats (players, games, came back 2+ days, regulars 5+, on a streak, the longest) and the longest streaks now.
+
 ---
 
 ## 11. The web pages and charts

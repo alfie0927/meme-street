@@ -163,6 +163,8 @@ class DailyMixin:
             if d["day"] is not None and d["plays"]:
                 board = self._daily_board(d, final=True)
                 d["past"] = ([{"day": d["day"], "players": len(board), "top": board[:3]}] + d["past"])[:7]
+            if d["day"] is not None and d.get("chart"):
+                d["log"] = ([self._daily_summary(d)] + d.get("log", []))[:90]      # (the admin page's day by day)
             seed = int(hashlib.sha256(f"{d['salt']}:{day}".encode()).hexdigest()[:15], 16)
             d.update(day=day, chart=make_chart(seed), plays={}, visits={})
         d.setdefault("visits", {})
@@ -181,7 +183,7 @@ class DailyMixin:
         play = d["visits"].pop("v:" + str(visitor or ""), None)
         if play is None or p.token in d["plays"]:
             return False
-        play.update(name=p.name, token=p.token)
+        play.update(name=p.name, token=p.token, claimed=True)
         play.pop("visitor", None)
         d["plays"][p.token] = play
         if play.get("done"):
@@ -244,6 +246,44 @@ class DailyMixin:
             self._daily_finish(play, final)
         done = sorted((x for x in d["plays"].values() if x.get("done")), key=lambda x: (-x["ret"], x["end"]))
         return [{"name": x["name"], "ret": round(x["ret"], 6), "trades": len(x["trades"])} for x in done]
+
+    def _daily_summary(self, d):
+        """One day of the Daily Chart in numbers, for the admin page: people (house bots apart), visitors who played
+        without an account and how many of them signed up after, and how the games went (2026-11-01)."""
+        bots = {b.token for b in self.house_bots()}
+        cs = d["chart"]["candles"]
+        hold = cs[-1][3] / cs[HISTORY - 1][3] - 1
+        over = lambda x: x.get("done") or self.now - x["t0"] >= LIVE
+        people = [x for x in d["plays"].values() if x.get("token") not in bots]
+        visits = list(d.get("visits", {}).values())
+        claimed = [x for x in people if x.get("claimed")]
+        done = [x for x in people if x.get("done")]
+        rets = sorted(x["ret"] for x in done)
+        return {"day": d["day"], "number": d["day"] - EPOCH_DAY + 1, "people": len(people), "finished": len(done),
+                "bots": len(d["plays"]) - len(people), "visitors": len(visits) + len(claimed),
+                "visitors_finished": sum(1 for x in visits if over(x)) + sum(1 for x in claimed if over(x)),
+                "signed_up": len(claimed), "hold": hold,
+                "avg": sum(rets) / len(rets) if rets else None, "median": rets[len(rets) // 2] if rets else None,
+                "best": rets[-1] if rets else None, "worst": rets[0] if rets else None,
+                "beat": sum(1 for r in rets if r > hold + 1e-9), "sat_out": sum(1 for x in done if not x["trades"]),
+                "trades": sum(len(x["trades"]) for x in done) / len(done) if done else None}
+
+    def daily_admin(self):
+        """The admin page's Daily tab: today so far, the days before, and the players who keep coming back."""
+        d = self._dchart()
+        self._daily_board(d)                                               # (games whose two minutes are up are finished)
+        bots = {b.token for b in self.house_bots()}
+        stats = {t: s for t, s in (d.get("stats") or {}).items() if t not in bots and t in self.by_token}
+        alive = lambda s: s["last"] is not None and s["last"] >= d["day"] - 1
+        streaks = sorted(((self.by_token[t].name, s["streak"], s["max_streak"], s["played"]) for t, s in stats.items() if alive(s) and s["streak"] > 1),
+                         key=lambda x: (-x[1], -x[3]))[:15]
+        return {"today": self._daily_summary(d), "days": d.get("log", [])[:30], "streaks": streaks,
+                "all_time": {"players": len(stats), "games": sum(s["played"] for s in stats.values()),
+                             "returning": sum(1 for s in stats.values() if s["played"] >= 2),
+                             "regulars": sum(1 for s in stats.values() if s["played"] >= 5),
+                             "on_streak": sum(1 for s in stats.values() if alive(s) and s["streak"] > 1),
+                             "best_streak": max((s["max_streak"] for s in stats.values()), default=0)},
+                "next": (d["day"] + 1) * DAY_SECONDS, "log_since": d["log"][-1]["day"] if d.get("log") else d["day"]}
 
     def _daily_shown(self, play):
         """How many candles the player has seen: the lead-in, and one more each second."""

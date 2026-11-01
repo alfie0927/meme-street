@@ -158,6 +158,8 @@ class BrowserSmoke(unittest.TestCase):
             await check("the players tab lists every account and opened on the picked one",
                         "document.querySelector('[data-page=players]').classList.contains('on')+' '+document.querySelectorAll('#plist tr.pick').length",
                         lambda t: t.startswith("true ") and int(t.split()[1]) >= 1, wait=8)
+            await pg.js("document.querySelector('#tabs [data-tab=daily]').click()")
+            await check("the Daily tab shows today's numbers and the all-time ones", "document.querySelectorAll('#daily .kpi').length", lambda n: n >= 15, wait=8)
         finally:
             errors = list(pg.errors)
             proc.terminate()

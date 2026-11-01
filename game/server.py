@@ -1741,6 +1741,14 @@ async def admin_overview(x_admin_key: str = Header("")):
     return data
 
 
+@app.get("/api/admin/daily")
+async def admin_daily(x_admin_key: str = Header("")):
+    """The Daily Chart in numbers: today, the last 30 days, streaks (daily.py `daily_admin`)."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    return await run(engine.daily_admin)
+
+
 @app.get("/api/admin/shop")
 async def admin_shop(x_admin_key: str = Header("")):
     """Orders, revenue, Pro members and where the game's MB came from (economy.py)."""
