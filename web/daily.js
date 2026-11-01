@@ -3,9 +3,12 @@
 // once a second; the ones still to come never reach the browser. Loaded by index.html after its own script, so it shares
 // its globals (S, page, api, postJson, refreshers...).
 let dly=null,dlyG=null,dlyT=null,dlyBusy=false,dlyWasRunning=false,dlySize=Number(lsGet('ms_daily_size',1))||1,dlyCd=null;
+const dlyHdr=()=>token?{'X-Token':token}:{'X-Visitor':visitorId()};   // (a logged-out visitor plays too, off the board)
+const DLY_ABOUT=`<div class="dly-about"><h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how every other player did.</p>
+  <p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p></div>`;
+const DLY_SAVE=`<div class="dly-save"><b>Save your result</b><p>Make a free account and today's return goes on the leaderboard and starts your streak. Without one it is not kept.</p><button class="dly-go" data-dly-join>Create a free account</button></div>`;
 async function loadDaily(){
- if(guest){dly=null;drawDailyGuest();return}
- const d=await api('/api/daily');if(!d||d.error||d.slow)return;
+ const d=await api('/api/daily');if(!d||d.error||d.slow||d.notfound){if(guest){dly=null;drawDailyGuest()}return}
  dly=d;dlyG=d.game?Object.assign({},d.game):null;drawDaily();
  if(d.status==='running'){dlyWasRunning=true;dlyRun()}
  else if(d.status==='done'&&dlyG&&dlyG.done&&(dlyWasRunning||lsGet('ms_daily_seen',null)!==d.day)){dlyWasRunning=false;dlySummary()}}
@@ -87,7 +90,7 @@ function dlyPop(html,label){
  box.style.display='flex';dlyCountdown()}
 function dlySummary(){
  const g=dlyG,d=dly;if(!g||!g.done||!d||!g.dist)return;lsSet('ms_daily_seen',d.day);
- dlyPop(dlyCard(g,d,true)+`<h3 class="dly-h">Everyone's returns today</h3>${dlyHist(g.dist,g.ret)}`,'Your result')}
+ dlyPop((d.visitor?DLY_SAVE:'')+dlyCard(g,d,true)+`<h3 class="dly-h">Everyone's returns today</h3>${dlyHist(g.dist,g.ret)}`,'Your result')}
 function dlyHelp(){
  dlyPop(`<h3 class="dly-mt">How to play</h3><ul class="dly-rules">
   <li><b>One chart a day</b>, the same for everyone, with no name. A new one at midnight UTC.</li>
@@ -104,21 +107,19 @@ function dlyCountdown(){if(dlyCd)return;dlyCd=setInterval(()=>{const els=documen
 function drawDailyGuest(){
  const el=$('daily-body');if(!el)return;el._st='guest';
  setHtml(el,`<div class="dly-wrap"><div class="dly-head"><div><div class="dly-title">Daily Chart</div><div class="dly-sub">A new chart every day</div></div><div class="dly-icons"><button class="dly-ic" data-dly-help aria-label="How to play">?</button></div></div>
-  <div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p><button class="dly-go" data-dly-join>Create an account to play</button><p class="dly-small">Free · one go a day · practice money</p></div>
-  <div class="dly-about"><h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how every other player did.</p>
-  <p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p></div></div>`)}
+  <div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p><button class="dly-go" data-dly-join>Create an account to play</button><p class="dly-small">Free · one go a day · practice money</p></div>${DLY_ABOUT}</div>`)}
 function drawDaily(){
  const el=$('daily-body'),d=dly;if(!el||!d)return;
  const st=d.status==='running'&&dlyG&&dlyG.done?'done':d.status;
- if(el._st!==st){el._st=st;
+ if(el._st!==st+d.visitor){el._st=st+d.visitor;
   if(st==='new')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p>
    ${d.stats.streak?`<p class="dly-streak">Streak <b>${d.stats.streak}</b> day${d.stats.streak===1?'':'s'}: keep it going</p>`:''}<button class="dly-go" id="dly-start">Play</button>
-   <p class="dly-small">One go a day · 1,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div></div>`);
+   <p class="dly-small">${d.visitor?'Free, no sign-up · ':''}One go a day · 1,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div>${d.visitor?DLY_ABOUT:''}</div>`);
   else if(st==='running')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-top"><div class="dly-timer" id="dly-timer"></div><div class="dly-pnl"><div class="dly-ret" id="dly-ret"></div><div class="dly-eq" id="dly-eq"></div></div></div>
    <div id="dly-chart" class="dly-chart"></div><div class="dly-pos" id="dly-pos"></div>
    <div class="dly-sizes" role="group" aria-label="Size">${[0.25,0.5,0.75,1].map((p,i)=>`<button data-dly-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
    <div class="dly-btns"><button class="dly-buy" data-dly="buy"><span id="dly-lb">Buy</span><small>B</small></button><button class="dly-sell" data-dly="sell"><span id="dly-ls">Sell</span><small>S</small></button></div></div>`);
-  else setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div id="dly-card"></div><h3 class="dly-h">Today's chart</h3><div id="dly-chart" class="dly-chart"></div><div id="dly-levels"></div><div id="dly-dist"></div><div id="dly-board"></div></div>`)}
+  else setHtml(el,`<div class="dly-wrap">${dlyHead(d)}${d.visitor?DLY_SAVE:''}<div id="dly-card"></div><h3 class="dly-h">Today's chart</h3><div id="dly-chart" class="dly-chart"></div><div id="dly-levels"></div><div id="dly-dist"></div><div id="dly-board"></div></div>`)}
  const g=dlyG;
  if(st==='running'&&g&&g.candles&&g.candles.length){
   setHtml($('dly-chart'),dlySvg(g));
@@ -176,7 +177,7 @@ async function dlySavePicture(){
  toast('Picture saved: post it to your story',true,3500)}
 async function dlyTrade(side){
  if(!dlyG||dlyG.done)return;
- const r=await postJson('/api/daily/trade',{side,pct:dlySize},{'X-Token':token||''});
+ const r=await postJson('/api/daily/trade',{side,pct:dlySize},dlyHdr());
  if(r.candles)dlyMerge(r);if(r.error)toast(r.error,false,2500);else{const t=r.trades[r.trades.length-1];toast(`${DLY_WORD[t[1]]||t[1]} at ${dlyPx(t[2])}`,true,1200)}
  if(r.done){dlyStop();loadDaily()}else drawDaily()}
 document.addEventListener('click',async e=>{
@@ -186,9 +187,9 @@ document.addEventListener('click',async e=>{
  if(t.closest('[data-dly-stats]')){dlyStatsPop();return}
  if(t.closest('[data-dly-share]')){dlyShare();return}
  if(t.closest('[data-dly-pic]')){dlySavePicture();return}
- if(t.closest('[data-dly-join]')){const j=$('g-join');if(j)j.click();return}
+ if(t.closest('[data-dly-join]')){const b=$('dly-pop');if(b)b.style.display='none';openSignin('register');return}
  const sz=t.closest('[data-dly-size]');if(sz){dlySize=Number(sz.dataset.dlySize);lsSet('ms_daily_size',dlySize);drawDaily();return}
- if(t.id==='dly-start'){t.disabled=true;const r=await postJson('/api/daily/start',{},{'X-Token':token||''});t.disabled=false;
+ if(t.id==='dly-start'){t.disabled=true;const r=await postJson('/api/daily/start',{},dlyHdr());t.disabled=false;
   if(r.error){toast(r.error,false,4000);loadDaily();return}dly.status='running';dlyG=r;dlyWasRunning=true;dlyRun();drawDaily();return}
  const b=t.closest('[data-dly]');if(b)dlyTrade(b.dataset.dly)});
 document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('dly-lvd')){dlyLvOpen=e.target.open;drawDaily()}},true);

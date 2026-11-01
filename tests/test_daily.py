@@ -295,7 +295,42 @@ class GameTests(unittest.TestCase):
             self.assertEqual(b.daily_poll(q, 0)["trades"], a.daily_poll(p, 0)["trades"])
 
 
+class VisitorTests(unittest.TestCase):
+    """A logged-out visitor plays too (2026-11-01): off the board until they sign up, then the game is theirs."""
+    def test_a_visitor_plays_off_the_board_and_signing_up_brings_the_game(self):
+        from types import SimpleNamespace
+        e = make_engine(5)
+        v = SimpleNamespace(token="v:abcdefabcdef0123", name="You", visitor=True)
+        self.assertTrue(e.daily_view(v)["visitor"])
+        self.assertIn("candles", e.daily_start(v))
+        e.daily_trade(v, "buy", 1)
+        self.assertIn("error", e.daily_start(v))                                   # one go
+        e.now += daily.LIVE + 1
+        g = e.daily_poll(v)
+        self.assertTrue(g["done"])
+        self.assertEqual((g["rank"], g["of"]), (1, 1))                            # where it would be
+        self.assertEqual(e.daily_view(v)["players"], 0)                          # but not on the board
+        p = join(e, "latejoiner")
+        self.assertTrue(e.daily_claim(p, "abcdefabcdef0123"))
+        view = e.daily_view(p)
+        self.assertEqual(view["status"], "done")
+        self.assertEqual(view["board"][0]["name"], "latejoiner")
+        self.assertEqual(view["stats"]["streak"], 1)
+        self.assertFalse(e.daily_claim(p, "abcdefabcdef0123"))                    # only once
+
+
 class ServerTests(unittest.TestCase):
+    def test_visitors_play_through_the_site_a_few_times_a_day(self):
+        with IsolatedServer(settings={"daily_chart": True, "daily_visits_per_ip": 2}) as srv:
+            h = {"X-Visitor": "a" * 20}
+            status, text, _ = http(srv, "/api/daily", headers=h)
+            self.assertEqual(status, 200, text)
+            self.assertTrue(json.loads(text)["visitor"])
+            self.assertIn("candles", json.loads(http(srv, "/api/daily/start", "POST", {}, headers=h)[1]))
+            self.assertIn("candles", json.loads(http(srv, "/api/daily/start", "POST", {}, headers={"X-Visitor": "b" * 20})[1]))
+            self.assertIn("account", json.loads(http(srv, "/api/daily/start", "POST", {}, headers={"X-Visitor": "c" * 20})[1])["error"])
+            self.assertEqual(http(srv, "/api/daily", headers={"X-Visitor": "short"})[0], 401)
+
     def test_on_the_site_and_switchable_off(self):
         """Back on the site (2026-10-24): the page, the script and the header button; with `daily_chart` off the endpoints
         answer 404."""

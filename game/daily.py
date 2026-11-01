@@ -164,8 +164,29 @@ class DailyMixin:
                 board = self._daily_board(d, final=True)
                 d["past"] = ([{"day": d["day"], "players": len(board), "top": board[:3]}] + d["past"])[:7]
             seed = int(hashlib.sha256(f"{d['salt']}:{day}".encode()).hexdigest()[:15], 16)
-            d.update(day=day, chart=make_chart(seed), plays={})
+            d.update(day=day, chart=make_chart(seed), plays={}, visits={})
+        d.setdefault("visits", {})
         return d
+
+    def _dplays(self, p):
+        """Where `p`'s game is: an account's in `plays` (on the board), a visitor's in `visits` (not on it) until they
+        sign up (`daily_claim`)."""
+        d = self._dchart()
+        return d["visits"] if getattr(p, "visitor", False) else d["plays"]
+
+    def daily_claim(self, p, visitor):
+        """A visitor who has just made an account brings today's game with them: it goes on the board and starts the
+        account's streak (2026-11-01)."""
+        d = self._dchart()
+        play = d["visits"].pop("v:" + str(visitor or ""), None)
+        if play is None or p.token in d["plays"]:
+            return False
+        play.update(name=p.name, token=p.token)
+        play.pop("visitor", None)
+        d["plays"][p.token] = play
+        if play.get("done"):
+            self._daily_record(play)
+        return True
 
     def _daily_finish(self, play, final=False):
         """Ends a game whose two minutes are up (or every game, at the end of the day): what is held is valued at the
@@ -243,9 +264,14 @@ class DailyMixin:
             out["ret"] = play["ret"]
             out["equity"] = play["equity"]
             board = self._daily_board(d)
-            out["rank"] = next((i + 1 for i, x in enumerate(board) if x["name"] == play["name"]), None)
-            out["of"] = len(board)
-            out["dist"] = sorted(x["ret"] for x in board)                  # everyone's return today (no names)
+            if play.get("visitor"):                                        # (not on the board: where it would be)
+                out["rank"] = 1 + sum(x["ret"] > play["ret"] for x in board)
+                out["of"] = len(board) + 1
+                out["dist"] = sorted([x["ret"] for x in board] + [round(play["ret"], 6)])
+            else:
+                out["rank"] = next((i + 1 for i, x in enumerate(board) if x["name"] == play["name"]), None)
+                out["of"] = len(board)
+                out["dist"] = sorted(x["ret"] for x in board)              # everyone's return today (no names)
             out["hold"] = cs[-1][3] / cs[HISTORY - 1][3] - 1                # what the stock itself did in the two minutes
             out["hi"] = max(c[1] for c in cs[HISTORY:])
             out["lo"] = min(c[2] for c in cs[HISTORY:])
@@ -256,8 +282,8 @@ class DailyMixin:
     def daily_view(self, p):
         d = self._dchart()
         board = self._daily_board(d)
-        play = d["plays"].get(p.token)
-        out = {"day": d["day"], "number": d["day"] - EPOCH_DAY + 1, "live": LIVE, "history": HISTORY, "cash": START_CASH,
+        play = self._dplays(p).get(p.token)
+        out = {"visitor": bool(getattr(p, "visitor", False)), "day": d["day"], "number": d["day"] - EPOCH_DAY + 1, "live": LIVE, "history": HISTORY, "cash": START_CASH,
                "chips": CHIPS, "stats": self._daily_stats(p),
                "board": board[:BOARD], "players": len(board), "past": d["past"], "guest": bool(getattr(p, "guest", False)),
                "status": "new" if play is None else "done" if play.get("done") or self.now - play["t0"] >= LIVE else "running",
@@ -269,15 +295,19 @@ class DailyMixin:
     def daily_start(self, p):
         if getattr(p, "guest", False):
             return {"error": "Create an account to play"}
-        d = self._dchart()
-        if p.token in d["plays"]:
+        plays = self._dplays(p)
+        if p.token in plays:
             return {"error": "You have played today's chart: a new one comes at midnight (UTC)"}
-        d["plays"][p.token] = {"name": p.name, "token": p.token, "t0": self.now, "cash": START_CASH, "shares": 0.0, "trades": []}
-        return self._daily_state(d["plays"][p.token])
+        if getattr(p, "visitor", False):
+            if len(plays) >= 50000:                                        # (a ceiling on what visitors can make the save hold)
+                return {"error": "Create a free account to play"}
+            plays[p.token] = {"name": "You", "visitor": True, "t0": self.now, "cash": START_CASH, "shares": 0.0, "trades": []}
+        else:
+            plays[p.token] = {"name": p.name, "token": p.token, "t0": self.now, "cash": START_CASH, "shares": 0.0, "trades": []}
+        return self._daily_state(plays[p.token])
 
     def daily_poll(self, p, since=0):
-        d = self._dchart()
-        play = d["plays"].get(p.token)
+        play = self._dplays(p).get(p.token)
         if play is None:
             return {"error": "Press Start first"}
         try:
@@ -288,7 +318,7 @@ class DailyMixin:
 
     def daily_trade(self, p, side, pct):
         d = self._dchart()
-        play = d["plays"].get(p.token)
+        play = self._dplays(p).get(p.token)
         if play is None:
             return {"error": "Press Start first"}
         self._daily_finish(play)

@@ -1363,6 +1363,8 @@ What follows is the game itself, as before.
 
 **Endpoints:** `GET /api/daily`, `POST /api/daily/start`, `GET /api/daily/state?since=`, `POST /api/daily/trade` (§12). Kept in the save as `daily_game` (the salt, today's chart, today's games, the last 7 days); not in the money ledger, since no real money moves.
 
+**Visitors play too** (2026-11-01): a logged-out page on `/daily` is in visitor mode and plays under an id its browser makes (`localStorage.ms_vid`, sent as `X-Visitor`; `server.daily_player`, forwarded by the gateways). A visitor's game is kept in `daily_game.visits`, not `plays`: it is not on the board, its place is where it would be (`rank`/`of` with the visitor counted in), and it counts for no stats. At most `daily_visits_per_ip` (3) visitor games a day from one address, so a new browser id is no free retry. The result shows a "Save your result" box (`DLY_SAVE`) that opens the sign-up; `POST /api/register` carries `visitor`, and `daily_claim` moves that game onto the new account: it goes on the board and starts the streak.
+
 ---
 
 ## 11. The web pages and charts

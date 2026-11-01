@@ -732,6 +732,31 @@ class BrowserGuest(unittest.TestCase):
             d, errors = asyncio.run(self._guest(srv.url))
         d.verdict(self, errors)
 
+    def test_visitors_play_the_daily_chart_and_are_asked_to_save_it(self):
+        with IsolatedServer(settings={"daily_chart": True}) as srv:
+            d, errors = asyncio.run(self._daily_visitor(srv.url))
+        d.verdict(self, errors)
+
+    async def _daily_visitor(self, base):
+        proc, pg, _ = await open_page(debug_port=9355)
+        d = Driver(pg)
+        try:
+            await pg.goto(base + "/daily", 3)
+            await d.check("a visitor gets the Play button, no sign-up", "!!document.getElementById('dly-start')", wait=10)
+            await d.check("and the words about the game", "document.querySelector('.dly-about h2').textContent", lambda t: "daily stock market game" in t)
+            await pg.js("document.getElementById('dly-start').click()")
+            await d.check("the game runs", "!!document.getElementById('dly-timer')", wait=8)
+            await pg.js("document.querySelector('[data-dly=buy]').click()")
+            await d.check("a trade goes through", "document.getElementById('toast').textContent", lambda t: "Bought" in t, wait=6)
+            await pg.js("dlyG.done=true;dly.status='done';dlyG.dist=[0];dlyG.grid=[];dlyG.hold=0;dlyG.ret=0;dlySummary()")
+            await d.check("the result asks them to make an account to save it", "document.querySelector('#dly-pop .dly-save b').textContent", "Save your result", wait=4)
+            await pg.js("document.querySelector('#dly-pop [data-dly-join]').click()")
+            await d.check("which opens the sign-up box", "getComputedStyle(document.getElementById('login')).display", "flex", wait=4)
+        finally:
+            errors = list(pg.errors)
+            proc.terminate()
+        return d, errors
+
     async def _guest(self, base):
         proc, pg, _ = await open_page(debug_port=9354)
         d = Driver(pg)

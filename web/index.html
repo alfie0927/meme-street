@@ -121,7 +121,7 @@ body.noscroll{overflow:hidden}
 .page-calendar #calendar-card{display:block}.page-bots #bots-card{display:block}.page-daily #daily-card{display:block}.chipset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}.holdings-tbl{width:100%}.holdings-tbl tr[data-go]{cursor:pointer}.holdings-tbl tr[data-go]:hover td{background:#ffffff08}.holdings-tbl td:nth-child(2),.holdings-tbl th:nth-child(2){text-align:left}.holdings-tbl a{color:inherit;text-decoration:none}.holdings-tbl td.w{white-space:nowrap}.wbar{display:inline-block;width:70px;height:6px;background:#ffffff10;border-radius:2px;margin-right:8px;vertical-align:middle;overflow:hidden}.wbar i{display:block;height:100%;background:var(--acc)}
 .dly-wrap{max-width:680px;margin:0 auto}.dly-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 0 12px;border-bottom:1px solid var(--line);margin-bottom:16px}
 .dly-title{font-size:20px;font-weight:700;letter-spacing:.02em}.dly-title span{color:var(--acc)}.dly-sub{color:var(--mut);font-size:12px;margin-top:2px}.dly-icons{display:flex;gap:6px}.dly-ic{min-width:34px;height:34px;padding:0 10px;font-weight:700}
-.dly-hero{text-align:center;padding:26px 0 22px}.dly-about{max-width:620px;margin:0 auto;padding:4px 0 8px;color:var(--mut);font-size:14px;line-height:1.55}.dly-about h2{color:var(--txt);font-size:17px;margin:0 0 6px}.dly-tag{font-size:22px;line-height:1.35;font-weight:700;margin:0 0 18px}.dly-streak{color:var(--acc);margin:0 0 14px}.dly-small{color:var(--mut);font-size:12px;margin:14px 0 0}
+.dly-hero{text-align:center;padding:26px 0 22px}.dly-about{max-width:620px;margin:0 auto;padding:4px 0 8px;color:var(--mut);font-size:14px;line-height:1.55}.dly-about h2{color:var(--txt);font-size:17px;margin:0 0 6px}.dly-save{border:1px solid var(--acc);background:#4cc3cc12;border-radius:var(--r);padding:12px 14px;margin:0 0 14px;text-align:center}.dly-save b{font-size:16px}.dly-save p{margin:4px 0 10px;color:var(--mut);font-size:13px}.dly-tag{font-size:22px;line-height:1.35;font-weight:700;margin:0 0 18px}.dly-streak{color:var(--acc);margin:0 0 14px}.dly-small{color:var(--mut);font-size:12px;margin:14px 0 0}
 .dly-go{font-size:17px;font-weight:700;padding:13px 44px;background:var(--acc);border:1px solid var(--acc);color:#021012;border-radius:999px;cursor:pointer}.dly-go:hover{filter:brightness(1.1)}.dly-alt{padding:12px 20px;border-radius:999px}
 .dly-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px}.dly-timer{font-size:44px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1}.dly-timer.low{color:var(--dn);animation:dlyPulse 1s infinite}@keyframes dlyPulse{50%{opacity:.55}}
 .dly-pnl{text-align:right}.dly-ret{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}.dly-eq{color:var(--mut);font-size:12px}
@@ -560,8 +560,10 @@ function notify(msgs){
   while(box.children.length>4)box.firstChild.remove()}}
 function setText(el,v,c){if(el._v!==v){el._v=v;el.textContent=v}if(c!==undefined&&el._c!==c){el._c=c;el.className=c}}
 function setHtml(el,v){if(el._v!==v){el._v=v;el.innerHTML=v}}
+// a logged-out browser's own id: it plays the Daily Chart under it, and brings that game to the account it signs up for
+function visitorId(){let v=lsGet('ms_vid','');if(!/^[A-Za-z0-9_-]{16,40}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');lsSet('ms_vid',v)}return v}
 async function api(p,opt){
- opt=opt||{};const headers={'X-Token':token||''};if(opt.body)headers['Content-Type']='application/json';
+ opt=opt||{};const headers={'X-Token':token||''};if(!token)headers['X-Visitor']=visitorId();if(opt.body)headers['Content-Type']='application/json';
  let r;try{r=await fetch(p,{method:opt.method||'GET',headers,body:opt.body?JSON.stringify(opt.body):undefined})}catch(e){return null}
  if(r.status===401){logout();return null}
  if(r.status===429){                       // the server rate-limits lookups: wait a moment and try once more
@@ -613,7 +615,7 @@ async function join(code){
    if($('pw').value!==$('pw2').value){err.textContent='The two passwords are not the same';return}
    if(authEmail!=='off'||emailSignup){body.email=$('em').value;if(emailSignup&&!body.email.trim()){err.textContent='Please give your email address';return}}
    body.birth_date=$('by-d').value;if(!body.birth_date){err.textContent='Please give your date of birth';return}
-   body.website=$('hp').value;if(code)body.code=code}}
+   body.website=$('hp').value;body.visitor=visitorId();if(code)body.code=code}}
  b.disabled=true;
  try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();
   if(j.need_code){codePop(j.email_msg||j.error,j.error?j.error:'');b.disabled=false;return}
@@ -645,7 +647,7 @@ if(!token&&location.hash==='#join')setTimeout(()=>openSignin('register'),60);   
 $('joinbtn').onclick=()=>join();$('nm').onkeydown=e=>{if(e.key==='Enter')join()};$('pw').onkeydown=$('pw2').onkeydown=e=>{if(e.key==='Enter')join()};
 function connect(){
  if(!token){
-  if((page==='market'||page==='stock'||page==='learn')&&!noGuest)guest=true;
+  if((page==='market'||page==='stock'||page==='learn'||page==='daily')&&!noGuest)guest=true;
   else{guest=false;document.body.classList.remove('guest');$('login-close').style.display='none';$('login').style.display='flex';return}}
  else guest=false;
  document.body.classList.toggle('guest',guest);

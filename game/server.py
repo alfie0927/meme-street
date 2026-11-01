@@ -2,6 +2,7 @@ import asyncio, json, logging, math, os, re, secrets, shutil, sys, threading, ti
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
+from types import SimpleNamespace
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
@@ -162,6 +163,7 @@ class Register(BaseModel):
     email: str = ""
     ref: str = ""              # the tracking link the visitor arrived by (?ref=), kept by the page until sign-up
     website: str = ""          # a field people never see: a bot that fills in every box fills this one too
+    visitor: str = ""          # the id a logged-out page played the Daily Chart under: its game moves to the new account
     code: str = ""             # the code mailed to `email` (needed once mail works: the address is verified before the account exists)
 
 
@@ -294,6 +296,8 @@ async def register(j: Register, request: Request):
         return JSONResponse({"error": err}, status_code=400)
     p.ref = clean_ref(j.ref)
     await run(engine.note_invite, p)
+    if j.visitor and engine.settings.get("daily_chart"):
+        await run(engine.daily_claim, p, j.visitor)
     p.birth_date = j.birth_date.strip() or None
     p.birth_year = int(p.birth_date[:4]) if p.birth_date else int(j.birth_year)
     limits.add(("signup", ip), now)
@@ -1557,26 +1561,45 @@ class DailyTrade(BaseModel):
     pct: float
 
 
+VISITOR_RE = re.compile(r"[A-Za-z0-9_-]{16,40}")
+
+
+async def daily_player(x_token, x_visitor, key, fn, *args, interval=0.25):
+    """`with_player`, but a logged-out page may play too, as a visitor: the id its browser made (`X-Visitor`) keeps
+    its game apart, off the board, until it signs up (`daily_claim`; 2026-11-01)."""
+    if x_token or not VISITOR_RE.fullmatch(x_visitor or ""):
+        return await with_player(x_token, key, fn, *args, interval=interval)
+    v = SimpleNamespace(token="v:" + x_visitor, name="You", visitor=True)
+    if not rate_ok(v.token, key, interval):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(fn, v, *args)
+
+
 @app.get("/api/daily", dependencies=[Depends(daily_on)])
-async def daily_view(x_token: str = Header("")):
+async def daily_view(x_token: str = Header(""), x_visitor: str = Header("")):
     """The Daily Chart (daily.py): today's board, the last days' winners, and the player's game if they have one."""
-    return await with_player(x_token, "daily", engine.daily_view, interval=0.2)
+    return await daily_player(x_token, x_visitor, "daily", engine.daily_view, interval=0.2)
 
 
 @app.post("/api/daily/start", dependencies=[Depends(daily_on)])
-async def daily_start(x_token: str = Header("")):
-    return await with_player(x_token, "daily_start", engine.daily_start, interval=1.0)
+async def daily_start(request: Request, x_token: str = Header(""), x_visitor: str = Header("")):
+    if not x_token:                                    # visitors: a few games a day from one address, so a new browser id is no free retry
+        ip, now = client_ip(request), time.time()
+        if limits.count(("daily-visit", ip), 86400, now) >= int(engine.settings.get("daily_visits_per_ip", 3)):
+            return {"error": "Create a free account to play today's chart"}
+        limits.add(("daily-visit", ip), now)
+    return await daily_player(x_token, x_visitor, "daily_start", engine.daily_start, interval=1.0)
 
 
 @app.get("/api/daily/state", dependencies=[Depends(daily_on)])
-async def daily_state(since: int = 0, x_token: str = Header("")):
+async def daily_state(since: int = 0, x_token: str = Header(""), x_visitor: str = Header("")):
     """The candles shown so far (from `since`), the cash, the shares and the time left; never a candle still to come."""
-    return await with_player(x_token, "daily_state", engine.daily_poll, since, interval=0.2)
+    return await daily_player(x_token, x_visitor, "daily_state", engine.daily_poll, since, interval=0.2)
 
 
 @app.post("/api/daily/trade", dependencies=[Depends(daily_on)])
-async def daily_trade(b: DailyTrade, x_token: str = Header("")):
-    return await with_player(x_token, "daily_trade", engine.daily_trade, b.side[:8], b.pct, interval=0.15)
+async def daily_trade(b: DailyTrade, x_token: str = Header(""), x_visitor: str = Header("")):
+    return await daily_player(x_token, x_visitor, "daily_trade", engine.daily_trade, b.side[:8], b.pct, interval=0.15)
 
 
 class BotSave(BaseModel):
