@@ -167,7 +167,7 @@ class DailyMixin:
             if d["day"] is not None and d.get("chart"):
                 d["log"] = ([self._daily_summary(d)] + d.get("log", []))[:90]      # (the admin page's day by day)
             seed = int(hashlib.sha256(f"{d['salt']}:{day}".encode()).hexdigest()[:15], 16)
-            d.update(day=day, chart=make_chart(seed), plays={}, visits={})
+            d.update(day=day, chart=make_chart(seed), plays={}, visits={}, resets=0)
         d.setdefault("visits", {})
         return d
 
@@ -271,6 +271,18 @@ class DailyMixin:
                 "best": rets[-1] if rets else None, "worst": rets[0] if rets else None,
                 "beat": sum(1 for r in rets if r > hold + 1e-9), "sat_out": sum(1 for x in done if not x["trades"]),
                 "trades": sum(len(x["trades"]) for x in done) / len(done) if done else None}
+
+    def daily_reset(self):
+        """Admin: a new chart for today, in place of the one out now (one that came out wrong). Today's board and games
+        start again; the old chart's numbers go into the day-by-day log marked as replaced. A game already finished on
+        it keeps its place in the player's stats (played, streak), and a replay today adds nothing to them."""
+        d = self._dchart()
+        self._daily_board(d, final=True)
+        d["log"] = ([dict(self._daily_summary(d), replaced=True)] + d.get("log", []))[:90]
+        d["resets"] = d.get("resets", 0) + 1
+        seed = int(hashlib.sha256(f"{d['salt']}:{d['day']}:{d['resets']}".encode()).hexdigest()[:15], 16)
+        d.update(chart=make_chart(seed), plays={}, visits={})
+        return True, f"Daily Chart #{d['day'] - EPOCH_DAY + 1} is a new chart now: today's board starts again"
 
     def daily_admin(self):
         """The admin page's Daily tab: today so far, the days before, and the players who keep coming back."""

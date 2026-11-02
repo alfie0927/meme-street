@@ -1749,6 +1749,22 @@ async def admin_daily(x_admin_key: str = Header("")):
     return await run(engine.daily_admin)
 
 
+class Confirm(BaseModel):
+    confirm: str
+
+
+@app.post("/api/admin/daily/reset")
+async def admin_daily_reset(b: Confirm, x_admin_key: str = Header("")):
+    """Replace today's Daily Chart with a new one (needs the word NEW as confirmation)."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    if b.confirm != "NEW":
+        return JSONResponse({"ok": False, "msg": "Type NEW to confirm"}, status_code=400)
+    ok, msg = await run(engine.daily_reset)
+    await run(engine.save, False)
+    return {"ok": ok, "msg": msg}
+
+
 @app.get("/api/admin/shop")
 async def admin_shop(x_admin_key: str = Header("")):
     """Orders, revenue, Pro members and where the game's MB came from (economy.py)."""

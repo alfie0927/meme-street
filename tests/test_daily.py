@@ -295,6 +295,26 @@ class GameTests(unittest.TestCase):
             self.assertEqual(b.daily_poll(q, 0)["trades"], a.daily_poll(p, 0)["trades"])
 
 
+class ResetTests(unittest.TestCase):
+    def test_a_new_chart_for_today_starts_the_board_again_and_counts_nothing_twice(self):
+        e = make_engine(5)
+        p = join(e, "replayer")
+        e.daily_start(p)
+        e.now += daily.LIVE + 1
+        e.daily_poll(p)
+        old = e.daily_game["chart"]["candles"]
+        ok, msg = e.daily_reset()
+        self.assertTrue(ok)
+        self.assertNotEqual(e.daily_game["chart"]["candles"], old)
+        self.assertEqual(e.daily_view(p)["status"], "new")
+        self.assertTrue(e.daily_admin()["days"][0]["replaced"])
+        e.daily_start(p)
+        e.now += daily.LIVE + 1
+        e.daily_poll(p)
+        self.assertEqual(e.daily_view(p)["stats"]["played"], 1)                   # the replay adds nothing
+        self.assertEqual(e.daily_view(p)["players"], 1)
+
+
 class FlatChartTests(unittest.TestCase):
     """Daily Chart #10 (2026-11-02) was a ruler-straight line: a steady chart pattern read as a run of surprise rises
     lowered the volatility until the noise was almost gone. These seeds were flat before the fix."""
@@ -380,6 +400,12 @@ class ServerTests(unittest.TestCase):
             status, text, _ = http(srv, "/api/admin/daily", headers={"X-Admin-Key": "testkey"})
             self.assertEqual(status, 200, text)
             self.assertEqual(json.loads(text)["today"]["visitors"], 2)
+            self.assertEqual(http(srv, "/api/admin/daily/reset", "POST", {"confirm": "NEW"})[0], 403)
+            adm = {"X-Admin-Key": "testkey"}
+            self.assertEqual(http(srv, "/api/admin/daily/reset", "POST", {"confirm": "no"}, headers=adm)[0], 400)
+            status, text, _ = http(srv, "/api/admin/daily/reset", "POST", {"confirm": "NEW"}, headers=adm)
+            self.assertTrue(json.loads(text)["ok"], text)
+            self.assertEqual(json.loads(http(srv, "/api/daily", headers=h)[1])["status"], "new")     # the visitor can play the new one
 
     def test_on_the_site_and_switchable_off(self):
         """Back on the site (2026-10-24): the page, the script and the header button; with `daily_chart` off the endpoints

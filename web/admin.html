@@ -353,7 +353,7 @@ function renderMail(m){
 function renderDaily(d){
  const t=d.today,a=d.all_time,pcx=x=>x===null||x===undefined?'-':sgn(x*100,1)+'%',pct=(n,of)=>of?Math.round(n/of*100)+'%':'-';
  const dd=day=>new Date(day*86400000).toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
- const row=x=>`<tr><td>#${x.number} <span class="mut">${dd(x.day)}</span></td><td>${x.people}</td><td>${x.visitors}</td><td>${x.signed_up} <span class="mut">${pct(x.signed_up,x.visitors)}</span></td><td>${x.people-x.signed_up+x.visitors}</td><td class="mut">${x.bots}</td><td class="${cls(x.avg)}">${pcx(x.avg)}</td><td class="${cls(x.avg_all)}">${pcx(x.avg_all)}</td><td>${pct(x.beat,x.finished)}</td><td class="${cls(x.hold)}">${pcx(x.hold)}</td></tr>`;
+ const row=x=>`<tr><td>#${x.number} <span class="mut">${dd(x.day)}${x.replaced?' · replaced':''}</span></td><td>${x.people}</td><td>${x.visitors}</td><td>${x.signed_up} <span class="mut">${pct(x.signed_up,x.visitors)}</span></td><td>${x.people-x.signed_up+x.visitors}</td><td class="mut">${x.bots}</td><td class="${cls(x.avg)}">${pcx(x.avg)}</td><td class="${cls(x.avg_all)}">${pcx(x.avg_all)}</td><td>${pct(x.beat,x.finished)}</td><td class="${cls(x.hold)}">${pcx(x.hold)}</td></tr>`;
  $('daily').innerHTML=`<div class="panel"><h2><span>Today: Daily Chart #${t.number} <span class="mut">next chart in ${f(Math.max(0,d.next-Date.now()/1000)/3600,1)} h</span></span></h2>
   <div class="kpis k5" style="margin:0">${[
    ['Accounts',t.people,`${t.finished} finished`],
@@ -371,8 +371,13 @@ function renderDaily(d){
    ['Regulars',a.regulars,'played 5+ days'],['On a streak now',a.on_streak,'2+ days in a row'],['Longest streak',a.best_streak,'days']].map(([l,v,e])=>kpi(l,v,esc(e))).join('')}</div></div>
   <div class="panel"><h2>Day by day <span class="mut">UTC, the last 30</span></h2><div style="overflow-x:auto"><table><thead><tr><th>Chart</th><th>Accounts</th><th>Visitors</th><th>Signed up</th><th>Everyone</th><th>Bots</th><th>Avg, accounts</th><th>Avg, everyone</th><th>Beat the stock</th><th>Stock</th></tr></thead><tbody>${row(t)}${d.days.map(row).join('')}</tbody></table></div>
    <p class="note">Kept from ${dd(d.log_since)} on. "Signed up": visitors who made an account after playing, so their game moved onto it. "Everyone": accounts plus visitors, each person once. "Avg, accounts": games on accounts (visitors who signed up included); "Avg, everyone": visitors who did not sign up too.</p></div>
-  <div class="panel"><h2>Longest streaks now</h2>${d.streaks.length?`<table><thead><tr><th>Player</th><th>Streak</th><th>Best</th><th>Games</th></tr></thead><tbody>${d.streaks.map(([n,s,m,p])=>`<tr><td><a href="#" data-p="${esc(n)}">${esc(n)}</a></td><td>${s}</td><td class="mut">${m}</td><td class="mut">${p}</td></tr>`).join('')}</tbody></table>`:empty('Nobody is on a streak of 2+ days.')}</div>`}
-$('daily').addEventListener('click',e=>{const pl=e.target.closest('[data-p]');if(pl){e.preventDefault();pick(pl.dataset.p)}});
+  <div class="panel"><h2>Longest streaks now</h2>${d.streaks.length?`<table><thead><tr><th>Player</th><th>Streak</th><th>Best</th><th>Games</th></tr></thead><tbody>${d.streaks.map(([n,s,m,p])=>`<tr><td><a href="#" data-p="${esc(n)}">${esc(n)}</a></td><td>${s}</td><td class="mut">${m}</td><td class="mut">${p}</td></tr>`).join('')}</tbody></table>`:empty('Nobody is on a streak of 2+ days.')}</div>
+  <div class="panel" style="border-color:#f0883e55"><h2>Replace today's chart</h2><p class="note" style="margin:0 0 10px">For a chart that came out wrong: a new chart for today, and today's board starts again (everyone can play the new one). The old chart's numbers stay in the table, marked replaced.</p>
+   <div class="act"><input id="dreset-word" placeholder="Type NEW" maxlength="3" style="flex:0 0 160px"><button id="dreset-go" class="danger">Make a new chart for today</button></div></div>`}
+$('daily').addEventListener('click',async e=>{const pl=e.target.closest('[data-p]');if(pl){e.preventDefault();pick(pl.dataset.p);return}
+ if(e.target.id!=='dreset-go')return;if($('dreset-word').value.trim().toUpperCase()!=='NEW')return toast('Type NEW first',false);
+ if(!confirm("Replace today's Daily Chart with a new one? Today's board starts again."))return;
+ try{const r=await post('/api/admin/daily/reset',{confirm:'NEW'});toast(said(r),!!r.ok);loadTab('daily')}catch(err){if(err.message!=='forbidden')toast('Not replaced: '+err.message,false)}});
 // ---------- the shop ----------
 const SRC={grant:'Starting balances',purchase:'Bought',challenge:'Challenge rewards',restart:'Free restarts',refund:'Refunds (taken back)',admin:'Added by an admin'};
 function renderShop(d){
