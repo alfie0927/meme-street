@@ -263,7 +263,7 @@ class DailyMixin:
         for x in visits:
             self._daily_finish(x)                                          # (a visitor's game is finished like any other; it records nothing)
         every = rets + [x["ret"] for x in visits if x.get("done")]
-        return {"day": d["day"], "number": d["day"] - EPOCH_DAY + 1, "people": len(people), "finished": len(done),
+        return {"day": d["day"], "number": self._dnum(d), "people": len(people), "finished": len(done),
                 "bots": len(d["plays"]) - len(people), "visitors": len(visits) + len(claimed),
                 "visitors_finished": sum(1 for x in visits if over(x)) + sum(1 for x in claimed if over(x)),
                 "signed_up": len(claimed), "hold": hold,
@@ -272,7 +272,11 @@ class DailyMixin:
                 "beat": sum(1 for r in rets if r > hold + 1e-9), "sat_out": sum(1 for x in done if not x["trades"]),
                 "trades": sum(len(x["trades"]) for x in done) / len(done) if done else None}
 
-    def daily_reset(self):
+    def _dnum(self, d):
+        """The chart's number: #1 on the epoch day (EPOCH_DAY, or the day an admin restarted the numbering)."""
+        return d["day"] - d.get("epoch", EPOCH_DAY) + 1
+
+    def daily_reset(self, restart=False):
         """Admin: a new chart for today, in place of the one out now (one that came out wrong). Today's board and games
         start again; the old chart's numbers go into the day-by-day log marked as replaced. A game already finished on
         it keeps its place in the player's stats (played, streak), and a replay today adds nothing to them."""
@@ -282,7 +286,9 @@ class DailyMixin:
         d["resets"] = d.get("resets", 0) + 1
         seed = int(hashlib.sha256(f"{d['salt']}:{d['day']}:{d['resets']}".encode()).hexdigest()[:15], 16)
         d.update(chart=make_chart(seed), plays={}, visits={})
-        return True, f"Daily Chart #{d['day'] - EPOCH_DAY + 1} is a new chart now: today's board starts again"
+        if restart:                                                        # (the new chart is Daily Chart #1, no winners before it)
+            d["epoch"], d["past"] = d["day"], []
+        return True, f"Daily Chart #{self._dnum(d)} is a new chart now: today's board starts again"
 
     def daily_admin(self):
         """The admin page's Daily tab: today so far, the days before, and the players who keep coming back."""
@@ -339,7 +345,7 @@ class DailyMixin:
         d = self._dchart()
         board = self._daily_board(d)
         play = self._dplays(p).get(p.token)
-        out = {"visitor": bool(getattr(p, "visitor", False)), "day": d["day"], "number": d["day"] - EPOCH_DAY + 1, "live": LIVE, "history": HISTORY, "cash": START_CASH,
+        out = {"visitor": bool(getattr(p, "visitor", False)), "day": d["day"], "number": self._dnum(d), "live": LIVE, "history": HISTORY, "cash": START_CASH,
                "chips": CHIPS, "stats": self._daily_stats(p),
                "board": board[:BOARD], "players": len(board), "past": d["past"], "guest": bool(getattr(p, "guest", False)),
                "status": "new" if play is None else "done" if play.get("done") or self.now - play["t0"] >= LIVE else "running",

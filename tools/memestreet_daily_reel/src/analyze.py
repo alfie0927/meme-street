@@ -336,9 +336,23 @@ def build_script(A):
                       win=[0, n - 1], reveal=[n - 1, n - 1], caps=["memestreet.net/daily"], outro=True))
     return beats
 
+def day_notes(A):
+    """What only this day's chart had: its range, its biggest candle, its key moment, and how many played."""
+    C, H = A["C"], A["H"]
+    live = C[H:]
+    big = max(range(len(live)), key=lambda k: abs(live[k][3] / live[k][0] - 1))
+    out = ["", f"Range: {min(c[2] for c in live):.2f} to {max(c[1] for c in live):.2f}. "
+               f"Biggest candle: {pct(live[big][3] / live[big][0] - 1)} at second {big + 1}."]
+    if A["events"]:
+        k = describe(max(A["events"], key=lambda e: e["vr"]))[1].removeprefix("Then ")
+        out.append("Key moment: " + k[0].upper() + k[1:])
+    if A["players"]:
+        out.append(f"{A['players']} {'player' if A['players'] == 1 else 'players'} took on this chart.")
+    return out
+
 def caption(A):
     hold, total, num = A["hold"], A["total"], A["number"]
-    lines = [f"Daily Chart #{num} recap 📈", ""]
+    lines = [f"Daily Chart #{num} recap", ""]
     if A["trades"]:
         lines.append(f"The stock {'gained' if hold >= 0 else 'lost'} {pct(hold, False).lstrip('+-')}. The best realistic play made {pct(total)}.")
         for k, t in enumerate(A["trades"], 1):
@@ -347,6 +361,7 @@ def caption(A):
         lines.append("No clean setups today. Sometimes the best trade is no trade.")
     if A["best_player"] is not None:
         lines.append(f"Today's best player: {pct(A['best_player'])}")
+    lines += day_notes(A)
     lines += ["", "New mystery chart every day. Two minutes. Can you beat it?", "memestreet.net/daily (link in bio)", "",
               "Fictional market · practice money, no cash value · not investment advice", "",
               "#memestreet #dailychart #chartreading #tradingeducation #learntotrade"]

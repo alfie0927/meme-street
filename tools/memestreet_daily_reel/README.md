@@ -52,7 +52,7 @@ This installs ffmpeg, Python packages, headless Chromium, the chart font and the
 
 No Meme Street account is needed. The bot reads each day's chart by playing it as a **guest visitor** (it never trades), and guests don't appear on the leaderboard.
 
-## 3. Let Instagram fetch the video from your site
+## 3. (Only for IG_LOGIN=instagram) Let Instagram fetch the video from your site
 
 Instagram Login posting works by giving Instagram a public link to the video. The bot copies each night's reel into a folder your website serves (keeping 3 days).
 
@@ -72,23 +72,35 @@ location /reels/ {
 
 **Other setups:** any folder that ends up public works. Put its path in `PUBLIC_VIDEO_DIR` and its URL in `PUBLIC_VIDEO_URL`. Check it by copying a test file in and opening `https://memestreet.net/reels/<file>` in a browser.
 
-## 4. Connect Instagram (once, about 10 minutes)
+## 4. Connect Instagram (once, about 15 minutes)
 
-1. **Make the Instagram account professional.** Instagram app → Settings → *Account type and tools* → switch to **Business** or **Creator**.
-2. **Create a Meta app.** Go to **developers.facebook.com** → *My Apps* → **Create app**. Pick the Instagram use case (the one for managing content on Instagram; app type *Business*).
-3. **Add Instagram with Instagram Login.** In the app dashboard: *Instagram* → **API setup with Instagram login**.
-4. **Permissions.** Make sure **instagram_business_basic** and **instagram_business_content_publish** are listed.
-5. **Generate the token.** Under *Generate access tokens* click **Add account**, log in to the Meme Street Instagram account, approve (keep "content publishing" ticked), then **Generate token** and copy it.
-6. **Paste it** into `config.env`:
+Uses Meta's **API setup with Unified login**: no Facebook Page needed, the video is uploaded straight to Meta, and the token usually never expires. (Section 3 is not needed in this mode.)
+
+1. **Instagram account:** Instagram app → Settings → *Account type and tools* → switch to **Business** or **Creator**, and make sure it is public.
+2. **Meta app:** developers.facebook.com/apps → your app (it must have the **Manage messaging & content on Instagram** use case and be owned by a business portfolio).
+3. **Open the setup:** *Use cases* → *Manage messaging & content on Instagram* → **Customize** → **API setup with Unified login**.
+4. **Configure your app:** **Create new configuration** (the default includes `instagram_content_publish`) → **Use this configuration** → under *Redirect URL* enter `https://memestreet.net/` → **Save**. You don't need the Login URL.
+5. **Generate access tokens:** **Add account** → invite your Instagram account as an **Instagram Tester**. Accept it on instagram.com: *Settings → Website permissions → Apps and websites → Tester invites*. Back in the dashboard, **Generate token**, complete the login, and **copy the token: it's shown only once** (starts with `EAA`).
+6. **Skip** "Configure webhooks", the login button and App Review. They're for apps other people log into.
+7. In `config.env`:
    ```
-   IG_LOGIN=instagram
-   IG_ACCESS_TOKEN=IGAA...
+   IG_LOGIN=unified
+   IG_ACCESS_TOKEN=EAA...
+   GRAPH_VERSION=v26.0
    ```
-7. **Test:** `./post_reel.sh --check` should print `connected (instagram login) as @your_account`.
+8. **Test:** `./post_reel.sh --check` should print `connected (unified login) as @your_account` and when the token expires (usually "never").
 
-Because you're posting to your own account (which has a role on your app), the app can stay in Development mode. No App Review is needed. The token normally lasts 60 days, but the bot refreshes it every night (saved in `state/ig_token.json`), so it keeps working as long as it runs.
+### If you can't create a business portfolio: Facebook login (no portfolio needed)
 
-**Alternative (Facebook Login):** if the Instagram account is linked to a Facebook Page, set `IG_LOGIN=facebook` and use a Page-connected token with `instagram_basic`, `instagram_content_publish`, `pages_show_list` and `pages_read_engagement`. A Meta Business Suite *System user* token never expires. This mode uploads the video directly, so section 3 isn't needed.
+1. Create a free **Facebook Page** (facebook.com/pages/create), e.g. "Meme Street".
+2. **Link Instagram to the Page:** in the Page's settings → *Linked accounts* → Instagram → connect your (Business/Creator) account.
+3. In your Meta app: *Use cases* → *Customize* → **API setup with Facebook login** → **Add required content permissions**.
+4. Open **developers.facebook.com/tools/explorer** (Graph API Explorer). Top right: pick your app, *User or Page* → **Get User Access Token**, tick `instagram_basic`, `instagram_content_publish`, `pages_show_list`, `pages_read_engagement`, `business_management` → **Generate Access Token** and approve (choose your Page + Instagram account).
+5. Make it permanent: open **developers.facebook.com/tools/debug/accesstoken**, paste the token → **Debug** → **Extend Access Token** → copy the new (60-day) token. Back in the Explorer, paste it in the token box and run `me/accounts?fields=name,access_token`. Copy your Page's `access_token`: a Page token made from an extended token **does not expire**.
+6. In `config.env`: `IG_LOGIN=facebook` and `IG_ACCESS_TOKEN=` that Page token. The video uploads straight to Meta (no section 3).
+7. Test: `./post_reel.sh --check`.
+
+Other modes: `IG_LOGIN=instagram` (Instagram Login; needs section 3) or `IG_LOGIN=facebook` (needs a Facebook Page).
 
 ## 5. Test the whole thing
 

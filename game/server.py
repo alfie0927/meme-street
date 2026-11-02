@@ -1751,6 +1751,7 @@ async def admin_daily(x_admin_key: str = Header("")):
 
 class Confirm(BaseModel):
     confirm: str
+    restart: bool = False      # daily reset: number the new chart #1
 
 
 @app.post("/api/admin/daily/reset")
@@ -1760,7 +1761,7 @@ async def admin_daily_reset(b: Confirm, x_admin_key: str = Header("")):
         return JSONResponse({"error": "forbidden"}, status_code=403)
     if b.confirm != "NEW":
         return JSONResponse({"ok": False, "msg": "Type NEW to confirm"}, status_code=400)
-    ok, msg = await run(engine.daily_reset)
+    ok, msg = await run(engine.daily_reset, b.restart)
     await run(engine.save, False)
     return {"ok": ok, "msg": msg}
 

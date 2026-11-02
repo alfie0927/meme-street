@@ -1,7 +1,9 @@
 """Publish out/<date>/reel.mp4 as an Instagram Reel (official Instagram API).
 
-Two ways to connect (set IG_LOGIN in config.env):
-  instagram (recommended) - "Instagram API with Instagram Login": no Facebook Page needed.
+Ways to connect (set IG_LOGIN in config.env):
+  unified (recommended)   - "API setup with Unified login": no Facebook Page, token usually never expires,
+                            video uploaded straight to Meta (no public hosting needed).
+  instagram               - "Instagram API with Instagram Login": no Facebook Page needed.
                             Instagram fetches the video from a public URL on your site
                             (PUBLIC_VIDEO_DIR + PUBLIC_VIDEO_URL). The token is refreshed automatically.
   facebook                - "Instagram API with Facebook Login": needs a linked Facebook Page,
@@ -14,8 +16,8 @@ Usage:
 import glob, json, os, shutil, sys, time, urllib.parse, urllib.request, urllib.error
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODE = os.environ.get("IG_LOGIN", "instagram").strip().lower()
-V = os.environ.get("GRAPH_VERSION", "v24.0")
+MODE = os.environ.get("IG_LOGIN", "unified").strip().lower()
+V = os.environ.get("GRAPH_VERSION", "v26.0")
 HOST = "https://graph.instagram.com" if MODE == "instagram" else "https://graph.facebook.com"
 STATE = os.path.join(ROOT, "state"); TOKFILE = os.path.join(STATE, "ig_token.json")
 
@@ -48,7 +50,18 @@ def refresh_token():
 
 def ig_id(tok):
     if os.environ.get("IG_USER_ID"): return os.environ["IG_USER_ID"]
-    me = http("GET", f"{HOST}/{V}/me", {"fields": "user_id,username" if MODE == "instagram" else "id", "access_token": tok})
+    if MODE == "unified":                      # system-user token: the Instagram account is an assigned asset
+        r = http("GET", f"{HOST}/{V}/me/assigned_instagram_accounts", {"fields": "id,username", "access_token": tok})
+        if not r.get("data"): raise SystemExit("token has no Instagram account assigned (re-check Generate access tokens)")
+        return r["data"][0]["id"]
+    if MODE == "facebook":                     # the Instagram account linked to your Facebook Page
+        me = http("GET", f"{HOST}/{V}/me", {"fields": "instagram_business_account", "access_token": tok})
+        if me.get("instagram_business_account"): return me["instagram_business_account"]["id"]      # Page token
+        pages = http("GET", f"{HOST}/{V}/me/accounts", {"fields": "name,instagram_business_account", "access_token": tok}).get("data", [])
+        for pg in pages:                                                                              # User token
+            if pg.get("instagram_business_account"): return pg["instagram_business_account"]["id"]
+        raise SystemExit("no Instagram account linked to your Facebook Page (link it in the Page's settings)")
+    me = http("GET", f"{HOST}/{V}/me", {"fields": "user_id,username", "access_token": tok})
     return me.get("user_id") or me.get("id")
 
 def check():
@@ -57,7 +70,13 @@ def check():
     me = http("GET", f"{HOST}/{V}/{uid}", {"fields": fields, "access_token": tok})
     lim = http("GET", f"{HOST}/{V}/{uid}/content_publishing_limit", {"fields": "quota_usage,config", "access_token": tok})
     print(f"connected ({MODE} login) as @{me.get('username')} (id {uid}); publishing limit: {json.dumps(lim.get('data', lim))}")
-    if MODE == "instagram" and not (os.environ.get("PUBLIC_VIDEO_DIR") and os.environ.get("PUBLIC_VIDEO_URL")):
+    if MODE == "unified":
+        try:
+            dbg = http("GET", f"{HOST}/{V}/debug_token", {"input_token": tok, "access_token": tok}).get("data", {})
+            exp = dbg.get("expires_at", 0)
+            print("token expires:", "never" if not exp else time.strftime("%Y-%m-%d", time.gmtime(exp)))
+        except SystemExit: pass
+    if MODE == "instagram" and not (os.environ.get("PUBLIC_VIDEO_DIR") and os.environ.get("PUBLIC_VIDEO_URL")):  # only instagram mode needs hosting
         print("WARNING: PUBLIC_VIDEO_DIR / PUBLIC_VIDEO_URL are not set; instagram mode needs them")
 
 def main(folder, dry=False):
@@ -96,5 +115,7 @@ def main(folder, dry=False):
     print("published reel, media id", r.get("id"))
 
 if __name__ == "__main__":
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
     if "--check" in sys.argv: check()
-    else: main(sys.argv[1], "--dry-run" in sys.argv)
+    elif args: main(args[0], "--dry-run" in sys.argv)
+    else: raise SystemExit(__doc__)

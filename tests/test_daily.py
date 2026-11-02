@@ -314,6 +314,15 @@ class ResetTests(unittest.TestCase):
         self.assertEqual(e.daily_view(p)["stats"]["played"], 1)                   # the replay adds nothing
         self.assertEqual(e.daily_view(p)["players"], 1)
 
+    def test_restart_numbers_the_new_chart_one_and_tomorrow_two(self):
+        e = make_engine(5)
+        p = join(e, "restarter")
+        self.assertIn("#1 ", e.daily_reset(restart=True)[1])
+        self.assertEqual(e.daily_view(p)["number"], 1)
+        self.assertEqual(e.daily_view(p)["past"], [])
+        e.now += daily.DAY_SECONDS
+        self.assertEqual(e.daily_view(p)["number"], 2)
+
 
 class FlatChartTests(unittest.TestCase):
     """Daily Chart #10 (2026-11-02) was a ruler-straight line: a steady chart pattern read as a run of surprise rises
