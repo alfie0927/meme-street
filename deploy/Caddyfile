@@ -36,15 +36,10 @@ YOURDOMAIN {
 	# }
 
 	# the daily reel, for Instagram to fetch (tools/memestreet_daily_reel; 3 days kept)
-
 	handle_path /reels/* {
-
 		root * /var/www/memestreet-reels
-
 		file_server
-
 	}
-
 
 	reverse_proxy 127.0.0.1:8000 {
 		# The gateway trusts these two headers (it needs the visitor's real address for the sign-up and login limits),
