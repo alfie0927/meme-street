@@ -6,7 +6,7 @@ from playwright.async_api import async_playwright
 HERE = os.path.dirname(os.path.abspath(__file__))
 FPS = int(os.environ.get("FPS", "60"))   # 60 = smoothest; 30 renders twice as fast
 
-async def frames(R, fdir):
+async def frames(R, fdir, cover=None, date=""):
     os.makedirs(fdir, exist_ok=True)
     n = int(round(R["T"] * FPS))
     async with async_playwright() as p:
@@ -17,6 +17,9 @@ async def frames(R, fdir):
         for i in range(n):
             await pg.evaluate("t=>render(t)", i / FPS)
             await pg.screenshot(path=f"{fdir}/f{i:05d}.jpg", type="jpeg", quality=92)
+        if cover:
+            await pg.evaluate("d=>cover(d)", date)
+            await pg.screenshot(path=cover, type="jpeg", quality=92)
         await b.close()
         if errs: raise SystemExit("render errors: " + "; ".join(errs[:3]))
     return n
@@ -24,12 +27,12 @@ async def frames(R, fdir):
 def main(work, out):
     R = json.load(open(os.path.join(work, "timeline.json")))
     fdir = os.path.join(work, "frames"); shutil.rmtree(fdir, ignore_errors=True)
-    n = asyncio.run(frames(R, fdir))
+    os.makedirs(out, exist_ok=True)
+    n = asyncio.run(frames(R, fdir, os.path.join(out, "cover.jpg"), os.path.basename(os.path.normpath(out))))
     T = R["T"]; ins = []; flt = []
     for i, (f, a) in enumerate(R["vo"]):
         ins += ["-i", f]; flt.append(f"[{i}:a]adelay={int(a*1000)}[v{i}]")
     flt.append("".join(f"[v{i}]" for i in range(len(R["vo"]))) + f"amix=inputs={len(R['vo'])}:normalize=0,apad=whole_dur={T},loudnorm=I=-16:TP=-1.5[o]")
-    os.makedirs(out, exist_ok=True)
     vo = os.path.join(work, "voice.m4a")
     subprocess.run(["ffmpeg", "-v", "error", "-y", *ins, "-filter_complex", ";".join(flt), "-map", "[o]", "-ar", "48000", "-ac", "1", "-c:a", "aac", "-b:a", "160k", vo], check=True)
     mp4 = os.path.join(out, "reel.mp4")

@@ -92,10 +92,14 @@ def main(folder, dry=False):
     if MODE == "instagram" or (pub_dir and pub_url):
         if not (pub_dir and pub_url): raise SystemExit("set PUBLIC_VIDEO_DIR and PUBLIC_VIDEO_URL in config.env (see README)")
         os.makedirs(pub_dir, exist_ok=True)
-        for old in glob.glob(os.path.join(pub_dir, "daily-*.mp4")):           # tidy: keep 3 days of public files
+        for old in glob.glob(os.path.join(pub_dir, "daily-*")):           # tidy: keep 3 days of public files
             if time.time() - os.path.getmtime(old) > 3 * 86400: os.remove(old)
         name = f"daily-{os.path.basename(os.path.normpath(folder))}.mp4"
         shutil.copy(mp4, os.path.join(pub_dir, name)); os.chmod(os.path.join(pub_dir, name), 0o644)
+        cover = os.path.join(folder, "cover.jpg")                             # the day's cover photo (render.py)
+        if os.path.exists(cover):
+            shutil.copy(cover, os.path.join(pub_dir, name[:-4] + ".jpg")); os.chmod(os.path.join(pub_dir, name[:-4] + ".jpg"), 0o644)
+            base["cover_url"] = pub_url.rstrip("/") + "/" + name[:-4] + ".jpg"
         c = http("POST", f"{HOST}/{V}/{uid}/media", {**base, "video_url": pub_url.rstrip("/") + "/" + name})
     else:
         c = http("POST", f"{HOST}/{V}/{uid}/media", {**base, "upload_type": "resumable"})

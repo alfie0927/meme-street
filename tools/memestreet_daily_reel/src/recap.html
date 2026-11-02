@@ -115,4 +115,11 @@ function render(T0){
  document.body.style.opacity=Math.min(seg(T0,0,.35),1-seg(T0,R.T-.45,R.T));
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
 window.render=render;
+// the reel's cover: the finished chart with its trades, under a big title (render.py saves it as cover.jpg)
+window.cover=async date=>{const sb=B.find(x=>x.score)||B[B.length-1];await render(sb.t1-.05);
+ const A=document.getElementById('titleA');A.textContent=`Daily Chart #${R.num}`;A.style.cssText='opacity:1;font-size:84px;top:450px';
+ document.getElementById('titleB').style.opacity=0;document.querySelector('.prog').style.display='none';document.getElementById('caps').innerHTML='';
+ document.getElementById('score').innerHTML=`<div style="text-align:center;margin-top:60px;font:800 110px/1.1 'Cascadia Mono'">Can you<br>beat it?</div>
+  <div style="text-align:center;margin-top:40px;font:700 40px/1 'Cascadia Mono';color:${MUTE}">${date} · memestreet.net/daily</div>`;
+ document.body.style.opacity=1;return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))};
 </script></body></html>
