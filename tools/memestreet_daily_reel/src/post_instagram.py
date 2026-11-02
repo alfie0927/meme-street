@@ -94,7 +94,7 @@ def main(folder, dry=False):
         os.makedirs(pub_dir, exist_ok=True)
         for old in glob.glob(os.path.join(pub_dir, "daily-*")):           # tidy: keep 3 days of public files
             if time.time() - os.path.getmtime(old) > 3 * 86400: os.remove(old)
-        name = f"daily-{os.path.basename(os.path.normpath(folder))}.mp4"
+        name = f"daily-{os.path.basename(os.path.normpath(folder))}-{int(time.time())}.mp4"   # (a new address each post: Cloudflare caches the old one)
         shutil.copy(mp4, os.path.join(pub_dir, name)); os.chmod(os.path.join(pub_dir, name), 0o644)
         cover = os.path.join(folder, "cover.jpg")                             # the day's cover photo (render.py)
         if os.path.exists(cover):

@@ -1,6 +1,6 @@
 # Meme Street · Daily Chart recap reel (automatic)
 
-Every night at **23:30 UTC** this makes a recap reel of that day's Daily Chart, and at **23:45 UTC** (or as soon as it is made) posts it to Instagram.
+Every night at **23:00 UTC** this makes a recap reel of that day's Daily Chart, and at **23:30 UTC** (or as soon as it is made) posts it to Instagram.
 
 It finds where support/resistance held, broke or faked out, works out the best trades someone could realistically have taken (entries/exits only at candle closes, after the signal), narrates it in the Meme Street voice (Kokoro *af_heart*) and renders a 60 fps, 1080×1920 reel. House rules are built in: no fees, no stop-loss placement ("watch for a fake breakout" instead), ends with memestreet.net/daily.
 
@@ -19,8 +19,8 @@ your-memestreet-repo/
         ├── README.md             this file
         ├── config.example.env    template for your settings
         ├── setup.sh              one-time server install
-        ├── make_reel.sh          23:30 job
-        ├── post_reel.sh          23:45 job
+        ├── make_reel.sh          23:00 job
+        ├── post_reel.sh          23:30 job
         ├── assets/logo.png
         ├── src/                  analyze.py, fetch.py, voice.py, render.py, recap.html, post_instagram.py
         └── systemd/              the two UTC timers
@@ -115,16 +115,16 @@ DATE=$(date -u +%F) ./post_reel.sh               # optional: really post this on
 
 ```bash
 sudo systemctl enable --now memestreet-reel-make.timer memestreet-reel-post.timer
-systemctl list-timers | grep memestreet          # next run times (23:30 and 23:45 UTC)
+systemctl list-timers | grep memestreet          # next run times (23:00 and 23:30 UTC)
 ```
 
 ## Day to day
 
 - **Logs:** `logs/<date>.log`, or `journalctl -u memestreet-reel-make -u memestreet-reel-post`.
-- **No double posts:** a reel is never posted twice (`out/<date>/posted.json`). If the 23:30 job fails, nothing is posted.
+- **No double posts:** a reel is never posted twice (`out/<date>/posted.json`). If the 23:00 job fails, nothing is posted.
 - **Re-make a day:** `./make_reel.sh 2026-11-02` (reuses saved data).
 - **Pause posting:** `sudo systemctl disable --now memestreet-reel-post.timer` (reels are still made).
 - **Slow server:** if rendering gets close to midnight, set `FPS=30` in `config.env` (twice as fast).
 - **Instagram limit:** 50 posts per 24 h. One a day is nowhere near it.
 
-For the first week, watch each reel when it appears (around 23:45 UTC). The script is generated automatically. It's reliable, but check it before trusting it fully.
+For the first week, watch each reel when it appears (around 23:30 UTC). The script is generated automatically. It's reliable, but check it before trusting it fully.

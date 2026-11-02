@@ -1,7 +1,7 @@
 [Unit]
-Description=Make the Daily Chart reel at 23:30 UTC (30 min before the daily resets)
+Description=Make the Daily Chart reel at 23:00 UTC (an hour before the daily resets)
 [Timer]
-OnCalendar=*-*-* 23:30:00 UTC
+OnCalendar=*-*-* 23:00:00 UTC
 Persistent=false
 [Install]
 WantedBy=timers.target

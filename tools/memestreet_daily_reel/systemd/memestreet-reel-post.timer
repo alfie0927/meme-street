@@ -1,7 +1,7 @@
 [Unit]
-Description=Post the Daily Chart reel at 23:45 UTC (or as soon as it is made)
+Description=Post the Daily Chart reel at 23:30 UTC (or as soon as it is made)
 [Timer]
-OnCalendar=*-*-* 23:45:00 UTC
+OnCalendar=*-*-* 23:30:00 UTC
 Persistent=false
 [Install]
 WantedBy=timers.target
