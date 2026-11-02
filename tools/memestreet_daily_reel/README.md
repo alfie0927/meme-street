@@ -50,7 +50,7 @@ This installs ffmpeg, Python packages, headless Chromium, the chart font and the
 
 > If your deploy process deletes and re-creates the repo folder, `config.env`, `state/` and `models/` would be wiped. In that case keep this folder outside the deploy directory (for example `/opt/memestreet-daily-reel`), and update it with `git pull` from there.
 
-Create the bot's Meme Street account (for example `ms_daily_recap`) and put the login in `config.env`. To read a day's chart it must play it (it never trades), so it shows on each day's board at 0.00%. It is excluded from "today's best player".
+No Meme Street account is needed. The bot reads each day's chart by playing it as a **guest visitor** (it never trades), and guests don't appear on the leaderboard.
 
 ## 3. Let Instagram fetch the video from your site
 

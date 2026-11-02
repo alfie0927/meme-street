@@ -30,6 +30,6 @@ done
 systemctl daemon-reload
 echo
 echo "Installed. Next:"
-echo "  1. edit $DIR/config.env  (Meme Street login, Instagram token, public video folder: README sections 2-4)"
+echo "  1. edit $DIR/config.env  (Instagram token + public video folder: README sections 3-4)"
 echo "  2. test:   ./post_reel.sh --check   then   ./make_reel.sh   (see README section 5)"
 echo "  3. go live: sudo systemctl enable --now memestreet-reel-make.timer memestreet-reel-post.timer"

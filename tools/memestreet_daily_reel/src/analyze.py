@@ -60,6 +60,7 @@ def analyse(d, own_name=""):
             if outcome == "broke" and ev["entry"] is not None:   # judge a break by the volume on the candle that confirms it
                 ev["vr"] = vol_ratio(ev["entry"])
             events.append(ev)
+    events = [e for e in events if e["entry"] is not None]          # only narrate what a candle close confirmed
     events.sort(key=lambda e: e["idx"])
 
     # ---------------------------------------------------------------- candidate trades + best combination
@@ -170,9 +171,10 @@ def build_script(A):
 
     # setup: nearest levels around the price when the clock starts
     p0 = cl[H - 1]
-    pre = [L for L in A["levels"] if any(t[0] < H for t in L["tests"])] or A["levels"]
-    sup = max([L["price"] for L in pre if L["price"] < p0 and L["kind"] == "support"], default=None) or max([L["price"] for L in pre if L["price"] < p0], default=None)
-    res = min([L["price"] for L in pre if L["price"] > p0 and L["kind"] == "resistance"], default=None) or min([L["price"] for L in pre if L["price"] > p0], default=None)
+    first_live = events[0]["price"] if events else None
+    pre = [L for L in A["levels"] if any(H - 40 <= t[0] < H for t in L["tests"]) or L["price"] == first_live] or A["levels"]
+    sup = max([L["price"] for L in pre if L["price"] < p0], default=None)       # nearest level below price acts as support
+    res = min([L["price"] for L in pre if L["price"] > p0], default=None)       # nearest level above acts as resistance
     lv, caps = [], []
     if sup and res:
         vo = f"Before the clock started, price sat between support near {say_price(sup)}, and resistance near {say_price(res)}."
@@ -191,7 +193,8 @@ def build_script(A):
     tidx = {}
     for k, t in enumerate(trades, 1):
         tidx.setdefault(t["entry"], []).append(("in", k, t)); tidx.setdefault(t["exit"], []).append(("out", k, t))
-    keep = [e for e in events if e["outcome"] != "held" or any(abs(e["idx"] - i) <= 2 for i in tidx)]
+    near_trade = lambda e: any(abs(e["idx"] - i) <= 2 or abs((e["entry"] or -99) - i) <= 1 for i in tidx)
+    keep = [e for e in events if near_trade(e) or (e["outcome"] == "broke" and e["vr"] >= 1.2) or e["outcome"] == "fake break"]
     if len(keep) > 6:
         keep = [e for e in keep if any(abs(e["idx"] - i) <= 3 for i in tidx) or e["outcome"] != "held"][:6]
     moments = [("ev", e["idx"], e) for e in keep]
@@ -308,6 +311,8 @@ def build_script(A):
 
     if len(beats) > 11:                              # busy day: drop optional chop beats first
         beats = [b for b in beats if b["title"] != "Chop zone"] if sum(b["title"] == "Chop zone" for b in beats) else beats
+    if (n - 1) - reveal_from >= 12:                    # the story always runs to the final candle
+        beats.append(gap_beat(reveal_from, n - 1))
     # keep the reveal moving forward only: a scene ends at its furthest cue, the next one starts there
     last_end = H
     for bb in beats:
