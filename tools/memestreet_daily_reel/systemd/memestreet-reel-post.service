@@ -5,4 +5,4 @@ After=network-online.target
 Type=oneshot
 User=__USER__
 ExecStart=__DIR__/post_reel.sh
-TimeoutStartSec=1800
+TimeoutStartSec=5400
