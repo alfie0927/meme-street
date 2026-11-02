@@ -1,0 +1,8 @@
+[Unit]
+Description=Meme Street: post the scheduled reels that are due (queue/)
+After=network-online.target
+[Service]
+Type=oneshot
+User=__USER__
+ExecStart=__DIR__/queue_post.sh
+TimeoutStartSec=3600
