@@ -1,0 +1,8 @@
+[Unit]
+Description=Meme Street: make the Daily Chart recap reel
+After=network-online.target
+[Service]
+Type=oneshot
+User=__USER__
+ExecStart=__DIR__/make_reel.sh
+TimeoutStartSec=3600

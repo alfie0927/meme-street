@@ -1,0 +1,8 @@
+[Unit]
+Description=Meme Street: post the Daily Chart recap reel to Instagram
+After=network-online.target
+[Service]
+Type=oneshot
+User=__USER__
+ExecStart=__DIR__/post_reel.sh
+TimeoutStartSec=1800

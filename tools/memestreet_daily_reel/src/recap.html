@@ -1,0 +1,118 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#07090c;font-family:'Cascadia Mono',monospace;color:#e6e9ec}
+.hdr{position:absolute;left:70px;right:70px;top:300px;height:96px;display:flex;align-items:center;justify-content:space-between}
+.hdr .l{display:flex;align-items:center;gap:22px;font:700 50px/1 'Cascadia Mono';color:#e6e9ec}
+.hdr img{width:96px;height:96px;border-radius:20px}
+.tag{padding:16px 28px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 30px/1 'Cascadia Mono';letter-spacing:1px}
+.prog{position:absolute;left:70px;right:70px;top:420px;height:6px;border-radius:3px;background:#161b21;overflow:hidden}
+.prog i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#4fc6c8,#3dd68c);border-radius:3px}
+.title{position:absolute;left:0;right:0;top:470px;text-align:center;font:700 54px/1.15 'Cascadia Mono';white-space:nowrap}
+.caps{position:absolute;left:0;right:0;top:1320px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.cap{padding:14px 26px;border-radius:999px;background:#13171c;border:2px solid #2a2f35;font:700 32px/1 'Cascadia Mono';color:#e6e9ec;white-space:nowrap}
+.score{position:absolute;left:62px;right:62px;top:1300px}
+.sc{padding:20px 14px;border-radius:20px;background:#0d1116;border:2px solid #23282e;text-align:center}
+.sc .k{font:700 21px/1 'Cascadia Mono';color:#8b96a3}.sc .v{font:700 40px/1.1 'Cascadia Mono';margin-top:10px}
+</style></head><body>
+<div class="hdr"><div class="l"><img src="../assets/logo.png">Meme Street</div><div class="tag" id="tag">DAILY CHART</div></div>
+<div class="prog"><i id="prog"></i></div>
+<div class="title" id="titleA"></div><div class="title" id="titleB"></div>
+<svg id="s" width="1080" height="1920" style="position:absolute;left:0;top:0"></svg>
+<div class="caps" id="caps"></div><div class="score" id="score"></div>
+<div id="outro" style="position:absolute;inset:0;background:#07090c;opacity:0"></div>
+<img id="oLogo" src="../assets/logo.png" style="position:absolute;left:70px;top:300px;width:96px;height:96px;border-radius:20px;opacity:0;z-index:5">
+<div id="oText" style="position:absolute;left:0;right:0;top:1100px;display:flex;flex-direction:column;align-items:center;opacity:0;z-index:5">
+ <div id="oName" style="font:800 100px/1 'Cascadia Mono';color:#e6e9ec;letter-spacing:-3px">Meme Street</div>
+ <div id="oUrl" style="margin-top:44px;padding:24px 48px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 46px/1 'Cascadia Mono'">memestreet.net/daily</div>
+</div>
+</div>
+<script>
+const R=window.__R,C=R.candles,B=R.beats,N=C.length,H0=R.history||60;
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>cl((t-a)/(b-a)),lerp=(a,b,u)=>a+(b-a)*u;
+const io=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2,out=u=>1-Math.pow(1-u,3),back=u=>{const c=1.7;return 1+(c+1)*Math.pow(u-1,3)+c*Math.pow(u-1,2)};
+const G='#3dd68c',RD='#f0585c',AM='#e8b14a',GV='#1d4a33',RV='#4d2226',MUTE='#8b96a3';
+const CARD={x:62,y:570,w:956,h:720},PL={x:CARD.x+22,y:CARD.y+76,w:CARD.w-170,h:460},VOL={y:CARD.y+582,h:108};
+const lv=s=>({p:parseFloat(s.slice(1)),k:s[0]==='S'?'support':'resistance'});
+// per-beat targets (window + price range) so the camera and the axis ease together, no jitter
+function rangeFor(b){let lo=1e9,hi=-1e9;for(let k=Math.max(0,Math.floor(b.win[0]));k<=Math.min(N-1,Math.ceil(b.win[1]));k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
+ (b.lv||[]).forEach(s=>{const L=lv(s);lo=Math.min(lo,L.p);hi=Math.max(hi,L.p)});const pad=(hi-lo)*.12;return [lo-pad,hi+pad]}
+B.forEach(b=>b._r=rangeFor(b));
+// reveal driven by cues: the chart reaches each cue's candle as its phrase is spoken
+const sio=u=>(1-Math.cos(Math.PI*u))/2;
+function revealAt(b,t){
+ if(b.kf&&b.kf.length){const kf=b.kf;if(t<=kf[0][0])return kf[0][1];
+  for(let j=1;j<kf.length;j++)if(t<=kf[j][0]){const[a0,v0]=kf[j-1],[a1,v1]=kf[j];return lerp(v0,v1,seg(t,a0,a1))}
+  return kf[kf.length-1][1]}
+ if(!b.cue_t||!b.cue_t.length)return b.reveal[0]+(b.reveal[1]-b.reveal[0])*io(seg(t,b.t0+.25,Math.max(b.t0+.5,b.vo_end-.4)));
+ const kf=[[b.t0+.15,b.reveal[0]]];let m=b.reveal[0];
+ b.cue_t.forEach(([tc,k])=>{const prev=kf[kf.length-1],nk=Math.max(m,k),T1=Math.max(prev[0]+.25,tc),D=Math.min(T1-prev[0],.35+.09*(nk-m));if(T1-D>prev[0]+.01)kf.push([T1-D,m]);m=nk;kf.push([T1,m])});   // hold, then travel just before the word
+ if(m<b.reveal[1])kf.push([Math.max(kf[kf.length-1][0]+.4,b.vo_end-.2),b.reveal[1]]);
+ if(t<=kf[0][0])return kf[0][1];
+ for(let j=1;j<kf.length;j++)if(t<=kf[j][0]){const[a0,v0]=kf[j-1],[a1,v1]=kf[j];return lerp(v0,v1,io(seg(t,a0,a1)))}
+ return kf[kf.length-1][1]}
+function beatAt(t){let i=0;for(let k=0;k<B.length;k++)if(t>=B[k].t0-0.001)i=k;return i}
+const fmtClock=k=>{const left=Math.max(0,120-Math.max(0,k-H0+1)),m=Math.floor(left/60),s=Math.round(left%60);return `${m}:${String(s).padStart(2,'0')}`};
+function render(T0){
+ // during the ending, the scene stays frozen on the finished scorecard while the logo zooms in
+ const i0=beatAt(T0),t=(B[i0].outro&&i0>0)?B[i0-1].t1-.02:T0;
+ const i=beatAt(t),b=B[i],p=B[Math.max(0,i-1)],u=i?io(seg(t,b.t0,b.t0+.9)):1,bu=seg(t,b.t0,b.t0+.4),endFade=1-seg(t,b.t1-.3,b.t1);
+ const w0=lerp(p.win[0],b.win[0],u),w1=lerp(p.win[1],b.win[1],u),lo=lerp(p._r[0],b._r[0],u),hi=lerp(p._r[1],b._r[1],u);
+ const rv=revealAt(b,t);
+ const X=k=>PL.x+(k-w0+.5)/(w1-w0+1)*PL.w,Y=v=>PL.y+(hi-v)/(hi-lo)*PL.h,bw=PL.w/(w1-w0+1);
+ const ks=[];for(let k=Math.max(0,Math.floor(w0)-1);k<=Math.min(N-1,Math.ceil(w1)+1);k++)if(k<=rv+.999)ks.push(k);
+ let vmax=1;ks.forEach(k=>vmax=Math.max(vmax,C[k][4]));
+ let s=`<defs><clipPath id="cp"><rect x="${PL.x-8}" y="${CARD.y+56}" width="${PL.w+16}" height="${CARD.h-66}"/></clipPath><linearGradient id="fade" x1="0" x2="1"><stop offset="0" stop-color="#0b0f13"/><stop offset="1" stop-color="#0b0f13" stop-opacity="0"/></linearGradient></defs>`;
+ s+=`<rect x="${CARD.x}" y="${CARD.y}" width="${CARD.w}" height="${CARD.h}" rx="26" fill="#0b0f13" stroke="#23272d" stroke-width="3"/><g clip-path="url(#cp)">`;
+ const gl=[];for(let g=0;g<5;g++)gl.push(lerp(lo+(hi-lo)*.1,hi-(hi-lo)*.1,g/4));
+ gl.forEach(v=>s+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${Y(v)}" y2="${Y(v)}" stroke="#151a1f" stroke-width="2"/>`);
+ (b.hl||[]).forEach(([a,z,c])=>{if(rv<a-.4)return;const col=c==='red'?'240,88,92':c==='green'?'61,214,140':'232,177,74',w=(Math.min(z,rv)-a+1)*bw;
+  s+=`<rect x="${X(a)-bw/2}" y="${PL.y-14}" width="${Math.max(0,w)}" height="${PL.h+VOL.h+46}" rx="6" fill="rgba(${col},.15)" opacity="${Math.min(bu,cl(rv-a+.6))}"/>`});
+ (b.span||[]).forEach(([a,z,c])=>{if(rv<a)return;const em=(b.mk||[]).find(m=>m[0]===a&&m.length>5&&(m[2]==='BUY'||m[2]==='SHORT')),op=em?seg(t,em[5],em[5]+.3):1;if(op<=0)return;s+=`<rect x="${X(a)}" y="${PL.y-14}" width="${Math.max(0,(Math.min(z,rv)-a)*bw)}" height="${PL.h+28}" fill="${c==='red'?'rgba(240,88,92,.11)':'rgba(61,214,140,.10)'}" opacity="${op}"/>`});
+ if(w0<H0&&w1>H0-1){const x=X(H0-.5);s+=`<line x1="${x}" x2="${x}" y1="${PL.y-14}" y2="${PL.y+PL.h+VOL.h+24}" stroke="#2c3740" stroke-width="2" stroke-dasharray="6 8"/><text x="${x+10}" y="${PL.y+PL.h+8}" font-size="20" fill="${MUTE}">clock starts</text>`}
+ (b.lv||[]).forEach((sv,j)=>{const L=lv(sv),y=Y(L.p),col=L.k==='support'?G:AM,lt=(b.lv_t&&b.lv_t[j]!=null)?b.lv_t[j]:b.t0+.15+j*.15,d=out(seg(t,lt-.1,lt+.6));
+  s+=`<line x1="${PL.x}" x2="${PL.x+PL.w*d}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="3" stroke-dasharray="14 10"/>`});
+ ks.forEach(k=>{const [o,h,l,c,vv]=C[k],g=cl(rv-k+1),up=c>=o,col=up?G:RD,x=X(k),bwid=Math.max(2,bw*.62),cc=lerp(o,c,out(g)),hh=Math.max(o,cc)+(h-Math.max(o,c))*g,ll=Math.min(o,cc)-(Math.min(o,c)-l)*g;
+  s+=`<g opacity="${cl(g*2)}"><line x1="${x}" x2="${x}" y1="${Y(hh)}" y2="${Y(ll)}" stroke="${col}" stroke-width="${Math.max(1.5,bw*.12)}"/><rect x="${x-bwid/2}" y="${Math.min(Y(o),Y(cc))}" width="${bwid}" height="${Math.max(2,Math.abs(Y(o)-Y(cc)))}" rx="${Math.min(2,bwid/4)}" fill="${col}"/>`;
+  const vh=vv/vmax*VOL.h*out(g);s+=`<rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh}" width="${bwid}" height="${vh}" fill="${up?GV:RV}"/></g>`});
+ (b.mk||[]).forEach(([k,px,lab,c,ph,tm])=>{if(tm!=null?t<tm-.05:rv<k-.05)return;const x=X(k),y=Y(px),col=c==='red'?RD:G,a=tm!=null?back(seg(t,tm-.05,tm+.45)):1,up=lab==='SHORT'||lab==='SELL',ty=up?y-46:y+46;
+  s+=`<circle cx="${x}" cy="${y}" r="${9*a}" fill="${col}" stroke="#0b0f13" stroke-width="3"/><g transform="translate(${x} ${ty}) scale(${a})"><rect x="-66" y="-20" width="132" height="40" rx="20" fill="${col}"/><text x="0" y="9" text-anchor="middle" font-size="22" font-weight="700" fill="#07121a">${lab}</text></g>`});
+ s+='</g><rect x="'+(PL.x-8)+'" y="'+(CARD.y+56)+'" width="26" height="'+(CARD.h-66)+'" fill="url(#fade)"/>';
+ gl.forEach(v=>s+=`<text x="${PL.x+PL.w+18}" y="${Y(v)+8}" font-size="24" fill="${MUTE}">${v.toFixed(2)}</text>`);
+ let lx=PL.x+4;(b.lv||[]).forEach((sv,j)=>{const L=lv(sv),col=L.k==='support'?G:AM,txt=`${L.k} ${L.p.toFixed(2)}`,lt=(b.lv_t&&b.lv_t[j]!=null)?b.lv_t[j]:b.t0;s+=`<g opacity="${out(seg(t,lt-.1,lt+.25))}"><line x1="${lx}" x2="${lx+28}" y1="${CARD.y+38}" y2="${CARD.y+38}" stroke="${col}" stroke-width="4"/><text x="${lx+38}" y="${CARD.y+46}" font-size="24" font-weight="700" fill="${col}">${txt}</text></g>`;lx+=60+txt.length*15});
+ if(!(b.lv||[]).length)s+=`<text x="${PL.x+4}" y="${CARD.y+46}" font-size="24" font-weight="700" fill="${MUTE}">Daily Chart #${R.num} · 2 minutes</text>`;
+ const lastK=Math.min(N-1,Math.floor(rv));if(lastK>=H0-1){s+=`<rect x="${CARD.x+CARD.w-142}" y="${CARD.y+18}" width="116" height="40" rx="20" fill="#13171c" stroke="#2a2f35" stroke-width="2"/><text x="${CARD.x+CARD.w-84}" y="${CARD.y+46}" text-anchor="middle" font-size="24" font-weight="700" fill="#e6e9ec">${fmtClock(lastK)}</text>`}
+ if(ks.length){const k=ks[ks.length-1],g=cl(rv-k+1),c=lerp(C[k][0],C[k][3],out(g)),up=c>=C[k][0],y=Y(c);
+  s+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${y}" y2="${y}" stroke="${up?G:RD}" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/><rect x="${PL.x+PL.w+8}" y="${y-20}" width="118" height="40" rx="8" fill="${up?G:RD}"/><text x="${PL.x+PL.w+67}" y="${y+9}" text-anchor="middle" font-size="24" font-weight="700" fill="#07121a">${c.toFixed(2)}</text>`;
+}
+ document.getElementById('s').innerHTML=s;
+ const A=document.getElementById('titleA'),Bt=document.getElementById('titleB'),x=seg(t,b.t0,b.t0+.45);
+ A.textContent=b.title;A.style.opacity=out(x);A.style.transform=`translateY(${(1-out(x))*20}px)`;
+ Bt.textContent=i?p.title:'';Bt.style.opacity=i?1-out(x):0;Bt.style.transform=`translateY(${-out(x)*20}px)`;
+ document.getElementById('tag').textContent=`DAILY #${R.num}`;
+ document.getElementById('prog').style.width=(cl(T0/R.T)*100)+'%';
+ const capList=b.cap_t&&b.cap_t.length?b.cap_t:(b.caps||[]).map((c,j)=>[c,b.t0+.5+j*.8]);
+ document.getElementById('caps').innerHTML=capList.map(([c,tc])=>{const a=out(seg(t,tc-.18,tc+.02))*endFade;return `<div class="cap" style="opacity:${a};transform:translateY(${(1-a)*14}px)">${c}</div>`}).join('');
+ const sc=document.getElementById('score');
+ if(b.score){const S=b.score,num=(v,a)=>{const m=v.match(/^([+-]?)(\d+\.\d+)%$/);if(!m)return v;return (m[1]||'')+(parseFloat(m[2])*a).toFixed(2)+'%'},
+   cell=(k,v,c,j)=>{const a=out(seg(t,b.t0+.35+j*.35,b.t0+.7+j*.35)),cnt=out(seg(t,b.t0+.35+j*.35,b.t0+1.3+j*.35));return `<div class="sc" style="opacity:${a};transform:translateY(${(1-a)*16}px)"><div class="k">${k}</div><div class="v" style="color:${c}">${num(v,cnt)}</div></div>`};
+  let j=0,r1='',r2='';S.tr.forEach(q=>{r1+=cell(q.k,q.v,q.v[0]==='-'?RD:G,j++)});
+  r2=cell('total',S.tot,S.tot[0]==='-'?RD:G,j++)+cell('the stock',S.hold,S.hold[0]==='-'?RD:G,j++)+cell('best player',S.best,'#e6e9ec',j++);
+  sc.innerHTML=`<div style="display:grid;grid-template-columns:repeat(${Math.max(1,Math.min(4,S.tr.length))},1fr);gap:14px">${r1}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px">${r2}</div>`}
+ else sc.innerHTML='';
+ const ob=B.find(x=>x.outro),O=document.getElementById('outro'),OL=document.getElementById('oLogo'),OT=document.getElementById('oText'),HL=document.querySelector('.hdr img');
+ if(ob&&T0>=ob.t0){
+  // the corner logo flies to the centre and grows; everything else fades away on the same dark background
+  const f=io(seg(T0,ob.t0+.2,ob.t0+1.5)),fade=out(seg(T0,ob.t0,ob.t0+.7));
+  O.style.opacity=fade;HL.style.opacity=0;OL.style.opacity=1;
+  const L0={x:70,y:300,s:96,r:20},L1={x:320,y:560,s:440,r:96};
+  OL.style.left=lerp(L0.x,L1.x,f)+'px';OL.style.top=lerp(L0.y,L1.y,f)+'px';OL.style.width=OL.style.height=lerp(L0.s,L1.s,f)+'px';OL.style.borderRadius=lerp(L0.r,L1.r,f)+'px';
+  OL.style.boxShadow=`0 ${30*f}px ${80*f}px rgba(79,198,200,${.18*f}),0 20px 60px rgba(0,0,0,${.5*f})`;
+  const n=out(seg(T0,ob.t0+1.25,ob.t0+1.8)),u2=out(seg(T0,ob.t0+1.5,ob.t0+2.05));
+  OT.style.opacity=1;document.getElementById('oName').style.opacity=n;document.getElementById('oName').style.transform=`translateY(${(1-n)*24}px)`;
+  document.getElementById('oUrl').style.opacity=u2;document.getElementById('oUrl').style.transform=`translateY(${(1-u2)*18}px)`;
+ }else{O.style.opacity=0;OL.style.opacity=0;OT.style.opacity=0;HL.style.opacity=1}
+ document.body.style.opacity=Math.min(seg(T0,0,.35),1-seg(T0,R.T-.45,R.T));
+ return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
+window.render=render;
+</script></body></html>

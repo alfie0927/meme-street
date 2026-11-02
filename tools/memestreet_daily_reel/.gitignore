@@ -1,0 +1,10 @@
+# private settings and runtime files: never commit these
+config.env
+models/
+data/
+work/
+out/
+logs/
+*.log
+__pycache__/
+state/
