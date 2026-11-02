@@ -295,6 +295,30 @@ class GameTests(unittest.TestCase):
             self.assertEqual(b.daily_poll(q, 0)["trades"], a.daily_poll(p, 0)["trades"])
 
 
+class FlatChartTests(unittest.TestCase):
+    """Daily Chart #10 (2026-11-02) was a ruler-straight line: a steady chart pattern read as a run of surprise rises
+    lowered the volatility until the noise was almost gone. These seeds were flat before the fix."""
+    def test_a_pattern_no_longer_flattens_the_noise(self):
+        import market_model as mm
+        ms, step = [], mm.MarketModel.step
+        def spy(self, t, dt, xs):
+            r = step(self, t, dt, xs)
+            ms.append(self.swing(xs[0], t).m)
+            return r
+        mm.MarketModel.step = spy
+        try:
+            daily.make_chart(269259)                                        # (its volatility fell to 0.066 of normal)
+        finally:
+            mm.MarketModel.step = step
+        live = ms[3 * mm.DAY // daily.STEP:]
+        self.assertGreater(sum(live) / len(live), 0.25)
+
+    def test_a_cheap_stock_keeps_its_small_moves(self):
+        cs = daily.make_chart(1773869)["candles"]                         # (5.87: in cents most candles did not move)
+        moved = sum(1 for a, b in zip(cs, cs[1:]) if a[3] != b[3])
+        self.assertGreater(moved, len(cs) * 0.8)
+
+
 class VisitorTests(unittest.TestCase):
     """A logged-out visitor plays too (2026-11-01): off the board until they sign up, then the game is theirs."""
     def test_a_visitor_plays_off_the_board_and_signing_up_brings_the_game(self):

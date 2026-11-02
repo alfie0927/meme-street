@@ -313,6 +313,7 @@ class Swing:
         self.vol_own = AR()                     # the listing's own volume mood
         self.vmin, self.vmin_t = 0.0, -1        # this minute's volume noise
         self.last_price = price
+        self.last_push = 0.0                    # the model's own log move last step (taken out of the surprise below)
         self.m = 1.0                            # the volatility multiplier last applied
         self.pat = None                         # the chart pattern under way (TA-A3)
 
@@ -646,10 +647,13 @@ class MarketModel:
             r2, n2, v2 = self._mode_step(x, sw, now, dt, lp, sig_now, rd, act)
             r3, n3, v3 = self._level_step(x, sw, now, dt, lp, sig_now, in_session)
             # stochastic volatility: the last second's move, in units of its expected size, feeds the fast and medium
-            # components with the opposite sign (a fall raises volatility, a rise lowers it a little)
+            # components with the opposite sign (a fall raises volatility, a rise lowers it a little). Only the surprise
+            # counts: the model's own push (a trend, a pattern, a bounce) is taken out first. Counted in, a steady pattern
+            # read as a run of rises, each lowered the volatility, which made the next push a bigger surprise still,
+            # and the noise collapsed to almost nothing: a ruler-straight chart (Daily Chart #10, 2026-11-02).
             if dt and sw.last_price > 0:
                 exp_sd = sig_d / math.sqrt(DAY) * math.sqrt(dt) * max(sw.m, 0.05) * max(act, 0.05)
-                z = max(-6.0, min(6.0, math.log(x.price / sw.last_price) / exp_sd)) if exp_sd > 0 else 0.0
+                z = max(-6.0, min(6.0, (math.log(x.price / sw.last_price) - sw.last_push) / exp_sd)) if exp_sd > 0 else 0.0
                 f = sw.sv[0].step(rng, dt, p["sv_fast_halflife"], p["sv_fast_sd"], -p["sv_leverage_fast"] * z * math.sqrt(dt))
                 md = sw.sv[1].step(rng, dt, p["sv_mid_halflife"], p["sv_mid_sd"], -p["sv_leverage_mid"] * z * math.sqrt(dt))
                 sl = sw.sv[2].step(rng, dt, p["sv_slow_halflife"], p["sv_slow_sd"])
@@ -661,7 +665,8 @@ class MarketModel:
             sw.m = math.exp(X - var)
             if sw.vmin_t != minute:
                 sw.vmin_t, sw.vmin = minute, rng.gauss(0.0, p["volume_minute_sd"])
-            rets[x.ticker] = math.expm1(r + act * (r2 + r3))
+            sw.last_push = r + act * (r2 + r3)
+            rets[x.ticker] = math.expm1(sw.last_push)
             noise[x.ticker] = n * n2 * n3 * sw.m
             volume[x.ticker] = v * v2 * v3 * math.exp(p["volume_vol_link"] * (X - var) + ov + sw.vmin)
             self._bar(sw, now, x.price)

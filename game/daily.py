@@ -103,7 +103,8 @@ def make_chart(seed):
     usual = sum(vols[:len(vols) * 9 // 10]) / (len(vols) * 9 // 10)
     for j, c in enumerate(candles[-CLOSE_RAMP:]):
         c[4] = max(c[4], 0.8 * usual * (0.9 + 0.2 * rng.random())) * (1 + 0.6 * j / (CLOSE_RAMP - 1))
-    nd = 4 if min(c[2] for c in candles) < 1 else 2
+    low = min(c[2] for c in candles)
+    nd = 4 if low < 1 else 3 if low < 50 else 2         # (a cheap stock's small moves would round away to a flat line in cents)
     return {"vol": round(vol, 4), "candles": [[round(c[0], nd), round(c[1], nd), round(c[2], nd), round(c[3], nd),
                                                int(c[4] * 1000)] for c in candles],
             "levels": _levels(model.trace, warm * STEP, candles, nd)}
