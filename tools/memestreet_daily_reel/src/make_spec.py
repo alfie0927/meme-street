@@ -31,13 +31,36 @@ CATEGORIES = {
                       "(a short countdown), then the reveal and why. One or two charts.",
     "Myth or fact": "A viral reel: three common trading beliefs, each called myth or fact with one line of why, ending on "
                     "the most surprising one. Cards and big text, one real chart to prove the last point.",
+    # the viral formats from the research of 2026-11-04 (swipe.md: 169 shorts and TikToks, 11 accounts, ranked by how far
+    # each beat its own account's median). The formula is copied, never a script.
+    "Chart twist": "VIRAL (top format, 37x its account's median): a real chart that looks one way ('it still looked bearish'), "
+                   "then the candles tell a different story. Hook names what it looked like; the middle builds the case "
+                   "for it; the turn ('but then...') reveals what the chart really did and the clue that showed it early.",
+    "One trick": "VIRAL (43x): one concrete, actionable rule shown on a real chart, said as an instruction in the first "
+                 "line ('Don't buy the breakout. Put an order at the retest.'). Then the chart proves it, then the one-line rule again.",
+    "Big players": "VIRAL (11x): how a move traps beginners: the push past a level that grabs everyone's stops, then the "
+                   "reversal. Calm, not conspiratorial: 'this is where the stops sat, this is what price did to them'.",
+    "Speed cheat sheet": "VIRAL (14x): rapid fire, three candles or patterns in under 30 seconds, each named, shown on a "
+                         "real chart, and given one line on what it means. The hook promises the speed.",
 }
 ROTATION = {"0600": ["Technical lesson", "Trading mistake"], "1200": ["Chart quiz"], "1800": ["Stock story", "Guess the move"],
-            "2100": ["Guess the move", "Myth or fact"], "0900": ["Myth or fact"], "1300": ["Guess the move"]}
+            "2100": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Guess the move"],
+            "0300": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Myth or fact"]}
 KINDS = {"Chart quiz": ["pattern", "candle", "breakout", "level", "trend", "stop", "rr", "fib"],
          "Technical lesson": ["rsi", "ma", "fib", "level", "pattern", "breakout", "candle", "trend"],
          "Trading mistake": ["stop", "rr", "breakout", "level", "next"],
-         "Guess the move": ["breakout", "level", "next", "pattern"], "Myth or fact": ["next", "breakout", "level"]}
+         "Guess the move": ["breakout", "level", "next", "pattern"], "Myth or fact": ["next", "breakout", "level"],
+         "Chart twist": ["breakout", "pattern", "level", "next"], "One trick": ["breakout", "stop", "level", "rr"],
+         "Big players": ["breakout", "level"], "Speed cheat sheet": ["candle", "pattern", "trend"]}
+VIRAL_EVIDENCE = [
+    ["37x", "It still looked bearish... but the candles told a different story."],
+    ["6x", "It looked bullish, until the second test changed everything."],
+    ["43x", "Don't buy it, but put an order in."],
+    ["7x", "This one candle can predict where price is going."],
+    ["11x", "The big players can move price, but they leave a footprint."],
+    ["14x", "Candlestick patterns explained in less than a minute."],
+    ["0.2x (what flops)", "Here are my top three chart settings."], ["0.2x (what flops)", "Markets went crazy today, here's why."]]
+CHART_COUNT = {"Chart quiz": 3, "Guess the move": 2, "Speed cheat sheet": 3}
 
 
 def get(path):
@@ -103,7 +126,7 @@ def gather(category, rng, history):
         history.setdefault("tickers", []).append(co["ticker"])
     else:
         kinds = KINDS[category][:]; rng.shuffle(kinds)
-        for k in kinds[:3 if category == "Chart quiz" else (2 if category == "Guess the move" else 1)]:
+        for k in kinds[:CHART_COUNT.get(category, 1)]:
             charts.append(chart_from_drill(drill(k)))
     facts["charts"] = [chart_summary(i, c) for i, c in enumerate(charts)]
     return facts, charts
@@ -224,6 +247,10 @@ def main(slot, work, category=None, remake=None):
               "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % category)
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
            "recent_titles_to_avoid": history.get("titles", [])[-20:]}
+    if CATEGORIES[category].startswith("VIRAL"):
+        ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
+                                         "(research 2026-11-04). Use the SHAPE, never the words: write an original line "
+                                         "about this reel's own chart.", "examples": VIRAL_EVIDENCE}
     if remake:
         ask["remake_of"] = {"note": "Make this reel again on the same topic, with the same teaching points and similar "
                                     "explanations, but tighter: no long pauses, every line earns its place. Use the new "
