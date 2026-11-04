@@ -113,15 +113,27 @@ def chart_summary(i, ch):
     return s
 
 
-def gather(category, rng, history):
-    """The facts for this reel, and the charts the renderer draws."""
+def gather(category, rng, history, company=None):
+    """The facts for this reel, and the charts the renderer draws. `company`: a remake's company, by name."""
     facts, charts = {}, []
     if category == "Stock story":
-        pack = json.load(open(PACK)) if os.path.exists(PACK) else {"companies": [], "templates": []}
-        done = set(history.get("tickers", [])[-30:])
-        cos = [c for c in pack["companies"] if c["ticker"] not in done] or pack["companies"]
-        co = rng.choice(cos)
-        st = get(f"/api/reel/stock/{co['ticker']}?tf=1h")
+        pack = json.load(open(PACK, encoding="utf-8")) if os.path.exists(PACK) else {"companies": [], "templates": []}
+        if company:                                      # (the same company as the reel it remakes, or no remake)
+            want = company.lower()
+            cos = [c for c in pack["companies"] if c["name"].lower() == want or c["name"].lower().startswith(want + " ")]
+            if not cos:
+                raise SystemExit(f"no game company called {company!r}: the original reel stays")
+        else:
+            done = set(history.get("tickers", [])[-30:])
+            cos = [c for c in pack["companies"] if c["ticker"] not in done] or pack["companies"]
+        rng.shuffle(cos)
+        for co in cos[:8]:                               # (the content pack has companies the live game may not list)
+            try:
+                st = get(f"/api/reel/stock/{co['ticker']}?tf=1h"); break
+            except urllib.error.HTTPError as e:
+                if e.code != 404: raise
+        else:
+            raise SystemExit("no listed company found: the original reel stays")
         news = [t for t in pack["templates"] if t.get("sector") == co["sector"]][:2]
         facts = {"company": st["name"], "ticker": st["ticker"], "what_it_does": st["desc"], "sector": co["sector"],
                  "price_now": round(st["price"], 2), "good_news_examples": sum((t["up"] for t in news), [])[:3],
@@ -249,7 +261,7 @@ def brief(slot, category=None, remake=None):
         category = {"Chart quiz": "Chart quiz", "Stock story": "Stock story", "Technicals": "Technical lesson",
                     "New-trader challenge": "Trading mistake"}.get(remake.get("type"), "Technical lesson")
     category = category or rng.choice(ROTATION.get(slot[-4:], ["Technical lesson"]))
-    facts, charts = gather(category, rng, history)
+    facts, charts = gather(category, rng, history, remake.get("title") if remake and category == "Stock story" else None)
     voice = open(os.path.join(ROOT, "voice.md"), encoding="utf-8").read()      # (a copy of ~/.claude/instagram/voice.md)
     hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
     system = ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
