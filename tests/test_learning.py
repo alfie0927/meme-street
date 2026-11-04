@@ -126,6 +126,14 @@ class ChartTestTests(unittest.TestCase):
             self.assertNotIn("score", a)
         self.assertIn("error", e.drill_new("nope"))
 
+    def test_a_reel_gets_a_company_and_its_candles(self):
+        e = self.e
+        s = next(x for x in e.stocks.values() if x.asset_type == "equity")
+        d = e.reel_stock(s.ticker, "1m")
+        self.assertEqual((d["name"], d["desc"]), (s.name, s.desc))
+        self.assertTrue(all(len(c) == 5 for c in d["candles"]))
+        self.assertIsNone(e.reel_stock("NOPE"))
+
     def test_an_old_test_expires(self):
         e = self.e
         q = e.drill_new("trend")

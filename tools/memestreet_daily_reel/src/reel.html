@@ -1,0 +1,149 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- The auto reels (make_spec.py -> narrate.py -> render.py with PAGE=reel.html). One frame per render(t).
+     Everything sits inside Instagram's safe zone (y 230..1440, right 230px kept light), and something moves in every frame. -->
+<style>
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#07090c;font-family:'Cascadia Mono',monospace,monospace;color:#e6e9ec}
+#bg{position:absolute;inset:0}
+.hdr{position:absolute;left:70px;right:70px;top:250px;height:84px;display:flex;align-items:center;justify-content:space-between}
+.hdr .l{display:flex;align-items:center;gap:20px;font:700 44px/1 'Cascadia Mono',monospace}.hdr img{width:84px;height:84px;border-radius:18px}
+.tag{padding:14px 26px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 28px/1 'Cascadia Mono',monospace;letter-spacing:1px;text-transform:uppercase}
+.prog{position:absolute;left:70px;right:70px;top:360px;height:6px;border-radius:3px;background:#161b21;overflow:hidden}
+.prog i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#4fc6c8,#3dd68c)}
+.head{position:absolute;left:60px;right:60px;top:400px;height:130px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 58px/1.12 'Cascadia Mono',monospace;letter-spacing:-1px}
+.head b{display:inline-block;margin-right:20px;padding:8px 18px;border-radius:16px;background:#e8b14a;color:#07121a;font-size:44px;vertical-align:middle}
+#stage{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.opts{position:absolute;left:62px;right:62px;top:1190px;display:flex;gap:16px}
+.opt{flex:1;padding:24px 10px;border-radius:20px;background:#13171c;border:3px solid #2a2f35;text-align:center;font:700 32px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
+.caps{position:absolute;left:70px;right:70px;top:1310px;text-align:center;font:700 46px/1.3 'Cascadia Mono',monospace;color:#e6e9ec}
+.caps span{display:inline-block;margin:0 9px;transition:none}
+.card{position:absolute;left:62px;right:62px;height:150px;border-radius:24px;background:#0d1116;border:3px solid #23282e;display:flex;align-items:center;gap:28px;padding:0 34px;box-sizing:border-box}
+.card .ic{width:84px;height:84px;flex:none}.card .tx{font:700 38px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
+.big{position:absolute;left:60px;right:60px;top:560px;height:560px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;text-align:center;font:700 92px/1.15 'Cascadia Mono',monospace;letter-spacing:-2px}
+.big span{display:inline-block;margin:0 18px}
+</style></head><body>
+<svg id="bg" width="1080" height="1920"></svg>
+<div class="hdr"><div class="l"><img src="../assets/logo.png">Meme Street</div><div class="tag" id="tag"></div></div>
+<div class="prog"><i id="prog"></i></div>
+<div class="head" id="head"></div>
+<svg id="chart" width="1080" height="1920" style="position:absolute;left:0;top:0"></svg>
+<div id="stage"></div>
+<div class="opts" id="opts"></div>
+<div class="caps" id="caps"></div>
+<div id="outro" style="position:absolute;inset:0;background:#07090c;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+ <img id="oLogo" src="../assets/logo.png" style="width:360px;height:360px;border-radius:80px">
+ <div id="oText" style="margin-top:56px;font:700 64px/1.15 'Cascadia Mono',monospace;text-align:center;max-width:900px"></div>
+ <div id="oUrl" style="margin-top:44px;padding:24px 48px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 46px/1 'Cascadia Mono',monospace">memestreet.net</div>
+ <div style="margin-top:40px;font:600 26px/1 'Cascadia Mono',monospace;color:#8b96a3">Fictional market. Not investment advice.</div>
+</div>
+<script>
+const R=window.__R,SC=R.scenes,CH=R.charts||[];
+const G='#3dd68c',RD='#f0585c',AM='#e8b14a',TE='#4fc6c8',GV='#1d4a33',RV='#4d2226',MUTE='#8b96a3';
+const TONE={level:AM,stop:RD,target:G,entry:TE,trigger:AM,green:G,red:RD,amber:AM,teal:TE};
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>cl((t-a)/(b-a)),lerp=(a,b,u)=>a+(b-a)*u;
+const io=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2,out=u=>1-Math.pow(1-u,3),back=u=>{const c=1.7;return 1+(c+1)*Math.pow(u-1,3)+c*Math.pow(u-1,2)};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ICON={up:`<path d="M10 62 L34 38 L50 52 L76 22" stroke="${G}" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M60 22 H76 V38" stroke="${G}" stroke-width="8" fill="none" stroke-linecap="round"/>`,
+ down:`<path d="M10 22 L34 46 L50 32 L76 62" stroke="${RD}" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M60 62 H76 V46" stroke="${RD}" stroke-width="8" fill="none" stroke-linecap="round"/>`,
+ warn:`<path d="M42 10 L78 74 H6 Z" stroke="${AM}" stroke-width="7" fill="none" stroke-linejoin="round"/><path d="M42 34 V52 M42 62 V63" stroke="${AM}" stroke-width="8" stroke-linecap="round"/>`,
+ check:`<circle cx="42" cy="42" r="34" stroke="${G}" stroke-width="7" fill="none"/><path d="M26 43 L37 54 L58 30" stroke="${G}" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`,
+ cross:`<circle cx="42" cy="42" r="34" stroke="${RD}" stroke-width="7" fill="none"/><path d="M30 30 L54 54 M54 30 L30 54" stroke="${RD}" stroke-width="8" stroke-linecap="round"/>`,
+ coin:`<circle cx="42" cy="42" r="34" stroke="${AM}" stroke-width="7" fill="none"/><path d="M42 22 V62 M52 30 H38 a8 8 0 0 0 0 16 h8 a8 8 0 0 1 0 16 H32" stroke="${AM}" stroke-width="6" fill="none" stroke-linecap="round"/>`,
+ clock:`<circle cx="42" cy="42" r="34" stroke="${TE}" stroke-width="7" fill="none"/><path d="M42 22 V42 L56 52" stroke="${TE}" stroke-width="7" fill="none" stroke-linecap="round"/>`,
+ bolt:`<path d="M48 6 L18 48 H40 L34 78 L66 34 H44 Z" stroke="${AM}" stroke-width="6" fill="none" stroke-linejoin="round"/>`,
+ chart:`<rect x="12" y="44" width="12" height="28" rx="3" fill="${TE}"/><rect x="36" y="28" width="12" height="44" rx="3" fill="${TE}"/><rect x="60" y="12" width="12" height="60" rx="3" fill="${TE}"/>`,
+ shield:`<path d="M42 8 L72 20 V40 C72 60 58 72 42 78 C26 72 12 60 12 40 V20 Z" stroke="${TE}" stroke-width="7" fill="none" stroke-linejoin="round"/>`,
+ people:`<circle cx="30" cy="30" r="12" stroke="${TE}" stroke-width="6" fill="none"/><circle cx="56" cy="30" r="12" stroke="${TE}" stroke-width="6" fill="none"/><path d="M10 72 C10 54 50 54 50 72 M36 72 C36 54 76 54 76 72" stroke="${TE}" stroke-width="6" fill="none"/>`,
+ idea:`<path d="M42 10 C24 10 16 24 16 36 C16 48 26 54 30 62 H54 C58 54 68 48 68 36 C68 24 60 10 42 10 Z" stroke="${AM}" stroke-width="6" fill="none"/><path d="M32 72 H52" stroke="${AM}" stroke-width="6" stroke-linecap="round"/>`};
+const icon=k=>`<svg class="ic" viewBox="0 0 84 84">${ICON[k]||ICON.idea}</svg>`;
+function sceneAt(t){let i=0;for(let k=0;k<SC.length;k++)if(t>=SC[k].t0-1e-3)i=k;return i}
+// ---- the chart state at time t: what is revealed, the window and the drawings, eased so nothing jumps
+function chartState(i,t){
+ const s=SC[i];if(s.chart==null)return null;const C=CH[s.chart].candles,n=C.length;
+ // the reveal: the scene starts at `show` (or where the previous scene on this chart ended) and grows at each reveal cue
+ const prevSame=i>0&&SC[i-1].chart===s.chart?SC[i-1]:null;
+ let r0=s.show!=null?s.show:(prevSame?endReveal(i-1):n-1),r=r0;
+ (s.cues||[]).filter(c=>c.do==='reveal').forEach(c=>{const k=Math.min(n-1,c.to),d=Math.min(2.6,Math.max(.6,(k-r)/14));if(t>c.t)r=lerp(r,k,io(seg(t,c.t,c.t+d)));else if(k<r)r=k;});
+ if(s.kind==='answer'&&s.reveal_to!=null){const st=s.t0+.1;r=Math.max(r,lerp(r0,s.reveal_to,io(seg(t,st,st+Math.min(2.4,Math.max(.8,(s.reveal_to-r0)/16))))))}
+ // the window: the scene's own, eased in from the previous scene's (a slow push-in on top, so the camera never sits still)
+ const W=winOf(s),P=prevSame?zoomedWin(prevSame,prevSame.t1):(i>0&&SC[i-1].chart!=null?null:W),u=P?io(seg(t,s.t0,s.t0+.8)):1;
+ let w=P?[lerp(P[0],W[0],u),lerp(P[1],W[1],u)]:W.slice();
+ (s.cues||[]).filter(c=>c.do==='zoom').forEach(c=>{const z=io(seg(t,c.t,c.t+.9));w=[lerp(w[0],c.from,z),lerp(w[1],c.to,z)]});
+ const drift=seg(t,s.t0,s.t1)*Math.min(4,(w[1]-w[0])*.04);w=[w[0]+drift,w[1]];
+ return {C,n,r,w,s}}
+function winOf(s){if(s.win)return s.win;const C=CH[s.chart].candles;return [0,C.length-1]}
+function zoomedWin(s,t){let w=winOf(s).slice();(s.cues||[]).filter(c=>c.do==='zoom'&&t>=c.t).forEach(c=>w=[c.from,c.to]);return w}
+function endReveal(i){const s=SC[i],C=CH[s.chart].candles;let r=s.show!=null?s.show:(i>0&&SC[i-1].chart===s.chart?endReveal(i-1):C.length-1);
+ (s.cues||[]).filter(c=>c.do==='reveal').forEach(c=>r=Math.min(C.length-1,c.to));if(s.kind==='answer'&&s.reveal_to!=null)r=Math.max(r,s.reveal_to);return r}
+function drawings(i,t){ // lines, marks and shades of this scene (and the scenes before it on the same chart, if it carries them)
+ const out=[];let k=i;while(k>=0&&SC[k].chart===SC[i].chart){(SC[k].cues||[]).forEach(c=>{if(['line','mark','shade'].includes(c.do))out.push(Object.assign({},c,{age:k===i?t-c.t:9}))});if(!SC[k].carry)break;k--}
+ return out.filter(c=>c.age>=-.05)}
+function drawChart(i,t){
+ const S=chartState(i,t),el=document.getElementById('chart');if(!S){el.innerHTML='';return}
+ const {C,n,r,w,s}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
+ const B={x:62,y:540,w:956,h:620},PL={x:B.x+20,y:B.y+60,w:B.w-160,h:430},VOL={y:B.y+505,h:90};
+ const w0=w[0],w1=Math.max(w[0]+8,w[1]);let lo=1e9,hi=-1e9;
+ const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r)+1);   // (only what is shown sets the scale, so the axis never gives the answer away)
+ for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
+ drawings(i,t).filter(d=>d.do==='line').forEach(d=>{lo=Math.min(lo,d.price);hi=Math.max(hi,d.price)});
+ const pad=(hi-lo)*.1;lo-=pad;hi+=pad;
+ const X=k=>PL.x+(k-w0+.5)/(w1-w0+1)*PL.w,Y=v=>PL.y+(hi-v)/(hi-lo)*PL.h,bw=PL.w/(w1-w0+1);
+ let vmax=1;for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)vmax=Math.max(vmax,C[k][4]);
+ let g=`<g opacity="${fade}"><defs><clipPath id="cp"><rect x="${PL.x-6}" y="${B.y+50}" width="${PL.w+12}" height="${B.h-60}"/></clipPath></defs>`;
+ g+=`<rect x="${B.x}" y="${B.y}" width="${B.w}" height="${B.h}" rx="28" fill="#0b0f13" stroke="#23272d" stroke-width="3"/><g clip-path="url(#cp)">`;
+ for(let q=0;q<5;q++){const v=lerp(lo+(hi-lo)*.1,hi-(hi-lo)*.1,q/4);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${Y(v)}" y2="${Y(v)}" stroke="#151a1f" stroke-width="2"/><text x="${PL.x+PL.w+16}" y="${Y(v)+8}" font-size="22" fill="${MUTE}">${v.toFixed(2)}</text>`}
+ const D=drawings(i,t);
+ D.filter(d=>d.do==='shade').forEach(d=>{const col=TONE[d.tone]||TE,a=out(seg(d.age,0,.5)),x0=X(d.from)-bw/2,ww=(d.to-d.from+1)*bw*a;g+=`<rect x="${x0}" y="${PL.y-10}" width="${Math.max(0,ww)}" height="${PL.h+VOL.h+40}" rx="8" fill="${col}" opacity=".14"/>`});
+ for(let k=Math.max(0,Math.floor(w0)-1);k<=Math.min(n-1,Math.ceil(w1)+1);k++){if(k>r+.999)break;const [o,h,l,c,v]=C[k],gg=cl(r-k+1),up=c>=o,col=up?G:RD,x=X(k),bwid=Math.max(2,bw*.64),cc=lerp(o,c,out(gg));
+  const hh=Math.max(o,cc)+(h-Math.max(o,c))*gg,ll=Math.min(o,cc)-(Math.min(o,c)-l)*gg,vh=v/vmax*VOL.h*out(gg);
+  g+=`<g opacity="${cl(gg*2)}"><line x1="${x}" x2="${x}" y1="${Y(hh)}" y2="${Y(ll)}" stroke="${col}" stroke-width="${Math.max(1.5,bw*.12)}"/><rect x="${x-bwid/2}" y="${Math.min(Y(o),Y(cc))}" width="${bwid}" height="${Math.max(2,Math.abs(Y(o)-Y(cc)))}" rx="${Math.min(2,bwid/4)}" fill="${col}"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh}" width="${bwid}" height="${vh}" fill="${up?GV:RV}"/></g>`}
+ D.filter(d=>d.do==='line').forEach(d=>{const col=TONE[d.tone]||AM,a=out(seg(d.age,0,.6)),y=Y(d.price);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w*a}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="4" stroke-dasharray="16 10"/>`;
+  if(d.label)g+=`<g opacity="${a}"><rect x="${PL.x+8}" y="${y-44}" width="${d.label.length*15+30}" height="36" rx="10" fill="#0b0f13" stroke="${col}" stroke-width="2"/><text x="${PL.x+23}" y="${y-19}" font-size="22" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`});
+ D.filter(d=>d.do==='mark').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),hiSide=d.side!=='low',y=hiSide?Y(C[k][1])-14:Y(C[k][2])+14,a=back(seg(d.age,0,.45)),col=TONE[d.tone]||'#e6e9ec',ty=hiSide?y-40:y+40;
+  g+=`<g transform="translate(${x} ${ty}) scale(${a})"><circle r="27" fill="${col}"/><text y="10" text-anchor="middle" font-size="28" font-weight="800" fill="#07121a">${esc(d.label||'')}</text></g><line x1="${x}" x2="${x}" y1="${y}" y2="${ty+(hiSide?27:-27)}" stroke="${col}" stroke-width="3" opacity="${a}"/>`});
+ g+='</g>';
+ const lk=Math.min(n-1,Math.floor(r));if(lk>=Math.floor(w0)){const k=lk,gg=cl(r-k+1),c=lerp(C[k][0],C[k][3],out(gg)),up=c>=C[k][0],y=Y(c);
+  g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${y}" y2="${y}" stroke="${up?G:RD}" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/><rect x="${PL.x+PL.w+6}" y="${y-20}" width="118" height="40" rx="8" fill="${up?G:RD}"/><text x="${PL.x+PL.w+65}" y="${y+9}" text-anchor="middle" font-size="23" font-weight="700" fill="#07121a">${c.toFixed(2)}</text>`}
+ const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+40}" font-size="24" font-weight="700" fill="${MUTE}">${esc(lab)}</text>`;
+ el.innerHTML=g+'</g>'}
+// ---- background: two slow glows, so even a still scene breathes
+function drawBg(t){document.getElementById('bg').innerHTML=`<defs><radialGradient id="g1"><stop offset="0" stop-color="#4fc6c8" stop-opacity=".10"/><stop offset="1" stop-color="#4fc6c8" stop-opacity="0"/></radialGradient><radialGradient id="g2"><stop offset="0" stop-color="#3dd68c" stop-opacity=".07"/><stop offset="1" stop-color="#3dd68c" stop-opacity="0"/></radialGradient></defs>
+ <circle cx="${540+300*Math.sin(t*.23)}" cy="${700+200*Math.cos(t*.17)}" r="700" fill="url(#g1)"/><circle cx="${540-280*Math.cos(t*.19)}" cy="${1300+180*Math.sin(t*.21)}" r="640" fill="url(#g2)"/>`}
+function render(T){
+ const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
+ drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
+ // the scene title slides in
+ const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
+ hd.innerHTML=s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px)`;
+ drawChart(i,t);
+ // cards, big text
+ let st='';
+ if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),y=560+k*170;
+  st+=`<div class="card" style="top:${y}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
+ if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big">${ws.map((w,k)=>{const at=s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.3));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
+ if(s.kind==='hook'&&s.chart!=null&&s.text){const a=back(seg(t,s.t0,s.t0+.45));st+=`<div style="position:absolute;left:60px;right:60px;top:1180px;text-align:center;font:700 64px/1.1 'Cascadia Mono',monospace;color:${AM};opacity:${cl(a)};transform:scale(${.85+.15*a})">${esc(s.text)}</div>`}
+ // the quiz countdown: a ring that empties, with the seconds
+ if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
+  st+=`<svg style="position:absolute;left:880px;top:560px;opacity:${a}" width="120" height="120"><circle cx="60" cy="60" r="50" fill="#07090ccc" stroke="#2a2f35" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="${AM}" stroke-width="8" stroke-dasharray="${314*(1-u)} 400" transform="rotate(-90 60 60)" stroke-linecap="round"/><text x="60" y="72" text-anchor="middle" font-size="36" font-weight="800" fill="#e6e9ec">${Math.ceil(left)}</text></svg>`}
+ document.getElementById('stage').innerHTML=st;
+ // the options: in during the question, the right one lights up at the answer
+ const o=document.getElementById('opts'),q=s.kind==='question'?s:(s.kind==='answer'&&p.kind==='question'?p:null);
+ if(q&&q.options){const shown=s.kind==='question'?s:null;o.innerHTML=q.options.map((x,k)=>{const at=s.kind==='question'?((s.cues||[]).find(c=>c.do==='options')||{t:s.vs+.4}).t+k*.15:-1,a=at<0?1:back(seg(t,at,at+.35));
+   let st2=`opacity:${cl(a)};transform:translateY(${(1-a)*30}px)`;if(s.kind==='answer'){const ok=k===q.answer,u=out(seg(t,s.t0,s.t0+.35));st2+=ok?`;background:#123d2a;border-color:${G};color:#fff;transform:scale(${1+.06*Math.sin(Math.PI*cl(u))})`:`;opacity:${1-.6*u}`}
+   return `<div class="opt" style="${st2}">${s.kind==='answer'&&k===q.answer?'&#10003; ':''}${esc(x)}</div>`}).join('')}else o.innerHTML='';
+ // burned-in captions: the line being spoken, the current word lit
+ const cp=document.getElementById('caps');
+ if(s.kind!=='outro'&&s.text_words&&s.words&&s.words.length&&t>=s.vs-.05&&t<=s.ve+.25){const tw=s.text_words,W=s.words,m=tw.length,wt=k=>W[Math.min(W.length-1,Math.round(k*W.length/m))];
+  let cur=0;for(let k=0;k<m;k++)if(t>=wt(k)[1]-.02)cur=k;const per=5,st0=Math.floor(cur/per)*per;
+  cp.innerHTML=tw.slice(st0,st0+per).map((w,k)=>`<span style="color:${st0+k===cur?TE:st0+k<cur?'#e6e9ec':'#5d6670'}">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1}else cp.innerHTML='';
+ // the end card
+ const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';document.getElementById('oText').style.opacity=out(seg(t,s.t0+.4,s.t0+.9))}else O.style.opacity=0;
+ document.body.style.opacity=Math.min(seg(T,0,.2),1-seg(T,R.T-.3,R.T));
+ return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
+window.render=render;
+// the reel's cover: its first chart (or its first scene) under the title
+window.cover=async date=>{const k=Math.max(0,SC.findIndex(s=>s.chart!=null&&s.kind!=='hook'));const s=SC[k];await render(Math.min(s.t1-.05,(s.ve||s.t1)));
+ document.getElementById('caps').innerHTML='';document.getElementById('opts').innerHTML='';document.querySelector('.prog').style.display='none';
+ const hd=document.getElementById('head');hd.innerHTML=esc(R.title||'');hd.style.cssText='opacity:1;font-size:80px;top:1170px;height:260px';document.body.style.opacity=1;
+ return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))};
+</script></body></html>

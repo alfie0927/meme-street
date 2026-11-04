@@ -1,0 +1,13 @@
+[Unit]
+Description=Meme Street: make the next auto reel and queue it
+After=network-online.target
+[Service]
+Type=oneshot
+User=__USER__
+ExecStart=__DIR__/auto_reel.sh
+TimeoutStartSec=5400
+# the game runs on this server too: one core, low priority, stopped before it can starve it
+Nice=19
+IOSchedulingClass=idle
+CPUQuota=100%
+MemoryMax=2G

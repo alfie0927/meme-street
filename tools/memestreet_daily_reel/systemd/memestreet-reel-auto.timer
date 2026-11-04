@@ -1,0 +1,6 @@
+[Unit]
+Description=Make each auto reel about 100 minutes before its slot (06:00, 12:00, 18:00, 21:00 UTC)
+[Timer]
+OnCalendar=*-*-* 04,10,16,19:20:00 UTC
+[Install]
+WantedBy=timers.target

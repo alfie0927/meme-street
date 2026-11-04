@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Make the auto reel for the next posting slot and put it in the queue (queue_post.sh posts it on time).
+#   ./auto_reel.sh                    the next slot (06:00, 12:00, 18:00, 21:00 UTC) starting within 3 hours
+#   ./auto_reel.sh 2026-11-05T1200    that slot
+# A slot that already holds a November reel gets a remake of it (queue/<slot>/remake.json); if anything fails, the
+# reel already there is posted as it is. A remade slot's original is kept in queue-originals/.
+set -euo pipefail
+cd "$(dirname "$0")"; set -a; . ./config.env; set +a
+mkdir -p logs queue queue-originals
+SLOT="${1:-}"
+if [ -z "$SLOT" ]; then
+  for h in 0600 1200 1800 2100; do
+    for d in "$(date -u +%F)" "$(date -u -d tomorrow +%F)"; do
+      s="${d}T$h"; ds=$(( $(date -u -d "${d} ${h:0:2}:${h:2:2}" +%s) - $(date -u +%s) ))
+      if [ "$ds" -gt 0 ] && [ "$ds" -le 10800 ]; then SLOT=$s; break 2; fi
+    done
+  done
+fi
+[ -n "$SLOT" ] || { echo "no slot in the next 3 hours"; exit 0; }
+[ -f "queue/$SLOT/posted.json" ] && { echo "$SLOT is already posted"; exit 0; }
+W="work/auto-$SLOT"; O="out/auto-$SLOT"; rm -rf "$W" "$O"
+args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.json")
+{
+  echo "=== auto reel $SLOT  $(date -u '+%F %T UTC')"
+  python3 src/make_spec.py "$SLOT" "$W" "${args[@]}"
+  python3 src/narrate.py "$W"
+  PAGE=reel.html FPS=${AUTO_FPS:-30} python3 src/render.py "$W" "$O"
+  [ "$(date -u +%Y-%m-%dT%H%M)" \< "$SLOT" ] || { echo "too late for $SLOT: the reel already queued posts"; exit 0; }
+  mkdir -p "queue/.staging/$SLOT" && cp "$O/reel.mp4" "$O/caption.txt" "$O/cover.jpg" "queue/.staging/$SLOT/"
+  [ -d "queue/$SLOT" ] && { rm -rf "queue-originals/$SLOT"; mv "queue/$SLOT" "queue-originals/$SLOT"; }
+  mv "queue/.staging/$SLOT" "queue/$SLOT"
+  echo "=== queued $SLOT $(date -u '+%T UTC')"
+} 2>&1 | tee -a "logs/auto.log"

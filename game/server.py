@@ -1505,6 +1505,15 @@ async def learn_test(request: Request, kind: str = "any", example: int = 0, x_to
     return await run(engine.drill_example if example else engine.drill_new, kind)
 
 
+@app.get("/api/reel/stock/{ticker}")
+async def reel_stock(ticker: str, request: Request, tf: str = "1h"):
+    """A company and its newest candles, for the reel generator (learning.py `reel_stock`). Public."""
+    if learn_slow(request, "", "reel_stock", 0.3):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    d = await run(engine.reel_stock, ticker.upper()[:8], tf)
+    return d if d else JSONResponse({"error": "unknown stock"}, status_code=404)
+
+
 @app.post("/api/learn/test")
 async def learn_test_answer(b: TestAnswer, request: Request, x_token: str = Header("")):
     """Mark a chart test: right or wrong, the candles that came next, and the player's score for the kind."""

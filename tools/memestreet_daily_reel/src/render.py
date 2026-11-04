@@ -13,7 +13,7 @@ async def frames(R, fdir, cover=None, date=""):
         b = await p.chromium.launch(); pg = await b.new_page(viewport={"width": 1080, "height": 1920})
         await pg.add_init_script(f"window.__R={json.dumps(R)};")
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
-        await pg.goto(f"file://{HERE}/recap.html"); await pg.evaluate("document.fonts.ready")
+        await pg.goto(f"file://{HERE}/{os.environ.get('PAGE', 'recap.html')}"); await pg.evaluate("document.fonts.ready")   # (PAGE=reel.html: the auto reels)
         for i in range(n):
             await pg.evaluate("t=>render(t)", i / FPS)
             await pg.screenshot(path=f"{fdir}/f{i:05d}.jpg", type="jpeg", quality=92)

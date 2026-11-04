@@ -312,6 +312,16 @@ class LearningMixin:
                 return t, cs, {"ticker": None, "name": "A chart from the market model", "tf": "short", "end": None}
         return None, None, None
 
+    def reel_stock(self, ticker, tf="1h", n=120):
+        """A company for the Instagram reels (tools/memestreet_daily_reel): what it does and its newest candles (the one
+        still forming left out). Public facts only, the same as the stock page shows (2026-11-04)."""
+        s = self.stocks.get(ticker)
+        if s is None or s.asset_type not in ("equity", "commodity") or tf not in TEST_TIMEFRAMES:
+            return None
+        rows = list(s.tf.get(tf, ()))[-(n + 1):-1]
+        return {"ticker": s.ticker, "name": s.name, "sector": s.sector, "desc": s.desc, "tf": TEST_TIMEFRAMES[tf],
+                "price": s.price, "candles": [[r[1], r[2], r[3], r[4], r[5] if len(r) > 5 else 0.0] for r in rows]}
+
     @staticmethod
     def _drill_pack(t, cs):
         """The question (the candles up to the moment) and the answer (the candles after it), on a window of the chart
