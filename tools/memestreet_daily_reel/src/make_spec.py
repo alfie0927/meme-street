@@ -8,7 +8,7 @@ idea. Claude writes the narration, the on-screen words, the hook and the caption
 voice.md, and the result is checked (hook score, length, words per line, no emoji, the disclaimer) and sent back to
 Claude to fix at most twice. Output: <work>/spec.json and <work>/caption.txt.
 """
-import json, os, random, re, sys, time, urllib.error, urllib.request
+import json, os, random, re, subprocess, sys, time, urllib.error, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(HERE, "ig"))
 import hookscore
@@ -63,21 +63,27 @@ VIRAL_EVIDENCE = [
 CHART_COUNT = {"Chart quiz": 3, "Guess the move": 2, "Speed cheat sheet": 3}
 
 
-def get(path):
+def get(path, body=None):
     for attempt in range(5):
         time.sleep(0.5 + attempt)                         # (the game's per-address limit on these)
         try:
-            with urllib.request.urlopen(SITE + path, timeout=30) as r:
+            req = urllib.request.Request(SITE + path, data=json.dumps(body).encode() if body else None,
+                                         headers={"content-type": "application/json"}, method="POST" if body else "GET")
+            with urllib.request.urlopen(req, timeout=30) as r:
                 return json.loads(r.read())
         except urllib.error.HTTPError as e:
             if e.code != 429 or attempt == 4: raise
 
 
 def drill(kind):
-    d = get(f"/api/learn/test?kind={kind}&example=1")
-    if "candles" not in d:
-        raise RuntimeError(f"no chart test for {kind}: {d}")
-    return d
+    """A fresh chart test of `kind` with its answer: the question, then the game's marking of it (the candles that came
+    next, the right answer and why). A new real chart every time, unlike a lesson's example."""
+    q = get(f"/api/learn/test?kind={kind}")
+    if "candles" not in q:
+        raise RuntimeError(f"no chart test for {kind}: {q}")
+    a = get("/api/learn/test", {"id": q["id"], "choice": 0})
+    return dict(q, upto=len(q["candles"]) - 1, candles=q["candles"] + a["candles"], lines=a["lines"], marks=a["marks"],
+                answer=a["answer"], result=a["result"], explain=a["explain"], where=a["where"])
 
 
 def swings(C, a, b, k=4):
@@ -208,22 +214,25 @@ def check(spec, facts, charts):
 
 
 def finish(spec, charts, category):
-    """Add what comes from the facts, not from Claude: the options and answers, the answer's lines, the windows."""
+    """Add what comes from the facts, not from Claude: the options and answers, the drawn lines, the windows."""
     for s in spec["scenes"]:
         ch = charts[s["chart"]] if isinstance(s.get("chart"), int) else None
         if not ch:
             s["chart"] = None; continue
         s.setdefault("win", ch["win"])
         d = ch.get("drill")
+        tone = lambda x: x.get("tone", "level")
         if s["kind"] == "question" and d:
             s["options"], s["answer"], s["show"] = d["options"], d["answer"], ch["upto"]
             s["win"] = [ch["win"][0], ch["end"]]
             s.setdefault("cues", []).append({"say": "", "do": "options"})
+            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": x.get("label", "")[:22], "tone": tone(x)}
+                          for x in d["lines"] if not x.get("after")][:2]
         elif s["kind"] == "answer" and d:
             s["reveal_to"], s["carry"] = ch["end"], True
             s.setdefault("cues", [])
-            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": x.get("label", "")[:22], "tone": x.get("tone", "level")}
-                          for x in d["lines"]][:3]
+            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": x.get("label", "")[:22], "tone": tone(x)}
+                          for x in d["lines"] if x.get("after")][:3]
             s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:2], "side": "high"} for m in d["marks"] if m.get("label")][:3]
         elif s["kind"] in ("hook", "chart") and s.get("show") is None and d:
             s["show"] = ch["upto"]
@@ -232,7 +241,8 @@ def finish(spec, charts, category):
     return spec
 
 
-def main(slot, work, category=None, remake=None):
+def brief(slot, category=None, remake=None):
+    """Everything the writer needs for one reel: the system prompt, the request (facts included) and the charts."""
     rng = random.Random(slot)
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
     if remake:
@@ -241,7 +251,7 @@ def main(slot, work, category=None, remake=None):
     category = category or rng.choice(ROTATION.get(slot[-4:], ["Technical lesson"]))
     facts, charts = gather(category, rng, history)
     voice = open(os.path.join(ROOT, "voice.md"), encoding="utf-8").read()      # (a copy of ~/.claude/instagram/voice.md)
-    hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json")))["hooks"]
+    hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
     system = ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
               "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
               "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % category)
@@ -256,34 +266,75 @@ def main(slot, work, category=None, remake=None):
                                     "explanations, but tighter: no long pauses, every line earns its place. Use the new "
                                     "charts in the facts instead of the old ones.",
                             "title": remake.get("title"), "old_narration": remake.get("narration"), "old_caption": remake.get("caption")}
-    msgs = [{"role": "user", "content": json.dumps(ask, indent=1)}]
+    os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
+    json.dump(history, open(HISTORY, "w"))                  # (the stock just used, so the next story picks another)
+    return {"slot": slot, "category": category, "system": system, "ask": ask, "charts": charts}
+
+
+def parse(raw, B):
+    """The script in Claude's reply, and what is wrong with it."""
+    m = re.search(r"\{.*\}", raw, re.S)
+    try:
+        spec = json.loads(m.group(0)) if m else {}
+    except ValueError as e:
+        return {}, [f"not valid JSON: {e}"]
+    return spec, check(spec, B["ask"]["facts"], B["charts"])
+
+
+def claude_cli(messages, system):
+    """The writer through Claude Code on this server, logged in to the owner's plan (CLAUDE_CODE_OAUTH_TOKEN from
+    `claude setup-token`): the plan's usage, no API bill. No tools: it only writes."""
+    convo = "\n\n".join(("REQUEST:\n" if m["role"] == "user" else "YOUR EARLIER REPLY:\n") + m["content"] for m in messages)
+    r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", os.environ.get("REEL_CLI_MODEL", "sonnet"),
+                        "--append-system-prompt", system,
+                        "--disallowedTools", "Bash,Edit,Write,Read,WebFetch,WebSearch,Glob,Grep,Task,NotebookEdit"],
+                       input=convo, capture_output=True, text=True, timeout=600, cwd="/tmp",
+                       env={k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"})   # (an API key would be billed instead)
+    if r.returncode:
+        raise SystemExit("claude -p failed: " + (r.stderr or r.stdout)[-400:])
+    return r.stdout
+
+
+def write(B):
+    """Have Claude write the script, checked and sent back at most twice."""
+    ask = claude_cli if os.environ.get("REEL_WRITER", "cli") == "cli" else claude
+    msgs = [{"role": "user", "content": json.dumps(B["ask"], indent=1)}]
     for attempt in range(3):
-        raw = claude(msgs, system)
-        m = re.search(r"\{.*\}", raw, re.S)
-        try:
-            spec = json.loads(m.group(0)) if m else {}
-        except ValueError as e:
-            spec, errs = {}, [f"not valid JSON: {e}"]
-        else:
-            errs = check(spec, facts, charts)
+        raw = ask(msgs, B["system"])
+        spec, errs = parse(raw, B)
         if not errs:
-            break
+            return spec
         print(f"attempt {attempt + 1}: " + "; ".join(errs[:8]))
         msgs += [{"role": "assistant", "content": raw}, {"role": "user", "content": "Fix these and reply with the whole JSON again: " + "; ".join(errs)}]
-    else:
-        raise SystemExit("the script did not pass its checks: " + "; ".join(errs))
-    spec = finish(spec, charts, category)
+    raise SystemExit("the script did not pass its checks: " + "; ".join(errs))
+
+
+def save(spec, B, work):
+    spec = finish(spec, B["charts"], B["category"])
     os.makedirs(work, exist_ok=True)
     json.dump(spec, open(os.path.join(work, "spec.json"), "w"))
-    open(os.path.join(work, "caption.txt"), "w").write(spec["caption"].strip() + "\n")
+    open(os.path.join(work, "caption.txt"), "w", encoding="utf-8").write(spec["caption"].strip() + "\n")
+    history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
     history.setdefault("titles", []).append(spec["title"])
     os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
     json.dump(history, open(HISTORY, "w"))
-    print(f"{category}: {spec['title']} ({sum(len(s['vo'].split()) for s in spec['scenes'])} words, {len(spec['scenes'])} scenes)")
+    print(f"{B['category']}: {spec['title']} ({sum(len(s['vo'].split()) for s in spec['scenes'])} words, {len(spec['scenes'])} scenes)")
 
 
 if __name__ == "__main__":
     a = sys.argv[1:]
+    rem = json.load(open(a[a.index("--remake") + 1], encoding="utf-8")) if "--remake" in a else None
     cat = a[a.index("--category") + 1] if "--category" in a else None
-    rem = json.load(open(a[a.index("--remake") + 1])) if "--remake" in a else None
-    main(a[0], a[1], cat, rem)
+    if a[0] == "brief":                                  # for a writer elsewhere (a cloud session): <dir>/brief.json
+        B = brief(a[1], cat, rem); os.makedirs(a[2], exist_ok=True)
+        json.dump(B, open(os.path.join(a[2], "brief.json"), "w"))
+        print(f"{a[2]}/brief.json: {B['category']}")
+    elif a[0] == "assemble":                             # <dir>/brief.json + <dir>/script.json (the writer's reply) -> spec.json
+        B = json.load(open(os.path.join(a[1], "brief.json")))
+        spec, errs = parse(open(os.path.join(a[1], "script.json"), encoding="utf-8").read(), B)
+        if errs:
+            raise SystemExit("fix: " + "; ".join(errs))
+        save(spec, B, a[1])
+    else:                                                # <slot> <work>: brief, write, save
+        B = brief(a[0], cat, rem)
+        save(write(B), B, a[1])

@@ -7,6 +7,7 @@
 # reel already there is posted as it is. A remade slot's original is kept in queue-originals/.
 set -euo pipefail
 cd "$(dirname "$0")"; set -a; . ./config.env; set +a
+export PATH="$HOME/.local/bin:$PATH"                 # (Claude Code, the script writer on the plan)
 mkdir -p logs queue queue-originals
 SLOT="${1:-}"
 if [ -z "$SLOT" ]; then
@@ -23,7 +24,11 @@ W="work/auto-$SLOT"; O="out/auto-$SLOT"; rm -rf "$W" "$O"
 args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.json")
 {
   echo "=== auto reel $SLOT  $(date -u '+%F %T UTC')"
-  python3 src/make_spec.py "$SLOT" "$W" "${args[@]}"
+  if [ -f "prewritten/$SLOT/spec.json" ]; then          # written ahead by a cloud session (prewritten/README.md)
+    mkdir -p "$W" && cp "prewritten/$SLOT/spec.json" "prewritten/$SLOT/caption.txt" "$W/" && echo "using the prewritten script"
+  else
+    python3 src/make_spec.py "$SLOT" "$W" "${args[@]}"
+  fi
   python3 src/narrate.py "$W"
   PAGE=reel.html FPS=${AUTO_FPS:-30} python3 src/render.py "$W" "$O"
   [ "$(date -u +%Y-%m-%dT%H%M)" \< "$SLOT" ] || { echo "too late for $SLOT: the reel already queued posts"; exit 0; }
