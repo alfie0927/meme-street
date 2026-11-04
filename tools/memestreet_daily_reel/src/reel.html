@@ -3,7 +3,7 @@
 <!-- The auto reels (make_spec.py -> narrate.py -> render.py with PAGE=reel.html). One frame per render(t).
      Everything sits inside Instagram's safe zone (y 230..1440, right 230px kept light), and something moves in every frame. -->
 <style>
-html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#07090c;font-family:'Cascadia Mono',monospace,monospace;color:#e6e9ec}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b;font-family:'Cascadia Mono',monospace,monospace;color:#e6e9ec}
 #bg{position:absolute;inset:0}
 .hdr{position:absolute;left:70px;right:70px;top:250px;height:84px;display:flex;align-items:center;justify-content:space-between}
 .hdr .l{display:flex;align-items:center;gap:20px;font:700 44px/1 'Cascadia Mono',monospace}.hdr img{width:84px;height:84px;border-radius:18px}
@@ -30,7 +30,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#07090c
 <div id="stage"></div>
 <div class="opts" id="opts"></div>
 <div class="caps" id="caps"></div>
-<div id="outro" style="position:absolute;inset:0;background:#07090c;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+<div id="outro" style="position:absolute;inset:0;background:#080a0b;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
  <img id="oLogo" src="../assets/logo.png" style="width:360px;height:360px;border-radius:80px">
  <div id="oText" style="margin-top:56px;font:700 64px/1.15 'Cascadia Mono',monospace;text-align:center;max-width:900px"></div>
  <div id="oUrl" style="margin-top:44px;padding:24px 48px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 46px/1 'Cascadia Mono',monospace">memestreet.net</div>
@@ -83,8 +83,10 @@ function drawChart(i,t){
  const {C,n,r,w,s}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
  const B={x:62,y:540,w:956,h:620},PL={x:B.x+20,y:B.y+60,w:B.w-160,h:430},VOL={y:B.y+505,h:90};
  const w0=w[0],w1=Math.max(w[0]+8,w[1]);let lo=1e9,hi=-1e9;
- const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r)+1);   // (only what is shown sets the scale, so the axis never gives the answer away)
+ const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r));   // (only what is shown sets the scale, so the axis never gives the answer away)
  for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
+ {const k=rr+1,gg=r-Math.floor(r);if(k<n&&k<=Math.ceil(w1)&&gg>0){const [o,h,l,c]=C[k],e=out(gg),cc=lerp(o,c,e);   // the growing candle moves the scale with it
+  hi=Math.max(hi,Math.max(o,cc)+(h-Math.max(o,c))*gg);lo=Math.min(lo,Math.min(o,cc)-(Math.min(o,c)-l)*gg)}}
  drawings(i,t).filter(d=>d.do==='line').forEach(d=>{lo=Math.min(lo,d.price);hi=Math.max(hi,d.price)});
  const pad=(hi-lo)*.1,mk=drawings(i,t).filter(d=>d.do==='mark');lo-=pad*(mk.some(d=>d.side==='low')?2.6:1);hi+=pad*(mk.some(d=>d.side!=='low')?2.6:1);   // (room for the markers)
  const X=k=>PL.x+(k-w0+.5)/(w1-w0+1)*PL.w,Y=v=>PL.y+(hi-v)/(hi-lo)*PL.h,bw=PL.w/(w1-w0+1);
@@ -107,7 +109,7 @@ function drawChart(i,t){
  const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+40}" font-size="24" font-weight="700" fill="${MUTE}">${esc(lab)}</text>`;
  el.innerHTML=g+'</g>'}
 // ---- background: two slow glows, so even a still scene breathes
-function drawBg(t){document.getElementById('bg').innerHTML=`<defs><radialGradient id="g1"><stop offset="0" stop-color="#4fc6c8" stop-opacity=".10"/><stop offset="1" stop-color="#4fc6c8" stop-opacity="0"/></radialGradient><radialGradient id="g2"><stop offset="0" stop-color="#3dd68c" stop-opacity=".07"/><stop offset="1" stop-color="#3dd68c" stop-opacity="0"/></radialGradient></defs>
+function drawBg(t){return;document.getElementById('bg').innerHTML=`<defs><radialGradient id="g1"><stop offset="0" stop-color="#4fc6c8" stop-opacity=".10"/><stop offset="1" stop-color="#4fc6c8" stop-opacity="0"/></radialGradient><radialGradient id="g2"><stop offset="0" stop-color="#3dd68c" stop-opacity=".07"/><stop offset="1" stop-color="#3dd68c" stop-opacity="0"/></radialGradient></defs>
  <circle cx="${540+300*Math.sin(t*.23)}" cy="${700+200*Math.cos(t*.17)}" r="700" fill="url(#g1)"/><circle cx="${540-280*Math.cos(t*.19)}" cy="${1300+180*Math.sin(t*.21)}" r="640" fill="url(#g2)"/>`}
 function render(T){
  const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
@@ -133,8 +135,8 @@ function render(T){
    return `<div class="opt" style="${st2}">${s.kind==='answer'&&k===q.answer?'&#10003; ':''}${esc(x)}</div>`}).join('')}else o.innerHTML='';
  // burned-in captions: the line being spoken, the current word lit
  const cp=document.getElementById('caps');
- if(s.kind!=='outro'&&s.text_words&&s.words&&s.words.length&&t>=s.vs-.05&&t<=s.ve+.25){const tw=s.text_words,W=s.words,m=tw.length,wt=k=>W[Math.min(W.length-1,Math.round(k*W.length/m))];
-  let cur=0;for(let k=0;k<m;k++)if(t>=wt(k)[1]-.02)cur=k;const per=5,st0=Math.floor(cur/per)*per;
+ if(s.kind!=='outro'&&s.text_words&&s.wt&&t>=s.vs-.05&&t<=s.ve+.25){const tw=s.text_words,m=tw.length;   // each word lights as it is said (narrate.py align)
+  let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.03)cur=k;const per=5,st0=Math.floor(cur/per)*per;
   cp.innerHTML=tw.slice(st0,st0+per).map((w,k)=>`<span style="color:${st0+k===cur?TE:st0+k<cur?'#e6e9ec':'#5d6670'}">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1}else cp.innerHTML='';
  // the end card
  const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';document.getElementById('oText').style.opacity=out(seg(t,s.t0+.4,s.t0+.9))}else O.style.opacity=0;

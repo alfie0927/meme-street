@@ -6,7 +6,7 @@ sound. Each cue ("say": a phrase of the line) gets the time that phrase is spoke
 the burned-in captions.
 Output: work/<slot>/timeline.json (+ vo/*.wav, sfx/*.wav).   Usage: python3 src/narrate.py work/<slot>
 """
-import json, os, re, sys
+import difflib, json, os, re, sys
 import numpy as np
 import soundfile as sf
 from kokoro_onnx import Kokoro
@@ -20,6 +20,28 @@ def tone(path, freqs, length, vol=0.25):
     t = np.arange(int(length * SR)) / SR
     a = sum(np.sin(2 * np.pi * f * t) for f in freqs) / len(freqs) * np.exp(-t * (40 if length < .1 else 7)) * vol
     sf.write(path, a.astype(np.float32), SR)
+
+def align(tw, W, d):
+    """Match the written words to the recognised ones (difflib), so every written word gets the time it is really
+    said; a word the recogniser heard differently ("230" for "two thirty") takes its place between its neighbours."""
+    key = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
+    out = [None] * len(tw)
+    if W:
+        sm = difflib.SequenceMatcher(None, [key(w) for w in tw], [w[0] for w in W], autojunk=False)
+        for a, b, n in sm.get_matching_blocks():
+            for q in range(n):
+                out[a + q] = (W[b + q][1], W[b + q][2])
+    known = [k for k, x in enumerate(out) if x]
+    if not known:
+        return [(d * k / len(tw), d * (k + 1) / len(tw)) for k in range(len(tw))]
+    for k in range(len(tw)):
+        if out[k]: continue
+        lo = max([j for j in known if j < k], default=None); hi = min([j for j in known if j > k], default=None)
+        t0 = out[lo][1] if lo is not None else 0.0; t1 = out[hi][0] if hi is not None else d
+        a = lo if lo is not None else -1; b = hi if hi is not None else len(tw)
+        f0, f1 = (k - a - 1) / (b - a - 1), (k - a) / (b - a - 1)
+        out[k] = (t0 + (t1 - t0) * f0, t0 + (t1 - t0) * f1)
+    return out
 
 def main(work):
     S = json.load(open(os.path.join(work, "spec.json")))
@@ -41,21 +63,20 @@ def main(work):
         d = dur(clip); W = words(clip)
         spoken = norm_words(sc["vo"])
 
+        tw = sc["vo"].split()
+        wt = align(tw, W, d)                                   # each written word's own (start, end) in the clip
+
         def at(phrase):
             """When `phrase` starts being spoken (seconds into the clip); the scene start if it is not in the line."""
             ch = sc["vo"].lower().find(phrase.lower().strip())
             if ch < 0: return 0.0
-            k = len(norm_words(sc["vo"][:ch]))
-            if W:
-                return W[min(k, len(W) - 1)][1]
-            return d * k / max(1, len(spoken))
+            return wt[min(len(sc["vo"][:ch].split()), len(wt) - 1)][0]
 
         sc["t0"] = round(t, 3); vs = t + 0.05
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
-        sc["words"] = [[w[0], round(vs + w[1], 3), round(vs + w[2], 3)] for w in W] or \
-            [[w, round(vs + d * k / len(spoken), 3), round(vs + d * (k + 1) / len(spoken), 3)] for k, w in enumerate(spoken)]
-        sc["text_words"] = sc["vo"].split()                    # (the captions show the written words, timed by W)
+        sc["text_words"] = tw                                  # the captions: the written words, each at its spoken time
+        sc["wt"] = [[round(vs + a, 3), round(vs + b, 3)] for a, b in wt]
         for c in sc.get("cues", []):
             c["t"] = round(vs + at(c.get("say", "")), 3)
         t = vs + d

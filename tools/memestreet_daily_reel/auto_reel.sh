@@ -31,7 +31,7 @@ args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.
     python3 src/make_spec.py "$SLOT" "$W" "${args[@]}"
   fi
   python3 src/narrate.py "$W"
-  PAGE=reel.html FPS=${AUTO_FPS:-30} python3 src/render.py "$W" "$O"
+  PAGE=reel.html FPS=${AUTO_FPS:-60} python3 src/render.py "$W" "$O"
   [ "$(date -u +%Y-%m-%dT%H%M)" \< "$SLOT" ] || { echo "too late for $SLOT: the reel already queued posts"; exit 0; }
   mkdir -p "queue/.staging/$SLOT" && cp "$O/reel.mp4" "$O/caption.txt" "$O/cover.jpg" "queue/.staging/$SLOT/"
   [ -d "queue/$SLOT" ] && { rm -rf "queue-originals/$SLOT"; mv "queue/$SLOT" "queue-originals/$SLOT"; }
