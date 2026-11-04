@@ -40,18 +40,33 @@ CATEGORIES = {
                  "line ('Don't buy the breakout. Put an order at the retest.'). Then the chart proves it, then the one-line rule again.",
     "Big players": "VIRAL (11x): how a move traps beginners: the push past a level that grabs everyone's stops, then the "
                    "reversal. Calm, not conspiratorial: 'this is where the stops sat, this is what price did to them'.",
+    # stick figures (research 2026-11-05: 632 videos from 19 stick-figure and animated finance accounts)
+    "Trader levels": "VIRAL STICK FIGURES (538x its account's median): 'Your life at every level of a trader'. Four or five "
+                     "levels, each a stick scene with a figure (label 'Level 1'...) acting it out with a pose and a short "
+                     "bubble, from the gambler who buys whatever went up to the one who sets the stop first. At least one "
+                     "level stands beside the real chart and acts out what that chart did. Funny, true, kind.",
+    "Explained like you're 5": "VIRAL STICK FIGURES (548x and 165x): one market idea explained like you're five by stick "
+                               "figures acting it out (a shop, a queue, a seesaw), then the same idea on the real chart. "
+                               "Big simple words; the stick figure is the teacher.",
+    "Stick skit": "VIRAL STICK FIGURES (75x on TikTok): a 20 to 30 second skit with two stick figures and one punchline, "
+                  "about a real beginner habit (buying the top, selling the bottom, ignoring the stop), played out on the "
+                  "real chart. The last beat lands the lesson in one line.",
     "Speed cheat sheet": "VIRAL (14x): rapid fire, three candles or patterns in under 30 seconds, each named, shown on a "
                          "real chart, and given one line on what it means. The hook promises the speed.",
 }
 ROTATION = {"0600": ["Technical lesson", "Trading mistake"], "1200": ["Chart quiz"], "1800": ["Stock story", "Guess the move"],
             "2100": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Guess the move"],
             "0300": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Myth or fact"]}
+ROTATION["2100"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
+ROTATION["0300"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
 KINDS = {"Chart quiz": ["pattern", "candle", "breakout", "level", "trend", "stop", "rr", "fib"],
          "Technical lesson": ["rsi", "ma", "fib", "level", "pattern", "breakout", "candle", "trend"],
          "Trading mistake": ["stop", "rr", "breakout", "level", "next"],
          "Guess the move": ["breakout", "level", "next", "pattern"], "Myth or fact": ["next", "breakout", "level"],
          "Chart twist": ["breakout", "pattern", "level", "next"], "One trick": ["breakout", "stop", "level", "rr"],
-         "Big players": ["breakout", "level"], "Speed cheat sheet": ["candle", "pattern", "trend"]}
+         "Big players": ["breakout", "level"], "Speed cheat sheet": ["candle", "pattern", "trend"],
+         "Trader levels": ["breakout", "level", "stop"], "Explained like you're 5": ["trend", "level", "candle", "rr"],
+         "Stick skit": ["breakout", "level", "next"]}
 VIRAL_EVIDENCE = [
     ["37x", "It still looked bearish... but the candles told a different story."],
     ["6x", "It looked bullish, until the second test changed everything."],
@@ -60,6 +75,10 @@ VIRAL_EVIDENCE = [
     ["11x", "The big players can move price, but they leave a footprint."],
     ["14x", "Candlestick patterns explained in less than a minute."],
     ["0.2x (what flops)", "Here are my top three chart settings."], ["0.2x (what flops)", "Markets went crazy today, here's why."]]
+STICK_EVIDENCE = [
+    ["538x", "Your life at every level of a day trader."], ["548x", "Stocks explained for those who want to be rich."],
+    ["165x", "Stock market terms explained, for beginners."], ["152x", "How to actually quit it, explained by a stick figure."],
+    ["75x", "Bro forgot his job. (a 15-second stick-figure skit)"], ["80x", "Every scam tactic explained in eight minutes."]]
 CHART_COUNT = {"Chart quiz": 3, "Guess the move": 2, "Speed cheat sheet": 3}
 
 
@@ -166,6 +185,9 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
  {"kind":"cards","head":"max 5 words","vo":"...","items":[{"text":"max 4 words","sub":"max 7 words","icon":"up|down|warn|check|cross|coin|clock|bolt|chart|shield|people|idea"}],
    "cues":[{"say":"exact phrase","do":"item","i":0}, ...one per item]}
  {"kind":"big","text":"max 7 words, shown huge","vo":"..."}
+ {"kind":"stick","head":"max 5 words","vo":"...","chart":N or null (with a chart: one presenter figure beside it),
+   "figures":[{"pose":"stand|think|panic|happy|point|pointl|sad|shrug|walk","label":"max 2 words","color":"white|teal|amber"}] (1 to 3 figures; none with a chart beyond the first),
+   "cues":[{"say":"exact phrase","do":"pose","fig":0,"pose":"panic"} | {"say":"..","do":"bubble","fig":0,"text":"max 5 words"} | chart cues as above]}
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 """
 
@@ -272,7 +294,8 @@ def brief(slot, category=None, remake=None):
     if CATEGORIES[category].startswith("VIRAL"):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research 2026-11-04). Use the SHAPE, never the words: write an original line "
-                                         "about this reel's own chart.", "examples": VIRAL_EVIDENCE}
+                                         "about this reel's own chart.",
+                                 "examples": STICK_EVIDENCE if "STICK" in CATEGORIES[category] else VIRAL_EVIDENCE}
     if remake:
         ask["remake_of"] = {"note": "Make this reel again on the same topic, with the same teaching points and similar "
                                     "explanations, but tighter: no long pauses, every line earns its place. Use the new "

@@ -81,7 +81,7 @@ function drawings(i,t){ // lines, marks and shades of this scene (and the scenes
 function drawChart(i,t){
  const S=chartState(i,t),el=document.getElementById('chart');if(!S){el.innerHTML='';return}
  const {C,n,r,w,s}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
- const B={x:62,y:540,w:956,h:620},PL={x:B.x+20,y:B.y+60,w:B.w-160,h:430},VOL={y:B.y+505,h:90};
+ const B={x:62,y:540,w:s.kind==='stick'?720:956,h:620},PL={x:B.x+20,y:B.y+60,w:B.w-160,h:430},VOL={y:B.y+505,h:90};
  const w0=w[0],w1=Math.max(w[0]+8,w[1]);let lo=1e9,hi=-1e9;
  const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r));   // (only what is shown sets the scale, so the axis never gives the answer away)
  for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
@@ -111,6 +111,46 @@ function drawChart(i,t){
 // ---- background: two slow glows, so even a still scene breathes
 function drawBg(t){return;document.getElementById('bg').innerHTML=`<defs><radialGradient id="g1"><stop offset="0" stop-color="#4fc6c8" stop-opacity=".10"/><stop offset="1" stop-color="#4fc6c8" stop-opacity="0"/></radialGradient><radialGradient id="g2"><stop offset="0" stop-color="#3dd68c" stop-opacity=".07"/><stop offset="1" stop-color="#3dd68c" stop-opacity="0"/></radialGradient></defs>
  <circle cx="${540+300*Math.sin(t*.23)}" cy="${700+200*Math.cos(t*.17)}" r="700" fill="url(#g1)"/><circle cx="${540-280*Math.cos(t*.19)}" cy="${1300+180*Math.sin(t*.21)}" r="640" fill="url(#g2)"/>`}
+// ---- stick figures (the explainer format that over-performs: "your life at every level of a trader", "explained like
+// you're 5", short skits). A pose is the angle of each limb segment from straight down (90 = pointing right); poses ease
+// into each other on their cue, and every figure breathes, so nothing is ever still.
+const POSE={stand:{la:[-14,-8],ra:[14,8],ll:[-12,-6],rl:[12,6],lean:0,tilt:0},
+ think:{la:[-14,-8],ra:[28,165],ll:[-10,-6],rl:[10,6],lean:0,tilt:12},
+ panic:{la:[-125,-155],ra:[125,155],ll:[-20,-10],rl:[20,10],lean:0,tilt:0,shake:1},
+ happy:{la:[-130,-150],ra:[130,150],ll:[-16,-8],rl:[16,8],lean:0,tilt:-6,bounce:1},
+ point:{la:[-14,-8],ra:[80,95],ll:[-12,-6],rl:[12,6],lean:-4,tilt:0},
+ pointl:{la:[-80,-95],ra:[14,8],ll:[-12,-6],rl:[12,6],lean:4,tilt:0},
+ sad:{la:[-4,-2],ra:[4,2],ll:[-8,-4],rl:[8,4],lean:12,tilt:28},
+ shrug:{la:[-50,-140],ra:[50,140],ll:[-12,-6],rl:[12,6],lean:0,tilt:8},
+ walk:{la:[-25,-10],ra:[25,10],ll:[-22,-10],rl:[22,10],lean:-5,tilt:0,walk:1}};
+const MOOD={stand:'flat',think:'flat',panic:'o',happy:'smile',point:'smile',pointl:'smile',sad:'frown',shrug:'flat',walk:'flat'};
+function figPose(s,f,k,t){let cur=f.pose||'stand',prev=cur,at=-9;(s.cues||[]).filter(c=>c.do==='pose'&&(c.fig||0)===k&&t>=c.t-.05).forEach(c=>{prev=cur;cur=c.pose;at=c.t});
+ const A=POSE[prev]||POSE.stand,Bp=POSE[cur]||POSE.stand,u=io(seg(t,at,at+.35)),m=(x,y)=>lerp(x,y,u);
+ const P={};['la','ra','ll','rl'].forEach(j=>P[j]=[m(A[j][0],Bp[j][0]),m(A[j][1],Bp[j][1])]);P.lean=m(A.lean,Bp.lean);P.tilt=m(A.tilt,Bp.tilt);P.name=cur;P.u=u;return P}
+function drawFigure(s,f,k,t,cx,gy,sc){const P=figPose(s,f,k,t),R=Math.PI/180,L=60*sc,br=Math.sin(t*2.4+k)*1.5*sc;
+ let sh=0,by=0;if(P.name==='panic')sh=Math.sin(t*40)*4*sc*P.u;if(P.name==='happy')by=-Math.abs(Math.sin(t*6))*14*sc*P.u;
+ const W=POSE[P.name]&&POSE[P.name].walk;if(W){P.ll=[Math.sin(t*7)*24,Math.sin(t*7)*24+8];P.rl=[-Math.sin(t*7)*24,-Math.sin(t*7)*24+8];P.la=[-Math.sin(t*7)*20,-8];P.ra=[Math.sin(t*7)*20,8]}
+ const hip=[cx+sh,gy-2*L*Math.cos(12*R)+by],lean=P.lean*R,neck=[hip[0]+Math.sin(lean)*1.15*L,hip[1]-Math.cos(lean)*1.15*L+br],head=[neck[0]+Math.sin(lean)*24*sc,neck[1]-30*sc];
+ const seg2=(o,a)=>{const p1=[o[0]+Math.sin(a[0]*R)*.55*L,o[1]+Math.cos(a[0]*R)*.55*L],p2=[p1[0]+Math.sin(a[1]*R)*.55*L,p1[1]+Math.cos(a[1]*R)*.55*L];return `M${o[0]} ${o[1]}L${p1[0]} ${p1[1]}L${p2[0]} ${p2[1]}`};
+ const sho=[neck[0]+Math.sin(lean)*-8*sc,neck[1]+10*sc],legs=(a)=>{const p1=[hip[0]+Math.sin(a[0]*R)*L,hip[1]+Math.cos(a[0]*R)*L],p2=[p1[0]+Math.sin(a[1]*R)*L,p1[1]+Math.cos(a[1]*R)*L];return `M${hip[0]} ${hip[1]}L${p1[0]} ${p1[1]}L${p2[0]} ${p2[1]}`};
+ const col=f.color==='teal'?TE:f.color==='amber'?AM:'#e6e9ec',sw=9*sc,fa=out(seg(t,s.t0+(f.enter||0),s.t0+(f.enter||0)+.4));
+ const tl=P.tilt,ex=head[0],ey=head[1],mood=f.mood&&P.u<.5?f.mood:MOOD[P.name]||'flat';
+ const mouth=mood==='smile'?`M${ex-9*sc} ${ey+8*sc}Q${ex} ${ey+16*sc} ${ex+9*sc} ${ey+8*sc}`:mood==='frown'?`M${ex-9*sc} ${ey+13*sc}Q${ex} ${ey+5*sc} ${ex+9*sc} ${ey+13*sc}`:mood==='o'?'':`M${ex-8*sc} ${ey+11*sc}H${ex+8*sc}`;
+ let g=`<g opacity="${fa}" transform="translate(0 ${(1-fa)*30})"><g stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" fill="none">
+  <path d="M${hip[0]} ${hip[1]}L${neck[0]} ${neck[1]}"/><path d="${legs(P.ll)}"/><path d="${legs(P.rl)}"/>
+  <circle cx="${ex}" cy="${ey}" r="${28*sc}" fill="#080a0b" transform="rotate(${tl} ${ex} ${ey+28*sc})"/><path d="${seg2(sho,P.la)}"/><path d="${seg2(sho,P.ra)}"/></g>
+  <g transform="rotate(${tl} ${ex} ${ey+28*sc})"><circle cx="${ex-9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/><circle cx="${ex+9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/>
+  ${mood==='o'?`<ellipse cx="${ex}" cy="${ey+11*sc}" rx="${5*sc}" ry="${7*sc}" fill="${col}"/>`:`<path d="${mouth}" stroke="${col}" stroke-width="${4*sc}" fill="none" stroke-linecap="round"/>`}</g>`;
+ if(f.label)g+=`<text x="${cx}" y="${gy+46*sc}" text-anchor="middle" font-size="${Math.round(30*Math.min(1.2,sc))}" font-weight="700" fill="${f.color==='amber'?AM:TE}">${esc(f.label)}</text>`;
+ // speech bubble: pops on its cue, stays until the next one
+ const bs=(s.cues||[]).filter(c=>c.do==='bubble'&&(c.fig||0)===k&&t>=c.t-.05);if(bs.length){const b=bs[bs.length-1],a=back(seg(t,b.t,b.t+.35)),txt=esc(b.text||''),w=Math.min(470,txt.length*21+50);let bx=Math.max(70,Math.min(1010-w,ex-w/2)),byy=ey-28*sc-150,tail=`M${ex-12} ${byy+62}L${ex} ${byy+84}L${ex+12} ${byy+62}Z`;
+  if(byy<550){const left=ex>540;bx=left?ex-36*sc-w-20:ex+36*sc+20;bx=Math.max(40,Math.min(1040-w,bx));byy=ey-32;tail=left?`M${bx+w-2} ${byy+20}L${bx+w+20} ${byy+32}L${bx+w-2} ${byy+44}Z`:`M${bx+2} ${byy+20}L${bx-20} ${byy+32}L${bx+2} ${byy+44}Z`}   // (no room above: beside the head)
+  g+=`<g transform="translate(${ex} ${byy+60}) scale(${a}) translate(${-ex} ${-(byy+60)})"><rect x="${bx}" y="${byy}" width="${w}" height="64" rx="20" fill="#e6e9ec"/><path d="${tail}" fill="#e6e9ec"/><text x="${bx+w/2}" y="${byy+42}" text-anchor="middle" font-size="30" font-weight="700" fill="#07121a">${txt}</text></g>`}
+ return g+'</g>'}
+function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
+ if(s.chart!=null)return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920">${drawFigure(s,F[0],0,t,912,1150,1.25)}</svg>`;
+ const n=F.length,sc=n===1?1.9:n===2?1.55:1.25,xs=n===1?[540]:n===2?[330,750]:[220,540,860];
+ return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920"><line x1="80" x2="1000" y1="1160" y2="1160" stroke="#2a2f35" stroke-width="4" stroke-linecap="round"/>${F.map((f,k)=>drawFigure(s,f,k,t,xs[k],1160,sc)).join('')}</svg>`}
 function render(T){
  const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
  drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
@@ -122,6 +162,7 @@ function render(T){
  let st='';
  if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),y=560+k*170;
   st+=`<div class="card" style="top:${y}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
+ if(s.kind==='stick')st+=drawSticks(s,t);
  if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big">${ws.map((w,k)=>{const at=s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.3));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  if(s.kind==='hook'&&s.chart!=null&&s.text){const a=back(seg(t,s.t0,s.t0+.45));st+=`<div style="position:absolute;left:60px;right:60px;top:1180px;text-align:center;font:700 64px/1.1 'Cascadia Mono',monospace;color:${AM};opacity:${cl(a)};transform:scale(${.85+.15*a})">${esc(s.text)}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
