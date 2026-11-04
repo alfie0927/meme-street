@@ -20,6 +20,7 @@ if [ -z "$SLOT" ]; then
 fi
 [ -n "$SLOT" ] || { echo "no slot in the next 3 hours"; exit 0; }
 [ -f "queue/$SLOT/posted.json" ] && { echo "$SLOT is already posted"; exit 0; }
+[ -f "queue/$SLOT/.auto" ] && { echo "$SLOT already has its auto reel"; exit 0; }
 W="work/auto-$SLOT"; O="out/auto-$SLOT"; rm -rf "$W" "$O"
 args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.json")
 {
@@ -34,6 +35,7 @@ args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.
   [ "$(date -u +%Y-%m-%dT%H%M)" \< "$SLOT" ] || { echo "too late for $SLOT: the reel already queued posts"; exit 0; }
   mkdir -p "queue/.staging/$SLOT" && cp "$O/reel.mp4" "$O/caption.txt" "$O/cover.jpg" "queue/.staging/$SLOT/"
   [ -d "queue/$SLOT" ] && { rm -rf "queue-originals/$SLOT"; mv "queue/$SLOT" "queue-originals/$SLOT"; }
+  touch "queue/.staging/$SLOT/.auto"
   mv "queue/.staging/$SLOT" "queue/$SLOT"
   echo "=== queued $SLOT $(date -u '+%T UTC')"
 } 2>&1 | tee -a "logs/auto.log"
