@@ -1,0 +1,13 @@
+Three chart shapes in thirty seconds.
+
+Falling channel: complete on a close below its trigger, and it can still fail.
+Downtrend: lower highs and lower lows.
+Hammer: a long lower wick after a fall.
+
+Save this for your next chart.
+
+Practise at memestreet.net
+
+Fictional market. Not investment advice.
+
+#MemeStreet #Candlesticks #ChartPatterns #LearnToTrade

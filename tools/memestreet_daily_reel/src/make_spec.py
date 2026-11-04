@@ -204,7 +204,7 @@ def check(spec, facts, charts):
     words = sum(len(s.get("vo", "").split()) for s in sc)
     if not 75 <= words <= 140: errs.append(f"the narration is {words} words; it must be 75 to 140")
     for k, s in enumerate(sc):
-        if len(s.get("vo", "").split()) > 30: errs.append(f"scene {k}'s line is too long ({len(s['vo'].split())} words, max 26)")
+        if len(s.get("vo", "").split()) > 26: errs.append(f"scene {k}'s line is too long ({len(s['vo'].split())} words, max 26)")
         ch = s.get("chart")
         if ch is not None and not (isinstance(ch, int) and 0 <= ch < len(charts)): errs.append(f"scene {k} uses chart {ch}, which does not exist")
         for c in s.get("cues", []):

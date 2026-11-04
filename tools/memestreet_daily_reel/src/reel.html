@@ -86,7 +86,7 @@ function drawChart(i,t){
  const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r)+1);   // (only what is shown sets the scale, so the axis never gives the answer away)
  for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
  drawings(i,t).filter(d=>d.do==='line').forEach(d=>{lo=Math.min(lo,d.price);hi=Math.max(hi,d.price)});
- const pad=(hi-lo)*.1;lo-=pad;hi+=pad;
+ const pad=(hi-lo)*.1,mk=drawings(i,t).filter(d=>d.do==='mark');lo-=pad*(mk.some(d=>d.side==='low')?2.6:1);hi+=pad*(mk.some(d=>d.side!=='low')?2.6:1);   // (room for the markers)
  const X=k=>PL.x+(k-w0+.5)/(w1-w0+1)*PL.w,Y=v=>PL.y+(hi-v)/(hi-lo)*PL.h,bw=PL.w/(w1-w0+1);
  let vmax=1;for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)vmax=Math.max(vmax,C[k][4]);
  let g=`<g opacity="${fade}"><defs><clipPath id="cp"><rect x="${PL.x-6}" y="${B.y+50}" width="${PL.w+12}" height="${B.h-60}"/></clipPath></defs>`;
