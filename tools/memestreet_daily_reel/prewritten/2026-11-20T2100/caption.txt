@@ -1,11 +1,11 @@
-Three chart shapes, one line each.
+Every trader starts at level one. Which level are you?
 
-A downtrend: lower highs and lower lows.
-A hammer: a long lower wick after a fall.
-A rising wedge: it points down, but it can still fail.
+Redfield Skies closed below its 20-candle low on 1.9 times normal volume.
+Within six candles it was back inside the range.
+Breakouts fail often. Level five puts the stop in first.
 
-Save this for your next chart.
+Comment your level below.
 Practise at memestreet.net
 Fictional market. Not investment advice.
 
-#MemeStreet #Candlesticks #ChartPatterns #LearnToTrade
+#MemeStreet #Breakout #StopLoss #LearnToTrade

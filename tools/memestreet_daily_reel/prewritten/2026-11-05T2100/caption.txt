@@ -1,10 +1,11 @@
-It looked like a bull flag. Then it never broke.
+Five levels of trader. Only one survived this fake breakout.
 
-Bull flag: only counts when a close breaks the top edge.
-Bullish engulfing: a green body that covers the red one before it.
-Downtrend: lower highs and lower lows, until it stops.
+The price closed above the 20-candle high on half the usual volume.
+Within six candles it closed back inside the range.
+Level five set the stop first, so the loss stayed small.
 
-Save this for your next chart.
+Which level are you? Tell me in the comments.
 Practise at memestreet.net
 Fictional market. Not investment advice.
-#MemeStreet #ChartPatterns #Candlesticks #TradingForBeginners
+
+#MemeStreet #TradingForBeginners #Breakout #LearnToTrade

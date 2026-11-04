@@ -1,12 +1,12 @@
-Three chart shapes in thirty seconds. Name them before I do.
+The doji, explained like you are five.
 
-1. A range: highs and lows at about the same prices.
-2. A double top: it only counts when a close breaks the trigger.
-3. A bearish engulfing candle: a red body covering the green one before it.
+Every candle is a tug of war between buyers and sellers.
+A doji is a draw: open and close almost the same.
+On Pinnacle, ten candles after this one, the price was 8.6% lower.
+Still only a clue, never a guarantee.
 
 Save this for your next chart.
 Practise at memestreet.net
-
 Fictional market. Not investment advice.
 
-#MemeStreet #ChartPatterns #Candlesticks #LearnToTrade
+#MemeStreet #Doji #Candlesticks #TradingForBeginners

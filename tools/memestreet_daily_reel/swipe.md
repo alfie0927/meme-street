@@ -847,3 +847,19 @@
 - hook score: 62.6  words: 8
 - hook: "Losing money trading? Follow for 60s trading lessons."
 
+
+## Stick figures (2026-11-05)
+
+632 videos from 19 stick-figure and animated finance accounts (YouTube and TikTok; Instagram needs a login), each ranked
+against its own account's median views.
+
+| Format | Best examples (x the account's median) |
+|---|---|
+| "Your life at every level of a ___" | Your Life at Every Level of a Day Trader (Finance Expl., 538x); Your Life As A Fake Money Printer (The Badly Explainer, 36x); Every Level of F1 Driver (The Explainer Boss, 10x) |
+| "Explained like you're 5 / for people who want to be rich" | Stocks Explained for Those Who Want to Be Rich (Sticky Academy, 548x, 1.7M); Stock Market Terms Explained (Stickman Invests, 165x); The Wolf of Wall Street Scam Explained Like You're 5 (Crayon Capital, 4.2M) |
+| "How to actually ___, explained by a stick figure" | quit any addiction (StickFigure Explains, 152x, 4.8M); become disciplined (48x) |
+| Short stick-figure skits | bro forgot his job (@nolife_animation, 75x); you have to buy something (54x) |
+| "Every ___ explained in N minutes" | Every money laundering tactic (Unhinged Explainer, 80x); every financial scam (67x) |
+
+Made from it: the "Trader levels", "Explained like you're 5" and "Stick skit" categories (src/make_spec.py), drawn as
+stick scenes in src/reel.html.

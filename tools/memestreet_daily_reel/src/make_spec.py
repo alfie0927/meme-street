@@ -51,12 +51,23 @@ CATEGORIES = {
     "Stick skit": "VIRAL STICK FIGURES (75x on TikTok): a 20 to 30 second skit with two stick figures and one punchline, "
                   "about a real beginner habit (buying the top, selling the bottom, ignoring the stop), played out on the "
                   "real chart. The last beat lands the lesson in one line.",
+    # from accounts like the owner's examples (research 2026-11-05: 479 videos, 16 trading short-form accounts)
+    "Truth list": "VIRAL LOOP (261x its account's median): a 6 to 10 second reel made to be replayed while the caption is "
+                  "read. Scenes: a hook (on-screen text, max 6 words, like 'Trading truths nobody tells you') over a real "
+                  "chart moving, then one big scene, no outro. The spoken line is the hook and 'read the caption'. The "
+                  "caption carries the value: 7 to 12 numbered, original, plain trading truths (risk, stops, patience, "
+                  "overtrading, revenge trading), one line each, then the usual ending.",
+    "Hard truth": "VIRAL (6 to 10x): one hard truth about trading psychology in 10 to 20 seconds, shown on the real chart "
+                  "moment that proves it (for example one loss, then the urge to win it back). One stick figure may act it "
+                  "out. Short lines, a pause-free build, the truth said plainly in the last scene before a short outro.",
     "Speed cheat sheet": "VIRAL (14x): rapid fire, three candles or patterns in under 30 seconds, each named, shown on a "
                          "real chart, and given one line on what it means. The hook promises the speed.",
 }
 ROTATION = {"0600": ["Technical lesson", "Trading mistake"], "1200": ["Chart quiz"], "1800": ["Stock story", "Guess the move"],
             "2100": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Guess the move"],
             "0300": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Myth or fact"]}
+ROTATION["0900"] = ["Hard truth"]
+ROTATION["1300"] = ["Truth list"]
 ROTATION["2100"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
 ROTATION["0300"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
 KINDS = {"Chart quiz": ["pattern", "candle", "breakout", "level", "trend", "stop", "rr", "fib"],
@@ -66,7 +77,9 @@ KINDS = {"Chart quiz": ["pattern", "candle", "breakout", "level", "trend", "stop
          "Chart twist": ["breakout", "pattern", "level", "next"], "One trick": ["breakout", "stop", "level", "rr"],
          "Big players": ["breakout", "level"], "Speed cheat sheet": ["candle", "pattern", "trend"],
          "Trader levels": ["breakout", "level", "stop"], "Explained like you're 5": ["trend", "level", "candle", "rr"],
-         "Stick skit": ["breakout", "level", "next"]}
+         "Stick skit": ["breakout", "level", "next"], "Truth list": ["trend", "breakout", "level"],
+         "Hard truth": ["stop", "next", "breakout", "level"]}
+LENGTH = {"Truth list": (8, 30, False), "Hard truth": (25, 60, True)}     # spoken words min, max, and whether it ends on the outro
 VIRAL_EVIDENCE = [
     ["37x", "It still looked bearish... but the candles told a different story."],
     ["6x", "It looked bullish, until the second test changed everything."],
@@ -79,6 +92,10 @@ STICK_EVIDENCE = [
     ["538x", "Your life at every level of a day trader."], ["548x", "Stocks explained for those who want to be rich."],
     ["165x", "Stock market terms explained, for beginners."], ["152x", "How to actually quit it, explained by a stick figure."],
     ["75x", "Bro forgot his job. (a 15-second stick-figure skit)"], ["80x", "Every scam tactic explained in eight minutes."]]
+SHORT_EVIDENCE = [
+    ["261x", "15 trading truths you need to hear. (6-second loop, the list in the caption)"],
+    ["68x", "'More trades = more money' and other beliefs that cost traders. (6-second loop)"],
+    ["10x", "The harsh reality of trading."], ["2x on a small account", "One loss. That's all it takes for emotion to grab the wheel."]]
 CHART_COUNT = {"Chart quiz": 3, "Guess the move": 2, "Speed cheat sheet": 3}
 
 
@@ -192,7 +209,7 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
 """
 
 RULES = """Rules:
-- Total spoken words 75 to 140 (about 25 to 50 seconds). No greeting, no "in this video". Start at the hook.
+- Total spoken words 75 to 140 (about 25 to 50 seconds), unless the reel's description says otherwise. No greeting, no "in this video". Start at the hook.
 - The first scene is a hook; the last is the outro. Change what is on screen every scene.
 - Every number, name and outcome must come from the facts. Never invent results, prices, people or history.
 - Candle indices in cues must be between a chart's first_shown and last. "say" must be words that appear in that scene's vo.
@@ -217,14 +234,15 @@ def claude(messages, system):
 EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿️]")
 
 
-def check(spec, facts, charts):
+def check(spec, facts, charts, category=None):
     """What is wrong with the script, in words Claude can fix."""
     errs = []
     sc = spec.get("scenes") or []
     if not sc or sc[0].get("kind") != "hook": errs.append("the first scene must be a hook")
-    if not sc or sc[-1].get("kind") != "outro": errs.append("the last scene must be an outro")
+    lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (75, 140, True))
+    if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     words = sum(len(s.get("vo", "").split()) for s in sc)
-    if not 75 <= words <= 140: errs.append(f"the narration is {words} words; it must be 75 to 140")
+    if not lo_w <= words <= hi_w: errs.append(f"the narration is {words} words; it must be {lo_w} to {hi_w}")
     for k, s in enumerate(sc):
         if len(s.get("vo", "").split()) > 26: errs.append(f"scene {k}'s line is too long ({len(s['vo'].split())} words, max 26)")
         ch = s.get("chart")
@@ -234,12 +252,9 @@ def check(spec, facts, charts):
             for f in ("to", "i", "from"):
                 if f in c and isinstance(ch, int) and 0 <= ch < len(charts) and not 0 <= c[f] < len(charts[ch]["candles"]):
                     errs.append(f"scene {k}: candle {c[f]} is outside chart {ch}")
-    hs = [h for h in spec.get("hooks", []) if isinstance(h, str)]
-    if hs:
-        best = max(hs, key=lambda h: hookscore.run(h)[1])
-        score = hookscore.run(best)[1]
-        if score < 50: errs.append(f"the best hook scores {score:.0f}/100 (needs 50+): make it shorter, concrete and with something at stake")
-        if sc and sc[0].get("kind") == "hook": sc[0]["vo"] = best if sc[0].get("vo") in hs else sc[0]["vo"]
+    if sc and sc[0].get("kind") == "hook":                 # the hook as spoken (the screen and the caption follow it, never swapped)
+        score = hookscore.run(sc[0].get("vo", ""))[1]
+        if score < 50: errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+): make it shorter, concrete and with something at stake; keep the on-screen text and the caption's first line saying the same thing")
     cap = spec.get("caption", "")
     if DISCLAIMER not in cap: errs.append(f"the caption must contain exactly: {DISCLAIMER}")
     if EMOJI.search(cap + json.dumps(sc)): errs.append("no emoji anywhere")
@@ -295,7 +310,8 @@ def brief(slot, category=None, remake=None):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research 2026-11-04). Use the SHAPE, never the words: write an original line "
                                          "about this reel's own chart.",
-                                 "examples": STICK_EVIDENCE if "STICK" in CATEGORIES[category] else VIRAL_EVIDENCE}
+                                 "examples": STICK_EVIDENCE if "STICK" in CATEGORIES[category] else
+                                 SHORT_EVIDENCE if category in LENGTH else VIRAL_EVIDENCE}
     if remake:
         ask["remake_of"] = {"note": "Make this reel again on the same topic, with the same teaching points and similar "
                                     "explanations, but tighter: no long pauses, every line earns its place. Use the new "
@@ -313,7 +329,7 @@ def parse(raw, B):
         spec = json.loads(m.group(0)) if m else {}
     except ValueError as e:
         return {}, [f"not valid JSON: {e}"]
-    return spec, check(spec, B["ask"]["facts"], B["charts"])
+    return spec, check(spec, B["ask"]["facts"], B["charts"], B["category"])
 
 
 def claude_cli(messages, system):

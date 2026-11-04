@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Make the auto reel for the next posting slot and put it in the queue (queue_post.sh posts it on time).
-#   ./auto_reel.sh                    the next slot (03:00, 06:00, 12:00, 18:00, 21:00 UTC) starting within 3 hours
+#   ./auto_reel.sh                    the next slot (03:00, 06:00, 09:00, 12:00, 13:00, 18:00, 21:00 UTC) starting within 3 hours
 #   ./auto_reel.sh 2026-11-05T1200    that slot
-# (03:00 and 21:00 are the viral slots.)
+# (03:00, 09:00, 13:00 and 21:00 are the viral slots.)
 # A slot that already holds a November reel gets a remake of it (queue/<slot>/remake.json); if anything fails, the
 # reel already there is posted as it is. A remade slot's original is kept in queue-originals/.
 set -euo pipefail
@@ -11,7 +11,7 @@ export PATH="$HOME/.local/bin:$PATH"                 # (Claude Code, the script 
 mkdir -p logs queue queue-originals
 SLOT="${1:-}"
 if [ -z "$SLOT" ]; then
-  for h in 0300 0600 1200 1800 2100; do
+  for h in 0300 0600 0900 1200 1300 1800 2100; do
     for d in "$(date -u +%F)" "$(date -u -d tomorrow +%F)"; do
       s="${d}T$h"; ds=$(( $(date -u -d "${d} ${h:0:2}:${h:2:2}" +%s) - $(date -u +%s) ))
       if [ "$ds" -gt 0 ] && [ "$ds" -le 10800 ]; then SLOT=$s; break 2; fi

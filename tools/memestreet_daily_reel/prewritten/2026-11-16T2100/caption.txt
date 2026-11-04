@@ -1,13 +1,12 @@
-Three chart shapes in thirty seconds.
+Five traders, one entry, five very different stops.
 
-Falling channel: complete on a close below its trigger, and it can still fail.
-Downtrend: lower highs and lower lows.
-Hammer: a long lower wick after a fall.
+CoinHarbor, bought at 327.90 off support.
+A stop a hair below: hit after one candle.
+Just below support at 324.61: hit after two, then it bounced to 336.10.
+Way down at 302.04: never hit, but the position has to be tiny.
 
-Save this for your next chart.
-
+Which level are you? Tell me in the comments.
 Practise at memestreet.net
-
 Fictional market. Not investment advice.
 
-#MemeStreet #Candlesticks #ChartPatterns #LearnToTrade
+#MemeStreet #StopLoss #RiskManagement #LearnToTrade
