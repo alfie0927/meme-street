@@ -863,3 +863,9 @@ against its own account's median views.
 
 Made from it: the "Trader levels", "Explained like you're 5" and "Stick skit" categories (src/make_spec.py), drawn as
 stick scenes in src/reel.html.
+
+## Weekly refresh
+
+src/research.py (memestreet-reel-research.timer, Mondays 05:00 UTC) re-ranks the newest Shorts of the channels above
+against their own medians and writes the top openings to state/evidence.json for the viral writer (shapes only).
+TikTok and Instagram stay manual research.

@@ -314,6 +314,9 @@ def brief(slot, category=None, remake=None):
                                          "about this reel's own chart.",
                                  "examples": STICK_EVIDENCE if "STICK" in CATEGORIES[category] else
                                  SHORT_EVIDENCE if category in LENGTH else VIRAL_EVIDENCE}
+        ev = os.path.join(ROOT, "state", "evidence.json")      # this week's outliers (src/research.py), shapes only
+        if os.path.exists(ev):
+            ask["what_works_now"]["this_week"] = json.load(open(ev, encoding="utf-8")).get("examples", [])[:8]
     if remake:
         ask["remake_of"] = {"note": "Make this reel again on the same topic, with the same teaching points and similar "
                                     "explanations, but tighter: no long pauses, every line earns its place. Use the new "

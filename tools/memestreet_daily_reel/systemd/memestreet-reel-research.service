@@ -1,0 +1,9 @@
+[Unit]
+Description=Meme Street: this week's viral finance Shorts (shapes for the reel writer)
+After=network-online.target
+[Service]
+Type=oneshot
+User=__USER__
+WorkingDirectory=__DIR__
+ExecStart=/usr/bin/python3 __DIR__/src/research.py
+Nice=19
