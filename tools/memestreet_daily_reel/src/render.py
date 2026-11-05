@@ -17,6 +17,13 @@ async def frames(R, fdir, cover=None, date=""):
         for i in range(n):
             await pg.evaluate("t=>render(t)", i / FPS)
             await pg.screenshot(path=f"{fdir}/f{i:05d}.jpg", type="jpeg", quality=92)
+        if os.environ.get("PAGE") == "reel.html":           # no text may touch other text, anywhere in the reel
+            bad = {}
+            for q in range(int(R["T"] * 4)):
+                for pair in await pg.evaluate("t=>qa(t)", q / 4):
+                    bad.setdefault(tuple(pair), q / 4)
+            if bad:
+                raise SystemExit("overlapping text: " + "; ".join(f"{a} / {b} at {t:.2f}s" for (a, b), t in list(bad.items())[:6]))
         if cover:
             await pg.evaluate("d=>cover(d)", date)
             await pg.screenshot(path=cover, type="jpeg", quality=92)

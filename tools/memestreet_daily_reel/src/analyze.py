@@ -332,7 +332,7 @@ def build_script(A):
     beats.append(dict(title="The scorecard", vo=sc_vo, win=[H, n - 1], reveal=[n - 1, n - 1],
                       span=[[t["entry"], t["exit"], "red" if t["dir"] == "short" else "green"] for t in trades],
                       score=dict(tr=sc_trades, tot=pct(total), hold=pct(hold), best=pct(bp) if bp is not None else "—"), caps=[]))
-    beats.append(dict(title="New chart daily", vo="A new chart drops every day. Play the Daily Chart at Meme Street dot net, slash daily.",
+    beats.append(dict(title="New chart daily", vo="A new chart drops every day. Play the Daily Chart at Meem Street dot net, slash daily.",
                       win=[0, n - 1], reveal=[n - 1, n - 1], caps=["memestreet.net/daily"], outro=True))
     return beats
 

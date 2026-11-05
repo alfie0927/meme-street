@@ -255,6 +255,8 @@ def check(spec, facts, charts, category=None):
     if sc and sc[0].get("kind") == "hook":                 # the hook as spoken (the screen and the caption follow it, never swapped)
         score = hookscore.run(sc[0].get("vo", ""))[1]
         if score < 50: errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+): make it shorter, concrete and with something at stake; keep the on-screen text and the caption's first line saying the same thing")
+    if sc and "memestreet.net" not in sc[-1].get("vo", "").lower():
+        errs.append("the last scene's line must end by saying memestreet.net (spoken as 'Meem Street dot net')")
     cap = spec.get("caption", "")
     if DISCLAIMER not in cap: errs.append(f"the caption must contain exactly: {DISCLAIMER}")
     if EMOJI.search(cap + json.dumps(sc)): errs.append("no emoji anywhere")

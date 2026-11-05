@@ -21,6 +21,34 @@ def tone(path, freqs, length, vol=0.25):
     a = sum(np.sin(2 * np.pi * f * t) for f in freqs) / len(freqs) * np.exp(-t * (40 if length < .1 else 7)) * vol
     sf.write(path, a.astype(np.float32), SR)
 
+SAY = [(re.compile(r"memestreet\.net(/daily)?", re.I), lambda m: "Meem Street dot net" + (" slash daily" if m.group(1) else "")),
+       (re.compile(r"\bmeme ?street\b", re.I), lambda m: "Meem Street")]
+
+def say_as(text):
+    """The line as the voice should say it: the brand is "Meem Street", and the site "Meem Street dot net"."""
+    for rx, fn in SAY:
+        text = rx.sub(fn, text)
+    return text
+
+def key(w):
+    return re.sub(r"[^a-z0-9']", "", w.lower())
+
+def follow(words, tw, wt, d):
+    """The time each of `words` (on-screen text) is said: matched in order to the spoken line, the rest spread between."""
+    keys, out, j = [key(w) for w in tw], [], 0
+    for w in words:
+        k = next((q for q in range(j, len(keys)) if keys[q] == key(w) and key(w)), None)
+        out.append(wt[k][0] if k is not None else None)
+        if k is not None: j = k + 1
+    known = [i for i, x in enumerate(out) if x is not None]
+    for i in range(len(out)):
+        if out[i] is None:
+            lo = max([q for q in known if q < i], default=None); hi = min([q for q in known if q > i], default=None)
+            a = out[lo] if lo is not None else 0.0; b = out[hi] if hi is not None else d * 0.8
+            n0 = lo if lo is not None else -1; n1 = hi if hi is not None else len(out)
+            out[i] = a + (b - a) * (i - n0) / (n1 - n0)
+    return out
+
 def align(tw, W, d):
     """Match the written words to the recognised ones (difflib), so every written word gets the time it is really
     said; a word the recogniser heard differently ("230" for "two thirty") takes its place between its neighbours."""
@@ -55,13 +83,12 @@ def main(work):
         sents = [x for x in re.split(r"(?<=[.!?])\s+", sc["vo"].strip()) if x]
         parts, cur = [], 0.0
         for j, s in enumerate(sents):
-            a, _ = K.create(s, voice="af_heart", speed=float(os.environ.get("VOICE_SPEED", "1.05")), lang="en-us")
+            a, _ = K.create(say_as(s), voice="af_heart", speed=float(os.environ.get("VOICE_SPEED", "1.05")), lang="en-us")
             a = trim(a, SR)
             if j: parts.append(np.zeros(int(SENT_GAP * SR), np.float32))
             parts.append(a)
         clip = os.path.join(work, "vo", f"s{i}.wav"); sf.write(clip, np.concatenate(parts), SR)
         d = dur(clip); W = words(clip)
-        spoken = norm_words(sc["vo"])
 
         tw = sc["vo"].split()
         wt = align(tw, W, d)                                   # each written word's own (start, end) in the clip
@@ -77,6 +104,10 @@ def main(work):
         vo.append([clip, round(vs, 3)])
         sc["text_words"] = tw                                  # the captions: the written words, each at its spoken time
         sc["wt"] = [[round(vs + a, 3), round(vs + b, 3)] for a, b in wt]
+        if sc.get("text") and (sc["kind"] == "big" or sc.get("chart") is None):   # big words appear as they are said
+            sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
+        if sc.get("options"):                                  # each option appears as it is read out
+            sc["opt_t"] = [round(vs + x, 3) for x in follow([o.split()[0] for o in sc["options"]], tw, wt, d)]
         for c in sc.get("cues", []):
             c["t"] = round(vs + at(c.get("say", "")), 3)
         t = vs + d

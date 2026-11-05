@@ -13,9 +13,9 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .head{position:absolute;left:60px;right:60px;top:400px;height:130px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 58px/1.12 'Cascadia Mono',monospace;letter-spacing:-1px}
 .head b{display:inline-block;margin-right:20px;padding:8px 18px;border-radius:16px;background:#e8b14a;color:#07121a;font-size:44px;vertical-align:middle}
 #stage{position:absolute;left:0;top:0;width:1080px;height:1920px}
-.opts{position:absolute;left:62px;right:62px;top:1190px;display:flex;gap:16px}
-.opt{flex:1;padding:24px 10px;border-radius:20px;background:#13171c;border:3px solid #2a2f35;text-align:center;font:700 32px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
-.caps{position:absolute;left:70px;right:70px;top:1310px;text-align:center;font:700 46px/1.3 'Cascadia Mono',monospace;color:#e6e9ec}
+.opts{position:absolute;left:62px;right:62px;top:1180px;height:104px;display:flex;gap:16px}
+.opt{flex:1;height:104px;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:20px;background:#13171c;border:3px solid #2a2f35;text-align:center;font:700 32px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
+.caps{position:absolute;left:70px;right:70px;top:1305px;max-height:120px;text-align:center;font:700 46px/1.3 'Cascadia Mono',monospace;color:#e6e9ec}
 .caps span{display:inline-block;margin:0 9px;transition:none}
 .card{position:absolute;left:62px;right:62px;height:150px;border-radius:24px;background:#0d1116;border:3px solid #23282e;display:flex;align-items:center;gap:28px;padding:0 34px;box-sizing:border-box}
 .card .ic{width:84px;height:84px;flex:none}.card .tx{font:700 38px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
@@ -127,7 +127,7 @@ const MOOD={stand:'flat',think:'flat',panic:'o',happy:'smile',point:'smile',poin
 function figPose(s,f,k,t){let cur=f.pose||'stand',prev=cur,at=-9;(s.cues||[]).filter(c=>c.do==='pose'&&(c.fig||0)===k&&t>=c.t-.05).forEach(c=>{prev=cur;cur=c.pose;at=c.t});
  const A=POSE[prev]||POSE.stand,Bp=POSE[cur]||POSE.stand,u=io(seg(t,at,at+.35)),m=(x,y)=>lerp(x,y,u);
  const P={};['la','ra','ll','rl'].forEach(j=>P[j]=[m(A[j][0],Bp[j][0]),m(A[j][1],Bp[j][1])]);P.lean=m(A.lean,Bp.lean);P.tilt=m(A.tilt,Bp.tilt);P.name=cur;P.u=u;return P}
-function drawFigure(s,f,k,t,cx,gy,sc){const P=figPose(s,f,k,t),R=Math.PI/180,L=60*sc,br=Math.sin(t*2.4+k)*1.5*sc;
+function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.PI/180,L=60*sc,br=Math.sin(t*2.4+k)*1.5*sc;
  let sh=0,by=0;if(P.name==='panic')sh=Math.sin(t*40)*4*sc*P.u;if(P.name==='happy')by=-Math.abs(Math.sin(t*6))*14*sc*P.u;
  const W=POSE[P.name]&&POSE[P.name].walk;if(W){P.ll=[Math.sin(t*7)*24,Math.sin(t*7)*24+8];P.rl=[-Math.sin(t*7)*24,-Math.sin(t*7)*24+8];P.la=[-Math.sin(t*7)*20,-8];P.ra=[Math.sin(t*7)*20,8]}
  const hip=[cx+sh,gy-2*L*Math.cos(12*R)+by],lean=P.lean*R,neck=[hip[0]+Math.sin(lean)*1.15*L,hip[1]-Math.cos(lean)*1.15*L+br],head=[neck[0]+Math.sin(lean)*24*sc,neck[1]-30*sc];
@@ -141,49 +141,60 @@ function drawFigure(s,f,k,t,cx,gy,sc){const P=figPose(s,f,k,t),R=Math.PI/180,L=6
   <circle cx="${ex}" cy="${ey}" r="${28*sc}" fill="#080a0b" transform="rotate(${tl} ${ex} ${ey+28*sc})"/><path d="${seg2(sho,P.la)}"/><path d="${seg2(sho,P.ra)}"/></g>
   <g transform="rotate(${tl} ${ex} ${ey+28*sc})"><circle cx="${ex-9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/><circle cx="${ex+9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/>
   ${mood==='o'?`<ellipse cx="${ex}" cy="${ey+11*sc}" rx="${5*sc}" ry="${7*sc}" fill="${col}"/>`:`<path d="${mouth}" stroke="${col}" stroke-width="${4*sc}" fill="none" stroke-linecap="round"/>`}</g>`;
- if(f.label)g+=`<text x="${cx}" y="${gy+46*sc}" text-anchor="middle" font-size="${Math.round(30*Math.min(1.2,sc))}" font-weight="700" fill="${f.color==='amber'?AM:TE}">${esc(f.label)}</text>`;
+ if(f.label)g+=`<text class="qa" x="${cx}" y="${gy+46*sc}" text-anchor="middle" font-size="${Math.round(30*Math.min(1.2,sc))}" font-weight="700" fill="${f.color==='amber'?AM:TE}">${esc(f.label)}</text>`;
  // speech bubble: pops on its cue, stays until the next one
- const bs=(s.cues||[]).filter(c=>c.do==='bubble'&&(c.fig||0)===k&&t>=c.t-.05);if(bs.length){const b=bs[bs.length-1],a=back(seg(t,b.t,b.t+.35)),txt=esc(b.text||''),w=Math.min(470,txt.length*21+50);let bx=Math.max(70,Math.min(1010-w,ex-w/2)),byy=ey-28*sc-150,tail=`M${ex-12} ${byy+62}L${ex} ${byy+84}L${ex+12} ${byy+62}Z`;
+ const bs=(s.cues||[]).filter(c=>c.do==='bubble'&&(c.fig||0)===k&&t>=c.t-.05);if(bs.length){const b=bs[bs.length-1],a=back(seg(t,b.t,b.t+.35)),txt=esc(b.text||''),w=Math.min(colW-16,470,(b.text||'').length*19+50),bf=Math.min(30,Math.floor((w-28)/Math.max(1,(b.text||'').length)/0.6));let bx=Math.max(70,Math.min(1010-w,ex-w/2)),byy=ey-28*sc-150,tail=`M${ex-12} ${byy+62}L${ex} ${byy+84}L${ex+12} ${byy+62}Z`;
   if(byy<550){const left=ex>540;bx=left?ex-36*sc-w-20:ex+36*sc+20;bx=Math.max(40,Math.min(1040-w,bx));byy=ey-32;tail=left?`M${bx+w-2} ${byy+20}L${bx+w+20} ${byy+32}L${bx+w-2} ${byy+44}Z`:`M${bx+2} ${byy+20}L${bx-20} ${byy+32}L${bx+2} ${byy+44}Z`}   // (no room above: beside the head)
-  g+=`<g transform="translate(${ex} ${byy+60}) scale(${a}) translate(${-ex} ${-(byy+60)})"><rect x="${bx}" y="${byy}" width="${w}" height="64" rx="20" fill="#e6e9ec"/><path d="${tail}" fill="#e6e9ec"/><text x="${bx+w/2}" y="${byy+42}" text-anchor="middle" font-size="30" font-weight="700" fill="#07121a">${txt}</text></g>`}
+  g+=`<g class="qa" transform="translate(${ex} ${byy+60}) scale(${a}) translate(${-ex} ${-(byy+60)})"><rect x="${bx}" y="${byy}" width="${w}" height="64" rx="20" fill="#e6e9ec"/><path d="${tail}" fill="#e6e9ec"/><text x="${bx+w/2}" y="${byy+42}" text-anchor="middle" font-size="${bf}" font-weight="700" fill="#07121a">${txt}</text></g>`}
  return g+'</g>'}
 function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
- if(s.chart!=null)return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920">${drawFigure(s,F[0],0,t,912,1150,1.25)}</svg>`;
+ if(s.chart!=null)return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920">${drawFigure(s,F[0],0,t,912,1150,1.25,300)}</svg>`;
  const n=F.length,sc=n===1?1.9:n===2?1.55:1.25,xs=n===1?[540]:n===2?[330,750]:[220,540,860];
- return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920"><line x1="80" x2="1000" y1="1160" y2="1160" stroke="#2a2f35" stroke-width="4" stroke-linecap="round"/>${F.map((f,k)=>drawFigure(s,f,k,t,xs[k],1160,sc)).join('')}</svg>`}
+ return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920"><line x1="80" x2="1000" y1="1160" y2="1160" stroke="#2a2f35" stroke-width="4" stroke-linecap="round"/>${F.map((f,k)=>drawFigure(s,f,k,t,xs[k],1160,sc,1040/n)).join('')}</svg>`}
+const fit=(el,maxH,base,min=18)=>{let f=base;el.style.fontSize=f+'px';while(el.scrollHeight>maxH+1&&f>min){f-=2;el.style.fontSize=f+'px'}};   // (text shrinks to its box: no overlaps)
 function render(T){
  const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
  drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
- hd.innerHTML=s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px)`;
+ const hookTxt=s.kind==='hook'&&s.chart!=null&&s.text;   // the on-screen hook sits in the title zone, in amber
+ hd.innerHTML=hookTxt?`<span style="color:${AM}">${esc(s.text)}</span>`:s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px)`;fit(hd,130,hookTxt?62:58);
  drawChart(i,t);
  // cards, big text
  let st='';
- if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),y=560+k*170;
-  st+=`<div class="card" style="top:${y}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
+ if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(170,600/Math.max(1,N)),y=560+k*gap;
+  st+=`<div class="card qa" style="top:${y}px;height:${gap-20}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
  if(s.kind==='stick')st+=drawSticks(s,t);
- if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big">${ws.map((w,k)=>{const at=s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.3));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
- if(s.kind==='hook'&&s.chart!=null&&s.text){const a=back(seg(t,s.t0,s.t0+.45));st+=`<div style="position:absolute;left:60px;right:60px;top:1180px;text-align:center;font:700 64px/1.1 'Cascadia Mono',monospace;color:${AM};opacity:${cl(a)};transform:scale(${.85+.15*a})">${esc(s.text)}</div>`}
+ if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
   st+=`<svg style="position:absolute;left:880px;top:560px;opacity:${a}" width="120" height="120"><circle cx="60" cy="60" r="50" fill="#07090ccc" stroke="#2a2f35" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="${AM}" stroke-width="8" stroke-dasharray="${314*(1-u)} 400" transform="rotate(-90 60 60)" stroke-linecap="round"/><text x="60" y="72" text-anchor="middle" font-size="36" font-weight="800" fill="#e6e9ec">${Math.ceil(left)}</text></svg>`}
  document.getElementById('stage').innerHTML=st;
  // the options: in during the question, the right one lights up at the answer
  const o=document.getElementById('opts'),q=s.kind==='question'?s:(s.kind==='answer'&&p.kind==='question'?p:null);
- if(q&&q.options){const shown=s.kind==='question'?s:null;o.innerHTML=q.options.map((x,k)=>{const at=s.kind==='question'?((s.cues||[]).find(c=>c.do==='options')||{t:s.vs+.4}).t+k*.15:-1,a=at<0?1:back(seg(t,at,at+.35));
+ if(q&&q.options){const shown=s.kind==='question'?s:null;o.innerHTML=q.options.map((x,k)=>{const at=s.kind==='question'?(s.opt_t?s.opt_t[k]:((s.cues||[]).find(c=>c.do==='options')||{t:s.vs+.4}).t+k*.15):-1,a=at<0?1:back(seg(t,at,at+.35));
    let st2=`opacity:${cl(a)};transform:translateY(${(1-a)*30}px)`;if(s.kind==='answer'){const ok=k===q.answer,u=out(seg(t,s.t0,s.t0+.35));st2+=ok?`;background:#123d2a;border-color:${G};color:#fff;transform:scale(${1+.06*Math.sin(Math.PI*cl(u))})`:`;opacity:${1-.6*u}`}
-   return `<div class="opt" style="${st2}">${s.kind==='answer'&&k===q.answer?'&#10003; ':''}${esc(x)}</div>`}).join('')}else o.innerHTML='';
+   return `<div class="opt" style="${st2}">${s.kind==='answer'&&k===q.answer?'&#10003; ':''}${esc(x)}</div>`}).join('');o.querySelectorAll('.opt').forEach(e=>fit(e,104,q.options.length>3?26:30,16))}else o.innerHTML='';
  // burned-in captions: the line being spoken, the current word lit
  const cp=document.getElementById('caps');
  if(s.kind!=='outro'&&s.text_words&&s.wt&&t>=s.vs-.05&&t<=s.ve+.25){const tw=s.text_words,m=tw.length;   // each word lights as it is said (narrate.py align)
   let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.03)cur=k;const per=5,st0=Math.floor(cur/per)*per;
-  cp.innerHTML=tw.slice(st0,st0+per).map((w,k)=>`<span style="color:${st0+k===cur?TE:st0+k<cur?'#e6e9ec':'#5d6670'}">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1}else cp.innerHTML='';
+  cp.innerHTML=tw.slice(st0,st0+per).map((w,k)=>`<span style="color:${st0+k===cur?TE:st0+k<cur?'#e6e9ec':'#5d6670'}">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1;fit(cp,120,46,28)}else cp.innerHTML='';
  // the end card
  const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';document.getElementById('oText').style.opacity=out(seg(t,s.t0+.4,s.t0+.9))}else O.style.opacity=0;
  document.body.style.opacity=Math.min(seg(T,0,.2),1-seg(T,R.T-.3,R.T));
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
 window.render=render;
+// the overlap check (render.py runs it through the reel): every visible piece of text, measured as drawn; any two that
+// touch are reported, and a reel with any is not posted
+window.qa=async T=>{await render(T);const els=[document.getElementById('head'),document.getElementById('caps'),...document.querySelectorAll('.opt,.qa')];
+ const vis=e=>{if(!e||!e.textContent.trim())return null;let o=1;for(let x=e;x&&x!==document.body;x=x.parentElement)o*=parseFloat(getComputedStyle(x).opacity);if(e.getAttribute&&e.getAttribute('opacity'))o*=parseFloat(e.getAttribute('opacity'));
+  if(o<.3)return null;let r;if(e.id==='head'||e.id==='caps'){const sp=e.querySelector('span')?[...e.querySelectorAll('span')]:[e];const rs=sp.map(x=>x.getBoundingClientRect());r={left:Math.min(...rs.map(x=>x.left)),right:Math.max(...rs.map(x=>x.right)),top:Math.min(...rs.map(x=>x.top)),bottom:Math.max(...rs.map(x=>x.bottom))}}else r=e.getBoundingClientRect();
+  return r.width===0&&r.right-r.left===0?null:r};
+ const B=els.map(e=>[e,vis(e)]).filter(x=>x[1]),bad=[];
+ for(let a=0;a<B.length;a++)for(let b=a+1;b<B.length;b++){const p=B[a][1],q=B[b][1];if(B[a][0].contains(B[b][0])||B[b][0].contains(B[a][0]))continue;
+  if(p.left<q.right-2&&q.left<p.right-2&&p.top<q.bottom-2&&q.top<p.bottom-2)bad.push([(B[a][0].id||B[a][0].className.baseVal||B[a][0].className)+':'+B[a][0].textContent.trim().slice(0,30),(B[b][0].id||B[b][0].className.baseVal||B[b][0].className)+':'+B[b][0].textContent.trim().slice(0,30)])}
+ return bad};
 // the reel's cover: its first chart (or its first scene) under the title
 window.cover=async date=>{const k=Math.max(0,SC.findIndex(s=>s.chart!=null&&s.kind!=='hook'));const s=SC[k];await render(Math.min(s.t1-.05,(s.ve||s.t1)));
  document.getElementById('caps').innerHTML='';document.getElementById('opts').innerHTML='';document.querySelector('.prog').style.display='none';
