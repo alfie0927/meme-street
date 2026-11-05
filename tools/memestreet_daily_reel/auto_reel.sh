@@ -23,6 +23,7 @@ fi
 [ -f "queue/$SLOT/.auto" ] && { echo "$SLOT already has its auto reel"; exit 0; }
 W="work/auto-$SLOT"; O="out/auto-$SLOT"; rm -rf "$W" "$O"
 args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.json")
+[ -n "${REEL_CATEGORY:-}" ] && args+=(--category "$REEL_CATEGORY")      # (a chosen format, e.g. for a test reel)
 {
   echo "=== auto reel $SLOT  $(date -u '+%F %T UTC')"
   if [ -f "prewritten/$SLOT/spec.json" ]; then          # written ahead by a cloud session (prewritten/README.md)

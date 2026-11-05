@@ -33,6 +33,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 <div id="outro" style="position:absolute;inset:0;background:#080a0b;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
  <img id="oLogo" src="../assets/logo.png" style="width:360px;height:360px;border-radius:80px">
  <div id="oText" style="margin-top:56px;font:700 64px/1.15 'Cascadia Mono',monospace;text-align:center;max-width:900px"></div>
+ <div id="oDaily" style="margin-top:34px;font:700 34px/1.2 'Cascadia Mono',monospace;color:#8b96a3;text-align:center"></div>
  <div id="oUrl" style="margin-top:44px;padding:24px 48px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 46px/1 'Cascadia Mono',monospace">memestreet.net</div>
  <div style="margin-top:40px;font:600 26px/1 'Cascadia Mono',monospace;color:#8b96a3">Fictional market. Not investment advice.</div>
 </div>
@@ -134,13 +135,15 @@ function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.P
  const seg2=(o,a)=>{const p1=[o[0]+Math.sin(a[0]*R)*.55*L,o[1]+Math.cos(a[0]*R)*.55*L],p2=[p1[0]+Math.sin(a[1]*R)*.55*L,p1[1]+Math.cos(a[1]*R)*.55*L];return `M${o[0]} ${o[1]}L${p1[0]} ${p1[1]}L${p2[0]} ${p2[1]}`};
  const sho=[neck[0]+Math.sin(lean)*-8*sc,neck[1]+10*sc],legs=(a)=>{const p1=[hip[0]+Math.sin(a[0]*R)*L,hip[1]+Math.cos(a[0]*R)*L],p2=[p1[0]+Math.sin(a[1]*R)*L,p1[1]+Math.cos(a[1]*R)*L];return `M${hip[0]} ${hip[1]}L${p1[0]} ${p1[1]}L${p2[0]} ${p2[1]}`};
  const col=f.color==='teal'?TE:f.color==='amber'?AM:'#e6e9ec',sw=9*sc,fa=out(seg(t,s.t0+(f.enter||0),s.t0+(f.enter||0)+.4));
- const tl=P.tilt,ex=head[0],ey=head[1],mood=f.mood&&P.u<.5?f.mood:MOOD[P.name]||'flat';
+ const tl=P.tilt,ex=head[0],ey=head[1],mood=f.mood&&P.u<.5?f.mood:MOOD[P.name]||'flat',who=(f.label||'').toLowerCase();
  const mouth=mood==='smile'?`M${ex-9*sc} ${ey+8*sc}Q${ex} ${ey+16*sc} ${ex+9*sc} ${ey+8*sc}`:mood==='frown'?`M${ex-9*sc} ${ey+13*sc}Q${ex} ${ey+5*sc} ${ex+9*sc} ${ey+13*sc}`:mood==='o'?'':`M${ex-8*sc} ${ey+11*sc}H${ex+8*sc}`;
  let g=`<g opacity="${fa}" transform="translate(0 ${(1-fa)*30})"><g stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" fill="none">
   <path d="M${hip[0]} ${hip[1]}L${neck[0]} ${neck[1]}"/><path d="${legs(P.ll)}"/><path d="${legs(P.rl)}"/>
   <circle cx="${ex}" cy="${ey}" r="${28*sc}" fill="#080a0b" transform="rotate(${tl} ${ex} ${ey+28*sc})"/><path d="${seg2(sho,P.la)}"/><path d="${seg2(sho,P.ra)}"/></g>
   <g transform="rotate(${tl} ${ex} ${ey+28*sc})"><circle cx="${ex-9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/><circle cx="${ex+9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/>
   ${mood==='o'?`<ellipse cx="${ex}" cy="${ey+11*sc}" rx="${5*sc}" ry="${7*sc}" fill="${col}"/>`:`<path d="${mouth}" stroke="${col}" stroke-width="${4*sc}" fill="none" stroke-linecap="round"/>`}</g>`;
+ if(who.startsWith('rookie'))g+=`<g transform="rotate(${tl} ${ex} ${ey+28*sc})" fill="${AM}"><path d="M${ex-26*sc} ${ey-14*sc}Q${ex} ${ey-48*sc} ${ex+26*sc} ${ey-14*sc}Z"/><rect x="${ex-46*sc}" y="${ey-18*sc}" width="${22*sc}" height="${7*sc}" rx="${3*sc}"/></g>`;   // Rookie: a backwards cap
+ if(who.startsWith('pro'))g+=`<g transform="rotate(${tl} ${ex} ${ey+28*sc})" stroke="${col}" stroke-width="${3*sc}" fill="none"><circle cx="${ex-10*sc}" cy="${ey-4*sc}" r="${8*sc}"/><circle cx="${ex+10*sc}" cy="${ey-4*sc}" r="${8*sc}"/><path d="M${ex-2*sc} ${ey-4*sc}H${ex+2*sc}"/></g>`;   // Pro: glasses
  if(f.label)g+=`<text class="qa" x="${cx}" y="${gy+46*sc}" text-anchor="middle" font-size="${Math.round(30*Math.min(1.2,sc))}" font-weight="700" fill="${f.color==='amber'?AM:TE}">${esc(f.label)}</text>`;
  // speech bubble: pops on its cue, stays until the next one
  const bs=(s.cues||[]).filter(c=>c.do==='bubble'&&(c.fig||0)===k&&t>=c.t-.05);if(bs.length){const b=bs[bs.length-1],a=back(seg(t,b.t,b.t+.35)),txt=esc(b.text||''),w=Math.min(colW-16,470,(b.text||'').length*19+50),bf=Math.min(30,Math.floor((w-28)/Math.max(1,(b.text||'').length)/0.6));let bx=Math.max(70,Math.min(1010-w,ex-w/2)),byy=ey-28*sc-150,tail=`M${ex-12} ${byy+62}L${ex} ${byy+84}L${ex+12} ${byy+62}Z`;
@@ -154,11 +157,11 @@ function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
 const fit=(el,maxH,base,min=18)=>{let f=base;el.style.fontSize=f+'px';while(el.scrollHeight>maxH+1&&f>min){f-=2;el.style.fontSize=f+'px'}};   // (text shrinks to its box: no overlaps)
 function render(T){
  const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
- drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
+ drawBg(T);document.getElementById('tag').textContent=(R.type||'')+(R.series?' #'+R.series:'');document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
  const hookTxt=s.kind==='hook'&&s.chart!=null&&s.text;   // the on-screen hook sits in the title zone, in amber
- hd.innerHTML=hookTxt?`<span style="color:${AM}">${esc(s.text)}</span>`:s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px)`;fit(hd,130,hookTxt?62:58);
+ hd.innerHTML=hookTxt?`<span style="color:${AM}">${esc(s.text)}</span>`:s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';const hb=back(seg(t,s.t0,s.t0+.4));hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px) scale(${.85+.15*hb})`;fit(hd,130,hookTxt?62:58);
  drawChart(i,t);
  // cards, big text
  let st='';
@@ -170,6 +173,8 @@ function render(T){
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
   st+=`<svg style="position:absolute;left:880px;top:560px;opacity:${a}" width="120" height="120"><circle cx="60" cy="60" r="50" fill="#07090ccc" stroke="#2a2f35" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="${AM}" stroke-width="8" stroke-dasharray="${314*(1-u)} 400" transform="rotate(-90 60 60)" stroke-linecap="round"/><text x="60" y="72" text-anchor="middle" font-size="36" font-weight="800" fill="#e6e9ec">${Math.ceil(left)}</text></svg>`}
  document.getElementById('stage').innerHTML=st;
+ const punch=back(seg(t,s.t0,s.t0+.45)),ps=.94+.06*punch;   // every scene lands with the same springy pop
+ ['chart','stage'].forEach(id=>{const e=document.getElementById(id);e.style.transformOrigin='540px 850px';e.style.transform=`scale(${ps})`});
  // the options: in during the question, the right one lights up at the answer
  const o=document.getElementById('opts'),q=s.kind==='question'?s:(s.kind==='answer'&&p.kind==='question'?p:null);
  if(q&&q.options){const shown=s.kind==='question'?s:null;o.innerHTML=q.options.map((x,k)=>{const at=s.kind==='question'?(s.opt_t?s.opt_t[k]:((s.cues||[]).find(c=>c.do==='options')||{t:s.vs+.4}).t+k*.15):-1,a=at<0?1:back(seg(t,at,at+.35));
@@ -179,9 +184,9 @@ function render(T){
  const cp=document.getElementById('caps');
  if(s.kind!=='outro'&&s.text_words&&s.wt&&t>=s.vs-.05&&t<=s.ve+.25){const tw=s.text_words,m=tw.length;   // each word lights as it is said (narrate.py align)
   let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.03)cur=k;const per=5,st0=Math.floor(cur/per)*per;
-  cp.innerHTML=tw.slice(st0,st0+per).map((w,k)=>`<span style="color:${st0+k===cur?TE:st0+k<cur?'#e6e9ec':'#5d6670'}">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1;fit(cp,120,46,28)}else cp.innerHTML='';
+  cp.innerHTML=tw.slice(st0,st0+per).map((w,k)=>`<span style="color:${st0+k===cur?TE:st0+k<cur?'#e6e9ec':'#5d6670'};display:inline-block;transform:scale(${st0+k===cur?1+.14*(1-seg(t,s.wt[cur][0],s.wt[cur][0]+.18)):1})">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1;fit(cp,120,46,28)}else cp.innerHTML='';
  // the end card
- const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';document.getElementById('oText').style.opacity=out(seg(t,s.t0+.4,s.t0+.9))}else O.style.opacity=0;
+ const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.daily;document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live${dd.best!=null?` · best today <span style="color:${G}">${dd.best>=0?'+':''}${(dd.best*100).toFixed(1)}%</span>`:''}`:'';document.getElementById('oDaily').style.opacity=out(seg(t,s.t0+.6,s.t0+1.1));document.getElementById('oText').style.opacity=out(seg(t,s.t0+.4,s.t0+.9))}else O.style.opacity=0;
  document.body.style.opacity=Math.min(seg(T,0,.2),1-seg(T,R.T-.3,R.T));
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
 window.render=render;

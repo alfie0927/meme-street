@@ -11,7 +11,8 @@ Claude to fix at most twice. Output: <work>/spec.json and <work>/caption.txt.
 import json, os, random, re, subprocess, sys, time, urllib.error, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(HERE, "ig"))
-import hookscore
+import hookscore, detect
+from pronounce import LEX
 
 SITE = os.environ.get("MS_BASE_LOCAL", "http://127.0.0.1:8000")
 MODEL = os.environ.get("REEL_MODEL", "claude-sonnet-5-5")
@@ -31,6 +32,11 @@ CATEGORIES = {
                       "(a short countdown), then the reveal and why. One or two charts.",
     "Myth or fact": "A viral reel: three common trading beliefs, each called myth or fact with one line of why, ending on "
                     "the most surprising one. Cards and big text, one real chart to prove the last point.",
+    "Daily recap": "Tonight's Daily Chart recap, the same chart every player had today: what the stock did, the realistic "
+                   "trades a careful reader could have taken (only those in the facts, at their candles), today's best "
+                   "player's return, and the invitation to play tomorrow's chart. Charts scenes with reveal cues through "
+                   "the day, marks at the trade candles, a cards scene for the scorecard. The outro ends: \"Tomorrow's "
+                   "Daily Chart drops at midnight. Beat it at memestreet.net.\"",
     # the viral formats from the research of 2026-11-04 (swipe.md: 169 shorts and TikToks, 11 accounts, ranked by how far
     # each beat its own account's median). The formula is copied, never a script.
     "Chart twist": "VIRAL (top format, 37x its account's median): a real chart that looks one way ('it still looked bearish'), "
@@ -152,6 +158,19 @@ def chart_summary(i, ch):
 def gather(category, rng, history, company=None):
     """The facts for this reel, and the charts the renderer draws. `company`: a remake's company, by name."""
     facts, charts = {}, []
+    if category == "Daily recap":                          # tonight's chart and its analysis (analyze.py), from fetch.py's file
+        import analyze
+        d = json.load(open(os.environ["DAILY_DATA"], encoding="utf-8"))
+        A = analyze.analyse(d, os.environ.get("MS_USER", ""))
+        C, H = A["C"], A["H"]
+        facts = {"chart_number": A["number"], "stock_change_pct": round(A["hold"] * 100, 2), "clock_starts_at_candle": H,
+                 "trades": [{"dir": t["dir"], "entry_candle": t["entry"], "exit_candle": t["exit"], "return_pct": round(t["r"] * 100, 2),
+                             "why": f"{t['ev']['outcome']} at {t['ev']['price']}"} for t in A["trades"]],
+                 "plan_total_pct": round(A["total"] * 100, 2), "best_player_pct": None if A["best_player"] is None else round(A["best_player"] * 100, 2),
+                 "players": A["players"]}
+        charts.append({"candles": C, "label": f"Daily Chart #{A['number']}", "upto": len(C) - 1, "end": len(C) - 1, "win": [0, len(C) - 1]})
+        facts["charts"] = [chart_summary(0, charts[0])]
+        return facts, charts
     if category == "Stock story":
         pack = json.load(open(PACK, encoding="utf-8")) if os.path.exists(PACK) else {"companies": [], "templates": []}
         if company:                                      # (the same company as the reel it remakes, or no remake)
@@ -216,7 +235,14 @@ RULES = """Rules:
 - The caption: first line is a hook that survives the "... more" cut (under 125 characters), then 2 to 5 short lines,
   one ask (comment, save or follow), "Practise at memestreet.net", then exactly "Fictional market. Not investment advice.",
   then 3 to 5 hashtags including #MemeStreet. No emoji anywhere. British spelling.
-- Sound like the voice profile: calm, clear, short sentences, never hype.
+- Sound like a person talking to ONE viewer: "you", contractions, short punchy lines, one surprising real number,
+  a question to the viewer now and then. Never read a list aloud. No stiff phrases ("in today's video", "let's dive in",
+  "it's important to note", "in conclusion", "delve"). Calm, clear, never hype.
+- Write prices the way people say them ("about two ten", "a hundred and twelve"), never with decimals in the spoken line.
+- Stick scenes use the two recurring characters: label "Rookie" (white) for the beginner and "Pro" (teal) for the one
+  who knows. Same names in every reel.
+- The last line echoes a word from the hook, so the replay loops cleanly, and the outro always ends with:
+  "Today's Daily Chart is live. Beat it at memestreet.net."
 """
 
 
@@ -255,6 +281,18 @@ def check(spec, facts, charts, category=None):
     if sc and sc[0].get("kind") == "hook":                 # the hook as spoken (the screen and the caption follow it, never swapped)
         score = hookscore.run(sc[0].get("vo", ""))[1]
         if score < 50: errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+): make it shorter, concrete and with something at stake; keep the on-screen text and the caption's first line saying the same thing")
+    if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and sc[0].get("text"):
+        k = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split()]
+        tx, vx = k(sc[0]["text"]), k(sc[0].get("vo", ""))
+        if tx != vx[:len(tx)]: errs.append("the hook's on-screen text must be the first words of the spoken hook, word for word, so it appears as it is said from the first frame")
+    spoken = " ".join(x.get("vo", "") for x in sc)
+    acr = sorted({a for a in re.findall(r"[A-Z][A-Z0-9&]{1,5}", spoken) if a not in LEX and a not in ("I", "OK", "UK", "US")})
+    if acr: errs.append("write these out or as people say them (the voice reads capitals as letters): " + ", ".join(acr))
+    if re.search(r"[0-9]+[.][0-9]{2}", spoken): errs.append("say prices the way people say them, no decimals in a spoken line ('about two ten')")
+    hs = detect.run(spoken, json.load(open(os.path.join(HERE, "ig", "slop.json"), encoding="utf-8")))
+    if hs[2] == "FLAGGED": errs.append(f"the narration reads machine-written (human score {hs[1]:.0f}): vary sentence length, be concrete, talk to 'you', drop stock phrases")
+    if sc and sc[-1].get("kind") == "outro" and "daily chart" not in sc[-1].get("vo", "").lower():
+        errs.append("the outro must end: \"Today's Daily Chart is live. Beat it at memestreet.net.\"")
     if sc and "memestreet.net" not in sc[-1].get("vo", "").lower():
         errs.append("the last scene's line must end by saying memestreet.net (spoken as 'Meem Street dot net')")
     cap = spec.get("caption", "")
@@ -300,7 +338,12 @@ def brief(slot, category=None, remake=None):
         category = {"Chart quiz": "Chart quiz", "Stock story": "Stock story", "Technicals": "Technical lesson",
                     "New-trader challenge": "Trading mistake"}.get(remake.get("type"), "Technical lesson")
     category = category or rng.choice(ROTATION.get(slot[-4:], ["Technical lesson"]))
-    facts, charts = gather(category, rng, history, remake.get("title") if remake and category == "Stock story" else None)
+    try:
+        facts, charts = gather(category, rng, history, remake.get("title") if remake and category == "Stock story" else None)
+    except SystemExit:
+        if not (remake and category == "Stock story"): raise
+        category = "Explained like you're 5"               # (gold, oil, an ETF: not a game company, so an explainer on the topic)
+        facts, charts = gather(category, rng, history)
     voice = open(os.path.join(ROOT, "voice.md"), encoding="utf-8").read()      # (a copy of ~/.claude/instagram/voice.md)
     hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
     system = ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
@@ -320,7 +363,10 @@ def brief(slot, category=None, remake=None):
     if remake:
         ask["remake_of"] = {"note": "Make this reel again on the same topic, with the same teaching points and similar "
                                     "explanations, but tighter: no long pauses, every line earns its place. Use the new "
-                                    "charts in the facts instead of the old ones.",
+                                    "charts in the facts instead of the old ones. If the topic is something the chart cannot "
+                                    "draw (MACD, Bollinger Bands, VWAP, ATR, moving averages, position sizing, an ETF, a "
+                                    "commodity), explain it with cards, big text and Rookie and Pro, and use the chart only "
+                                    "for what it really shows; never claim the chart shows the indicator.",
                             "title": remake.get("title"), "old_narration": remake.get("narration"), "old_caption": remake.get("caption")}
     os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
     json.dump(history, open(HISTORY, "w"))                  # (the stock just used, so the next story picks another)

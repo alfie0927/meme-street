@@ -11,8 +11,9 @@ import numpy as np
 import soundfile as sf
 from kokoro_onnx import Kokoro
 from voice import MODEL, trim, dur, words, norm_words
+from pronounce import say_as
 
-GAP, LEAD, TAIL, SENT_GAP, THINK = 0.22, 0.15, 0.9, 0.12, 1.6
+GAP, LEAD, TAIL, THINK = 0.12, 0.1, 0.6, 1.6        # (seconds: between scenes, before the first, after the last, quiz thinking time)
 SR = 24000
 
 def tone(path, freqs, length, vol=0.25):
@@ -21,14 +22,34 @@ def tone(path, freqs, length, vol=0.25):
     a = sum(np.sin(2 * np.pi * f * t) for f in freqs) / len(freqs) * np.exp(-t * (40 if length < .1 else 7)) * vol
     sf.write(path, a.astype(np.float32), SR)
 
-SAY = [(re.compile(r"memestreet\.net(/daily)?", re.I), lambda m: "Meem Street dot net" + (" slash daily" if m.group(1) else "")),
-       (re.compile(r"\bmeme ?street\b", re.I), lambda m: "Meem Street")]
+def tighten(a, sr=SR, keep=0.16, longest=0.22):
+    """The voice without dead air: any pause inside a line longer than `longest` seconds is cut down to `keep`
+    (the breath stays, the wait goes), and the ends are trimmed."""
+    a = trim(a, sr)
+    f = int(0.01 * sr); n = len(a) // f
+    if n < 3: return a
+    rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 1e-4)
+    out, k = [], 0
+    while k < n:
+        if quiet[k]:
+            e = k
+            while e < n and quiet[e]: e += 1
+            run = a[k * f:e * f]
+            out.append(run if (e - k) * 0.01 <= longest else np.concatenate([run[:int(keep / 2 * sr)], run[-int(keep / 2 * sr):]]))
+            k = e
+        else:
+            out.append(a[k * f:(k + 1) * f]); k += 1
+    out.append(a[n * f:])
+    return np.concatenate(out)
 
-def say_as(text):
-    """The line as the voice should say it: the brand is "Meem Street", and the site "Meem Street dot net"."""
-    for rx, fn in SAY:
-        text = rx.sub(fn, text)
-    return text
+def heard_ok(line, W):
+    """Did the voice say the line? The recognised words must cover most of the written ones (a garbled or skipped
+    passage fails the reel instead of posting)."""
+    want = [key(w) for w in say_as(line).split() if key(w)]
+    got = [w[0] for w in W]
+    if not want or not got: return True
+    m = sum(b.size for b in difflib.SequenceMatcher(None, want, got, autojunk=False).get_matching_blocks())
+    return m / len(want) >= 0.6
 
 def key(w):
     return re.sub(r"[^a-z0-9']", "", w.lower())
@@ -71,24 +92,46 @@ def align(tw, W, d):
         out[k] = (t0 + (t1 - t0) * f0, t0 + (t1 - t0) * f1)
     return out
 
+def live_daily():
+    """Today's Daily Chart for the end card: its number and the best return so far (the game's own numbers)."""
+    import urllib.request
+    try:
+        req = urllib.request.Request(os.environ.get("MS_BASE_LOCAL", "http://127.0.0.1:8000") + "/api/daily",
+                                     headers={"X-Visitor": "reelendcard0000000001"})
+        d = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        board = d.get("board") or []
+        return {"number": d.get("number"), "best": max((b.get("ret") for b in board if b.get("ret") is not None), default=None)}
+    except Exception:
+        return None
+
+def series_no(work, kind):
+    """The reel's episode number in its series (Chart quiz #7), fixed per slot so a re-render keeps it."""
+    f = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "state", "series.json")
+    S = json.load(open(f)) if os.path.exists(f) else {}
+    slot = os.path.basename(os.path.normpath(work))
+    if slot not in S.setdefault("slots", {}):
+        c = S.setdefault("count", {}); c[kind] = c.get(kind, 0) + 1
+        S["slots"][slot] = c[kind]
+        os.makedirs(os.path.dirname(f), exist_ok=True); json.dump(S, open(f, "w"))
+    return S["slots"][slot]
+
 def main(work):
     S = json.load(open(os.path.join(work, "spec.json")))
     K = Kokoro(os.path.join(MODEL, "kokoro-v1.0.onnx"), os.path.join(MODEL, "voices-v1.0.bin"))
     for d in ("vo", "sfx"):
         os.makedirs(os.path.join(work, d), exist_ok=True)
-    tick, chime = os.path.join(work, "sfx", "tick.wav"), os.path.join(work, "sfx", "chime.wav")
-    tone(tick, [1800], 0.05, 0.18); tone(chime, [880, 1320], 0.6, 0.22)
+    A = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+    if not os.path.exists(os.path.join(A, "sfx_pop.wav")):
+        import sounds; sounds.main()                           # (the house sounds, made once: sounds.py)
+    tick, chime, pop, whoosh = (os.path.join(A, f"sfx_{x}.wav") for x in ("tick", "chime", "pop", "whoosh"))
     t, vo = LEAD, []
     for i, sc in enumerate(S["scenes"]):
-        sents = [x for x in re.split(r"(?<=[.!?])\s+", sc["vo"].strip()) if x]
-        parts, cur = [], 0.0
-        for j, s in enumerate(sents):
-            a, _ = K.create(say_as(s), voice="af_heart", speed=float(os.environ.get("VOICE_SPEED", "1.05")), lang="en-us")
-            a = trim(a, SR)
-            if j: parts.append(np.zeros(int(SENT_GAP * SR), np.float32))
-            parts.append(a)
-        clip = os.path.join(work, "vo", f"s{i}.wav"); sf.write(clip, np.concatenate(parts), SR)
+        speed = float(os.environ.get("VOICE_SPEED", "1.08")) * (1.04 if sc["kind"] == "hook" else 1.0)
+        a, _ = K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")   # one take: natural flow
+        clip = os.path.join(work, "vo", f"s{i}.wav"); sf.write(clip, tighten(a), SR)
         d = dur(clip); W = words(clip)
+        if not heard_ok(sc["vo"], W):
+            raise SystemExit(f"scene {i}: the voice does not match the line (garbled or skipped): {sc['vo'][:80]}")
 
         tw = sc["vo"].split()
         wt = align(tw, W, d)                                   # each written word's own (start, end) in the clip
@@ -100,6 +143,7 @@ def main(work):
             return wt[min(len(sc["vo"][:ch].split()), len(wt) - 1)][0]
 
         sc["t0"] = round(t, 3); vs = t + 0.05
+        if i: vo.append([whoosh, round(max(0, t - 0.12), 3)])                 # every scene change sounds the same
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
         sc["text_words"] = tw                                  # the captions: the written words, each at its spoken time
@@ -110,6 +154,8 @@ def main(work):
             sc["opt_t"] = [round(vs + x, 3) for x in follow([o.split()[0] for o in sc["options"]], tw, wt, d)]
         for c in sc.get("cues", []):
             c["t"] = round(vs + at(c.get("say", "")), 3)
+            if c.get("do") in ("mark", "bubble", "item", "line"): vo.append([pop, c["t"]])
+        for x in sc.get("opt_t", []): vo.append([pop, x])
         t = vs + d
         if sc["kind"] == "question":                          # the viewer's moment: a ticking countdown, not silence
             think = float(sc.get("think", THINK)); sc["think_t"] = [round(t + 0.15, 3), round(t + 0.15 + think, 3)]
@@ -120,6 +166,7 @@ def main(work):
         t += GAP if i < len(S["scenes"]) - 1 else TAIL
         sc["t1"] = round(t, 3)
     S["T"] = round(t, 2); S["vo"] = vo; S["num"] = None
+    S["daily"] = live_daily(); S["series"] = series_no(work, S.get("type", ""))
     json.dump(S, open(os.path.join(work, "timeline.json"), "w"))
     print(f"narration: {len(S['scenes'])} scenes, {S['T']:.1f}s")
 
