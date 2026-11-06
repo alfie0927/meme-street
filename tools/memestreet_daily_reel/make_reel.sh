@@ -6,7 +6,8 @@ set -euo pipefail
 cd "$(dirname "$0")"; set -a; . ./config.env; set +a
 export PATH="$HOME/.local/bin:$PATH"
 DATE="${1:-$(date -u +%F)}"
-mkdir -p data work out logs
+mkdir -p data work out logs queue
+exec 8>queue/.auto.lock; flock 8                   # (one reel job at a time, the auto reels included: two at once ran a 4 GB server out of memory)
 {
   echo "=== make_reel $DATE  $(date -u '+%F %T UTC')"
   [ -f "data/$DATE.json" ] || python3 src/fetch.py "data/$DATE.json"
