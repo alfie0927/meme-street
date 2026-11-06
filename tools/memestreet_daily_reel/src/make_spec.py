@@ -537,6 +537,16 @@ def capitals(spec):
     return spec
 
 
+def system_prompt(category):
+    """The writer's standing instructions, always the current rules (a rewrite rebuilds them: a brief saved before a rule
+    changed must not hold the writer to the old one)."""
+    voice = open(os.path.join(ROOT, "voice.md"), encoding="utf-8").read()      # (a copy of ~/.claude/instagram/voice.md)
+    hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
+    return ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
+            "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
+            "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS)))
+
+
 def brief(slot, category=None, remake=None):
     """Everything the writer needs for one reel: the system prompt, the request (facts included) and the charts."""
     rng = random.Random(slot)
@@ -551,11 +561,7 @@ def brief(slot, category=None, remake=None):
         if not (remake and category == "Stock story"): raise
         category = "Explained like you're 5"               # (gold, oil, an ETF: not a game company, so an explainer on the topic)
         facts, charts = gather(category, rng, history)
-    voice = open(os.path.join(ROOT, "voice.md"), encoding="utf-8").read()      # (a copy of ~/.claude/instagram/voice.md)
-    hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
-    system = ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
-              "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
-              "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS)))
+    system = system_prompt(category)
     import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
     need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
     facts["video"] = {"available": os.environ.get("HF_VIDEO") == "1" and bool(footage.cred()) and footage.remaining() >= need}   # (off: the neon 3D is the style)
@@ -682,6 +688,7 @@ def revise(work, review):
     """The critic sent the finished reel back: the writer gets its own script and his checked script notes, and rewrites
     only the scenes they name (a patch; the rest is approved and stays as it is, so it is not voiced or reviewed again)."""
     B = json.load(open(os.path.join(work, "brief.json"), encoding="utf-8"))
+    B["system"] = system_prompt(B["category"])          # (today's rules, not the ones saved with the brief)
     draft = open(os.path.join(work, "draft.json"), encoding="utf-8").read()
     sn = lambda x: int((re.findall(r"scene (\d+)", x.get("where", "")) or [999])[0])
     todo = sorted((x for x in review.get("issues", []) if x.get("owner", "script") != "renderer"), key=sn)
