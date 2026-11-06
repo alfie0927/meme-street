@@ -29,7 +29,7 @@ WPS, HUMAN = 3.9, {"comma": 0.28, "sentence": 0.36}
 # The silence put in to get there: the voice trails off before it is silent, so a pause is heard about 0.2 s longer
 # than the silence inserted (calibrated 2026-11-06 with the same measure: 0.08 s at a full stop is heard as 0.25 s,
 # 0.16 s as 0.41 s; a comma is never heard under about 0.33 s).
-PAUSE = {",": 0.2, ";": 0.2, ":": 0.2, ".": 0.135, "!": 0.135, "?": 0.17}   # (commas at 0.12 were heard as 0.16-0.24 s: clipped)
+PAUSE = {",": 0.2, ";": 0.2, ":": 0.2, ".": 0.32, "!": 0.32, "?": 0.32}      # (a full stop under a comma's pause was heard as a comma: HUMAN)
 INSIDE = 0.08                                            # (longest pause kept between words with no punctuation)
 
 def talk_rate(W):
@@ -53,7 +53,7 @@ def pace(a, tw, sr=SR):
             if s > 0 and j < n: runs.append((s, j))
             s = None
     marks = [PAUSE[m] for w in tw[:-1] if (m := w.rstrip("\"')")[-1:]) in PAUSE]
-    stops = sorted(sorted((r for r in runs if r[1] - r[0] >= 10), key=lambda r: r[0] - r[1])[:len(marks)])
+    stops = sorted(sorted((r for r in runs if r[1] - r[0] >= 3), key=lambda r: r[0] - r[1])[:len(marks)])   # (30 ms+: the voice dips at a mark even when it barely stops)
     want = dict(zip(stops, marks if len(stops) == len(marks) else [PAUSE[","]] * len(stops)))
     out, pos = [], 0
     for r in runs:
@@ -65,7 +65,7 @@ def pace(a, tw, sr=SR):
 def demo():
     t = np.arange(int(0.3 * SR)) / SR; v = (0.5 * np.sin(2 * np.pi * 200 * t)).astype(np.float32); z = lambda d: np.zeros(int(d * SR), np.float32)
     a = np.concatenate([v, z(0.2), v, z(0.5), v, z(0.15), v])         # "one | two, three four": the 0.5 s silence is the comma
-    o = pace(a, ["one", "two,", "three", "four"])
+    o = pace(a, ["one", "two,", "three", "four"])   # (the 0.15 s silence is cut to INSIDE)
     assert abs(len(o) - (4 * len(v) + int((INSIDE * 2 + PAUSE[","]) * SR))) < SR * 0.03, len(o) / SR
     w = align(["warning,", "or", "trouble"], [("warning", 0.0, 0.5), ("trouble", 1.4, 1.8)], 2.0)
     assert abs(w[1][0] - 1.1) < 1e-6, w                                   # 'or' is said just before 'trouble', after the pause
