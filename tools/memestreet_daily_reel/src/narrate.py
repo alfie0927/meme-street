@@ -64,6 +64,18 @@ def pace(a, tw, wt, sr=SR):
     for s0, s1, z in edits:
         out += [a[pos:s0], np.zeros(z, a.dtype)]; pos = s1
     out.append(a[pos:])
+    a = np.concatenate(out)
+    # any silence still longer than a sentence pause (a boundary the word timing missed, e.g. after a spoken number) is cut to one
+    n = len(a) // f; rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 1e-4)
+    out, pos, s = [], 0, None
+    for j in range(n + 1):
+        if j < n and quiet[j]:
+            s = j if s is None else s
+        elif s is not None:
+            if j - s > 45 and s > 0 and j < n:
+                out += [a[pos:s * f], np.zeros(int(PAUSE["."] * sr), a.dtype)]; pos = j * f
+            s = None
+    out.append(a[pos:])
     return np.concatenate(out)
 
 def heard_ok(line, W):

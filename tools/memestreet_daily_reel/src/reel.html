@@ -10,7 +10,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .tag{padding:14px 26px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 28px/1 'Cascadia Mono',monospace;letter-spacing:1px;text-transform:uppercase}
 .prog{position:absolute;left:70px;right:70px;top:360px;height:6px;border-radius:3px;background:#161b21;overflow:hidden}
 .prog i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#4fc6c8,#3dd68c)}
-.head{position:absolute;left:60px;right:60px;top:400px;height:130px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 58px/1.12 'Cascadia Mono',monospace;letter-spacing:-1px}
+.head{text-wrap:balance;position:absolute;left:60px;right:60px;top:400px;height:130px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 58px/1.12 'Cascadia Mono',monospace;letter-spacing:-1px}
 .head b{display:inline-block;margin-right:20px;padding:8px 18px;border-radius:16px;background:#e8b14a;color:#07121a;font-size:44px;vertical-align:middle}
 #stage{position:absolute;left:0;top:0;width:1080px;height:1920px}
 .opts{position:absolute;left:62px;right:62px;top:1180px;height:104px;display:flex;gap:16px}
@@ -39,6 +39,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 </div>
 <script>
 const R=window.__R,SC=R.scenes,CH=R.charts||[];
+if(SC.length)SC[0].t0=-.6;   // (the first scene has already landed at frame 1: a still black frame loses the thumb)
 const G='#3dd68c',RD='#f0585c',AM='#e8b14a',TE='#4fc6c8',GV='#1d4a33',RV='#4d2226',MUTE='#8b96a3';
 const TONE={level:AM,stop:RD,target:G,entry:TE,trigger:AM,green:G,red:RD,amber:AM,teal:TE};
 const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>cl((t-a)/(b-a)),lerp=(a,b,u)=>a+(b-a)*u;
@@ -82,7 +83,9 @@ function drawings(i,t){ // lines, marks and shades of this scene (and the scenes
 function drawChart(i,t){
  const S=chartState(i,t),el=document.getElementById('chart');if(!S){el.innerHTML='';return}
  const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
- const B={x:62,y:540,w:s.kind==='stick'?720:956,h:620},PL={x:B.x+20,y:B.y+60,w:B.w-160,h:430},VOL={y:B.y+505,h:90};
+ const short=k=>k<0||SC[k].kind==='stick'||SC[k].kind==='question'||(SC[k].kind==='answer'&&k>0&&SC[k-1].kind==='question'),hh0=k=>short(k)?620:740,
+  bh=i>0&&SC[i-1].chart===s.chart?lerp(hh0(i-1),hh0(i),io(seg(t,s.t0,s.t0+.6))):hh0(i);   // (eased, so the chart never jumps)
+ const B={x:62,y:540,w:s.kind==='stick'?720:956,h:bh},PL={x:B.x+20,y:B.y+60,w:B.w-170,h:bh-190},VOL={y:B.y+bh-115,h:90};
  const w0=w[0],w1=Math.max(w[0]+8,w[1]);let lo=1e9,hi=-1e9;
  const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r));   // (only what is shown sets the scale, so the axis never gives the answer away)
  for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
@@ -95,18 +98,18 @@ function drawChart(i,t){
  const vv=[];for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)vv.push(C[k][4]);vv.sort((a,b)=>a-b);const vmax=Math.max(1,2.2*(vv[vv.length>>1]||1));
  let post='',g=`<g opacity="${fade}"><defs><clipPath id="cp"><rect x="${PL.x-6}" y="${B.y+50}" width="${PL.w+12}" height="${B.h-60}"/></clipPath></defs>`;
  g+=`<rect x="${B.x}" y="${B.y}" width="${B.w}" height="${B.h}" rx="28" fill="#0b0f13" stroke="#23272d" stroke-width="3"/><g clip-path="url(#cp)">`;
- for(let q=0;q<5;q++){const v=lerp(lo+(hi-lo)*.1,hi-(hi-lo)*.1,q/4);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${Y(v)}" y2="${Y(v)}" stroke="#151a1f" stroke-width="2"/><text x="${PL.x+PL.w+16}" y="${Y(v)+8}" font-size="22" fill="${MUTE}">${v.toFixed(2)}</text>`}
+ for(let q=0;q<5;q++){const v=lerp(lo+(hi-lo)*.1,hi-(hi-lo)*.1,q/4);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${Y(v)}" y2="${Y(v)}" stroke="#151a1f" stroke-width="2"/><text x="${PL.x+PL.w+16}" y="${Y(v)+8}" font-size="24" fill="${MUTE}">${v.toFixed(2)}</text>`}
  const D=drawings(i,t),taken=[],free=(a,b,c,d)=>!taken.some(q=>a<q[2]&&q[0]<c&&b<q[3]&&q[1]<d);   // (every tag's box: a new tag never lands on one)
  D.filter(d=>d.do==='shade').forEach(d=>{const col=TONE[d.tone]||TE,a=out(seg(d.age,0,.5)),x0=X(d.from)-bw/2,ww=(d.to-d.from+1)*bw*a;g+=`<rect x="${x0}" y="${PL.y-10}" width="${Math.max(0,ww)}" height="${PL.h+VOL.h+40}" rx="8" fill="${col}" opacity=".14"/>`});
  for(let k=Math.max(0,Math.floor(w0)-1);k<=Math.min(n-1,Math.ceil(w1)+1);k++){if(k>r+.999)break;const [o,h,l,c,v]=C[k],gg=cl(r-k+1),up=c>=o,col=up?G:RD,x=X(k),bwid=Math.max(2,bw*.64),cc=lerp(o,c,out(gg));
   const hh=Math.max(o,cc)+(h-Math.max(o,c))*gg,ll=Math.min(o,cc)-(Math.min(o,c)-l)*gg,vh=Math.min(1,v/vmax)*VOL.h*out(gg);
   g+=`<g opacity="${cl(gg*2)}"><line x1="${x}" x2="${x}" y1="${Y(hh)}" y2="${Y(ll)}" stroke="${col}" stroke-width="${Math.max(1.5,bw*.12)}"/><rect x="${x-bwid/2}" y="${Math.min(Y(o),Y(cc))}" width="${bwid}" height="${Math.max(2,Math.abs(Y(o)-Y(cc)))}" rx="${Math.min(2,bwid/4)}" fill="${col}"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh}" width="${bwid}" height="${vh}" fill="${up?GV:RV}"/></g>`}
  D.filter(d=>d.do==='line').forEach(d=>{const col=TONE[d.tone]||AM,a=out(seg(d.age,0,.6)),y=Y(d.price);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w*a}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="4" stroke-dasharray="16 10"/>`;
-  if(d.label){const lw=d.label.length*15+30,c2=[[PL.x+8,y-44],[PL.x+PL.w-lw-8,y-44],[PL.x+8,y+8],[PL.x+PL.w-lw-8,y+8]],[lx,ly]=c2.find(([u,v])=>free(u-4,v-6,u+lw+4,v+42))||c2[0];taken.push([lx,ly,lx+lw,ly+36]);   // (close lines: their tags go to opposite ends)
-   g+=`<g opacity="${a}"><rect x="${lx}" y="${ly}" width="${lw}" height="36" rx="10" fill="#0b0f13" stroke="${col}" stroke-width="2"/><text x="${lx+15}" y="${ly+25}" font-size="22" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
- const pill=(x,y,lab,col,a,ys)=>{const pw=String(lab).length*14+26,at=(u,v)=>[cl(u,PL.x+pw/2,PL.x+PL.w-pw/2),v];
-  const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),[px,py]=c2.find(([u,v])=>free(u-pw/2-6,v-25,u+pw/2+6,v+25))||at(x,y);
-  y=py;taken.push([px-pw/2,y-19,px+pw/2,y+19]);return `<g transform="translate(${px} ${y}) scale(${a})"><rect x="${-pw/2}" y="-19" width="${pw}" height="38" rx="10" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text y="8" text-anchor="middle" font-size="22" font-weight="700" fill="${col}">${esc(lab)}</text></g>`};
+  if(d.label){const lw=d.label.length*18+34,c2=[[PL.x+8,y-52],[PL.x+PL.w-lw-8,y-52],[PL.x+8,y+8],[PL.x+PL.w-lw-8,y+8]],[lx,ly]=c2.find(([u,v])=>free(u-4,v-6,u+lw+4,v+50))||c2[0];taken.push([lx,ly,lx+lw,ly+44]);   // (close lines: their tags go to opposite ends)
+   g+=`<g opacity="${a}"><rect x="${lx}" y="${ly}" width="${lw}" height="44" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text x="${lx+17}" y="${ly+31}" font-size="28" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
+ const pill=(x,y,lab,col,a,ys)=>{const pw=String(lab).length*17+32,at=(u,v)=>[cl(u,PL.x+pw/2,PL.x+PL.w-pw/2),v];
+  const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),[px,py]=c2.find(([u,v])=>free(u-pw/2-6,v-29,u+pw/2+6,v+29))||at(x,y);
+  y=py;taken.push([px-pw/2,y-23,px+pw/2,y+23]);return `<g transform="translate(${px} ${y}) scale(${a})"><rect x="${-pw/2}" y="-23" width="${pw}" height="46" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-size="28" font-weight="700" fill="${col}">${esc(lab)}</text></g>`};
  D.filter(d=>d.do==='mark'&&d.side==='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length),ya=VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h,vh=Math.min(1,C[k][4]/vmax)*VOL.h,x=X(k),bwid=Math.max(4,bw*.64)+10;
   g+=`<g opacity="${cl(a)}"><line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${ya}" y2="${ya}" stroke="${MUTE}" stroke-width="3" stroke-dasharray="10 8"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh-5}" width="${bwid}" height="${vh+10}" rx="4" fill="none" stroke="${col}" stroke-width="4"/></g>`+(d.label?pill(x,VOL.y+VOL.h-vh-34,d.label,col,a):'')});
  post+=D.some(d=>d.do==='mark'&&d.side==='vol')?(()=>{const d=D.find(d=>d.do==='mark'&&d.side==='vol'),k=Math.max(0,Math.min(n-1,d.i)),ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length);return `<text x="${PL.x+PL.w+16}" y="${VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h+8}" font-size="22" font-weight="700" fill="${MUTE}" opacity="${cl(back(seg(d.age,0,.45)))}">avg</text>`})():'';
@@ -114,11 +117,11 @@ function drawChart(i,t){
  D.filter(d=>d.do==='mark'&&d.side!=='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),hiSide=d.side!=='low',y=hiSide?Y(C[k][1]):Y(C[k][2]),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,rr=Math.max(13,Math.min(20,bw*.9)),lab=String(d.label||'');
   g+=`<g transform="translate(${x} ${y}) scale(${a})"><circle r="${rr}" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-width="3.5"/><circle r="4" fill="${col}"/></g>`;
   if(lab.length&&lab.length<=2){const bx=x+rr*.75+12,by=y+(hiSide?-1:1)*(rr*.75+12);g+=`<g transform="translate(${bx} ${by}) scale(${a})"><circle r="15" fill="${col}"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#07121a">${esc(lab)}</text></g>`}
-  else if(lab){const sg=hiSide?-1:1;g+=pill(x,y+sg*(rr+30),lab,col,a,[y+sg*(rr+30),y+sg*(rr+76),y-sg*(rr+30)])}});
+  else if(lab){const sg=hiSide?-1:1;g+=pill(x,y+sg*(rr+34),lab,col,a,[y+sg*(rr+34),y+sg*(rr+86),y-sg*(rr+34)])}});
  g+='</g>'+post;
  const lk=Math.min(n-1,Math.floor(r));if(lk>=Math.floor(w0)){const k=lk,gg=cl(r-k+1),c=lerp(C[k][0],C[k][3],out(gg)),f0=Math.floor(r0),up=r-r0>=1&&f0<k?c>=C[f0][3]:c>=C[k][0],y=Y(c);
-  g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${y}" y2="${y}" stroke="${up?G:RD}" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/><rect x="${PL.x+PL.w+6}" y="${y-20}" width="118" height="40" rx="8" fill="${up?G:RD}"/><text x="${PL.x+PL.w+65}" y="${y+9}" text-anchor="middle" font-size="23" font-weight="700" fill="#07121a">${c.toFixed(2)}</text>`}
- const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+40}" font-size="24" font-weight="700" fill="${MUTE}">${esc(lab)}</text>`;
+  g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${y}" y2="${y}" stroke="${up?G:RD}" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/><rect x="${PL.x+PL.w+6}" y="${y-23}" width="132" height="46" rx="9" fill="${up?G:RD}"/><text x="${PL.x+PL.w+72}" y="${y+10}" text-anchor="middle" font-size="27" font-weight="700" fill="#07121a">${c.toFixed(2)}</text>`}
+ const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+42}" font-size="28" font-weight="700" fill="${MUTE}">${esc(lab)}</text>`;
  el.innerHTML=g+'</g>'}
 // ---- background: two slow glows, so even a still scene breathes
 function drawBg(t){return;document.getElementById('bg').innerHTML=`<defs><radialGradient id="g1"><stop offset="0" stop-color="#4fc6c8" stop-opacity=".10"/><stop offset="1" stop-color="#4fc6c8" stop-opacity="0"/></radialGradient><radialGradient id="g2"><stop offset="0" stop-color="#3dd68c" stop-opacity=".07"/><stop offset="1" stop-color="#3dd68c" stop-opacity="0"/></radialGradient></defs>
@@ -197,8 +200,8 @@ function render(T){
   let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.03)cur=k;const per=4,st0=Math.floor(cur/per)*per;
   cp.innerHTML=tw.slice(st0,cur+1).map((w,k)=>`<span style="color:${st0+k===cur?TE:'#e6e9ec'};display:inline-block;transform:scale(${st0+k===cur?1+.14*(1-seg(t,s.wt[cur][0],s.wt[cur][0]+.18)):1})">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1;fit(cp,120,46,28)}else cp.innerHTML='';
  // the end card
- const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.daily;document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live${dd.best!=null?` · best today <span style="color:${G}">${dd.best>=0?'+':''}${(dd.best*100).toFixed(1)}%</span>`:''}`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,tU-.05,tU+.35)),eU=document.getElementById('oUrl');document.getElementById('oDaily').style.opacity=out(seg(t,tD-.05,tD+.3));eU.style.opacity=cl(uU);eU.style.transform=`scale(${.7+.3*uU})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
- document.body.style.opacity=Math.min(seg(T,0,.2),1-seg(T,R.T-.3,R.T));
+ const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.daily;document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live${dd.best!=null?` · best today <span style="color:${G}">${dd.best>=0?'+':''}${(dd.best*100).toFixed(1)}%</span>`:''}`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,tD+.2,tD+.55)),eU=document.getElementById('oUrl');document.getElementById('oDaily').style.opacity=out(seg(t,tD-.05,tD+.3));eU.style.opacity=cl(uU);eU.style.transform=`scale(${(.7+.3*uU)*(1+.1*Math.sin(Math.PI*seg(t,tU-.05,tU+.4)))})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
+ document.body.style.opacity=1;
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
 window.render=render;
 // the overlap check (render.py runs it through the reel): every visible piece of text, measured as drawn; any two that
