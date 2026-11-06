@@ -135,6 +135,22 @@ def live_daily():
     except Exception:
         return None
 
+EL_VOICE = os.environ.get("ELEVEN_VOICE", "EXAVITQu4vr4xnSDxMaL")   # (Sarah: the ElevenLabs voice closest to Kokoro's af_heart)
+EL_MODEL = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
+EL_SPEED = float(os.environ.get("ELEVEN_SPEED", "1.17"))   # (1.1 read at 3.62 words a second; the human target is 3.9)
+
+
+def el_line(text):
+    """One line read by ElevenLabs (ELEVEN_API_KEY in config.env), as float samples at SR."""
+    import urllib.request
+    body = {"text": text, "model_id": EL_MODEL, "voice_settings": {"stability": 0.5, "similarity_boost": 0.75, "style": 0.1,
+                                                                   "use_speaker_boost": True, "speed": EL_SPEED}}
+    req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{EL_VOICE}?output_format=pcm_{SR}", data=json.dumps(body).encode(),
+                                 headers={"xi-api-key": os.environ["ELEVEN_API_KEY"].strip(), "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return np.frombuffer(r.read(), np.int16).astype(np.float32) / 32768
+
+
 FILM_FPS = 30
 
 
@@ -174,10 +190,20 @@ def main(work):
     for i, sc in enumerate(S["scenes"]):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
         speed = float(os.environ.get("VOICE_SPEED", "1.0"))
-        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS]).encode()).hexdigest()[:16])
+        el = bool(os.environ.get("ELEVEN_API_KEY", "").strip())
+        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS] + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
+        a = None
         if os.path.exists(h + ".json"):                        # (a line the last cut already voiced: a remake redoes only what changed)
             shutil.copy(h + ".wav", clip); W = [tuple(w) for w in json.load(open(h + ".json"))]
-        else:
+        elif el:                                               # ElevenLabs: a human read, its own pauses and pace (no re-pacing)
+            try:
+                a = trim(el_line(say_as(sc["vo"].strip())), SR)
+            except Exception as e:                             # (out of characters, network: Kokoro reads this line)
+                print(f"scene {i}: ElevenLabs failed ({str(e)[:160]}); Kokoro reads it", flush=True)
+        if a is not None:
+            sf.write(clip, a, SR); W = words(clip)
+            os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
+        elif not os.path.exists(h + ".json"):
             for _ in range(3):                                 # one take per line (natural flow), at the human talking speed
                 a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
                 sf.write(clip, pace(a, tw), SR)   # the pauses a person makes, at the commas and full stops
