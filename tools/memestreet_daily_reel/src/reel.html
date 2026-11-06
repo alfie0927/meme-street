@@ -79,7 +79,8 @@ function endReveal(i){const s=SC[i],C=CH[s.chart].candles;let r=s.show!=null?s.s
  (s.cues||[]).filter(c=>c.do==='reveal').forEach(c=>r=Math.min(C.length-1,c.to));if(s.kind==='answer'&&s.reveal_to!=null)r=Math.max(r,s.reveal_to);return r}
 function drawings(i,t){ // lines, marks and shades of this scene (and the scenes before it on the same chart, if it carries them)
  const out=[];let k=i;while(k>=0&&SC[k].chart===SC[i].chart){(SC[k].cues||[]).forEach(c=>{if(['line','mark','shade'].includes(c.do))out.push(Object.assign({},c,{age:k===i?t-c.t:9}))});if(!SC[k].carry)break;k--}
- return out.filter(c=>c.age>=-.05)}
+ const seen=new Set();   // (a candle marked again later keeps only its newest mark: two tags on one candle push each other off it)
+ return out.filter(c=>c.age>=-.05).filter(c=>c.do!=='mark'||c.side==='vol'||!seen.has(c.i)&&seen.add(c.i))}
 function drawChart(i,t){
  const S=chartState(i,t),el=document.getElementById('chart');if(!S){el.innerHTML='';return}
  const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
@@ -112,7 +113,7 @@ function drawChart(i,t){
   if(d.label){const lw=d.label.length*18+34,c2=[y-52,y+8].flatMap(v=>[PL.x+8,PL.x+PL.w-lw-8,PL.x+PL.w*.35-lw/2,PL.x+PL.w*.65-lw/2].map(u=>[u,v])),fit=f=>c2.find(([u,v])=>v>=PL.y-6&&v+44<=B.y+B.h-10&&f(u-4,v-6,u+lw+4,v+50)),[lx,ly]=fit(clear)||fit(free)||c2.find(([u,v])=>v>=PL.y-6)||c2[0];   // (never up into the chart's title row)taken.push([lx,ly,lx+lw,ly+44]);   // (close lines: their tags go to opposite ends)
    g+=`<g opacity="${a}"><rect x="${lx}" y="${ly}" width="${lw}" height="44" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text x="${lx+17}" y="${ly+31}" font-size="28" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
  const pill=(x,y,lab,col,a,ys)=>{const pw=String(lab).length*17+32,at=(u,v)=>[cl(u,PL.x+pw/2,PL.x+PL.w-pw/2),v];
-  const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),fit=f=>c2.find(([u,v])=>f(u-pw/2-6,v-29,u+pw/2+6,v+29)),[px,py]=fit(clear)||fit(free)||at(x,y);
+  const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),fit=f=>c2.find(([u,v])=>f(u-pw/2-6,v-29,u+pw/2+6,v+29)),[px,py]=fit(free)||at(x,y);   // (the nearest free spot: a tag stays by its mark)
   y=py;taken.push([px-pw/2,y-23,px+pw/2,y+23]);return `<g transform="translate(${px} ${y}) scale(${a})"><rect x="${-pw/2}" y="-23" width="${pw}" height="46" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-size="28" font-weight="700" fill="${col}">${esc(lab)}</text></g>`};
  D.filter(d=>d.do==='mark'&&d.side==='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length),ya=VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h,vh=Math.min(1,C[k][4]/vmax)*VOL.h,x=X(k),bwid=Math.max(4,bw*.64)+10;
   g+=`<g opacity="${cl(a)}"><line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${ya}" y2="${ya}" stroke="${MUTE}" stroke-width="3" stroke-dasharray="10 8"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh-5}" width="${bwid}" height="${vh+10}" rx="4" fill="none" stroke="${col}" stroke-width="4"/></g>`+(d.label?pill(x,VOL.y+VOL.h-vh-34,d.label,col,a):'')});
@@ -206,7 +207,7 @@ function render(T){
  if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
-  st+=`<svg style="position:absolute;left:480px;top:1300px;opacity:${a};transform:scale(${1+.08*Math.pow(1-((t-s.think_t[0])%.4)/.4,3)})" width="120" height="120"><circle cx="60" cy="60" r="50" fill="#07090ccc" stroke="#2a2f35" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="${AM}" stroke-width="8" stroke-dasharray="${314*(1-u)} 400" transform="rotate(-90 60 60)" stroke-linecap="round"/><text x="60" y="72" text-anchor="middle" font-size="36" font-weight="800" fill="#e6e9ec">${Math.ceil(left)}</text></svg>`}
+  st+=`<svg style="position:absolute;left:460px;top:1290px;opacity:${a};transform:scale(${1+.1*Math.pow(1-((t-s.think_t[0])%.4)/.4,3)})" width="160" height="160"><circle cx="80" cy="80" r="64" fill="#2a2110" stroke="#4a3a1c" stroke-width="12"/><circle cx="80" cy="80" r="64" fill="none" stroke="${AM}" stroke-width="12" stroke-dasharray="${402*(1-u)} 500" transform="rotate(-90 80 80)" stroke-linecap="round"/><text x="80" y="99" text-anchor="middle" font-size="54" font-weight="800" fill="${AM}">${Math.ceil(left)}</text></svg>`}   // (big and amber: a timer, not dead air)
  document.getElementById('stage').innerHTML=st;
  const punch=back(seg(t,s.t0,s.t0+.45)),ps=.94+.06*punch;   // every scene lands with the same springy pop
  ['chart','stage'].forEach(id=>{const e=document.getElementById(id);e.style.transformOrigin='540px 850px';e.style.transform=`scale(${ps})`});

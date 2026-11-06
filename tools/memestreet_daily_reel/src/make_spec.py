@@ -461,8 +461,10 @@ def finish(spec, charts, category):
             s.setdefault("cues", [])
             s["cues"] += [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
                            "tone": tone(x), "from": "template"} for x in d["lines"] if x.get("after")][:3]
-            s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:2], "side": "high", "from": "template"}
-                          for m in d["marks"] if m.get("label")][:3]
+            mine = {c.get("i") for q in spec["scenes"] if q.get("chart") == s["chart"] for c in q.get("cues", [])
+                    if c.get("do") == "mark" and c.get("from") != "template"}      # (a candle the writer marked keeps only its mark)
+            s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:14], "side": "high", "from": "template"}
+                          for m in d["marks"] if m.get("label") and m["i"] not in mine][:3]
         elif s["kind"] in ("hook", "chart") and s.get("show") is None and d:
             s["show"] = ch["upto"]
     spec["type"] = category
