@@ -29,7 +29,9 @@ args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.
 [ -n "${REEL_CATEGORY:-}" ] && args+=(--category "$REEL_CATEGORY")      # (a chosen format, e.g. for a test reel)
 {
   echo "=== auto reel $SLOT  $(date -u '+%F %T UTC')"
-  [ -n "${RESUME:-}" ] || python3 src/make_spec.py "$SLOT" "$W" "${args[@]}"
+  if [ -z "${RESUME:-}" ]; then                         # (a first draft that fails its checks five times gets two more goes)
+    ok=; for try in 1 2 3; do python3 src/make_spec.py "$SLOT" "$W" "${args[@]}" && { ok=1; break; }; done; [ -n "$ok" ]
+  fi
   python3 src/critic.py loop "$W" "$O"                   # voice, render, review; rewritten until the critic approves
   mkdir -p "queue/.staging/$SLOT" && cp "$O/reel.mp4" "$O/caption.txt" "$O/cover.jpg" "$O/approved.json" "queue/.staging/$SLOT/"
   [ -d "queue/$SLOT" ] && { rm -rf "queue-originals/$SLOT"; mv "queue/$SLOT" "queue-originals/$SLOT"; }
