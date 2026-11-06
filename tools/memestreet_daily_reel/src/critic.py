@@ -344,7 +344,8 @@ def loop(work, out):
             print(f"   stuck 3 rounds, to the to-do list: {x.get('where')}: {str(x.get('what'))[:160]}", flush=True)
         learn(rev, slot)
         if rev["approved"]:
-            run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("AUTO_FPS", "60"))   # (the same frames, smoother)
+            if os.environ.get("AUTO_FPS", "30") != os.environ.get("REVIEW_FPS", "30"):   # (the cut he approved is what posts: 30 fps, as
+                run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ["AUTO_FPS"])   #  Reels are; a 60 fps re-render took 45 min)
             json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"),
                        "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
             return rnd
