@@ -283,7 +283,7 @@ RULES = """Rules:
 - Stick scenes use the two recurring characters: label "Rookie" (white) for the beginner and "Pro" (teal) for the one
   who knows. Same names in every reel.
 - The last line echoes a word from the hook, so the replay loops cleanly, and the outro always ends with:
-  "Today's Daily Chart is live. Beat it at memestreet.net."
+  "Join free at memestreet.net." Only a reel about the Daily Chart (the Daily recap) mentions the Daily Chart.
 """
 
 
@@ -343,8 +343,12 @@ def check(spec, facts, charts, category=None):
     if hs[2] == "FLAGGED":
         weak = "; ".join(f"{n.lower()} {v[0]:.0f}: {v[1]}" for n, v in sorted(hs[0].items(), key=lambda kv: kv[1][0])[:2])
         errs.append(f"the narration reads machine-written (human score {hs[1]:.0f}; weakest: {weak}): vary sentence length, be concrete, talk to 'you', drop stock phrases")
-    if sc and sc[-1].get("kind") == "outro" and "daily chart" not in sc[-1].get("vo", "").lower():
-        errs.append("the outro must end: \"Today's Daily Chart is live. Beat it at memestreet.net.\"")
+    if sc and sc[-1].get("kind") == "outro":
+        ov = sc[-1].get("vo", "").lower()
+        if "memestreet.net" not in ov:
+            errs.append("the outro must end: \"Join free at memestreet.net.\"")
+        if "daily chart" in ov and category != "Daily recap":
+            errs.append("only a reel about the Daily Chart mentions it: end with \"Join free at memestreet.net.\"")
     if sc and "memestreet.net" not in sc[-1].get("vo", "").lower():
         errs.append("the last scene's line must end by saying memestreet.net (spoken as 'Meem Street dot net')")
     if facts.get("plan_beat_holding") is False and not re.search(r"\bhold", " ".join(x.get("vo", "") for x in sc[:2]).lower()):
