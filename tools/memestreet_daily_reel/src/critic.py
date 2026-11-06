@@ -154,12 +154,7 @@ You judge, and score out of 10:
    is a mispronunciation unless it is clearly a homophone or a number written differently).
 4. CONTENT - the story: a hook that earns the next second, a clear arc with a payoff that delivers the hook's promise,
    one idea, true and useful to a beginner trader, a reason to play the game, and an ending that makes people want the
-   next reel. Language that sounds like a person, not an advert. In a stock story (format "Stock story"), the company's
-   business is SHOWN, not just said: an animated scene whose sprites act out what the voice says (a dragon-rental
-   company: dragons flying over a ranch; a foundry: metal pouring from a furnace), and its news acted out where it can
-   be. A stock story with no animated scene, or with sprites that do not match the words or barely move, is a script
-   major; an animation that looks broken (sprites cut off, piled on each other, floating where they should stand) is a
-   renderer note.
+   next reel. Language that sounds like a person, not an advert.
 
 You cannot hear the audio directly: you hear it through the report (what Whisper hears in the final mix, with times,
 the talking speed and the pauses). You see the reel through the images (Read them all: a contact sheet at one frame a
@@ -179,7 +174,7 @@ lesson: the general rule the writer must follow in EVERY future reel. Scenes cou
 
 Say who can fix it. The writer controls only the script: each scene's kind and order, its spoken line, head and
 on-screen text, and its cues: which phrase each cue lands on, which candles are revealed, marked, shaded or zoomed,
-each line's price, label and tone, cards, figures, poses, bubbles and sprites. That is "script", and its fix names the
+each line's price, label and tone, cards, figures, poses and bubbles. That is "script", and its fix names the
 change in those terms (e.g. "scene 1: a line cue at 119.42 labelled 'Entry', said on 'entry'"). Everything about how
 the house template draws (where a tag sits, tags stacking, sizes, fonts, colours, the voice's pauses and pronunciation
 of a word that is written right, the end card's layout) is "renderer": the writer cannot change it, so never give the

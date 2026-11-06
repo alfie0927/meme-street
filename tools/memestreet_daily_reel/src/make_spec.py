@@ -24,9 +24,7 @@ CATEGORIES = {
     "Chart quiz": "Three questions on three real game charts. Each: a question scene (options shown, a short countdown), "
                   "then an answer scene (the rest of the chart plays out, the right option lights up, one or two lines on why).",
     "Stock story": "Introduce one fictional company from the game: the hook, what it does, how it makes money, what moves "
-                   "its stock (good news and bad news), its real recent chart, and an invitation to trade it. Show what "
-                   "the company does as an animated \"scene\" (its business acted out: dragons flying over the ranch, "
-                   "metal pouring from a furnace), and act out its good and bad news the same way where you can.",
+                   "its stock (good news and bad news), its real recent chart, and an invitation to trade it.",
     "Technical lesson": "Teach one chart idea (an indicator, a level, a pattern) on a real chart that shows it: what it is, "
                         "how to read it, the trap, and the one rule to remember.",
     "Trading mistake": "One common beginner mistake, shown on a real chart: what people do, what it costs, what to do instead.",
@@ -246,12 +244,6 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
  {"kind":"stick","head":"max 5 words","vo":"...","chart":N or null (with a chart: one presenter figure beside it),
    "figures":[{"pose":"stand|think|panic|happy|point|pointl|sad|shrug|walk","label":"max 2 words","color":"white|teal|amber"}] (1 to 3 figures; none with a chart beyond the first),
    "cues":[{"say":"exact phrase","do":"pose","fig":0,"pose":"panic"} | {"say":"..","do":"bubble","fig":0,"text":"max 5 words"} | chart cues as above]}
- {"kind":"scene","head":"max 5 words","vo":"...","set":"farm|city|factory|lab|sea|sky|mine|shop|night|desert",
-   "sprites":[{"e":"one emoji","x":0-100 (left to right),"y":0-100 (0 high in the sky, 100 standing on the ground),
-               "size":"s|m|l","move":"fly|walk|bob|pulse|shake|drop|spin|float|still","to":[x,y] (optional: travels there
-               during the scene),"flip":true (optional: mirrors it to face right),"say":"exact phrase from vo: it pops in then"}]}
-   (3 to 8 sprites: an animated picture that acts out what the line says, e.g. a dragon-rental company: a farm set,
-    🐉 flying from left to right, 🏠 the barn, 🌳 trees, 🧑‍🌾 the rancher; a sick herd: 🤒 bobbing over the dragons)
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 """
 
@@ -311,8 +303,6 @@ def check(spec, facts, charts, category=None):
     if not sc or sc[0].get("kind") != "hook": errs.append("the first scene must be a hook")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (75, 140, True))
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
-    if category == "Stock story" and not any(s.get("kind") == "scene" for s in sc):
-        errs.append("a stock story shows what the company does as an animated \"scene\" (its business acted out with sprites)")
     words = sum(len(s.get("vo", "").split()) for s in sc)
     if not lo_w <= words <= hi_w: errs.append(f"the narration is {words} words; it must be {lo_w} to {hi_w}")
     for k, s in enumerate(sc):
@@ -387,17 +377,7 @@ def shown_check(sc, charts):
     kw = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split() if re.sub(r"[^a-z0-9']", "", w.lower())]
     for k, s in enumerate(sc):
         ch, kind, vo = s.get("chart"), s.get("kind"), s.get("vo", "")
-        if kind == "scene":                                # an animated picture: sprites that act out the line
-            sp = s.get("sprites") or []
-            if not 3 <= len(sp) <= 8: errs.append(f"scene {k} (an animated scene) needs 3 to 8 sprites, it has {len(sp)}")
-            for p in sp:
-                if not isinstance(p.get("e"), str) or not p["e"] or len(p["e"]) > 8 or p["e"].isascii():
-                    errs.append(f"scene {k}: sprite {p.get('e')!r} must be one emoji")
-                if not all(isinstance(p.get(q), (int, float)) and 0 <= p[q] <= 100 for q in ("x", "y")):
-                    errs.append(f"scene {k}: sprite {p.get('e')!r} needs x and y from 0 to 100")
-                if p.get("say") and not re.search(re.escape(p["say"].lower()), vo.lower()):
-                    errs.append(f"scene {k}: sprite {p.get('e')!r} says {p['say']!r}, which is not in its line")
-        if ch is None and kind in ("stick", "cards", "big", "scene") and CHART_TALK.search(vo):
+        if ch is None and kind in ("stick", "cards", "big") and CHART_TALK.search(vo):
             errs.append(f"scene {k} talks about {CHART_TALK.search(vo).group(0)!r} but shows no chart: give it the chart, or say only what it shows")
         for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" else []):
             if t and len(kw(t)) >= 3 and any(kw(vo)[j:j + len(kw(t))] == kw(t) for j in range(len(kw(vo)))):
@@ -684,7 +664,6 @@ def rendered(work, notes):
         s = R["scenes"][k]
         cues = [f"{c.get('t')}s {c.get('do')} " + " ".join(f"{q}={c[q]}" for q in ("label", "text", "price", "i", "to") if c.get(q) is not None)
                 + f" (from {c.get('from', 'you')})" for c in s.get("cues", [])]
-        cues += [f"{p.get('t')}s sprite {p.get('e')} at {p.get('x')},{p.get('y')} {p.get('move', '')}" for p in s.get("sprites", [])]
         out.append(f"scene {k} ({s.get('kind')}, {s.get('t0')}s-{s.get('t1')}s): vo {s.get('vo')!r}; head {s.get('head')!r}; "
                    f"text {s.get('text')!r}\n  " + "\n  ".join(cues or ["(no cues)"]))
     return "\n".join(out) or "(no scene named)"
