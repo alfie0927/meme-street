@@ -324,7 +324,9 @@ def check(spec, facts, charts, category=None):
     acr = sorted({a for a in re.findall(r"[A-Z][A-Z0-9&]{1,5}", spoken) if a not in LEX and a not in ("I", "OK", "UK", "US")})
     if acr: errs.append("write these out or as people say them (the voice reads capitals as letters): " + ", ".join(acr))
     if re.search(r"[0-9]+[.][0-9]{2}", spoken): errs.append("say prices the way people say them, no decimals in a spoken line ('about two ten')")
-    hs = detect.run(spoken, json.load(open(os.path.join(HERE, "ig", "slop.json"), encoding="utf-8")))
+    # (numbers are written out for the voice, but the detector counts only digits as concrete: score them as digits)
+    NW = r"(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|half|point)"
+    hs = detect.run(re.sub(rf"\b{NW}(?:[\s-]+(?:and\s+)?{NW})*\b", "9", spoken, flags=re.I), json.load(open(os.path.join(HERE, "ig", "slop.json"), encoding="utf-8")))
     if hs[2] == "FLAGGED":
         weak = "; ".join(f"{n.lower()} {v[0]:.0f}: {v[1]}" for n, v in sorted(hs[0].items(), key=lambda kv: kv[1][0])[:2])
         errs.append(f"the narration reads machine-written (human score {hs[1]:.0f}; weakest: {weak}): vary sentence length, be concrete, talk to 'you', drop stock phrases")
