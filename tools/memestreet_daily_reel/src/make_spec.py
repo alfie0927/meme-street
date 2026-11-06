@@ -292,8 +292,12 @@ def check(spec, facts, charts, category=None):
                     errs.append(f"scene {k}: candle {c[f]} is outside chart {ch}")
     errs += shown_check(sc, charts) + speech_check(sc)
     if sc and sc[0].get("kind") == "hook":                 # the hook as spoken (the screen and the caption follow it, never swapped)
-        score = hookscore.run(sc[0].get("vo", ""))[1]
-        if score < 50: errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+): make it shorter, concrete and with something at stake; keep the on-screen text and the caption's first line saying the same thing")
+        res, score, _, flags = hookscore.run(sc[0].get("vo", ""))
+        if score < 50:
+            weak = "; ".join(f"{k.lower()} {v[0]:.0f}: {v[1]}" for k, v in sorted(res.items(), key=lambda x: x[1][0])[:3])
+            errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+); its weakest parts: {weak}" + (f"; {'; '.join(flags)}" if flags else "") +
+                        ". A hook that scores: 5-12 words, a number or a named thing up front, something lost or won, said to 'you' "
+                        "(e.g. 'This one candle cost you fifteen percent.' scores 84); keep the on-screen text and the caption's first line saying the same thing")
     if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and sc[0].get("text"):
         k = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split()]
         tx, vx = k(sc[0]["text"]), k(sc[0].get("vo", ""))
@@ -470,7 +474,8 @@ def lessons():
     every reel, so the next one passes first time."""
     f = os.path.join(ROOT, "state", "lessons.json")
     L = json.load(open(f, encoding="utf-8")) if os.path.exists(f) else []
-    L = sorted(L, key=lambda x: (-x.get("count", 1), x.get("last", "")))[:30]
+    L = sorted((x for x in L if x.get("owner") != "renderer"),     # (the renderer's notes are fixed in reel.html, not by the writer)
+               key=lambda x: (x.get("count", 1), x.get("last", "")), reverse=True)[:30]
     return ("\n\nThe film critic who reviews every finished reel sent earlier reels back for these. Never repeat them:\n" +
             "\n".join(f"- {x['lesson']}" for x in L)) if L else ""
 

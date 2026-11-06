@@ -61,8 +61,10 @@ def pack(work, out, rd):
             misheard.append({"scene": said[a0][1] if a0 < len(said) else None, "script": " ".join(w for w, _ in said[a0:a1]),
                              "heard": " ".join(w for w, _, _ in H[b0:b1]), "at": round(H[b0][1], 2) if b0 < len(H) else None})
     scenes = []
-    for i, s in enumerate(R["scenes"]):
-        hw = [h for h in H if s.get("vs", s["t0"]) - 0.1 <= h[1] < s.get("ve", s["t1"]) + 0.1]
+    SC = R["scenes"]   # each heard word belongs to the scene whose voice it is nearest (the first and last are open-ended)
+    cut = [-1e9] + [(a.get("ve", a["t1"]) + b.get("vs", b["t0"])) / 2 for a, b in zip(SC, SC[1:])] + [1e9]
+    for i, s in enumerate(SC):
+        hw = [h for h in H if cut[i] <= h[1] < cut[i + 1]]
         r = talk_rate([(key(w), a, b) for w, a, b in hw])
         pauses = [{"after": a[0], "secs": round(b[1] - a[2], 2), "at": round(a[2], 2)} for a, b in zip(hw, hw[1:]) if b[1] - a[2] >= 0.15]
         sync = []                                           # caption word time vs when it is heard
@@ -119,6 +121,8 @@ You judge, and score out of 10:
 You cannot hear the audio directly: you hear it through the report (what Whisper hears in the final mix, with times,
 the talking speed and the pauses). You see the reel through the images (Read them all: a contact sheet at one frame a
 second, and three frames per scene: as it lands, mid-line and its last moment, named with their times).
+The frame below about 1440 px and the right edge are left empty on purpose: Instagram's caption, buttons and audio strip
+cover them, so nothing may go there; do not mark that space down as dead.
 
 Approve only if every score is 8 or more and nothing would embarrass you. Do not invent problems to look tough, and
 do not move the goalposts: judge what is in front of you. When you send it back, every note says exactly where (scene,
@@ -159,7 +163,7 @@ def ask_critic(rd, rnd, prev):
 def learn(rev, slot):
     """Each reason for a send-back becomes (or strengthens) a lesson for every later reel."""
     L = json.load(open(LESSONS, encoding="utf-8")) if os.path.exists(LESSONS) else []
-    now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M")
+    now = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M")
     for x in rev.get("issues", []):
         les = (x.get("lesson") or "").strip()
         if not les or x.get("severity") == "minor": continue
@@ -173,16 +177,29 @@ def learn(rev, slot):
 
 
 def run(cmd, **env):
-    subprocess.run(cmd, check=True, cwd=ROOT, env=dict(os.environ, **{k: str(v) for k, v in env.items()}))
+    """Run a step; its output is shown, and on failure its last lines are the reason (SystemExit with them)."""
+    r = subprocess.run(cmd, cwd=ROOT, env=dict(os.environ, **{k: str(v) for k, v in env.items()}),
+                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    print(r.stdout, end="", flush=True)
+    if r.returncode:
+        raise SystemExit([l for l in r.stdout.strip().splitlines() if l.strip() and not l.startswith((" ", "Traceback"))][-1:] or [" ".join(cmd) + " failed"])
 
 
 def loop(work, out):
     slot = os.path.basename(os.path.normpath(work)); prev = None
     for rnd in range(1, MAX_ROUNDS + 1):
-        run(["python3", "src/narrate.py", work])
-        run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("REVIEW_FPS", "30"))
-        pack(work, out, os.path.join(work, "review"))
-        rev = ask_critic(os.path.join(work, "review"), rnd, prev)
+        try:
+            run(["python3", "src/narrate.py", work])
+            run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("REVIEW_FPS", "30"))
+        except SystemExit as e:   # a QA gate stopped it (garbled voice, text on text): that is a send-back, not the end
+            why = e.code[0] if isinstance(e.code, list) else str(e.code)
+            rev = {"approved": False, "scores": None, "verdict": "The automatic checks stopped this cut before review: " + why,
+                   "issues": [{"severity": "blocker", "where": "automatic check", "what": why, "owner": "script",
+                               "fix": "Rewrite the part named so the check passes: plainer words the voice can say, shorter on-screen text.",
+                               "lesson": ""}]}
+        else:
+            pack(work, out, os.path.join(work, "review"))
+            rev = ask_critic(os.path.join(work, "review"), rnd, prev)
         json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
         print(f"critic round {rnd}: {'APPROVED' if rev['approved'] else 'sent back'} {rev.get('scores')} - {rev.get('verdict', '')}", flush=True)
         for x in rev.get("issues", []):
@@ -190,7 +207,7 @@ def loop(work, out):
         if rev["approved"]:
             run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("AUTO_FPS", "60"))   # (the same frames, smoother)
             json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"),
-                       "at": datetime.datetime.utcnow().isoformat() + "Z"}, open(os.path.join(out, "approved.json"), "w"))
+                       "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
             return rnd
         learn(rev, slot)
         if rnd < MAX_ROUNDS:

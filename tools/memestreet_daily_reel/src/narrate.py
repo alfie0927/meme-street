@@ -10,7 +10,7 @@ import difflib, json, os, re, sys
 import numpy as np
 import soundfile as sf
 from kokoro_onnx import Kokoro
-from voice import MODEL, trim, dur, words, norm_words
+from voice import MODEL, NUM, trim, dur, words, norm_words
 from pronounce import say_as
 
 GAP, LEAD, TAIL, THINK = 0.24, 0.1, 0.6, 1.6        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
@@ -69,8 +69,8 @@ def pace(a, tw, wt, sr=SR):
 def heard_ok(line, W):
     """Did the voice say the line? The recognised words must cover most of the written ones (a garbled or skipped
     passage fails the reel instead of posting)."""
-    want = [key(w) for w in say_as(line).split() if key(w)]
-    got = [w[0] for w in W]
+    sp = lambda x: re.sub(r"\d", lambda m: NUM[m.group()], "".join(norm_words(x)))   # (letters only, digits spelt: Whisper writes "A, one to one" as "a1 to 1")
+    want, got = sp(say_as(line)), sp(" ".join(w[0] for w in W))
     if not want: return True
     if not got: return False                               # (no recognised words: the captions could not be timed)
     m = sum(b.size for b in difflib.SequenceMatcher(None, want, got, autojunk=False).get_matching_blocks())

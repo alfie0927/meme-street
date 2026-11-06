@@ -71,7 +71,7 @@ function chartState(i,t){
  let w=P?[lerp(P[0],W[0],u),lerp(P[1],W[1],u)]:W.slice();
  (s.cues||[]).filter(c=>c.do==='zoom').forEach(c=>{const z=io(seg(t,c.t,c.t+.9));w=[lerp(w[0],c.from,z),lerp(w[1],c.to,z)]});
  const drift=seg(t,s.t0,s.t1)*Math.min(4,(w[1]-w[0])*.04);w=[w[0]+drift,w[1]];
- return {C,n,r,w,s}}
+ return {C,n,r,w,s,r0}}
 function winOf(s){if(s.win)return s.win;const C=CH[s.chart].candles;return [0,C.length-1]}
 function zoomedWin(s,t){let w=winOf(s).slice();(s.cues||[]).filter(c=>c.do==='zoom'&&t>=c.t).forEach(c=>w=[c.from,c.to]);return w}
 function endReveal(i){const s=SC[i],C=CH[s.chart].candles;let r=s.show!=null?s.show:(i>0&&SC[i-1].chart===s.chart?endReveal(i-1):C.length-1);
@@ -81,7 +81,7 @@ function drawings(i,t){ // lines, marks and shades of this scene (and the scenes
  return out.filter(c=>c.age>=-.05)}
 function drawChart(i,t){
  const S=chartState(i,t),el=document.getElementById('chart');if(!S){el.innerHTML='';return}
- const {C,n,r,w,s}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
+ const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
  const B={x:62,y:540,w:s.kind==='stick'?720:956,h:620},PL={x:B.x+20,y:B.y+60,w:B.w-160,h:430},VOL={y:B.y+505,h:90};
  const w0=w[0],w1=Math.max(w[0]+8,w[1]);let lo=1e9,hi=-1e9;
  const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r));   // (only what is shown sets the scale, so the axis never gives the answer away)
@@ -95,23 +95,27 @@ function drawChart(i,t){
  let post='',g=`<g opacity="${fade}"><defs><clipPath id="cp"><rect x="${PL.x-6}" y="${B.y+50}" width="${PL.w+12}" height="${B.h-60}"/></clipPath></defs>`;
  g+=`<rect x="${B.x}" y="${B.y}" width="${B.w}" height="${B.h}" rx="28" fill="#0b0f13" stroke="#23272d" stroke-width="3"/><g clip-path="url(#cp)">`;
  for(let q=0;q<5;q++){const v=lerp(lo+(hi-lo)*.1,hi-(hi-lo)*.1,q/4);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${Y(v)}" y2="${Y(v)}" stroke="#151a1f" stroke-width="2"/><text x="${PL.x+PL.w+16}" y="${Y(v)+8}" font-size="22" fill="${MUTE}">${v.toFixed(2)}</text>`}
- const D=drawings(i,t);
+ const D=drawings(i,t),taken=[],free=(a,b,c,d)=>!taken.some(q=>a<q[2]&&q[0]<c&&b<q[3]&&q[1]<d);   // (every tag's box: a new tag never lands on one)
  D.filter(d=>d.do==='shade').forEach(d=>{const col=TONE[d.tone]||TE,a=out(seg(d.age,0,.5)),x0=X(d.from)-bw/2,ww=(d.to-d.from+1)*bw*a;g+=`<rect x="${x0}" y="${PL.y-10}" width="${Math.max(0,ww)}" height="${PL.h+VOL.h+40}" rx="8" fill="${col}" opacity=".14"/>`});
  for(let k=Math.max(0,Math.floor(w0)-1);k<=Math.min(n-1,Math.ceil(w1)+1);k++){if(k>r+.999)break;const [o,h,l,c,v]=C[k],gg=cl(r-k+1),up=c>=o,col=up?G:RD,x=X(k),bwid=Math.max(2,bw*.64),cc=lerp(o,c,out(gg));
   const hh=Math.max(o,cc)+(h-Math.max(o,c))*gg,ll=Math.min(o,cc)-(Math.min(o,c)-l)*gg,vh=Math.min(1,v/vmax)*VOL.h*out(gg);
   g+=`<g opacity="${cl(gg*2)}"><line x1="${x}" x2="${x}" y1="${Y(hh)}" y2="${Y(ll)}" stroke="${col}" stroke-width="${Math.max(1.5,bw*.12)}"/><rect x="${x-bwid/2}" y="${Math.min(Y(o),Y(cc))}" width="${bwid}" height="${Math.max(2,Math.abs(Y(o)-Y(cc)))}" rx="${Math.min(2,bwid/4)}" fill="${col}"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh}" width="${bwid}" height="${vh}" fill="${up?GV:RV}"/></g>`}
  D.filter(d=>d.do==='line').forEach(d=>{const col=TONE[d.tone]||AM,a=out(seg(d.age,0,.6)),y=Y(d.price);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w*a}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="4" stroke-dasharray="16 10"/>`;
-  if(d.label)g+=`<g opacity="${a}"><rect x="${PL.x+8}" y="${y-44}" width="${d.label.length*15+30}" height="36" rx="10" fill="#0b0f13" stroke="${col}" stroke-width="2"/><text x="${PL.x+23}" y="${y-19}" font-size="22" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`});
- const pill=(x,y,lab,col,a)=>{const pw=String(lab).length*14+26,px=cl(x,PL.x+pw/2,PL.x+PL.w-pw/2);return `<g transform="translate(${px} ${y}) scale(${a})"><rect x="${-pw/2}" y="-19" width="${pw}" height="38" rx="10" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text y="8" text-anchor="middle" font-size="22" font-weight="700" fill="${col}">${esc(lab)}</text></g>`};
+  if(d.label){const lw=d.label.length*15+30,c2=[[PL.x+8,y-44],[PL.x+PL.w-lw-8,y-44],[PL.x+8,y+8],[PL.x+PL.w-lw-8,y+8]],[lx,ly]=c2.find(([u,v])=>free(u-4,v-6,u+lw+4,v+42))||c2[0];taken.push([lx,ly,lx+lw,ly+36]);   // (close lines: their tags go to opposite ends)
+   g+=`<g opacity="${a}"><rect x="${lx}" y="${ly}" width="${lw}" height="36" rx="10" fill="#0b0f13" stroke="${col}" stroke-width="2"/><text x="${lx+15}" y="${ly+25}" font-size="22" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
+ const pill=(x,y,lab,col,a,ys)=>{const pw=String(lab).length*14+26,at=(u,v)=>[cl(u,PL.x+pw/2,PL.x+PL.w-pw/2),v];
+  const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),[px,py]=c2.find(([u,v])=>free(u-pw/2-6,v-25,u+pw/2+6,v+25))||at(x,y);
+  y=py;taken.push([px-pw/2,y-19,px+pw/2,y+19]);return `<g transform="translate(${px} ${y}) scale(${a})"><rect x="${-pw/2}" y="-19" width="${pw}" height="38" rx="10" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text y="8" text-anchor="middle" font-size="22" font-weight="700" fill="${col}">${esc(lab)}</text></g>`};
  D.filter(d=>d.do==='mark'&&d.side==='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length),ya=VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h,vh=Math.min(1,C[k][4]/vmax)*VOL.h,x=X(k),bwid=Math.max(4,bw*.64)+10;
   g+=`<g opacity="${cl(a)}"><line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${ya}" y2="${ya}" stroke="${MUTE}" stroke-width="3" stroke-dasharray="10 8"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh-5}" width="${bwid}" height="${vh+10}" rx="4" fill="none" stroke="${col}" stroke-width="4"/></g>`+(d.label?pill(x,VOL.y+VOL.h-vh-34,d.label,col,a):'')});
  post+=D.some(d=>d.do==='mark'&&d.side==='vol')?(()=>{const d=D.find(d=>d.do==='mark'&&d.side==='vol'),k=Math.max(0,Math.min(n-1,d.i)),ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length);return `<text x="${PL.x+PL.w+16}" y="${VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h+8}" font-size="22" font-weight="700" fill="${MUTE}" opacity="${cl(back(seg(d.age,0,.45)))}">avg</text>`})():'';
+ D.filter(d=>d.do==='mark'&&d.side!=='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),y=d.side!=='low'?Y(C[k][1]):Y(C[k][2]),rr=Math.max(13,Math.min(20,bw*.9));taken.push([x-rr,y-rr,x+rr,y+rr])});
  D.filter(d=>d.do==='mark'&&d.side!=='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),hiSide=d.side!=='low',y=hiSide?Y(C[k][1]):Y(C[k][2]),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,rr=Math.max(13,Math.min(20,bw*.9)),lab=String(d.label||'');
   g+=`<g transform="translate(${x} ${y}) scale(${a})"><circle r="${rr}" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-width="3.5"/><circle r="4" fill="${col}"/></g>`;
   if(lab.length&&lab.length<=2){const bx=x+rr*.75+12,by=y+(hiSide?-1:1)*(rr*.75+12);g+=`<g transform="translate(${bx} ${by}) scale(${a})"><circle r="15" fill="${col}"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#07121a">${esc(lab)}</text></g>`}
-  else if(lab)g+=pill(x,y+(hiSide?-1:1)*(rr+30),lab,col,a)});
+  else if(lab){const sg=hiSide?-1:1;g+=pill(x,y+sg*(rr+30),lab,col,a,[y+sg*(rr+30),y+sg*(rr+76),y-sg*(rr+30)])}});
  g+='</g>'+post;
- const lk=Math.min(n-1,Math.floor(r));if(lk>=Math.floor(w0)){const k=lk,gg=cl(r-k+1),c=lerp(C[k][0],C[k][3],out(gg)),up=c>=C[k][0],y=Y(c);
+ const lk=Math.min(n-1,Math.floor(r));if(lk>=Math.floor(w0)){const k=lk,gg=cl(r-k+1),c=lerp(C[k][0],C[k][3],out(gg)),f0=Math.floor(r0),up=r-r0>=1&&f0<k?c>=C[f0][3]:c>=C[k][0],y=Y(c);
   g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${y}" y2="${y}" stroke="${up?G:RD}" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/><rect x="${PL.x+PL.w+6}" y="${y-20}" width="118" height="40" rx="8" fill="${up?G:RD}"/><text x="${PL.x+PL.w+65}" y="${y+9}" text-anchor="middle" font-size="23" font-weight="700" fill="#07121a">${c.toFixed(2)}</text>`}
  const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+40}" font-size="24" font-weight="700" fill="${MUTE}">${esc(lab)}</text>`;
  el.innerHTML=g+'</g>'}
@@ -184,7 +188,7 @@ function render(T){
  // the options: in during the question, the right one lights up at the answer
  const o=document.getElementById('opts'),q=s.kind==='question'?s:(s.kind==='answer'&&p.kind==='question'?p:null);
  if(q&&q.options){const shown=s.kind==='question'?s:null;o.innerHTML=q.options.map((x,k)=>{const at=s.kind==='question'?(s.opt_t?s.opt_t[k]:((s.cues||[]).find(c=>c.do==='options')||{t:s.vs+.4}).t+k*.15):-1,a=at<0?1:back(seg(t,at,at+.35));
-   let st2=`opacity:${cl(a)};transform:translateY(${(1-a)*30}px)`;if(s.kind==='answer'){const ok=k===q.answer,u=out(seg(t,s.t0,s.t0+.35));st2+=ok?`;background:#123d2a;border-color:${G};color:#fff;transform:scale(${1+.06*Math.sin(Math.PI*cl(u))})`:`;opacity:${1-.6*u}`}
+   let st2=`opacity:${cl(a)};transform:scale(${.85+.15*a})`;if(s.kind==='answer'){const ok=k===q.answer,u=out(seg(t,s.t0,s.t0+.35));st2+=ok?`;background:#123d2a;border-color:${G};color:#fff;transform:scale(${1+.06*Math.sin(Math.PI*cl(u))})`:`;opacity:${1-.6*u}`}
    return `<div class="opt" style="${st2}"><b style="flex:none;margin-right:12px;padding:4px 12px;border-radius:10px;background:${s.kind==='answer'&&k===q.answer?G:'#2a2f35'};color:${s.kind==='answer'&&k===q.answer?'#07121a':'#e6e9ec'}">${String.fromCharCode(65+k)}</b><span>${esc(x)}</span></div>`}).join('');o.querySelectorAll('.opt').forEach(e=>fit(e,104,q.options.length>3?26:30,16))}else o.innerHTML='';
  // burned-in captions: the line being spoken, the current word lit
  const cp=document.getElementById('caps');
