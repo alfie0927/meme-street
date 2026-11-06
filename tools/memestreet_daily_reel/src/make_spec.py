@@ -266,10 +266,11 @@ WORLD_LAYOUTS = re.findall(r"^  (\w+)\(s\) \{", _W, re.M)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
 RULES = """Rules:
-- The house style is neon 3D: every reel has at least one "world" scene (a stock story has 2 or 3: what the company does,
-  its good news, its bad news), and the hook may be one too (give the hook a layout and props). Pick the layout that
-  acts out the line, and props that show it: a dragon-rental firm is a dragon circling its ranch, a teleport freight
-  firm is crates through portals, a recall is warnings hitting the company. Charts stay charts.
+- Neon 3D "world" scenes show real things: a stock story has 2 or 3 (what the company does, its good news, its bad
+  news), and any reel may use one when a real object acts out the line (a company, its product, money moving). A dragon-
+  rental firm is a dragon circling its ranch, teleport freight is crates through portals, a recall is warnings hitting
+  the company. Never an abstract stand-in for an idea (a box for 'your trade', triangles for 'panic'): if a viewer could
+  not tell what it shows in one second with the sound off, use the chart, cards or Rookie and Pro instead. Charts stay charts.
 - Video (only when the ask's "video" says it is available): a stock story shows the company's business and its good
   and bad news as 2 or 3 film scenes; every other reel puts one "shot" on its hook (the first thing anyone sees, so make
   it striking). A shot shows the line's subject doing something specific and physical, fictional (no real brands,
@@ -342,8 +343,6 @@ def check(spec, facts, charts, category=None):
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
     if category == "Stock story" and not 2 <= len(worlds) <= 3:
         errs.append("a stock story shows what the company does and its news as 2 or 3 world scenes (neon 3D)")
-    elif not worlds:
-        errs.append("every reel has at least one world scene (neon 3D): the hook, or the idea of the reel acted out")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
     films = [s for s in sc if s.get("kind") == "film"]
     for k, s in enumerate(sc):

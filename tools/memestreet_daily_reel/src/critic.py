@@ -158,8 +158,10 @@ You judge, and score out of 10:
    next reel. Language that sounds like a person, not an advert.
 5. NEON 3D SCENES ("world" scenes, the house style: glowing teal, purple and amber line work on near-black, after the
    PhaseJump reel): each must pop, read at a glance, and act out exactly what the voice says at that moment (the right
-   props, popping in on their words). The wrong layout or props, or a scene that shows nothing the voice says, is a
-   script note (fix: a different layout or props); props clipping, labels off screen or on each other, or a dull frame
+   props, popping in on their words). It must be readable in one second with the sound off: an abstract scene (a box
+   standing for 'your trade', triangles for 'panic') or one where you cannot tell what is happening is a script major
+   (fix: the chart, cards or a concrete scene instead). The wrong layout or props, or a scene that shows nothing the
+   voice says, is a script note (fix: a different layout or props); props clipping, labels off screen or on each other, or a dull frame
    is a renderer note.
 6. VIDEO SHOTS (scenes with a full-screen realistic clip, when used): each must look real and cinematic, show exactly what the
    voice says at that moment, and hold up frame by frame. AI artefacts (melted or doubled faces, extra limbs, objects

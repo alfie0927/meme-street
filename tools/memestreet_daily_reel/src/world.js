@@ -308,8 +308,7 @@ const LAYOUTS = {
     const G = new THREE.Group(), f = floor(); G.add(f); lights(G);
     f.children[0].material.opacity = .3;                      // (a brighter grid: here it is the whole picture)
     const h1 = halo(COL.teal, 26, .22), h2 = halo(COL.purple, 18, .16); h1.position.set(-3, 2, -14); h2.position.set(6, 3, -12); G.add(h1, h2);
-    return {G, period: 10, pose() {}, cam(u) {const a = Math.PI * 2 * u / 10;
-      cam.position.set(Math.sin(a) * 1.4, 4.2 + .3 * Math.sin(a * 2), 10); cam.lookAt(Math.sin(a) * .8, .4, -2)}};
+    return {G, period: 10, pose() {}, cam() {cam.position.set(0, 4.2, 10); cam.lookAt(0, .4, -2)}};   // (a still camera: a moving backdrop behind still charts reads as the picture swimming)
   },
   flow(s) {   // props: the stations left to right (2 or 3), then the thing that travels (repeats along the route)
     const P = s.props || [], st = P.slice(0, Math.max(1, P.length - 1)).slice(0, 3), mover = P.length > 1 ? P[P.length - 1] : {p: 'crate', color: 'amber'};
@@ -394,7 +393,7 @@ const LAYOUTS = {
       hits.forEach((o, k) => {const q = seg(u, on(k) - .5, on(k)), tx = [-2.2, 2.2, 0][k], tz = [1.2, 1, 1.8][k];
         o.visible = u >= on(k) - .5; o.position.set(tx * (1 + 2 * (1 - out(q))), (1 - out(q)) * 3, tz); o.rotation.y = (1 - q) * 3; idle(o, u, k);
         const hit = seg(u, on(k), on(k) + .5), live = u >= on(k) ? 1 - hit : 0; shake += live; f = Math.max(f, live)});
-      h.rotation.z = .05 * Math.sin(u * 40) * shake + .06 * seg(u, on(0), on(0) + 2);
+      h.rotation.z = .035 * Math.sin(u * 7) * shake + .06 * seg(u, on(0), on(0) + 2);   // (a slow wobble: a fast shake stutters at 30 fps)
       flash.material.opacity = .5 * f;
     }, cam(u, d) { orbitCam(u, d, 10, 8.5, -.15, .12, 2.9, 1.5) }};
   },
@@ -424,7 +423,7 @@ export async function drawWorld(canvas, s, t) {
   }
   const u = t - Math.max(0, s.t0), d = Math.max(1, s.t1 - Math.max(0, s.t0));
   const fl = parts.G.children[0]?.userData?.dust;
-  const sp = k => parts.period ? 5 * (1 + k % 2) / parts.period : .15 * (1 + rnd(k + 9));   // (a looping scene: every mote comes back to where it started)
+  const sp = k => parts.period ? 5 / parts.period : .15 * (1 + rnd(k + 9));   // (a looping scene: every mote comes back to where it started)
   if (fl) fl.children.forEach(m => {const k = m.userData.k; m.position.set((rnd(k) - .5) * 14, (rnd(k + 50) * 5 + u * sp(k)) % 5, (rnd(k + 99) - .5) * 10)});
   parts.pose(u); parts.cam(u, d); parts.G.updateMatrixWorld(true); cam.updateMatrixWorld();
   comp.render();

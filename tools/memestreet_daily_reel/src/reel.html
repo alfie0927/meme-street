@@ -26,7 +26,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .card .ic{width:100px;height:100px;flex:none}.card .tx{font:700 46px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
 .big{position:absolute;left:60px;right:60px;top:560px;height:560px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;text-align:center;font:700 92px/1.15 'Cascadia Mono',monospace;letter-spacing:-2px}
 .big span{display:inline-block;margin:0 18px}
-.wlab{position:absolute;transform:translate(-50%,-100%);padding:8px 16px;border-radius:12px;background:#0b0f13d9;border:2.5px solid;font:700 30px/1 'Cascadia Mono',monospace;white-space:nowrap}
+.wlab{position:absolute;transform:translate(-50%,-100%);padding:8px 16px;border-radius:12px;background:#0b0f13d9;border:2.5px solid;font:700 38px/1 'Cascadia Mono',monospace;white-space:nowrap}
 </style>
 <script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js"}}</script>
 </head><body>
@@ -199,7 +199,7 @@ function render(T){
  // a neon 3D scene (world.js): a layout and props, drawn by WebGL under the titles and captions, its labels as text here
  const wc=document.getElementById('world'),wl=document.getElementById('wlabs');let wp=null;
  if(s.layout){wc.style.opacity=out(seg(T,s.t0,s.t0+.3));fs.style.opacity=wc.style.opacity;wp=window.worldLoad.then(()=>window.drawWorld(wc,s,T)).then(L=>{const placed=[];
-  wl.innerHTML=L.sort((a,b)=>a.y-b.y).map(l=>{let y=Math.max(600,Math.min(1250,l.y));const w=l.text.length*18+36,x=Math.max(70+w/2,Math.min(1010-w/2,l.x));
+  wl.innerHTML=L.sort((a,b)=>a.y-b.y).map(l=>{let y=Math.max(600,Math.min(1250,l.y));const w=l.text.length*23+40,x=Math.max(70+w/2,Math.min(1010-w/2,l.x));
    while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+8&&Math.abs(q[1]-y)<54))y+=56;placed.push([x,y,w]);   // (labels never stack on each other)
    return `<div class="wlab qa" style="left:${x}px;top:${y}px;color:${l.color};border-color:${l.color};opacity:${wc.style.opacity}">${esc(l.text)}</div>`}).join('')})}
  else{wc.style.opacity=0;wl.innerHTML=''}
