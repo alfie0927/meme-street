@@ -87,6 +87,8 @@ def shot(desc, seconds, out_dir):
     out = os.path.join(out_dir, key + ".mp4")
     if os.path.exists(out):
         return out
+    if os.environ.get("HF_VIDEO") != "1":
+        print("footage: video is off (HF_VIDEO=1 turns it on), no video"); return None
     if not cred():
         print("footage: no Higgsfield key (config.env), no video"); return None
     if remaining() < cost(seconds):
@@ -118,7 +120,7 @@ def demo():
         img = any("soul" in u for _, u in calls[-2:])
         return {"status": "completed", "request_id": "r1", **({"images": [{"url": "https://x/i.png"}]} if img else {"video": {"url": "https://x/v.mp4"}})}
     d = tempfile.mkdtemp(); http, fetch, SPEND, POLL = fake, (lambda u, p: open(p, "wb").write(b"mp4")), os.path.join(d, "s.json"), 0
-    os.environ.setdefault("HF_API_KEY", "id:secret")
+    os.environ.setdefault("HF_API_KEY", "id:secret"); os.environ["HF_VIDEO"] = "1"
     p = shot("a dragon over a ranch", 6, d)
     assert p and open(p, "rb").read() == b"mp4" and abs(spent() - cost(5)) < 1e-9, spent()
     n = len(calls); assert shot("a dragon over a ranch", 6, d) == p and len(calls) == n          # (cached: no call, no spend)
@@ -139,5 +141,6 @@ if __name__ == "__main__":
         except urllib.error.HTTPError as e:
             print({401: "key rejected (401): check HF_API_KEY", 403: "key rejected (403)"}.get(e.code, f"key accepted (HTTP {e.code} for a made-up request)"))
     elif sys.argv[1] == "try":
+        os.environ["HF_VIDEO"] = "1"                     # (a test shot is asked for by hand)
         p = shot(sys.argv[2], float(sys.argv[3]) if len(sys.argv) > 3 else 5, os.path.join(ROOT, "state", "footage_try"))
         print(p, f"spent this month ${spent():.2f} of ${CAP:.0f}")
