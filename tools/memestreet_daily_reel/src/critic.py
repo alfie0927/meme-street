@@ -33,6 +33,27 @@ def heard(mp4):
     return [(w.word.strip(), w.start, w.end) for s in segs for w in s.words]
 
 
+def silences(vo, T, sr=16000):
+    """The silent stretches (>= 0.15 s) of the voice alone, from the waveform: Whisper's word edges stretch a pause
+    (it ends a word like 'forty-six' early), so they are not a measure of how long the voice is quiet."""
+    a = np.zeros(int(T * sr) + sr, np.float32)
+    for f, o in vo:
+        if "/vo/" not in f: continue                         # (sound effects are not the voice)
+        c = np.frombuffer(subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(ROOT, f), "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"],
+                                         capture_output=True).stdout, np.float32)
+        i = int(o * sr); c = c[:len(a) - i]; a[i:i + len(c)] += c
+    n = len(a) // 160; loud = np.sqrt(np.mean(a[:n * 160].reshape(n, 160) ** 2, axis=1)) >= 0.01   # 10 ms frames, -40 dB
+    on = np.flatnonzero(loud)
+    if not len(on): return []
+    runs, s = [], None
+    for j in range(on[0], on[-1] + 1):
+        if not loud[j]: s = j if s is None else s
+        elif s is not None:
+            if j - s >= 15: runs.append((s / 100, j / 100))
+            s = None
+    return runs
+
+
 key = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
 
 
@@ -60,7 +81,7 @@ def pack(work, out, rd):
         if op != "equal":
             misheard.append({"scene": said[a0][1] if a0 < len(said) else None, "script": " ".join(w for w, _ in said[a0:a1]),
                              "heard": " ".join(w for w, _, _ in H[b0:b1]), "at": round(H[b0][1], 2) if b0 < len(H) else None})
-    scenes = []
+    scenes, Q = [], silences(R["vo"], T)
     SC = R["scenes"]   # each heard word belongs to the scene whose voice it is nearest (the first and last are open-ended)
     cut = [-1e9] + [(a.get("ve", a["t1"]) + b.get("vs", b["t0"])) / 2 for a, b in zip(SC, SC[1:])] + [1e9]
     for i, s in enumerate(SC):
@@ -69,7 +90,8 @@ def pack(work, out, rd):
         if clip:   # pace, pauses and caption sync from the scene's own voice track: in the mix, music and effects blur word edges
             hw = [(w, a + clip[1], b + clip[1]) for w, a, b in heard(clip[0])]
         r = talk_rate([(key(w), a, b) for w, a, b in hw])
-        pauses = [{"after": a[0], "secs": round(b[1] - a[2], 2), "at": round(a[2], 2)} for a, b in zip(hw, hw[1:]) if b[1] - a[2] >= 0.15]
+        pauses = [{"after": next((w for w, _, b in reversed(hw) if b <= q0 + 0.15), ""), "secs": round(q1 - q0, 2), "at": round(q0, 2)}
+                  for q0, q1 in Q if cut[i] <= q0 < cut[i + 1]]
         sync = []                                           # caption word time vs when it is heard
         tw = s.get("text_words") or []
         m = difflib.SequenceMatcher(None, [key(w) for w in tw], [key(w) for w, _, _ in hw], autojunk=False)
@@ -86,7 +108,7 @@ def pack(work, out, rd):
                        "pauses_heard": pauses, "caption_minus_voice_secs": {"max_abs": max(map(abs, sync), default=None),
                        "mean": round(sum(sync) / len(sync), 2) if sync else None}, "on_screen": on_screen,
                        "cues": [f"{c.get('do')} on '{c.get('say', '')}' @ {c.get('t')}s" for c in s.get("cues", [])]})
-    gaps = [b[1] - a[2] for a, b in zip(H, H[1:])]
+    gaps = [q1 - q0 for q0, q1 in Q]
     wr = [(len(x["script"].split()), x["words_per_sec_talking"]) for x in scenes if x["words_per_sec_talking"]]
     report = {"title": R.get("title"), "format": R.get("type"), "series": R.get("series"), "length_secs": T,
               "caption_post_text": open(os.path.join(work, "caption.txt"), encoding="utf-8").read() if os.path.exists(os.path.join(work, "caption.txt")) else "",
