@@ -142,7 +142,10 @@ You judge, and score out of 10:
 1. SYNC - every on-screen word, caption, marker and move lands exactly when the voice says it; nothing early, nothing late,
    nothing on screen that the voice does not explain, nothing said that the screen does not show.
 2. VISUALS - appealing, clean, balanced, readable at a glance on a phone; every scene pops and gives the eye something new;
-   no clutter, no ugly or cramped labels, no empty dead stage, no text touching other text, nothing cut off.
+   no clutter, no ugly or cramped labels, no empty dead stage, no text touching other text, nothing cut off. Every piece
+   of text is properly written: each title, head, card, bubble, label, caption sentence and the post caption starts with
+   a capital letter, names are capitalised ('Ember Dragon Ranches', 'I'), no lowercase fragments ('level cost you 11%').
+   A capitals fault is a script note (major on the hook or the end card).
 3. AUDIO - smooth, human pacing: steady speed (real narrators: about 3.9 words a second while talking), natural pauses after
    commas (about 0.3 s) and sentences (about 0.35 s), never rushed, never dragging, no dead air; every word pronounced
    correctly (the transcript of the final mix against the script shows what a listener hears: a word heard differently

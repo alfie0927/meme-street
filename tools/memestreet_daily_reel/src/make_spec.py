@@ -266,6 +266,9 @@ RULES = """Rules:
   (or where the scene before it on the same chart ended), or revealed earlier in the same scene.
 - On-screen text (hook text, big text, outro text) is words of that scene's line, word for word, in order.
 - A figure's label is its name ("Rookie", "Pro") or role, never a copy of the scene's head.
+- Proper capitals everywhere: every sentence, title, head, card, bubble, label and on-screen line starts with a capital
+  letter; names keep theirs ("Ember Dragon Ranches", "Rookie", "I"). On-screen text taken from the middle of a line
+  still starts with a capital ("Level cost you 11%" reads wrong; take a whole phrase: "This level cost you 11%").
 - The caption: first line is a hook that survives the "... more" cut (under 125 characters), then 2 to 5 short lines,
   one ask (comment, save or follow), "Practise at memestreet.net", then exactly "Fictional market. Not investment advice.",
   then 3 to 5 hashtags including #MemeStreet. No emoji anywhere. British spelling.
@@ -452,6 +455,32 @@ def finish(spec, charts, category):
             s["show"] = ch["upto"]
     spec["type"] = category
     spec["charts"] = [{"candles": c["candles"], "label": c["label"]} for c in charts]
+    return capitals(spec)
+
+
+def sentence_case(x):
+    """Every sentence and line starts with a capital, and 'i' is 'I' (nothing is ever lowered: names keep their case)."""
+    abbr = lambda m: re.search(r"\b(i\.e|e\.g|vs|etc|approx)\.\s+$", m.string[:m.start(2)], re.I)
+    x = re.sub(r"(^|[.!?]\s+|\n\s*)([\"'(]?)([a-z])", lambda m: m.group(0) if abbr(m) else m.group(1) + m.group(2) + m.group(3).upper(), x)
+    return re.sub(r"\bi(?=\b(?!\.))(?=['\s,.!?]|$)", "I", x)
+
+
+def capitals(spec):
+    """Proper capitals everywhere a viewer reads: titles, heads, hook and big text, cards, bubbles, labels, options,
+    the spoken lines (they become the captions) and the post caption."""
+    up = lambda x: sentence_case(x) if isinstance(x, str) else x
+    for k in ("title", "caption"):
+        spec[k] = up(spec.get(k))
+    for s in spec["scenes"]:
+        for k in ("vo", "head", "text", "badge"):
+            if s.get(k): s[k] = up(s[k])
+        for it in s.get("items", []):
+            for k in ("text", "sub"):
+                if it.get(k): it[k] = up(it[k])
+        for c in s.get("cues", []) + s.get("figures", []):
+            for k in ("text", "label"):
+                if c.get(k): c[k] = up(c[k])
+        if s.get("options"): s["options"] = [up(o) for o in s["options"]]
     return spec
 
 
@@ -600,7 +629,13 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     rem = json.load(open(a[a.index("--remake") + 1], encoding="utf-8")) if "--remake" in a else None
     cat = a[a.index("--category") + 1] if "--category" in a else None
-    if a[0] == "revise":                                 # <work> <review.json>: rewrite after the film critic's notes
+    if a[0] == "selftest":
+        for x, y in [("level cost you 11%", "Level cost you 11%"), ("it fell. then i sold!", "It fell. Then I sold!"),
+                     ("at memestreet.net. now", "At memestreet.net. Now"), ("i'm in, i.e. long", "I'm in, i.e. long"),
+                     ("Ember Dragon Ranches up", "Ember Dragon Ranches up")]:
+            assert sentence_case(x) == y, (x, sentence_case(x))
+        print("ok")
+    elif a[0] == "revise":                               # <work> <review.json>: rewrite after the film critic's notes
         revise(a[1], json.load(open(a[2], encoding="utf-8")))
     elif a[0] == "brief":                                  # for a writer elsewhere (a cloud session): <dir>/brief.json
         B = brief(a[1], cat, rem); os.makedirs(a[2], exist_ok=True)
