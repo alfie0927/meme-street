@@ -94,7 +94,7 @@ def shot(desc, seconds, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     for d in (desc, desc + ", calm and family friendly"):          # (a refusal gets one gentler try; failed requests are free)
         try:
-            im = run(IMAGE, {"prompt": d + STYLE, "aspect_ratio": "9:16", "resolution": "2K"})
+            im = run(IMAGE, {"prompt": d + STYLE, "aspect_ratio": "9:16", "resolution": "1080p"})
             if im.get("status") != "completed":
                 print(f"footage: still {im.get('status')}: {im.get('error') or ''}"); continue
             charge(PRICE["image"])
