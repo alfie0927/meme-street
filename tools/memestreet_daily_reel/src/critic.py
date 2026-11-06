@@ -173,9 +173,15 @@ and do not move the goalposts. Numbers (pauses, speeds, drift) come only from re
 Every note carries evidence, or it is thrown away unread: the image file(s) where it shows, named exactly as in
 report.json "images", and/or a "report" quote copied character for character from report.json that proves it (for
 example "secs": 0.62). A note also says exactly where (scene, time), what is wrong, the concrete fix, and a one-line
-lesson: the general rule the writer must follow in EVERY future reel. Say whether the fix belongs to the "script"
-(words, scenes, cues, on-screen text, which the writer controls) or the "renderer" (how the house template draws things,
-which the writer cannot change). Scenes count from 0, as in report.json.
+lesson: the general rule the writer must follow in EVERY future reel. Scenes count from 0, as in report.json.
+
+Say who can fix it. The writer controls only the script: each scene's kind and order, its spoken line, head and
+on-screen text, and its cues: which phrase each cue lands on, which candles are revealed, marked, shaded or zoomed,
+each line's price, label and tone, cards, figures, poses, bubbles and sprites. That is "script", and its fix names the
+change in those terms (e.g. "scene 1: a line cue at 119.42 labelled 'Entry', said on 'entry'"). Everything about how
+the house template draws (where a tag sits, tags stacking, sizes, fonts, colours, the voice's pauses and pronunciation
+of a word that is written right, the end card's layout) is "renderer": the writer cannot change it, so never give the
+writer a renderer fix.
 
 From round 2 you get a numbered checklist of your earlier notes that are still open, and the scenes that changed since
 the last cut. For each checklist note, look at this cut: "fixed", or "still_wrong" with evidence from this cut. Never
@@ -270,6 +276,20 @@ def learn(rev, slot):
     remember(TODO, [x for x in iss if x.get("owner") == "renderer" and not x.get("still_open")], slot, "what")
 
 
+def unstick(rev, slot):
+    """Count how many rounds each script note has stayed open. One the writer has failed to change for three rounds is
+    almost always the pipeline (a template line, a renamed level): it stops blocking and goes to the to-do list."""
+    keep, stuck = [], []
+    for x in rev.get("issues", []):
+        x["rounds_open"] = x.get("rounds_open", 0) + 1 if x.get("still_open") else 1
+        (stuck if x["rounds_open"] >= 3 and x.get("owner", "script") != "renderer" else keep).append(x)
+    if stuck:
+        remember(TODO, [dict(x, what="STUCK (the writer could not change it in 3 rounds): " + x.get("what", "")) for x in stuck], slot, "what")
+        rev.update(issues=keep, stuck=stuck)
+        rev["approved"] = not any(x.get("severity") in ("blocker", "major") and x.get("owner", "script") != "renderer" for x in keep)
+    return rev
+
+
 def run(cmd, **env):
     """Run a step; its output is shown, and on failure its last lines are the reason (SystemExit with them)."""
     r = subprocess.run(cmd, cwd=ROOT, env=dict(os.environ, **{k: str(v) for k, v in env.items()}),
@@ -305,12 +325,15 @@ def loop(work, out):
                     rev = verify(ask_critic(rd, rnd, prev, changed), rd, prev); break
                 except (SystemExit, subprocess.TimeoutExpired, ValueError) as e:   # (the critic call failed: wait, ask again)
                     print(f"critic round {rnd}: no review ({str(e)[:200]}); asking again in 5 minutes", flush=True); time.sleep(300)
+        rev = unstick(rev, slot)
         json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
         print(f"critic round {rnd}: {'APPROVED' if rev['approved'] else 'sent back'} {rev.get('scores')} - {rev.get('verdict', '')}", flush=True)
         for x in rev.get("issues", []):
             print(f"   [{x.get('severity')}/{x.get('owner')}{'/still open' if x.get('still_open') else ''}] {x.get('where')}: {x.get('what')}", flush=True)
         for x in rev.get("dropped", []):
             print(f"   dropped ({x.get('dropped')}): {x.get('where')}: {str(x.get('what'))[:160]}", flush=True)
+        for x in rev.get("stuck", []):
+            print(f"   stuck 3 rounds, to the to-do list: {x.get('where')}: {str(x.get('what'))[:160]}", flush=True)
         learn(rev, slot)
         if rev["approved"]:
             run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("AUTO_FPS", "60"))   # (the same frames, smoother)
@@ -347,6 +370,15 @@ def demo():
                 "previous": [{"n": 1, "status": "still_wrong", "evidence": [{"report": '"after": "high,"'}]}]}, rd, prev)
     assert [x.get("still_open") for x in v["issues"]] == [None, True] and not v["approved"]
     assert verify({"issues": [], "previous": [{"n": 1, "status": "fixed"}]}, rd, prev)["approved"]
+    global TODO
+    TODO, old = os.path.join(rd, "todo.json"), TODO
+    note = {"severity": "blocker", "owner": "script", "what": "stuck", "evidence": [{"image": "scene02_chart_5.0s-9.0s.jpg"}]}
+    v = unstick(verify({"issues": [note], "previous": []}, rd, []), "t")
+    assert v["issues"][0]["rounds_open"] == 1 and not v["approved"]
+    for r in (2, 3):                                     # the same note, still wrong in the next two cuts
+        v = unstick(verify({"issues": [], "previous": [{"n": 1, "status": "still_wrong", "evidence": note["evidence"]}]}, rd, v["issues"] or v["stuck"]), "t")
+    assert v["approved"] and v["stuck"][0]["rounds_open"] == 3 and "STUCK" in json.load(open(TODO))[0]["what"]
+    TODO = old
     print("verify ok")
 
 

@@ -434,6 +434,13 @@ def finish(spec, charts, category):
     """Add what comes from the facts, not from Claude: the options and answers, the drawn lines, the windows."""
     named = [(s.get("chart"), c["price"], c["label"]) for s in spec["scenes"] for c in s.get("cues", [])
              if c.get("do") == "line" and c.get("label") and isinstance(c.get("price"), (int, float))]
+    def said(vo, lab):                                    # a template line appears when the line names it ('a stop'), else at the start
+        words = {"stop": ["stop"], "take": ["target", "take"], "target": ["target"], "entry": ["entry", "buy"], "buy": ["buy", "entry"]}
+        first = re.sub(r"[^a-z]", " ", lab.lower()).split()[:1]
+        for w in words.get(first[0], first) if first else []:
+            m = re.search(r"\b" + re.escape(w) + r"\w*", vo, re.I)
+            if m: return m.group(0)
+        return ""
     def name(k, x):                                       # the writer's name for this level, if it drew it: one level, one name
         return next((lab for ck, p, lab in named if ck == k and abs(p - x["price"]) <= 0.001 * abs(p)), x.get("label", ""))[:22]
     for s in spec["scenes"]:
@@ -446,15 +453,16 @@ def finish(spec, charts, category):
         if s["kind"] == "question" and d:
             s["options"], s["answer"], s["show"] = d["options"], d["answer"], ch["upto"]
             s["win"] = [ch["win"][0], ch["end"]]
-            s.setdefault("cues", []).append({"say": "", "do": "options"})
-            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": name(s["chart"], x), "tone": tone(x)}
-                          for x in d["lines"] if not x.get("after")][:2]
+            s.setdefault("cues", []).append({"say": "", "do": "options", "from": "template"})
+            s["cues"] += [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
+                           "tone": tone(x), "from": "template"} for x in d["lines"] if not x.get("after")][:2]
         elif s["kind"] == "answer" and d:
             s["reveal_to"], s["carry"] = ch["end"], True
             s.setdefault("cues", [])
-            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": name(s["chart"], x), "tone": tone(x)}
-                          for x in d["lines"] if x.get("after")][:3]
-            s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:2], "side": "high"} for m in d["marks"] if m.get("label")][:3]
+            s["cues"] += [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
+                           "tone": tone(x), "from": "template"} for x in d["lines"] if x.get("after")][:3]
+            s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:2], "side": "high", "from": "template"}
+                          for m in d["marks"] if m.get("label")][:3]
         elif s["kind"] in ("hook", "chart") and s.get("show") is None and d:
             s["show"] = ch["upto"]
     spec["type"] = category
@@ -547,13 +555,13 @@ def merge(base, patch):
     """A rewrite after the critic sends only what changes: {"scenes": {"3": scene, ...}, "title": ...}. The scenes not
     named stay exactly as they were (a whole script, with a list of scenes, replaces the draft)."""
     if isinstance(patch.get("scenes"), list):
-        return patch
+        return {k: v for k, v in patch.items() if k != "fixes"}
     s = json.loads(json.dumps(base))
     for k, v in (patch.get("scenes") or {}).items():
         i = int(k)
         if 0 <= i < len(s["scenes"]): s["scenes"][i] = v
         elif i == len(s["scenes"]): s["scenes"].append(v)
-    s.update({k: v for k, v in patch.items() if k != "scenes"})
+    s.update({k: v for k, v in patch.items() if k not in ("scenes", "fixes")})
     return s
 
 
@@ -582,14 +590,43 @@ def lessons():
             "\n".join(f"- {x['lesson']}" for x in L)) if L else ""
 
 
-def write(B, msgs=None, base=None):
-    """Have Claude write the script (or, with `base`, a patch of it), checked and sent back at most four times."""
+def fix_check(raw, notes, base, spec):
+    """A rewrite answers every note: each has an entry in "fixes", a note about scene k changes scene k (or its fix
+    names the changed scene that carries it), and something changed at all (an unchanged cut is not reviewed again)."""
+    m = re.search(r"\{.*\}", raw, re.S)
+    try:
+        patch = json.loads(m.group(0)) if m else {}
+    except ValueError:
+        return []                                         # (parse() already said it is not JSON)
+    errs, keep = [], lambda s: {k: v for k, v in s.items() if k != "fixes"}
+    if keep(spec) == keep(base):
+        errs.append("nothing changed: the critic would see the same cut; change what the notes ask")
+    sc = patch.get("scenes")
+    changed = set(range(len(spec.get("scenes", [])))) if isinstance(sc, list) else {int(k) for k in (sc or {}) if str(k).isdigit()}
+    fixes = {f.get("n"): str(f.get("how", "")) for f in patch.get("fixes", []) if isinstance(f, dict)}
+    for n, x in enumerate(notes, 1):
+        if n not in fixes:
+            errs.append(f"note {n} has no entry in \"fixes\" (say how you fixed it)"); continue
+        want = {int(k) for k in re.findall(r"scene (\d+)", x.get("where", ""))}
+        named = {int(k) for k in re.findall(r"scene (\d+)", fixes[n])}
+        if want and not (want | named) & changed:
+            errs.append(f"note {n} is about scene {min(want)}, but you did not change it (or name the scene you changed for it)")
+        if "caption" in x.get("where", "").lower() and "caption" not in patch and not isinstance(sc, list):
+            errs.append(f"note {n} is about the post caption, but you did not send a new \"caption\"")
+    return errs
+
+
+def write(B, msgs=None, base=None, notes=None):
+    """Have Claude write the script (or, with `base`, a patch of it that answers `notes`), checked and sent back at
+    most four times."""
     ask = claude_cli if os.environ.get("REEL_WRITER", "cli") == "cli" else claude
     msgs = msgs or [{"role": "user", "content": json.dumps(B["ask"], indent=1)}]
     B = dict(B, system=B["system"] + lessons())
     for attempt in range(5):
         raw = ask(msgs, B["system"])
         spec, errs = parse(raw, B, base)
+        if base is not None and spec:
+            errs += fix_check(raw, notes or [], base, spec)
         if not errs:
             return spec
         print(f"attempt {attempt + 1}: " + "; ".join(errs[:8]))
@@ -603,16 +640,43 @@ def revise(work, review):
     B = json.load(open(os.path.join(work, "brief.json"), encoding="utf-8"))
     draft = open(os.path.join(work, "draft.json"), encoding="utf-8").read()
     sn = lambda x: int((re.findall(r"scene (\d+)", x.get("where", "")) or [999])[0])
-    notes = "\n".join(f"- [{x.get('severity', '')}] {x.get('where', '')}: {x.get('what', '')} FIX: {x.get('fix', '')}"
-                      for x in sorted((x for x in review.get("issues", []) if x.get("owner", "script") != "renderer"), key=sn))
+    todo = sorted((x for x in review.get("issues", []) if x.get("owner", "script") != "renderer"), key=sn)
+    ev = lambda x: "".join(f" [measured: {e['report']}]" for e in x.get("evidence") or [] if isinstance(e, dict) and e.get("report"))
+    notes = "\n".join(f"{n}. [{x.get('severity', '')}] {x.get('where', '')}: {x.get('what', '')}{ev(x)} FIX: {x.get('fix', '')}"
+                      + (f" (OPEN {x['rounds_open']} ROUNDS: your earlier fixes did not change this on screen; read the scene as rendered below)"
+                         if x.get("rounds_open", 0) >= 2 else "") for n, x in enumerate(todo, 1))
     msgs = [{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": draft},
             {"role": "user", "content": "A film critic watched the finished reel made from your script and sent it back.\n"
-                                        f"His notes (scenes count from 0):\n{notes}\n"
+                                        f"His notes (scenes count from 0):\n{notes}\n\n"
+                                        f"The noted scenes as they were rendered (times in seconds):\n{rendered(work, todo)}\n\n"
                                         "Fix every note. Everything he did not mention is approved: leave it exactly as it is. "
+                                        "Lines and marks marked \"template\" are added from the game's facts: to rename one, add your "
+                                        "own line cue at the same price with the name you want; its \"say\" sets when it appears. "
+                                        "Where a tag sits, its size and its font belong to the template, not to you.\n"
                                         'Reply with JSON holding only what you change: {"scenes": {"<scene number>": <the whole '
-                                        'new scene>, ...}}, plus "title" or "caption" only if a note is about them. To add, '
-                                        "remove or reorder scenes, reply with the whole JSON instead."}]
-    save(write(B, msgs, json.loads(draft)), B, work, again=True)
+                                        'new scene>, ...}, "fixes": [{"n": <note number>, "how": "scene k: what you changed"}, '
+                                        '...one per note]}, plus "title" or "caption" only if a note is about them. To add, '
+                                        "remove or reorder scenes, reply with the whole JSON (with \"fixes\") instead."}]
+    save(write(B, msgs, json.loads(draft), todo), B, work, again=True)
+
+
+def rendered(work, notes):
+    """What the noted scenes really put on screen in the cut he watched (timeline.json): the line, the titles, and
+    every cue with its time and whether the writer or the template added it."""
+    try:
+        R = json.load(open(os.path.join(work, "timeline.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        return "(not available)"
+    ks = sorted({int(k) for x in notes for k in re.findall(r"scene (\d+)", x.get("where", ""))} & set(range(len(R["scenes"]))))
+    out = []
+    for k in ks:
+        s = R["scenes"][k]
+        cues = [f"{c.get('t')}s {c.get('do')} " + " ".join(f"{q}={c[q]}" for q in ("label", "text", "price", "i", "to") if c.get(q) is not None)
+                + f" (from {c.get('from', 'you')})" for c in s.get("cues", [])]
+        cues += [f"{p.get('t')}s sprite {p.get('e')} at {p.get('x')},{p.get('y')} {p.get('move', '')}" for p in s.get("sprites", [])]
+        out.append(f"scene {k} ({s.get('kind')}, {s.get('t0')}s-{s.get('t1')}s): vo {s.get('vo')!r}; head {s.get('head')!r}; "
+                   f"text {s.get('text')!r}\n  " + "\n  ".join(cues or ["(no cues)"]))
+    return "\n".join(out) or "(no scene named)"
 
 
 def save(spec, B, work, again=False):
@@ -638,6 +702,15 @@ if __name__ == "__main__":
                      ("at memestreet.net. now", "At memestreet.net. Now"), ("i'm in, i.e. long", "I'm in, i.e. long"),
                      ("Ember Dragon Ranches up", "Ember Dragon Ranches up")]:
             assert sentence_case(x) == y, (x, sentence_case(x))
+        base = {"title": "T", "caption": "c", "scenes": [{"vo": "a"}, {"vo": "b"}, {"vo": "c"}]}
+        notes = [{"where": "scene 1, 4s", "what": "x"}, {"where": "post caption", "what": "y"}]
+        fc = lambda p: fix_check(json.dumps(p), notes, base, merge(base, p))
+        assert any("nothing changed" in e for e in fc({"scenes": {}, "fixes": [{"n": 1}, {"n": 2}]}))
+        assert any("note 2 has no entry" in e for e in fc({"scenes": {"1": {"vo": "B"}}, "fixes": [{"n": 1, "how": "scene 1"}]}))
+        assert any("did not change it" in e for e in fc({"scenes": {"2": {"vo": "C"}}, "caption": "d", "fixes": [{"n": 1, "how": "x"}, {"n": 2}]}))
+        assert fc({"scenes": {"2": {"vo": "C"}}, "caption": "d", "fixes": [{"n": 1, "how": "scene 2 carries it"}, {"n": 2}]}) == []
+        assert any("post caption" in e for e in fc({"scenes": {"1": {"vo": "B"}}, "fixes": [{"n": 1}, {"n": 2}]}))
+        assert "fixes" not in merge(base, {"scenes": {"1": {"vo": "B"}}, "fixes": []})
         print("ok")
     elif a[0] == "revise":                               # <work> <review.json>: rewrite after the film critic's notes
         revise(a[1], json.load(open(a[2], encoding="utf-8")))
