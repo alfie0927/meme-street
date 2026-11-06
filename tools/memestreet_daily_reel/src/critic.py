@@ -37,6 +37,20 @@ def heard(mp4):
     return [(w.word.strip(), w.start, w.end) for s in segs for w in s.words]
 
 
+def motion(mp4, cuts, fps=30):
+    """How the picture moves, measured: jumps (a frame that changes far more than its neighbours, away from a scene cut:
+    something snapping in or jerking) and drift (seconds where the whole frame keeps changing: a background that swims)."""
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", mp4, "-vf", f"fps={fps},scale=135:240,format=gray", "-f", "rawvideo", "-"],
+                         capture_output=True).stdout
+    F = np.frombuffer(raw, np.uint8).reshape(-1, 240, 135).astype(np.float32)
+    if len(F) < 3: return {"jumps": [], "drift_secs": []}
+    d = np.abs(np.diff(F, axis=0)).mean(axis=(1, 2)); med = float(np.median(d))
+    near = lambda i: any(abs(i + 1 - c * fps) <= 3 for c in cuts)
+    jumps = [round((i + 1) / fps, 2) for i in range(len(d)) if d[i] > max(6, 5 * med) and not near(i)]
+    drift = [k for k in range(len(d) // fps) if float(np.median(d[k * fps:(k + 1) * fps])) > .3]   # (a calm reel: 0.04; the swimming 3D one: 0.73)
+    return {"jumps": jumps[:20], "drift_secs": drift[:20], "median_change": round(med, 2)}
+
+
 def silences(vo, T, sr=16000):
     """The silent stretches (>= 0.15 s) of the voice alone, from the waveform: Whisper's word edges stretch a pause
     (it ends a word like 'forty-six' early), so they are not a measure of how long the voice is quiet."""
@@ -125,6 +139,7 @@ def pack(work, out, rd, only=None):
               "whole_reel": {"words_per_sec_talking": round(sum(n for n, _ in wr) / max(1e-9, sum(n / r for n, r in wr)), 2),
                              "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps)},
               "script_vs_heard_differences": misheard,
+              "motion": dict(motion(mp4, [x["t0"] for x in R["scenes"][1:]]), note="jumps: times a frame changes far more than its neighbours away from a scene cut (a snap or jerk); drift_secs: seconds where most of the frame keeps changing (a swimming picture). Both are visual faults; check the frames at those times."),
               "transcript_notes": "The script is shown as the voice is told to say it. Whisper writes 'Meem Street dot net' as "
                                   "MemeStreet.net or Meme Street, numbers as digits ('93' for 'ninety-three', '15%' for "
                                   "'fifteen percent') and may split or join words: those are not mispronunciations. A "
