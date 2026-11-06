@@ -61,5 +61,21 @@ def main(work, out):
     shutil.rmtree(fdir, ignore_errors=True)
     print(f"rendered {mp4} ({n} frames, {T:.1f}s)")
 
+async def backdrop():
+    """The neon backdrop every non-3D scene sits on (world.js layout 'backdrop'): 300 frames, a seamless 10 s loop at
+    30 fps, made once into assets/backdrop/ (reel.html shows the frame for the time)."""
+    d = os.path.join(os.path.dirname(HERE), "assets", "backdrop"); os.makedirs(d, exist_ok=True)
+    async with async_playwright() as p:
+        b = await p.chromium.launch(args=["--allow-file-access-from-files", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
+        pg = await b.new_page(viewport={"width": 1080, "height": 1920})
+        await pg.goto(f"file://{HERE}/world_test.html?layout=backdrop&d=10"); await pg.wait_for_function("window.ready===true")
+        for i in range(300):
+            await pg.evaluate("t=>window.draw(t)", i / 30); await pg.screenshot(path=f"{d}/f{i + 1:05d}.jpg", type="jpeg", quality=88)
+        await b.close()
+    print(f"backdrop: 300 frames in {d}")
+
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2])
+    if sys.argv[1] == "backdrop":
+        asyncio.run(backdrop())
+    else:
+        main(sys.argv[1], sys.argv[2])

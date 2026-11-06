@@ -342,7 +342,7 @@ def check(spec, facts, charts, category=None):
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
     if category == "Stock story" and not 2 <= len(worlds) <= 3:
         errs.append("a stock story shows what the company does and its news as 2 or 3 world scenes (neon 3D)")
-    elif category != "Daily recap" and not worlds:
+    elif not worlds:
         errs.append("every reel has at least one world scene (neon 3D): the hook, or the idea of the reel acted out")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
     films = [s for s in sc if s.get("kind") == "film"]

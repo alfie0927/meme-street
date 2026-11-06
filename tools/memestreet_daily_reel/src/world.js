@@ -254,10 +254,15 @@ export const PROP_NAMES = Object.keys(PROPS);
 
 function floor() {
   const g = new THREE.Group();
-  const grid = new THREE.GridHelper(40, 40, COL.teal, COL.teal);
-  grid.material.transparent = true; grid.material.opacity = .13; grid.material.toneMapped = false; g.add(grid);
-  const p = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({color: 0x07090a, roughness: .95, metalness: .1}));
-  p.rotation.x = -Math.PI / 2; p.position.y = -.002; g.add(p);
+  const a = [];                                              // (the grid in thick lines: 1 px lines vanish into the distance)
+  const inside = (x, z) => Math.hypot(x, z) < 7.8;            // (no line near a camera: thick lines that pass it get flipped)
+  for (let k = -8; k <= 8; k++) for (let j = -8; j < 8; j++) {
+    if (inside(k, j) && inside(k, j + 1)) a.push(k, 0, j, k, 0, j + 1);
+    if (inside(j, k) && inside(j + 1, k)) a.push(j, 0, k, j + 1, 0, k);
+  }
+  const grid = new LineSegments2(new LineSegmentsGeometry().setPositions(a), new LineMaterial({color: COL.teal, linewidth: 1.6,
+    transparent: true, opacity: .16, toneMapped: false, resolution: new THREE.Vector2(W * S, H * S)}));
+  g.add(grid);
   const dust = new THREE.Group();                             // (drifting motes: the air has depth)
   for (let k = 0; k < 60; k++) {const m = new THREE.Mesh(new THREE.SphereGeometry(.025, 6, 6), glow(k % 3 ? COL.teal : COL.purple, .5)); m.userData.k = k; dust.add(m)}
   g.add(dust); g.userData.dust = dust;
@@ -299,6 +304,13 @@ const when = (p, s) => p && p.t != null ? p.t - Math.max(0, s.t0) : null;
 const SLOTS = [[-2, -.8], [2, -.8], [-1.3, -2.4], [1.3, -2.4], [0, -3.2]];
 const FLIERS = ['dragon', 'bird', 'fish', 'plane', 'drone', 'rocket'];
 const LAYOUTS = {
+  backdrop(s) {   // the neon floor and drifting motes behind every other scene: a seamless 10 s loop (render.py backdrop)
+    const G = new THREE.Group(), f = floor(); G.add(f); lights(G);
+    f.children[0].material.opacity = .3;                      // (a brighter grid: here it is the whole picture)
+    const h1 = halo(COL.teal, 26, .22), h2 = halo(COL.purple, 18, .16); h1.position.set(-3, 2, -14); h2.position.set(6, 3, -12); G.add(h1, h2);
+    return {G, period: 10, pose() {}, cam(u) {const a = Math.PI * 2 * u / 10;
+      cam.position.set(Math.sin(a) * 1.4, 4.2 + .3 * Math.sin(a * 2), 10); cam.lookAt(Math.sin(a) * .8, .4, -2)}};
+  },
   flow(s) {   // props: the stations left to right (2 or 3), then the thing that travels (repeats along the route)
     const P = s.props || [], st = P.slice(0, Math.max(1, P.length - 1)).slice(0, 3), mover = P.length > 1 ? P[P.length - 1] : {p: 'crate', color: 'amber'};
     const G = new THREE.Group(); G.add(floor()); lights(G, C(st[0]), C(st[st.length - 1]));
@@ -412,7 +424,8 @@ export async function drawWorld(canvas, s, t) {
   }
   const u = t - Math.max(0, s.t0), d = Math.max(1, s.t1 - Math.max(0, s.t0));
   const fl = parts.G.children[0]?.userData?.dust;
-  if (fl) fl.children.forEach(m => {const k = m.userData.k; m.position.set((rnd(k) - .5) * 14, (rnd(k + 50) * 5 + u * .15 * (1 + rnd(k + 9))) % 5, (rnd(k + 99) - .5) * 10)});
+  const sp = k => parts.period ? 5 * (1 + k % 2) / parts.period : .15 * (1 + rnd(k + 9));   // (a looping scene: every mote comes back to where it started)
+  if (fl) fl.children.forEach(m => {const k = m.userData.k; m.position.set((rnd(k) - .5) * 14, (rnd(k + 50) * 5 + u * sp(k)) % 5, (rnd(k + 99) - .5) * 10)});
   parts.pose(u); parts.cam(u, d); parts.G.updateMatrixWorld(true); cam.updateMatrixWorld();
   comp.render();
   const v = new THREE.Vector3(), box = new THREE.Box3();     // the labels, in screen pixels (reel.html draws them as text)
