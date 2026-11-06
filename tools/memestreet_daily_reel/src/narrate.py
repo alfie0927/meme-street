@@ -6,12 +6,12 @@ sound. Each cue ("say": a phrase of the line) gets the time that phrase is spoke
 the burned-in captions.
 Output: work/<slot>/timeline.json (+ vo/*.wav, sfx/*.wav).   Usage: python3 src/narrate.py work/<slot>
 """
-import difflib, json, os, re, sys
+import difflib, hashlib, json, os, re, shutil, sys
 import numpy as np
 import soundfile as sf
 from kokoro_onnx import Kokoro
 from voice import MODEL, NUM, trim, dur, words, norm_words
-from pronounce import say_as
+from pronounce import say_as, digits
 
 GAP, LEAD, TAIL, THINK = 0.24, 0.1, 0.6, 1.6        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
 SR = 24000
@@ -159,12 +159,17 @@ def main(work):
     for i, sc in enumerate(S["scenes"]):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
         speed = float(os.environ.get("VOICE_SPEED", "1.0"))
-        for _ in range(3):                                     # one take per line (natural flow), at the human talking speed
-            a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
-            sf.write(clip, pace(a, tw), SR)   # the pauses a person makes, at the commas and full stops
-            W = words(clip); r = talk_rate(W)                  # (measured as heard, pauses in: what the critic and a viewer hear)
-            if not r or abs(r / WPS - 1) < 0.05: break
-            speed = min(1.35, max(0.8, speed * WPS / r))
+        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS]).encode()).hexdigest()[:16])
+        if os.path.exists(h + ".json"):                        # (a line the last cut already voiced: a remake redoes only what changed)
+            shutil.copy(h + ".wav", clip); W = [tuple(w) for w in json.load(open(h + ".json"))]
+        else:
+            for _ in range(3):                                 # one take per line (natural flow), at the human talking speed
+                a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
+                sf.write(clip, pace(a, tw), SR)   # the pauses a person makes, at the commas and full stops
+                W = words(clip); r = talk_rate(W)              # (measured as heard, pauses in: what the critic and a viewer hear)
+                if not r or abs(r / WPS - 1) < 0.05: break
+                speed = min(1.35, max(0.8, speed * WPS / r))
+            os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
         d = dur(clip)
         if not heard_ok(sc["vo"], W):
             raise SystemExit(f"scene {i}: the voice does not match the line (garbled or skipped): {sc['vo'][:80]}")
@@ -180,8 +185,9 @@ def main(work):
         if i: vo.append([whoosh, round(max(0, t - 0.12), 3)])                 # every scene change sounds the same
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
-        sc["text_words"] = tw                                  # the captions: the written words, each at its spoken time
-        sc["wt"] = [[round(vs + a, 3), round(vs + b, 3)] for a, b in wt]
+        cap = digits(tw)                                       # the captions: the written words, numbers in digits ('two oh three' 203),
+        sc["text_words"] = [c for c, _, _ in cap]              # each from when it starts being said
+        sc["wt"] = [[round(vs + wt[a][0], 3), round(vs + wt[b][1], 3)] for _, a, b in cap]
         if sc.get("text") and (sc["kind"] == "big" or sc.get("chart") is None):   # big words appear as they are said
             sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
         if sc.get("options"):                                  # each option appears as it is read out

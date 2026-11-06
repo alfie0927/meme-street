@@ -1,14 +1,18 @@
 """The film critic: every finished reel is watched by a harsh film maker (Claude, on the owner's plan) before it may be
 posted. He gets a review pack made from the real render: frames of every scene, a contact sheet, what the voice is
 heard saying (Whisper on the final mix) against the script, the pacing against real narrators, and how far every
-caption sits from its word. He approves, or sends it back with notes; the writer rewrites from the notes
-(make_spec.py revise) and the reel is voiced, rendered and reviewed again, until he approves (at most MAX_ROUNDS).
-Every reason for a send-back becomes a lesson the writer reads before every later reel (state/lessons.json).
+caption sits from its word. He approves, or sends it back with notes. Every note must carry evidence from this cut (a
+frame of the pack, a quote of the report) or it is dropped (verify); earlier notes come back only as a checklist he
+must prove still wrong. The writer rewrites only the scenes the checked script notes name (make_spec.py revise), only
+changed lines are voiced again, and the reel is reviewed again, as many rounds as it takes. Template ("renderer") notes
+never block: they go to state/renderer_todo.json to be fixed in code. Every checked script note becomes a lesson the
+writer reads before every later reel (state/lessons.json).
 
   python3 src/critic.py loop <work> <out>     voice, render, review, rewrite... -> <out>/approved.json at 60 fps
   python3 src/critic.py review <work> <out>   review one rendered reel -> <work>/review-<n>.json
+  python3 src/critic.py demo                  self-check of the evidence check
 """
-import datetime, difflib, glob, json, math, os, re, subprocess, sys
+import datetime, difflib, glob, itertools, json, math, os, re, subprocess, sys, tempfile, time
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
@@ -16,8 +20,8 @@ sys.path.insert(0, HERE)
 from pronounce import say_as
 from narrate import WPS, HUMAN, talk_rate
 
-MAX_ROUNDS = int(os.environ.get("MAX_ROUNDS", "4"))
 LESSONS = os.path.join(ROOT, "state", "lessons.json")
+TODO = os.path.join(ROOT, "state", "renderer_todo.json")
 _ASR = None
 
 
@@ -57,8 +61,9 @@ def silences(vo, T, sr=16000):
 key = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
 
 
-def pack(work, out, rd):
-    """The review pack: images to look at and a report of what is heard and when."""
+def pack(work, out, rd, only=None):
+    """The review pack: images to look at and a report of what is heard and when (frames of the scenes in `only`, or
+    of every scene, plus a contact sheet of the whole reel)."""
     R = json.load(open(os.path.join(work, "timeline.json")))
     mp4 = os.path.join(out, "reel.mp4"); os.makedirs(rd, exist_ok=True)
     for f in glob.glob(os.path.join(rd, "*.jpg")): os.remove(f)
@@ -66,7 +71,8 @@ def pack(work, out, rd):
     ff("-i", mp4, "-vf", f"fps=1,scale=180:-1,tile=8x{math.ceil(T / 8)}", "-frames:v", "1", os.path.join(rd, "contact_sheet_1fps.jpg"))
     imgs = ["contact_sheet_1fps.jpg"]
     for i, s in enumerate(R["scenes"]):                      # each scene: as it lands, mid-line, and its last moment
-        ts = [s["t0"] + 0.35, (s.get("vs", s["t0"]) + s.get("ve", s["t1"])) / 2, s["t1"] - 0.08]
+        if only is not None and i not in only: continue
+        ts =[s["t0"] + 0.35, (s.get("vs", s["t0"]) + s.get("ve", s["t1"])) / 2, s["t1"] - 0.08]
         parts = []
         for k, t in enumerate(ts):
             p = os.path.join(rd, f"_s{i}_{k}.jpg"); ff("-ss", f"{max(0, t):.2f}", "-i", mp4, "-frames:v", "1", "-vf", "scale=360:-1", p); parts.append(p)
@@ -151,25 +157,44 @@ second, and three frames per scene: as it lands, mid-line and its last moment, n
 The frame below about 1440 px and the right edge are left empty on purpose: Instagram's caption, buttons and audio strip
 cover them, so nothing may go there; do not mark that space down as dead.
 
-Approve only if every score is 8 or more and nothing would embarrass you. Do not invent problems to look tough, and
-do not move the goalposts: judge what is in front of you. When you send it back, every note says exactly where (scene,
-time), what is wrong and the concrete fix, and a one-line lesson: the general rule the writer must follow in EVERY
-future reel so you never see this again. Say whether the fix belongs to the "script" (words, scenes, cues, on-screen
-text, which the writer controls) or the "renderer" (how the house template draws things, which the writer cannot change).
+Approve only if nothing would embarrass you. Be accurate before you are harsh: a note is only for something that is
+wrong in THIS cut and that you can point at in this round's images or report.json. Judge only what is in front of you,
+never what you remember of an earlier cut; do not invent problems to look tough, do not guess at what you cannot see,
+and do not move the goalposts. Numbers (pauses, speeds, drift) come only from report.json, never from estimates.
+
+Every note carries evidence, or it is thrown away unread: the image file(s) where it shows, named exactly as in
+report.json "images", and/or a "report" quote copied character for character from report.json that proves it (for
+example "secs": 0.62). A note also says exactly where (scene, time), what is wrong, the concrete fix, and a one-line
+lesson: the general rule the writer must follow in EVERY future reel. Say whether the fix belongs to the "script"
+(words, scenes, cues, on-screen text, which the writer controls) or the "renderer" (how the house template draws things,
+which the writer cannot change). Scenes count from 0, as in report.json.
+
+From round 2 you get a numbered checklist of your earlier notes that are still open, and the scenes that changed since
+the last cut. For each checklist note, look at this cut: "fixed", or "still_wrong" with evidence from this cut. Never
+repeat a checklist note as a new issue, and never write "not fixed from round N" in a new issue. Scenes that did not
+change passed last round: judge the changed scenes and the scenes a checklist note names; raise a new note on an
+unchanged scene only for a blocker.
 
 Reply with JSON only:
 {"approved": true|false, "scores": {"sync": n, "visuals": n, "audio": n, "content": n},
  "verdict": "two or three blunt sentences",
+ "previous": [{"n": 1, "status": "fixed|still_wrong", "evidence": [{"image": "..."}, {"report": "..."}]}],
  "issues": [{"severity": "blocker|major|minor", "where": "scene 3, 12.4s", "what": "...", "fix": "...",
-             "owner": "script|renderer", "lesson": "a rule for every future reel"}]}"""
+             "owner": "script|renderer", "lesson": "a rule for every future reel",
+             "evidence": [{"image": "scene03_chart_12.1s-15.0s.jpg"}, {"report": "\\"secs\\": 0.62"}]}]}"""
 
 
-def ask_critic(rd, rnd, prev):
+def ask_critic(rd, rnd, prev, changed=None):
+    """His review of this cut. `prev`: his checked notes still open from the last cut (a checklist); `changed`: the
+    scenes rewritten since then (None: the first cut, judge everything)."""
     req = ("Review this reel. Read report.json in this folder, then Read every image it lists, then reply with the JSON.\n"
            f"This is round {rnd}.")
+    if changed is not None:
+        req += f"\nScenes changed since the last cut: {changed or 'none'} (only their frames, and those of the scenes the checklist names, are in this pack)."
     if prev:
-        req += ("\nYour notes on the previous cut were:\n" + json.dumps(prev.get("issues", []), indent=1) +
-                "\nCheck each one was fixed; judge the rest fresh.")
+        req += ("\nChecklist, your open notes on the last cut (they describe that cut, not this one; check each against this "
+                "cut and answer in \"previous\"):\n" +
+                "\n".join(f"{n}. [{x.get('severity')}] {x.get('where')}: {x.get('what')}" for n, x in enumerate(prev, 1)))
     r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", os.environ.get("REEL_CRITIC_MODEL", "opus"),
                         "--append-system-prompt", SYSTEM, "--allowedTools", "Read",
                         "--disallowedTools", "Bash,Edit,Write,WebFetch,WebSearch,Task,NotebookEdit"],
@@ -181,26 +206,60 @@ def ask_critic(rd, rnd, prev):
     rev = json.loads(m.group(0)) if m else {}
     if "approved" not in rev:
         raise SystemExit("critic gave no verdict: " + r.stdout[-300:])
-    sc = rev.get("scores") or {}
-    rev["approved"] = bool(rev["approved"]) and all(isinstance(v, (int, float)) and v >= 8 for v in sc.values()) \
-        and not any(x.get("severity") == "blocker" for x in rev.get("issues", []))
     return rev
 
 
-def learn(rev, slot):
-    """Each reason for a send-back becomes (or strengthens) a lesson for every later reel."""
-    L = json.load(open(LESSONS, encoding="utf-8")) if os.path.exists(LESSONS) else []
-    now = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M")
+def verify(rev, rd, prev):
+    """Keep only what this cut shows. A note stays if it has evidence and every piece checks out: each image is in this
+    round's pack, each report quote is in report.json. A new note that repeats a checklist note is dropped (the checklist
+    answers it); a checklist note stays open only as "still_wrong" with checked evidence. Approved = no checked script
+    blocker or major left (template notes go to the to-do list and never block; scores are his opinion and are logged)."""
+    imgs = set(os.listdir(rd))
+    norm = lambda x: re.sub(r'[\s"\\]', "", str(x))
+    rep = norm(open(os.path.join(rd, "report.json"), encoding="utf-8").read())
+    def proved(ev):
+        ev = [e for e in ev if isinstance(e, dict)] if isinstance(ev, list) else []
+        return bool(ev) and all(e["image"] in imgs if e.get("image") else len(norm(e.get("report", ""))) >= 4 and norm(e.get("report", "")) in rep
+                                for e in ev)
+    same = lambda a, b: difflib.SequenceMatcher(None, a.lower(), b.lower()).ratio() > 0.72
+    keep, drop = [], []
     for x in rev.get("issues", []):
-        les = (x.get("lesson") or "").strip()
-        if not les or x.get("severity") == "minor": continue
-        best = max(L, key=lambda y: difflib.SequenceMatcher(None, y["lesson"].lower(), les.lower()).ratio(), default=None)
-        if best and difflib.SequenceMatcher(None, best["lesson"].lower(), les.lower()).ratio() > 0.72:
+        why = ("no evidence from this cut" if not proved(x.get("evidence")) else
+               "repeats a checklist note" if any(same(x.get("what", ""), p.get("what", "")) for p in prev) else None)
+        (drop if why else keep).append(dict(x, dropped=why) if why else x)
+    for p in rev.get("previous", []):
+        n = p.get("n")
+        if isinstance(n, int) and 1 <= n <= len(prev) and p.get("status") == "still_wrong":
+            (keep if proved(p.get("evidence")) else drop).append(dict(prev[n - 1], evidence=p.get("evidence"), still_open=True,
+                                                                      **({} if proved(p.get("evidence")) else {"dropped": "still_wrong without evidence from this cut"})))
+    rev.update(issues=keep, dropped=drop, critic_said_approved=rev.get("approved"))
+    rev["approved"] = not any(x.get("severity") in ("blocker", "major") and x.get("owner", "script") != "renderer" for x in keep)
+    return rev
+
+
+def remember(path, items, slot, field):
+    """Each item's `field` (a lesson, a template fault) becomes a new entry or strengthens a similar one."""
+    L = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else []
+    now = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M")
+    for x in items:
+        txt = (x.get(field) or "").strip()
+        if not txt: continue
+        best = max(L, key=lambda y: difflib.SequenceMatcher(None, y[field].lower(), txt.lower()).ratio(), default=None)
+        if best and difflib.SequenceMatcher(None, best[field].lower(), txt.lower()).ratio() > 0.72:
             best["count"] = best.get("count", 1) + 1; best["last"] = now
         else:
-            L.append({"lesson": les, "owner": x.get("owner", "script"), "count": 1, "first": now, "last": now, "slot": slot})
-    os.makedirs(os.path.dirname(LESSONS), exist_ok=True)
-    json.dump(L, open(LESSONS, "w", encoding="utf-8"), indent=1)
+            L.append({field: txt, "owner": x.get("owner", "script"), "count": 1, "first": now, "last": now, "slot": slot,
+                      **({"fix": x.get("fix", ""), "where": x.get("where", ""), "evidence": x.get("evidence")} if field == "what" else {})})
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    json.dump(L, open(path, "w", encoding="utf-8"), indent=1)
+
+
+def learn(rev, slot):
+    """Checked script notes become lessons the writer reads before every later reel; checked template notes go to the
+    renderer to-do list (fixed in reel.html / narrate.py, not by the writer)."""
+    iss = rev.get("issues", [])
+    remember(LESSONS, [x for x in iss if x.get("owner", "script") != "renderer" and x.get("severity") != "minor" and not x.get("still_open")], slot, "lesson")
+    remember(TODO, [x for x in iss if x.get("owner") == "renderer" and not x.get("still_open")], slot, "what")
 
 
 def run(cmd, **env):
@@ -213,8 +272,14 @@ def run(cmd, **env):
 
 
 def loop(work, out):
-    slot = os.path.basename(os.path.normpath(work)); prev = None
-    for rnd in range(1, MAX_ROUNDS + 1):
+    """Voice, render, review, rewrite... as many rounds as it takes, until he approves. Each rewrite touches only the
+    scenes his checked notes name; only their lines are voiced again and only their frames go in the next pack."""
+    slot = os.path.basename(os.path.normpath(work)); prev, old = [], None
+    rd = os.path.join(work, "review")
+    for rnd in itertools.count(1):
+        scenes = json.load(open(os.path.join(work, "spec.json")))["scenes"]
+        changed = None if old is None else [i for i, s in enumerate(scenes) if i >= len(old) or s != old[i]]
+        old = scenes
         try:
             run(["python3", "src/narrate.py", work])
             run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("REVIEW_FPS", "30"))
@@ -225,28 +290,64 @@ def loop(work, out):
                                "fix": "Rewrite the part named so the check passes: plainer words the voice can say, shorter on-screen text.",
                                "lesson": ""}]}
         else:
-            pack(work, out, os.path.join(work, "review"))
-            rev = ask_critic(os.path.join(work, "review"), rnd, prev)
+            named = {int(n) for x in prev for n in re.findall(r"scene (\d+)", x.get("where", ""))}
+            pack(work, out, rd, None if changed is None else sorted(set(changed) | named))
+            while True:
+                try:
+                    rev = verify(ask_critic(rd, rnd, prev, changed), rd, prev); break
+                except (SystemExit, subprocess.TimeoutExpired, ValueError) as e:   # (the critic call failed: wait, ask again)
+                    print(f"critic round {rnd}: no review ({str(e)[:200]}); asking again in 5 minutes", flush=True); time.sleep(300)
         json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
         print(f"critic round {rnd}: {'APPROVED' if rev['approved'] else 'sent back'} {rev.get('scores')} - {rev.get('verdict', '')}", flush=True)
         for x in rev.get("issues", []):
-            print(f"   [{x.get('severity')}/{x.get('owner')}] {x.get('where')}: {x.get('what')}", flush=True)
+            print(f"   [{x.get('severity')}/{x.get('owner')}{'/still open' if x.get('still_open') else ''}] {x.get('where')}: {x.get('what')}", flush=True)
+        for x in rev.get("dropped", []):
+            print(f"   dropped ({x.get('dropped')}): {x.get('where')}: {str(x.get('what'))[:160]}", flush=True)
+        learn(rev, slot)
         if rev["approved"]:
             run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("AUTO_FPS", "60"))   # (the same frames, smoother)
             json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"),
                        "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
             return rnd
-        learn(rev, slot)
-        if rnd < MAX_ROUNDS:
-            run(["python3", "src/make_spec.py", "revise", work, os.path.join(work, f"review-{rnd}.json")])
-        prev = rev
-    raise SystemExit(f"the critic did not approve the reel in {MAX_ROUNDS} rounds: nothing is posted")
+        prev = [x for x in rev["issues"] if x.get("owner", "script") != "renderer" and x.get("where") != "automatic check"]
+        while True:
+            try:
+                run(["python3", "src/make_spec.py", "revise", work, os.path.join(work, f"review-{rnd}.json")]); break
+            except SystemExit as e:   # (the rewrite did not pass its checks in five tries: it tries again)
+                print(f"rewrite after round {rnd} did not pass its checks ({e.code}); trying again", flush=True)
+
+
+def demo():
+    """The evidence check: made-up frames, made-up quotes, repeats and unproved 'still wrong' answers are dropped."""
+    rd = tempfile.mkdtemp()
+    json.dump({"scenes": [{"pauses_heard": [{"after": "high,", "secs": 0.33}]}]}, open(os.path.join(rd, "report.json"), "w"), indent=1)
+    open(os.path.join(rd, "scene02_chart_5.0s-9.0s.jpg"), "w").close()
+    prev = [{"severity": "major", "owner": "script", "where": "scene 1, 4s", "what": "The Stop tag touches the price tag."}]
+    rev = {"approved": False, "issues": [
+        {"severity": "major", "owner": "script", "what": "real, seen", "evidence": [{"image": "scene02_chart_5.0s-9.0s.jpg"}]},
+        {"severity": "major", "owner": "script", "what": "a frame that is not in the pack", "evidence": [{"image": "scene09_x.jpg"}]},
+        {"severity": "major", "owner": "script", "what": "a 0.72 s pause", "evidence": [{"report": '"secs": 0.72'}]},
+        {"severity": "minor", "owner": "script", "what": "a 0.33 s pause after high", "evidence": [{"report": '"secs": 0.33'}]},
+        {"severity": "major", "owner": "script", "what": "no evidence at all"},
+        {"severity": "major", "owner": "script", "what": "The Stop tag touches the price tag!", "evidence": [{"image": "scene02_chart_5.0s-9.0s.jpg"}]},
+        {"severity": "blocker", "owner": "renderer", "what": "template", "evidence": [{"image": "scene02_chart_5.0s-9.0s.jpg"}]}],
+        "previous": [{"n": 1, "status": "still_wrong"}]}
+    v = verify(rev, rd, prev)
+    assert [x["what"] for x in v["issues"]] == ["real, seen", "a 0.33 s pause after high", "template"], v["issues"]
+    assert len(v["dropped"]) == 5 and not v["approved"]
+    v = verify({"issues": [{"severity": "blocker", "owner": "renderer", "what": "t", "evidence": [{"image": "scene02_chart_5.0s-9.0s.jpg"}]}],
+                "previous": [{"n": 1, "status": "still_wrong", "evidence": [{"report": '"after": "high,"'}]}]}, rd, prev)
+    assert [x.get("still_open") for x in v["issues"]] == [None, True] and not v["approved"]
+    assert verify({"issues": [], "previous": [{"n": 1, "status": "fixed"}]}, rd, prev)["approved"]
+    print("verify ok")
 
 
 if __name__ == "__main__":
-    if sys.argv[1] == "loop":
+    if sys.argv[1] == "demo":
+        demo()
+    elif sys.argv[1] == "loop":
         loop(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == "review":
         w, o = sys.argv[2], sys.argv[3]; n = len(glob.glob(os.path.join(w, "review-*.json"))) + 1
-        pack(w, o, os.path.join(w, "review")); rev = ask_critic(os.path.join(w, "review"), n, None)
+        pack(w, o, os.path.join(w, "review")); rev = verify(ask_critic(os.path.join(w, "review"), n, []), os.path.join(w, "review"), [])
         json.dump(rev, open(os.path.join(w, f"review-{n}.json"), "w"), indent=1); print(json.dumps(rev, indent=1))

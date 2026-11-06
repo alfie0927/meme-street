@@ -10,6 +10,7 @@ set -euo pipefail
 cd "$(dirname "$0")"; set -a; . ./config.env; set +a
 export PATH="$HOME/.local/bin:$PATH"                 # (Claude Code, the script writer on the plan)
 mkdir -p logs queue queue-originals
+exec 8>queue/.auto.lock; flock 8                   # (one reel at a time: the critic has no round limit, so the next run waits)
 SLOT="${1:-}"
 if [ -z "$SLOT" ]; then
   for h in 0300 0600 0900 1200 1300 1800 2100; do
@@ -22,12 +23,13 @@ fi
 [ -n "$SLOT" ] || { echo "no slot in the next 3 hours"; exit 0; }
 [ -f "queue/$SLOT/posted.json" ] && { echo "$SLOT is already posted"; exit 0; }
 [ -f "queue/$SLOT/.auto" ] && { echo "$SLOT already has its auto reel"; exit 0; }
-W="work/auto-$SLOT"; O="out/auto-$SLOT"; rm -rf "$W" "$O"
+W="work/auto-$SLOT"; O="out/auto-$SLOT"
+[ -n "${RESUME:-}" ] && [ -f "$W/spec.json" ] || { RESUME=; rm -rf "$W" "$O"; }   # (RESUME=1: carry on with the script already written)
 args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.json")
 [ -n "${REEL_CATEGORY:-}" ] && args+=(--category "$REEL_CATEGORY")      # (a chosen format, e.g. for a test reel)
 {
   echo "=== auto reel $SLOT  $(date -u '+%F %T UTC')"
-  python3 src/make_spec.py "$SLOT" "$W" "${args[@]}"
+  [ -n "${RESUME:-}" ] || python3 src/make_spec.py "$SLOT" "$W" "${args[@]}"
   python3 src/critic.py loop "$W" "$O"                   # voice, render, review; rewritten until the critic approves
   mkdir -p "queue/.staging/$SLOT" && cp "$O/reel.mp4" "$O/caption.txt" "$O/cover.jpg" "$O/approved.json" "queue/.staging/$SLOT/"
   [ -d "queue/$SLOT" ] && { rm -rf "queue-originals/$SLOT"; mv "queue/$SLOT" "queue-originals/$SLOT"; }

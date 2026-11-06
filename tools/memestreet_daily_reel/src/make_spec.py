@@ -478,14 +478,30 @@ def brief(slot, category=None, remake=None):
     return {"slot": slot, "category": category, "system": system, "ask": ask, "charts": charts}
 
 
-def parse(raw, B):
-    """The script in Claude's reply, and what is wrong with it."""
+def parse(raw, B, base=None):
+    """The script in Claude's reply (a patch of `base` when one is given), and what is wrong with it."""
     m = re.search(r"\{.*\}", raw, re.S)
     try:
         spec = json.loads(m.group(0)) if m else {}
     except ValueError as e:
         return {}, [f"not valid JSON: {e}"]
+    if base is not None:
+        spec = merge(base, spec)
     return spec, check(spec, B["ask"]["facts"], B["charts"], B["category"])
+
+
+def merge(base, patch):
+    """A rewrite after the critic sends only what changes: {"scenes": {"3": scene, ...}, "title": ...}. The scenes not
+    named stay exactly as they were (a whole script, with a list of scenes, replaces the draft)."""
+    if isinstance(patch.get("scenes"), list):
+        return patch
+    s = json.loads(json.dumps(base))
+    for k, v in (patch.get("scenes") or {}).items():
+        i = int(k)
+        if 0 <= i < len(s["scenes"]): s["scenes"][i] = v
+        elif i == len(s["scenes"]): s["scenes"].append(v)
+    s.update({k: v for k, v in patch.items() if k != "scenes"})
+    return s
 
 
 def claude_cli(messages, system):
@@ -513,33 +529,37 @@ def lessons():
             "\n".join(f"- {x['lesson']}" for x in L)) if L else ""
 
 
-def write(B, msgs=None):
-    """Have Claude write the script, checked and sent back at most four times."""
+def write(B, msgs=None, base=None):
+    """Have Claude write the script (or, with `base`, a patch of it), checked and sent back at most four times."""
     ask = claude_cli if os.environ.get("REEL_WRITER", "cli") == "cli" else claude
     msgs = msgs or [{"role": "user", "content": json.dumps(B["ask"], indent=1)}]
     B = dict(B, system=B["system"] + lessons())
     for attempt in range(5):
         raw = ask(msgs, B["system"])
-        spec, errs = parse(raw, B)
+        spec, errs = parse(raw, B, base)
         if not errs:
             return spec
         print(f"attempt {attempt + 1}: " + "; ".join(errs[:8]))
-        msgs += [{"role": "assistant", "content": raw}, {"role": "user", "content": "Fix these and reply with the whole JSON again: " + "; ".join(errs)}]
+        msgs += [{"role": "assistant", "content": raw}, {"role": "user", "content": ("Fix these and reply with only the scenes you change, in the same form: " if base else "Fix these and reply with the whole JSON again: ") + "; ".join(errs)}]
     raise SystemExit("the script did not pass its checks: " + "; ".join(errs))
 
 
 def revise(work, review):
-    """The critic sent the finished reel back: the writer gets its own script and every note, and rewrites it."""
+    """The critic sent the finished reel back: the writer gets its own script and his checked script notes, and rewrites
+    only the scenes they name (a patch; the rest is approved and stays as it is, so it is not voiced or reviewed again)."""
     B = json.load(open(os.path.join(work, "brief.json"), encoding="utf-8"))
     draft = open(os.path.join(work, "draft.json"), encoding="utf-8").read()
-    notes = "\n".join(f"- [{x.get('severity', '')}] {x.get('where', '')}: {x.get('what', '')} FIX: {x.get('fix', '')}" for x in review.get("issues", []))
+    sn = lambda x: int((re.findall(r"scene (\d+)", x.get("where", "")) or [999])[0])
+    notes = "\n".join(f"- [{x.get('severity', '')}] {x.get('where', '')}: {x.get('what', '')} FIX: {x.get('fix', '')}"
+                      for x in sorted((x for x in review.get("issues", []) if x.get("owner", "script") != "renderer"), key=sn))
     msgs = [{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": draft},
             {"role": "user", "content": "A film critic watched the finished reel made from your script and sent it back.\n"
-                                        f"His verdict: {review.get('verdict', '')}\nHis notes:\n{notes}\n"
-                                        "Fix every note (a note about the look you cannot change in the script: work around it, "
-                                        "e.g. a different cue, scene kind or wording). Keep what he did not mention. "
-                                        "Reply with the whole JSON again."}]
-    save(write(B, msgs), B, work, again=True)
+                                        f"His notes (scenes count from 0):\n{notes}\n"
+                                        "Fix every note. Everything he did not mention is approved: leave it exactly as it is. "
+                                        'Reply with JSON holding only what you change: {"scenes": {"<scene number>": <the whole '
+                                        'new scene>, ...}}, plus "title" or "caption" only if a note is about them. To add, '
+                                        "remove or reorder scenes, reply with the whole JSON instead."}]
+    save(write(B, msgs, json.loads(draft)), B, work, again=True)
 
 
 def save(spec, B, work, again=False):
