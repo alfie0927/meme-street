@@ -85,9 +85,10 @@ def pack(work, out, rd):
     SC = R["scenes"]   # each heard word belongs to the scene whose voice it is nearest (the first and last are open-ended)
     cut = [-1e9] + [(a.get("ve", a["t1"]) + b.get("vs", b["t0"])) / 2 for a, b in zip(SC, SC[1:])] + [1e9]
     for i, s in enumerate(SC):
-        hm = hw = [h for h in H if cut[i] <= h[1] < cut[i + 1]]          # (hm: what the final mix is heard saying)
+        hw = [h for h in H if cut[i] <= h[1] < cut[i + 1]]
         clip = next(((f, o) for f, o in R["vo"] if f.endswith(f"/s{i}.wav")), None)
-        if clip:   # pace, pauses and caption sync from the scene's own voice track: in the mix, music and effects blur word edges
+        if clip:   # what each scene says, its pace and caption sync, from its own voice track: in the mix, music and effects blur
+                   # word edges and Whisper moves a scene's first word into the scene before (mix problems show in script_vs_heard_differences)
             hw = [(w, a + clip[1], b + clip[1]) for w, a, b in heard(clip[0])]
         r = talk_rate([(key(w), a, b) for w, a, b in hw])
         pauses = [{"after": next((w for w, _, b in reversed(hw) if b <= q0 + 0.15), ""), "secs": round(q1 - q0, 2), "at": round(q0, 2)}
@@ -104,7 +105,7 @@ def pack(work, out, rd):
         if s.get("items"): on_screen["cards"] = [x.get("text") for x in s["items"]]
         if s.get("figures"): on_screen["figures"] = [f"{f.get('label', '')} ({f.get('color', 'white')}, {f.get('pose', 'stand')})" for f in s["figures"]]
         scenes.append({"scene": i, "kind": s["kind"], "from_s": s["t0"], "to_s": s["t1"], "has_chart": s.get("chart") is not None,
-                       "script": s["vo"], "heard": " ".join(w for w, _, _ in hm), "words_per_sec_talking": round(r, 2) if r else None,
+                       "script": s["vo"], "heard": " ".join(w for w, _, _ in hw), "words_per_sec_talking": round(r, 2) if r else None,
                        "pauses_heard": pauses, "caption_minus_voice_secs": {"max_abs": max(map(abs, sync), default=None),
                        "mean": round(sum(sync) / len(sync), 2) if sync else None}, "on_screen": on_screen,
                        "cues": [f"{c.get('do')} on '{c.get('say', '')}' @ {c.get('t')}s" for c in s.get("cues", [])]})

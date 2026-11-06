@@ -38,45 +38,37 @@ def talk_rate(W):
     t = sum(e - s for _, s, e in W) + sum(g for g in (b[1] - a[2] for a, b in zip(W, W[1:])) if 0 < g < 0.25)
     return len(W) / t if t > 0 else None
 
-def pace(a, tw, wt, sr=SR):
-    """Put human pauses into a line: at each word boundary, the silence becomes the pause its punctuation asks for
-    (PAUSE), or at most INSIDE with none. A boundary with punctuation but no silence gets one at its quietest point."""
+def pace(a, tw, sr=SR):
+    """Put human pauses into a line. The voice already stops at its punctuation, so the line's N longest silences are its
+    N commas and full stops (in order): each becomes the pause its mark asks for (PAUSE), and every other silence is cut
+    to INSIDE. Word timings are not used: Whisper writes 'sixty-nine' as '69,' and shifts them, which put a comma pause
+    one word early ('near | sixty-nine') and left the real one in (a double pause)."""
     f = int(0.01 * sr); n = len(a) // f
     rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 1e-4)
-    edits = []                                           # (start sample, end sample, new silence in samples)
-    for k in range(len(tw) - 1):
-        want = PAUSE.get(tw[k].rstrip("\"')")[-1:], None)
-        lo, hi = max(0, int((wt[k][1] - 0.08) * 100)), min(n, int((wt[k + 1][0] + 0.08) * 100) + 1)
-        if edits and lo * f < edits[-1][1]: lo = edits[-1][1] // f + 1
-        if hi <= lo: continue
-        best, s = (0, lo, lo), None                      # the longest quiet run in the boundary
-        for j in range(lo, hi + 1):
-            if j < hi and quiet[j]:
-                s = j if s is None else s
-            elif s is not None:
-                best = max(best, (j - s, s, j)); s = None
-        L, s0, s1 = best
-        if L:
-            edits.append((s0 * f, s1 * f, int((want if want else min(L * 0.01, INSIDE)) * sr)))
-        elif want:
-            m = lo + int(np.argmin(rms[lo:hi])); edits.append((m * f, m * f, int(want * sr)))
-    out, pos = [], 0
-    for s0, s1, z in edits:
-        out += [a[pos:s0], np.zeros(z, a.dtype)]; pos = s1
-    out.append(a[pos:])
-    a = np.concatenate(out)
-    # any silence still longer than a sentence pause (a boundary the word timing missed, e.g. after a spoken number) is cut to one
-    n = len(a) // f; rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 1e-4)
-    out, pos, s = [], 0, None
+    runs, s = [], None                                   # interior silences, in 10 ms frames
     for j in range(n + 1):
         if j < n and quiet[j]:
             s = j if s is None else s
         elif s is not None:
-            if j - s > 45 and s > 0 and j < n:
-                out += [a[pos:s * f], np.zeros(int(PAUSE["."] * sr), a.dtype)]; pos = j * f
+            if s > 0 and j < n: runs.append((s, j))
             s = None
+    marks = [PAUSE[m] for w in tw[:-1] if (m := w.rstrip("\"')")[-1:]) in PAUSE]
+    stops = sorted(sorted((r for r in runs if r[1] - r[0] >= 10), key=lambda r: r[0] - r[1])[:len(marks)])
+    want = dict(zip(stops, marks if len(stops) == len(marks) else [PAUSE[","]] * len(stops)))
+    out, pos = [], 0
+    for r in runs:
+        z = want.get(r, min((r[1] - r[0]) * 0.01, INSIDE))
+        out += [a[pos:r[0] * f], np.zeros(int(z * sr), a.dtype)]; pos = r[1] * f
     out.append(a[pos:])
     return np.concatenate(out)
+
+def demo():
+    t = np.arange(int(0.3 * SR)) / SR; v = (0.5 * np.sin(2 * np.pi * 200 * t)).astype(np.float32); z = lambda d: np.zeros(int(d * SR), np.float32)
+    a = np.concatenate([v, z(0.2), v, z(0.5), v, z(0.15), v])         # "one | two, three four": the 0.5 s silence is the comma
+    o = pace(a, ["one", "two,", "three", "four"])
+    assert abs(len(o) - (4 * len(v) + int((INSIDE * 2 + PAUSE[","]) * SR))) < SR * 0.03, len(o) / SR
+    w = align(["warning,", "or", "trouble"], [("warning", 0.0, 0.5), ("trouble", 1.4, 1.8)], 2.0)
+    assert abs(w[1][0] - 1.1) < 1e-6, w                                   # 'or' is said just before 'trouble', after the pause
 
 def heard_ok(line, W):
     """Did the voice say the line? The recognised words must cover most of the written ones (a garbled or skipped
@@ -125,6 +117,8 @@ def align(tw, W, d):
         lo = max([j for j in known if j < k], default=None); hi = min([j for j in known if j > k], default=None)
         t0 = out[lo][1] if lo is not None else 0.0; t1 = out[hi][0] if hi is not None else d
         a = lo if lo is not None else -1; b = hi if hi is not None else len(tw)
+        if lo is not None and tw[lo].rstrip("\"')")[-1:] in PAUSE:          # (after a comma the pause comes first: the missed words
+            t0 = max(t0, t1 - 0.3 * (b - a - 1))                           #  are said at the end of the gap, not the start)
         f0, f1 = (k - a - 1) / (b - a - 1), (k - a) / (b - a - 1)
         out[k] = (t0 + (t1 - t0) * f0, t0 + (t1 - t0) * f1)
     return out
@@ -167,8 +161,7 @@ def main(work):
         speed = float(os.environ.get("VOICE_SPEED", "1.0"))
         for _ in range(3):                                     # one take per line (natural flow), at the human talking speed
             a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
-            sf.write(clip, a, SR); W = words(clip)
-            sf.write(clip, pace(a, tw, align(tw, W, dur(clip))), SR)   # the pauses a person makes, at the commas and full stops
+            sf.write(clip, pace(a, tw), SR)   # the pauses a person makes, at the commas and full stops
             W = words(clip); r = talk_rate(W)                  # (measured as heard, pauses in: what the critic and a viewer hear)
             if not r or abs(r / WPS - 1) < 0.05: break
             speed = min(1.35, max(0.8, speed * WPS / r))

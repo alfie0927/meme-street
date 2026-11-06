@@ -18,7 +18,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .caps{position:absolute;z-index:3;left:70px;right:70px;top:1305px;max-height:120px;text-align:center;font:700 46px/1.3 'Cascadia Mono',monospace;color:#e6e9ec}
 .caps span{display:inline-block;margin:0 9px;transition:none}
 .card{position:absolute;left:62px;right:62px;height:150px;border-radius:24px;background:#0d1116;border:3px solid #23282e;display:flex;align-items:center;gap:28px;padding:0 34px;box-sizing:border-box}
-.card .ic{width:84px;height:84px;flex:none}.card .tx{font:700 38px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
+.card .ic{width:100px;height:100px;flex:none}.card .tx{font:700 46px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
 .big{position:absolute;left:60px;right:60px;top:560px;height:560px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;text-align:center;font:700 92px/1.15 'Cascadia Mono',monospace;letter-spacing:-2px}
 .big span{display:inline-block;margin:0 18px}
 </style></head><body>
@@ -101,15 +101,17 @@ function drawChart(i,t){
  for(let q=0;q<5;q++){const v=lerp(lo+(hi-lo)*.1,hi-(hi-lo)*.1,q/4);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${Y(v)}" y2="${Y(v)}" stroke="#151a1f" stroke-width="2"/><text x="${PL.x+PL.w+16}" y="${Y(v)+8}" font-size="24" fill="${MUTE}">${v.toFixed(2)}</text>`}
  const D=drawings(i,t),taken=[],free=(a,b,c,d)=>!taken.some(q=>a<q[2]&&q[0]<c&&b<q[3]&&q[1]<d);   // (every tag's box: a new tag never lands on one)
  {const k=Math.min(n-1,Math.floor(r));if(k>=0){const x=X(k),yc=Y(C[k][3]);taken.push([x-bw,Y(C[k][1])-8,x+bw,Y(C[k][2])+8],[PL.x+PL.w-40,yc-30,PL.x+PL.w+140,yc+30])}}   // (the newest candle and the price tag stay clear of tags)
+ const cb=[];for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)cb.push([X(k)-bw/2,Y(C[k][1])-4,X(k)+bw/2,Y(C[k][2])+4]);
+ const clear=(a,b,c,d)=>free(a,b,c,d)&&!cb.some(q=>a<q[2]&&q[0]<c&&b<q[3]&&q[1]<d);   // (a tag off the candles where one fits: on them it hides the price)
  D.filter(d=>d.do==='shade').forEach(d=>{const col=TONE[d.tone]||TE,a=out(seg(d.age,0,.5)),x0=X(d.from)-bw/2,ww=(d.to-d.from+1)*bw*a;g+=`<rect x="${x0}" y="${PL.y-10}" width="${Math.max(0,ww)}" height="${PL.h+VOL.h+40}" rx="8" fill="${col}" opacity=".14"/>`});
  for(let k=Math.max(0,Math.floor(w0)-1);k<=Math.min(n-1,Math.ceil(w1)+1);k++){if(k>r+.999)break;const [o,h,l,c,v]=C[k],gg=cl(r-k+1),up=c>=o,col=up?G:RD,x=X(k),bwid=Math.max(2,bw*.64),cc=lerp(o,c,out(gg));
   const hh=Math.max(o,cc)+(h-Math.max(o,c))*gg,ll=Math.min(o,cc)-(Math.min(o,c)-l)*gg,vh=Math.min(1,v/vmax)*VOL.h*out(gg);
   g+=`<g opacity="${cl(gg*2)}"><line x1="${x}" x2="${x}" y1="${Y(hh)}" y2="${Y(ll)}" stroke="${col}" stroke-width="${Math.max(1.5,bw*.12)}"/><rect x="${x-bwid/2}" y="${Math.min(Y(o),Y(cc))}" width="${bwid}" height="${Math.max(2,Math.abs(Y(o)-Y(cc)))}" rx="${Math.min(2,bwid/4)}" fill="${col}"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh}" width="${bwid}" height="${vh}" fill="${up?GV:RV}"/></g>`}
  D.filter(d=>d.do==='line').forEach(d=>{const col=TONE[d.tone]||AM,a=out(seg(d.age,0,.6)),y=Y(d.price);g+=`<line x1="${PL.x}" x2="${PL.x+(PL.w-16)*a}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="4" stroke-dasharray="16 10"/>`;
-  if(d.label){const lw=d.label.length*18+34,c2=[[PL.x+8,y-52],[PL.x+PL.w-lw-8,y-52],[PL.x+8,y+8],[PL.x+PL.w-lw-8,y+8]],[lx,ly]=c2.find(([u,v])=>free(u-4,v-6,u+lw+4,v+50))||c2[0];taken.push([lx,ly,lx+lw,ly+44]);   // (close lines: their tags go to opposite ends)
+  if(d.label){const lw=d.label.length*18+34,c2=[y-52,y+8].flatMap(v=>[PL.x+8,PL.x+PL.w-lw-8,PL.x+PL.w*.35-lw/2,PL.x+PL.w*.65-lw/2].map(u=>[u,v])),fit=f=>c2.find(([u,v])=>f(u-4,v-6,u+lw+4,v+50)),[lx,ly]=fit(clear)||fit(free)||c2[0];taken.push([lx,ly,lx+lw,ly+44]);   // (close lines: their tags go to opposite ends)
    g+=`<g opacity="${a}"><rect x="${lx}" y="${ly}" width="${lw}" height="44" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text x="${lx+17}" y="${ly+31}" font-size="28" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
  const pill=(x,y,lab,col,a,ys)=>{const pw=String(lab).length*17+32,at=(u,v)=>[cl(u,PL.x+pw/2,PL.x+PL.w-pw/2),v];
-  const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),[px,py]=c2.find(([u,v])=>free(u-pw/2-6,v-29,u+pw/2+6,v+29))||at(x,y);
+  const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),fit=f=>c2.find(([u,v])=>f(u-pw/2-6,v-29,u+pw/2+6,v+29)),[px,py]=fit(clear)||fit(free)||at(x,y);
   y=py;taken.push([px-pw/2,y-23,px+pw/2,y+23]);return `<g transform="translate(${px} ${y}) scale(${a})"><rect x="${-pw/2}" y="-23" width="${pw}" height="46" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-size="28" font-weight="700" fill="${col}">${esc(lab)}</text></g>`};
  D.filter(d=>d.do==='mark'&&d.side==='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length),ya=VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h,vh=Math.min(1,C[k][4]/vmax)*VOL.h,x=X(k),bwid=Math.max(4,bw*.64)+10;
   g+=`<g opacity="${cl(a)}"><line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${ya}" y2="${ya}" stroke="${MUTE}" stroke-width="3" stroke-dasharray="10 8"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh-5}" width="${bwid}" height="${vh+10}" rx="4" fill="none" stroke="${col}" stroke-width="4"/></g>`+(d.label?pill(x,VOL.y+VOL.h-vh-34,d.label,col,a):'')});
@@ -180,8 +182,8 @@ function render(T){
  drawChart(i,t);
  // cards, big text
  let st='';
- if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(170,600/Math.max(1,N)),y=560+k*gap;
-  st+=`<div class="card qa" style="top:${y}px;height:${gap-20}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
+ if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(230,720/Math.max(1,N)),y=560+(720-N*gap)/2+k*gap;   // (the stack fills the stage down to the captions)
+  st+=`<div class="card qa" style="top:${y}px;height:${gap-24}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
  if(s.kind==='stick')st+=drawSticks(s,t);
  if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
