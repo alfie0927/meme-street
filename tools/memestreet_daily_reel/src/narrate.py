@@ -13,7 +13,7 @@ from kokoro_onnx import Kokoro
 from voice import MODEL, trim, dur, words, norm_words
 from pronounce import say_as
 
-GAP, LEAD, TAIL, THINK = 0.12, 0.1, 0.6, 1.6        # (seconds: between scenes, before the first, after the last, quiz thinking time)
+GAP, LEAD, TAIL, THINK = 0.24, 0.1, 0.6, 1.6        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
 SR = 24000
 
 def tone(path, freqs, length, vol=0.25):
@@ -22,24 +22,48 @@ def tone(path, freqs, length, vol=0.25):
     a = sum(np.sin(2 * np.pi * f * t) for f in freqs) / len(freqs) * np.exp(-t * (40 if length < .1 else 7)) * vol
     sf.write(path, a.astype(np.float32), SR)
 
-def tighten(a, sr=SR, keep=0.16, longest=0.22):
-    """The voice without dead air: any pause inside a line longer than `longest` seconds is cut down to `keep`
-    (the breath stays, the wait goes), and the ends are trimmed."""
-    a = trim(a, sr)
+# How real narrators pace a Short (measured 2026-11-06 on 16 top Shorts from TradingLab, JeaFx, Casual Finance, Qxir,
+# Sticky Academy, Stickman Invests, Brad Goh and Tom Crown, with the same word timing as below): about 3.9 words a second
+# while talking, a pause of about 0.28 s after a comma and 0.36 s after a sentence, and no pause inside a phrase.
+WPS, HUMAN = 3.9, {"comma": 0.28, "sentence": 0.36}
+# The silence put in to get there: the voice trails off before it is silent, so a pause is heard about 0.2 s longer
+# than the silence inserted (calibrated 2026-11-06 with the same measure: 0.08 s at a full stop is heard as 0.25 s,
+# 0.16 s as 0.41 s; a comma is never heard under about 0.33 s).
+PAUSE = {",": 0.12, ";": 0.12, ":": 0.12, ".": 0.135, "!": 0.135, "?": 0.17}
+INSIDE = 0.08                                            # (longest pause kept between words with no punctuation)
+
+def talk_rate(W):
+    """Words a second while talking (pauses over 0.25 s left out), as measured on the human Shorts."""
+    if len(W) < 3: return None
+    t = sum(e - s for _, s, e in W) + sum(g for g in (b[1] - a[2] for a, b in zip(W, W[1:])) if 0 < g < 0.25)
+    return len(W) / t if t > 0 else None
+
+def pace(a, tw, wt, sr=SR):
+    """Put human pauses into a line: at each word boundary, the silence becomes the pause its punctuation asks for
+    (PAUSE), or at most INSIDE with none. A boundary with punctuation but no silence gets one at its quietest point."""
     f = int(0.01 * sr); n = len(a) // f
-    if n < 3: return a
     rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 1e-4)
-    out, k = [], 0
-    while k < n:
-        if quiet[k]:
-            e = k
-            while e < n and quiet[e]: e += 1
-            run = a[k * f:e * f]
-            out.append(run if (e - k) * 0.01 <= longest else np.concatenate([run[:int(keep / 2 * sr)], run[-int(keep / 2 * sr):]]))
-            k = e
-        else:
-            out.append(a[k * f:(k + 1) * f]); k += 1
-    out.append(a[n * f:])
+    edits = []                                           # (start sample, end sample, new silence in samples)
+    for k in range(len(tw) - 1):
+        want = PAUSE.get(tw[k].rstrip("\"')")[-1:], None)
+        lo, hi = max(0, int((wt[k][1] - 0.08) * 100)), min(n, int((wt[k + 1][0] + 0.08) * 100) + 1)
+        if edits and lo * f < edits[-1][1]: lo = edits[-1][1] // f + 1
+        if hi <= lo: continue
+        best, s = (0, lo, lo), None                      # the longest quiet run in the boundary
+        for j in range(lo, hi + 1):
+            if j < hi and quiet[j]:
+                s = j if s is None else s
+            elif s is not None:
+                best = max(best, (j - s, s, j)); s = None
+        L, s0, s1 = best
+        if L:
+            edits.append((s0 * f, s1 * f, int((want if want else min(L * 0.01, INSIDE)) * sr)))
+        elif want:
+            m = lo + int(np.argmin(rms[lo:hi])); edits.append((m * f, m * f, int(want * sr)))
+    out, pos = [], 0
+    for s0, s1, z in edits:
+        out += [a[pos:s0], np.zeros(z, a.dtype)]; pos = s1
+    out.append(a[pos:])
     return np.concatenate(out)
 
 def heard_ok(line, W):
@@ -47,7 +71,8 @@ def heard_ok(line, W):
     passage fails the reel instead of posting)."""
     want = [key(w) for w in say_as(line).split() if key(w)]
     got = [w[0] for w in W]
-    if not want or not got: return True
+    if not want: return True
+    if not got: return False                               # (no recognised words: the captions could not be timed)
     m = sum(b.size for b in difflib.SequenceMatcher(None, want, got, autojunk=False).get_matching_blocks())
     return m / len(want) >= 0.6
 
@@ -126,14 +151,17 @@ def main(work):
     tick, chime, pop, whoosh = (os.path.join(A, f"sfx_{x}.wav") for x in ("tick", "chime", "pop", "whoosh"))
     t, vo = LEAD, []
     for i, sc in enumerate(S["scenes"]):
-        speed = float(os.environ.get("VOICE_SPEED", "1.08")) * (1.04 if sc["kind"] == "hook" else 1.0)
-        a, _ = K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")   # one take: natural flow
-        clip = os.path.join(work, "vo", f"s{i}.wav"); sf.write(clip, tighten(a), SR)
+        clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
+        speed = float(os.environ.get("VOICE_SPEED", "1.0"))
+        for _ in range(2):                                     # one take per line (natural flow), at the human talking speed
+            a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
+            sf.write(clip, a, SR); W = words(clip); r = talk_rate(W)
+            if not r or abs(r / WPS - 1) < 0.06: break
+            speed = min(1.2, max(0.8, speed * WPS / r))
+        sf.write(clip, pace(a, tw, align(tw, W, dur(clip))), SR)   # the pauses a person makes, at the commas and full stops
         d = dur(clip); W = words(clip)
         if not heard_ok(sc["vo"], W):
             raise SystemExit(f"scene {i}: the voice does not match the line (garbled or skipped): {sc['vo'][:80]}")
-
-        tw = sc["vo"].split()
         wt = align(tw, W, d)                                   # each written word's own (start, end) in the clip
 
         def at(phrase):

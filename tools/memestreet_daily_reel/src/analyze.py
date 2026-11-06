@@ -162,7 +162,9 @@ def build_script(A):
     beats = []
     hold, total, num = A["hold"], A["total"], A["number"]
     up_down = "rose" if hold >= 0 else "fell"
-    if trades:
+    if trades and total < hold:
+        hook = f"Daily Chart number {num}. The stock {up_down} {say_pct(hold)} percent. Today, just buying at the open and holding beat these trades."
+    elif trades:
         hook = f"Daily Chart number {num}. The stock {up_down} {say_pct(hold)} percent. Here's how you could have finished up {say_pct(total)} percent."
     else:
         hook = f"Daily Chart number {num}. The stock {up_down} {say_pct(hold)} percent. And today, patience was the winning trade."

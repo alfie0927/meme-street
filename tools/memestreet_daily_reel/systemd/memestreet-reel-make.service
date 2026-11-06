@@ -5,7 +5,7 @@ After=network-online.target
 Type=oneshot
 User=__USER__
 ExecStart=__DIR__/make_reel.sh
-TimeoutStartSec=3600
+TimeoutStartSec=9000
 # the game runs on this server too: rendering gets one core, low priority, and is stopped before it can starve it
 Nice=19
 IOSchedulingClass=idle

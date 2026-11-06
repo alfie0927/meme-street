@@ -36,7 +36,8 @@ CATEGORIES = {
                    "trades a careful reader could have taken (only those in the facts, at their candles), today's best "
                    "player's return, and the invitation to play tomorrow's chart. Charts scenes with reveal cues through "
                    "the day, marks at the trade candles, a cards scene for the scorecard. The outro ends: \"Tomorrow's "
-                   "Daily Chart drops at midnight. Beat it at memestreet.net.\"",
+                   "Daily Chart drops at midnight. Beat it at memestreet.net.\" When the facts say plan_beat_holding is false, "
+                   "say briefly in the first or second scene that just buying at the open and holding did better today.",
     # the viral formats from the research of 2026-11-04 (swipe.md: 169 shorts and TikToks, 11 accounts, ranked by how far
     # each beat its own account's median). The formula is copied, never a script.
     "Chart twist": "VIRAL (top format, 37x its account's median): a real chart that looks one way ('it still looked bearish'), "
@@ -48,9 +49,9 @@ CATEGORIES = {
                    "reversal. Calm, not conspiratorial: 'this is where the stops sat, this is what price did to them'.",
     # stick figures (research 2026-11-05: 632 videos from 19 stick-figure and animated finance accounts)
     "Trader levels": "VIRAL STICK FIGURES (538x its account's median): 'Your life at every level of a trader'. Four or five "
-                     "levels, each a stick scene with a figure (label 'Level 1'...) acting it out with a pose and a short "
-                     "bubble, from the gambler who buys whatever went up to the one who sets the stop first. At least one "
-                     "level stands beside the real chart and acts out what that chart did. Funny, true, kind.",
+                     "levels, each a stick scene (head 'Level 1'...) with Rookie or Pro acting it out with a pose and a short "
+                     "bubble, from the gambler who buys whatever went up to the one who sets the stop first. Every level "
+                     "that mentions candles or price stands beside the real chart and acts out what that chart did. Funny, true, kind.",
     "Explained like you're 5": "VIRAL STICK FIGURES (548x and 165x): one market idea explained like you're five by stick "
                                "figures acting it out (a shop, a queue, a seesaw), then the same idea on the real chart. "
                                "Big simple words; the stick figure is the teacher.",
@@ -166,7 +167,8 @@ def gather(category, rng, history, company=None):
         facts = {"chart_number": A["number"], "stock_change_pct": round(A["hold"] * 100, 2), "clock_starts_at_candle": H,
                  "trades": [{"dir": t["dir"], "entry_candle": t["entry"], "exit_candle": t["exit"], "return_pct": round(t["r"] * 100, 2),
                              "why": f"{t['ev']['outcome']} at {t['ev']['price']}"} for t in A["trades"]],
-                 "plan_total_pct": round(A["total"] * 100, 2), "best_player_pct": None if A["best_player"] is None else round(A["best_player"] * 100, 2),
+                 "plan_total_pct": round(A["total"] * 100, 2), "plan_beat_holding": bool(A["total"] >= A["hold"]),
+                 "best_player_pct": None if A["best_player"] is None else round(A["best_player"] * 100, 2),
                  "players": A["players"]}
         charts.append({"candles": C, "label": f"Daily Chart #{A['number']}", "upto": len(C) - 1, "end": len(C) - 1, "win": [0, len(C) - 1]})
         facts["charts"] = [chart_summary(0, charts[0])]
@@ -213,7 +215,7 @@ SCHEMA = """Reply with JSON only, no prose, in this shape:
 Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contractions welcome):
  {"kind":"hook","vo":"the first hook line","text":"on-screen hook, max 6 words","chart":N or null}
  {"kind":"chart","chart":N,"head":"on-screen title, max 5 words","vo":"...","show":candle index shown at the start (optional),
-   "cues":[{"say":"exact phrase from vo","do":"reveal","to":index} | {"say":"..","do":"mark","i":index,"label":"A","side":"high"|"low","tone":"amber|green|red|teal"}
+   "cues":[{"say":"exact phrase from vo","do":"reveal","to":index} | {"say":"..","do":"mark","i":index,"label":"max 12 characters","side":"high"|"low"|"vol" (vol: rings that candle's volume bar against the 20-candle average),"tone":"amber|green|red|teal"}
           | {"say":"..","do":"line","price":number,"label":"max 3 words","tone":"amber|green|red|teal"} | {"say":"..","do":"shade","from":index,"to":index,"tone":"green|red|amber"}
           | {"say":"..","do":"zoom","from":index,"to":index}]}
  {"kind":"question","chart":N,"badge":"Q1","head":"max 5 words","vo":"asks it and reads the options"}   (options and answer are added from the facts)
@@ -232,9 +234,19 @@ RULES = """Rules:
 - The first scene is a hook; the last is the outro. Change what is on screen every scene.
 - Every number, name and outcome must come from the facts. Never invent results, prices, people or history.
 - Candle indices in cues must be between a chart's first_shown and last. "say" must be words that appear in that scene's vo.
+- Show what you say: a scene that talks about candles, the chart, a breakout, volume or wicks has that chart on screen
+  (stick scenes too: give them the chart). Talking about volume? Mark the candle with side "vol".
+- A mark, shade or zoom only points at candles already on screen at that moment: at or before the scene's "show"
+  (or where the scene before it on the same chart ended), or revealed earlier in the same scene.
+- On-screen text (hook text, big text, outro text) is words of that scene's line, word for word, in order.
+- A figure's label is its name ("Rookie", "Pro") or role, never a copy of the scene's head.
 - The caption: first line is a hook that survives the "... more" cut (under 125 characters), then 2 to 5 short lines,
   one ask (comment, save or follow), "Practise at memestreet.net", then exactly "Fictional market. Not investment advice.",
   then 3 to 5 hashtags including #MemeStreet. No emoji anywhere. British spelling.
+- Talk the way the best finance narrators do (measured on 16 top Shorts): full, flowing sentences of 10 to 20 words,
+  joined the way people join them ("so", "and", "but", "because", "which means", "now"), pointing at the chart with
+  "here" and "right here". One short punchy fragment ("But then, crash.") at most once in a reel; never stack
+  fragments ("Clean. Strong." / "Calm. Boring. Lovely." read like an advert, not a person).
 - Sound like a person talking to ONE viewer: "you", contractions, short punchy lines, one surprising real number,
   a question to the viewer now and then. Never read a list aloud. No stiff phrases ("in today's video", "let's dive in",
   "it's important to note", "in conclusion", "delve"). Calm, clear, never hype.
@@ -278,6 +290,7 @@ def check(spec, facts, charts, category=None):
             for f in ("to", "i", "from"):
                 if f in c and isinstance(ch, int) and 0 <= ch < len(charts) and not 0 <= c[f] < len(charts[ch]["candles"]):
                     errs.append(f"scene {k}: candle {c[f]} is outside chart {ch}")
+    errs += shown_check(sc, charts) + speech_check(sc)
     if sc and sc[0].get("kind") == "hook":                 # the hook as spoken (the screen and the caption follow it, never swapped)
         score = hookscore.run(sc[0].get("vo", ""))[1]
         if score < 50: errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+): make it shorter, concrete and with something at stake; keep the on-screen text and the caption's first line saying the same thing")
@@ -290,15 +303,70 @@ def check(spec, facts, charts, category=None):
     if acr: errs.append("write these out or as people say them (the voice reads capitals as letters): " + ", ".join(acr))
     if re.search(r"[0-9]+[.][0-9]{2}", spoken): errs.append("say prices the way people say them, no decimals in a spoken line ('about two ten')")
     hs = detect.run(spoken, json.load(open(os.path.join(HERE, "ig", "slop.json"), encoding="utf-8")))
-    if hs[2] == "FLAGGED": errs.append(f"the narration reads machine-written (human score {hs[1]:.0f}): vary sentence length, be concrete, talk to 'you', drop stock phrases")
+    if hs[2] == "FLAGGED":
+        weak = "; ".join(f"{n.lower()} {v[0]:.0f}: {v[1]}" for n, v in sorted(hs[0].items(), key=lambda kv: kv[1][0])[:2])
+        errs.append(f"the narration reads machine-written (human score {hs[1]:.0f}; weakest: {weak}): vary sentence length, be concrete, talk to 'you', drop stock phrases")
     if sc and sc[-1].get("kind") == "outro" and "daily chart" not in sc[-1].get("vo", "").lower():
         errs.append("the outro must end: \"Today's Daily Chart is live. Beat it at memestreet.net.\"")
     if sc and "memestreet.net" not in sc[-1].get("vo", "").lower():
         errs.append("the last scene's line must end by saying memestreet.net (spoken as 'Meem Street dot net')")
+    if facts.get("plan_beat_holding") is False and not re.search(r"\bhold", " ".join(x.get("vo", "") for x in sc[:2]).lower()):
+        errs.append("buying at the open and holding beat today's trades: say so briefly in the first or second scene (use the word 'holding')")
     cap = spec.get("caption", "")
     if DISCLAIMER not in cap: errs.append(f"the caption must contain exactly: {DISCLAIMER}")
     if EMOJI.search(cap + json.dumps(sc)): errs.append("no emoji anywhere")
     if "#MemeStreet" not in cap: errs.append("the caption needs #MemeStreet")
+    return errs
+
+
+def speech_check(sc):
+    """Sentences like a person's (the human Shorts average 16 words a sentence; ours were 5 to 7): flowing on average,
+    and never two fragments in a row."""
+    errs, frag = [], []
+    sents = [x for s in sc for x in re.split(r"(?<=[.?!])\s+", s.get("vo", "").strip()) if x]
+    n = sum(len(x.split()) for x in sents)
+    if n >= 40 and n / max(1, len(sents)) < 9:
+        errs.append(f"the sentences average {n / len(sents):.0f} words: people speak in flowing sentences of 10 to 20 words, joined with so, and, but, because")
+    for a, b in zip(sents, sents[1:]):
+        if len(a.split()) < 4 and len(b.split()) < 4: frag.append(f"{a} {b}")
+    if frag: errs.append("stacked fragments read like an advert, join them into a sentence: " + " | ".join(frag[:4]))
+    return errs
+
+
+CHART_TALK = re.compile(r"\b(candles?|chart|breakout|volume|wicks?)\b", re.I)
+
+
+def shown_check(sc, charts):
+    """The screen shows what the voice says: chart talk has a chart, on-screen text is spoken word for word, a figure is
+    not labelled with the title, and marks, shades and zooms land on candles that are already drawn (renderer rules)."""
+    errs, end = [], {}
+    kw = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split() if re.sub(r"[^a-z0-9']", "", w.lower())]
+    for k, s in enumerate(sc):
+        ch, kind, vo = s.get("chart"), s.get("kind"), s.get("vo", "")
+        if ch is None and kind in ("stick", "cards", "big") and CHART_TALK.search(vo):
+            errs.append(f"scene {k} talks about {CHART_TALK.search(vo).group(0)!r} but shows no chart: give it the chart, or say only what it shows")
+        if s.get("text") and kind in ("hook", "big", "outro"):
+            t, v = kw(s["text"]), kw(vo)
+            if not any(v[j:j + len(t)] == t for j in range(len(v) - len(t) + 1)):
+                errs.append(f"scene {k}'s on-screen text {s['text']!r} must be words of its line, word for word, in order")
+        for f in s.get("figures") or []:
+            if f.get("label") and s.get("head") and f["label"].strip().lower() == s["head"].strip().lower():
+                errs.append(f"scene {k}: the figure's label repeats the title {s['head']!r}; label it with its name (Rookie, Pro)")
+        if not (isinstance(ch, int) and 0 <= ch < len(charts)):
+            continue
+        C = charts[ch]; n = len(C["candles"]); drill = C.get("drill")
+        if kind == "question" and drill: r = C["upto"]                    # (as the renderer will draw it: see finish())
+        elif s.get("show") is not None: r = s["show"]
+        elif k and sc[k - 1].get("chart") == ch: r = end[k - 1]
+        elif kind in ("hook", "chart") and drill: r = C["upto"]
+        else: r = n - 1
+        if kind == "answer" and drill: r = max(r, C["end"])
+        for c in s.get("cues", []):
+            if c.get("do") == "reveal" and isinstance(c.get("to"), int): r = max(r, c["to"])
+            far = c.get("i") if c.get("do") == "mark" else c.get("to") if c.get("do") in ("shade", "zoom") else None
+            if isinstance(far, int) and far > r:
+                errs.append(f"scene {k}: the {c['do']} on candle {far} points at a candle not drawn yet (only up to {r} is on screen): reveal it first or use an earlier candle")
+        end[k] = r
     return errs
 
 
@@ -397,11 +465,22 @@ def claude_cli(messages, system):
     return r.stdout
 
 
-def write(B):
-    """Have Claude write the script, checked and sent back at most twice."""
+def lessons():
+    """What the film critic (critic.py) sent earlier reels back for, most often first: the writer reads these before
+    every reel, so the next one passes first time."""
+    f = os.path.join(ROOT, "state", "lessons.json")
+    L = json.load(open(f, encoding="utf-8")) if os.path.exists(f) else []
+    L = sorted(L, key=lambda x: (-x.get("count", 1), x.get("last", "")))[:30]
+    return ("\n\nThe film critic who reviews every finished reel sent earlier reels back for these. Never repeat them:\n" +
+            "\n".join(f"- {x['lesson']}" for x in L)) if L else ""
+
+
+def write(B, msgs=None):
+    """Have Claude write the script, checked and sent back at most four times."""
     ask = claude_cli if os.environ.get("REEL_WRITER", "cli") == "cli" else claude
-    msgs = [{"role": "user", "content": json.dumps(B["ask"], indent=1)}]
-    for attempt in range(3):
+    msgs = msgs or [{"role": "user", "content": json.dumps(B["ask"], indent=1)}]
+    B = dict(B, system=B["system"] + lessons())
+    for attempt in range(5):
         raw = ask(msgs, B["system"])
         spec, errs = parse(raw, B)
         if not errs:
@@ -411,13 +490,29 @@ def write(B):
     raise SystemExit("the script did not pass its checks: " + "; ".join(errs))
 
 
-def save(spec, B, work):
-    spec = finish(spec, B["charts"], B["category"])
+def revise(work, review):
+    """The critic sent the finished reel back: the writer gets its own script and every note, and rewrites it."""
+    B = json.load(open(os.path.join(work, "brief.json"), encoding="utf-8"))
+    draft = open(os.path.join(work, "draft.json"), encoding="utf-8").read()
+    notes = "\n".join(f"- [{x.get('severity', '')}] {x.get('where', '')}: {x.get('what', '')} FIX: {x.get('fix', '')}" for x in review.get("issues", []))
+    msgs = [{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": draft},
+            {"role": "user", "content": "A film critic watched the finished reel made from your script and sent it back.\n"
+                                        f"His verdict: {review.get('verdict', '')}\nHis notes:\n{notes}\n"
+                                        "Fix every note (a note about the look you cannot change in the script: work around it, "
+                                        "e.g. a different cue, scene kind or wording). Keep what he did not mention. "
+                                        "Reply with the whole JSON again."}]
+    save(write(B, msgs), B, work, again=True)
+
+
+def save(spec, B, work, again=False):
     os.makedirs(work, exist_ok=True)
+    json.dump(B, open(os.path.join(work, "brief.json"), "w"))          # (for a rewrite after the critic: revise())
+    json.dump(spec, open(os.path.join(work, "draft.json"), "w"))
+    spec = finish(spec, B["charts"], B["category"])
     json.dump(spec, open(os.path.join(work, "spec.json"), "w"))
     open(os.path.join(work, "caption.txt"), "w", encoding="utf-8").write(spec["caption"].strip() + "\n")
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
-    history.setdefault("titles", []).append(spec["title"])
+    if not again: history.setdefault("titles", []).append(spec["title"])
     os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
     json.dump(history, open(HISTORY, "w"))
     print(f"{B['category']}: {spec['title']} ({sum(len(s['vo'].split()) for s in spec['scenes'])} words, {len(spec['scenes'])} scenes)")
@@ -427,7 +522,9 @@ if __name__ == "__main__":
     a = sys.argv[1:]
     rem = json.load(open(a[a.index("--remake") + 1], encoding="utf-8")) if "--remake" in a else None
     cat = a[a.index("--category") + 1] if "--category" in a else None
-    if a[0] == "brief":                                  # for a writer elsewhere (a cloud session): <dir>/brief.json
+    if a[0] == "revise":                                 # <work> <review.json>: rewrite after the film critic's notes
+        revise(a[1], json.load(open(a[2], encoding="utf-8")))
+    elif a[0] == "brief":                                  # for a writer elsewhere (a cloud session): <dir>/brief.json
         B = brief(a[1], cat, rem); os.makedirs(a[2], exist_ok=True)
         json.dump(B, open(os.path.join(a[2], "brief.json"), "w"))
         print(f"{a[2]}/brief.json: {B['category']}")
