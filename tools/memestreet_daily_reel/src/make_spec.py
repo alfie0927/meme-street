@@ -24,7 +24,8 @@ CATEGORIES = {
     "Chart quiz": "Three questions on three real game charts. Each: a question scene (options shown, a short countdown), "
                   "then an answer scene (the rest of the chart plays out, the right option lights up, one or two lines on why).",
     "Stock story": "Introduce one fictional company from the game: the hook, what it does, how it makes money, what moves "
-                   "its stock (good news and bad news), its real recent chart, and an invitation to trade it.",
+                   "its stock (good news and bad news), its real recent chart, and an invitation to trade it. When "
+                   "video is available, show what it does and its good and bad news as film scenes (2 or 3).",
     "Technical lesson": "Teach one chart idea (an indicator, a level, a pattern) on a real chart that shows it: what it is, "
                         "how to read it, the trap, and the one rule to remember.",
     "Trading mistake": "One common beginner mistake, shown on a real chart: what people do, what it costs, what to do instead.",
@@ -231,7 +232,7 @@ SCHEMA = """Reply with JSON only, no prose, in this shape:
  "scenes": [ ...in order... ],
  "caption": "the Instagram caption"}
 Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contractions welcome):
- {"kind":"hook","vo":"the first hook line","text":"the reel's title, 2 to 5 words: its theme (e.g. 'Spot The Doji'), not the line","chart":N or null}
+ {"kind":"hook","vo":"the first hook line","shot":"(when video is available) the cinematic shot behind the hook","text":"the reel's title, 2 to 5 words: its theme (e.g. 'Spot The Doji'), not the line","chart":N or null}
  {"kind":"chart","chart":N,"head":"title, max 5 words: names the idea (e.g. 'The Setup'), not the line","vo":"...","show":candle index shown at the start (optional),
    "cues":[{"say":"exact phrase from vo","do":"reveal","to":index} | {"say":"..","do":"mark","i":index,"label":"max 12 characters","side":"high"|"low"|"vol" (vol: rings that candle's volume bar against the 20-candle average),"tone":"amber|green|red|teal"}
           | {"say":"..","do":"line","price":number,"label":"max 3 words","tone":"amber|green|red|teal"} | {"say":"..","do":"shade","from":index,"to":index,"tone":"green|red|amber"}
@@ -244,10 +245,18 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
  {"kind":"stick","head":"max 5 words","vo":"...","chart":N or null (with a chart: one presenter figure beside it),
    "figures":[{"pose":"stand|think|panic|happy|point|pointl|sad|shrug|walk","label":"max 2 words","color":"white|teal|amber"}] (1 to 3 figures; none with a chart beyond the first),
    "cues":[{"say":"exact phrase","do":"pose","fig":0,"pose":"panic"} | {"say":"..","do":"bubble","fig":0,"text":"max 5 words"} | chart cues as above]}
+ {"kind":"film","head":"title, max 5 words","vo":"...","shot":"one realistic cinematic shot, 15 to 50 words, written like a
+   director's shot list: the subject, what it is doing, where, the light, the camera move. E.g. 'A green dragon hauls a
+   wooden crate on chains over a misty mountain ranch at golden hour, wings beating slowly, camera tracking alongside'"}
+   (only when video is available: a full-screen realistic video clip with the title and captions over it)
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 """
 
 RULES = """Rules:
+- Video (only when the ask's "video" says it is available): a stock story shows the company's business and its good
+  and bad news as 2 or 3 film scenes; every other reel puts one "shot" on its hook (the first thing anyone sees, so make
+  it striking). A shot shows the line's subject doing something specific and physical, fictional (no real brands,
+  places or people), no text or screens in frame. Charts stay charts.
 - Total spoken words 75 to 140 (about 25 to 50 seconds), unless the reel's description says otherwise. No greeting, no "in this video". Start at the hook.
 - The first scene is a hook; the last is the outro. Change what is on screen every scene.
 - Every number, name and outcome must come from the facts. Never invent results, prices, people or history.
@@ -303,6 +312,18 @@ def check(spec, facts, charts, category=None):
     if not sc or sc[0].get("kind") != "hook": errs.append("the first scene must be a hook")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (75, 140, True))
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
+    video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
+    films = [s for s in sc if s.get("kind") == "film"]
+    for k, s in enumerate(sc):
+        if s.get("shot") is not None and not 12 <= len(str(s["shot"]).split()) <= 60:
+            errs.append(f"scene {k}'s shot must be 12 to 60 words: subject, action, setting, light, camera move")
+        if s.get("kind") == "film" and not s.get("shot"): errs.append(f"scene {k} is a film scene with no shot")
+    if not video and (films or any(s.get("shot") for s in sc)):
+        errs.append("no video this time: use cards, big text or Rookie and Pro instead of film scenes and shots")
+    elif video and category == "Stock story" and not 2 <= len(films) <= 3:
+        errs.append("a stock story shows the business and its news as 2 or 3 film scenes")
+    elif video and category != "Stock story" and sc and not sc[0].get("shot"):
+        errs.append("put one cinematic \"shot\" on the hook (video is available)")
     words = sum(len(s.get("vo", "").split()) for s in sc)
     if not lo_w <= words <= hi_w: errs.append(f"the narration is {words} words; it must be {lo_w} to {hi_w}")
     for k, s in enumerate(sc):
@@ -377,7 +398,7 @@ def shown_check(sc, charts):
     kw = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split() if re.sub(r"[^a-z0-9']", "", w.lower())]
     for k, s in enumerate(sc):
         ch, kind, vo = s.get("chart"), s.get("kind"), s.get("vo", "")
-        if ch is None and kind in ("stick", "cards", "big") and CHART_TALK.search(vo):
+        if ch is None and kind in ("stick", "cards", "big", "film") and CHART_TALK.search(vo):
             errs.append(f"scene {k} talks about {CHART_TALK.search(vo).group(0)!r} but shows no chart: give it the chart, or say only what it shows")
         for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" else []):
             if t and len(kw(t)) >= 3 and any(kw(vo)[j:j + len(kw(t))] == kw(t) for j in range(len(kw(vo)))):
@@ -506,6 +527,9 @@ def brief(slot, category=None, remake=None):
     system = ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
               "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
               "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % category)
+    import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
+    need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
+    facts["video"] = {"available": bool(os.environ.get("HF_API_KEY_ID")) and footage.remaining() >= need}
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
            "recent_titles_to_avoid": history.get("titles", [])[-20:]}
     if CATEGORIES[category].startswith("VIRAL"):

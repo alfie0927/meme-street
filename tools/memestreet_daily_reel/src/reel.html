@@ -5,6 +5,9 @@
 <style>
 html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b;font-family:'Cascadia Mono',monospace,monospace;color:#e6e9ec}
 #bg{position:absolute;inset:0}
+#film{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover;opacity:0}
+#fshade{position:absolute;inset:0;opacity:0;background:linear-gradient(to bottom,rgba(5,7,9,.9) 0%,rgba(5,7,9,.45) 27%,rgba(5,7,9,0) 42%,rgba(5,7,9,0) 58%,rgba(5,7,9,.6) 68%,rgba(5,7,9,.92) 100%)}
+.head,.caps{text-shadow:0 2px 14px rgba(0,0,0,.85)}
 .hdr{position:absolute;left:70px;right:70px;top:250px;height:84px;display:flex;align-items:center;justify-content:space-between}
 .hdr .l{display:flex;align-items:center;gap:20px;font:700 44px/1 'Cascadia Mono',monospace}.hdr img{width:84px;height:84px;border-radius:18px}
 .tag{padding:14px 26px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 28px/1 'Cascadia Mono',monospace;letter-spacing:1px;text-transform:uppercase}
@@ -23,6 +26,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .big span{display:inline-block;margin:0 18px}
 </style></head><body>
 <svg id="bg" width="1080" height="1920"></svg>
+<img id="film" alt=""><div id="fshade"></div>
 <div class="hdr"><div class="l"><img src="../assets/logo.png">Meme Street</div><div class="tag" id="tag"></div></div>
 <div class="prog"><i id="prog"></i></div>
 <div class="head" id="head"></div>
@@ -82,7 +86,7 @@ function drawings(i,t){ // lines, marks and shades of this scene (and the scenes
  const seen=new Set();   // (a candle marked again later keeps only its newest mark: two tags on one candle push each other off it)
  return out.filter(c=>c.age>=-.05).filter(c=>c.do==='mark'?c.side==='vol'||!seen.has(c.i)&&seen.add(c.i):c.do==='line'?!seen.has('p'+Math.round(c.price*1000))&&seen.add('p'+Math.round(c.price*1000)):true)}   // (one line per price, the newest)
 function drawChart(i,t){
- const S=chartState(i,t),el=document.getElementById('chart');if(!S){el.innerHTML='';return}
+ const S=chartState(i,t),el=document.getElementById('chart');if(!S||SC[i].film){el.innerHTML='';return}   // (a video shot fills the frame)
  const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
  const short=k=>k<0||SC[k].kind==='stick'||SC[k].kind==='question'||(SC[k].kind==='answer'&&k>0&&SC[k-1].kind==='question'),hh0=k=>short(k)?620:740,
   bh=i>0&&SC[i-1].chart===s.chart?lerp(hh0(i-1),hh0(i),io(seg(t,s.t0,s.t0+.6))):hh0(i);   // (eased, so the chart never jumps)
@@ -176,6 +180,12 @@ function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
 const fit=(el,maxH,base,min=18)=>{let f=base;el.style.fontSize=f+'px';while(el.scrollHeight>maxH+1&&f>min){f-=2;el.style.fontSize=f+'px'}};   // (text shrinks to its box: no overlaps)
 function render(T){
  const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
+ // a realistic video shot (footage.py via narrate.py): full screen behind the titles and captions, a slow push-in
+ const fm=document.getElementById('film'),fs=document.getElementById('fshade');let fp=null;
+ if(s.film){const k=Math.max(0,Math.min(s.film.n-1,Math.floor((T-Math.max(0,s.t0))*s.film.fps))),src='file://'+s.film.dir+'/f'+String(k+1).padStart(5,'0')+'.jpg';
+  if(fm.getAttribute('src')!==src){fm.setAttribute('src',src);fp=fm.decode().catch(()=>{})}
+  const fa=out(seg(T,s.t0,s.t0+.3));fm.style.opacity=fa;fs.style.opacity=fa;fm.style.transform=`scale(${1.02+.05*seg(T,s.t0,s.t1)})`}
+ else{fm.style.opacity=0;fs.style.opacity=0}
  drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
@@ -208,7 +218,7 @@ function render(T){
  // the end card
  const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.type==='Daily recap'?R.daily:null;   /* (the Daily Chart line only on a reel about it) */document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,s.t0+.25,s.t0+.6)),eU=document.getElementById('oUrl'),eD=document.getElementById('oDaily');eD.style.opacity=out(seg(t,s.t0+.15,s.t0+.45));eD.style.transform=`scale(${1+.08*Math.sin(Math.PI*seg(t,tD-.05,tD+.35))})`;eU.style.opacity=cl(uU);eU.style.transform=`scale(${(.7+.3*uU)*(1+.1*Math.sin(Math.PI*seg(t,tU-.05,tU+.4)))})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
  document.body.style.opacity=1;
- return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
+ return Promise.all([fp,new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))])}
 window.render=render;
 // the overlap check (render.py runs it through the reel): every visible piece of text, measured as drawn; any two that
 // touch are reported, and a reel with any is not posted

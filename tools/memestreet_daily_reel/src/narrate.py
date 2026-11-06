@@ -6,7 +6,7 @@ sound. Each cue ("say": a phrase of the line) gets the time that phrase is spoke
 the burned-in captions.
 Output: work/<slot>/timeline.json (+ vo/*.wav, sfx/*.wav).   Usage: python3 src/narrate.py work/<slot>
 """
-import difflib, hashlib, json, os, re, shutil, sys
+import difflib, glob, hashlib, json, os, re, shutil, sys
 import numpy as np
 import soundfile as sf
 from kokoro_onnx import Kokoro
@@ -135,6 +135,32 @@ def live_daily():
     except Exception:
         return None
 
+FILM_FPS = 30
+
+
+def film(sc, work):
+    """The scene's shot as frames (work/footage/<clip>/f00001.jpg...) at FILM_FPS, slowed to fill the scene (never below
+    0.6x; past that the last frame holds). No clip (no key, over the cap, refused): a film scene becomes big text."""
+    import footage, subprocess
+    d = sc["t1"] - sc["t0"]
+    clip = footage.shot(sc["shot"], d, os.path.join(work, "footage"))
+    if not clip:
+        sc.pop("shot", None)
+        if sc["kind"] == "film": sc.update(kind="big", text=sc.get("head") or "")
+        return
+    n = int(d * FILM_FPS) + 2
+    out = clip[:-4]
+    if len(glob.glob(os.path.join(out, "f*.jpg"))) < n:
+        cd = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", clip],
+                                  capture_output=True, text=True).stdout or 5)
+        slow = min(1 / 0.6, max(1.0, d / cd))
+        os.makedirs(out, exist_ok=True)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", clip, "-vf", f"setpts={slow:.4f}*PTS,fps={FILM_FPS},eq=brightness=-0.03:contrast=1.06:saturation=0.9,"   # (graded to the house look)
+                        "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920", "-q:v", "3",
+                        "-frames:v", str(n), os.path.join(out, "f%05d.jpg")], check=True)
+    sc["film"] = {"dir": os.path.abspath(out), "n": len(glob.glob(os.path.join(out, "f*.jpg"))), "fps": FILM_FPS}
+
+
 def main(work):
     S = json.load(open(os.path.join(work, "spec.json")))
     K = Kokoro(os.path.join(MODEL, "kokoro-v1.0.onnx"), os.path.join(MODEL, "voices-v1.0.bin"))
@@ -194,6 +220,9 @@ def main(work):
             vo.append([chime, round(t, 3)])
         t += GAP if i < len(S["scenes"]) - 1 else TAIL
         sc["t1"] = round(t, 3)
+    for sc in S["scenes"]:                                     # realistic video shots (footage.py), fitted to their scenes
+        if sc.get("shot"):
+            film(sc, work)
     S["T"] = round(t, 2); S["vo"] = vo; S["num"] = None
     S["daily"] = live_daily()
     json.dump(S, open(os.path.join(work, "timeline.json"), "w"))
