@@ -4,7 +4,8 @@ remakes only a shot whose description changed, and a monthly cap stops all spend
 
   python3 src/footage.py demo                     self-check with a stubbed API (no spend)
   python3 src/footage.py try "<shot>" [seconds]    one real shot -> state/footage_try/<key>.mp4
-Needs HF_API_KEY_ID and HF_API_KEY_SECRET (config.env, from console.higgsfield.ai).
+Needs HF_API_KEY in config.env: the key exactly as console.higgsfield.ai shows it.
+  python3 src/footage.py check                     is the key accepted? (a free status call, nothing generated)
 """
 import datetime, hashlib, json, os, sys, tempfile, time, urllib.error, urllib.request
 
@@ -24,9 +25,18 @@ MOTION = ", smooth natural motion, slow cinematic camera move, realistic physics
 NEG = "text, letters, captions, watermark, logo, warped hands, extra limbs, melted face, morphing, flicker, distorted, blurry, low quality"
 
 
+def key():
+    """The credential: HF_API_KEY as the console shows it (one string, usually 'id:secret'), or HF_API_KEY_ID and
+    HF_API_KEY_SECRET; '' when there is none."""
+    one = os.environ.get("HF_API_KEY", "").strip()
+    if one: return one
+    i, s = os.environ.get("HF_API_KEY_ID", "").strip(), os.environ.get("HF_API_KEY_SECRET", "").strip()
+    return f"{i}:{s}" if i and s else ""
+
+
 def http(method, url, body=None):
     req = urllib.request.Request(url, method=method, data=None if body is None else json.dumps(body).encode(),
-                                 headers={"Authorization": f"Key {os.environ['HF_API_KEY_ID']}:{os.environ['HF_API_KEY_SECRET']}",
+                                 headers={"Authorization": f"Key {key()}",
                                           "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read() or b"{}")
@@ -77,7 +87,7 @@ def shot(desc, seconds, out_dir):
     out = os.path.join(out_dir, key + ".mp4")
     if os.path.exists(out):
         return out
-    if not os.environ.get("HF_API_KEY_ID") or not os.environ.get("HF_API_KEY_SECRET"):
+    if not key():
         print("footage: no Higgsfield key (config.env), no video"); return None
     if remaining() < cost(seconds):
         print(f"footage: the monthly cap (${CAP:.0f}) is reached, no video"); return None
@@ -108,7 +118,7 @@ def demo():
         img = any("soul" in u for _, u in calls[-2:])
         return {"status": "completed", "request_id": "r1", **({"images": [{"url": "https://x/i.png"}]} if img else {"video": {"url": "https://x/v.mp4"}})}
     d = tempfile.mkdtemp(); http, fetch, SPEND, POLL = fake, (lambda u, p: open(p, "wb").write(b"mp4")), os.path.join(d, "s.json"), 0
-    os.environ.setdefault("HF_API_KEY_ID", "id"); os.environ.setdefault("HF_API_KEY_SECRET", "secret")
+    os.environ.setdefault("HF_API_KEY", "id:secret")
     p = shot("a dragon over a ranch", 6, d)
     assert p and open(p, "rb").read() == b"mp4" and abs(spent() - cost(5)) < 1e-9, spent()
     n = len(calls); assert shot("a dragon over a ranch", 6, d) == p and len(calls) == n          # (cached: no call, no spend)
@@ -123,6 +133,11 @@ def demo():
 if __name__ == "__main__":
     if sys.argv[1] == "demo":
         demo()
+    elif sys.argv[1] == "check":                         # a status call for a request that does not exist: 404 = key accepted
+        try:
+            http("GET", API + "/requests/00000000-0000-0000-0000-000000000000/status"); print("key accepted")
+        except urllib.error.HTTPError as e:
+            print({401: "key rejected (401): check HF_API_KEY", 403: "key rejected (403)"}.get(e.code, f"key accepted (HTTP {e.code} for a made-up request)"))
     elif sys.argv[1] == "try":
         p = shot(sys.argv[2], float(sys.argv[3]) if len(sys.argv) > 3 else 5, os.path.join(ROOT, "state", "footage_try"))
         print(p, f"spent this month ${spent():.2f} of ${CAP:.0f}")
