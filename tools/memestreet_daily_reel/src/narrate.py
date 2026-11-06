@@ -135,17 +135,6 @@ def live_daily():
     except Exception:
         return None
 
-def series_no(work, kind):
-    """The reel's episode number in its series (Chart quiz #7), fixed per slot so a re-render keeps it."""
-    f = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "state", "series.json")
-    S = json.load(open(f)) if os.path.exists(f) else {}
-    slot = os.path.basename(os.path.normpath(work))
-    if slot not in S.setdefault("slots", {}):
-        c = S.setdefault("count", {}); c[kind] = c.get(kind, 0) + 1
-        S["slots"][slot] = c[kind]
-        os.makedirs(os.path.dirname(f), exist_ok=True); json.dump(S, open(f, "w"))
-    return S["slots"][slot]
-
 def main(work):
     S = json.load(open(os.path.join(work, "spec.json")))
     K = Kokoro(os.path.join(MODEL, "kokoro-v1.0.onnx"), os.path.join(MODEL, "voices-v1.0.bin"))
@@ -208,7 +197,7 @@ def main(work):
         t += GAP if i < len(S["scenes"]) - 1 else TAIL
         sc["t1"] = round(t, 3)
     S["T"] = round(t, 2); S["vo"] = vo; S["num"] = None
-    S["daily"] = live_daily(); S["series"] = series_no(work, S.get("type", ""))
+    S["daily"] = live_daily()
     json.dump(S, open(os.path.join(work, "timeline.json"), "w"))
     print(f"narration: {len(S['scenes'])} scenes, {S['T']:.1f}s")
 

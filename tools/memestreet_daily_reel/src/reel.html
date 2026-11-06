@@ -191,7 +191,7 @@ function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
 const fit=(el,maxH,base,min=18)=>{let f=base;el.style.fontSize=f+'px';while(el.scrollHeight>maxH+1&&f>min){f-=2;el.style.fontSize=f+'px'}};   // (text shrinks to its box: no overlaps)
 function render(T){
  const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
- drawBg(T);document.getElementById('tag').textContent=(R.type||'')+(R.series?' #'+R.series:'');document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
+ drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
  const hookTxt=s.kind==='hook'&&s.chart!=null&&s.text;   // the on-screen hook sits in the title zone, in amber

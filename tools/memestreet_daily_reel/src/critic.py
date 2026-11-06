@@ -117,7 +117,7 @@ def pack(work, out, rd, only=None):
                        "cues": [f"{c.get('do')} on '{c.get('say', '')}' @ {c.get('t')}s" for c in s.get("cues", [])]})
     gaps = [q1 - q0 for q0, q1 in Q]
     wr = [(len(x["script"].split()), x["words_per_sec_talking"]) for x in scenes if x["words_per_sec_talking"]]
-    report = {"title": R.get("title"), "format": R.get("type"), "series": R.get("series"), "length_secs": T,
+    report = {"title": R.get("title"), "format": R.get("type"), "length_secs": T,
               "caption_post_text": open(os.path.join(work, "caption.txt"), encoding="utf-8").read() if os.path.exists(os.path.join(work, "caption.txt")) else "",
               "human_narrator_reference": {"words_per_sec_talking": WPS, "pause_after_comma": HUMAN["comma"], "pause_after_sentence": HUMAN["sentence"],
                                            "source": "measured on 16 top finance Shorts narrated by people"},
