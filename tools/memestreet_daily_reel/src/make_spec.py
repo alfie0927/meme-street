@@ -25,7 +25,7 @@ CATEGORIES = {
                   "then an answer scene (the rest of the chart plays out, the right option lights up, one or two lines on why).",
     "Stock story": "Introduce one fictional company from the game: the hook, what it does, how it makes money, what moves "
                    "its stock (good news and bad news), its real recent chart, and an invitation to trade it. Show what "
-                   "it does and its good and bad news as 2 or 3 neon 3D world scenes.",
+                   "it does and its good and bad news as 2 or 3 animated story scenes.",
     "Technical lesson": "Teach one chart idea (an indicator, a level, a pattern) on a real chart that shows it: what it is, "
                         "how to read it, the trap, and the one rule to remember.",
     "Trading mistake": "One common beginner mistake, shown on a real chart: what people do, what it costs, what to do instead.",
@@ -249,9 +249,9 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
    director's shot list: the subject, what it is doing, where, the light, the camera move. E.g. 'A green dragon hauls a
    wooden crate on chains over a misty mountain ranch at golden hour, wings beating slowly, camera tracking alongside'"}
    (only when video is available: a full-screen realistic video clip with the title and captions over it)
- {"kind":"world","head":"title, max 5 words","vo":"...","layout":"flow|network|hero|grow|risk|compare",
+ {"kind":"story","head":"title, max 5 words","vo":"...","layout":"flow|network|hero|grow|risk|compare",
    "props":[{"p":"<prop>","color":"teal|green|amber|red|purple|grey","label":"max 3 words, or empty","say":"exact phrase from vo: it pops in then"}]}
-   (a neon 3D scene. Layouts: flow = props[:-1] are stations left to right and the last prop travels through them
+   (an animated 2D scene in the house style. Layouts: flow = props[:-1] are stations left to right and the last prop travels through them
     (two portals and a crate: teleport freight); network = each prop is a node on a glowing globe, links fill in (2-8);
     hero = props[0] is the company, big in the middle (a flier circles above its plinth), the rest stand around it;
     grow = up to 5 columns rise one by one on their words (good news, growth); risk = props[0] is the company, the rest
@@ -260,13 +260,13 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 """
 
-_W = open(os.path.join(HERE, "world.js"), encoding="utf-8").read()
-WORLD_PROPS = re.findall(r"^  (\w+)\(c\) \{", _W, re.M)        # (the neon 3D kit: world.js PROPS and LAYOUTS)
-WORLD_LAYOUTS = re.findall(r"^  (\w+)\(s\) \{", _W, re.M)
+_R = open(os.path.join(HERE, "reel.html"), encoding="utf-8").read()
+WORLD_PROPS = re.findall(r"^ (\w+)\(c(?:,u)?\)\{", _R[_R.index("const PROP2D={"):_R.index("function prop2d(")], re.M)   # (the 2D story kit in reel.html)
+WORLD_LAYOUTS = re.findall(r"lay==='(\w+)'", _R)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
 RULES = """Rules:
-- Neon 3D "world" scenes show real things: a stock story has 2 or 3 (what the company does, its good news, its bad
+- Animated "story" scenes (2D neon line art) show real things: a stock story has 2 or 3 (what the company does, its good news, its bad
   news), and any reel may use one when a real object acts out the line (a company, its product, money moving). A dragon-
   rental firm is a dragon circling its ranch, teleport freight is crates through portals, a recall is warnings hitting
   the company. Never an abstract stand-in for an idea (a box for 'your trade', triangles for 'panic'): if a viewer could
@@ -285,7 +285,7 @@ RULES = """Rules:
   (or where the scene before it on the same chart ended), or revealed earlier in the same scene.
 - Big text and outro text are words of that scene's line, word for word, in order.
 - Titles are titles: each head names that scene's idea, 2 to 5 words, never a copy of what the voice says, and the same
-  style through the reel. A hook over a chart (or a world scene) puts the reel's theme in its text, as a title; a hook
+  style through the reel. A hook over a chart puts the reel's theme in its text, as a title; a hook
   with no chart shows its own first words big as they are said, so there the text IS the first words of the line. An answer's title is set for you (it never
   gives the answer away: the highlight shows it).
 - A figure's label is its name ("Rookie", "Pro") or role, never a copy of the scene's head.
@@ -333,17 +333,17 @@ def check(spec, facts, charts, category=None):
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     worlds = [s for s in sc if s.get("layout")]
     for k, s in enumerate(sc):
-        if s.get("kind") == "world" or s.get("layout"):
+        if s.get("kind") == "story" or s.get("layout"):
             P = s.get("props") or []
             if s.get("layout") not in WORLD_LAYOUTS: errs.append(f"scene {k}: layout must be one of {', '.join(WORLD_LAYOUTS)}")
-            if not 1 <= len(P) <= 8: errs.append(f"scene {k}: a world scene has 1 to 8 props")
+            if not 1 <= len(P) <= 8: errs.append(f"scene {k}: a story scene has 1 to 8 props")
             for q in P:
                 if q.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {q.get('p')!r}; use one of {', '.join(WORLD_PROPS)}")
                 if q.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: colour {q.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
                 if len(str(q.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {q.get('label')!r} is over 3 words")
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
     if category == "Stock story" and not 2 <= len(worlds) <= 3:
-        errs.append(f"a stock story shows what the company does and its news as 2 or 3 world scenes (neon 3D: kind \"world\" with a layout "
+        errs.append(f"a stock story shows what the company does and its news as 2 or 3 story scenes (kind \"story\" with a layout "
                     f"and props); this script has {len(worlds)}")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
     films = [s for s in sc if s.get("kind") == "film"]
@@ -428,7 +428,7 @@ def shown_check(sc, charts):
     kw = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split() if re.sub(r"[^a-z0-9']", "", w.lower())]
     for k, s in enumerate(sc):
         ch, kind, vo = s.get("chart"), s.get("kind"), s.get("vo", "")
-        if ch is None and kind in ("stick", "cards", "big", "film", "world") and CHART_TALK.search(vo):
+        if ch is None and kind in ("stick", "cards", "big", "film", "story") and CHART_TALK.search(vo):
             errs.append(f"scene {k} talks about {CHART_TALK.search(vo).group(0)!r} but shows no chart: give it the chart, or say only what it shows")
         for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" and (ch is not None or s.get("layout")) else []):
             if t and len(kw(t)) >= 3 and any(kw(vo)[j:j + len(kw(t))] == kw(t) for j in range(len(kw(vo)))):
@@ -699,6 +699,7 @@ def revise(work, review):
                          if x.get("rounds_open", 0) >= 2 else "") for n, x in enumerate(todo, 1))
     msgs = [{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": draft},
             {"role": "user", "content": "A film critic watched the finished reel made from your script and sent it back.\n"
+                                        f"His verdict: {review.get('verdict', '')}\nHis scores (8+ on each is needed): {review.get('scores')}\n"
                                         f"His notes (scenes count from 0):\n{notes}\n\n"
                                         f"The noted scenes as they were rendered (times in seconds):\n{rendered(work, todo)}\n\n"
                                         "Fix every note. Everything he did not mention is approved: leave it exactly as it is. "

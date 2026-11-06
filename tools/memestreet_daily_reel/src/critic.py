@@ -106,7 +106,7 @@ def pack(work, out, rd, only=None):
             for q in range(n):
                 sync.append(round(s["wt"][a0 + q][0] - hw[b0 + q][1], 2))
         on_screen = {k: s[k] for k in ("head", "text", "badge", "options", "shot", "layout") if s.get(k)}
-        if s.get("props"): on_screen["props_3d"] = [f"{p.get('p')} ({p.get('color', 'teal')}) '{p.get('label', '')}' on '{p.get('say', '')}' @ {p.get('t')}s" for p in s["props"]]
+        if s.get("props"): on_screen["story_props"] = [f"{p.get('p')} ({p.get('color', 'teal')}) '{p.get('label', '')}' on '{p.get('say', '')}' @ {p.get('t')}s" for p in s["props"]]
         for c in s.get("cues", []):
             if c.get("text") or c.get("label"): on_screen.setdefault("cue_texts", []).append(f"{c['do']}: {c.get('text') or c.get('label')} @ {c.get('t')}s")
         if s.get("items"): on_screen["cards"] = [x.get("text") for x in s["items"]]
@@ -156,7 +156,7 @@ You judge, and score out of 10:
 4. CONTENT - the story: a hook that earns the next second, a clear arc with a payoff that delivers the hook's promise,
    one idea, true and useful to a beginner trader, a reason to play the game, and an ending that makes people want the
    next reel. Language that sounds like a person, not an advert.
-5. NEON 3D SCENES ("world" scenes, the house style: glowing teal, purple and amber line work on near-black, after the
+5. ANIMATED STORY SCENES ("story" scenes: 2D neon line art, glowing teal, purple and amber on near-black, after the
    PhaseJump reel): each must pop, read at a glance, and act out exactly what the voice says at that moment (the right
    props, popping in on their words). It must be readable in one second with the sound off: an abstract scene (a box
    standing for 'your trade', triangles for 'panic') or one where you cannot tell what is happening is a script major
@@ -174,7 +174,13 @@ second, and three frames per scene: as it lands, mid-line and its last moment, n
 The frame below about 1440 px and the right edge are left empty on purpose: Instagram's caption, buttons and audio strip
 cover them, so nothing may go there; do not mark that space down as dead.
 
-Approve only if nothing would embarrass you. Be accurate before you are harsh: a note is only for something that is
+Your bar is the best faceless finance reels on Instagram, the ones with millions of views. Score against them, not
+against this pipeline's earlier cuts: 8 means you would proudly put this reel next to theirs, 9 means it beats them,
+6 is a forgettable reel that loses the thumb, and most first cuts are 5 or 6. A reel that looks cheap, cluttered,
+confusing or ugly in ANY frame (something you cannot read, a jumpy picture, text on text, a muddy or stray element)
+cannot score 8 on visuals, and a voice that mispronounces a word, rushes or stalls cannot score 8 on audio. Nothing
+posts unless every score is 8 or more and no major fault is left, so never round up out of kindness: an empty slot is
+better than a reel that makes the page look amateur. Be accurate before you are harsh: a note is only for something that is
 wrong in THIS cut and that you can point at in this round's images or report.json. Judge only what is in front of you,
 never what you remember of an earlier cut; do not invent problems to look tough, do not guess at what you cannot see,
 and do not move the goalposts. Numbers (pauses, speeds, drift) come only from report.json, never from estimates.
@@ -186,7 +192,7 @@ lesson: the general rule the writer must follow in EVERY future reel. Scenes cou
 
 Say who can fix it. The writer controls only the script: each scene's kind and order, its spoken line, head and
 on-screen text, and its cues: which phrase each cue lands on, which candles are revealed, marked, shaded or zoomed,
-each line's price, label and tone, cards, figures, poses, bubbles, each world scene's layout and props (which, their colours, labels and words), and each
+each line's price, label and tone, cards, figures, poses, bubbles, each story scene's layout and props (which, their colours, labels and words), and each
 video shot's description ("shot"). That is "script", and its fix names the
 change in those terms (e.g. "scene 1: a line cue at 119.42 labelled 'Entry', said on 'entry'"). Everything about how
 the house template draws (where a tag sits, tags stacking, sizes, fonts, colours, the voice's pauses and pronunciation
@@ -233,6 +239,15 @@ def ask_critic(rd, rnd, prev, changed=None):
     return rev
 
 
+def gate(rev):
+    """Approved = every score 8 or more and no checked blocker or major left, the template's included: a reel the critic
+    scores 6 on visuals, or with a box through its title, does not post."""
+    sc = rev.get("scores") or {}
+    rev["low_scores"] = {k: v for k, v in sc.items() if not isinstance(v, (int, float)) or v < 8}
+    rev["approved"] = not rev["low_scores"] and not any(x.get("severity") in ("blocker", "major") for x in rev.get("issues", []))
+    return rev
+
+
 def verify(rev, rd, prev):
     """Keep only what this cut shows. A note stays if it has evidence and every piece checks out: each image is in this
     round's pack, each report quote is in report.json. A new note that repeats a checklist note is dropped (the checklist
@@ -257,8 +272,7 @@ def verify(rev, rd, prev):
             (keep if proved(p.get("evidence")) else drop).append(dict(prev[n - 1], evidence=p.get("evidence"), still_open=True,
                                                                       **({} if proved(p.get("evidence")) else {"dropped": "still_wrong without evidence from this cut"})))
     rev.update(issues=keep, dropped=drop, critic_said_approved=rev.get("approved"))
-    rev["approved"] = not any(x.get("severity") in ("blocker", "major") and x.get("owner", "script") != "renderer" for x in keep)
-    return rev
+    return gate(rev)
 
 
 def remember(path, items, slot, field):
@@ -296,7 +310,7 @@ def unstick(rev, slot):
     if stuck:
         remember(TODO, [dict(x, what="STUCK (the writer could not change it in 3 rounds): " + x.get("what", "")) for x in stuck], slot, "what")
         rev.update(issues=keep, stuck=stuck)
-        rev["approved"] = not any(x.get("severity") in ("blocker", "major") and x.get("owner", "script") != "renderer" for x in keep)
+        gate(rev)
     return rev
 
 
@@ -312,7 +326,7 @@ def run(cmd, **env):
 def loop(work, out):
     """Voice, render, review, rewrite... as many rounds as it takes, until he approves. Each rewrite touches only the
     scenes his checked notes name; only their lines are voiced again and only their frames go in the next pack."""
-    slot = os.path.basename(os.path.normpath(work)); prev, old = [], None
+    slot = os.path.basename(os.path.normpath(work)); prev, old, held = [], None, 0
     rd = os.path.join(work, "review")
     for rnd in itertools.count(1):
         scenes = json.load(open(os.path.join(work, "spec.json")))["scenes"]
@@ -336,6 +350,13 @@ def loop(work, out):
                 except (SystemExit, subprocess.TimeoutExpired, ValueError) as e:   # (the critic call failed: wait, ask again)
                     print(f"critic round {rnd}: no review ({str(e)[:200]}); asking again in 5 minutes", flush=True); time.sleep(300)
         rev = unstick(rev, slot)
+        own = [x for x in rev.get("issues", []) if x.get("owner", "script") != "renderer" and x.get("where") != "automatic check"]
+        held = 0 if rev["approved"] or own or rev.get("scores") is None else held + 1   # (sent back with nothing the writer can fix)
+        if held >= 3:                                     # (three rounds held up by the template alone: hold the reel, post nothing)
+            remember(TODO, [{"what": "HELD: " + (rev.get("verdict") or ""), "owner": "renderer", "where": slot, "fix": "fix the template",
+                             "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
+            json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
+            raise SystemExit(f"held after round {rnd}: the template, not the script, keeps it below the bar ({rev.get('verdict', '')[:200]}); nothing is posted")
         json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
         print(f"critic round {rnd}: {'APPROVED' if rev['approved'] else 'sent back'} {rev.get('scores')} - {rev.get('verdict', '')}", flush=True)
         for x in rev.get("issues", []):
@@ -394,6 +415,10 @@ def demo():
         v = unstick(verify({"issues": [], "previous": [{"n": 1, "status": "still_wrong", "evidence": note["evidence"]}]}, rd, v["issues"] or v["stuck"]), "t")
     assert v["approved"] and v["stuck"][0]["rounds_open"] == 3 and "STUCK" in json.load(open(TODO))[0]["what"]
     TODO = old
+    S8 = {"sync": 8, "visuals": 8, "audio": 9, "content": 8}
+    assert not gate({"scores": dict(S8, visuals=6), "issues": []})["approved"]                       # (a 6 on visuals does not post)
+    assert not gate({"scores": S8, "issues": [{"severity": "major", "owner": "renderer"}]})["approved"]   # (a template fault blocks)
+    assert gate({"scores": S8, "issues": [{"severity": "minor"}]})["approved"]
     print("verify ok")
 
 

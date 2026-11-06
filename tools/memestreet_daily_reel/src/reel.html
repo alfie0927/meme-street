@@ -5,8 +5,6 @@
 <style>
 html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b;font-family:'Cascadia Mono',monospace,monospace;color:#e6e9ec}
 #bg{position:absolute;inset:0}
-#bgloop{position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0}
-#chart,#stage svg{filter:drop-shadow(0 0 6px rgba(79,198,200,.35))}   /* (the neon house style on the 2D parts too) */
 #film{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover;opacity:0}
 #fshade{position:absolute;inset:0;opacity:0;background:linear-gradient(to bottom,rgba(5,7,9,.9) 0%,rgba(5,7,9,.45) 27%,rgba(5,7,9,0) 42%,rgba(5,7,9,0) 58%,rgba(5,7,9,.6) 68%,rgba(5,7,9,.92) 100%)}
 .head,.caps{text-shadow:0 2px 14px rgba(0,0,0,.85)}
@@ -19,20 +17,17 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .head b{display:inline-block;margin-right:20px;padding:8px 18px;border-radius:16px;background:#e8b14a;color:#07121a;font-size:44px;vertical-align:middle}
 #stage{position:absolute;left:0;top:0;width:1080px;height:1920px}
 .opts{position:absolute;left:62px;right:62px;top:1180px;height:104px;display:flex;gap:16px}
-.opt{flex:1;height:104px;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:20px;background:#13171ce6;border:3px solid #2c4a4c;box-shadow:0 0 22px rgba(79,198,200,.18);text-align:center;font:700 32px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
+.opt{flex:1;height:104px;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:20px;background:#13171c;border:3px solid #2a2f35;text-align:center;font:700 32px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
 .caps{position:absolute;z-index:3;left:70px;right:70px;top:1305px;max-height:120px;text-align:center;font:700 46px/1.3 'Cascadia Mono',monospace;color:#e6e9ec}
 .caps span{display:inline-block;margin:0 9px;transition:none}
-.card{position:absolute;left:62px;right:62px;height:150px;border-radius:24px;background:#0d1116e6;border:3px solid #2c4a4c;box-shadow:0 0 28px rgba(79,198,200,.22);display:flex;align-items:center;gap:28px;padding:0 34px;box-sizing:border-box}
+.card{position:absolute;left:62px;right:62px;height:150px;border-radius:24px;background:#0d1116;border:3px solid #23282e;display:flex;align-items:center;gap:28px;padding:0 34px;box-sizing:border-box}
 .card .ic{width:100px;height:100px;flex:none}.card .tx{font:700 46px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
 .big{position:absolute;left:60px;right:60px;top:560px;height:560px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;text-align:center;font:700 92px/1.15 'Cascadia Mono',monospace;letter-spacing:-2px}
 .big span{display:inline-block;margin:0 18px}
-.wlab{position:absolute;transform:translate(-50%,-100%);padding:8px 16px;border-radius:12px;background:#0b0f13d9;border:2.5px solid;font:700 38px/1 'Cascadia Mono',monospace;white-space:nowrap}
-</style>
-<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js"}}</script>
-</head><body>
+.slab{position:absolute;transform:translate(-50%,-100%);padding:8px 16px;border-radius:12px;background:#0b0f13e6;border:2.5px solid;font:700 36px/1 'Cascadia Mono',monospace;white-space:nowrap}
+</style></head><body>
 <svg id="bg" width="1080" height="1920"></svg>
-<img id="bgloop" alt=""><img id="film" alt=""><div id="fshade"></div>
-<canvas id="world" width="540" height="960" style="position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0;-webkit-mask-image:linear-gradient(to bottom,transparent 500px,#000 610px);mask-image:linear-gradient(to bottom,transparent 500px,#000 610px)"></canvas><!-- (the 3D fades out above the stage: nothing ever rises into the title) --><div id="wlabs"></div>
+<img id="film" alt=""><div id="fshade"></div>
 <div class="hdr"><div class="l"><img src="../assets/logo.png">Meme Street</div><div class="tag" id="tag"></div></div>
 <div class="prog"><i id="prog"></i></div>
 <div class="head" id="head"></div>
@@ -92,7 +87,7 @@ function drawings(i,t){ // lines, marks and shades of this scene (and the scenes
  const seen=new Set();   // (a candle marked again later keeps only its newest mark: two tags on one candle push each other off it)
  return out.filter(c=>c.age>=-.05).filter(c=>c.do==='mark'?c.side==='vol'||!seen.has(c.i)&&seen.add(c.i):c.do==='line'?!seen.has('p'+Math.round(c.price*1000))&&seen.add('p'+Math.round(c.price*1000)):true)}   // (one line per price, the newest)
 function drawChart(i,t){
- const S=chartState(i,t),el=document.getElementById('chart');if(!S||SC[i].film||SC[i].layout){el.innerHTML='';return}   // (a video shot fills the frame)
+ const S=chartState(i,t),el=document.getElementById('chart');if(!S||SC[i].film){el.innerHTML='';return}   // (a video shot fills the frame)
  const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
  const short=k=>k<0||SC[k].kind==='stick'||SC[k].kind==='question'||(SC[k].kind==='answer'&&k>0&&SC[k-1].kind==='question'),hh0=k=>short(k)?620:740,
   bh=i>0&&SC[i-1].chart===s.chart?lerp(hh0(i-1),hh0(i),io(seg(t,s.t0,s.t0+.6))):hh0(i);   // (eased, so the chart never jumps)
@@ -179,6 +174,106 @@ function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.P
   if(byy<550){const left=ex>540;bx=left?ex-36*sc-w-20:ex+36*sc+20;bx=Math.max(40,Math.min(1040-w,bx));byy=ey-32;tail=left?`M${bx+w-2} ${byy+20}L${bx+w+20} ${byy+32}L${bx+w-2} ${byy+44}Z`:`M${bx+2} ${byy+20}L${bx-20} ${byy+32}L${bx+2} ${byy+44}Z`}   // (no room above: beside the head)
   g+=`<g class="qa" transform="translate(${ex} ${byy+60}) scale(${a}) translate(${-ex} ${-(byy+60)})"><rect x="${bx}" y="${byy}" width="${w}" height="64" rx="20" fill="#e6e9ec"/><path d="${tail}" fill="#e6e9ec"/><text x="${bx+w/2}" y="${byy+42}" text-anchor="middle" font-size="${bf}" font-weight="700" fill="#07121a">${txt}</text></g>`}
  return g+'</g>'}
+// ---- 2D animated story scenes (the PhaseJump look: flat neon line art on near-black). A story scene is
+// {"kind":"story","layout":"flow|network|hero|grow|risk|compare","props":[{"p","color","label","t"}]}; every prop pops in on
+// its word (narrate.py times "say") and then idles gently; nothing moves fast, the camera never moves.
+const SCOL={teal:'#4fc6c8',green:'#3dd68c',amber:'#e8b14a',red:'#f0585c',purple:'#9b7bff',white:'#e6e9ec',grey:'#5a636e'};
+const sc2=p=>SCOL[(p||{}).color]||SCOL.teal;
+const ln=(c,w=4)=>`fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
+const bd=(c,w=4)=>`fill="#0b0f13" fill-opacity=".85" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"`;
+// every prop is drawn standing on (0,0), about 200 px tall, facing right; u = seconds since it appeared
+const PROP2D={
+ portal(c,u){let g='';for(let k=0;k<3;k++)g+=`<ellipse cx="0" cy="-110" rx="${62-k*12}" ry="${108-k*16}" ${ln(c,k?2.5:5)} opacity="${1-k*.25}" stroke-dasharray="${k?'14 10':'none'}" stroke-dashoffset="${-u*30*(k%2?1:-1)}"/>`;
+  g+=`<ellipse cx="0" cy="-110" rx="44" ry="80" fill="${c}" opacity=".10"/>`;
+  for(let k=0;k<5;k++){const a=k/5*Math.PI*2+u*1.1;g+=`<circle cx="${Math.cos(a)*62}" cy="${-110+Math.sin(a)*108}" r="4" fill="#fff"/>`}
+  return g+`<ellipse cx="0" cy="0" rx="70" ry="10" fill="${c}" opacity=".18"/>`},
+ crate(c){return `<rect x="-45" y="-90" width="90" height="90" rx="8" ${bd(c)}/><line x1="-45" y1="-45" x2="45" y2="-45" ${ln(c,3)}/><line x1="-22" y1="-90" x2="-22" y2="0" ${ln(c,2)} opacity=".5"/><line x1="22" y1="-90" x2="22" y2="0" ${ln(c,2)} opacity=".5"/>`},
+ node(c,u){return `<circle cx="0" cy="-20" r="${16+2*Math.sin(u*2)}" fill="${c}"/><circle cx="0" cy="-20" r="30" fill="${c}" opacity=".18"/>`},
+ building(c){let g=`<rect x="-50" y="-230" width="100" height="230" rx="4" ${bd(c)}/>`;for(let k=0;k<6;k++)g+=`<line x1="-34" y1="${-200+k*34}" x2="34" y2="${-200+k*34}" ${ln(c,3)} opacity=".55" stroke-dasharray="10 8"/>`;return g},
+ city(c){return [[-120,150],[-55,230],[15,190],[80,260],[140,120]].map(([x,h])=>`<rect x="${x-28}" y="${-h}" width="56" height="${h}" rx="3" ${bd(c,3.5)}/><line x1="${x-14}" y1="${-h+24}" x2="${x+14}" y2="${-h+24}" ${ln(c,2.5)} opacity=".5"/>`).join('')},
+ factory(c,u){let g=`<path d="M-110 0 V-90 L-60 -130 V-90 L-10 -130 V-90 L40 -130 V-90 H110 V0 Z" ${bd(c)}/><rect x="70" y="-200" width="26" height="110" ${bd(c,3.5)}/>`;
+  for(let k=0;k<3;k++){const q=(u*.35+k/3)%1;g+=`<circle cx="${83+q*20}" cy="${-215-q*90}" r="${8+q*16}" ${ln(SCOL.grey,3)} opacity="${(1-q)*.8}"/>`}
+  return g+`<rect x="-80" y="-60" width="34" height="34" rx="3" ${ln(c,2.5)} opacity=".6"/><rect x="-20" y="-60" width="34" height="34" rx="3" ${ln(c,2.5)} opacity=".6"/>`},
+ warehouse(c){return `<path d="M-120 0 V-100 Q0 -180 120 -100 V0 Z" ${bd(c)}/><rect x="-35" y="-70" width="70" height="70" rx="3" ${ln(c,3)} opacity=".7"/><line x1="-35" y1="-46" x2="35" y2="-46" ${ln(c,2)} opacity=".5"/><line x1="-35" y1="-22" x2="35" y2="-22" ${ln(c,2)} opacity=".5"/>`},
+ truck(c,u){const w=u*4;return `<rect x="-120" y="-110" width="150" height="85" rx="6" ${bd(c)}/><path d="M30 -25 V-85 H80 L110 -55 V-25 Z" ${bd(c)}/>`+[-85,-20,75].map(x=>`<circle cx="${x}" cy="-14" r="16" ${bd(c,4)}/><line x1="${x}" y1="-14" x2="${x+Math.cos(w)*12}" y2="${-14+Math.sin(w)*12}" ${ln(c,2.5)}/>`).join('')},
+ ship(c,u){return `<path d="M-140 -50 H150 L115 0 H-115 Z" ${bd(c)}/>`+[[-95,SCOL.amber],[-40,SCOL.teal],[15,SCOL.purple],[70,SCOL.amber]].map(([x,k])=>`<rect x="${x}" y="-95" width="48" height="45" rx="3" ${bd(k,3)}/>`).join('')+`<rect x="-140" y="-140" width="34" height="90" ${bd(c,3.5)}/><path d="M-170 12 ${Array.from({length:8},(_,i)=>`Q${-150+i*45} ${8+6*Math.sin(u*2+i)} ${-130+i*45} 12`).join(' ')}" ${ln(c,3)} opacity=".6"/>`},
+ plane(c){return `<path d="M-130 -100 Q-140 -118 -110 -118 H90 Q140 -118 150 -100 Q140 -84 90 -84 H-110 Q-140 -84 -130 -100 Z" ${bd(c)}/><path d="M-10 -100 L-60 -30 H-25 L40 -100 Z" ${bd(c,3.5)}/><path d="M-10 -110 L-50 -165 H-20 L35 -112" ${bd(c,3.5)}/><path d="M-115 -110 L-135 -150 H-112 L-92 -112" ${bd(c,3)}/>`},
+ rocket(c,u){const f=1+.12*Math.sin(u*6);return `<path d="M0 -260 Q40 -200 40 -110 V-40 H-40 V-110 Q-40 -200 0 -260 Z" ${bd(c)}/><circle cx="0" cy="-160" r="16" ${ln(c,3.5)}/><path d="M-40 -90 L-70 -20 H-40 M40 -90 L70 -20 H40" ${bd(c,3.5)}/><path d="M-26 -36 Q0 ${-36+60*f} 26 -36 Z" fill="${SCOL.amber}" opacity=".85"/>`},
+ drone(c,u){let g=`<rect x="-50" y="-140" width="100" height="34" rx="10" ${bd(c)}/><line x1="-110" y1="-150" x2="110" y2="-150" ${ln(c,3)}/>`;
+  for(const x of [-110,110])g+=`<ellipse cx="${x}" cy="-158" rx="${40*Math.abs(Math.cos(u*3))+8}" ry="6" ${ln(c,3)}/>`;
+  return g+`<line x1="0" y1="-106" x2="0" y2="-70" ${ln(c,3)}/><rect x="-22" y="-70" width="44" height="40" rx="4" ${bd(SCOL.amber,3)}/>`},
+ train(c){return [-150,-30,90].map((x,k)=>`<rect x="${x-55}" y="-100" width="110" height="78" rx="${k?6:22}" ${bd(c)}/><line x1="${x-38}" y1="-74" x2="${x+38}" y2="-74" ${ln(c,3)} opacity=".6"/><circle cx="${x-30}" cy="-14" r="11" ${bd(c,3)}/><circle cx="${x+30}" cy="-14" r="11" ${bd(c,3)}/>`).join('')+`<line x1="-230" y1="0" x2="170" y2="0" ${ln(c,3)} opacity=".5"/>`},
+ coin(c,u){const sx=Math.abs(Math.cos(u*1.4))*.9+.1;return `<g transform="translate(0 -70) scale(${sx} 1)"><circle r="60" ${bd(c)}/><circle r="42" ${ln(c,3)} opacity=".6"/><path d="M-16 18 V-18 L0 2 L16 -18 V18" ${ln(c,5)}/></g>`},
+ coins(c){let g='';for(let k=0;k<5;k++)g+=`<ellipse cx="${(k%2)*6-3}" cy="${-14-k*22}" rx="62" ry="16" ${bd(c,3.5)}/>`;return g},
+ bar(c){return `<rect x="-38" y="-200" width="76" height="200" rx="6" ${bd(c)}/><line x1="-38" y1="-200" x2="38" y2="-200" ${ln(c,7)}/>`},
+ arrow(c){return `<path d="M0 -230 L70 -150 H28 V0 H-28 V-150 H-70 Z" ${bd(c)}/>`},
+ shield(c){return `<path d="M0 -230 Q60 -215 90 -200 Q90 -60 0 0 Q-90 -60 -90 -200 Q-60 -215 0 -230 Z" ${bd(c)}/><path d="M-34 -118 L-8 -90 L40 -146" ${ln(c,7)}/>`},
+ warning(c){return `<path d="M0 -200 L100 -20 H-100 Z" ${bd(c,5)}/><line x1="0" y1="-140" x2="0" y2="-80" ${ln(c,9)}/><circle cx="0" cy="-50" r="6" fill="${c}"/>`},
+ gear(c,u){let d='';for(let k=0;k<=20;k++){const a=k/20*Math.PI*2+u*.5,r=k%2?70:88;d+=(k?'L':'M')+(Math.cos(a)*r).toFixed(1)+' '+(-110+Math.sin(a)*r).toFixed(1)}return `<path d="${d}Z" ${bd(c)}/><circle cx="0" cy="-110" r="26" ${ln(c,4)}/>`},
+ flask(c,u){let g=`<path d="M-22 -210 V-140 L-80 -20 Q-86 0 -64 0 H64 Q86 0 80 -20 L22 -140 V-210" ${bd(c)}/><path d="M-62 -40 L-48 -66 H48 L62 -40 Q66 -10 50 -10 H-50 Q-66 -10 -62 -40 Z" fill="${SCOL.green}" opacity=".45"/><line x1="-34" y1="-210" x2="34" y2="-210" ${ln(c,5)}/>`;
+  for(let k=0;k<4;k++){const q=(u*.5+k/4)%1;g+=`<circle cx="${Math.sin(k*2.3)*20}" cy="${-30-q*150}" r="6" ${ln(SCOL.green,3)} opacity="${1-q}"/>`}return g},
+ battery(c,u){let g=`<rect x="-55" y="-200" width="110" height="200" rx="12" ${bd(c)}/><rect x="-22" y="-218" width="44" height="18" rx="4" ${bd(c,3)}/>`;const n=1+Math.floor((u*.8)%4);
+  for(let k=0;k<4;k++)g+=`<rect x="-38" y="${-44-k*44}" width="76" height="32" rx="4" fill="${SCOL.green}" opacity="${k<n?.6:.08}"/>`;return g},
+ chip(c){let g=`<rect x="-80" y="-180" width="160" height="160" rx="12" ${bd(c)}/><rect x="-40" y="-140" width="80" height="80" rx="6" ${ln(c,3)} opacity=".6"/>`;for(let k=0;k<5;k++){const v=-160+k*30;g+=`<line x1="-80" y1="${v+20}" x2="-104" y2="${v+20}" ${ln(c,3)}/><line x1="80" y1="${v+20}" x2="104" y2="${v+20}" ${ln(c,3)}/>`}return g},
+ pipe(c,u){const d='M-180 -60 H-70 Q-40 -60 -40 -110 V-130 Q-40 -160 -10 -160 H10 Q40 -160 40 -130 V-110 Q40 -60 70 -60 H180';let g=`<path d="${d}" ${ln(c,12)} opacity=".35"/><path d="${d}" ${ln(c,4)}/>`;
+  return g+`<path d="${d}" ${ln('#fff',8)} stroke-dasharray="2 60" stroke-dashoffset="${-u*80}"/>`},
+ tree(c){return `<rect x="-8" y="-60" width="16" height="60" ${bd(c,3)}/><path d="M0 -230 L60 -150 H30 L75 -90 H-75 L-30 -150 H-60 Z" ${bd(SCOL.green)}/>`},
+ mountain(c){return `<path d="M-200 0 L-90 -170 L-40 -100 L30 -230 L200 0 Z" ${bd(c)}/><path d="M30 -230 L5 -185 L30 -195 L52 -180 Z" fill="${SCOL.white}" opacity=".7"/>`},
+ wave(c,u){let g='';for(let k=0;k<3;k++){let d='';for(let i=0;i<=24;i++){const x=-200+i*400/24;d+=(i?'L':'M')+x.toFixed(0)+' '+(-40-k*36+14*Math.sin(x/40+u*1.6+k)).toFixed(1)}g+=`<path d="${d}" ${ln(c,4)} opacity="${1-k*.28}"/>`}return g},
+ person(c){return `<circle cx="0" cy="-185" r="26" ${bd(c)}/><path d="M0 -158 V-80 M0 -80 L-30 0 M0 -80 L30 0 M-42 -130 L0 -140 L42 -130" ${ln(c,5)}/>`},
+ dragon(c,u){const f=Math.sin(u*2.2),wing=`<path d="M-10 -120 Q-40 ${-210-50*f} 30 ${-250-40*f} Q50 ${-200-30*f} 70 ${-190-25*f} Q60 -150 30 -125 Z" ${bd(c,4)} fill-opacity=".55"/>`;
+  return `<path d="M-150 -95 Q-120 -60 -70 -95 Q-30 -125 40 -118 Q90 -112 110 -140 Q130 -165 160 -158 L175 -150 L158 -140 Q140 -138 128 -118 Q100 -82 40 -80 Q-20 -76 -70 -70 Q-115 -55 -150 -95 Z" ${bd(c)}/>`+
+   `<path d="M158 -158 L150 -182 L166 -162 M140 -162 L128 -184 L146 -164" ${ln(c,3.5)}/><circle cx="160" cy="-150" r="4" fill="${SCOL.amber}"/><path d="M-150 -95 L-178 -112 L-168 -88 Z" ${bd(c,3.5)}/>`+
+   `<path d="M-20 -78 L-30 -30 M40 -80 L45 -32" ${ln(c,5)}/>`+wing},
+ bird(c,u){const f=Math.sin(u*3);return `<path d="M-60 -120 Q0 -95 60 -120 Q20 -128 0 -118 Q-20 -128 -60 -120 Z" ${bd(c,3.5)}/><path d="M-5 -120 Q-60 ${-150-40*f} -120 ${-140-50*f} M5 -120 Q60 ${-150-40*f} 120 ${-140-50*f}" ${ln(c,4.5)}/><circle cx="62" cy="-122" r="4" fill="${SCOL.amber}"/>`},
+ fish(c,u){const w=14*Math.sin(u*2.5);return `<path d="M-90 -100 Q-20 -160 90 -100 Q-20 -40 -90 -100 Z" ${bd(c)}/><path d="M-88 -100 L-150 ${-140+w} L-140 -100 L-150 ${-60+w} Z" ${bd(c,3.5)}/><circle cx="55" cy="-108" r="6" fill="${c}"/>`},
+};
+// draw one prop: at (x,y), scale k, popping in at t0, idling gently; returns svg
+function prop2d(p,x,y,k,t,t0,j){const a=t0==null?1:back(seg(t,t0-.05,t0+.35)),u=Math.max(0,t-(t0||0));if(a<=0)return '';const f=PROP2D[(p||{}).p]||PROP2D.crate;
+ return `<g transform="translate(${x} ${(y+4*Math.sin(t*1.2+j)).toFixed(1)}) scale(${(k*(.85+.15*a)).toFixed(3)})" opacity="${cl(a).toFixed(3)}">${f(sc2(p),u)}</g>`}
+const STAGE={x0:80,x1:1000,ground:1180,top:600};
+function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?P[k].t:null,G=STAGE.ground,lay=s.layout||'hero';let g='';
+ const lab=(k,x,y)=>{if(P[k]&&P[k].label)L.push({text:P[k].label,x,y,color:sc2(P[k]),a:T0(k)==null?1:cl(seg(t,T0(k),T0(k)+.3))})};
+ g+=`<line x1="${STAGE.x0}" y1="${G}" x2="${STAGE.x1}" y2="${G}" stroke="#4fc6c8" stroke-width="2" opacity=".25"/>`;
+ if(lay==='flow'){const st=P.slice(0,Math.max(1,P.length-1)).slice(0,3),mv=P.length>1?P[P.length-1]:{p:'crate',color:'amber'},n=st.length,xs=st.map((_,k)=>n===1?540:220+640*k/(n-1)),portal=n>1&&st.every(p=>p.p==='portal');
+  st.forEach((p,k)=>{g+=prop2d(p,xs[k],G,1.7,t,T0(k),k);lab(k,xs[k],G-420)});
+  const a0=T0(P.length-1)??s.vs;for(let j=0;j<3;j++){const q=((Math.max(0,t-a0)*.11+j/3)%1),x=STAGE.x0+(STAGE.x1-STAGE.x0)*q,inGap=portal&&x>xs[0]&&x<xs[n-1],near=Math.min(...xs.map(v=>Math.abs(x-v)));
+   if(t>=a0&&!inGap){const o=portal?cl(near/60):1;g+=`<g opacity="${o.toFixed(2)}">${prop2d(mv,x,G,1,t,null,j+5)}</g>`}}
+  lab(P.length-1,STAGE.x0+60,G-110)}
+ else if(lay==='network'){const N=Math.max(P.length,6),cx=540,cy=900,R=300,pts=Array.from({length:N},(_,k)=>{const a=-Math.PI/2+k/N*Math.PI*2;return [cx+Math.cos(a)*R,cy+Math.sin(a)*R]});
+  const on=k=>T0(k)??s.vs+.3+k*.35;g+=`<circle cx="${cx}" cy="${cy}" r="${R+40}" ${ln('#4fc6c8',2)} opacity=".18"/>`;
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const tt=Math.max(on(i),on(j)),q=out(seg(t,tt,tt+.5));if(q<=0)continue;const [x1,y1]=pts[i],[x2,y2]=pts[j];
+   g+=`<line x1="${x1}" y1="${y1}" x2="${(x1+(x2-x1)*q).toFixed(1)}" y2="${(y1+(y2-y1)*q).toFixed(1)}" stroke="#9b7bff" stroke-width="2.5" opacity=".55"/>`}
+  pts.forEach(([x,y],k)=>{g+=prop2d(P[k]||{p:'node',color:'teal'},x,y+20,1.3,t,on(k),k);const out_=(y<cy?-1:1);lab(k,x,y+(out_<0?-50:90))})}
+ else if(lay==='hero'){const fly=['dragon','bird','plane','drone','fish','rocket'].includes((P[0]||{}).p),slots=fly?[[200,G],[540,G],[880,G]]:[[190,G],[890,G],[330,G-150],[750,G-150]];   // (a flier leaves the middle free; side props never touch)
+  P.slice(1,1+slots.length).forEach((p,k)=>{g+=prop2d(p,slots[k][0],slots[k][1],1.05,t,T0(k+1),k+1);lab(k+1,slots[k][0],slots[k][1]-280)});
+  if(fly){const w=.35*(t-(T0(0)??s.vs)),x=540+260*Math.sin(w),y=760+40*Math.sin(2*w),dir=Math.cos(w)>=0?1:-1;
+   g+=`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) scale(${dir} 1) translate(${-x.toFixed(1)} ${-y.toFixed(1)})">${prop2d(P[0],x,y+150,1.6,t,T0(0),0)}</g>`;lab(0,x,y-260)}
+  else{g+=prop2d(P[0]||{p:'building'},540,G,2.1,t,T0(0),0);lab(0,540,G-520)}}
+ else if(lay==='grow'){const n=Math.max(3,Math.min(5,P.length||4)),on=k=>T0(k)??s.vs+.4+k*.5;
+  for(let k=0;k<n;k++){const x=200+600*k/(n-1),h=(130+k*(380/(n-1)))*out(seg(t,on(k),on(k)+.8));if(h<=0)continue;
+   g+=`<rect x="${x-55}" y="${G-h}" width="110" height="${h}" rx="8" ${bd(SCOL.green)}/><line x1="${x-55}" y1="${G-h}" x2="${x+55}" y2="${G-h}" ${ln(SCOL.green,8)}/>`;lab(k,x,G-h-40)}
+  const ar=out(seg(t,on(n-1),on(n-1)+1));if(ar>0)g+=`<g opacity="${ar}">${prop2d({p:'arrow',color:'green'},940,G-430-ar*60,.75,t,null,9)}</g>`}
+ else if(lay==='risk'){const hit=k=>T0(k+1)??s.vs+.6+k*.9,first=hit(0),red=seg(t,first,first+.6),wob=2*Math.sin((t-first)*5)*Math.max(0,1-(t-first)/1.5)*(t>=first?1:0),slots=[[190,G-200],[890,G-200],[540,G-560]];
+  const h=Object.assign({},P[0]||{p:'building',color:'teal'});g+=`<g transform="rotate(${wob.toFixed(2)} 540 ${G})">${prop2d(h,540,G,2,t,T0(0),0)}</g>`;
+  if(red>0)g+=`<g opacity="${(red*.75).toFixed(2)}">${prop2d(Object.assign({},h,{color:'red'}),540,G,2,t,null,0)}</g>`;lab(0,540,G-490);
+  P.slice(1,4).forEach((p,k)=>{const a=out(seg(t,hit(k)-.45,hit(k)));if(a<=0)return;const [tx,ty]=slots[k],sx=tx<540?-260:tx>540?260:0,sy=tx===540?-200:0;
+   g+=prop2d(Object.assign({p:'warning',color:'red'},p),tx+sx*(1-a),ty+sy*(1-a),1,t,null,k+1);lab(k+1,tx,ty-230)})}
+ else if(lay==='compare'){const mv=P[2]||{p:'crate',color:'amber'},card=(x,c,title)=>`<rect x="${x}" y="${STAGE.top+20}" width="440" height="${G-STAGE.top}" rx="22" fill="#0b0f13" stroke="${c}" stroke-width="3" opacity=".9"/>`;
+  g+=card(70,SCOL.grey)+card(570,sc2(P[1]||{color:'teal'}));
+  const path='M120 1080 C 220 900, 300 1120, 380 940 S 420 760, 470 820';g+=`<path d="${path}" ${ln(SCOL.grey,3)} stroke-dasharray="10 10" opacity=".6"/>`;
+  const q1=((t-s.t0)*.07)%1,pt=[[120,1080],[220,960],[300,1060],[380,940],[440,830],[470,820]],i=Math.min(4,Math.floor(q1*5)),f=q1*5-i,px=pt[i][0]+(pt[i+1][0]-pt[i][0])*f,py=pt[i][1]+(pt[i+1][1]-pt[i][1])*f;
+  g+=prop2d(Object.assign({},mv,{color:'grey'}),px,py+30,.55,t,null,7);
+  g+=prop2d(Object.assign({},P[0]||{p:'truck'},{color:'grey'}),290,G-20,.7,t,T0(0),0);
+  const two=(P[1]||{}).p==='portal';if(two){g+=prop2d(P[1],660,G-20,.85,t,T0(1),1)+prop2d(Object.assign({},P[1],{color:'purple'}),920,G-20,.85,t,T0(1),2)}else g+=prop2d(P[1]||{p:'portal'},790,G-20,.9,t,T0(1),1);
+  const q2=((t-s.t0)*.45)%1,fx=600+380*q2;if(!two||fx<660||fx>920)g+=prop2d(mv,fx,G-30,.5,t,null,8);
+  lab(0,290,STAGE.top+70);lab(1,790,STAGE.top+70)}
+ const labs=L.filter(l=>l.a>0).sort((a,b)=>a.y-b.y),placed=[];
+ const html=labs.map(l=>{const w=l.text.length*23+40;let x=Math.max(70+w/2,Math.min(1010-w/2,l.x)),y=Math.max(STAGE.top,Math.min(1240,l.y));
+  while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+8&&Math.abs(q[1]-y)<56))y+=58;placed.push([x,y,w]);
+  return `<div class="slab qa" style="left:${x}px;top:${y}px;color:${l.color};border-color:${l.color};opacity:${l.a}">${esc(l.text)}</div>`}).join('');
+ const fade=out(seg(t,s.t0,s.t0+.35));
+ return `<svg style="position:absolute;left:0;top:0;opacity:${fade}" width="1080" height="1920"><defs><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g filter="url(#sglow)">${g}</g></svg>`+html}
 function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
  if(s.chart!=null)return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920">${drawFigure(s,F[0],0,t,912,1150,1.25,300)}</svg>`;
  const n=F.length,sc=n===1?1.9:n===2?1.55:1.25,xs=n===1?[540]:n===2?[330,750]:[220,540,860];
@@ -186,23 +281,12 @@ function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
 const fit=(el,maxH,base,min=18)=>{let f=base;el.style.fontSize=f+'px';while(el.scrollHeight>maxH+1&&f>min){f-=2;el.style.fontSize=f+'px'}};   // (text shrinks to its box: no overlaps)
 function render(T){
  const i=sceneAt(T),s=SC[i],p=SC[Math.max(0,i-1)],t=T;
- // the neon backdrop (the house style everywhere): a pre-rendered 10 s loop of the 3D floor, behind every scene that is not 3D itself
- const bl=document.getElementById('bgloop');let bp=null;
- if(!s.layout&&!s.film&&s.kind!=='outro'){const src='../assets/backdrop/f'+String(Math.floor(T*30)%300+1).padStart(5,'0')+'.jpg';
-  if(bl.getAttribute('src')!==src){bl.setAttribute('src',src);bp=bl.decode().catch(()=>{})}bl.style.opacity=1}else bl.style.opacity=0;
  // a realistic video shot (footage.py via narrate.py): full screen behind the titles and captions, a slow push-in
  const fm=document.getElementById('film'),fs=document.getElementById('fshade');let fp=null;
  if(s.film){const k=Math.max(0,Math.min(s.film.n-1,Math.floor((T-Math.max(0,s.t0))*s.film.fps))),src='file://'+s.film.dir+'/f'+String(k+1).padStart(5,'0')+'.jpg';
   if(fm.getAttribute('src')!==src){fm.setAttribute('src',src);fp=fm.decode().catch(()=>{})}
   const fa=out(seg(T,s.t0,s.t0+.3));fm.style.opacity=fa;fs.style.opacity=fa;fm.style.transform=`scale(${1.02+.05*seg(T,s.t0,s.t1)})`}
  else{fm.style.opacity=0;fs.style.opacity=0}
- // a neon 3D scene (world.js): a layout and props, drawn by WebGL under the titles and captions, its labels as text here
- const wc=document.getElementById('world'),wl=document.getElementById('wlabs');let wp=null;
- if(s.layout){wc.style.opacity=out(seg(T,s.t0,s.t0+.3));fs.style.opacity=wc.style.opacity;wp=window.worldLoad.then(()=>window.drawWorld(wc,s,T)).then(L=>{const placed=[];
-  wl.innerHTML=L.sort((a,b)=>a.y-b.y).map(l=>{let y=Math.max(600,Math.min(1250,l.y));const w=l.text.length*23+40,x=Math.max(70+w/2,Math.min(1010-w/2,l.x));
-   while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+8&&Math.abs(q[1]-y)<54))y+=56;placed.push([x,y,w]);   // (labels never stack on each other)
-   return `<div class="wlab qa" style="left:${x}px;top:${y}px;color:${l.color};border-color:${l.color};opacity:${wc.style.opacity}">${esc(l.text)}</div>`}).join('')})}
- else{wc.style.opacity=0;wl.innerHTML=''}
  drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
@@ -214,6 +298,7 @@ function render(T){
  if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(230,720/Math.max(1,N)),y=560+(720-N*gap)/2+k*gap;   // (the stack fills the stage down to the captions)
   st+=`<div class="card qa" style="top:${y}px;height:${gap-24}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
  if(s.kind==='stick')st+=drawSticks(s,t);
+ if(s.kind==='story')st+=drawStory(s,t);
  if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
@@ -235,9 +320,8 @@ function render(T){
  // the end card
  const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.type==='Daily recap'?R.daily:null;   /* (the Daily Chart line only on a reel about it) */document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,s.t0+.25,s.t0+.6)),eU=document.getElementById('oUrl'),eD=document.getElementById('oDaily');eD.style.opacity=out(seg(t,s.t0+.15,s.t0+.45));eD.style.transform=`scale(${1+.08*Math.sin(Math.PI*seg(t,tD-.05,tD+.35))})`;eU.style.opacity=cl(uU);eU.style.transform=`scale(${(.7+.3*uU)*(1+.1*Math.sin(Math.PI*seg(t,tU-.05,tU+.4)))})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
  document.body.style.opacity=1;
- return Promise.all([fp,wp,bp,new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))])}
+ return Promise.all([fp,new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))])}
 window.render=render;
-window.worldLoad=new Promise(r=>window._wr=r);
 // the overlap check (render.py runs it through the reel): every visible piece of text, measured as drawn; any two that
 // touch are reported, and a reel with any is not posted
 window.qa=async T=>{await render(T);const els=[document.getElementById('head'),document.getElementById('caps'),...document.querySelectorAll('.opt,.qa')];
@@ -253,5 +337,4 @@ window.cover=async date=>{const k=Math.max(0,SC.findIndex(s=>s.chart!=null&&s.ki
  document.getElementById('caps').innerHTML='';document.getElementById('opts').innerHTML='';document.querySelector('.prog').style.display='none';
  const hd=document.getElementById('head');hd.innerHTML=esc(R.title||'');hd.style.cssText='opacity:1;font-size:80px;top:1170px;height:260px';document.body.style.opacity=1;
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))};
-</script>
-<script type="module">import {drawWorld} from './world.js';window.drawWorld=drawWorld;window._wr();</script></body></html>
+</script></body></html>
