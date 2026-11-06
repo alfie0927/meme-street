@@ -233,13 +233,13 @@ SCHEMA = """Reply with JSON only, no prose, in this shape:
  "scenes": [ ...in order... ],
  "caption": "the Instagram caption"}
 Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contractions welcome):
- {"kind":"hook","vo":"the first hook line","text":"on-screen hook, max 6 words","chart":N or null}
- {"kind":"chart","chart":N,"head":"on-screen title, max 5 words","vo":"...","show":candle index shown at the start (optional),
+ {"kind":"hook","vo":"the first hook line","text":"the reel's title, 2 to 5 words: its theme (e.g. 'Spot The Doji'), not the line","chart":N or null}
+ {"kind":"chart","chart":N,"head":"title, max 5 words: names the idea (e.g. 'The Setup'), not the line","vo":"...","show":candle index shown at the start (optional),
    "cues":[{"say":"exact phrase from vo","do":"reveal","to":index} | {"say":"..","do":"mark","i":index,"label":"max 12 characters","side":"high"|"low"|"vol" (vol: rings that candle's volume bar against the 20-candle average),"tone":"amber|green|red|teal"}
           | {"say":"..","do":"line","price":number,"label":"max 3 words","tone":"amber|green|red|teal"} | {"say":"..","do":"shade","from":index,"to":index,"tone":"green|red|amber"}
           | {"say":"..","do":"zoom","from":index,"to":index}]}
  {"kind":"question","chart":N,"badge":"Q1","head":"max 5 words","vo":"asks it and reads the options"}   (options and answer are added from the facts)
- {"kind":"answer","chart":N,"head":"the right answer, max 5 words","vo":"says the answer first, then why, max 26 words","cues":[...]}
+ {"kind":"answer","chart":N,"vo":"says the answer first, then why, max 26 words","cues":[...]}
  {"kind":"cards","head":"max 5 words","vo":"...","items":[{"text":"max 4 words","sub":"max 7 words","icon":"up|down|warn|check|cross|coin|clock|bolt|chart|shield|people|idea"}],
    "cues":[{"say":"exact phrase","do":"item","i":0}, ...one per item]}
  {"kind":"big","text":"max 7 words, shown huge","vo":"..."}
@@ -264,7 +264,10 @@ RULES = """Rules:
   (stick scenes too: give them the chart). Talking about volume? Mark the candle with side "vol".
 - A mark, shade or zoom only points at candles already on screen at that moment: at or before the scene's "show"
   (or where the scene before it on the same chart ended), or revealed earlier in the same scene.
-- On-screen text (hook text, big text, outro text) is words of that scene's line, word for word, in order.
+- Big text and outro text are words of that scene's line, word for word, in order.
+- Titles are titles: the hook's text is the reel's theme and each head names that scene's idea, 2 to 5 words, never
+  a copy of what the voice says, and the same style through the reel. An answer's title is set for you (it never
+  gives the answer away: the highlight shows it).
 - A figure's label is its name ("Rookie", "Pro") or role, never a copy of the scene's head.
 - Proper capitals everywhere: every sentence, title, head, card, bubble, label and on-screen line starts with a capital
   letter; names keep theirs ("Ember Dragon Ranches", "Rookie", "I"). On-screen text taken from the middle of a line
@@ -328,7 +331,7 @@ def check(spec, facts, charts, category=None):
             weak = "; ".join(f"{k.lower()} {v[0]:.0f}: {v[1]}" for k, v in sorted(res.items(), key=lambda x: x[1][0])[:3])
             errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+); its weakest parts: {weak}" + (f"; {'; '.join(flags)}" if flags else "") +
                         ". A hook that scores: 5-12 words, a number or a named thing up front, something lost or won, said to 'you' "
-                        "(e.g. 'This one candle cost you fifteen percent.' scores 84); keep the on-screen text and the caption's first line saying the same thing")
+                        "(e.g. 'This one candle cost you fifteen percent.' scores 84); keep the caption's first line saying the same thing")
     if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and sc[0].get("text"):
         k = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split()]
         tx, vx = k(sc[0]["text"]), k(sc[0].get("vo", ""))
@@ -396,7 +399,10 @@ def shown_check(sc, charts):
                     errs.append(f"scene {k}: sprite {p.get('e')!r} says {p['say']!r}, which is not in its line")
         if ch is None and kind in ("stick", "cards", "big", "scene") and CHART_TALK.search(vo):
             errs.append(f"scene {k} talks about {CHART_TALK.search(vo).group(0)!r} but shows no chart: give it the chart, or say only what it shows")
-        if s.get("text") and kind in ("hook", "big", "outro"):
+        for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" else []):
+            if t and len(kw(t)) >= 3 and any(kw(vo)[j:j + len(kw(t))] == kw(t) for j in range(len(kw(vo)))):
+                errs.append(f"scene {k}'s title {t!r} repeats its line: a title names the idea or the theme, not what is said")
+        if s.get("text") and kind in ("big", "outro"):
             t, v = kw(s["text"]), kw(vo)
             if not any(v[j:j + len(t)] == t for j in range(len(v) - len(t) + 1)):
                 errs.append(f"scene {k}'s on-screen text {s['text']!r} must be words of its line, word for word, in order")
@@ -441,6 +447,7 @@ def finish(spec, charts, category):
             m = re.search(r"\b" + re.escape(w) + r"\w*", vo, re.I)
             if m: return m.group(0)
         return ""
+    drawn = lambda k, x: any(ck == k and abs(p - x["price"]) <= 0.001 * abs(p) for ck, p, _ in named)   # (the writer drew this level: no second line)
     def name(k, x):                                       # the writer's name for this level, if it drew it: one level, one name
         return next((lab for ck, p, lab in named if ck == k and abs(p - x["price"]) <= 0.001 * abs(p)), x.get("label", ""))[:22]
     for s in spec["scenes"]:
@@ -455,12 +462,14 @@ def finish(spec, charts, category):
             s["win"] = [ch["win"][0], ch["end"]]
             s.setdefault("cues", []).append({"say": "", "do": "options", "from": "template"})
             s["cues"] += [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
-                           "tone": tone(x), "from": "template"} for x in d["lines"] if not x.get("after")][:2]
+                           "tone": tone(x), "from": "template"} for x in d["lines"] if not drawn(s["chart"], x) and not x.get("after")][:2]
         elif s["kind"] == "answer" and d:
             s["reveal_to"], s["carry"] = ch["end"], True
+            q = next((x for x in reversed(spec["scenes"][:spec["scenes"].index(s)]) if x.get("kind") == "question"), {})
+            s["head"], s["badge"] = "The answer", q.get("badge", "")      # (one title for every answer: the highlight shows which)
             s.setdefault("cues", [])
             s["cues"] += [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
-                           "tone": tone(x), "from": "template"} for x in d["lines"] if x.get("after")][:3]
+                           "tone": tone(x), "from": "template"} for x in d["lines"] if not drawn(s["chart"], x) and x.get("after")][:3]
             mine = {c.get("i") for q in spec["scenes"] if q.get("chart") == s["chart"] for c in q.get("cues", [])
                     if c.get("do") == "mark" and c.get("from") != "template"}      # (a candle the writer marked keeps only its mark)
             s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:14], "side": "high", "from": "template"}
