@@ -97,7 +97,14 @@ def digits(words):
         if j < n and core(words[j]) == "percent" and words[j - 1][-1:] not in _P: v += "%"; j += 1
         last = words[j - 1]; v += last[len(last.rstrip(_P)):]
         out.append((v, i, j - 1)); i = j
-    return out
+    joined = []                                          # a spelt ticker reads as one word: 'E M B R' -> 'EMBR'
+    for t in out:
+        if joined and re.fullmatch(r"[A-Z]+", joined[-1][0]) and joined[-1][2] - joined[-1][1] + 1 == len(joined[-1][0]) \
+                and re.fullmatch(r"[A-Z][^\w\s]*", t[0]):
+            joined[-1] = (joined[-1][0] + t[0], joined[-1][1], t[2])
+        else:
+            joined.append(t)
+    return joined
 
 
 def demo():
@@ -111,6 +118,7 @@ def demo():
                         ("one thousand two hundred shares", "1200 shares"), ("twenty three", "23"), ("seventy-four to fifty-one", "74 to 51")]:
         assert cap(said) == shown, (said, cap(said), shown)
     assert digits("near sixty-nine, under".split())[1] == ("69,", 1, 1)
+    assert cap("Trade E M B R free.") == "Trade EMBR free." and cap("A, or B") == "A, or B" and cap("RSI stays") == "RSI stays"
 
 
 if __name__ == "__main__":
