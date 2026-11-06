@@ -1,0 +1,6 @@
+# The server runs these with bash and python on Linux: always LF, whatever the checkout.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.wav binary
+*.mp4 binary
