@@ -25,7 +25,7 @@ MOTION = ", smooth natural motion, slow cinematic camera move, realistic physics
 NEG = "text, letters, captions, watermark, logo, warped hands, extra limbs, melted face, morphing, flicker, distorted, blurry, low quality"
 
 
-def key():
+def cred():
     """The credential: HF_API_KEY as the console shows it (one string, usually 'id:secret'), or HF_API_KEY_ID and
     HF_API_KEY_SECRET; '' when there is none."""
     one = os.environ.get("HF_API_KEY", "").strip()
@@ -36,7 +36,7 @@ def key():
 
 def http(method, url, body=None):
     req = urllib.request.Request(url, method=method, data=None if body is None else json.dumps(body).encode(),
-                                 headers={"Authorization": f"Key {key()}",
+                                 headers={"Authorization": f"Key {cred()}",
                                           "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=60) as r:
         return json.loads(r.read() or b"{}")
@@ -87,7 +87,7 @@ def shot(desc, seconds, out_dir):
     out = os.path.join(out_dir, key + ".mp4")
     if os.path.exists(out):
         return out
-    if not key():
+    if not cred():
         print("footage: no Higgsfield key (config.env), no video"); return None
     if remaining() < cost(seconds):
         print(f"footage: the monthly cap (${CAP:.0f}) is reached, no video"); return None

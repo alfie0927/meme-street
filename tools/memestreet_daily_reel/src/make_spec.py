@@ -529,7 +529,7 @@ def brief(slot, category=None, remake=None):
               "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % category)
     import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
     need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
-    facts["video"] = {"available": bool(footage.key()) and footage.remaining() >= need}
+    facts["video"] = {"available": bool(footage.cred()) and footage.remaining() >= need}
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
            "recent_titles_to_avoid": history.get("titles", [])[-20:]}
     if CATEGORIES[category].startswith("VIRAL"):
