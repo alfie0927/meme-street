@@ -195,6 +195,8 @@ def main(work):
         for c in sc.get("cues", []):
             c["t"] = round(vs + at(c.get("say", "")), 3)
             if c.get("do") in ("mark", "bubble", "item", "line"): vo.append([pop, c["t"]])
+        for p in sc.get("sprites", []):                        # an animated scene's sprites pop in on their words
+            p["t"] = round(vs + (at(p["say"]) if p.get("say") else 0), 3); vo.append([pop, p["t"]])
         for x in sc.get("opt_t", []): vo.append([pop, x])
         t = vs + d
         if sc["kind"] == "question":                          # the viewer's moment: a ticking countdown, not silence

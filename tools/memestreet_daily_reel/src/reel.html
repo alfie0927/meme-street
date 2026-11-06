@@ -168,6 +168,22 @@ function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.P
   if(byy<550){const left=ex>540;bx=left?ex-36*sc-w-20:ex+36*sc+20;bx=Math.max(40,Math.min(1040-w,bx));byy=ey-32;tail=left?`M${bx+w-2} ${byy+20}L${bx+w+20} ${byy+32}L${bx+w-2} ${byy+44}Z`:`M${bx+2} ${byy+20}L${bx-20} ${byy+32}L${bx+2} ${byy+44}Z`}   // (no room above: beside the head)
   g+=`<g class="qa" transform="translate(${ex} ${byy+60}) scale(${a}) translate(${-ex} ${-(byy+60)})"><rect x="${bx}" y="${byy}" width="${w}" height="64" rx="20" fill="#e6e9ec"/><path d="${tail}" fill="#e6e9ec"/><text x="${bx+w/2}" y="${byy+42}" text-anchor="middle" font-size="${bf}" font-weight="700" fill="#07121a">${txt}</text></g>`}
  return g+'</g>'}
+// an animated scene: a set (sky over ground) and emoji sprites that pop in on their words and act out the line
+const SETS={farm:['#7cc7f2','#d4efff','#5fb24e','#3f8a35'],city:['#2b3a67','#f2a46b','#3a3f4a','#25282f'],factory:['#a9b0bb','#e6e8ec','#6b6f78','#4a4d54'],
+ lab:['#d9ecf2','#f2f8fa','#b9c7cf','#93a3ab'],sea:['#7cc7f2','#d4efff','#2a7fc4','#174f80'],sky:['#4f9fe0','#cfeaff','#cfeaff','#cfeaff'],
+ mine:['#2a2420','#4a3c30','#3b2f25','#241c16'],shop:['#ffe6c7','#fff5e8','#c79a6b','#9c7449'],night:['#0b1537','#24366e','#1c3b2a','#10241a'],desert:['#ffc977','#ffefc9','#e3b26b','#c18f48']};
+function drawScene(s,t){const P=SETS[s.set]||SETS.farm,X0=62,Y0=560,W=956,H=700,gy=.8,a0=out(seg(t,s.t0,s.t0+.35));
+ let h=`<div style="position:absolute;left:${X0}px;top:${Y0}px;width:${W}px;height:${H}px;border-radius:28px;overflow:hidden;opacity:${a0};background:linear-gradient(to bottom,${P[0]},${P[1]} ${gy*100}%,${P[2]} ${gy*100}%,${P[3]})">`;
+ if(s.set==='night')for(let k=0;k<18;k++)h+=`<div style="position:absolute;left:${(k*137)%W}px;top:${(k*71)%(H*.5)}px;width:4px;height:4px;border-radius:2px;background:#fff;opacity:${.4+.4*Math.sin(t*2+k)}"></div>`;
+ const SZ={s:90,m:150,l:230};
+ (s.sprites||[]).forEach((p,k)=>{const t0=p.t!=null?p.t:s.vs,u=t-t0,a=back(seg(t,t0-.05,t0+.4));if(u<-.05)return;
+  const tr=p.to?io(seg(t,t0,s.t1)):0,sz=SZ[p.size]||SZ.m,x=cl(lerp(p.x,p.to?p.to[0]:p.x,tr)/100*W,sz*.6,W-sz*.6),y=lerp(sz+20,(gy+.02)*H,lerp(p.y,p.to?p.to[1]:p.y,tr)/100);   // (y 0: its top at the panel's top; 100: on the ground)
+  let dx=0,dy=0,sc=1,rot=0;const m=p.move||'still';
+  if(m==='walk')dy=-Math.abs(Math.sin(u*8))*10;else if(m==='fly')dy=Math.sin(u*2.5)*18;else if(m==='bob')dy=Math.sin(u*3+k)*8;
+  else if(m==='pulse')sc=1+.08*Math.sin(u*5);else if(m==='shake')dx=Math.sin(u*40)*5;else if(m==='spin')rot=u*120;else if(m==='float')dy=-Math.min(u,4)*15;
+  if(m==='drop')dy=-(1-out(seg(u,0,.55)))*450;
+  h+=`<div style="position:absolute;left:${x}px;top:${y}px;font:${sz}px/1 'Noto Color Emoji';opacity:${cl(m==='drop'?seg(u,0,.1):a)};transform:translate(-50%,-100%) translate(${dx}px,${dy}px) scale(${(m==='drop'?1:.6+.4*a)*sc}) scaleX(${p.flip?-1:1}) rotate(${rot}deg);transform-origin:50% 100%">${esc(p.e)}</div>`});
+ return h+'</div>'}
 function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
  if(s.chart!=null)return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920">${drawFigure(s,F[0],0,t,912,1150,1.25,300)}</svg>`;
  const n=F.length,sc=n===1?1.9:n===2?1.55:1.25,xs=n===1?[540]:n===2?[330,750]:[220,540,860];
@@ -186,6 +202,7 @@ function render(T){
  if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(230,720/Math.max(1,N)),y=560+(720-N*gap)/2+k*gap;   // (the stack fills the stage down to the captions)
   st+=`<div class="card qa" style="top:${y}px;height:${gap-24}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
  if(s.kind==='stick')st+=drawSticks(s,t);
+ if(s.kind==='scene')st+=drawScene(s,t);
  if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
