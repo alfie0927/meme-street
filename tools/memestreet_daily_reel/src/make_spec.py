@@ -284,8 +284,9 @@ RULES = """Rules:
 - A mark, shade or zoom only points at candles already on screen at that moment: at or before the scene's "show"
   (or where the scene before it on the same chart ended), or revealed earlier in the same scene.
 - Big text and outro text are words of that scene's line, word for word, in order.
-- Titles are titles: the hook's text is the reel's theme and each head names that scene's idea, 2 to 5 words, never
-  a copy of what the voice says, and the same style through the reel. An answer's title is set for you (it never
+- Titles are titles: each head names that scene's idea, 2 to 5 words, never a copy of what the voice says, and the same
+  style through the reel. A hook over a chart (or a world scene) puts the reel's theme in its text, as a title; a hook
+  with no chart shows its own first words big as they are said, so there the text IS the first words of the line. An answer's title is set for you (it never
   gives the answer away: the highlight shows it).
 - A figure's label is its name ("Rookie", "Pro") or role, never a copy of the scene's head.
 - Proper capitals everywhere: every sentence, title, head, card, bubble, label and on-screen line starts with a capital
@@ -342,7 +343,8 @@ def check(spec, facts, charts, category=None):
                 if len(str(q.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {q.get('label')!r} is over 3 words")
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
     if category == "Stock story" and not 2 <= len(worlds) <= 3:
-        errs.append("a stock story shows what the company does and its news as 2 or 3 world scenes (neon 3D)")
+        errs.append(f"a stock story shows what the company does and its news as 2 or 3 world scenes (neon 3D: kind \"world\" with a layout "
+                    f"and props); this script has {len(worlds)}")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
     films = [s for s in sc if s.get("kind") == "film"]
     for k, s in enumerate(sc):
@@ -371,7 +373,7 @@ def check(spec, facts, charts, category=None):
             errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+); its weakest parts: {weak}" + (f"; {'; '.join(flags)}" if flags else "") +
                         ". A hook that scores: 5-12 words, a number or a named thing up front, something lost or won, said to 'you' "
                         "(e.g. 'This one candle cost you fifteen percent.' scores 84); keep the caption's first line saying the same thing")
-    if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and sc[0].get("text"):
+    if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and not sc[0].get("layout") and sc[0].get("text"):
         k = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split()]
         tx, vx = k(sc[0]["text"]), k(sc[0].get("vo", ""))
         if tx != vx[:len(tx)]: errs.append("the hook's on-screen text must be the first words of the spoken hook, word for word, so it appears as it is said from the first frame")
@@ -428,7 +430,7 @@ def shown_check(sc, charts):
         ch, kind, vo = s.get("chart"), s.get("kind"), s.get("vo", "")
         if ch is None and kind in ("stick", "cards", "big", "film", "world") and CHART_TALK.search(vo):
             errs.append(f"scene {k} talks about {CHART_TALK.search(vo).group(0)!r} but shows no chart: give it the chart, or say only what it shows")
-        for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" else []):
+        for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" and (ch is not None or s.get("layout")) else []):
             if t and len(kw(t)) >= 3 and any(kw(vo)[j:j + len(kw(t))] == kw(t) for j in range(len(kw(vo)))):
                 errs.append(f"scene {k}'s title {t!r} repeats its line: a title names the idea or the theme, not what is said")
         if s.get("text") and kind in ("big", "outro"):
