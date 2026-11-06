@@ -141,6 +141,12 @@ def swings(C, a, b, k=4):
 def chart_from_drill(d):
     up, C = d["upto"], d["candles"]
     end = min(len(C) - 1, up + 25)
+    if re.search(r"fake|back inside|fail", d["result"], re.I) and d["lines"]:
+        # a fake or failed move: the reveal stops just after the close back across the level, so the payoff shows the
+        # failure (25 candles on, the price can be anywhere, e.g. +40% after a "fake" breakout)
+        lv = d["lines"][0]["price"]; side = C[up][3] > lv
+        back = next((k for k in range(up + 1, end + 1) if (C[k][3] > lv) != side), None)
+        if back is not None: end = min(end, max(up + 6, back + 3))
     return {"candles": C, "label": f"{d['where']['name']} · {d['where']['tf']}", "upto": up, "end": end,
             "win": [max(0, up - 70), end], "drill": d}
 
@@ -153,6 +159,18 @@ def chart_summary(i, ch):
     if d:
         s.update(question=d["q"], options=d["options"], right_answer=d["options"][d["answer"]], stops_at=d["upto"],
                  what_happened=d["result"], why=d["explain"], drawn_with_answer=[x["label"] for x in d["lines"] if x.get("label")])
+        up, e = d["upto"], ch["end"]; c0 = C[up][3]; after = C[up + 1:e + 1]
+        s["after_the_question"] = {                       # what the answer scene really shows: the script may say only this
+            "note": "The candles revealed after the question, as numbers. Say only what these show; if what_happened seems to "
+                    "say more, these numbers win.",
+            "close_at_question": round(c0, 2),
+            "closes_after": [[up + j + 1, round(c[3], 2)] for j, c in enumerate(after)][::max(1, len(after) // 8)],
+            "pct_to_last": round((C[e][3] / c0 - 1) * 100, 1),
+            "highest_after": round(max(c[1] for c in after), 2) if after else None,
+            "lowest_after": round(min(c[2] for c in after), 2) if after else None,
+            "levels": [{"label": x.get("label", ""), "price": round(x["price"], 2),
+                        "closes_above": sum(c[3] > x["price"] for c in after), "closes_below": sum(c[3] < x["price"] for c in after)}
+                       for x in d["lines"]]}
     return s
 
 
@@ -371,11 +389,24 @@ def shown_check(sc, charts):
             if isinstance(far, int) and far > r:
                 errs.append(f"scene {k}: the {c['do']} on candle {far} points at a candle not drawn yet (only up to {r} is on screen): reveal it first or use an earlier candle")
         end[k] = r
+    seen = {}
+    for k, s in enumerate(sc):
+        for c in s.get("cues", []):
+            if c.get("do") != "line" or not c.get("label") or not isinstance(c.get("price"), (int, float)): continue
+            for (ch, lab), p in seen.items():
+                same = abs(p - c["price"]) <= 0.005 * max(abs(p), 1e-9)
+                if ch == s.get("chart") and (lab == c["label"]) != same:
+                    errs.append(f"scene {k}: the line {c['label']!r} at {c['price']} " + (f"is the level already called {lab!r}: one level keeps one name in every scene" if same else f"reuses the name of the line at {p}: one name means one level"))
+            seen[(s.get("chart"), c["label"])] = c["price"]
     return errs
 
 
 def finish(spec, charts, category):
     """Add what comes from the facts, not from Claude: the options and answers, the drawn lines, the windows."""
+    named = [(s.get("chart"), c["price"], c["label"]) for s in spec["scenes"] for c in s.get("cues", [])
+             if c.get("do") == "line" and c.get("label") and isinstance(c.get("price"), (int, float))]
+    def name(k, x):                                       # the writer's name for this level, if it drew it: one level, one name
+        return next((lab for ck, p, lab in named if ck == k and abs(p - x["price"]) <= 0.005 * abs(p)), x.get("label", ""))[:22]
     for s in spec["scenes"]:
         ch = charts[s["chart"]] if isinstance(s.get("chart"), int) else None
         if not ch:
@@ -387,12 +418,12 @@ def finish(spec, charts, category):
             s["options"], s["answer"], s["show"] = d["options"], d["answer"], ch["upto"]
             s["win"] = [ch["win"][0], ch["end"]]
             s.setdefault("cues", []).append({"say": "", "do": "options"})
-            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": x.get("label", "")[:22], "tone": tone(x)}
+            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": name(s["chart"], x), "tone": tone(x)}
                           for x in d["lines"] if not x.get("after")][:2]
         elif s["kind"] == "answer" and d:
             s["reveal_to"], s["carry"] = ch["end"], True
             s.setdefault("cues", [])
-            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": x.get("label", "")[:22], "tone": tone(x)}
+            s["cues"] += [{"say": "", "do": "line", "price": x["price"], "label": name(s["chart"], x), "tone": tone(x)}
                           for x in d["lines"] if x.get("after")][:3]
             s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:2], "side": "high"} for m in d["marks"] if m.get("label")][:3]
         elif s["kind"] in ("hook", "chart") and s.get("show") is None and d:

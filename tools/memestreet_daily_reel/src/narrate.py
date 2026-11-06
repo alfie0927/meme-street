@@ -29,7 +29,7 @@ WPS, HUMAN = 3.9, {"comma": 0.28, "sentence": 0.36}
 # The silence put in to get there: the voice trails off before it is silent, so a pause is heard about 0.2 s longer
 # than the silence inserted (calibrated 2026-11-06 with the same measure: 0.08 s at a full stop is heard as 0.25 s,
 # 0.16 s as 0.41 s; a comma is never heard under about 0.33 s).
-PAUSE = {",": 0.12, ";": 0.12, ":": 0.12, ".": 0.135, "!": 0.135, "?": 0.17}
+PAUSE = {",": 0.2, ";": 0.2, ":": 0.2, ".": 0.135, "!": 0.135, "?": 0.17}   # (commas at 0.12 were heard as 0.16-0.24 s: clipped)
 INSIDE = 0.08                                            # (longest pause kept between words with no punctuation)
 
 def talk_rate(W):
@@ -153,13 +153,14 @@ def main(work):
     for i, sc in enumerate(S["scenes"]):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
         speed = float(os.environ.get("VOICE_SPEED", "1.0"))
-        for _ in range(2):                                     # one take per line (natural flow), at the human talking speed
+        for _ in range(3):                                     # one take per line (natural flow), at the human talking speed
             a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
-            sf.write(clip, a, SR); W = words(clip); r = talk_rate(W)
-            if not r or abs(r / WPS - 1) < 0.06: break
-            speed = min(1.2, max(0.8, speed * WPS / r))
-        sf.write(clip, pace(a, tw, align(tw, W, dur(clip))), SR)   # the pauses a person makes, at the commas and full stops
-        d = dur(clip); W = words(clip)
+            sf.write(clip, a, SR); W = words(clip)
+            sf.write(clip, pace(a, tw, align(tw, W, dur(clip))), SR)   # the pauses a person makes, at the commas and full stops
+            W = words(clip); r = talk_rate(W)                  # (measured as heard, pauses in: what the critic and a viewer hear)
+            if not r or abs(r / WPS - 1) < 0.05: break
+            speed = min(1.35, max(0.8, speed * WPS / r))
+        d = dur(clip)
         if not heard_ok(sc["vo"], W):
             raise SystemExit(f"scene {i}: the voice does not match the line (garbled or skipped): {sc['vo'][:80]}")
         wt = align(tw, W, d)                                   # each written word's own (start, end) in the clip

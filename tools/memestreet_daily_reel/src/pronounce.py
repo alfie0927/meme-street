@@ -21,6 +21,7 @@ def say_as(text):
         text = rx.sub(v, text)
     text = re.sub(r"\b(\d+(?:\.\d+)?)\s*[x×](?=\W|$)", lambda m: m.group(1) + " times", text)        # 2.4x -> 2.4 times
     text = re.sub(r"(\d)\s*%", r"\1 percent", text)
+    text = re.sub(r"\b([A-D]) or ([A-D])\b", r"\1, or \2", text)         # ("A or B" ran together, heard as "ORB")
     for t, name in _TICKERS.items():
         text = re.sub(r"\b" + re.escape(t) + r"\b", name, text)
     return text

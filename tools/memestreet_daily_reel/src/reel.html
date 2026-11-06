@@ -88,8 +88,9 @@ function drawChart(i,t){
  for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
  {const k=rr+1,gg=r-Math.floor(r);if(k<n&&k<=Math.ceil(w1)&&gg>0){const [o,h,l,c]=C[k],e=out(gg),cc=lerp(o,c,e);   // the growing candle moves the scale with it
   hi=Math.max(hi,Math.max(o,cc)+(h-Math.max(o,c))*gg);lo=Math.min(lo,Math.min(o,cc)-(Math.min(o,c)-l)*gg)}}
- drawings(i,t).filter(d=>d.do==='line').forEach(d=>{lo=Math.min(lo,d.price);hi=Math.max(hi,d.price)});
- const pad=(hi-lo)*.1,mk=drawings(i,t).filter(d=>d.do==='mark'&&d.side!=='vol');lo-=pad*(mk.some(d=>d.side==='low')?2.6:1);hi+=pad*(mk.some(d=>d.side!=='low')?2.6:1);   // (room for the markers)
+ const DA=drawings(i,1e9);   // (every line and mark of the scene, drawn yet or not, sets the scale: nothing jumps when one lands)
+ DA.filter(d=>d.do==='line').forEach(d=>{lo=Math.min(lo,d.price);hi=Math.max(hi,d.price)});
+ const pad=(hi-lo)*.1,mk=DA.filter(d=>d.do==='mark'&&d.side!=='vol');lo-=pad*(mk.some(d=>d.side==='low')?2.6:1);hi+=pad*(mk.some(d=>d.side!=='low')?2.6:1);   // (room for the markers)
  const X=k=>PL.x+(k-w0+.5)/(w1-w0+1)*PL.w,Y=v=>PL.y+(hi-v)/(hi-lo)*PL.h,bw=PL.w/(w1-w0+1);
  const vv=[];for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)vv.push(C[k][4]);vv.sort((a,b)=>a-b);const vmax=Math.max(1,2.2*(vv[vv.length>>1]||1));
  let post='',g=`<g opacity="${fade}"><defs><clipPath id="cp"><rect x="${PL.x-6}" y="${B.y+50}" width="${PL.w+12}" height="${B.h-60}"/></clipPath></defs>`;
@@ -181,7 +182,7 @@ function render(T){
  if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
-  st+=`<svg style="position:absolute;left:916px;top:410px;opacity:${a}" width="120" height="120"><circle cx="60" cy="60" r="50" fill="#07090ccc" stroke="#2a2f35" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="${AM}" stroke-width="8" stroke-dasharray="${314*(1-u)} 400" transform="rotate(-90 60 60)" stroke-linecap="round"/><text x="60" y="72" text-anchor="middle" font-size="36" font-weight="800" fill="#e6e9ec">${Math.ceil(left)}</text></svg>`}
+  st+=`<svg style="position:absolute;left:480px;top:1300px;opacity:${a};transform:scale(${1+.08*Math.pow(1-((t-s.think_t[0])%.4)/.4,3)})" width="120" height="120"><circle cx="60" cy="60" r="50" fill="#07090ccc" stroke="#2a2f35" stroke-width="8"/><circle cx="60" cy="60" r="50" fill="none" stroke="${AM}" stroke-width="8" stroke-dasharray="${314*(1-u)} 400" transform="rotate(-90 60 60)" stroke-linecap="round"/><text x="60" y="72" text-anchor="middle" font-size="36" font-weight="800" fill="#e6e9ec">${Math.ceil(left)}</text></svg>`}
  document.getElementById('stage').innerHTML=st;
  const punch=back(seg(t,s.t0,s.t0+.45)),ps=.94+.06*punch;   // every scene lands with the same springy pop
  ['chart','stage'].forEach(id=>{const e=document.getElementById(id);e.style.transformOrigin='540px 850px';e.style.transform=`scale(${ps})`});
@@ -196,7 +197,7 @@ function render(T){
   let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.03)cur=k;const per=4,st0=Math.floor(cur/per)*per;
   cp.innerHTML=tw.slice(st0,cur+1).map((w,k)=>`<span style="color:${st0+k===cur?TE:'#e6e9ec'};display:inline-block;transform:scale(${st0+k===cur?1+.14*(1-seg(t,s.wt[cur][0],s.wt[cur][0]+.18)):1})">${esc(w)}</span>`).join(' ');cp.style.opacity=s.kind==='big'?0:1;fit(cp,120,46,28)}else cp.innerHTML='';
  // the end card
- const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.daily;document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live${dd.best!=null?` · best today <span style="color:${G}">${dd.best>=0?'+':''}${(dd.best*100).toFixed(1)}%</span>`:''}`:'';document.getElementById('oDaily').style.opacity=out(seg(t,s.t0+.6,s.t0+1.1));document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
+ const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.daily;document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live${dd.best!=null?` · best today <span style="color:${G}">${dd.best>=0?'+':''}${(dd.best*100).toFixed(1)}%</span>`:''}`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,tU-.05,tU+.35)),eU=document.getElementById('oUrl');document.getElementById('oDaily').style.opacity=out(seg(t,tD-.05,tD+.3));eU.style.opacity=cl(uU);eU.style.transform=`scale(${.7+.3*uU})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
  document.body.style.opacity=Math.min(seg(T,0,.2),1-seg(T,R.T-.3,R.T));
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))}
 window.render=render;
