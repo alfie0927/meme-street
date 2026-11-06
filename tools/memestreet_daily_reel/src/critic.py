@@ -64,7 +64,10 @@ def pack(work, out, rd):
     SC = R["scenes"]   # each heard word belongs to the scene whose voice it is nearest (the first and last are open-ended)
     cut = [-1e9] + [(a.get("ve", a["t1"]) + b.get("vs", b["t0"])) / 2 for a, b in zip(SC, SC[1:])] + [1e9]
     for i, s in enumerate(SC):
-        hw = [h for h in H if cut[i] <= h[1] < cut[i + 1]]
+        hm = hw = [h for h in H if cut[i] <= h[1] < cut[i + 1]]          # (hm: what the final mix is heard saying)
+        clip = next(((f, o) for f, o in R["vo"] if f.endswith(f"/s{i}.wav")), None)
+        if clip:   # pace, pauses and caption sync from the scene's own voice track: in the mix, music and effects blur word edges
+            hw = [(w, a + clip[1], b + clip[1]) for w, a, b in heard(clip[0])]
         r = talk_rate([(key(w), a, b) for w, a, b in hw])
         pauses = [{"after": a[0], "secs": round(b[1] - a[2], 2), "at": round(a[2], 2)} for a, b in zip(hw, hw[1:]) if b[1] - a[2] >= 0.15]
         sync = []                                           # caption word time vs when it is heard
@@ -79,16 +82,17 @@ def pack(work, out, rd):
         if s.get("items"): on_screen["cards"] = [x.get("text") for x in s["items"]]
         if s.get("figures"): on_screen["figures"] = [f"{f.get('label', '')} ({f.get('color', 'white')}, {f.get('pose', 'stand')})" for f in s["figures"]]
         scenes.append({"scene": i, "kind": s["kind"], "from_s": s["t0"], "to_s": s["t1"], "has_chart": s.get("chart") is not None,
-                       "script": s["vo"], "heard": " ".join(w for w, _, _ in hw), "words_per_sec_talking": round(r, 2) if r else None,
+                       "script": s["vo"], "heard": " ".join(w for w, _, _ in hm), "words_per_sec_talking": round(r, 2) if r else None,
                        "pauses_heard": pauses, "caption_minus_voice_secs": {"max_abs": max(map(abs, sync), default=None),
                        "mean": round(sum(sync) / len(sync), 2) if sync else None}, "on_screen": on_screen,
                        "cues": [f"{c.get('do')} on '{c.get('say', '')}' @ {c.get('t')}s" for c in s.get("cues", [])]})
     gaps = [b[1] - a[2] for a, b in zip(H, H[1:])]
+    wr = [(len(x["script"].split()), x["words_per_sec_talking"]) for x in scenes if x["words_per_sec_talking"]]
     report = {"title": R.get("title"), "format": R.get("type"), "series": R.get("series"), "length_secs": T,
               "caption_post_text": open(os.path.join(work, "caption.txt"), encoding="utf-8").read() if os.path.exists(os.path.join(work, "caption.txt")) else "",
               "human_narrator_reference": {"words_per_sec_talking": WPS, "pause_after_comma": HUMAN["comma"], "pause_after_sentence": HUMAN["sentence"],
                                            "source": "measured on 16 top finance Shorts narrated by people"},
-              "whole_reel": {"words_per_sec_talking": round(talk_rate([(key(w), a, b) for w, a, b in H]) or 0, 2),
+              "whole_reel": {"words_per_sec_talking": round(sum(n for n, _ in wr) / max(1e-9, sum(n / r for n, r in wr)), 2),
                              "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps)},
               "script_vs_heard_differences": misheard,
               "transcript_notes": "The script is shown as the voice is told to say it. Whisper writes 'Meem Street dot net' as "
