@@ -423,7 +423,7 @@ def shown_check(sc, charts):
         for c in s.get("cues", []):
             if c.get("do") != "line" or not c.get("label") or not isinstance(c.get("price"), (int, float)): continue
             for (ch, lab), p in seen.items():
-                same = abs(p - c["price"]) <= 0.005 * max(abs(p), 1e-9)
+                same = abs(p - c["price"]) <= 0.001 * max(abs(p), 1e-9)   # (0.1%: an entry and its stop can sit 0.4% apart)
                 if ch == s.get("chart") and (lab == c["label"]) != same:
                     errs.append(f"scene {k}: the line {c['label']!r} at {c['price']} " + (f"is the level already called {lab!r}: one level keeps one name in every scene" if same else f"reuses the name of the line at {p}: one name means one level"))
             seen[(s.get("chart"), c["label"])] = c["price"]
@@ -435,7 +435,7 @@ def finish(spec, charts, category):
     named = [(s.get("chart"), c["price"], c["label"]) for s in spec["scenes"] for c in s.get("cues", [])
              if c.get("do") == "line" and c.get("label") and isinstance(c.get("price"), (int, float))]
     def name(k, x):                                       # the writer's name for this level, if it drew it: one level, one name
-        return next((lab for ck, p, lab in named if ck == k and abs(p - x["price"]) <= 0.005 * abs(p)), x.get("label", ""))[:22]
+        return next((lab for ck, p, lab in named if ck == k and abs(p - x["price"]) <= 0.001 * abs(p)), x.get("label", ""))[:22]
     for s in spec["scenes"]:
         ch = charts[s["chart"]] if isinstance(s.get("chart"), int) else None
         if not ch:
