@@ -207,6 +207,8 @@ def main(work):
             sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
         if sc.get("options"):                                  # each option appears as it is read out
             sc["opt_t"] = [round(vs + x, 3) for x in follow([o.split()[0] for o in sc["options"]], tw, wt, d)]
+        for p in sc.get("props", []):                         # a 3D scene's props pop in on their words
+            p["t"] = round(vs + at(p["say"]) if p.get("say") else vs + 0.2, 3); vo.append([pop, p["t"]])
         for c in sc.get("cues", []):
             c["t"] = round(vs + at(c.get("say", "")), 3)
             if c.get("do") in ("mark", "bubble", "item", "line"): vo.append([pop, c["t"]])

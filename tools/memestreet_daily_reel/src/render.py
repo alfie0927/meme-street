@@ -10,7 +10,9 @@ async def frames(R, fdir, cover=None, date=""):
     os.makedirs(fdir, exist_ok=True)
     n = int(round(R["T"] * FPS))
     async with async_playwright() as p:
-        b = await p.chromium.launch(); pg = await b.new_page(viewport={"width": 1080, "height": 1920})
+        b = await p.chromium.launch(args=["--allow-file-access-from-files", "--use-angle=swiftshader", "--enable-unsafe-swiftshader",
+                                          "--ignore-gpu-blocklist"])   # (local ES modules and software WebGL: the 3D scenes, world.js)
+        pg = await b.new_page(viewport={"width": 1080, "height": 1920})
         await pg.add_init_script(f"window.__R={json.dumps(R)};")
         errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
         await pg.goto(f"file://{HERE}/{os.environ.get('PAGE', 'recap.html')}"); await pg.evaluate("document.fonts.ready")   # (PAGE=reel.html: the auto reels)

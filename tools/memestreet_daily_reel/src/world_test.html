@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Standalone check of world.js: one test scene per layout, full frame (?layout=flow) -->
+<style>html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b}canvas{display:block;width:1080px;height:1920px}
+.lab{position:absolute;transform:translate(-50%,-100%);padding:8px 16px;border-radius:12px;background:#0b0f13cc;border:2.5px solid;font:700 30px/1 'Cascadia Mono',monospace;white-space:nowrap}</style>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js"}}</script>
+</head><body><canvas id="world" width="1080" height="1920"></canvas><div id="labs"></div>
+<script type="module">
+import {drawWorld} from './world.js';
+const q = new URLSearchParams(location.search), lay = q.get('layout') || 'flow', d = +(q.get('d') || 6);
+const P = {
+  flow: [{p: 'portal', color: 'teal', label: 'Gate A', t: .3}, {p: 'portal', color: 'purple', label: 'Gate B', t: .8}, {p: 'crate', color: 'amber', label: 'Cargo', t: 1.2}],
+  network: [1, 2, 3, 4, 5, 6, 7, 8].map(k => ({p: 'node', color: k % 3 ? 'teal' : 'purple', label: k < 4 ? 'Port ' + k : '', t: .3 + k * .45})),
+  hero: [{p: 'dragon', color: 'teal', label: 'Ember Dragon', t: .2}, {p: 'crate', color: 'amber', label: 'Lifting', t: 1}, {p: 'rocket', color: 'purple', label: 'Fireworks', t: 1.6}, {p: 'factory', color: 'amber', label: 'Furnaces', t: 2.2}],
+  grow: [{p: 'bar', color: 'green', label: 'Q1', t: .3}, {p: 'bar', color: 'green', label: 'Q2', t: .9}, {p: 'bar', color: 'green', label: 'Q3', t: 1.5}, {p: 'bar', color: 'green', label: 'Record', t: 2.1}],
+  risk: [{p: 'city', color: 'teal', label: 'StoneSage', t: .1}, {p: 'warning', color: 'red', label: 'Recall', t: 1.2}, {p: 'warning', color: 'amber', label: 'Lawsuit', t: 2.4}],
+  compare: [{p: 'truck', color: 'grey', label: 'The old way', t: .2}, {p: 'portal', color: 'teal', label: 'The new way', t: .9}, {p: 'crate', color: 'amber'}],
+}[lay];
+const S = {kind: 'world', layout: lay, props: P, t0: 0, t1: d};
+window.draw = async t => {
+  const L = await drawWorld(document.getElementById('world'), S, t);
+  document.getElementById('labs').innerHTML = L.map(l => `<div class="lab" style="left:${l.x}px;top:${l.y}px;color:${l.color};border-color:${l.color}">${l.text}</div>`).join('');
+};
+window.ready = true;
+</script></body></html>

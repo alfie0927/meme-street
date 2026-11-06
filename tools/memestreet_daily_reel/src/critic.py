@@ -105,7 +105,8 @@ def pack(work, out, rd, only=None):
         for a0, b0, n in m.get_matching_blocks():
             for q in range(n):
                 sync.append(round(s["wt"][a0 + q][0] - hw[b0 + q][1], 2))
-        on_screen = {k: s[k] for k in ("head", "text", "badge", "options", "shot") if s.get(k)}
+        on_screen = {k: s[k] for k in ("head", "text", "badge", "options", "shot", "layout") if s.get(k)}
+        if s.get("props"): on_screen["props_3d"] = [f"{p.get('p')} ({p.get('color', 'teal')}) '{p.get('label', '')}' on '{p.get('say', '')}' @ {p.get('t')}s" for p in s["props"]]
         for c in s.get("cues", []):
             if c.get("text") or c.get("label"): on_screen.setdefault("cue_texts", []).append(f"{c['do']}: {c.get('text') or c.get('label')} @ {c.get('t')}s")
         if s.get("items"): on_screen["cards"] = [x.get("text") for x in s["items"]]
@@ -155,7 +156,12 @@ You judge, and score out of 10:
 4. CONTENT - the story: a hook that earns the next second, a clear arc with a payoff that delivers the hook's promise,
    one idea, true and useful to a beginner trader, a reason to play the game, and an ending that makes people want the
    next reel. Language that sounds like a person, not an advert.
-5. VIDEO SHOTS (scenes with a full-screen realistic clip): each must look real and cinematic, show exactly what the
+5. NEON 3D SCENES ("world" scenes, the house style: glowing teal, purple and amber line work on near-black, after the
+   PhaseJump reel): each must pop, read at a glance, and act out exactly what the voice says at that moment (the right
+   props, popping in on their words). The wrong layout or props, or a scene that shows nothing the voice says, is a
+   script note (fix: a different layout or props); props clipping, labels off screen or on each other, or a dull frame
+   is a renderer note.
+6. VIDEO SHOTS (scenes with a full-screen realistic clip, when used): each must look real and cinematic, show exactly what the
    voice says at that moment, and hold up frame by frame. AI artefacts (melted or doubled faces, extra limbs, objects
    that warp or morph, gibberish text or signs, flicker) or a shot that shows the wrong thing are script majors: the
    fix is a new shot description for that scene (only that clip is made again). Judge them under VISUALS and SYNC.
@@ -178,7 +184,8 @@ lesson: the general rule the writer must follow in EVERY future reel. Scenes cou
 
 Say who can fix it. The writer controls only the script: each scene's kind and order, its spoken line, head and
 on-screen text, and its cues: which phrase each cue lands on, which candles are revealed, marked, shaded or zoomed,
-each line's price, label and tone, cards, figures, poses, bubbles and each video shot's description ("shot"). That is "script", and its fix names the
+each line's price, label and tone, cards, figures, poses, bubbles, each world scene's layout and props (which, their colours, labels and words), and each
+video shot's description ("shot"). That is "script", and its fix names the
 change in those terms (e.g. "scene 1: a line cue at 119.42 labelled 'Entry', said on 'entry'"). Everything about how
 the house template draws (where a tag sits, tags stacking, sizes, fonts, colours, the voice's pauses and pronunciation
 of a word that is written right, the end card's layout) is "renderer": the writer cannot change it, so never give the

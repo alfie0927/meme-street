@@ -24,9 +24,13 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .card .ic{width:100px;height:100px;flex:none}.card .tx{font:700 46px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
 .big{position:absolute;left:60px;right:60px;top:560px;height:560px;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;text-align:center;font:700 92px/1.15 'Cascadia Mono',monospace;letter-spacing:-2px}
 .big span{display:inline-block;margin:0 18px}
-</style></head><body>
+.wlab{position:absolute;transform:translate(-50%,-100%);padding:8px 16px;border-radius:12px;background:#0b0f13d9;border:2.5px solid;font:700 30px/1 'Cascadia Mono',monospace;white-space:nowrap}
+</style>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js"}}</script>
+</head><body>
 <svg id="bg" width="1080" height="1920"></svg>
 <img id="film" alt=""><div id="fshade"></div>
+<canvas id="world" width="540" height="960" style="position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0"></canvas><div id="wlabs"></div>
 <div class="hdr"><div class="l"><img src="../assets/logo.png">Meme Street</div><div class="tag" id="tag"></div></div>
 <div class="prog"><i id="prog"></i></div>
 <div class="head" id="head"></div>
@@ -86,7 +90,7 @@ function drawings(i,t){ // lines, marks and shades of this scene (and the scenes
  const seen=new Set();   // (a candle marked again later keeps only its newest mark: two tags on one candle push each other off it)
  return out.filter(c=>c.age>=-.05).filter(c=>c.do==='mark'?c.side==='vol'||!seen.has(c.i)&&seen.add(c.i):c.do==='line'?!seen.has('p'+Math.round(c.price*1000))&&seen.add('p'+Math.round(c.price*1000)):true)}   // (one line per price, the newest)
 function drawChart(i,t){
- const S=chartState(i,t),el=document.getElementById('chart');if(!S||SC[i].film){el.innerHTML='';return}   // (a video shot fills the frame)
+ const S=chartState(i,t),el=document.getElementById('chart');if(!S||SC[i].film||SC[i].layout){el.innerHTML='';return}   // (a video shot fills the frame)
  const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
  const short=k=>k<0||SC[k].kind==='stick'||SC[k].kind==='question'||(SC[k].kind==='answer'&&k>0&&SC[k-1].kind==='question'),hh0=k=>short(k)?620:740,
   bh=i>0&&SC[i-1].chart===s.chart?lerp(hh0(i-1),hh0(i),io(seg(t,s.t0,s.t0+.6))):hh0(i);   // (eased, so the chart never jumps)
@@ -186,6 +190,13 @@ function render(T){
   if(fm.getAttribute('src')!==src){fm.setAttribute('src',src);fp=fm.decode().catch(()=>{})}
   const fa=out(seg(T,s.t0,s.t0+.3));fm.style.opacity=fa;fs.style.opacity=fa;fm.style.transform=`scale(${1.02+.05*seg(T,s.t0,s.t1)})`}
  else{fm.style.opacity=0;fs.style.opacity=0}
+ // a neon 3D scene (world.js): a layout and props, drawn by WebGL under the titles and captions, its labels as text here
+ const wc=document.getElementById('world'),wl=document.getElementById('wlabs');let wp=null;
+ if(s.layout){wc.style.opacity=out(seg(T,s.t0,s.t0+.3));fs.style.opacity=wc.style.opacity;wp=window.worldLoad.then(()=>window.drawWorld(wc,s,T)).then(L=>{const placed=[];
+  wl.innerHTML=L.sort((a,b)=>a.y-b.y).map(l=>{let y=Math.max(600,Math.min(1250,l.y));const w=l.text.length*18+36,x=Math.max(70+w/2,Math.min(1010-w/2,l.x));
+   while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+8&&Math.abs(q[1]-y)<54))y+=56;placed.push([x,y,w]);   // (labels never stack on each other)
+   return `<div class="wlab qa" style="left:${x}px;top:${y}px;color:${l.color};border-color:${l.color};opacity:${wc.style.opacity}">${esc(l.text)}</div>`}).join('')})}
+ else{wc.style.opacity=0;wl.innerHTML=''}
  drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
@@ -218,8 +229,9 @@ function render(T){
  // the end card
  const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.type==='Daily recap'?R.daily:null;   /* (the Daily Chart line only on a reel about it) */document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,s.t0+.25,s.t0+.6)),eU=document.getElementById('oUrl'),eD=document.getElementById('oDaily');eD.style.opacity=out(seg(t,s.t0+.15,s.t0+.45));eD.style.transform=`scale(${1+.08*Math.sin(Math.PI*seg(t,tD-.05,tD+.35))})`;eU.style.opacity=cl(uU);eU.style.transform=`scale(${(.7+.3*uU)*(1+.1*Math.sin(Math.PI*seg(t,tU-.05,tU+.4)))})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
  document.body.style.opacity=1;
- return Promise.all([fp,new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))])}
+ return Promise.all([fp,wp,new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))])}
 window.render=render;
+window.worldLoad=new Promise(r=>window._wr=r);
 // the overlap check (render.py runs it through the reel): every visible piece of text, measured as drawn; any two that
 // touch are reported, and a reel with any is not posted
 window.qa=async T=>{await render(T);const els=[document.getElementById('head'),document.getElementById('caps'),...document.querySelectorAll('.opt,.qa')];
@@ -235,4 +247,5 @@ window.cover=async date=>{const k=Math.max(0,SC.findIndex(s=>s.chart!=null&&s.ki
  document.getElementById('caps').innerHTML='';document.getElementById('opts').innerHTML='';document.querySelector('.prog').style.display='none';
  const hd=document.getElementById('head');hd.innerHTML=esc(R.title||'');hd.style.cssText='opacity:1;font-size:80px;top:1170px;height:260px';document.body.style.opacity=1;
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))};
-</script></body></html>
+</script>
+<script type="module">import {drawWorld} from './world.js';window.drawWorld=drawWorld;window._wr();</script></body></html>

@@ -24,8 +24,8 @@ CATEGORIES = {
     "Chart quiz": "Three questions on three real game charts. Each: a question scene (options shown, a short countdown), "
                   "then an answer scene (the rest of the chart plays out, the right option lights up, one or two lines on why).",
     "Stock story": "Introduce one fictional company from the game: the hook, what it does, how it makes money, what moves "
-                   "its stock (good news and bad news), its real recent chart, and an invitation to trade it. When "
-                   "video is available, show what it does and its good and bad news as film scenes (2 or 3).",
+                   "its stock (good news and bad news), its real recent chart, and an invitation to trade it. Show what "
+                   "it does and its good and bad news as 2 or 3 neon 3D world scenes.",
     "Technical lesson": "Teach one chart idea (an indicator, a level, a pattern) on a real chart that shows it: what it is, "
                         "how to read it, the trap, and the one rule to remember.",
     "Trading mistake": "One common beginner mistake, shown on a real chart: what people do, what it costs, what to do instead.",
@@ -249,10 +249,27 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
    director's shot list: the subject, what it is doing, where, the light, the camera move. E.g. 'A green dragon hauls a
    wooden crate on chains over a misty mountain ranch at golden hour, wings beating slowly, camera tracking alongside'"}
    (only when video is available: a full-screen realistic video clip with the title and captions over it)
+ {"kind":"world","head":"title, max 5 words","vo":"...","layout":"flow|network|hero|grow|risk|compare",
+   "props":[{"p":"<prop>","color":"teal|green|amber|red|purple|grey","label":"max 3 words, or empty","say":"exact phrase from vo: it pops in then"}]}
+   (a neon 3D scene. Layouts: flow = props[:-1] are stations left to right and the last prop travels through them
+    (two portals and a crate: teleport freight); network = each prop is a node on a glowing globe, links fill in (2-8);
+    hero = props[0] is the company, big in the middle (a flier circles above its plinth), the rest stand around it;
+    grow = up to 5 columns rise one by one on their words (good news, growth); risk = props[0] is the company, the rest
+    are warnings or shields that fly in and hit it (bad news); compare = props[0] the old way (shown grey), props[1] the new
+    way, props[2] the thing they move. Props: %s)
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 """
 
+_W = open(os.path.join(HERE, "world.js"), encoding="utf-8").read()
+WORLD_PROPS = re.findall(r"^  (\w+)\(c\) \{", _W, re.M)        # (the neon 3D kit: world.js PROPS and LAYOUTS)
+WORLD_LAYOUTS = re.findall(r"^  (\w+)\(s\) \{", _W, re.M)
+WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
+
 RULES = """Rules:
+- The house style is neon 3D: every reel has at least one "world" scene (a stock story has 2 or 3: what the company does,
+  its good news, its bad news), and the hook may be one too (give the hook a layout and props). Pick the layout that
+  acts out the line, and props that show it: a dragon-rental firm is a dragon circling its ranch, a teleport freight
+  firm is crates through portals, a recall is warnings hitting the company. Charts stay charts.
 - Video (only when the ask's "video" says it is available): a stock story shows the company's business and its good
   and bad news as 2 or 3 film scenes; every other reel puts one "shot" on its hook (the first thing anyone sees, so make
   it striking). A shot shows the line's subject doing something specific and physical, fictional (no real brands,
@@ -312,6 +329,21 @@ def check(spec, facts, charts, category=None):
     if not sc or sc[0].get("kind") != "hook": errs.append("the first scene must be a hook")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (75, 140, True))
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
+    worlds = [s for s in sc if s.get("layout")]
+    for k, s in enumerate(sc):
+        if s.get("kind") == "world" or s.get("layout"):
+            P = s.get("props") or []
+            if s.get("layout") not in WORLD_LAYOUTS: errs.append(f"scene {k}: layout must be one of {', '.join(WORLD_LAYOUTS)}")
+            if not 1 <= len(P) <= 8: errs.append(f"scene {k}: a world scene has 1 to 8 props")
+            for q in P:
+                if q.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {q.get('p')!r}; use one of {', '.join(WORLD_PROPS)}")
+                if q.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: colour {q.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
+                if len(str(q.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {q.get('label')!r} is over 3 words")
+                if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
+    if category == "Stock story" and not 2 <= len(worlds) <= 3:
+        errs.append("a stock story shows what the company does and its news as 2 or 3 world scenes (neon 3D)")
+    elif category != "Daily recap" and not worlds:
+        errs.append("every reel has at least one world scene (neon 3D): the hook, or the idea of the reel acted out")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
     films = [s for s in sc if s.get("kind") == "film"]
     for k, s in enumerate(sc):
@@ -320,10 +352,7 @@ def check(spec, facts, charts, category=None):
         if s.get("kind") == "film" and not s.get("shot"): errs.append(f"scene {k} is a film scene with no shot")
     if not video and (films or any(s.get("shot") for s in sc)):
         errs.append("no video this time: use cards, big text or Rookie and Pro instead of film scenes and shots")
-    elif video and category == "Stock story" and not 2 <= len(films) <= 3:
-        errs.append("a stock story shows the business and its news as 2 or 3 film scenes")
-    elif video and category != "Stock story" and sc and not sc[0].get("shot"):
-        errs.append("put one cinematic \"shot\" on the hook (video is available)")
+
     words = sum(len(s.get("vo", "").split()) for s in sc)
     if not lo_w <= words <= hi_w: errs.append(f"the narration is {words} words; it must be {lo_w} to {hi_w}")
     for k, s in enumerate(sc):
@@ -398,7 +427,7 @@ def shown_check(sc, charts):
     kw = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split() if re.sub(r"[^a-z0-9']", "", w.lower())]
     for k, s in enumerate(sc):
         ch, kind, vo = s.get("chart"), s.get("kind"), s.get("vo", "")
-        if ch is None and kind in ("stick", "cards", "big", "film") and CHART_TALK.search(vo):
+        if ch is None and kind in ("stick", "cards", "big", "film", "world") and CHART_TALK.search(vo):
             errs.append(f"scene {k} talks about {CHART_TALK.search(vo).group(0)!r} but shows no chart: give it the chart, or say only what it shows")
         for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" else []):
             if t and len(kw(t)) >= 3 and any(kw(vo)[j:j + len(kw(t))] == kw(t) for j in range(len(kw(vo)))):
@@ -501,7 +530,7 @@ def capitals(spec):
         for it in s.get("items", []):
             for k in ("text", "sub"):
                 if it.get(k): it[k] = up(it[k])
-        for c in s.get("cues", []) + s.get("figures", []):
+        for c in s.get("cues", []) + s.get("figures", []) + s.get("props", []):
             for k in ("text", "label"):
                 if c.get(k): c[k] = up(c[k])
         if s.get("options"): s["options"] = [up(o) for o in s["options"]]
@@ -526,10 +555,10 @@ def brief(slot, category=None, remake=None):
     hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
     system = ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
               "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
-              "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % category)
+              "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS)))
     import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
     need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
-    facts["video"] = {"available": bool(footage.cred()) and footage.remaining() >= need}
+    facts["video"] = {"available": os.environ.get("HF_VIDEO") == "1" and bool(footage.cred()) and footage.remaining() >= need}   # (off: the neon 3D is the style)
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
            "recent_titles_to_avoid": history.get("titles", [])[-20:]}
     if CATEGORIES[category].startswith("VIRAL"):
