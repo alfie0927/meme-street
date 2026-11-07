@@ -152,7 +152,10 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(body.count('property="og:title"'), 1)
         self.assertIn('rel="canonical" href="https://memestreet.net/daily"', body)
         self.assertIn('"WebApplication"', body)
+        self.assertIn("<noscript><main", body)
+        self.assertIn("<h1>The Daily Chart: a daily stock market game</h1>", body)
         status, body, _ = http(self.srv, "/")
+        self.assertNotIn("<noscript><main", body)
         self.assertIn("<title>Meme Street</title>", body)
         self.assertNotIn("canonical", body)
 

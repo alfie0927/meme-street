@@ -6,8 +6,7 @@ Ordered by expected signups per hour of work. Each item: query → page → chan
    Search Console and Bing Webmaster Tools, submit `/sitemap.xml`. Unlocks positions, impressions and indexing checks.
 2. **"position size calculator"** → new `/tools/position-size-calculator`. A free tool (Monthly step 4); the game
    already has the sum in its risk tool, so the page can reuse the formula and link to `/lessons/position-sizing`.
-3. **Daily Chart server content.** "daily stock market game", "stock chart game like wordle" → `/daily`. The page is the
-   SPA shell; only `.dly-about` is in the HTML once JS runs. Put the how-to-play text and today's number in the server HTML.
+3. ~~Daily Chart server content~~ done 2026-11-07 (noscript how-to-play text and h1 on /daily).
 4. **Numbered steps render as one paragraph** on lesson pages (and in-game): `1.` lines in `content/learn-*.md` are not a
    list in `learning.parse_learn`. Fix in the parser so both get an `<ol>` (needs the Learn page's renderer to follow).
 5. **"investopedia simulator alternative"** → `/vs/investopedia-simulator`. Fair comparison; sources and "as of" dates.
