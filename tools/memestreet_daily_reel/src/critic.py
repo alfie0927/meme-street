@@ -163,88 +163,43 @@ def pack(work, out, rd, only=None, refs=True):
     return report
 
 
-SYSTEM = """You are a film maker with twenty years in short-form video, hired to approve or reject every Instagram Reel
-before it goes out on Meme Street (a free stock market game with fictional companies, memestreet.net). You are harsh
-and exact. You have watched thousands of finance Shorts and you know what holds a thumb and what loses it in a second.
-Nothing reaches the audience until it is something you would put your own name on.
+SYSTEM = """You are the last safety check before a Meme Street Instagram Reel posts (a free stock market game with
+fictional companies, memestreet.net). The owner decides what good looks like: their rulebook is below, and they give
+feedback after reels post. Your job is narrow: stop a reel that would embarrass the page. Flag only BLOCKERS:
+1. A fact that is wrong: a number, price, move or claim that contradicts the chart on screen or the facts.
+2. Voice and screen disagree: the voice says something the screen contradicts, or the story depends on something the
+   screen never shows (e.g. "price fell to 58" while the tag reads 64; a quiz question the chart cannot answer).
+3. A broken frame: text on text, text cut off, an empty stage for over 2 seconds, a garbled or unreadable scene.
+4. A word the listener hears wrongly (the transcript of the final mix against the script; a number written as digits,
+   or a homophone, is not a mispronunciation), or a garbled stretch of voice.
+5. A clear break of an owner's rule (the rulebook below), visible in this cut.
+Anything else, however much you would change it, is a "note" (logged for the owner, never blocking). Do not invent
+problems; judge only what this round's images and report.json show; numbers come only from report.json.
 
-You judge, and score out of 10:
-1. SYNC - every on-screen word, caption, marker and move lands exactly when the voice says it; nothing early, nothing late,
-   nothing on screen that the voice does not explain, nothing said that the screen does not show.
-2. VISUALS - appealing, clean, balanced, readable at a glance on a phone; every scene pops and gives the eye something new;
-   no clutter, no ugly or cramped labels, no empty dead stage, no text touching other text, nothing cut off. Every piece
-   of text is properly written: each title, head, card, bubble, label, caption sentence and the post caption starts with
-   a capital letter, names are capitalised ('Ember Dragon Ranches', 'I'), no lowercase fragments ('level cost you 11%').
-   A capitals fault is a script note (major on the hook or the end card). Titles are titles: the hook's title is the
-   reel's theme and each scene's head names its idea, in one consistent style; a title that just repeats what the voice
-   says ('This one candle'), or an answer's title that gives the answer away, is a script major.
-3. AUDIO - smooth, human pacing: steady speed (real narrators: about 3.9 words a second while talking), natural pauses after
-   commas (about 0.3 s) and sentences (about 0.35 s), never rushed, never dragging, no dead air; every word pronounced
-   correctly (the transcript of the final mix against the script shows what a listener hears: a word heard differently
-   is a mispronunciation unless it is clearly a homophone or a number written differently).
-4. CONTENT - the story: a hook that earns the next second, a clear arc with a payoff that delivers the hook's promise,
-   one idea, true and useful to a beginner trader, a reason to play the game, and an ending that makes people want the
-   next reel. Language that sounds like a person, not an advert.
-5. ANIMATED STORY SCENES ("story" scenes: 2D neon line art, glowing teal, purple and amber on near-black, after the
-   PhaseJump reel): each must pop, read at a glance, and act out exactly what the voice says at that moment (the right
-   props, popping in on their words). It must be readable in one second with the sound off: an abstract scene (a box
-   standing for 'your trade', triangles for 'panic') or one where you cannot tell what is happening is a script major
-   (fix: the chart, cards or a concrete scene instead). The wrong layout or props, or a scene that shows nothing the
-   voice says, is a script note (fix: a different layout or props); props clipping, labels off screen or on each other, or a dull frame
-   is a renderer note.
-6. VIDEO SHOTS (scenes with a full-screen realistic clip, when used): each must look real and cinematic, show exactly what the
-   voice says at that moment, and hold up frame by frame. AI artefacts (melted or doubled faces, extra limbs, objects
-   that warp or morph, gibberish text or signs, flicker) or a shot that shows the wrong thing are script majors: the
-   fix is a new shot description for that scene (only that clip is made again). Judge them under VISUALS and SYNC.
+You hear the reel through the report (what Whisper hears in the final mix, with times, pace and pauses) and see it
+through the images (Read them all: a contact sheet and three frames per scene). The frame below about 1440 px and the
+right edge are left empty on purpose (Instagram's interface covers them).
 
-You cannot hear the audio directly: you hear it through the report (what Whisper hears in the final mix, with times,
-the talking speed and the pauses). You see the reel through the images (Read them all: a contact sheet at one frame a
-second, and three frames per scene: as it lands, mid-line and its last moment, named with their times).
-The frame below about 1440 px and the right edge are left empty on purpose: Instagram's caption, buttons and audio strip
-cover them, so nothing may go there; do not mark that space down as dead.
+Every issue carries evidence or it is thrown away: the image file(s) where it shows, named exactly as in report.json
+"images", and/or a "report" quote copied character for character from report.json. Say where (scene, time; scenes count
+from 0), what is wrong, the concrete fix, and the owner of the fix: "script" (the writer controls each scene's kind,
+spoken line, head and on-screen text, cues, chart reveals, marks, shades, zooms and lines, cards, figures, bubbles,
+story layouts and props) or "renderer" (how the house template draws things).
 
-Your bar is the best faceless finance reels on Instagram, the ones with millions of views; the owner's own picks are in
-the pack (report.json "references": ref1.jpg... with their measured pace, pauses, cuts per minute and motion). Read
-them first and judge this reel against them: as clean, as calm, as easy to follow? Each format (quiz, stock story, lesson,
-Daily recap, stick skit) has its own template inside one house style (palette, font, small brand header with the
-format tag, caption style, calm motion): judge it against that shared style, not against another format's layout. Score against them, not
-against this pipeline's earlier cuts: 8 means you would proudly put this reel next to theirs, 9 means it beats them,
-6 is a forgettable reel that loses the thumb, and most first cuts are 5 or 6. A reel that looks cheap, cluttered,
-confusing or ugly in ANY frame (something you cannot read, a jumpy picture, text on text, a muddy or stray element)
-cannot score 8 on visuals, and a voice that mispronounces a word, rushes or stalls cannot score 8 on audio. Nothing
-posts unless every score is 8 or more and no major fault is left, so never round up out of kindness: an empty slot is
-better than a reel that makes the page look amateur. Be accurate before you are harsh: a note is only for something that is
-wrong in THIS cut and that you can point at in this round's images or report.json. Judge only what is in front of you,
-never what you remember of an earlier cut; do not invent problems to look tough, do not guess at what you cannot see,
-and do not move the goalposts. Numbers (pauses, speeds, drift) come only from report.json, never from estimates.
-
-Every note carries evidence, or it is thrown away unread: the image file(s) where it shows, named exactly as in
-report.json "images", and/or a "report" quote copied character for character from report.json that proves it (for
-example "secs": 0.62). A note also says exactly where (scene, time), what is wrong, the concrete fix, and a one-line
-lesson: the general rule the writer must follow in EVERY future reel. Scenes count from 0, as in report.json.
-
-Say who can fix it. The writer controls only the script: each scene's kind and order, its spoken line, head and
-on-screen text, and its cues: which phrase each cue lands on, which candles are revealed, marked, shaded or zoomed,
-each line's price, label and tone, cards, figures, poses, bubbles, each story scene's layout and props (which, their colours, labels and words), and each
-video shot's description ("shot"). That is "script", and its fix names the
-change in those terms (e.g. "scene 1: a line cue at 119.42 labelled 'Entry', said on 'entry'"). Everything about how
-the house template draws (where a tag sits, tags stacking, sizes, fonts, colours, the voice's pauses and pronunciation
-of a word that is written right, the end card's layout) is "renderer": the writer cannot change it, so never give the
-writer a renderer fix.
-
-From round 2 you get a numbered checklist of your earlier notes that are still open, and the scenes that changed since
-the last cut. For each checklist note, look at this cut: "fixed", or "still_wrong" with evidence from this cut. Never
-repeat a checklist note as a new issue, and never write "not fixed from round N" in a new issue. Scenes that did not
-change passed last round: judge the changed scenes and the scenes a checklist note names; raise a new note on an
-unchanged scene only for a blocker.
+In round 2 you get the blockers from round 1 as a checklist: answer each "fixed" or "still_wrong" with evidence from this
+cut, and raise a new blocker only if this cut shows one.
 
 Reply with JSON only:
-{"approved": true|false, "scores": {"sync": n, "visuals": n, "audio": n, "content": n},
- "verdict": "two or three blunt sentences",
+{"approved": true|false, "scores": {"sync": n, "visuals": n, "audio": n, "content": n} (for the log only),
+ "verdict": "one or two sentences",
  "previous": [{"n": 1, "status": "fixed|still_wrong", "evidence": [{"image": "..."}, {"report": "..."}]}],
- "issues": [{"severity": "blocker|major|minor", "where": "scene 3, 12.4s", "what": "...", "fix": "...",
-             "owner": "script|renderer", "lesson": "a rule for every future reel",
-             "evidence": [{"image": "scene03_chart_12.1s-15.0s.jpg"}, {"report": "\\"secs\\": 0.62"}]}]}"""
+ "issues": [{"severity": "blocker|note", "where": "scene 3, 12.4s", "what": "...", "fix": "...", "owner": "script|renderer",
+             "lesson": "a rule for every future reel", "evidence": [{"image": "scene03_chart_12.1s-15.0s.jpg"}, {"report": "\\"secs\\": 0.62"}]}]}"""
+
+
+def rulebook():
+    p = os.path.join(ROOT, "RULEBOOK.md")
+    return "\n\nTHE OWNER'S RULEBOOK:\n" + open(p, encoding="utf-8").read() if os.path.exists(p) else ""
 
 
 def ask_critic(rd, rnd, prev, changed=None, model=None):
@@ -259,7 +214,7 @@ def ask_critic(rd, rnd, prev, changed=None, model=None):
                 "cut and answer in \"previous\"):\n" +
                 "\n".join(f"{n}. [{x.get('severity')}] {x.get('where')}: {x.get('what')}" for n, x in enumerate(prev, 1)))
     r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", model or os.environ.get("REEL_CRITIC_MODEL", "opus"),
-                        "--append-system-prompt", SYSTEM, "--allowedTools", "Read",
+                        "--append-system-prompt", SYSTEM + rulebook(), "--allowedTools", "Read",
                         "--disallowedTools", "Bash,Edit,Write,WebFetch,WebSearch,Task,NotebookEdit"],
                        input=req, capture_output=True, text=True, timeout=900, cwd=rd,
                        env={k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"})
@@ -277,7 +232,7 @@ def gate(rev):
     scores 6 on visuals, or with a box through its title, does not post."""
     sc = rev.get("scores") or {}
     rev["low_scores"] = {k: v for k, v in sc.items() if not isinstance(v, (int, float)) or v < 8}
-    rev["approved"] = not rev["low_scores"] and not any(x.get("severity") in ("blocker", "major") for x in rev.get("issues", []))
+    rev["approved"] = not any(x.get("severity") == "blocker" for x in rev.get("issues", []))   # (a safety check: only blockers stop a reel)
     return rev
 
 
@@ -383,7 +338,7 @@ def loop(work, out):
                     big = os.environ.get("REEL_CRITIC_MODEL", "opus")     # (to save the plan's usage: the big model judges the first cut,
                     small = os.environ.get("REEL_CRITIC_LATER", "sonnet")  #  a smaller one checks the fixes, and the big one confirms a pass)
                     rev = verify(ask_critic(rd, rnd, prev, changed, big if rnd == 1 else small), rd, prev)
-                    if rnd > 1 and rev["approved"] and small != big:
+                    if rnd > 1 and rev["approved"] and small != big and os.environ.get("REEL_CRITIC_CONFIRM") == "1":
                         print(f"critic round {rnd}: passed by {small}; {big} confirms", flush=True)
                         rev = verify(ask_critic(rd, rnd, prev, changed, big), rd, prev)
                     break
@@ -425,7 +380,7 @@ def loop(work, out):
             json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"),
                        "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
             return rnd
-        if rnd >= int(os.environ.get("MAX_ROUNDS", "6")) or rev.get("plateau"):   # (credits: round 1 finds most faults and the rest
+        if rnd >= int(os.environ.get("MAX_ROUNDS", "2")) or rev.get("plateau"):   # (one review, at most one fix: then held)   # (credits: round 1 finds most faults and the rest
                                                          #  are tweaks; a reel not good enough by round 6, or no longer improving, is held)
             remember(TODO, [{"what": f"HELD after {rnd} rounds{' (no longer improving)' if rev.get('plateau') else ''}: " + (rev.get("verdict") or ""), "owner": "renderer", "where": slot,
                              "fix": "find why it cannot pass", "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
@@ -471,9 +426,9 @@ def demo():
     assert v["approved"] and v["stuck"][0]["rounds_open"] == 3 and "STUCK" in json.load(open(TODO))[0]["what"]
     TODO = old
     S8 = {"sync": 8, "visuals": 8, "audio": 9, "content": 8}
-    assert not gate({"scores": dict(S8, visuals=6), "issues": []})["approved"]                       # (a 6 on visuals does not post)
-    assert not gate({"scores": S8, "issues": [{"severity": "major", "owner": "renderer"}]})["approved"]   # (a template fault blocks)
-    assert gate({"scores": S8, "issues": [{"severity": "minor"}]})["approved"]
+    assert gate({"scores": dict(S8, visuals=6), "issues": []})["approved"]                           # (scores are for the log)
+    assert not gate({"scores": S8, "issues": [{"severity": "blocker", "owner": "renderer"}]})["approved"]  # (a blocker stops it)
+    assert gate({"scores": S8, "issues": [{"severity": "note"}]})["approved"]                          # (notes never block)
     print("verify ok")
 
 

@@ -556,7 +556,10 @@ def system_prompt(category):
     changed must not hold the writer to the old one)."""
     voice = open(os.path.join(ROOT, "voice.md"), encoding="utf-8").read()      # (a copy of ~/.claude/instagram/voice.md)
     hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
-    return ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
+    rb = os.path.join(ROOT, "RULEBOOK.md")              # (the owner's rulebook: highest priority, read before every reel)
+    book = ("THE OWNER'S RULEBOOK. These rules override everything below; follow every one:\n" +
+            open(rb, encoding="utf-8").read() + "\n\n") if os.path.exists(rb) else ""
+    return book + ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
             "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
             "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS)))
 
