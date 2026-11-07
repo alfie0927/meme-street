@@ -278,7 +278,8 @@ RULES = """Rules:
   and bad news as 2 or 3 film scenes; every other reel puts one "shot" on its hook (the first thing anyone sees, so make
   it striking). A shot shows the line's subject doing something specific and physical, fictional (no real brands,
   places or people), no text or screens in frame. Charts stay charts.
-- Total spoken words 75 to 140 (about 25 to 50 seconds), unless the reel's description says otherwise. No greeting, no "in this video". Start at the hook.
+- Total spoken words 60 to 110 (about 25 to 35 seconds): concise, one idea, every line earning its place, unless the
+  reel's description says otherwise. No greeting, no "in this video". Start at the hook.
 - The first scene is a hook; the last is the outro. Change what is on screen every scene.
 - Every number, name and outcome must come from the facts. Never invent results, prices, people or history.
 - Candle indices in cues must be between a chart's first_shown and last. "say" must be words that appear in that scene's vo.
@@ -335,7 +336,7 @@ def check(spec, facts, charts, category=None):
     errs = []
     sc = spec.get("scenes") or []
     if not sc or sc[0].get("kind") != "hook": errs.append("the first scene must be a hook")
-    lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (75, 140, True))
+    lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (60, 110, True))
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
     body = [s for s in sc if s.get("kind") != "outro"]
@@ -562,7 +563,7 @@ def system_prompt(category):
 
 def brief(slot, category=None, remake=None):
     """Everything the writer needs for one reel: the system prompt, the request (facts included) and the charts."""
-    rng = random.Random(slot)
+    rng = random.Random(slot + os.environ.get("REEL_TRY", ""))   # (a held slot's second try gets another format)
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
     if remake:
         category = {"Chart quiz": "Chart quiz", "Stock story": "Stock story", "Technicals": "Technical lesson",

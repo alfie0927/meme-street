@@ -12,15 +12,21 @@ export PATH="$HOME/.local/bin:$PATH"                 # (Claude Code, the script 
 mkdir -p logs queue queue-originals
 exec 8>queue/.auto.lock; flock 8                   # (one reel at a time: the critic has no round limit, so the next run waits)
 SLOT="${1:-}"
-if [ -z "$SLOT" ]; then
-  for h in 0300 0600 0900 1200 1300 1800 2100; do
-    for d in "$(date -u +%F)" "$(date -u -d tomorrow +%F)"; do
+if [ -z "$SLOT" ]; then                              # (made ahead: the earliest slot in the next 36 hours that has no approved reel
+  for d in "$(date -u +%F)" "$(date -u -d tomorrow +%F)" "$(date -u -d '2 days' +%F)"; do   #  yet, so posts go out on time)
+    for h in 0300 0600 0900 1200 1300 1800 2100; do
       s="${d}T$h"; ds=$(( $(date -u -d "${d} ${h:0:2}:${h:2:2}" +%s) - $(date -u +%s) ))
-      if [ "$ds" -gt 0 ] && [ "$ds" -le 10800 ]; then SLOT=$s; break 2; fi
+      [ "$ds" -gt 600 ] && [ "$ds" -le 129600 ] || continue
+      [ -f "queue/$s/.auto" ] || [ -f "queue/$s/posted.json" ] && continue
+      [ "$(cat "queue/$s/.tries" 2>/dev/null || echo 0)" -ge 2 ] && continue   # (held twice: that slot stays empty)
+      SLOT=$s; break 2
     done
   done
+  [ -n "$SLOT" ] || { echo "every slot in the next 36 hours has its reel"; exit 0; }
+  mkdir -p "queue/$SLOT"; tries=$(cat "queue/$SLOT/.tries" 2>/dev/null || echo 0)
+  echo $((tries + 1)) > "queue/$SLOT/.tries"; export REEL_TRY=$tries   # (a second try gets another format)
 fi
-[ -n "$SLOT" ] || { echo "no slot in the next 3 hours"; exit 0; }
+[ -n "$SLOT" ] || { echo "no slot"; exit 0; }
 [ -f "queue/$SLOT/posted.json" ] && { echo "$SLOT is already posted"; exit 0; }
 [ -f "queue/$SLOT/.auto" ] && { echo "$SLOT already has its auto reel"; exit 0; }
 W="work/auto-$SLOT"; O="out/auto-$SLOT"
