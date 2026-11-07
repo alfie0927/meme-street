@@ -558,10 +558,9 @@ class ServerTests(unittest.TestCase):
         try:
             c.recv_until("state")
             me = json.loads(c.get("/api/me")[1])
-            for key in ("achievements", "quests", "tournaments", "following", "public", "rank", "unlocked"):
+            for key in ("achievements", "following", "public", "rank", "unlocked"):
                 self.assertIn(key, me)
-            self.assertEqual(len(me["quests"]["quests"]), 3)
-            self.assertEqual({t["kind"] for t in me["tournaments"]["active"]}, {"marathon"})
+            self.assertNotIn("quests", me)
             time.sleep(0.3)
             b = json.loads(c.get("/api/boards")[1])
             for key in ("season", "pnl", "mine"):
@@ -571,44 +570,7 @@ class ServerTests(unittest.TestCase):
         finally:
             c.close()
 
-    def test_tournament_join_over_http(self):
-        c = Client(self.srv, "TourneyJoin")
-        try:
-            c.recv_until("state")
-            me = json.loads(c.get("/api/me")[1])
-            time.sleep(0.6)
-            bad = json.loads(c.post("/api/tournament/join", {"id": "nothing"})[1])
-            self.assertFalse(bad["ok"])
-            open_now = [t for t in me["tournaments"]["active"] if t["open"]]
-            if not open_now:                      # entry windows close part-way through each tournament
-                return
-            t = open_now[0]
-            time.sleep(0.6)
-            ok = json.loads(c.post("/api/tournament/join", {"id": t["id"]})[1])
-            self.assertTrue(ok["ok"], ok)
-            time.sleep(0.6)
-            again = json.loads(c.post("/api/tournament/join", {"id": t["id"]})[1])
-            self.assertFalse(again["ok"])
-            time.sleep(0.3)
-            mine = json.loads(c.get("/api/me")[1])
-            joined = next(x for x in mine["tournaments"]["active"] if x["id"] == t["id"])
-            self.assertTrue(joined["joined"])
-            self.assertEqual(joined["mine"]["rank"], 1)
-            self.assertEqual(joined["mine"]["account"]["cash"], 1000.0)          # contest_balance in base.json
-            # a paper trade over the socket (the real balance is left alone: see test_contests)
-            c.send({"type": "contest_trade", "id": t["id"], "ticker": "GOLD", "side": "buy", "pct": 0.5})
-            res = c.recv_until("result")
-            self.assertTrue(res["ok"], res)
-            self.assertTrue(res["contest"])
-            c.send({"type": "contest_trade", "id": "nothing", "ticker": "GOLD", "side": "buy", "pct": 0.5})
-            self.assertFalse(c.recv_until("result")["ok"])
-            time.sleep(0.4)
-            after = json.loads(c.get("/api/me")[1])
-            acct = next(x for x in after["tournaments"]["active"] if x["id"] == t["id"])["mine"]["account"]
-            self.assertEqual([r["ticker"] for r in acct["positions"]], ["GOLD"])
-            self.assertAlmostEqual(acct["cash"], 500.0, places=2)
-        finally:
-            c.close()
+
 
     def test_profiles_follow_and_privacy_over_http(self):
         a, b = Client(self.srv, "ProfA"), Client(self.srv, "ProfB")

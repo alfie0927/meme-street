@@ -388,7 +388,7 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
   lab(0,290,STAGE.top+70);lab(1,790,STAGE.top+70)}
  else if(lay==='stage'){}   // (the living backdrop and an empty ground: a storyboard's actors alone)
  let cam=0;{const A=s.actors||[],Bt=s.beats||[],h=a=>(PSZ[a.p]||[0,220])[1]*aK(s,a);   // the storyboard: actors over the setting, their labels only while they stand still; the beats' effects
-  A.forEach((a,j)=>{const S=actorState(s,a,t);if(!S.alive)return;const k=aK(s,a)*S.grow,en=Bt.find(b=>b.do==='enter'&&b.who===a.id),t0=en&&en.t!=null?en.t:s.t0+.2;
+  A.forEach((a,j)=>{const S=actorState(s,a,t);if(!S.alive)return;const pw=(PSZ[a.p]||[200,220])[0],k=Math.min(aK(s,a)*S.grow,S.x>STAGE.x0&&S.x<STAGE.x1?2*Math.min(S.x-STAGE.x0,STAGE.x1-S.x)/pw:9),en=Bt.find(b=>b.do==='enter'&&b.who===a.id),t0=en&&en.t!=null?en.t:s.t0+.2;
    g+=`<g transform="translate(${S.sh.toFixed(1)} 0) rotate(${S.rot.toFixed(1)} ${S.x.toFixed(0)} ${S.y.toFixed(0)})">${prop2d(Object.assign({},a,{color:S.col}),S.x,S.y,k,t,t0,j+20)}</g>`;
    if(a.label&&S.rest&&t>=t0)L.push({text:a.label,x:S.x,y:S.y-h(a)*S.grow-40,color:sc2({color:S.col}),a:cl(seg(t,t0,t0+.3))})});
   Bt.forEach(b=>{if(b.t==null||t<b.t)return;const Dn=BEAT[b.do]||.5,ti=b.t+Dn,a=A.find(q=>q.id===b.who);if(!a)return;const S=actorState(s,a,Math.min(t,ti)),c=sc2({color:S.col}),H=h(a),k=aK(s,a);

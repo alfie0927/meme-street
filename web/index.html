@@ -253,10 +253,8 @@ body.guest .guest-cta{display:flex}
 .curve{width:100%;height:auto;display:block;cursor:crosshair;touch-action:pan-y}
 .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
 .pbar{height:3px;background:var(--line2);overflow:hidden;margin-top:5px}.pbar i{display:block;height:100%;background:var(--acc)}.pbar.done i{background:var(--up)}
-.quest{padding:8px 0;border-bottom:1px solid var(--line2)}.q-done b{color:var(--up)}
 .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px}
 .ach{border:1px solid var(--line);border-left:2px solid var(--acc);border-radius:2px;padding:8px 11px}.ach.locked{opacity:.5;border-left-color:var(--line)}.ach b{display:block}.ach small{display:block;color:var(--mut)}.ach .when{font-size:11px;margin-top:4px;color:var(--up)}
-.tour{border-left:2px solid var(--line);padding:6px 12px;margin-bottom:8px}
 .chatlog{height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:2px;padding:8px 10px;background:var(--bg);margin-bottom:8px}
 .msg{padding:3px 0;font-size:12.5px;word-break:break-word}.msg small{color:var(--mut);margin-right:5px}.msg .rep{opacity:0;margin-left:8px;cursor:pointer;font-size:11px;color:var(--mut)}.msg:hover .rep{opacity:1}.msg .rep:hover{color:var(--dn)}
 .share{display:inline-block;margin-left:6px;padding:0 7px;border-radius:3px;border:1px solid var(--line);font-size:11px}
@@ -372,12 +370,6 @@ body.guest .guest-cta{display:flex}
 
 .exit-btn{min-height:0;padding:2px 9px;border-radius:3px;background:none;border:1px dashed var(--line);color:var(--mut);font-variant-numeric:tabular-nums}.exit-btn.set{border-style:solid;color:var(--txt)}.exit-btn:hover{border-color:var(--acc);color:var(--txt)}.exit-btn small{font-size:10.5px}
 .exit-edit{display:inline-flex;gap:4px;align-items:center}.exit-edit input{width:92px;padding:3px 6px}.exit-edit button{min-height:0;padding:3px 8px}
-.ptitle{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;padding:1px 7px;border-radius:3px;border:1px solid #a5f3fc66;color:#a5f3fc;background:#a5f3fc12;vertical-align:1px;white-space:nowrap}
-.lad-tier{border:1px solid var(--line2);border-radius:2px;margin:8px 0;padding:0 12px}.lad-tier summary{cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;padding:8px 0;list-style:none}
-.lad-tier summary::-webkit-details-marker{display:none}.lad-tier summary .pbar{grid-column:1/-1}.lad-tier .lad-arrow{color:var(--mut);transition:transform .15s}.lad-tier[open] .lad-arrow{transform:rotate(180deg)}
-.lad-bronze{border-left:3px solid #cd7f32}.lad-silver{border-left:3px solid #c0c7d0}.lad-gold{border-left:3px solid #ffd166}.lad-diamond{border-left:3px solid #a5f3fc}
-.lad-q{display:grid;grid-template-columns:1fr auto;gap:0 12px;padding:7px 0;border-top:1px solid var(--line2)}.lad-q.done>div>b{color:var(--up)}.lad-p{grid-column:1/-1}.lad-r{white-space:nowrap;text-align:right}.lad-r b{color:var(--up)}.lad-unl{font-size:12px;margin-top:3px}
-.lad-h{margin:14px 0 6px;font-size:13px}#lad-preview{margin-left:6px}
 .cal-nav{display:flex;align-items:center;gap:8px;margin:12px 0 4px}.cal-nav h3{margin:0;padding:0;border:0;flex:1;text-align:center;font-size:15px;color:var(--txt)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.cal-wd{font-size:11px;color:var(--mut);text-align:center;padding:2px 0;text-transform:uppercase;letter-spacing:.05em}
 .cal-cell{display:flex;flex-direction:column;align-items:stretch;gap:3px;min-height:92px;min-width:0;padding:5px 6px;border:1px solid var(--line2);border-radius:2px;background:var(--card);text-align:left;color:var(--txt);font:inherit}
@@ -420,9 +412,9 @@ body.guest .guest-cta{display:flex}
 <div class="stat"><small>Cash</small><span id="cash">-</span></div>
 <div class="stat"><small>Equity</small><span id="eq">-</span></div>
 <div class="stat"><small>P&amp;L (all time)</small><span id="pnl">-</span></div>
-<div class="stat"><small>Day return</small><span id="ret">-</span></div>
+<div class="stat"><small>Today</small><span id="ret">-</span></div>
 <div class="stat"><small>Rank</small><span id="rank">-</span></div>
-<div class="stat"><small>Day <span id="sn"></span> ends in</small><span id="left">-</span></div>
+<div class="stat"><small>Session <span id="sn"></span> ends in</small><span id="left">-</span></div>
 </div><div id="tape"><div class="tape-run"></div></div></header>
 <div id="session-banner"></div><div id="low-banner"></div><div id="learn-banner"></div>
 <main><section>
@@ -463,15 +455,7 @@ body.guest .guest-cta{display:flex}
 <p class="hint">Follow up to 20 traders. You see their holdings only if they made them public, and always a few minutes late.</p><table id="follow-list"></table></div></div>
 <div class="card" id="profile-card"><div id="prof-head"></div>
 <h3 class="sp">Invite friends</h3><div id="invite"></div>
-<h3 class="sp">Daily quests</h3><div id="quests"></div>
-<h3 class="sp">Quest ladder <span id="lad-count" class="mut"></span></h3><div id="ladder"></div>
-<h3 class="sp">Daily contest</h3><div id="tours"></div>
-<div id="contest-play" style="display:none"><div id="cp-summary"></div>
-<div class="bar"><select id="cp-ticker" aria-label="Ticker"></select><select id="cp-pct" aria-label="Size"><option value="0.1">10%</option><option value="0.25" selected>25%</option><option value="0.5">50%</option><option value="1">100%</option></select><button class="buy" id="cp-buy">Buy</button><button class="sell" id="cp-sell">Sell / short</button></div>
-<div class="hint">The size is a share of your paper cash when you buy and of the position when you sell, as on the market page.</div>
-<table id="cp-pos"></table></div>
-<h3 class="sp">Achievements <span id="ach-count" class="mut"></span></h3><div class="ach-grid" id="achs"></div>
-<h3 class="sp">Medals</h3><div id="badges"></div>
+<h3 class="sp">Badges <span id="ach-count" class="mut"></span></h3><div class="ach-grid" id="achs"></div>
 <h3 class="sp">Account</h3><div id="acct-note" class="hint"></div>
 <div id="email-box" style="display:none"><div id="email-note" class="hint"></div>
 <div class="bar"><input id="email-in" type="email" maxlength="254" placeholder="Email address" autocomplete="email"><button class="buy" id="email-send">Send code</button></div>
@@ -479,7 +463,7 @@ body.guest .guest-cta{display:flex}
 <div class="bar"><input id="acct-cur" type="password" maxlength="128" placeholder="Current password" autocomplete="current-password" style="display:none"><input id="acct-new" type="password" maxlength="128" placeholder="New password (8+)" autocomplete="new-password"><button class="buy" id="acct-save">Save password</button></div>
 <div class="bar"><button id="acct-others">Log out other devices</button><button id="acct-out">Log out</button></div>
 <h3 class="sp">Privacy</h3><label><input type="checkbox" id="pub-toggle" style="width:auto;margin:0 8px 0 0"> Make my results and (delayed) holdings public</label>
-<p class="hint">If it's public, others see your returns and what you held five minutes ago, in percentages. If not, only your name, medals and achievements (and you still show on the leaderboards).</p></div>
+<p class="hint">If it's public, others see your returns and what you held five minutes ago, in percentages. If not, only your name and badges (and you still show on the leaderboards).</p></div>
 <div class="card" id="learn-card"><div id="learn-body" class="mut">Loading…</div></div>
 <div class="card" id="bots-card"><h3>Trading bots</h3><div id="bots-body"><p class="mut">Loading…</p></div></div>
 <div class="card" id="daily-card"><div id="daily-body"><p class="mut">Loading…</p></div></div>
@@ -552,7 +536,7 @@ function dur(s){
 // green or red by the number as it is shown: an amount that rounds to 0.00 (or a return that rounds to 0.0%) stays plain
 const cls=(v,d=2)=>{const r=Number(Number(v).toFixed(d));return r>0?'up':r<0?'dn':''},clsP=v=>cls(v,3);
 function toast(m,ok,ms){const t=$('toast');t.textContent=m;t.style.borderColor=ok?'#3ad07a':'#f25c54';t.style.opacity=1;clearTimeout(t._h);t._h=setTimeout(()=>t.style.opacity=0,ms||2200)}
-// achievements, quests and other messages from the server stack up in the corner so they never hide a trade result
+// badges and other messages from the server stack up in the corner so they never hide a trade result
 function notify(msgs){
  const box=$('notes');
  for(const m of msgs){const d=document.createElement('div');d.textContent=m;if(/margin call/i.test(m))d.className='bad';box.appendChild(d);
@@ -663,7 +647,7 @@ function connect(){
    if(t==='tick')onTick(m);
    else if(t==='init')onInit(m);
    else if(t==='notice'){notify(m.msgs||[])}
-   else if(t==='result'){toast(m.msg,m.ok);if(m.contest)setTimeout(loadMe,150)}
+   else if(t==='result'){toast(m.msg,m.ok)}
    else if(t==='history'){if(m.ticker===selectedTicker&&m.period===chartPeriod){if(m.since==null)chartCandles=m.candles||[];else if(chartCandles.length)chartCandles=chartCandles.filter(c=>c.t<m.since).concat(m.candles||[]).slice(-CHART_MAX);else requestHistory();if(m.now)clockOffset=m.now-Date.now()/1000;scheduleChart()}}
    else if(t==='company'){if(m.ticker===selectedTicker){company=m;drawCompany()}}
    else if(t==='chat')onChat(m.msg);
@@ -1318,9 +1302,7 @@ $('hist-csv').onclick=async()=>{
 // two boards side by side, by return and by profit, each with its own Today / All time (remembered)
 let boardsData=null;const boardTab=Object.assign({ret:'day',pnl:'day'},lsGet('ms_board_tabs',{}));
 const boardKey=by=>boardTab[by]==='day'?(by==='ret'?'season':'day_pnl'):by;
-// a name as the player chose to show it: a name colour and a title from the quest ladder's Diamond tier (ladder.py)
-const COLOR_OK=/^#[0-9a-f]{6}$/i;
-function nameHtml(name,st){const c=st&&COLOR_OK.test(st.c||'')?` style="color:${st.c}"`:'';return `<span class="pname"${c}>${esc(name)}</span>${st&&st.t?` <span class="ptitle">${esc(st.t)}</span>`:''}`}
+function nameHtml(name){return `<span class="pname">${esc(name)}</span>`}
 const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${nameHtml(r.name,r.style)}</a>`;
 function drawBoards(){
  const b=boardsData;if(!b)return;const mine=b.mine||{};
@@ -1336,31 +1318,17 @@ function drawBoards(){
 $('leaders-card').addEventListener('click',e=>{const t=e.target.closest('.lb-tabs [data-b]');if(!t)return;boardTab[t.closest('.lb').dataset.by]=t.dataset.b;lsSet('ms_board_tabs',boardTab);drawBoards()});
 async function loadBoards(){const b=await api('/api/boards');if(b&&!b.slow&&!b.notfound){boardsData=b;drawBoards()}}
 
-// ---------- profile: quests, tournaments, achievements, privacy ----------
+// ---------- profile: badges, account, privacy ----------
 let meData=null;
 const pbar=(v,g)=>`<div class="pbar ${v>=g?'done':''}"><i style="width:${Math.min(100,v/g*100).toFixed(0)}%"></i></div>`;
 function drawProfile(){
  const d=meData;if(!d)return;
- setHtml($('prof-head'),`<h2 style="margin:0 0 4px">${nameHtml(d.name,d.ladder&&d.ladder.style)}</h2><div><span class="pill">Day rank ${d.rank.season?'#'+d.rank.season:'-'}</span><span class="pill">All-time P&amp;L ${d.rank.pnl?'#'+d.rank.pnl:'-'}</span><span class="pill">Worst drawdown ${(d.dd*100).toFixed(1)}%</span>${d.muted?`<span class="pill dn">Chat muted ${Math.ceil(d.muted/60)} min</span>`:''}</div>`);
+ setHtml($('prof-head'),`<h2 style="margin:0 0 4px">${esc(d.name)}</h2><div><span class="pill">Rank today ${d.rank.season?'#'+d.rank.season:'-'}</span><span class="pill">All-time P&amp;L ${d.rank.pnl?'#'+d.rank.pnl:'-'}</span><span class="pill">Worst drawdown ${(d.dd*100).toFixed(1)}%</span>${d.muted?`<span class="pill dn">Chat muted ${Math.ceil(d.muted/60)} min</span>`:''}</div>`);
  const link=`${location.origin}/?ref=${encodeURIComponent(d.invite||'')}`;
  setHtml($('invite'),`<p class="hint" style="margin-top:0">Your own invite link: anyone who signs up through it counts as invited by you.</p><div class="bar" style="margin:0"><input id="inv-link" readonly value="${esc(link)}" style="flex:1;min-width:220px;max-width:440px"><button id="inv-copy">Copy</button></div><p class="hint">${d.invited?`<b>${d.invited}</b> friend${d.invited===1?' has':'s have'} joined through your link.`:'Nobody has joined through your link yet.'}</p>`);
- const q=d.quests;
- setHtml($('quests'),`<div class="hint">The same three for everyone, for bragging rights (no MB). New ones in ${dur(q.resets_in)}. Streak: <b>${q.streak}</b> day${q.streak===1?'':'s'}.</div>`+q.quests.map(x=>`<div class="chal quest ${x.done?'q-done':''}"><b>${esc(x.text)}</b><span class="chal-r mut">${numText(Math.min(x.progress,x.goal),0)} / ${numText(x.goal,0)}</span>${pbar(x.progress,x.goal)}</div>`).join(''));
- drawLadder();
- const T=d.tournaments;
- const act=T.active.map(t=>{const left=dur(t.end-engineNow()),mine=t.mine;
-  return `<div class="tour"><b>${esc(t.name)}</b> <span class="mut">ends in ${left} · ${t.entrants} entered</span>
-   ${mine?`<div>You are in: rank <b>${mine.rank}</b> of ${mine.of}, <span class="${clsP(mine.ret)}">${pc(mine.ret)}</span> on your ${numText(t.balance,0)} MB paper balance. Trade it below.</div>`:t.open?`<div><button class="buy" data-join="${esc(t.id)}">Join with ${numText(t.balance,0)} MB of paper money</button></div>`:`<div class="mut">Entries closed. Next one starts when this ends.</div>`}
-   ${t.top.length?`<div class="mut" style="font-size:12px;margin-top:4px">Leading: ${t.top.map(r=>`${esc(r.name)} ${pc(r.ret)}`).join(' · ')}</div>`:''}</div>`}).join('');
- const played=T.finished.filter(t=>t.entrants>0),empty=T.finished.length-played.length;
- const fin=played.map(t=>`<div class="mut" style="font-size:12px;margin-top:4px"><b>${esc(t.name)}</b> (${t.entrants} entered): ${(Array.isArray(t.results)?t.results.slice(0,3).map((r,i)=>`${i+1}. ${esc(r.name)} ${pc(r.ret)}`).join(' · '):'')||'no results'}</div>`).join('')
-  +(empty?`<div class="mut" style="font-size:12px;margin-top:4px">${played.length?'And ':''}${empty} recent contest${empty===1?'':'s'} nobody entered.</div>`:'');
- setHtml($('tours'),`<div class="hint">Everyone starts with the same paper money and trades it at live prices under the real rules. The best returns at midnight UTC win a medal. Your real balance is never touched, and entries close after 12 hours.</div>`+act+(fin?`<h3 class="sp">Recent results</h3>`+fin:''));
- drawContest();
  drawAccount();
  setText($('ach-count'),`(${d.unlocked} / ${d.total})`);
  setHtml($('achs'),d.achievements.map(a=>`<div class="ach ${a.t?'':'locked'}"><b>${esc(a.name)}</b><small>${esc(a.description)}</small>${a.t?`<small class="when">Unlocked ${stamp(a.t)}</small>`:''}</div>`).join(''));
- setHtml($('badges'),d.badges.length?d.badges.slice().reverse().map(b=>`<span class="pill">${['1st','2nd','3rd'][b.place-1]||''} ${esc(b.tournament)}${b.tier?' · '+esc(b.tier):''} · ${pc(b.ret)} · ${stamp(b.t)}</span>`).join(''):'<span class="mut">No medals yet. Finish in the top three of a daily contest.</span>');
  if($('pub-toggle').checked!==d.public&&document.activeElement!==$('pub-toggle'))$('pub-toggle').checked=d.public}
 function drawAccount(){
  const a=meData&&meData.account;if(!a)return;
@@ -1385,45 +1353,9 @@ $('acct-save').onclick=async()=>{
  if(j.token){token=j.token;try{localStorage.ms_token=token}catch(e){}$('acct-new').value=$('acct-cur').value='';toast(j.msg,true);loadMe();connect()}else toast(j.error||'Could not save the password',false)};
 $('acct-others').onclick=async()=>{const r=await api('/api/account/logout_all',{method:'POST',body:{}});if(r&&r.msg)toast(r.msg,true);loadMe()};
 $('acct-out').onclick=logoutHere;
-let contestId=null;
-function contestOf(d){return d&&d.tournaments&&d.tournaments.active.find(t=>t.joined&&t.mine&&t.mine.account)}
-function drawContest(){
- const t=contestOf(meData),box=$('contest-play');
- if(!t){contestId=null;box.style.display='none';return}
- contestId=t.id;box.style.display='block';
- const a=t.mine.account,sel=$('cp-ticker');
- if(S){const names=Object.keys(S.byT||{}).sort();if(sel.options.length!==names.length){const keep=sel.value;sel.innerHTML=names.map(n=>`<option>${esc(n)}</option>`).join('');if(keep&&names.includes(keep))sel.value=keep}}
- setHtml($('cp-summary'),`<div>Paper equity <b>${numText(a.equity)}</b> MB (<span class="${clsP(t.mine.ret)}">${pc(t.mine.ret)}</span>) · free cash ${numText(a.free)} MB · rank <b>${t.mine.rank}</b> of ${t.mine.of} · ${a.trades} trade${a.trades===1?'':'s'}${a.margin_calls?` · <span class="dn">${a.margin_calls} margin call${a.margin_calls===1?'':'s'}</span>`:''}</div>`);
- setHtml($('cp-pos'),tbl(['Position','Shares','Entry','Now','P&amp;L',''],a.positions.map(r=>`<tr><td>${esc(r.ticker)}${r.shares<0?' <span class="mut">short</span>':''}</td><td>${numText(Math.abs(r.shares),2)}</td><td>${numText(r.avg,2)}</td><td>${numText(r.price,2)}</td><td class="${cls(r.pnl)}">${numText(r.pnl,2)}</td><td><button data-cclose="${esc(r.ticker)}" data-cside="${r.shares<0?'buy':'sell'}">Close</button></td></tr>`),'No paper positions yet. Pick a ticker and buy or short it.'))}
-function contestTrade(ticker,side,pct){if(contestId)send({type:'contest_trade',id:contestId,ticker,side,pct})}
-$('cp-buy').onclick=()=>contestTrade($('cp-ticker').value,'buy',Number($('cp-pct').value));
-$('cp-sell').onclick=()=>contestTrade($('cp-ticker').value,'sell',Number($('cp-pct').value));
-$('cp-pos').addEventListener('click',e=>{const b=e.target.closest('[data-cclose]');if(b)contestTrade(b.dataset.cclose,b.dataset.cside,1)});
-setInterval(()=>{if(page==='profile'&&contestId&&!document.hidden)loadMe()},2500);
-$('tours').addEventListener('click',async e=>{const b=e.target.closest('[data-join]');if(!b)return;b.disabled=true;const r=await api('/api/tournament/join',{method:'POST',body:{id:b.dataset.join}});if(r&&r.msg)toast(r.msg,r.ok);loadMe()});
 $('pub-toggle').addEventListener('change',async()=>{const r=await api('/api/public',{method:'POST',body:{public:$('pub-toggle').checked}});if(r&&r.msg)toast(r.msg,r.ok);loadMe()});
-// the quest ladder: Bronze to Diamond, one drop-down per tier (the first unfinished tier starts open)
-let ladOpen=lsGet('ms_ladder_open',null);
-function drawLadder(){
- const L=meData&&meData.ladder;if(!L)return;
- setText($('lad-count'),`(${L.done} / ${L.total})`);
- const first=(L.tiers.find(t=>t.done<t.quests.length)||L.tiers[L.tiers.length-1]).id,open=new Set(ladOpen||[first]);
- const opt=(v,cur,n)=>`<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(n)}</option>`;
- const style=L.titles.length||L.colors.length?`<div class="bar"><select id="lad-title" aria-label="Title">${opt('',L.wear.title,'No title')}${L.titles.map(t=>opt(t.id,L.wear.title,t.name)).join('')}</select><select id="lad-color" aria-label="Name colour">${opt('',L.wear.color,'Plain name')}${L.colors.map(c=>opt(c.id,L.wear.color,c.name)).join('')}</select><button class="buy" id="lad-save">Save</button><span id="lad-preview">${nameHtml(meData.name,L.style)}</span></div>`
-  :'<p class="hint" style="margin:0">Finish a Diamond quest to unlock a title (such as <span class="ptitle">Top Trader</span>) and a colour for your name.</p>';
- setHtml($('ladder'),`<p class="hint">One-off quests that get harder each tier. Each pays once (Bronze ${L.tiers[0].reward}, Silver ${L.tiers[1].reward}, Gold ${L.tiers[2].reward}, Diamond ${L.tiers[3].reward} MB), and a Diamond quest also unlocks a title and a name colour. Rewards never lift your return or rank.</p>`
-  +L.tiers.map(t=>`<details class="lad-tier lad-${t.id}" data-tier="${t.id}" ${open.has(t.id)?'open':''}><summary><b>${esc(t.name)}</b><span class="mut">${t.done} / ${t.quests.length} done · +${numText(t.reward,0)} MB each${t.id==='diamond'?' and a title':''}</span><span class="lad-arrow">▾</span>${pbar(t.done,t.quests.length)}</summary>`
-   +t.quests.map(q=>`<div class="lad-q ${q.done?'done':''}"><div><b>${esc(q.name)}</b> <small class="mut">${esc(q.how)}</small>${q.unlocks?`<div class="lad-unl">Unlocks the title <span class="ptitle">${esc(q.unlocks.title)}</span> and a <b style="color:${COLOR_OK.test(q.unlocks.color)?q.unlocks.color:'inherit'}">${esc(q.unlocks.color_name.toLowerCase())}</b> name</div>`:''}</div><div class="lad-r"><span class="mut">${numText(Math.min(q.n,q.target),0)} / ${numText(q.target,0)}</span> · <b>+${numText(q.reward,0)} MB</b></div><div class="lad-p">${pbar(q.n,q.target)}</div></div>`).join('')+'</details>').join('')
-  +`<h4 class="lad-h">Your name on the boards and in chat</h4>${style}`)}
-$('profile-card').addEventListener('toggle',e=>{const t=e.target.closest&&e.target.closest('.lad-tier');if(!t)return;
- ladOpen=[...document.querySelectorAll('#ladder .lad-tier')].filter(x=>x.open).map(x=>x.dataset.tier);lsSet('ms_ladder_open',ladOpen)},true);
-$('profile-card').addEventListener('change',e=>{if(!['lad-title','lad-color'].includes(e.target.id))return;const L=meData.ladder;
- const c=L.colors.find(x=>x.id===$('lad-color').value),t=L.titles.find(x=>x.id===$('lad-title').value);
- $('lad-preview').innerHTML=nameHtml(meData.name,{c:c?c.hex:'',t:t?t.name:''})});
 $('profile-card').addEventListener('click',async e=>{if(e.target.id!=='inv-copy')return;const i=$('inv-link');
  try{await navigator.clipboard.writeText(i.value);toast('Invite link copied',true,2000)}catch(err){i.select();toast('Select the link and copy it',false,2500)}});
-$('profile-card').addEventListener('click',async e=>{if(e.target.id!=='lad-save')return;
- const r=await postJson('/api/ladder/style',{title:$('lad-title').value,color:$('lad-color').value},{'X-Token':token||''});toast(r.msg||r.error||'Error',!!r.ok);loadMe()});
 async function loadMe(){const d=await api('/api/me');if(d&&!d.slow&&!d.notfound){meData=d;if(page==='profile')drawProfile();else if(page==='social'){drawSocialBits();drawChatNote()}}}
 
 // ---------- social: chat and following ----------
@@ -1468,7 +1400,7 @@ $('chat-note').addEventListener('click',async e=>{
  send({type:'chat_appeal',text:t});setTimeout(loadMe,600)});
 function drawFollowing(){
  if(!followData)return;
- setHtml($('follow-list'),tbl(['Trader','Day return','All-time return','Rank','Medals',''],followData.map(p=>`<tr><td><a href="/player/${encodeURIComponent(p.name)}">${esc(p.name)}</a></td><td class="${p.public?clsP(p.season_ret):'mut'}">${p.public?pc(p.season_ret):'private'}</td><td class="${p.public?clsP(p.alltime_ret):'mut'}">${p.public?pc(p.alltime_ret):'private'}</td><td>${p.public&&p.rank?'#'+p.rank:'-'}</td><td>${p.badges.length}</td><td><button data-unfollow="${esc(p.name)}">Unfollow</button></td></tr>`),'You are not following anyone yet.'))}
+ setHtml($('follow-list'),tbl(['Trader','Today','All-time return','Rank',''],followData.map(p=>`<tr><td><a href="/player/${encodeURIComponent(p.name)}">${esc(p.name)}</a></td><td class="${p.public?clsP(p.season_ret):'mut'}">${p.public?pc(p.season_ret):'private'}</td><td class="${p.public?clsP(p.alltime_ret):'mut'}">${p.public?pc(p.alltime_ret):'private'}</td><td>${p.public&&p.rank?'#'+p.rank:'-'}</td><td><button data-unfollow="${esc(p.name)}">Unfollow</button></td></tr>`),'You are not following anyone yet.'))}
 async function loadSocial(){
  if(socTab==='chat'){loadShareList();loadMe();return}
  await loadMe();
@@ -1485,13 +1417,12 @@ function drawPlayer(){
  box.className='';
  const res=d.public||d.me;
  const holdings=d.holdings;
- setHtml(box,`<h2 style="margin:0 0 6px">${nameHtml(d.name,d.style)}</h2>
- <div><span class="pill">${d.public?'Public profile':'Private profile'}</span><span class="pill">${d.followers} follower${d.followers===1?'':'s'}</span>${d.ladder?`<span class="pill">Quest ladder ${d.ladder.done} / ${d.ladder.total}${d.ladder.tiers.diamond?' · Diamond '+d.ladder.tiers.diamond:''}</span>`:''}${d.me?'<span class="pill">This is you</span>':''}</div>
+ setHtml(box,`<h2 style="margin:0 0 6px">${esc(d.name)}</h2>
+ <div><span class="pill">${d.public?'Public profile':'Private profile'}</span><span class="pill">${d.followers} follower${d.followers===1?'':'s'}</span>${d.me?'<span class="pill">This is you</span>':''}</div>
  ${!d.me?`<div class="bar" style="margin-top:10px"><button class="${d.following_them?'sell':'buy'}" id="pl-follow">${d.following_them?'Unfollow':'Follow'}</button></div>`:''}
- ${res&&d.season_ret!==undefined?`<div class="finance-grid"><div><small>Day return</small><strong class="${clsP(d.season_ret)}">${pc(d.season_ret)}</strong></div><div><small>Return since joining</small><strong class="${clsP(d.alltime_ret)}">${pc(d.alltime_ret)}</strong></div><div><small>Day rank</small><strong>#${d.rank??'-'}</strong></div><div><small>Trades today</small><strong>${d.trades}</strong></div></div>`:'<p class="hint">This trader keeps their results private. You can see their medals and achievements.</p>'}
+ ${res&&d.season_ret!==undefined?`<div class="finance-grid"><div><small>Today</small><strong class="${clsP(d.season_ret)}">${pc(d.season_ret)}</strong></div><div><small>Return since joining</small><strong class="${clsP(d.alltime_ret)}">${pc(d.alltime_ret)}</strong></div><div><small>Rank today</small><strong>#${d.rank??'-'}</strong></div><div><small>Trades today</small><strong>${d.trades}</strong></div></div>`:'<p class="hint">This trader keeps their results private. You can see their badges.</p>'}
  ${res&&d.season_ret!==undefined?`<h3 class="sp">What they held</h3>${holdings?`<p class="hint">As of ${stamp(holdings.as_of)}, deliberately delayed by ${Math.round(d.holdings_delay/60)} minutes. Shown as a share of their account, never in MB.</p>`+`<table>${tbl(['Ticker','Side','Share of account'],holdings.positions.map(p=>`<tr><td><a href="/stock/${encodeURIComponent(p.ticker)}">${esc(p.ticker)}</a></td><td class="${p.side==='short'?'dn':''}">${p.side==='short'?'SHORT':'Long'}</td><td>${(p.weight*100).toFixed(1)}%</td></tr>`),'Nothing (all cash) at that time.')}</table>`:'<p class="hint">Not available yet: holdings only appear after the delay.</p>'}`:''}
- <h3 class="sp">Medals</h3>${d.badges.length?d.badges.slice().reverse().map(b=>`<span class="pill">${['1st','2nd','3rd'][b.place-1]||''} ${esc(b.tournament)}${b.tier?' · '+esc(b.tier):''} · ${pc(b.ret)}</span>`).join(''):'<span class="mut">None yet.</span>'}
- <h3 class="sp">Achievements (${d.achievements.length})</h3><div class="ach-grid">${d.achievements.map(a=>`<div class="ach"><b>${esc(a.name)}</b><small>Unlocked ${stamp(a.t)}</small></div>`).join('')||'<span class="mut">None yet.</span>'}</div>`)}
+ <h3 class="sp">Badges (${d.achievements.length})</h3><div class="ach-grid">${d.achievements.map(a=>`<div class="ach"><b>${esc(a.name)}</b><small>Unlocked ${stamp(a.t)}</small></div>`).join('')||'<span class="mut">None yet.</span>'}</div>`)}
 $('player-card').addEventListener('click',async e=>{if(e.target.id!=='pl-follow')return;const d=playerData;const r=await api(d.following_them?'/api/unfollow':'/api/follow',{method:'POST',body:{name:d.name}});if(r&&r.msg)toast(r.msg,r.ok);loadPlayer()});
 async function loadPlayer(){const d=await api('/api/profile/'+encodeURIComponent(pageArg));if(d&&!d.slow){playerData=d;drawPlayer()}}
 

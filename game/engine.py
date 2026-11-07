@@ -6,7 +6,6 @@ import newsgen
 import relations
 import economy
 import learning
-import ladder
 import chartprefs
 import bots
 import daily
@@ -286,17 +285,16 @@ class Player:
         self.created = 0.0       # when the account was made
         self.trades = 0
         self.guest = False       # True only for the one hidden, read-only visitor (Engine.guest)
-        social.init_player(self)   # achievements, quests, following, chat limits (see social.py)
+        social.init_player(self)   # achievements, following, chat limits (see social.py)
         economy.init_player(self)  # birth year, Pro, MB by source, spending cap (see economy.py)
         learning.init_player(self)  # lessons passed, challenge progress (see learning.py)
-        ladder.init_player(self)    # the Bronze-to-Diamond quest ladder, and the title and name colour worn (ladder.py)
         chartprefs.init_player(self)   # indicators, chart type and drawings, kept on the server (chartprefs.py)
         options.init_player(self)      # option positions (options.py)
         bots.init_player(self)         # trading bots (Expert, bots.py)
         housebots.init_player(self)    # a house bot's persona (housebots.py); None for a person
 
 
-class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin,
+class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin,
              chartprefs.ChartsMixin, options.OptionsMixin, bots.BotsMixin, daily.DailyMixin,
              housebots.HouseBotsMixin):
     def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None,
@@ -2167,7 +2165,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     self.house += owed
                     p.divs[s.ticker] = p.divs.get(s.ticker, 0.0) - owed
                     self._emit("dividend", p, s.ticker, shares=0.0, price=amt, cash=-owed, house=owed, notional=owed)
-            self._paper_dividend(s.ticker, amt)
             factor = 1 - amt / price
             s.fair *= factor
             s.fair_open *= factor
@@ -2583,7 +2580,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 self.house -= cd
                 self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=cd, house=-cd,
                            notional=abs(cd), shortfall=short)
-        self._paper_delist(ticker, stock.price)
         self._emit("delist", None, ticker, house=0.0)
         self._archive_stock(stock, reason, stock.price)
         self.delisted.append(ticker)
@@ -3029,7 +3025,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         for p in self.players.values():
             e = self.equity(p)
             self._track_drawdown(p, e)
-            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token, "style": self.style_of(p),
+            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token,
                    "gain": e - p.season_base}
             everyone.append(row)
             if self.traded_today(p):
@@ -3043,7 +3039,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _season_boundary(self):
         """When the current season ends. A season is one real day (`season_seconds`, 86400) and ends at midnight UTC,
-        so it coincides with the daily tournament and the daily quests."""
+        so it coincides with the Daily Chart."""
         length = float(self.settings.get("season_seconds", 86400))
         return (math.floor(self.now / length) + 1) * length
 
@@ -3125,15 +3121,12 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p.orders, p.orders_dirty = [], True
             p.notices.clear()
             social.reset_progress(p)
-            ladder.init_player(p)                         # the quest ladder starts again too (like the achievements)
             p.mb_by_source = {"grant": target}            # where their MB came from starts again with the new balance
             p.chal, p.challenge_mb, p.stop_seen = {}, {}, []   # challenges too: the MB they paid went with the old balance
             self._notify(p, f"The game was reset: it is Day 1 again and everyone starts with {target:,.0f} MB.")
         self.season_no = 1
         self.history = []
         self.season_end = self._season_boundary()
-        self.tournaments, self._sandboxes = [], {}
-        self.tournament_history.clear()
         self.margin_log.clear()
         self.margin_calls = 0
         self.trades_total = 0
@@ -3178,7 +3171,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _forget(self, p):
         """Remove every trace of an account outside the shop's books: the player, its sessions, its email and codes,
-        others' follows of it, its place on the boards, its Daily Chart game and stats, and its contest entries."""
+        others' follows of it, its place on the boards, and its Daily Chart game and stats."""
         tok = p.token
         self.players.pop(tok, None)
         self.by_token.pop(tok, None)
@@ -3194,10 +3187,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if isinstance(d, dict):
             d.get("plays", {}).pop(tok, None)
             (d.get("stats") or {}).pop(tok, None)
-        for t in self.tournaments:
-            t.get("entrants", {}).pop(tok, None)
-        for sb in self._sandboxes.values():
-            sb.players.pop(tok, None)
 
     def reset_with_backup(self, folder):
         """`reset_to_day_one`, after copying the save, the chart file and the ledger into `folder`."""
@@ -3213,7 +3202,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _end_season(self):
         self._board()
-        self._ladder_day_end()                           # top-10 and top-3 finishes count on the quest ladder
         top = [(r["name"], round(r["ret"] * 100, 1)) for r in self.board[:5]]
         self.history.append({"season": self.season_no, "top": top})
         self.history = self.history[-10:]
@@ -3269,7 +3257,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             self._dividends()
         self._borrow_fees()
         self._margin_calls()
-        self._paper_tick()
         self._reserve_check()
         self._orders_tick()
         self._settle_options()
@@ -3590,7 +3577,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         return notes
 
     def board_view(self):
-        return [{"name": r["name"], "equity": round(r["equity"], 2), "ret": round(r["ret"], 4), "style": r.get("style"),
+        return [{"name": r["name"], "equity": round(r["equity"], 2), "ret": round(r["ret"], 4),
                  } for r in self.board[:10]]
 
     def sector_view(self):
@@ -3718,9 +3705,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                    "total_equity": sum(self.equity(p) for p in humans), "total_cash": sum(p.cash for p in humans)}
         social = {"chat_last_hour": sum(1 for m in self.chat if m["t"] > now - 3600), "chat_kept": len(self.chat),
                   "reported_messages": len({r["id"] for r in self.chat_reports}),
-                  "muted": sum(1 for t, u in self.muted.items() if u > now), "appeals_open": sum(1 for a in self.appeals if a.get("status") == "open"),
-                  "contests_running": len(self.tournaments), "contest_entrants": sum(len(t.get("entrants", [])) for t in self.tournaments)}
-        keys = ("signup_bonus", "contest_balance", "email_mode", "require_password", "index_size", "earnings_quarter_days", "earnings_jitter_days",
+                  "muted": sum(1 for t, u in self.muted.items() if u > now), "appeals_open": sum(1 for a in self.appeals if a.get("status") == "open")}
+        keys = ("signup_bonus", "email_mode", "require_password", "index_size", "earnings_quarter_days", "earnings_jitter_days",
                 "volatility_scale", "reserve_floor_frac", "reserve_stress_frac", "reserve_floor_min", "house_seed", "moonshot_max",
                 "moonshot_mean_seconds", "catalyst_mean_seconds", "event_mean_seconds", "sector_shock_mean_seconds", "premarket_seconds",
                 "aftermarket_seconds", "chat_enabled", "chat_min_trades", "trust_proxy")
@@ -4046,7 +4032,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                           "entry_fee": p.entry_fee, "realized": p.realized, "fees_paid": p.fees_paid, "trades": p.trades,
                           "log": list(p.log), "margin_calls": p.margin_calls,
                           "social": social.dump_player(p), "economy": economy.dump_player(p),
-                          "learning": learning.dump_player(p), "ladder": ladder.dump_player(p),
+                          "learning": learning.dump_player(p),
                           "chart": chartprefs.dump_player(p),
                           "lev": p.lev, "loan": p.loan, "loan_int": p.loan_int, "collat": p.collat,
                           "options": options.dump_player(p), "bots": bots.dump_player(p), "house": housebots.dump_player(p),
@@ -4476,7 +4462,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 social.load_player(p, x.get("social", {}))
                 economy.load_player(p, x.get("economy", {}))
                 learning.load_player(p, x.get("learning", {}))
-                ladder.load_player(p, x.get("ladder", {}))
                 chartprefs.load_player(p, x.get("chart", {}))
                 self.players[p.token] = p
                 self.by_token[p.token] = p

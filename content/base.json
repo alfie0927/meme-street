@@ -23,7 +23,6 @@
   "offering_mean_seconds": 7200,
   "daily_turnover": 0.004,
   "signup_bonus": 1000,
-  "contest_balance": 1000,
   "min_age": 13,
   "shop_currency": "usd",
   "shop_packages": [
@@ -51,8 +50,7 @@
   "restart_below": 50,
   "restart_days": 7,
   "challenge_week_cap": 500,
-  "rewards_need_email": false,
-  "quest_ladder": true
+  "rewards_need_email": false
  },
  "sectors": [
   {

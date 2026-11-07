@@ -211,12 +211,11 @@ class ChallengeTests(unittest.TestCase):
         self.assertNotIn("NVXA", p.stop_seen)
         self.assertEqual(p.chal["week_planned"]["n"], 1)
 
-    def test_a_take_profit_counts_for_the_ladder(self):
+    def test_a_take_profit_counts_for_the_challenges(self):
         e, p = self.e, self.p
         e.trade(p, "NVXA", "buy", 0.3)
         ok, msg = e.place_order(p, "NVXA", "take_profit", e.stocks["NVXA"].price * 1.1)
         self.assertTrue(ok, msg)
-        self.assertEqual(p.ladder["n"].get("targets"), 1)
         self.assertIn("once", p.chal["first_target"]["done"])                  # the "Set a target" challenge
         self.assertEqual(p.chal["week_targets"]["n"], 1)
 

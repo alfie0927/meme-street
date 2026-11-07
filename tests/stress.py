@@ -33,7 +33,7 @@ HTTP_GETS = ["/api/me", "/api/boards", "/api/portfolio", "/api/history?limit=20"
              "/api/following", "/api/profile/monitor", "/api/profile/nobody"]
 HTTP_POSTS = [("/api/follow", {"name": "monitor"}), ("/api/unfollow", {"name": "monitor"}),
               ("/api/public", {"public": True}), ("/api/public", {"public": False}),
-              ("/api/tournament/join", {"id": "marathon-0"}), ("/api/follow", {"nope": 1})]
+              ("/api/follow", {"nope": 1})]
 
 
 def post(url, path, body, headers=None):

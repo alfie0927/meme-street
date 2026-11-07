@@ -1,4 +1,4 @@
-"""Achievements, daily quests, the day and all-time boards, tournaments, public profiles, following and chat.
+"""Achievements, the day and all-time boards, public profiles, following and chat.
 None of it may touch money or prices, so most tests also check that the token books still balance."""
 import os
 import random
@@ -247,117 +247,6 @@ class AchievementTests(unittest.TestCase):
         self.assertEqual(p.notices[-1], "n99")
 
 
-class QuestTests(unittest.TestCase):
-    def setUp(self):
-        self.e = fresh(12)
-        self.p = join(self.e, "quester")
-
-    def test_everyone_gets_the_same_three_quests_each_day_and_they_change_daily(self):
-        day = int(self.e.now // DAY)
-        a = self.e.quests_for_day(day)
-        self.assertEqual(a, self.e.quests_for_day(day))
-        self.assertEqual(len(a), 3)
-        self.assertEqual(len({q["id"] for q in a}), 3)
-        others = [tuple(q["id"] for q in self.e.quests_for_day(day + i)) for i in range(1, 12)]
-        self.assertGreater(len(set(others)), 1)
-
-    def test_quest_goals_are_within_range_and_text_is_filled_in(self):
-        for day in range(200):
-            for q in self.e.quests_for_day(day):
-                self.assertNotIn("{", q["text"])
-                self.assertGreater(q["goal"], 0)
-
-    def force(self, ids):
-        """Pin today's quests to a given set so tests don't depend on the date."""
-        table = {q[0]: q for q in social.QUESTS}
-        quests = []
-        for qid in ids:
-            _, text, metric, lo, hi, mult = table[qid]
-            goal = lo * mult
-            quests.append({"id": qid, "text": text.format(goal=goal), "metric": metric, "goal": goal})
-        self.e.quests_for_day = lambda d, _q=quests: _q
-        return quests
-
-    def test_progress_counts_trades_and_completes_the_quest_with_a_notice(self):
-        e, p = self.e, self.p
-        self.force(["trades", "short", "index"])
-        for i in range(4):
-            step(e)
-            e.trade(p, "GOLD", "buy" if i % 2 == 0 else "sell", 0.1, amount=30)
-        info = e.quests_for(p)
-        trades = next(q for q in info["quests"] if q["id"] == "trades")
-        self.assertTrue(trades["done"])
-        self.assertTrue(any("Quest complete" in n for n in p.notices))
-
-    def test_all_three_unlock_the_streak_and_achievement(self):
-        e, p = self.e, self.p
-        e.credit(p, 2000)
-        self.force(["short", "index", "trades"])
-        step(e)
-        e.trade(p, "NVXA", "sell", 0.1, amount=100)
-        step(e)
-        e.trade(p, "MSI", "buy", 0.1, amount=100)
-        for i in range(2):
-            step(e)
-            e.trade(p, "GOLD", "buy", 0.1, amount=30)
-        info = e.quests_for(p)
-        self.assertTrue(all(q["done"] for q in info["quests"]), info)
-        self.assertEqual(info["streak"], 1)
-        self.assertIn("quest_day", unlocked(p))
-
-    def test_streak_continues_on_consecutive_days_and_resets_after_a_gap(self):
-        e, p = self.e, self.p
-        p.quest_last_full = int(e.now // DAY) - 1
-        p.quest_streak = 3
-        self.force(["short"])
-        e.quests_for_day = lambda d: [{"id": "short", "text": "x", "metric": "shorts", "goal": 1}]
-        e.trade(p, "NVXA", "sell", 0.1, amount=100)
-        self.assertEqual(p.quest_streak, 4)
-        self.assertEqual(e.quests_for(p)["streak"], 4)
-        # a missed day breaks it
-        e.now += 2 * DAY
-        self.assertEqual(e.quests_for(p)["streak"], 0)
-
-    def test_progress_resets_at_midnight_utc(self):
-        e, p = self.e, self.p
-        step(e)
-        e.trade(p, "GOLD", "buy", 0.1, amount=30)
-        self.assertEqual(e._daily(p)["trades"], 1)
-        e.now += DAY
-        self.assertEqual(e._daily(p)["trades"], 0)
-
-    def test_sector_quest_counts_distinct_sectors_only(self):
-        e, p = self.e, self.p
-        e.credit(p, 3000)
-        tickers = {}
-        for tk, s in e.stocks.items():
-            if s.asset_type == "equity":
-                tickers.setdefault(s.sector, []).append(tk)
-        sectors = list(tickers)[:2]
-        for sec in sectors:
-            step(e)
-            e.trade(p, tickers[sec][0], "buy", 0.1, amount=100)
-            step(e)
-            e.trade(p, tickers[sec][1], "buy", 0.1, amount=100)
-        self.assertEqual(len(e._daily(p)["sectors"]), 2)
-
-    def test_old_days_are_forgotten(self):
-        e, p = self.e, self.p
-        p.quests_done["1"] = ["x"]
-        e._check_quests(p)
-        self.assertNotIn("1", p.quests_done)
-
-    def test_quests_have_no_money_reward(self):
-        e, p = self.e, self.p
-        cash = p.cash
-        self.force(["short"])
-        e.quests_for_day = lambda d: [{"id": "short", "text": "x", "metric": "shorts", "goal": 1}]
-        e.trade(p, "NVXA", "sell", 0.1, amount=100)
-        self.assertEqual(sum(1 for n in p.notices if "Quest" in n or "quest" in n) >= 1, True)
-        self.assertLess(abs(drift(e)), 1e-6)
-        self.assertLessEqual(p.cash, cash + 100 * (1 - engine.FEE) + 1e-9)       # only the short's own proceeds
-
-
 class DrawdownAndBoardTests(unittest.TestCase):
     def setUp(self):
         self.e = fresh(13)
@@ -490,14 +379,10 @@ class DrawdownAndBoardTests(unittest.TestCase):
         self.assertEqual([r["name"] for r in e.board], ["dd_other"])
         self.assertEqual({r["name"] for r in e.boards["pnl"]}, {"dd_player", "dd_other"})
 
-    def test_margin_calls_and_paper_contest_trades_do_not_put_anyone_on_a_board(self):
+    def test_margin_calls_do_not_put_anyone_on_a_board(self):
         e, p = self.e, self.p
         e._board()
         e.tick(now=e.now + 1)
-        t = next((t for t in e.tournaments if t["kind"] == "marathon"), None)
-        if t is not None:
-            e.tournament_join(p, t["id"])
-            e.contest_trade(p, t["id"], "CLDR", "buy", 0.2)
         e._board()
         self.assertNotIn(p.token, e.rank)
         self.assertNotIn(p.token, e.rank_pnl)
@@ -546,7 +431,6 @@ class DrawdownAndBoardTests(unittest.TestCase):
         self.assertLess(abs(drift(e)), 1e-6)
 
 
-# (the daily contest tests live in test_contests.py)
 
 
 class ProfileAndFollowTests(unittest.TestCase):
@@ -616,13 +500,12 @@ class ProfileAndFollowTests(unittest.TestCase):
         self.assertIsNotNone(self.e.public_profile("VISIBLE", self.q))
         self.assertIsNone(self.e.public_profile("nobody_here", self.q))
 
-    def test_profile_lists_achievements_and_badges(self):
+    def test_profile_lists_achievements(self):
         e, p = self.e, self.p
         e.trade(p, "CLDR", "buy", 0.1)
-        p.badges.append({"tournament": "Daily Marathon", "tier": "Gold", "place": 1, "t": e.now, "ret": 0.1})
         prof = e.public_profile("visible", self.q)
         self.assertIn("first_trade", [a["id"] for a in prof["achievements"]])
-        self.assertEqual(len(prof["badges"]), 1)
+        self.assertNotIn("badges", prof)
 
     def test_follow_unfollow_and_limits(self):
         e, q = self.e, self.q
@@ -799,9 +682,6 @@ class PersistenceTests(unittest.TestCase):
             step(e)
             e._social_t = 0
             e._social_tick()
-            tid = next(t["id"] for t in e.tournaments if t["kind"] == "marathon")
-            e.tournament_join(a, tid)
-            a.badges.append({"tournament": "Daily Marathon", "tier": "Gold", "place": 2, "t": e.now, "ret": 0.01})
             e.mute("friend", 900)
             before = (dict(a.achievements), dict(a.counters), a.maxdd, a.peak, list(a.opened))
             e.save()
@@ -812,10 +692,8 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual((dict(a2.achievements), dict(a2.counters), a2.maxdd, a2.peak, list(a2.opened)), before)
             self.assertTrue(a2.public)
             self.assertEqual(b2.following, ["keeper"])
-            self.assertEqual(len(a2.badges), 1)
             self.assertEqual([m["text"] for m in f.chat], ["remember me"])
             self.assertEqual(f.chat_seq, e.chat_seq)
-            self.assertIn(a2.token, next(t for t in f.tournaments if t["id"] == tid)["entrants"])
             self.assertGreater(f.muted[b2.token], f.now - 1)
 
     def test_an_old_save_without_social_data_loads_cleanly(self):
@@ -864,8 +742,6 @@ class NoEdgeAndStressTests(unittest.TestCase):
                         e.post_chat(p, f"talk {k}")
                     e.follow(p, ps[(k + 1) % 4].name)
                     e.set_public(p, k % 2 == 0)
-                    for t in e.tournaments:
-                        e.tournament_join(p, t["id"])
                     e.public_profile(ps[(k + 2) % 4].name, p)
                     e.boards_for(p)
                     e.me_for(p)
@@ -904,8 +780,8 @@ class NoEdgeAndStressTests(unittest.TestCase):
         me = e.me_for(p)
         self.assertEqual(me["total"], len(social.ACHIEVEMENTS))
         self.assertEqual(len(me["achievements"]), me["total"])
-        self.assertEqual(len(me["quests"]["quests"]), 3)
-        self.assertEqual({t["kind"] for t in me["tournaments"]["active"]}, {"marathon"} if me["tournaments"]["active"] else set())
+        for gone in ("quests", "tournaments", "ladder", "badges"):
+            self.assertNotIn(gone, me)
 
 
 if __name__ == "__main__":

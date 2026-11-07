@@ -590,23 +590,6 @@ async def handle_message(conn, p, raw):
                 logger.exception("order failed")
                 ok, msg = False, "Order error"
             conn.push(dumps({"type": "result", "ok": ok, "msg": msg}))
-        elif kind == "contest_trade":
-            now = time.time()
-            if now - conn.last_query.get("contest_trade", 0.0) < 0.2:
-                conn.push(dumps({"type": "result", "ok": False, "msg": "Slow down a little"}))
-                return
-            conn.last_query["contest_trade"] = now
-            try:
-                raw_amount = m.get("amount")
-                ok, msg = await run(engine.contest_trade, p, str(m.get("id")), str(m.get("ticker")),
-                                    str(m.get("side")), float(m.get("pct") or 0),
-                                    None if raw_amount in (None, "") else float(raw_amount))
-            except (ValueError, TypeError):
-                ok, msg = False, "Bad trade request"
-            except Exception:
-                logger.exception("contest trade failed")
-                ok, msg = False, "Trade error"
-            conn.push(dumps({"type": "result", "ok": ok, "msg": "Contest (paper money): " + msg, "contest": True}))
         elif kind in ("history", "company"):
             now = time.time()
             if now - conn.last_query.get(kind, 0.0) < 0.2:  # lookups are heavier than trades
@@ -1338,7 +1321,7 @@ async def close_all(x_token: str = Header("")):
 
 @app.get("/api/me")
 async def me(x_token: str = Header("")):
-    """Achievements, daily quests, tournaments, who you follow, and your ranks."""
+    """Achievements, who you follow, your account and your ranks."""
     return await with_player(x_token, "me", engine.me_for)
 
 
@@ -1346,12 +1329,6 @@ async def me(x_token: str = Header("")):
 async def boards(x_token: str = Header("")):
     """The season, risk-adjusted and all-time leaderboards."""
     return await with_player(x_token, "boards", engine.boards_for)
-
-
-@app.post("/api/tournament/join")
-async def tournament_join(b: Ident, x_token: str = Header("")):
-    res = await with_player(x_token, "tjoin", engine.tournament_join, b.id, interval=0.5)
-    return res if isinstance(res, JSONResponse) else acted(res)
 
 
 @app.get("/api/profile/{name}")
@@ -1808,20 +1785,6 @@ async def admin_refund(b: Ident, x_admin_key: str = Header("")):
     if ok:
         await run(engine.save, False)
     return {"ok": ok, "msg": msg}
-
-
-class LadderStyle(BaseModel):
-    title: str = ""
-    color: str = ""
-
-
-@app.post("/api/ladder/style")
-async def ladder_style(b: LadderStyle, x_token: str = Header("")):
-    """Wear an unlocked title and name colour ("" for none)."""
-    def work(p):
-        ok, msg = engine.set_style(p, b.title, b.color)
-        return {"ok": ok, "msg": msg, "style": engine.style_of(p)}
-    return await with_player(x_token, "ladder_style", work, interval=0.5)
 
 
 class ProGrant(BaseModel):

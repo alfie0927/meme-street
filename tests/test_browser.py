@@ -374,24 +374,8 @@ class BrowserPages(unittest.TestCase):
             await d.check("my row is highlighted on both", "document.querySelectorAll('.lb-table tr.me').length", 2)
             # profile
             await pg.goto(base + "/profile", 3)
-            await d.check("three quests", "document.querySelectorAll('#quests .quest').length", 3, wait=10)
             await d.check("achievement grid is full", "document.querySelectorAll('#achs .ach').length", lambda n: n >= 20)
             await d.check("first steps is unlocked", "document.querySelectorAll('#achs .ach:not(.locked)').length", lambda n: n >= 1)
-            await d.check("the daily contest is listed", "document.getElementById('tours').innerText",
-                          lambda t: "Daily Marathon" in t and "Hourly Sprint" not in t and "paper money" in t)
-            await d.check("the paper trading panel is hidden until I join", "document.getElementById('contest-play').style.display", "none")
-            await pg.js("document.querySelector('#tours [data-join]').click()")
-            await d.check("joining shows my rank", "document.getElementById('tours').innerText",
-                          lambda t: "rank 1 of 1" in t, wait=10)
-            await d.check("the paper panel opens with the full balance", "document.getElementById('cp-summary').innerText",
-                          lambda t: "1,000.00" in t, wait=10)     # contest_balance in base.json
-            await pg.js("(()=>{const s=document.getElementById('cp-ticker');s.value='GOLD';document.getElementById('cp-pct').value='0.5';document.getElementById('cp-buy').click()})()")
-            await d.check("a paper buy shows as a paper position", "document.getElementById('cp-pos').innerText",
-                          lambda t: "GOLD" in t, wait=10)
-            await asyncio.sleep(1.4)                                   # (one second between trades in the same stock)
-            await pg.js("document.querySelector('#cp-pos [data-cclose]').click()")
-            await d.check("closing the paper position empties the table", "document.getElementById('cp-pos').innerText",
-                          lambda t: "No paper positions yet" in t, wait=10)
             await pg.js("(()=>{const c=document.getElementById('pub-toggle');c.checked=true;c.dispatchEvent(new Event('change',{bubbles:true}))})()")
             await asyncio.sleep(1.5)
             await pg.goto(base + "/profile", 3)
