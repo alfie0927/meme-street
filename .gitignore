@@ -7,3 +7,4 @@ __pycache__/
 data/
 # the tunnel program `python tools/share.py --install` downloads
 tools/cloudflared*
+tools/memestreet_daily_reel/exemplar/

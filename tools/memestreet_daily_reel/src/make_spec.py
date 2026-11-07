@@ -566,8 +566,14 @@ def brief(slot, category=None, remake=None):
     import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
     need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
     facts["video"] = {"available": os.environ.get("HF_VIDEO") == "1" and bool(footage.cred()) and footage.remaining() >= need}   # (off: the neon 3D is the style)
+    exm = os.path.join(ROOT, "exemplar", "measures.json")   # (the owner's reference reels: plain words, short beats)
+    refs = [v["transcript"] for v in json.load(open(exm)).values() if v.get("words", 0) > 40] if os.path.exists(exm) else []
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
            "recent_titles_to_avoid": history.get("titles", [])[-20:]}
+    if refs:
+        ask["owner_reference_reels"] = {"note": "Narration from reels the owner loves. Match their plainness and rhythm: short "
+                                      "beats, one idea each, a term then what it means ('the gap that flips'). Never copy their words.",
+                                      "transcripts": refs[:3]}
     if CATEGORIES[category].startswith("VIRAL"):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research 2026-11-04). Use the SHAPE, never the words: write an original line "

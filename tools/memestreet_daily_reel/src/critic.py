@@ -12,7 +12,7 @@ writer reads before every later reel (state/lessons.json).
   python3 src/critic.py review <work> <out>   review one rendered reel -> <work>/review-<n>.json
   python3 src/critic.py demo                  self-check of the evidence check
 """
-import datetime, difflib, glob, itertools, json, math, os, re, subprocess, sys, tempfile, time
+import datetime, difflib, glob, itertools, json, math, os, re, shutil, subprocess, sys, tempfile, time
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
@@ -35,6 +35,19 @@ def heard(mp4):
                                      capture_output=True).stdout, np.float32)
     segs, _ = _ASR.transcribe(a, word_timestamps=True, language="en", beam_size=5)
     return [(w.word.strip(), w.start, w.end) for s in segs for w in s.words]
+
+
+def references(rd, imgs):
+    """The owner's reference reels (exemplar/: stills ref1.jpg... and their measures), copied into the pack: the bar to judge by."""
+    ex = os.path.join(ROOT, "exemplar"); names = []
+    for f in sorted(glob.glob(os.path.join(ex, "ref*.jpg"))):
+        shutil.copy(f, rd); names.append(os.path.basename(f)); imgs.append(os.path.basename(f))
+    m = json.load(open(os.path.join(ex, "measures.json"))) if os.path.exists(os.path.join(ex, "measures.json")) else {}
+    keep = ("secs", "words_per_sec_talking", "pauses_over_0.15s", "cuts_per_min", "median_motion")
+    return {"images": names, "measured": [{k: v[k] for k in keep if k in v} for v in m.values()],
+            "note": "Reels the owner loves (three frames each). What they share: the picture is one big, clean, full-width chart "
+                    "(or one stick-figure metaphor) that evolves instead of cutting to new layouts; almost no interface; small "
+                    "low captions with the key word coloured; one idea per beat; one ask at the end. Compare this reel to them."}
 
 
 def motion(mp4, cuts, fps=30):
@@ -138,6 +151,7 @@ def pack(work, out, rd, only=None):
                                            "source": "measured on 16 top finance Shorts narrated by people"},
               "whole_reel": {"words_per_sec_talking": round(sum(n for n, _ in wr) / max(1e-9, sum(n / r for n, r in wr)), 2),
                              "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps)},
+              "references": references(rd, imgs),
               "script_vs_heard_differences": misheard,
               "motion": dict(motion(mp4, [x["t0"] for x in R["scenes"][1:]]), note="jumps: times a frame changes far more than its neighbours away from a scene cut (a snap or jerk); drift_secs: seconds where most of the frame keeps changing (a swimming picture). Both are visual faults; check the frames at those times."),
               "transcript_notes": "The script is shown as the voice is told to say it. Whisper writes 'Meem Street dot net' as "
@@ -189,7 +203,9 @@ second, and three frames per scene: as it lands, mid-line and its last moment, n
 The frame below about 1440 px and the right edge are left empty on purpose: Instagram's caption, buttons and audio strip
 cover them, so nothing may go there; do not mark that space down as dead.
 
-Your bar is the best faceless finance reels on Instagram, the ones with millions of views. Score against them, not
+Your bar is the best faceless finance reels on Instagram, the ones with millions of views; the owner's own picks are in
+the pack (report.json "references": ref1.jpg... with their measured pace, pauses, cuts per minute and motion). Read
+them first and judge this reel against them: as clean, as calm, as easy to follow? Score against them, not
 against this pipeline's earlier cuts: 8 means you would proudly put this reel next to theirs, 9 means it beats them,
 6 is a forgettable reel that loses the thumb, and most first cuts are 5 or 6. A reel that looks cheap, cluttered,
 confusing or ugly in ANY frame (something you cannot read, a jumpy picture, text on text, a muddy or stray element)
