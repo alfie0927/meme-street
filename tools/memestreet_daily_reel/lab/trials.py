@@ -27,7 +27,7 @@ def main():
         if not p.get("trial"): continue
         t = p["trial"]; age = time.time() - time.mktime(time.strptime(p["posted_at"], "%Y-%m-%d %H:%M:%S UTC"))
         i = insights.insights(p["media_id"], tok) if age > 86400 else {}
-        pairs.setdefault(t["pair"], {"category": t.get("category")})[t["variant"]] = {"media_id": p["media_id"], "age_h": round(age / 3600), **i}
+        pairs.setdefault(t["pair"], {"category": t.get("category"), "version": t.get("version", 1)})[t["variant"]] = {"media_id": p["media_id"], "age_h": round(age / 3600), **i}
     rows = []
     for k in sorted(pairs):
         P = pairs[k]; a, b = P.get("v1", {}), P.get("v2", {})
@@ -35,7 +35,7 @@ def main():
         sf = os.path.join(LAB, "data", "trial", f"{k}-sim.json")
         if os.path.exists(sf): sim = json.load(open(sf))
         w = winner(a, b) if a and b else None
-        rows.append({"pair": k, "category": P["category"], "v1": a, "v2": b, "winner": w,
+        rows.append({"pair": k, "category": P["category"], "version": P["version"], "v1": a, "v2": b, "winner": w,
                      "simulated": sim, "sim_right": (sim["pick"] == w) if sim and w else None})
     json.dump(rows, open(os.path.join(LAB, "data", "trials.json"), "w"), indent=1)
     f = lambda r, v, m: r[v].get(m, "-") if r[v] else "-"
@@ -45,6 +45,9 @@ def main():
         print(f"{r['pair']:16} {str(r['category'])[:16]:16} {str(f(r,'v1','reels_skip_rate')):>6}/{str(f(r,'v2','reels_skip_rate')):<6} {str(ws('v1')):>6}/{str(ws('v2')):<7} "
               f"{str(f(r,'v1','views')):>5}/{str(f(r,'v2','views')):<6} {str(f(r,'v1','shares'))}/{str(f(r,'v2','shares')):<4}  {str(r['winner'] or 'wait'):6}  "
               f"{(r['simulated'] or {}).get('pick', '-')}{'' if r['sim_right'] is None else (' right' if r['sim_right'] else ' wrong')}")
+    import evolve
+    for v, x in sorted(evolve.summary(rows).items()):
+        print(f"rules version {v}: {x['pairs']} pairs scored, version 2 won {x['v2_wins']}; skip {x['skip_v1']}% -> {x['skip_v2']}%, watch {x['watch_v1']}s -> {x['watch_v2']}s")
     done = [r for r in rows if r["winner"]]
     if done:
         print(f"version 2 won {sum(r['winner'] == 'v2' for r in done)} of {len(done)} scored pairs; "

@@ -1,8 +1,8 @@
 [Unit]
-Description=Make the next Trial Reels pair (10:30, 15:30, 22:30 UTC), hourly
+Description=Start the next Trial Reels pair as soon as the last is made (back to back)
 
 [Timer]
-OnCalendar=*-*-* *:20:00 UTC
+OnCalendar=*-*-* *:00/10:00 UTC
 Persistent=true
 
 [Install]

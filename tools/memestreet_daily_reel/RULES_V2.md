@@ -1,5 +1,7 @@
 # Reels v2: rules for reels people don't skip
 
+Version: 1
+
 Approved by the owner on 2026-11-07 for testing: version-2 reels are made from the same facts as the current reels and
 posted as Trial Reels (non-followers only; Instagram shares one with followers if it performs), one pair a day, until
 the numbers say which version wins. Where these rules differ from the rulebook, these win for version-2 reels.
@@ -58,3 +60,6 @@ within 3 seconds.
 ## Words
 - Stakes in money or percent, second person ("you"), concrete over abstract.
 - Length stays 30 to 45 seconds (the current 60 to 110 words); 20-30 s and 45-55 s cuts are tested as Trial Reels.
+
+## Versions
+- 1 (2026-11-07): the first version, from the research and the owner's seven decisions.

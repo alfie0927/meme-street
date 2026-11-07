@@ -1,0 +1,11 @@
+[Unit]
+Description=Meme Street: the next version of the Trial Reels rules (RULES_V2.md)
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/memestreet-daily-reel
+Environment=PATH=/root/.local/bin:/usr/local/bin:/usr/bin:/bin
+EnvironmentFile=/opt/memestreet-daily-reel/config.env
+ExecStart=/usr/bin/python3 lab/evolve.py
+Nice=19
