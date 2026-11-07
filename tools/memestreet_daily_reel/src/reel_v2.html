@@ -272,7 +272,7 @@ function breath(u){const b=(u%4.2)-2.6,f=b>0&&b<1.1?Math.sin(Math.PI*b/1.1):0;if
 const PSZ={hut:[200,195],cloud:[230,250],sun:[200,220],snowflake:[190,220],turbine:[230,280],clock:[180,200],hourglass:[130,225],moon:[200,220],bed:[240,230],kraken:[180,240],sub:[340,200],kelp:[160,220],shell:[220,180],hover:[230,170],potion:[190,240],cauldron:[250,240],goldbar:[260,120],wand:[200,220],queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
  ship:[330,150],plane:[300,170],rocket:[140,260],drone:[260,170],train:[400,100],coin:[120,130],coins:[130,120],bar:[80,200],arrow:[140,230],
  shield:[180,230],warning:[200,200],gear:[180,180],flask:[170,220],battery:[110,220],chip:[210,160],pipe:[360,110],tree:[150,230],
- mountain:[400,230],wave:[400,120],person:[90,215],dragon:[360,240],bird:[240,110],fish:[250,130]};
+ mountain:[400,230],wave:[400,120],person:[90,215],dragon:[360,300],bird:[240,110],fish:[250,130]};
 const fitK=(p,k,w,h)=>{const z=PSZ[(p||{}).p]||[200,220];return Math.min(k,w/z[0],h/z[1])};
 // draw one prop: at (x,y), scale k, popping in at t0, idling gently; returns svg
 function prop2d(p,x,y,k,t,t0,j){const a=t0==null?1:back(seg(t,t0-.05,t0+.35)),u=Math.max(0,t-(t0||0));if(a<=0)return '';const f=PROP2D[(p||{}).p]||PROP2D.crate;
@@ -431,7 +431,7 @@ function render(T){
    if(k===m-1||/[.!?]$/.test(w)||(/[,;:]$/.test(w)&&n>=3)||(len+nxt>26&&!(k===m-2||/[.!?,;:]$/.test(tw[k+1]||''))||len+nxt>34)){s._grp.push([a,k+1]);a=k+1;len=0}}}   // (phrases that fit one line: a sentence or clause, never a lone word on a second line)
   let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.04)cur=k;const gi=s._grp.find(g=>cur>=g[0]&&cur<g[1])||[0,m],st0=gi[0],nx=gi[1],W=s.wt;   // (the whole group is laid out at once so it never shifts; each word fades and rises in on its time, the group fades out just before the next)
   cp.innerHTML=tw.slice(st0,Math.min(m,nx)).map((w,j)=>{const k=st0+j,a=io(seg(t,W[k][0]-.1,W[k][0]+.2)),h=Math.round(100*(1-io(seg(t,W[k][0]+.1,W[k][0]+.55))));return `<span style="color:color-mix(in srgb,${TE} ${h}%,#e6e9ec);opacity:${a.toFixed(3)};transform:translateY(${((1-a)*6).toFixed(1)}px)">${esc(w)}</span>`}).join(' ');{const go=io(nx<m?seg(t,W[nx][0]-.3,W[nx][0]-.1):seg(t,s.ve+.02,s.ve+.24));cp.style.opacity=s.kind==='big'?0:(1-go).toFixed(3);cp.style.transform=`translateY(${(-8*go).toFixed(1)}px)`}   // (smooth: words ease in over 0.3 s, a line eases out and drifts up before the next)
- fit(cp,70,54,34)}else{cp.innerHTML='';cp.style.transform=''}
+ fit(cp,90,54,34)}else{cp.innerHTML='';cp.style.transform=''}
  // the end card
  const O=document.getElementById('outro');if(s.kind==='outro'){const f=io(seg(t,s.t0,s.t0+1.2)),z=back(seg(t,s.t0+.35,s.t0+1.15));/* (the owner: a slower, gentler way into the sign-off) */O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.type==='Daily recap'?R.daily:null;   /* (the Daily Chart line only on a reel about it) */document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,s.t0+.25,s.t0+.6)),eU=document.getElementById('oUrl'),eD=document.getElementById('oDaily');eD.style.opacity=out(seg(t,s.t0+.15,s.t0+.45));eD.style.transform=`scale(${1+.08*Math.sin(Math.PI*seg(t,tD-.05,tD+.35))})`;eU.style.opacity=cl(uU);eU.style.transform=`scale(${(.7+.3*uU)*(1+.1*Math.sin(Math.PI*seg(t,tU-.05,tU+.4)))})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
  document.body.style.opacity=1;
@@ -452,8 +452,10 @@ window.cover=async date=>{   // the reel's cover, the November template: brand h
  let k=SC.findIndex(q=>q.chart!=null&&q.kind!=='hook');if(k<0)k=SC.findIndex(q=>q.kind==='story'||q.kind==='stick');if(k<0)k=0;const s=SC[k];
  await render(Math.min(s.t1-.05,(s.ve||s.t1)));
  for(const id of ['caps','opts'])document.getElementById(id).innerHTML='';document.querySelector('.prog').style.display='none';
+ {const H=document.querySelector('.hdr');H.style.top='250px';H.style.height='96px';H.style.opacity=1;H.querySelector('img').style.cssText='width:96px;height:96px;border-radius:20px';H.querySelector('.l').style.gap='22px';H.querySelector('.l').style.fontSize='50px';document.getElementById('tag').style.cssText='padding:16px 28px;font-size:30px'}   // (the cover's brand row is as big as the Daily's)
  document.getElementById('head').style.opacity=0;document.getElementById('wlabs')&&(document.getElementById('wlabs').innerHTML='');
  for(const id of ['chart','stage'])document.getElementById(id).style.transform='translateY(-120px)';   // (the picture moves up into the panel)
+ document.getElementById('stage').style.clipPath='inset(492px 30px 628px 30px round 28px)';   // (an edge-to-edge story scene stays inside the cover's panel: 372-1172 once moved up)
  const add=(css,html)=>{const d=document.createElement('div');d.style.cssText='position:absolute;'+css;d.innerHTML=html;document.body.insertBefore(d,document.getElementById('chart'));return d};
  add('left:30px;right:30px;top:372px;height:800px;border-radius:28px;background:#0b0f13;border:3px solid #23272d','');
  const t=add('left:60px;right:60px;top:1210px;height:230px;display:flex;align-items:center;justify-content:center;text-align:center;text-wrap:balance;font:700 76px/1.12 \'Cascadia Mono\',monospace;color:#e6e9ec',esc(R.title||''));
