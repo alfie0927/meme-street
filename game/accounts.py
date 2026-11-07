@@ -272,7 +272,7 @@ class AccountsMixin:
     # ---- email: verifying an address, and recovering a password with it
     def email_mode(self):
         """"off" (no email asked for), "optional" (asked for, never needed) or "required" (a verified address is needed
-        before anyone can trade or chat). With no setting it is "off", until the server finds that
+        before anyone can trade, enter a contest or chat). With no setting it is "off", until the server finds that
         mail can really be sent, and then "optional": asking for an address that no mail will ever reach would only
         confuse people."""
         mode = self.settings.get("email_mode", self.default_email_mode)

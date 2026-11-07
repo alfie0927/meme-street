@@ -399,10 +399,12 @@ class LearningMixin:
         """A stop-loss or a take-profit was placed on an open position."""
         if kind == "take_profit":
             self._bump(p, "targets")
+            self._ladder_count(p, "targets")
         if kind != "stop_loss" or ticker in p.stop_seen:
             return
         p.stop_seen.append(ticker)
         self._bump(p, "stops")
+        self._ladder_count(p, "stops")
 
     def _learn_after_trade(self, p, ticker):
         """A position that had a stop-loss was closed: a planned trade, win or lose."""
@@ -410,3 +412,4 @@ class LearningMixin:
             return
         p.stop_seen.remove(ticker)
         self._bump(p, "planned")
+        self._ladder_count(p, "planned")

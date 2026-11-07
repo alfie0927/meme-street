@@ -81,6 +81,13 @@ class SeasonTests(unittest.TestCase):
             self.assertAlmostEqual(g.equity(p2) / equity, 1.0, places=5)
             self.assertLess(abs(drift(g)), 1e-6)
 
+    def test_the_daily_tournament_and_the_season_share_their_boundaries(self):
+        e = make_engine(3)
+        e._social_t = 0
+        e._social_tick()
+        marathon = next(t for t in e.tournaments if t["kind"] == "marathon")
+        self.assertEqual(marathon["end"], e.season_end)
+
     def test_the_length_can_be_changed(self):
         e = make_engine(4, season_seconds=3600)
         e.now = 3600 * 1000 + 5

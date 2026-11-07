@@ -107,11 +107,16 @@ class EngineTests(unittest.TestCase):
         self.assertIsNone(e.receipt(pending["id"]))                    # nothing to receipt before it is paid
 
     def test_rewards_can_be_kept_for_verified_accounts(self):
-        e = make_engine(7)
+        e = make_engine(7, quest_ladder=True)
         p = join(e, "unverified")
         self.assertEqual(e._reward(p, 25, "A challenge"), 25.0)       # off by default (no real email yet)
         e.settings["rewards_need_email"] = True
         self.assertEqual(e._reward(p, 25, "A challenge"), 0.0)
+        p.counters["trades"] = 5
+        e._ladder_check(p)
+        self.assertIn("b_trades", p.ladder["done"])                    # the quest is done...
+        self.assertEqual(p.mb_by_source.get("challenge"), 25.0)        # ...but paid nothing
+        self.assertTrue(any("verify your email" in n for n in p.notices))
         p.email_verified = True
         self.assertEqual(e._reward(p, 25, "A challenge"), 25.0)
 

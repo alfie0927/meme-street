@@ -18,7 +18,7 @@ BONUS = 10000.0
 
 
 def played(seed=1):
-    """A game that has been going for a while: trades, a short, an order, a second day."""
+    """A game that has been going for a while: trades, a short, an order, medals, a contest entry, a second day."""
     e = make_engine(seed, signup_bonus=BONUS)
     a, b = join(e, "alpha"), join(e, "bravo")
     e.trade(a, "CLDR", "buy", 0.5)
@@ -27,11 +27,13 @@ def played(seed=1):
     e.now += 2
     e.trade(b, "NVXA", "buy", 1.0)
     e.place_order(a, "CLDR", "stop_loss", e.stocks["CLDR"].price * 0.5)
+    a.badges.append({"tournament": "Daily Marathon", "place": 1, "t": e.now, "ret": 0.1})
     a.following = ["bravo"]
     a.public = True
     a.strikes = 2
     e._social_t = 0
     e._social_tick()
+    e.tournament_join(a, next(iter(t["id"] for t in e.tournaments)))
     advance(e, 200)
     e.season_no = 19
     e.history = [{"season": 18, "top": [("alpha", 5.0)]}]
@@ -101,12 +103,22 @@ class ResetTests(unittest.TestCase):
 
     def test_the_competitive_record_is_cleared_but_identity_stays(self):
         a = self.a
+        self.assertEqual(a.badges, [])
         self.assertEqual(a.achievements, {})
         self.assertEqual(a.counters, {})
         self.assertEqual(a.following, ["bravo"])
         self.assertTrue(a.public)
         self.assertEqual(a.strikes, 2)
         self.assertEqual(a.name, "alpha")
+
+    def test_contests_and_boards_start_again(self):
+        e = self.e
+        self.assertEqual(len(e.tournament_history), 0)
+        self.assertEqual(e._sandboxes, {})
+        e._social_t = 0
+        e._social_tick()
+        self.assertEqual({t["kind"] for t in e.tournaments}, {"marathon"})
+        self.assertEqual(next(iter(e.tournaments))["entrants"], {})
 
     def test_players_are_told(self):
         self.assertTrue(any("Day 1 again" in n for n in self.a.notices))

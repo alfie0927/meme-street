@@ -417,7 +417,7 @@ class EconomyMixin:
         return p.email, f"Your Meme Street receipt: {what}", body
 
     def reward_block(self, p):
-        """Why `p` gets no MB from a challenge right now, or None. With `rewards_need_email` on (once real
+        """Why `p` gets no MB from a challenge or a quest right now, or None. With `rewards_need_email` on (once real
         email is set up, ROADMAP O1 and R6), only an account with a verified address is paid."""
         if self.settings.get("rewards_need_email", False) and not getattr(p, "email_verified", False):
             return "verify your email address on the Profile page to earn MB"
