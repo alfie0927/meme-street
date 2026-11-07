@@ -15,6 +15,15 @@ BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favi
 DAILY_TEXT = ("A free daily stock market game: one new chart a day, the same for everyone. Two minutes to buy, sell and "
               "short as the candles print, then see how your return ranks against every other player. Like Wordle, "
               "for trading.")
+DAILY_BODY = ("<main style=\"max-width:620px;margin:0 auto;padding:24px 16px;font:16px/1.55 system-ui,sans-serif\">"
+              "<h1>The Daily Chart: a daily stock market game</h1>"
+              "<p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice "
+              "money and have two minutes: the candles print one a second, and you buy, sell or short as they come. "
+              "When the time is up you see your return, your place, and how every other player did.</p>"
+              "<p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The "
+              "chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p>"
+              "<p>Turn on JavaScript to play. New to charts? Start with the <a href=\"/lessons\">free lessons</a> or read "
+              "<a href=\"/about\">about Meme Street</a>.</p></main>")
 SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart; the Learn page)
 
 
@@ -27,9 +36,10 @@ def add_pages(app):
 
     cache = {}
 
-    def page_as(path, title, description, extra=""):
+    def page_as(path, title, description, extra="", body=""):
         """index.html with its own title, description, preview and address for a page search engines should list on
-        its own (the Daily Chart): the same file, so nothing else changes."""
+        its own (the Daily Chart): the same file, so nothing else changes. `body` is plain text for visitors and crawlers
+        without JavaScript (put in a noscript block, so players never see it twice)."""
         f = os.path.join(web, "index.html")
         key = (path, os.path.getmtime(f))
         if key not in cache:
@@ -42,6 +52,8 @@ def add_pages(app):
             for tag in ('<meta name="description"', '<meta property="og:title"', '<meta property="og:description"'):
                 i = s.index(tag)                               # the home page's own copies go
                 s = s[:i] + s[s.index(">", i) + 1:]
+            if body:
+                s = s.replace('<body class="page-market">', '<body class="page-market"><noscript>' + body + "</noscript>", 1)
             for k in [k for k in cache if k[1] != key[1]]:   # (a page of an older index.html)
                 del cache[k]
             cache[key] = s
@@ -54,7 +66,7 @@ def add_pages(app):
                 "description": DAILY_TEXT, "image": site + "/brand/memestreet_logo_peaks.png",
                 "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
         return page_as("/daily", "Daily Chart: the daily stock market game | Meme Street", DAILY_TEXT,
-                       '<script type="application/ld+json">' + json.dumps(data) + "</script>")
+                       '<script type="application/ld+json">' + json.dumps(data) + "</script>", DAILY_BODY)
 
     @app.get("/brand/{name}")
     async def brand_file(name: str):
