@@ -205,7 +205,9 @@ cover them, so nothing may go there; do not mark that space down as dead.
 
 Your bar is the best faceless finance reels on Instagram, the ones with millions of views; the owner's own picks are in
 the pack (report.json "references": ref1.jpg... with their measured pace, pauses, cuts per minute and motion). Read
-them first and judge this reel against them: as clean, as calm, as easy to follow? Score against them, not
+them first and judge this reel against them: as clean, as calm, as easy to follow? Each format (quiz, stock story, lesson,
+Daily recap, stick skit) has its own template inside one house style (palette, font, small brand header with the
+format tag, caption style, calm motion): judge it against that shared style, not against another format's layout. Score against them, not
 against this pipeline's earlier cuts: 8 means you would proudly put this reel next to theirs, 9 means it beats them,
 6 is a forgettable reel that loses the thumb, and most first cuts are 5 or 6. A reel that looks cheap, cluttered,
 confusing or ugly in ANY frame (something you cannot read, a jumpy picture, text on text, a muddy or stray element)
