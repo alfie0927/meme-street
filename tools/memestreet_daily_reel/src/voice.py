@@ -47,6 +47,18 @@ def norm_words(text):
     ws = [re.sub(r"[^a-z0-9']", "", x.lower()) for x in text.split()]
     return [NUM.get(x, x) for x in ws if x]
 
+def speak(K, sent):
+    """One sentence in the house voice: ElevenLabs (Sarah, as the other reels) at an easy recap pace, Kokoro if it fails."""
+    if os.environ.get("ELEVEN_API_KEY", "").strip():
+        try:
+            import narrate
+            from pronounce import say_as
+            return narrate.el_line(say_as(sent), float(os.environ.get("RECAP_SPEED", "1.0"))), narrate.SR
+        except Exception as e:
+            print(f"ElevenLabs failed ({str(e)[:120]}); Kokoro reads it", flush=True)
+    return K.create(sent, voice="af_heart", speed=1.0, lang="en-us")
+
+
 def main(work):
     S = json.load(open(os.path.join(work, "script.json")))
     K = Kokoro(os.path.join(MODEL, "kokoro-v1.0.onnx"), os.path.join(MODEL, "voices-v1.0.bin"))
@@ -57,13 +69,13 @@ def main(work):
         audio, spans, pos, cur, sr = [], [], 0, 0.0, 24000
         for j, sent in enumerate(sents):
             c0 = b["vo"].index(sent, pos); pos = c0 + len(sent)
-            a, sr = K.create(sent, voice="af_heart", speed=1.0, lang="en-us"); a = trim(a, sr)
+            a, sr = speak(K, sent); a = trim(a, sr)
             if j: audio.append(np.zeros(int(SENT_GAP * sr), np.float32)); cur += SENT_GAP
             spans.append([c0, c0 + len(sent), cur, cur + len(a) / sr]); audio.append(a); cur += len(a) / sr
         out = os.path.join(work, "vo", f"b{i}.wav"); sf.write(out, np.concatenate(audio), sr)
         clips.append(out); spans_all.append(spans)
     # keep the reel under MAX_SECONDS with a gentle, pitch-preserving tempo (max 1.08x)
-    MAX_T = float(os.environ.get("MAX_SECONDS", "88"))
+    MAX_T = float(os.environ.get("MAX_SECONDS", "120"))     # (the recap is slow on purpose: no speeding up to fit)
     talk = sum(dur(c) for c in clips); fixed = LEAD + GAP * (len(clips) - 1) + TAIL; f = 1.0
     if talk + fixed > MAX_T:
         f = min(1.08, talk / max(1.0, MAX_T - fixed))
