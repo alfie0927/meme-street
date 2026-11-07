@@ -36,7 +36,7 @@ HEAD = ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
         '<script type="application/ld+json">{ld}</script><style>{css}</style></head><body><div class="wrap">'
         '<header><a class="brand" href="/"><img src="/brand/memestreet_logo_peaks.png" alt="" width="26" height="26">'
         'Meme Street</a><span class="sp"></span><a href="/lessons" class="btn">Lessons</a><a href="/#join" class="btn go">'
-        'Play free</a></header>')
+        'Sign up</a></header>')
 CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every account starts with 1,000 MB of practice '
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
