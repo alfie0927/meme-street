@@ -1,0 +1,97 @@
+name: seo-ship
+
+# The daily SEO run (seo/ in the repo, a cloud routine) opens a pull request from a branch named seo/YYYY-MM-DD. This
+# merges it and puts it live, with nobody watching, but only when every file it changes is on the SEO list below
+# (pages, titles, the sitemap, lesson text, seo/ notes). A PR that touches anything else (the game, payments, the
+# market, reels) is left open for the owner. Before merging: lint, types, the lesson pages' self-check and the page
+# tests. After deploying: the site must answer, or the code from before is put back (deploy/rollback.sh).
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: seo-ship
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  ship:
+    if: startsWith(github.head_ref, 'seo/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Only SEO files?
+        id: scope
+        shell: bash
+        run: |
+          git diff --name-only origin/main...HEAD > changed.txt
+          cat changed.txt
+          # the SEO list: anything else needs the owner
+          bad=$(grep -vE '^(seo/.*|game/lessonpages\.py|game/pages\.py|web/about\.html|web/bots-guide\.html|content/learn-[0-9a-z-]+\.md|docs/HOW_IT_WORKS\.md|tests/test_server\.py)$' changed.txt || true)
+          if [ -n "$bad" ]; then
+            echo "ok=no" >> "$GITHUB_OUTPUT"
+            { echo "## Left for the owner"; echo "These files are not on the SEO list, so this PR is not merged or deployed automatically:"; echo '```'; echo "$bad"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "ok=yes" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v6
+        if: steps.scope.outputs.ok == 'yes'
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Checks
+        if: steps.scope.outputs.ok == 'yes'
+        shell: bash
+        run: |
+          pip install -r requirements.txt ruff==0.6.9 mypy==1.11.2
+          ruff check --select E,F,W --ignore E501,E731,E741,E401 game tools tests
+          mypy game tools/realism.py tools/pricing_model.py --ignore-missing-imports
+          (cd game && python lessonpages.py)
+          cd tests && python -m unittest test_server.ServerTests.test_search_engines_get_robots_and_a_sitemap \
+            test_server.ServerTests.test_the_daily_chart_has_its_own_title_description_and_address \
+            test_server.ServerTests.test_pages_are_served_and_never_cached
+      - name: Merge
+        if: steps.scope.outputs.ok == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} --squash --delete-branch
+          git fetch origin main && git checkout -q origin/main
+      - name: Deploy
+        id: deploy
+        if: steps.scope.outputs.ok == 'yes'
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh && printf '%s\n' "$KEY" > ~/.ssh/deploy && chmod 600 ~/.ssh/deploy
+          echo "memestreet.net ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHIIJNQzGYyEGRN66qD2rpKTShKUaEXahzJXUzCxvM+f" > ~/.ssh/known_hosts
+          S="ssh -i $HOME/.ssh/deploy root@memestreet.net"
+          # the same files as deploy/upload.ps1 sends
+          ls requirements.txt game/*.py web/*.html web/*.js content/*.json content/*.md tools/*.py deploy/* \
+            brand/memestreet_logo_peaks.png brand/memestreet_header_peaks.png brand/favicon.ico brand/icon-48.png \
+            brand/icon-192.png brand/icon-512.png brand/apple-touch-icon.png 2>/dev/null | sort -u > files.txt
+          tar -czf code.tgz -T files.txt
+          scp -i ~/.ssh/deploy code.tgz root@memestreet.net:/tmp/memestreet-code.tgz
+          touch started   # (from here a failure means the server may be half-updated: the next step rolls back)
+          # as upload.ps1 -Restart: keep the code it replaces (for rollback.sh), unpack, update and restart
+          $S 'mkdir -p /opt/memestreet-releases && tar -czf /opt/memestreet-releases/$(date -u +%Y%m%d-%H%M%S).tgz -C /opt/memestreet --ignore-failed-read game web content tools deploy brand requirements.txt 2>/dev/null || true; ls -1t /opt/memestreet-releases/*.tgz 2>/dev/null | tail -n +6 | xargs -r rm -f --; tar -xzf /tmp/memestreet-code.tgz -C /opt/memestreet && rm /tmp/memestreet-code.tgz && sed -i "s/\r$//" /opt/memestreet/deploy/* && bash /opt/memestreet/deploy/update_server.sh restart'
+      - name: Is the site up?
+        if: always() && (steps.deploy.outcome == 'success' || steps.deploy.outcome == 'failure')
+        shell: bash
+        run: |
+          for i in $(seq 1 24); do
+            if curl -sf https://memestreet.net/api/health >/dev/null && curl -sf -o /dev/null https://memestreet.net/lessons; then echo "up"; exit 0; fi
+            sleep 5
+          done
+          echo "::error title=Site down after deploy::putting the code from before back"
+          [ -f started ] || { echo "the deploy never reached the server; nothing to roll back"; exit 1; }
+          ssh -i ~/.ssh/deploy root@memestreet.net 'bash /opt/memestreet/deploy/rollback.sh'
+          exit 1
