@@ -140,11 +140,11 @@ EL_MODEL = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
 EL_SPEED = float(os.environ.get("ELEVEN_SPEED", "1.17"))   # (1.1 read at 3.62 words a second; the human target is 3.9)
 
 
-def el_line(text):
+def el_line(text, speed=None):
     """One line read by ElevenLabs (ELEVEN_API_KEY in config.env), as float samples at SR."""
     import urllib.request
     body = {"text": text, "model_id": EL_MODEL, "voice_settings": {"stability": 0.5, "similarity_boost": 0.75, "style": 0.1,
-                                                                   "use_speaker_boost": True, "speed": EL_SPEED}}
+                                                                   "use_speaker_boost": True, "speed": speed or EL_SPEED}}
     req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{EL_VOICE}?output_format=pcm_{SR}", data=json.dumps(body).encode(),
                                  headers={"xi-api-key": os.environ["ELEVEN_API_KEY"].strip(), "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=120) as r:
@@ -201,7 +201,13 @@ def main(work):
             except Exception as e:                             # (out of characters, network: Kokoro reads this line)
                 print(f"scene {i}: ElevenLabs failed ({str(e)[:160]}); Kokoro reads it", flush=True)
         if a is not None:
-            sf.write(clip, a, SR); W = words(clip)
+            sf.write(clip, a, SR); W = words(clip); r = talk_rate(W)
+            if r and abs(r / WPS - 1) > 0.12:                  # (a dense line came out rushed, a light one slow: one retake at the
+                try:                                           #  speed that lands it on the human pace)
+                    sp = min(1.2, max(0.8, EL_SPEED * WPS / r))
+                    a = trim(el_line(say_as(sc["vo"].strip()), sp), SR); sf.write(clip, a, SR); W = words(clip)
+                except Exception as e:
+                    print(f"scene {i}: ElevenLabs retake failed ({str(e)[:120]}); the first take stays", flush=True)
             os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
         elif not os.path.exists(h + ".json"):
             for _ in range(3):                                 # one take per line (natural flow), at the human talking speed
