@@ -49,7 +49,7 @@ def norm_words(text):
 
 def speak(K, sent):
     """One sentence in the house voice: ElevenLabs (Sarah, as the other reels) at an easy recap pace, Kokoro if it fails."""
-    if os.environ.get("ELEVEN_API_KEY", "").strip():
+    if os.environ.get("ELEVEN_API_KEY", "").strip() and os.environ.get("REEL_VOICE") != "kokoro":
         try:
             import narrate
             from pronounce import say_as

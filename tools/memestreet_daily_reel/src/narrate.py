@@ -181,7 +181,7 @@ def el_enough(S):
     """ElevenLabs reads the whole reel or none of it: when the plan's characters left would not cover this reel (with room
     for retakes), Kokoro reads all of it, so a reel is never in two voices."""
     key = os.environ.get("ELEVEN_API_KEY", "").strip()
-    if not key: return False
+    if not key or os.environ.get("REEL_VOICE") == "kokoro": return False   # (the owner's choice, 2026-11-07: Kokoro, with its pronunciation fixes)
     need = 1.3 * sum(len(say_as(sc["vo"].strip())) for sc in S["scenes"])
     try:
         import urllib.request
