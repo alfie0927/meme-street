@@ -343,8 +343,16 @@ window.qa=async T=>{await render(T);const els=[document.getElementById('head'),d
   if(p.left<q.right-2&&q.left<p.right-2&&p.top<q.bottom-2&&q.top<p.bottom-2)bad.push([(B[a][0].id||B[a][0].className.baseVal||B[a][0].className)+':'+B[a][0].textContent.trim().slice(0,30),(B[b][0].id||B[b][0].className.baseVal||B[b][0].className)+':'+B[b][0].textContent.trim().slice(0,30)])}
  return bad};
 // the reel's cover: its first chart (or its first scene) under the title
-window.cover=async date=>{const k=Math.max(0,SC.findIndex(s=>s.chart!=null&&s.kind!=='hook'));const s=SC[k];await render(Math.min(s.t1-.05,(s.ve||s.t1)));
- document.getElementById('caps').innerHTML='';document.getElementById('opts').innerHTML='';document.querySelector('.prog').style.display='none';
- const hd=document.getElementById('head');hd.innerHTML=esc(R.title||'');hd.style.cssText='opacity:1;font-size:70px;top:360px;height:150px';   /* (above the chart, never across it) */document.body.style.opacity=1;
+window.cover=async date=>{   // the reel's cover, the November template: brand header, the main picture in a framed panel, the title, the site
+ let k=SC.findIndex(q=>q.chart!=null&&q.kind!=='hook');if(k<0)k=SC.findIndex(q=>q.kind==='story'||q.kind==='stick');if(k<0)k=0;const s=SC[k];
+ await render(Math.min(s.t1-.05,(s.ve||s.t1)));
+ for(const id of ['caps','opts'])document.getElementById(id).innerHTML='';document.querySelector('.prog').style.display='none';
+ document.getElementById('head').style.opacity=0;document.getElementById('wlabs')&&(document.getElementById('wlabs').innerHTML='');
+ for(const id of ['chart','stage'])document.getElementById(id).style.transform='translateY(-120px)';   // (the picture moves up into the panel)
+ const add=(css,html)=>{const d=document.createElement('div');d.style.cssText='position:absolute;'+css;d.innerHTML=html;document.body.insertBefore(d,document.getElementById('chart'));return d};
+ add('left:30px;right:30px;top:372px;height:800px;border-radius:28px;background:#0b0f13;border:3px solid #23272d','');
+ const t=add('left:60px;right:60px;top:1210px;height:230px;display:flex;align-items:center;justify-content:center;text-align:center;text-wrap:balance;font:700 76px/1.12 \'Cascadia Mono\',monospace;color:#e6e9ec',esc(R.title||''));
+ t.style.zIndex=5;add('left:0;right:0;top:1470px;text-align:center;font:600 30px/1 \'Cascadia Mono\',monospace;color:#8b96a3;z-index:5','memestreet.net');
+ document.body.style.opacity=1;
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))};
 </script></body></html>
