@@ -23,9 +23,20 @@ PACK = os.environ.get("CONTENT_PACK", "/opt/memestreet/content/pack_fiction.json
 CATEGORIES = {
     "Chart quiz": "Three questions on three real game charts. Each: a question scene (options shown, a short countdown), "
                   "then an answer scene (the rest of the chart plays out, the right option lights up, one or two lines on why).",
-    "Stock story": "Introduce one fictional company from the game: the hook, what it does, how it makes money, what moves "
-                   "its stock (good news and bad news), its real recent chart, and an invitation to trade it. Show what "
-                   "it does and its good and bad news as 2 or 3 animated story scenes.",
+    "Stock story": "Just the company, never its chart (the owner, 2026-11-07; the four November stock stories that did best "
+                   "had no chart). Seven beats, in this order: (1) the hook, one odd and specific fact about what it does "
+                   "('This company sells rain.'), over a story scene; (2) what it is: its name and what it does, a story "
+                   "scene; (3) how it makes money: a cards scene of 3 items with icons; (4) why it matters: a story scene "
+                   "(compare: the old way against its way, or flow); (5) what's unique: a story scene that grows (grow or "
+                   "network); (6) risks and what moves its stock: a cards scene of 2 or 3 items with the warn icon, from "
+                   "the good and bad news in the facts; (7) the outro, inviting viewers to trade it. No chart scene, no "
+                   "candles, no price moves.",
+    "Chart breakdown": "One game company's real recent chart, read like an analyst, in its own structure: (1) the hook, the "
+                       "chart's biggest move said as a stake ('This stock fell 12% in a day. The chart warned you.'), with the "
+                       "chart already drawn; (2) the company in one line, over the chart; (3) three numbered reads, each a "
+                       "scene titled '1. ...', '2. ...', '3. ...' on the same chart with marks, lines, shades and zooms (the "
+                       "trend, the level, the tell); (4) the one lesson to take away; (5) the outro. One chart the whole way, "
+                       "no story scenes.",
     "Technical lesson": "Teach one chart idea (an indicator, a level, a pattern) on a real chart that shows it: what it is, "
                         "how to read it, the trap, and the one rule to remember.",
     "Trading mistake": "One common beginner mistake, shown on a real chart: what people do, what it costs, what to do instead.",
@@ -71,7 +82,7 @@ CATEGORIES = {
     "Speed cheat sheet": "VIRAL (14x): rapid fire, three candles or patterns in under 30 seconds, each named, shown on a "
                          "real chart, and given one line on what it means. The hook promises the speed.",
 }
-ROTATION = {"0600": ["Technical lesson", "Trading mistake"], "1200": ["Chart quiz"], "1800": ["Stock story", "Guess the move"],
+ROTATION = {"0600": ["Technical lesson", "Trading mistake"], "1200": ["Chart quiz"], "1800": ["Stock story", "Chart breakdown"],
             "2100": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Guess the move"],
             "0300": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Myth or fact"]}
 ROTATION["0900"] = ["Hard truth"]
@@ -233,7 +244,7 @@ def gather(category, rng, history, company=None):
         charts.append({"candles": C, "label": f"Daily Chart #{A['number']}", "upto": len(C) - 1, "end": len(C) - 1, "win": [0, len(C) - 1]})
         facts["charts"] = [chart_summary(0, charts[0])]
         return facts, charts
-    if category == "Stock story":
+    if category in ("Stock story", "Chart breakdown"):
         pack = json.load(open(PACK, encoding="utf-8")) if os.path.exists(PACK) else {"companies": [], "templates": []}
         if company:                                      # (the same company as the reel it remakes, or no remake)
             want = company.lower()
@@ -256,8 +267,10 @@ def gather(category, rng, history, company=None):
                  "price_now": round(st["price"], 2), "good_news_examples": sum((t["up"] for t in news), [])[:3],
                  "bad_news_examples": sum((t["down"] for t in news), [])[:3]}
         C = st["candles"]
-        charts.append({"candles": C, "label": f"{st['name']} ({st['ticker']}) · {st['tf']}", "upto": len(C) - 1,
-                       "end": len(C) - 1, "win": [0, len(C) - 1]})
+        if category == "Chart breakdown":                # (a stock story is just the company: no chart in its facts)
+            charts.append({"candles": C, "label": f"{st['name']} ({st['ticker']}) · {st['tf']}", "upto": len(C) - 1,
+                           "end": len(C) - 1, "win": [0, len(C) - 1]})
+            facts["charts"] = [chart_summary(0, charts[0])]
         history.setdefault("tickers", []).append(co["ticker"])
     else:
         kinds = KINDS[category][:]; rng.shuffle(kinds)
@@ -319,6 +332,7 @@ RULES = """Rules:
   and bad news as 2 or 3 film scenes; every other reel puts one "shot" on its hook (the first thing anyone sees, so make
   it striking). A shot shows the line's subject doing something specific and physical, fictional (no real brands,
   places or people), no text or screens in frame. Charts stay charts.
+- Say a price the way it is shown on screen: under 10 it keeps its point ('4.91' is 'four point nine one', never 'four ninety-one', which the captions would show as 491); from 10 up, 'two oh three' for 203 is fine.
 - Total spoken words 60 to 110 (about 25 to 35 seconds): concise, one idea, every line earning its place, unless the
   reel's description says otherwise. No greeting, no "in this video". Start at the hook.
 - The first scene is a hook; the last is the outro. Change what is on screen every scene.
@@ -382,9 +396,9 @@ def check(spec, facts, charts, category=None):
     look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
     body = [s for s in sc if s.get("kind") != "outro"]
     cuts = sum(1 for a, b in zip(body, body[1:]) if look(a) != look(b))
-    if cuts > (5 if category == "Stock story" else 3):         # (what fills the screen changes this often: choppy next to the references)
+    if cuts > (6 if category == "Stock story" else 3):         # (what fills the screen changes this often: choppy next to the references)
         errs.append(f"the screen changes {cuts} times before the outro; keep one chart on screen and let it evolve (at most "
-                    f"{5 if category == 'Stock story' else 3} switches)")
+                    f"{6 if category == 'Stock story' else 3} switches)")
     worlds = [s for s in sc if s.get("layout")]
     for k, s in enumerate(sc):
         if s.get("kind") == "story" or s.get("layout"):
@@ -397,9 +411,18 @@ def check(spec, facts, charts, category=None):
                 if q.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: colour {q.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
                 if len(str(q.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {q.get('label')!r} is over 3 words")
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
-    if category == "Stock story" and not 2 <= len(worlds) <= 3:
-        errs.append(f"a stock story shows what the company does and its news as 2 or 3 story scenes (kind \"story\" with a layout "
-                    f"and props); this script has {len(worlds)}")
+    if category == "Stock story":
+        if not 3 <= len(worlds) <= 5:
+            errs.append(f"a stock story tells the company in 3 to 5 story scenes (kind \"story\" with a layout and props): the hook, "
+                        f"what it is, why it matters, what's unique; this script has {len(worlds)}")
+        if any(s.get("chart") is not None for s in sc):
+            errs.append("a stock story is just the company: no chart scenes (a chart read is the Chart breakdown format)")
+        if sc and not sc[0].get("layout"):
+            errs.append("a stock story's hook is illustrated: give scene 0 a story layout and props that show the odd fact (its text is the title)")
+        if sum(1 for s in sc if s.get("kind") == "cards") < 2:
+            errs.append("a stock story has 2 cards scenes: how it makes money (3 items), and risks and what moves it (2 or 3, warn icon)")
+    if category == "Chart breakdown" and any(s.get("kind") == "story" or (s.get("kind") not in ("outro",) and s.get("chart") is None) for s in sc):
+        errs.append("a chart breakdown keeps its one chart on screen in every scene but the outro (no story scenes)")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
     films = [s for s in sc if s.get("kind") == "film"]
     for k, s in enumerate(sc):

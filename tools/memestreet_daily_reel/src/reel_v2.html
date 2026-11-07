@@ -182,9 +182,42 @@ function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.P
 const SCOL={teal:'#4fc6c8',green:'#3dd68c',amber:'#e8b14a',red:'#f0585c',purple:'#9b7bff',white:'#e6e9ec',grey:'#5a636e'};
 const sc2=p=>SCOL[(p||{}).color]||SCOL.teal;
 const ln=(c,w=4)=>`fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
-const bd=(c,w=4)=>`fill="#0b0f13" fill-opacity=".85" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"`;
+const bd=(c,w=4)=>`fill="${c}" fill-opacity=".2" stroke="${c}" stroke-width="${w}" stroke-linejoin="round"`;   // (filled, like the November stories: reads at a glance)
 // every prop is drawn standing on (0,0), about 200 px tall, facing right; u = seconds since it appeared
 const PROP2D={
+ // ---- one or two signature props per game sector (2026-11-07): weather, time, dreams, creatures, ocean, anti-gravity, alchemy
+ cloud(c,u){let g='';for(let k=0;k<7;k++){const x=-72+k*24,y=(u*230+k*41)%110;g+=`<line x1="${x}" y1="${-118+y}" x2="${x-6}" y2="${-96+y}" stroke="${SCOL.teal}" stroke-width="4" stroke-linecap="round" opacity="${(1-y/110).toFixed(2)}"/>`}
+  return g+`<path d="M-100 -130 Q-112 -178 -62 -182 Q-50 -232 4 -222 Q54 -246 78 -196 Q122 -192 108 -150 Q112 -128 84 -126 H-78 Q-102 -124 -100 -130 Z" ${bd(c)}/>`},
+ sun(c,u){let g='';for(let k=0;k<10;k++){const a=k/10*Math.PI*2+u*.25;g+=`<line x1="${(Math.cos(a)*70).toFixed(1)}" y1="${(-120+Math.sin(a)*70).toFixed(1)}" x2="${(Math.cos(a)*96).toFixed(1)}" y2="${(-120+Math.sin(a)*96).toFixed(1)}" ${ln(c,5)}/>`}
+  return g+`<circle cx="0" cy="-120" r="54" ${bd(c)}/>`},
+ snowflake(c,u){let g='';for(let k=0;k<6;k++){const a=k/6*Math.PI*2+u*.3,x=Math.cos(a),y=Math.sin(a);g+=`<line x1="0" y1="-120" x2="${(x*92).toFixed(1)}" y2="${(-120+y*92).toFixed(1)}" ${ln(c,5)}/>`;
+  for(const s of [-1,1]){const b=a+s*.6;g+=`<line x1="${(x*58).toFixed(1)}" y1="${(-120+y*58).toFixed(1)}" x2="${(x*58+Math.cos(b)*26).toFixed(1)}" y2="${(-120+y*58+Math.sin(b)*26).toFixed(1)}" ${ln(c,4)}/>`}}return g},
+ turbine(c,u){let g=`<path d="M-8 0 L-4 -160 H4 L8 0 Z" ${bd(c,3)}/>`;for(let k=0;k<3;k++){const a=k/3*Math.PI*2+u*1.6;
+  g+=`<path d="M0 -160 L${(Math.cos(a-.12)*30).toFixed(1)} ${(-160+Math.sin(a-.12)*30).toFixed(1)} L${(Math.cos(a)*110).toFixed(1)} ${(-160+Math.sin(a)*110).toFixed(1)} L${(Math.cos(a+.12)*30).toFixed(1)} ${(-160+Math.sin(a+.12)*30).toFixed(1)} Z" ${bd(c,3)}/>`}
+  return g+`<circle cx="0" cy="-160" r="12" fill="${c}"/>`},
+ clock(c,u){let g=`<circle cx="0" cy="-110" r="88" ${bd(c)}/>`;for(let k=0;k<12;k++){const a=k/12*Math.PI*2;g+=`<line x1="${(Math.cos(a)*70).toFixed(1)}" y1="${(-110+Math.sin(a)*70).toFixed(1)}" x2="${(Math.cos(a)*80).toFixed(1)}" y2="${(-110+Math.sin(a)*80).toFixed(1)}" ${ln(c,k%3?2:4)}/>`}
+  const m=u*1.2-Math.PI/2,h=u*.1-Math.PI/2;return g+`<line x1="0" y1="-110" x2="${(Math.cos(m)*66).toFixed(1)}" y2="${(-110+Math.sin(m)*66).toFixed(1)}" ${ln('#e6e9ec',4)}/><line x1="0" y1="-110" x2="${(Math.cos(h)*42).toFixed(1)}" y2="${(-110+Math.sin(h)*42).toFixed(1)}" ${ln(c,7)}/><circle cx="0" cy="-110" r="7" fill="${c}"/>`},
+ hourglass(c,u){const f=(u*.25)%1;return `<path d="M-60 -220 H60 L8 -110 L60 0 H-60 L-8 -110 Z" ${bd(c)}/><path d="M${(-46*(1-f)).toFixed(1)} ${(-206+96*f).toFixed(1)} H${(46*(1-f)).toFixed(1)} L4 -116 H-4 Z" fill="${SCOL.amber}" opacity=".8"/><path d="M${(-46*f).toFixed(1)} -14 H${(46*f).toFixed(1)} L${(20*f).toFixed(1)} ${(-14-50*f).toFixed(1)} H${(-20*f).toFixed(1)} Z" fill="${SCOL.amber}" opacity=".8"/><line x1="0" y1="-110" x2="0" y2="-16" stroke="${SCOL.amber}" stroke-width="2" stroke-dasharray="4 6" stroke-dashoffset="${(-u*40).toFixed(0)}"/>`},
+ moon(c,u){let g=`<path d="M30 -210 A95 95 0 1 0 30 -30 A75 75 0 1 1 30 -210 Z" ${bd(c)}/>`;for(let k=0;k<4;k++){const x=40+k*28,y=-200+((k*53)%120),a=.35+.65*Math.abs(Math.sin(u*1.3+k));g+=`<path d="M${x} ${y-10} L${x+3} ${y-3} L${x+10} ${y} L${x+3} ${y+3} L${x} ${y+10} L${x-3} ${y+3} L${x-10} ${y} L${x-3} ${y-3} Z" fill="#fff" opacity="${a.toFixed(2)}"/>`}return g},
+ bed(c,u){let g=`<rect x="-120" y="-120" width="16" height="120" ${bd(c,3)}/><rect x="-104" y="-70" width="220" height="44" rx="8" ${bd(c)}/><rect x="-96" y="-98" width="60" height="28" rx="12" ${bd('#e6e9ec',3)}/><line x1="110" y1="-26" x2="110" y2="0" ${ln(c,4)}/>`;
+  for(let k=0;k<3;k++){const p=(u*.5+k/3)%1;g+=`<text x="${(-40+p*60).toFixed(0)}" y="${(-110-p*90).toFixed(0)}" font-size="${(22+p*14).toFixed(0)}" font-weight="700" fill="${c}" opacity="${(1-p).toFixed(2)}">z</text>`}return g},
+ kraken(c,u){let g='';for(let k=0;k<5;k++){const x0=-64+k*32,w=26*Math.sin(u*1.4+k);g+=`<path d="M${x0} -70 Q${x0+w} -30 ${x0+(k-2)*22} ${(-4+10*Math.sin(u*1.4+k+1)).toFixed(1)}" ${ln(c,9)}/>`}
+  return g+`<path d="M-80 -70 Q-86 -230 0 -232 Q86 -230 80 -70 Z" ${bd(c)}/><circle cx="-30" cy="-120" r="10" fill="${c}"/><circle cx="30" cy="-120" r="10" fill="${c}"/>`},
+ sub(c,u){let g=`<ellipse cx="0" cy="-80" rx="130" ry="46" ${bd(c)}/><rect x="-30" y="-150" width="60" height="40" rx="8" ${bd(c)}/><path d="M10 -150 V-182 H34" ${ln(c,4)}/><path d="M-130 -80 L-170 -112 V-48 Z" ${bd(c,3)}/>`;
+  for(const x of [-60,0,60])g+=`<circle cx="${x}" cy="-80" r="12" ${ln('#e6e9ec',3)}/>`;for(let k=0;k<3;k++){const p=(u*.6+k/3)%1;g+=`<circle cx="${(150+8*Math.sin(p*9)).toFixed(1)}" cy="${(-90-p*130).toFixed(0)}" r="${(5+p*6).toFixed(1)}" ${ln(c,2)} opacity="${(1-p).toFixed(2)}"/>`}return g},
+ kelp(c,u){let g='';for(let k=0;k<3;k++){const x0=-60+k*60;let d=`M${x0} 0`;for(let i=1;i<=6;i++)d+=` L${(x0+14*Math.sin(u*1.1+i*.7+k)*i/6).toFixed(1)} ${-i*36}`;g+=`<path d="${d}" ${ln(SCOL.green,8)}/>`}return g},
+ shell(c,u){let g=`<path d="M-100 -20 Q-110 -150 0 -170 Q110 -150 100 -20 Q0 10 -100 -20 Z" ${bd(c)}/>`;for(let k=-3;k<=3;k++)g+=`<line x1="0" y1="-10" x2="${k*30}" y2="${-150+Math.abs(k)*14}" ${ln(c,3)}/>`;
+  return g+`<circle cx="0" cy="-40" r="18" fill="#fff" opacity="${(.7+.3*Math.sin(u*2)).toFixed(2)}"/>`},
+ hover(c,u){const y=-60+8*Math.sin(u*1.5);let g=`<rect x="-110" y="${(y-26).toFixed(1)}" width="220" height="26" rx="10" ${bd(c)}/><rect x="-60" y="${(y-86).toFixed(1)}" width="120" height="60" rx="6" ${bd(SCOL.amber)}/>`;
+  for(let k=0;k<4;k++){const p=(u*1.4+k/4)%1;g+=`<ellipse cx="0" cy="${(y+10+p*40).toFixed(1)}" rx="${(90-p*50).toFixed(1)}" ry="6" ${ln(c,3)} opacity="${(1-p).toFixed(2)}"/>`}return g},
+ potion(c,u){let g=`<path d="M-18 -220 V-180 Q-90 -160 -90 -90 Q-90 0 0 0 Q90 0 90 -90 Q90 -160 18 -180 V-220 Z" ${bd(c)}/><path d="M-82 -80 Q-80 -8 0 -8 Q80 -8 82 -80 Q40 -${(92+6*Math.sin(u*2)).toFixed(1)} 0 -84 Q-40 -76 -82 -80 Z" fill="${c}" opacity=".55"/><rect x="-24" y="-238" width="48" height="22" rx="5" fill="${SCOL.amber}" opacity=".9"/>`;
+  for(let k=0;k<4;k++){const p=(u*.7+k/4)%1;g+=`<circle cx="${(-40+k*26).toFixed(0)}" cy="${(-20-p*70).toFixed(0)}" r="${(4+p*5).toFixed(1)}" fill="#fff" opacity="${(.8*(1-p)).toFixed(2)}"/>`}return g},
+ cauldron(c,u){let g=`<path d="M-120 -130 H120 Q118 -20 0 -14 Q-118 -20 -120 -130 Z" ${bd(c)}/><ellipse cx="0" cy="-130" rx="120" ry="18" fill="${SCOL.green}" opacity=".6"/><line x1="-80" y1="-24" x2="-96" y2="0" ${ln(c,6)}/><line x1="80" y1="-24" x2="96" y2="0" ${ln(c,6)}/>`;
+  for(let k=0;k<5;k++){const p=(u*.8+k/5)%1;g+=`<circle cx="${(-70+k*35+10*Math.sin(p*6)).toFixed(1)}" cy="${(-140-p*90).toFixed(0)}" r="${(6+p*10).toFixed(1)}" ${ln(SCOL.green,3)} opacity="${(1-p).toFixed(2)}"/>`}return g},
+ goldbar(c,u){let g='';for(const [x,y] of [[-70,0],[70,0],[0,-62]])g+=`<path d="M${x-62} ${y} L${x-44} ${y-56} H${x+44} L${x+62} ${y} Z" ${bd(SCOL.amber)}/>`;
+  const s=((u*.4)%1)*240-120;return g+`<line x1="${s.toFixed(0)}" y1="-110" x2="${(s+30).toFixed(0)}" y2="-10" stroke="#fff" stroke-width="6" opacity=".35"/>`},
+ wand(c,u){let g=`<line x1="-90" y1="-10" x2="60" y2="-170" ${ln('#e6e9ec',9)}/><path d="M60 -212 L71 -182 L102 -180 L77 -161 L86 -130 L60 -148 L34 -130 L43 -161 L18 -180 L49 -182 Z" ${bd(c)}/>`;
+  for(let k=0;k<5;k++){const a=k/5*Math.PI*2+u*.9,r=56+10*Math.sin(u*3+k);g+=`<circle cx="${(60+Math.cos(a)*r).toFixed(1)}" cy="${(-170+Math.sin(a)*r).toFixed(1)}" r="4" fill="#fff" opacity="${(.4+.6*Math.abs(Math.sin(u*2+k))).toFixed(2)}"/>`}return g},
  portal(c,u){let g='';for(let k=0;k<3;k++)g+=`<ellipse cx="0" cy="-110" rx="${62-k*12}" ry="${108-k*16}" ${ln(c,k?2.5:5)} opacity="${1-k*.25}" stroke-dasharray="${k?'14 10':'none'}" stroke-dashoffset="${-u*30*(k%2?1:-1)}"/>`;
   g+=`<ellipse cx="0" cy="-110" rx="44" ry="80" fill="${c}" opacity=".10"/>`;
   for(let k=0;k<5;k++){const a=k/5*Math.PI*2+u*1.1;g+=`<circle cx="${Math.cos(a)*62}" cy="${-110+Math.sin(a)*108}" r="4" fill="#fff"/>`}
@@ -232,7 +265,7 @@ const PROP2D={
  fish(c,u){const w=14*Math.sin(u*2.5);return `<path d="M-90 -100 Q-20 -160 90 -100 Q-20 -40 -90 -100 Z" ${bd(c)}/><path d="M-88 -100 L-150 ${-140+w} L-140 -100 L-150 ${-60+w} Z" ${bd(c,3.5)}/><circle cx="55" cy="-108" r="6" fill="${c}"/>`},
 };
 // each prop's real size at scale 1 (width, height), so a slot can fit it: a wide dragon never spills onto its neighbours
-const PSZ={queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
+const PSZ={cloud:[230,250],sun:[200,220],snowflake:[190,220],turbine:[230,280],clock:[180,200],hourglass:[130,225],moon:[200,220],bed:[240,230],kraken:[180,240],sub:[340,200],kelp:[160,220],shell:[220,180],hover:[230,170],potion:[190,240],cauldron:[250,240],goldbar:[260,120],wand:[200,220],queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
  ship:[330,150],plane:[300,170],rocket:[140,260],drone:[260,170],train:[400,100],coin:[120,130],coins:[130,120],bar:[80,200],arrow:[140,230],
  shield:[180,230],warning:[200,200],gear:[180,180],flask:[170,220],battery:[110,220],chip:[210,160],pipe:[360,110],tree:[150,230],
  mountain:[400,230],wave:[400,120],person:[90,215],dragon:[360,240],bird:[240,110],fish:[250,130]};
@@ -241,9 +274,11 @@ const fitK=(p,k,w,h)=>{const z=PSZ[(p||{}).p]||[200,220];return Math.min(k,w/z[0
 function prop2d(p,x,y,k,t,t0,j){const a=t0==null?1:back(seg(t,t0-.05,t0+.35)),u=Math.max(0,t-(t0||0));if(a<=0)return '';const f=PROP2D[(p||{}).p]||PROP2D.crate;
  return `<g transform="translate(${x} ${(y+4*Math.sin(t*1.2+j)).toFixed(1)}) scale(${(k*(.85+.15*a)).toFixed(3)})" opacity="${cl(a).toFixed(3)}">${f(sc2(p),u)}</g>`}
 const STAGE={x0:80,x1:1000,ground:1180,top:600};
-function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?P[k].t:null,G=STAGE.ground,lay=s.layout||'hero';let g='';
+function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0?Math.min(P[k].t,s.t0+.3):P[k].t):null,G=STAGE.ground,lay=s.layout||'hero';let g='';   // (the lead prop is up from the start: no empty stage)
  const lab=(k,x,y)=>{if(P[k]&&P[k].label)L.push({text:P[k].label,x,y,color:sc2(P[k]),a:T0(k)==null?1:cl(seg(t,T0(k),T0(k)+.3))})};
- g+=`<line x1="${STAGE.x0}" y1="${G}" x2="${STAGE.x1}" y2="${G}" stroke="#4fc6c8" stroke-width="2" opacity=".25"/>`;
+ {const tint=sc2(P[0]||{});   // a quiet backdrop (far hills, never moving) and a filled ground, in the lead prop's colour
+  g+=`<path d="M60 ${G} L190 ${G-150} L300 ${G-60} L430 ${G-210} L560 ${G-90} L690 ${G-180} L820 ${G-70} L1020 ${G-160} L1020 ${G} Z" fill="${tint}" opacity=".06"/>`;
+  g+=`<rect x="60" y="${G}" width="960" height="90" fill="${tint}" opacity=".12"/><line x1="60" y1="${G}" x2="1020" y2="${G}" stroke="${tint}" stroke-width="3" opacity=".5"/>`}
  if(lay==='flow'){const st=P.slice(0,Math.max(1,P.length-1)).slice(0,3),mv=P.length>1?P[P.length-1]:{p:'crate',color:'amber'},n=st.length,xs=st.map((_,k)=>n===1?540:220+640*k/(n-1)),portal=n>1&&st.every(p=>p.p==='portal');
   st.forEach((p,k)=>{const kk=fitK(p,1.7,n>2?280:380,400);g+=prop2d(p,xs[k],G,kk,t,T0(k),k);lab(k,xs[k],G-(PSZ[p.p]||[0,220])[1]*kk-40)});
   const a0=T0(P.length-1)??s.vs;for(let j=0;j<3;j++){const q=((Math.max(0,t-a0)*.11+j/3)%1),x=STAGE.x0+(STAGE.x1-STAGE.x0)*q,inGap=portal&&x>xs[0]&&x<xs[n-1],near=Math.min(...xs.map(v=>Math.abs(x-v)));
@@ -254,12 +289,12 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?P[k].t
   for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){const tt=Math.max(on(i),on(j)),q=out(seg(t,tt,tt+.5));if(q<=0)continue;const [x1,y1]=pts[i],[x2,y2]=pts[j];
    g+=`<line x1="${x1}" y1="${y1}" x2="${(x1+(x2-x1)*q).toFixed(1)}" y2="${(y1+(y2-y1)*q).toFixed(1)}" stroke="#9b7bff" stroke-width="2.5" opacity=".55"/>`}
   pts.forEach(([x,y],k)=>{g+=prop2d(P[k]||{p:'node',color:'teal'},x,y+20,1.3,t,on(k),k);const out_=(y<cy?-1:1);lab(k,x,y+(out_<0?-50:90))})}
- else if(lay==='hero'){const fly=['dragon','bird','plane','drone','fish','rocket'].includes((P[0]||{}).p),slots=fly?[[200,G],[540,G],[880,G]]:[[190,G],[890,G],[330,G-150],[750,G-150]];   // (a flier leaves the middle free; side props never touch)
-  P.slice(1,1+slots.length).forEach((p,k)=>{const kk=fitK(p,1.05,fly?250:210,fly&&k===1?150:230),under=fly&&k===1;   // (under a flier the middle prop is small and labelled below)
+ else if(lay==='hero'){const fly=['dragon','bird','plane','drone','fish','rocket'].includes((P[0]||{}).p),slots=fly?[[200,G],[540,G],[880,G]]:[[170,G],[910,G],[170,G-320],[910,G-320]];   // (a flier leaves the middle free; side props never touch)
+  P.slice(1,1+slots.length).forEach((p,k)=>{const kk=fitK(p,1.3,fly?290:220,fly&&k===1?170:k<2?250:200),under=fly&&k===1;   // (two columns at the edges, clear of the lead prop)   // (under a flier the middle prop is small and labelled below)
    g+=prop2d(p,slots[k][0],slots[k][1],kk,t,T0(k+1),k+1);lab(k+1,slots[k][0],under?G+58:slots[k][1]-(PSZ[p.p]||[0,220])[1]*kk-40)});
-  if(fly){const u=t-(T0(0)??s.vs),kk=fitK(P[0],1.6,620,330),x=540+24*Math.sin(u*.6),y=1000+10*Math.sin(u*1.1);   // (hovers: a slow drift, never a crossing)
+  if(fly){const u=t-(T0(0)??s.vs),kk=fitK(P[0],2.1,760,420),x=540+24*Math.sin(u*.6),y=1000+10*Math.sin(u*1.1);   // (hovers: a slow drift, never a crossing)
    g+=prop2d(P[0],x,y,kk,t,T0(0),0);lab(0,540,y-(PSZ[P[0].p]||[0,240])[1]*kk-40)}
-  else{const kk=fitK(P[0]||{p:'building'},2.1,420,480);g+=prop2d(P[0]||{p:'building'},540,G,kk,t,T0(0),0);lab(0,540,G-(PSZ[(P[0]||{}).p]||[0,230])[1]*kk-40)}}
+  else{const kk=fitK(P[0]||{p:'building'},2.6,500,560);g+=prop2d(P[0]||{p:'building'},540,G,kk,t,T0(0),0);lab(0,540,G-(PSZ[(P[0]||{}).p]||[0,230])[1]*kk-40)}}
  else if(lay==='grow'){const n=Math.max(3,Math.min(5,P.length||4)),on=k=>T0(k)??s.vs+.4+k*.5;
   for(let k=0;k<n;k++){const x=200+600*k/(n-1),h=(130+k*(380/(n-1)))*out(seg(t,on(k),on(k)+.8));if(h<=0)continue;
    g+=`<rect x="${x-55}" y="${G-h}" width="110" height="${h}" rx="8" ${bd(SCOL.green)}/><line x1="${x-55}" y1="${G-h}" x2="${x+55}" y2="${G-h}" ${ln(SCOL.green,8)}/>`;lab(k,x,G-h-40)}
@@ -279,11 +314,12 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?P[k].t
   const q2=((t-s.t0)*.45)%1,fx=600+380*q2;if(!two||fx<660||fx>920)g+=prop2d(mv,fx,G-30,.5,t,null,8);
   lab(0,290,STAGE.top+70);lab(1,790,STAGE.top+70)}
  const labs=L.filter(l=>l.a>0).sort((a,b)=>a.y-b.y),placed=[];
- const html=labs.map(l=>{const w=l.text.length*23+40;let x=Math.max(70+w/2,Math.min(1010-w/2,l.x)),y=Math.max(STAGE.top,Math.min(1240,l.y));
+ const zl=1+.04*io(seg(t,s.t0,s.t1)),html=labs.map(l=>{const w=l.text.length*23+40,lx=540+(l.x-540)*zl,ly=G-200+(l.y-G+200)*zl;let x=Math.max(70+w/2,Math.min(1010-w/2,lx)),y=Math.max(STAGE.top,Math.min(1240,ly));   // (tags ride the push-in with their props)
   while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+20&&Math.abs(q[1]-y)<66))y+=68;placed.push([x,y,w]);   // (a clear gap between tags, never touching)
   return `<div class="slab qa" style="left:${x}px;top:${y}px;color:${l.color};border-color:${l.color};opacity:${l.a}">${esc(l.text)}</div>`}).join('');
  const fade=out(seg(t,s.t0,s.t0+.35));
- return `<svg style="position:absolute;left:0;top:0;opacity:${fade}" width="1080" height="1920"><defs><clipPath id="sclip"><rect x="60" y="578" width="960" height="700"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip)"><g filter="url(#sglow)">${g}</g></g></svg>`+html}
+ const zm=1+.04*io(seg(t,s.t0,s.t1));   // (a slow, eased push-in across the scene: alive, never jerky)
+ return `<svg style="position:absolute;left:0;top:0;opacity:${fade};transform-origin:540px ${G-200}px;transform:scale(${zm.toFixed(4)})" width="1080" height="1920"><defs><clipPath id="sclip"><rect x="60" y="578" width="960" height="700"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip)"><g filter="url(#sglow)">${g}</g></g></svg>`+html}
 function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
  if(s.chart!=null)return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920">${drawFigure(s,F[0],0,t,912,1150,1.25,300)}</svg>`;
  const n=F.length,sc=n===1?1.9:n===2?1.55:1.25,xs=n===1?[540]:n===2?[330,750]:[220,540,860];
@@ -301,7 +337,7 @@ function render(T){
  document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
- const hookTxt=s.kind==='hook'&&s.chart!=null&&s.text;   // the on-screen hook sits in the title zone, in amber
+ const hookTxt=s.kind==='hook'&&(s.chart!=null||s.layout)&&s.text;   // the on-screen hook sits in the title zone, in amber
  hd.innerHTML=hookTxt?(()=>{const ws=s.text.split(' '),key=ws.map(w=>/\d/.test(w)).some(x=>x)?ws.map(w=>/\d/.test(w)):ws.map((_,k)=>k===ws.length-1);return '<span>'+ws.map((w,k)=>`<span style="color:${key[k]?AM:'#fff'}">${esc(w)}</span>`).join(' ')+'</span>'})():s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';const hb=back(seg(t,s.t0,s.t0+.4));hd.style.padding=s.kind==='question'?'0 150px':'0';hd.style.boxSizing='border-box';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px) scale(${.85+.15*hb})`;fit(hd,180,hookTxt?84:62);
  if(s.kind==='outro'){let k=i;while(k>0&&SC[k].chart==null)k--;drawChart(SC[k].chart!=null?k:i,SC[k].chart!=null?SC[k].t1-.01:t)}else drawChart(i,t);   // (v2: the sign-off sits over the last chart, dimmed: no separate end card)
  // cards, big text
@@ -309,8 +345,8 @@ function render(T){
  if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(230,720/Math.max(1,N)),y=560+(720-N*gap)/2+k*gap;   // (the stack fills the stage down to the captions)
   st+=`<div class="card qa" style="top:${y}px;height:${gap-24}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
  if(s.kind==='stick')st+=drawSticks(s,t);
- if(s.kind==='story')st+=drawStory(s,t);
- if(s.kind==='big'||s.kind==='hook'&&s.chart==null){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
+ if(s.kind==='story'||s.kind==='hook'&&s.layout)st+=drawStory(s,t);   // (a stock story's hook is illustrated)
+ if(s.kind==='big'||s.kind==='hook'&&s.chart==null&&!s.layout){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
   st+=`<svg style="position:absolute;left:460px;top:1290px;opacity:${a};transform:scale(${1+.1*Math.pow(1-((t-s.think_t[0])%.4)/.4,3)})" width="160" height="160"><circle cx="80" cy="80" r="64" fill="#2a2110" stroke="#4a3a1c" stroke-width="12"/><circle cx="80" cy="80" r="64" fill="none" stroke="${AM}" stroke-width="12" stroke-dasharray="${402*(1-u)} 500" transform="rotate(-90 80 80)" stroke-linecap="round"/><text x="80" y="99" text-anchor="middle" font-size="54" font-weight="800" fill="${AM}">${Math.ceil(left)}</text></svg>`}   // (big and amber: a timer, not dead air)
