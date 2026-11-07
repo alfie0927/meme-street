@@ -266,7 +266,8 @@ WORLD_LAYOUTS = re.findall(r"lay==='(\w+)'", _R)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
 RULES = """Rules:
-- Animated "story" scenes (2D neon line art) show real things: a stock story has 2 or 3 (what the company does, its good news, its bad
+- One label per idea in a story scene: a waiting list is a "queue" prop labelled "Waiting list", not a person plus separate
+  labels. Animated "story" scenes (2D neon line art) show real things: a stock story has 2 or 3 (what the company does, its good news, its bad
   news), and any reel may use one when a real object acts out the line (a company, its product, money moving). A dragon-
   rental firm is a dragon circling its ranch, teleport freight is crates through portals, a recall is warnings hitting
   the company. Never an abstract stand-in for an idea (a box for 'your trade', triangles for 'panic'): if a viewer could
@@ -640,6 +641,9 @@ def claude_cli(messages, system):
                         "--disallowedTools", "Bash,Edit,Write,Read,WebFetch,WebSearch,Glob,Grep,Task,NotebookEdit"],
                        input=convo, capture_output=True, text=True, timeout=600, cwd="/tmp",
                        env={k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"})   # (an API key would be billed instead)
+    if r.returncode and re.search(r"hit your|usage limit|rate limit", (r.stderr or "") + r.stdout, re.I):
+        print("the writer's plan limit is reached: waiting 15 minutes, then trying again", flush=True)   # (credits come back: carry on then)
+        time.sleep(900); return claude_cli(messages, system)
     if r.returncode:
         raise SystemExit("claude -p failed: " + (r.stderr or r.stdout)[-400:])
     return r.stdout

@@ -420,7 +420,8 @@ def loop(work, out):
             try:
                 run(["python3", "src/make_spec.py", "revise", work, os.path.join(work, f"review-{rnd}.json")]); break
             except SystemExit as e:   # (the rewrite did not pass its checks in five tries: it tries again)
-                print(f"rewrite after round {rnd} did not pass its checks ({e.code}); trying again", flush=True)
+                print(f"rewrite after round {rnd} did not pass its checks ({e.code}); trying again in a minute", flush=True)
+                time.sleep(60)
 
 
 def demo():

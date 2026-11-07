@@ -220,6 +220,7 @@ const PROP2D={
  tree(c){return `<rect x="-8" y="-60" width="16" height="60" ${bd(c,3)}/><path d="M0 -230 L60 -150 H30 L75 -90 H-75 L-30 -150 H-60 Z" ${bd(SCOL.green)}/>`},
  mountain(c){return `<path d="M-200 0 L-90 -170 L-40 -100 L30 -230 L200 0 Z" ${bd(c)}/><path d="M30 -230 L5 -185 L30 -195 L52 -180 Z" fill="${SCOL.white}" opacity=".7"/>`},
  wave(c,u){let g='';for(let k=0;k<3;k++){let d='';for(let i=0;i<=24;i++){const x=-200+i*400/24;d+=(i?'L':'M')+x.toFixed(0)+' '+(-40-k*36+14*Math.sin(x/40+u*1.6+k)).toFixed(1)}g+=`<path d="${d}" ${ln(c,4)} opacity="${1-k*.28}"/>`}return g},
+ queue(c,u){let g='';for(let k=0;k<5;k++){const x=-150+k*75,b=2*Math.sin(u*1.2+k);g+=`<circle cx="${x}" cy="${-170+b}" r="20" ${bd(c,3.5)}/><path d="M${x} ${-150+b} V-70 M${x} -70 L${x-20} 0 M${x} -70 L${x+20} 0 M${x-28} -125 L${x} -132 L${x+28} -125" ${ln(c,4)}/>`}return g},
  person(c){return `<circle cx="0" cy="-185" r="26" ${bd(c)}/><path d="M0 -158 V-80 M0 -80 L-30 0 M0 -80 L30 0 M-42 -130 L0 -140 L42 -130" ${ln(c,5)}/>`},
  dragon(c,u){const f=Math.sin(u*2.2),wing=`<path d="M-10 -120 Q-40 ${-210-50*f} 30 ${-250-40*f} Q50 ${-200-30*f} 70 ${-190-25*f} Q60 -150 30 -125 Z" ${bd(c,4)} fill-opacity=".55"/>`;
   return `<path d="M-150 -95 Q-120 -60 -70 -95 Q-30 -125 40 -118 Q90 -112 110 -140 Q130 -165 160 -158 L175 -150 L158 -140 Q140 -138 128 -118 Q100 -82 40 -80 Q-20 -76 -70 -70 Q-115 -55 -150 -95 Z" ${bd(c)}/>`+
@@ -229,7 +230,7 @@ const PROP2D={
  fish(c,u){const w=14*Math.sin(u*2.5);return `<path d="M-90 -100 Q-20 -160 90 -100 Q-20 -40 -90 -100 Z" ${bd(c)}/><path d="M-88 -100 L-150 ${-140+w} L-140 -100 L-150 ${-60+w} Z" ${bd(c,3.5)}/><circle cx="55" cy="-108" r="6" fill="${c}"/>`},
 };
 // each prop's real size at scale 1 (width, height), so a slot can fit it: a wide dragon never spills onto its neighbours
-const PSZ={portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
+const PSZ={queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
  ship:[330,150],plane:[300,170],rocket:[140,260],drone:[260,170],train:[400,100],coin:[120,130],coins:[130,120],bar:[80,200],arrow:[140,230],
  shield:[180,230],warning:[200,200],gear:[180,180],flask:[170,220],battery:[110,220],chip:[210,160],pipe:[360,110],tree:[150,230],
  mountain:[400,230],wave:[400,120],person:[90,215],dragon:[360,240],bird:[240,110],fish:[250,130]};
@@ -322,7 +323,9 @@ function render(T){
  const cp=document.getElementById('caps');
  if(s.text_words&&s.wt&&t>=s.vs-.05&&t<=s.ve+.25&&!(s.think_t&&t>=s.think_t[0]-.05)){   // (no captions under the countdown)
  const tw=s.text_words,m=tw.length;   // each word lights as it is said (narrate.py align)
-  let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.04)cur=k;const per=4,st0=Math.floor(cur/per)*per,nx=st0+per,W=s.wt;   // (the whole group is laid out at once so it never shifts; each word fades and rises in on its time, the group fades out just before the next)
+  if(!s._grp){s._grp=[];let a=0,len=0;for(let k=0;k<m;k++){const w=tw[k],n=k-a+1;len+=w.length+1;const nxt=k<m-1?tw[k+1].length+1:0;
+   if(k===m-1||/[.!?]$/.test(w)||(/[,;:]$/.test(w)&&n>=3)||len+nxt>30){s._grp.push([a,k+1]);a=k+1;len=0}}}   // (phrases that fit one line: a sentence or clause, never a lone word on a second line)
+  let cur=0;for(let k=0;k<m;k++)if(t>=s.wt[k][0]-.04)cur=k;const gi=s._grp.find(g=>cur>=g[0]&&cur<g[1])||[0,m],st0=gi[0],nx=gi[1],W=s.wt;   // (the whole group is laid out at once so it never shifts; each word fades and rises in on its time, the group fades out just before the next)
   cp.innerHTML=tw.slice(st0,Math.min(m,nx)).map((w,j)=>{const k=st0+j,a=out(seg(t,W[k][0]-.04,W[k][0]+.11)),h=Math.round(100*(1-seg(t,W[k][0]+.05,W[k][0]+.3)));return `<span style="color:color-mix(in srgb,${TE} ${h}%,#e6e9ec);opacity:${a};transform:translateY(${(1-a)*10}px)">${esc(w)}</span>`}).join(' ');cp.style.opacity=s.kind==='big'?0:nx<m?1-seg(t,W[nx][0]-.16,W[nx][0]-.04):1;fit(cp,120,46,28)}else cp.innerHTML='';
  // the end card
  const O=document.getElementById('outro');if(s.kind==='outro'){const f=out(seg(t,s.t0,s.t0+.5)),z=back(seg(t,s.t0+.1,s.t0+.7));O.style.opacity=f;document.getElementById('oLogo').style.transform=`scale(${.6+.4*z})`;document.getElementById('oText').textContent=s.text||'';const dd=R.type==='Daily recap'?R.daily:null;   /* (the Daily Chart line only on a reel about it) */document.getElementById('oDaily').innerHTML=dd?`Daily Chart #${dd.number} is live`:'';const wAt=(re,d)=>{const k=(s.text_words||[]).findIndex(w=>re.test(w));return k>=0&&s.wt?s.wt[k][0]:d},tD=wAt(/daily|live/i,s.t0+.6),tU=wAt(/meme?|memestreet/i,s.t0+1.2),uU=back(seg(t,s.t0+.25,s.t0+.6)),eU=document.getElementById('oUrl'),eD=document.getElementById('oDaily');eD.style.opacity=out(seg(t,s.t0+.15,s.t0+.45));eD.style.transform=`scale(${1+.08*Math.sin(Math.PI*seg(t,tD-.05,tD+.35))})`;eU.style.opacity=cl(uU);eU.style.transform=`scale(${(.7+.3*uU)*(1+.1*Math.sin(Math.PI*seg(t,tU-.05,tU+.4)))})`;document.getElementById('oText').style.opacity=out(seg(t,s.t0,s.t0+.3));document.getElementById('oText').style.transform=`scale(${.9+.1*back(seg(t,s.t0,s.t0+.4))})`}else O.style.opacity=0;
@@ -342,6 +345,6 @@ window.qa=async T=>{await render(T);const els=[document.getElementById('head'),d
 // the reel's cover: its first chart (or its first scene) under the title
 window.cover=async date=>{const k=Math.max(0,SC.findIndex(s=>s.chart!=null&&s.kind!=='hook'));const s=SC[k];await render(Math.min(s.t1-.05,(s.ve||s.t1)));
  document.getElementById('caps').innerHTML='';document.getElementById('opts').innerHTML='';document.querySelector('.prog').style.display='none';
- const hd=document.getElementById('head');hd.innerHTML=esc(R.title||'');hd.style.cssText='opacity:1;font-size:80px;top:1170px;height:260px';document.body.style.opacity=1;
+ const hd=document.getElementById('head');hd.innerHTML=esc(R.title||'');hd.style.cssText='opacity:1;font-size:70px;top:360px;height:150px';   /* (above the chart, never across it) */document.body.style.opacity=1;
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))};
 </script></body></html>
