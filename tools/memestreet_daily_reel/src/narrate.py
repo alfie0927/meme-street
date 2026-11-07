@@ -204,7 +204,7 @@ def main(work):
             sf.write(clip, a, SR); W = words(clip); r = talk_rate(W)
             if r and abs(r / WPS - 1) > 0.2:                   # (only a clear outlier: a retake at another speed changes the pace between lines)                  # (a dense line came out rushed, a light one slow: one retake at the
                 try:                                           #  speed that lands it on the human pace)
-                    sp = min(EL_SPEED + .08, max(EL_SPEED - .08, EL_SPEED * WPS / r))   # (near the house speed, so lines match)
+                    sp = round(min(1.2, EL_SPEED + .08, max(EL_SPEED - .08, EL_SPEED * WPS / r)), 2)   # (near the house speed, so lines match; 1.2 is ElevenLabs' top)
                     a = trim(el_line(say_as(sc["vo"].strip()), sp), SR); sf.write(clip, a, SR); W = words(clip)
                 except Exception as e:
                     print(f"scene {i}: ElevenLabs retake failed ({str(e)[:120]}); the first take stays", flush=True)
