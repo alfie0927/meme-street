@@ -360,6 +360,7 @@ def loop(work, out):
     """Voice, render, review, rewrite... as many rounds as it takes, until he approves. Each rewrite touches only the
     scenes his checked notes name; only their lines are voiced again and only their frames go in the next pack."""
     slot = os.path.basename(os.path.normpath(work)); prev, old, held = [], None, 0
+    streak, lows = {}, []                                 # (per scene: rounds in a row with a major; the lowest score each round)
     rd = os.path.join(work, "review")
     for rnd in itertools.count(1):
         scenes = json.load(open(os.path.join(work, "spec.json")))["scenes"]
@@ -396,6 +397,15 @@ def loop(work, out):
                              "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
             json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
             raise SystemExit(f"held after round {rnd}: the template, not the script, keeps it below the bar ({rev.get('verdict', '')[:200]}); nothing is posted")
+        hit = {int(k) for x in rev.get("issues", []) if x.get("severity") in ("blocker", "major") and x.get("owner", "script") != "renderer"
+               for k in re.findall(r"scene (\d+)", x.get("where", ""))}
+        streak = {k: streak.get(k, 0) + 1 for k in hit}         # (a scene faulted 2 rounds running needs a new approach, not a tweak)
+        rev["stuck_scenes"] = sorted(k for k, c in streak.items() if c >= 2)
+        sc = rev.get("scores") or {}
+        if sc and not rev["approved"]:
+            lows.append(min(v for v in sc.values() if isinstance(v, (int, float))))
+            if len(lows) >= 4 and max(lows[-3:]) <= lows[-4]:  # (the lowest score has not moved in 3 rounds: more rounds will not help)
+                rev["plateau"] = True
         json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
         print(f"critic round {rnd}: {'APPROVED' if rev['approved'] else 'sent back'} {rev.get('scores')} - {rev.get('verdict', '')}", flush=True)
         for x in rev.get("issues", []):
@@ -415,8 +425,9 @@ def loop(work, out):
             json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"),
                        "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
             return rnd
-        if rnd >= int(os.environ.get("MAX_ROUNDS", "8")):    # (credits: a reel not good enough in 8 rounds is held, not chased for ever)
-            remember(TODO, [{"what": f"HELD after {rnd} rounds: " + (rev.get("verdict") or ""), "owner": "renderer", "where": slot,
+        if rnd >= int(os.environ.get("MAX_ROUNDS", "6")) or rev.get("plateau"):   # (credits: round 1 finds most faults and the rest
+                                                         #  are tweaks; a reel not good enough by round 6, or no longer improving, is held)
+            remember(TODO, [{"what": f"HELD after {rnd} rounds{' (no longer improving)' if rev.get('plateau') else ''}: " + (rev.get("verdict") or ""), "owner": "renderer", "where": slot,
                              "fix": "find why it cannot pass", "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
             raise SystemExit(f"held after {rnd} rounds: not good enough to post ({(rev.get('verdict') or '')[:200]}); nothing is posted")
         prev = [x for x in rev["issues"] if x.get("owner", "script") != "renderer" and x.get("where") != "automatic check"]

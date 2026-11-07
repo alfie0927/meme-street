@@ -723,6 +723,10 @@ def revise(work, review):
                                         f"His verdict: {review.get('verdict', '')}\nHis scores (8+ on each is needed): {review.get('scores')}\n"
                                         f"His notes (scenes count from 0):\n{notes}\n\n"
                                         f"The noted scenes as they were rendered (times in seconds):\n{rendered(work, todo)}\n\n"
+                                        + (f"Scenes {', '.join(map(str, review['stuck_scenes']))} have drawn a major fault two rounds running: "
+                                           "tweaking will not fix them. Give each a different approach (another scene kind, another "
+                                           "moment of the chart, another prop) or drop it (a quiz may drop that question), within the "
+                                           "length rules.\n" if review.get("stuck_scenes") else "") +
                                         "Fix every note. Everything he did not mention is approved: leave it exactly as it is. "
                                         "Lines and marks marked \"template\" are added from the game's facts: to rename one, add your "
                                         "own line cue at the same price with the name you want; its \"say\" sets when it appears. "
