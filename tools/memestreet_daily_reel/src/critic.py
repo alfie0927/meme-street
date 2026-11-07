@@ -37,10 +37,10 @@ def heard(mp4):
     return [(w.word.strip(), w.start, w.end) for s in segs for w in s.words]
 
 
-def references(rd, imgs):
+def references(rd, imgs, stills=True):
     """The owner's reference reels (exemplar/: stills ref1.jpg... and their measures), copied into the pack: the bar to judge by."""
     ex = os.path.join(ROOT, "exemplar"); names = []
-    for f in sorted(glob.glob(os.path.join(ex, "ref*.jpg"))):
+    for f in sorted(glob.glob(os.path.join(ex, "ref*.jpg"))) if stills else []:   # (the stills in round 1 only: they cost tokens)
         shutil.copy(f, rd); names.append(os.path.basename(f)); imgs.append(os.path.basename(f))
     m = json.load(open(os.path.join(ex, "measures.json"))) if os.path.exists(os.path.join(ex, "measures.json")) else {}
     keep = ("secs", "words_per_sec_talking", "pauses_over_0.15s", "cuts_per_min", "median_motion")
@@ -88,7 +88,7 @@ def silences(vo, T, sr=16000):
 key = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
 
 
-def pack(work, out, rd, only=None):
+def pack(work, out, rd, only=None, refs=True):
     """The review pack: images to look at and a report of what is heard and when (frames of the scenes in `only`, or
     of every scene, plus a contact sheet of the whole reel)."""
     R = json.load(open(os.path.join(work, "timeline.json")))
@@ -151,7 +151,7 @@ def pack(work, out, rd, only=None):
                                            "source": "measured on 16 top finance Shorts narrated by people"},
               "whole_reel": {"words_per_sec_talking": round(sum(n for n, _ in wr) / max(1e-9, sum(n / r for n, r in wr)), 2),
                              "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps)},
-              "references": references(rd, imgs),
+              "references": references(rd, imgs, refs),
               "script_vs_heard_differences": misheard,
               "motion": dict(motion(mp4, [x["t0"] for x in R["scenes"][1:]]), note="jumps: times a frame changes far more than its neighbours away from a scene cut (a snap or jerk); drift_secs: seconds where most of the frame keeps changing (a swimming picture). Both are visual faults; check the frames at those times."),
               "transcript_notes": "The script is shown as the voice is told to say it. Whisper writes 'Meem Street dot net' as "
@@ -247,7 +247,7 @@ Reply with JSON only:
              "evidence": [{"image": "scene03_chart_12.1s-15.0s.jpg"}, {"report": "\\"secs\\": 0.62"}]}]}"""
 
 
-def ask_critic(rd, rnd, prev, changed=None):
+def ask_critic(rd, rnd, prev, changed=None, model=None):
     """His review of this cut. `prev`: his checked notes still open from the last cut (a checklist); `changed`: the
     scenes rewritten since then (None: the first cut, judge everything)."""
     req = ("Review this reel. Read report.json in this folder, then Read every image it lists, then reply with the JSON.\n"
@@ -258,7 +258,7 @@ def ask_critic(rd, rnd, prev, changed=None):
         req += ("\nChecklist, your open notes on the last cut (they describe that cut, not this one; check each against this "
                 "cut and answer in \"previous\"):\n" +
                 "\n".join(f"{n}. [{x.get('severity')}] {x.get('where')}: {x.get('what')}" for n, x in enumerate(prev, 1)))
-    r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", os.environ.get("REEL_CRITIC_MODEL", "opus"),
+    r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", model or os.environ.get("REEL_CRITIC_MODEL", "opus"),
                         "--append-system-prompt", SYSTEM, "--allowedTools", "Read",
                         "--disallowedTools", "Bash,Edit,Write,WebFetch,WebSearch,Task,NotebookEdit"],
                        input=req, capture_output=True, text=True, timeout=900, cwd=rd,
@@ -376,10 +376,16 @@ def loop(work, out):
                                "lesson": ""}]}
         else:
             named = {int(n) for x in prev for n in re.findall(r"scene (\d+)", x.get("where", ""))}
-            pack(work, out, rd, None if changed is None else sorted(set(changed) | named))
+            pack(work, out, rd, None if changed is None else sorted(set(changed) | named), refs=changed is None)
             while True:
                 try:
-                    rev = verify(ask_critic(rd, rnd, prev, changed), rd, prev); break
+                    big = os.environ.get("REEL_CRITIC_MODEL", "opus")     # (to save the plan's usage: the big model judges the first cut,
+                    small = os.environ.get("REEL_CRITIC_LATER", "sonnet")  #  a smaller one checks the fixes, and the big one confirms a pass)
+                    rev = verify(ask_critic(rd, rnd, prev, changed, big if rnd == 1 else small), rd, prev)
+                    if rnd > 1 and rev["approved"] and small != big:
+                        print(f"critic round {rnd}: passed by {small}; {big} confirms", flush=True)
+                        rev = verify(ask_critic(rd, rnd, prev, changed, big), rd, prev)
+                    break
                 except (SystemExit, subprocess.TimeoutExpired, ValueError) as e:   # (the critic call failed: wait, ask again)
                     print(f"critic round {rnd}: no review ({str(e)[:200]}); asking again in 5 minutes", flush=True); time.sleep(300)
         rev = unstick(rev, slot)

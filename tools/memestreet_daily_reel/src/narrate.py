@@ -202,7 +202,7 @@ def main(work):
                 print(f"scene {i}: ElevenLabs failed ({str(e)[:160]}); Kokoro reads it", flush=True)
         if a is not None:
             sf.write(clip, a, SR); W = words(clip); r = talk_rate(W)
-            if r and abs(r / WPS - 1) > 0.12:                  # (a dense line came out rushed, a light one slow: one retake at the
+            if r and abs(r / WPS - 1) > 0.15:                  # (a dense line came out rushed, a light one slow: one retake at the
                 try:                                           #  speed that lands it on the human pace)
                     sp = min(1.2, max(0.8, EL_SPEED * WPS / r))
                     a = trim(el_line(say_as(sc["vo"].strip()), sp), SR); sf.write(clip, a, SR); W = words(clip)
