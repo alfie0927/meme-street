@@ -42,6 +42,6 @@ W1="work/trial-$A"; W2="work/trial-$B"; O1="out/trial-$A"; O2="out/trial-$B"
   done
   mv "queue/.staging/$A" "queue/$A"; mv "queue/.staging/$B" "queue/$B"   # (both or neither)
   for x in "$W1 $O1 v1" "$W2 $O2 v2"; do set -- $x; python3 lab/audience.py pack "$1" "$2" "lab/data/trial/$A-$3" || true; done
-  python3 lab/audience.py both "lab/data/trial/$A-v1" "lab/data/trial/$A-v2" | tail -1 || true   # (the simulated verdict, logged before the real one)
+  python3 -c "import sys,json; sys.path.insert(0,'lab'); import audience as S; s=S.both('lab/data/trial/$A-v1','lab/data/trial/$A-v2'); json.dump({'share_preferring_v1': s, 'pick': 'v1' if s['watch_longer'] > .5 else 'v2'}, open('lab/data/trial/$A-sim.json','w'))" | tail -1 || true   # (the simulated verdict, saved before the real one: lab/trials.py scores it)
   echo "=== trial pair queued $A + $B $(date -u '+%T UTC')"
 } 2>&1 | tee -a logs/trial.log
