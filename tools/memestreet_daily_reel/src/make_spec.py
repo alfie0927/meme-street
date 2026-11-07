@@ -78,12 +78,14 @@ ROTATION["0900"] = ["Hard truth"]
 ROTATION["1300"] = ["Truth list"]
 ROTATION["2100"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
 ROTATION["0300"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
-KINDS = {"Chart quiz": ["pattern", "candle", "breakout", "level", "trend", "stop", "rr", "fib"],
-         "Technical lesson": ["rsi", "ma", "fib", "level", "pattern", "breakout", "candle", "trend"],
+# (no "pattern" questions: triangles, wedges, channels and flags need slanted trendlines the renderer cannot draw yet;
+#  a quiz on one looped 55 critic rounds on 2026-11-07)
+KINDS = {"Chart quiz": ["candle", "breakout", "level", "trend", "stop", "rr", "fib"],
+         "Technical lesson": ["rsi", "ma", "fib", "level", "breakout", "candle", "trend"],
          "Trading mistake": ["stop", "rr", "breakout", "level", "next"],
-         "Guess the move": ["breakout", "level", "next", "pattern"], "Myth or fact": ["next", "breakout", "level"],
-         "Chart twist": ["breakout", "pattern", "level", "next"], "One trick": ["breakout", "stop", "level", "rr"],
-         "Big players": ["breakout", "level"], "Speed cheat sheet": ["candle", "pattern", "trend"],
+         "Guess the move": ["breakout", "level", "next"], "Myth or fact": ["next", "breakout", "level"],
+         "Chart twist": ["breakout", "level", "next"], "One trick": ["breakout", "stop", "level", "rr"],
+         "Big players": ["breakout", "level"], "Speed cheat sheet": ["candle", "trend"],
          "Trader levels": ["breakout", "level", "stop"], "Explained like you're 5": ["trend", "level", "candle", "rr"],
          "Stick skit": ["breakout", "level", "next"], "Truth list": ["trend", "breakout", "level"],
          "Hard truth": ["stop", "next", "breakout", "level"]}

@@ -415,6 +415,10 @@ def loop(work, out):
             json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"),
                        "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
             return rnd
+        if rnd >= int(os.environ.get("MAX_ROUNDS", "8")):    # (credits: a reel not good enough in 8 rounds is held, not chased for ever)
+            remember(TODO, [{"what": f"HELD after {rnd} rounds: " + (rev.get("verdict") or ""), "owner": "renderer", "where": slot,
+                             "fix": "find why it cannot pass", "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
+            raise SystemExit(f"held after {rnd} rounds: not good enough to post ({(rev.get('verdict') or '')[:200]}); nothing is posted")
         prev = [x for x in rev["issues"] if x.get("owner", "script") != "renderer" and x.get("where") != "automatic check"]
         while True:
             try:
