@@ -1,0 +1,4 @@
+https://www.wallstreetsurvivor.com/author-sitemap.xml
+https://www.wallstreetsurvivor.com/category-sitemap.xml
+https://www.wallstreetsurvivor.com/page-sitemap.xml
+https://www.wallstreetsurvivor.com/post-sitemap.xml

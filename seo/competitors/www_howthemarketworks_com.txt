@@ -1,0 +1,4 @@
+https://www.howthemarketworks.com/wp-sitemap-posts-page-1.xml
+https://www.howthemarketworks.com/wp-sitemap-posts-post-1.xml
+https://www.howthemarketworks.com/wp-sitemap-taxonomies-category-1.xml
+https://www.howthemarketworks.com/wp-sitemap-taxonomies-post_tag-1.xml

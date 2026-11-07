@@ -1,0 +1,111 @@
+query,intent,monthly volume,difficulty,target URL,status,current position,last checked
+stock market game,commercial,unknown,unknown,https://memestreet.net/,live,not verified,2026-11-07
+free stock market simulator,commercial,unknown,unknown,https://memestreet.net/about,live,not verified,2026-11-07
+practice trading with play money,commercial,unknown,unknown,https://memestreet.net/about,live,not verified,2026-11-07
+paper trading game no real money,commercial,unknown,unknown,https://memestreet.net/about,live,not verified,2026-11-07
+daily stock market game,commercial,unknown,unknown,https://memestreet.net/daily,live,not verified,2026-11-07
+stock chart game like wordle,commercial,unknown,unknown,https://memestreet.net/daily,live,not verified,2026-11-07
+learn to trade free course,informational,unknown,unknown,https://memestreet.net/lessons,live,not verified,2026-11-07
+trading bot simulator no code,commercial,unknown,unknown,https://memestreet.net/bots/guide,live,not verified,2026-11-07
+investopedia simulator alternative,commercial,unknown,unknown,,gap,not verified,2026-11-07
+wall street survivor alternative,commercial,unknown,unknown,,gap,not verified,2026-11-07
+howthemarketworks alternative,commercial,unknown,unknown,,gap,not verified,2026-11-07
+position size calculator,tool,unknown,unknown,,gap,not verified,2026-11-07
+stock market game for teens,commercial,unknown,unknown,,gap,not verified,2026-11-07
+trading simulator with fake companies,commercial,unknown,unknown,https://memestreet.net/about,live,not verified,2026-11-07
+how meme street works,informational,unknown,unknown,https://memestreet.net/lessons/welcome,live (PR pending),not indexed,2026-11-07
+"your first trade, with a stop",informational,unknown,unknown,https://memestreet.net/lessons/first-trade,live (PR pending),not indexed,2026-11-07
+finding your way around,informational,unknown,unknown,https://memestreet.net/lessons/finding-your-way,live (PR pending),not indexed,2026-11-07
+"stocks, shares and why companies list",informational,unknown,unknown,https://memestreet.net/lessons/stocks-shares,live (PR pending),not indexed,2026-11-07
+"exchanges, indices and etfs",informational,unknown,unknown,https://memestreet.net/lessons/exchanges-indices,live (PR pending),not indexed,2026-11-07
+"market cap, volume and liquidity",informational,unknown,unknown,https://memestreet.net/lessons/cap-volume,live (PR pending),not indexed,2026-11-07
+bid ask spread explained,informational,unknown,unknown,https://memestreet.net/lessons/bid-ask,live (PR pending),not indexed,2026-11-07
+how prices move,informational,unknown,unknown,https://memestreet.net/lessons/price-moves,live (PR pending),not indexed,2026-11-07
+pre-market and after-hours trading,informational,unknown,unknown,https://memestreet.net/lessons/sessions,live (PR pending),not indexed,2026-11-07
+trading halts and circuit breakers,informational,unknown,unknown,https://memestreet.net/lessons/halts,live (PR pending),not indexed,2026-11-07
+how to read candlestick charts,informational,unknown,unknown,https://memestreet.net/lessons/candlesticks,live (PR pending),not indexed,2026-11-07
+timeframes and the price scale,informational,unknown,unknown,https://memestreet.net/lessons/timeframes,live (PR pending),not indexed,2026-11-07
+higher highs higher lows trend,informational,unknown,unknown,https://memestreet.net/lessons/trends,live (PR pending),not indexed,2026-11-07
+support and resistance trading,informational,unknown,unknown,https://memestreet.net/lessons/support-resistance,live (PR pending),not indexed,2026-11-07
+trading ranges and breakouts,informational,unknown,unknown,https://memestreet.net/lessons/ranges-breakouts,live (PR pending),not indexed,2026-11-07
+volume confirmation trading,informational,unknown,unknown,https://memestreet.net/lessons/volume,live (PR pending),not indexed,2026-11-07
+chart reversal patterns,informational,unknown,unknown,https://memestreet.net/lessons/reversal-patterns,live (PR pending),not indexed,2026-11-07
+bull flag and continuation patterns,informational,unknown,unknown,https://memestreet.net/lessons/continuation-patterns,live (PR pending),not indexed,2026-11-07
+fair value gap explained,informational,unknown,unknown,https://memestreet.net/lessons/gaps,live (PR pending),not indexed,2026-11-07
+multiple timeframe analysis,informational,unknown,unknown,https://memestreet.net/lessons/multi-timeframe,live (PR pending),not indexed,2026-11-07
+moving averages explained,informational,unknown,unknown,https://memestreet.net/lessons/moving-averages,live (PR pending),not indexed,2026-11-07
+rsi macd stochastic explained,informational,unknown,unknown,https://memestreet.net/lessons/momentum,live (PR pending),not indexed,2026-11-07
+bollinger bands and atr explained,informational,unknown,unknown,https://memestreet.net/lessons/volatility,live (PR pending),not indexed,2026-11-07
+vwap explained,informational,unknown,unknown,https://memestreet.net/lessons/volume-tools,live (PR pending),not indexed,2026-11-07
+fibonacci retracement trading,informational,unknown,unknown,https://memestreet.net/lessons/fibonacci,live (PR pending),not indexed,2026-11-07
+adx indicator explained,informational,unknown,unknown,https://memestreet.net/lessons/trend-strength,live (PR pending),not indexed,2026-11-07
+"combining indicators, and false signals",informational,unknown,unknown,https://memestreet.net/lessons/combining-indicators,live (PR pending),not indexed,2026-11-07
+market vs limit vs stop order,informational,unknown,unknown,https://memestreet.net/lessons/order-types,live (PR pending),not indexed,2026-11-07
+bracket order stop loss take profit,informational,unknown,unknown,https://memestreet.net/lessons/brackets,live (PR pending),not indexed,2026-11-07
+trailing stop loss explained,informational,unknown,unknown,https://memestreet.net/lessons/trailing-scaling,live (PR pending),not indexed,2026-11-07
+"slippage, gaps through stops, and fees",informational,unknown,unknown,https://memestreet.net/lessons/costs,live (PR pending),not indexed,2026-11-07
+position sizing 1% rule,informational,unknown,unknown,https://memestreet.net/lessons/position-sizing,live (PR pending),not indexed,2026-11-07
+risk reward ratio explained,informational,unknown,unknown,https://memestreet.net/lessons/r-multiples,live (PR pending),not indexed,2026-11-07
+trading expectancy formula,informational,unknown,unknown,https://memestreet.net/lessons/expectancy,live (PR pending),not indexed,2026-11-07
+drawdown recovery math,informational,unknown,unknown,https://memestreet.net/lessons/drawdown,live (PR pending),not indexed,2026-11-07
+correlation and diversification,informational,unknown,unknown,https://memestreet.net/lessons/correlation,live (PR pending),not indexed,2026-11-07
+risk of ruin trading,informational,unknown,unknown,https://memestreet.net/lessons/risk-of-ruin,live (PR pending),not indexed,2026-11-07
+where to put a stop loss,informational,unknown,unknown,https://memestreet.net/lessons/stop-placement,live (PR pending),not indexed,2026-11-07
+how does shorting a stock work,informational,unknown,unknown,https://memestreet.net/lessons/shorting-basics,live (PR pending),not indexed,2026-11-07
+what is a short squeeze,informational,unknown,unknown,https://memestreet.net/lessons/squeezes,live (PR pending),not indexed,2026-11-07
+margin call explained,informational,unknown,unknown,https://memestreet.net/lessons/margin-leverage,live (PR pending),not indexed,2026-11-07
+why leverage magnifies losses,informational,unknown,unknown,https://memestreet.net/lessons/leverage-maths,live (PR pending),not indexed,2026-11-07
+the three financial statements,informational,unknown,unknown,https://memestreet.net/lessons/statements,live (PR pending),not indexed,2026-11-07
+"revenue, margins, eps, debt and cash",informational,unknown,unknown,https://memestreet.net/lessons/key-numbers,live (PR pending),not indexed,2026-11-07
+p/e ratio explained,informational,unknown,unknown,https://memestreet.net/lessons/valuation,live (PR pending),not indexed,2026-11-07
+"dividends, buybacks and dilution",informational,unknown,unknown,https://memestreet.net/lessons/dividends-buybacks,live (PR pending),not indexed,2026-11-07
+"earnings season: guidance, beats and misses",informational,unknown,unknown,https://memestreet.net/lessons/earnings,live (PR pending),not indexed,2026-11-07
+how sectors are valued differently,informational,unknown,unknown,https://memestreet.net/lessons/sectors,live (PR pending),not indexed,2026-11-07
+analysts and credit ratings,informational,unknown,unknown,https://memestreet.net/lessons/ratings,live (PR pending),not indexed,2026-11-07
+inflation and central banks,informational,unknown,unknown,https://memestreet.net/lessons/inflation,live (PR pending),not indexed,2026-11-07
+how interest rates affect stocks,informational,unknown,unknown,https://memestreet.net/lessons/rates,live (PR pending),not indexed,2026-11-07
+"jobs, gdp, pmi and retail sales",informational,unknown,unknown,https://memestreet.net/lessons/data-releases,live (PR pending),not indexed,2026-11-07
+why the surprise moves prices,informational,unknown,unknown,https://memestreet.net/lessons/surprise,live (PR pending),not indexed,2026-11-07
+the business cycle and sector rotation,informational,unknown,unknown,https://memestreet.net/lessons/cycle,live (PR pending),not indexed,2026-11-07
+"risk-on, risk-off and safe havens",informational,unknown,unknown,https://memestreet.net/lessons/risk-on-off,live (PR pending),not indexed,2026-11-07
+yield curve explained simply,informational,unknown,unknown,https://memestreet.net/lessons/yield-curve,live (PR pending),not indexed,2026-11-07
+call and put options for beginners,informational,unknown,unknown,https://memestreet.net/lessons/options-basics,live (PR pending),not indexed,2026-11-07
+how options are priced: intrinsic and time value,informational,unknown,unknown,https://memestreet.net/lessons/options-pricing,live (PR pending),not indexed,2026-11-07
+option greeks explained,informational,unknown,unknown,https://memestreet.net/lessons/greeks,live (PR pending),not indexed,2026-11-07
+iv crush explained,informational,unknown,unknown,https://memestreet.net/lessons/implied-vol,live (PR pending),not indexed,2026-11-07
+option strategies,informational,unknown,unknown,https://memestreet.net/lessons/option-strategies,live (PR pending),not indexed,2026-11-07
+exercise and assignment: european and american,informational,unknown,unknown,https://memestreet.net/lessons/exercise,live (PR pending),not indexed,2026-11-07
+"futures: contracts, margin, contango and backwardation",informational,unknown,unknown,https://memestreet.net/lessons/futures,live (PR pending),not indexed,2026-11-07
+"cfds, swaps, and leveraged fund decay",informational,unknown,unknown,https://memestreet.net/lessons/other-products,live (PR pending),not indexed,2026-11-07
+bonds and yields,informational,unknown,unknown,https://memestreet.net/lessons/bonds,live (PR pending),not indexed,2026-11-07
+commodities,informational,unknown,unknown,https://memestreet.net/lessons/commodities,live (PR pending),not indexed,2026-11-07
+currencies and forex,informational,unknown,unknown,https://memestreet.net/lessons/forex,live (PR pending),not indexed,2026-11-07
+crypto: what is different,informational,unknown,unknown,https://memestreet.net/lessons/crypto,live (PR pending),not indexed,2026-11-07
+"reits, and index funds against stock picking",informational,unknown,unknown,https://memestreet.net/lessons/reits-index,live (PR pending),not indexed,2026-11-07
+trend following and momentum,informational,unknown,unknown,https://memestreet.net/lessons/trend-following,live (PR pending),not indexed,2026-11-07
+mean reversion strategy,informational,unknown,unknown,https://memestreet.net/lessons/mean-reversion,live (PR pending),not indexed,2026-11-07
+breakout trading strategy,informational,unknown,unknown,https://memestreet.net/lessons/breakout-trading,live (PR pending),not indexed,2026-11-07
+day trading vs swing trading,informational,unknown,unknown,https://memestreet.net/lessons/styles,live (PR pending),not indexed,2026-11-07
+"value, growth, dividends and dollar-cost averaging",informational,unknown,unknown,https://memestreet.net/lessons/investing-styles,live (PR pending),not indexed,2026-11-07
+pairs trading and hedging,informational,unknown,unknown,https://memestreet.net/lessons/pairs-hedging,live (PR pending),not indexed,2026-11-07
+can you beat the market,informational,unknown,unknown,https://memestreet.net/lessons/hold-market,live (PR pending),not indexed,2026-11-07
+trading biases,informational,unknown,unknown,https://memestreet.net/lessons/biases,live (PR pending),not indexed,2026-11-07
+process over outcome,informational,unknown,unknown,https://memestreet.net/lessons/process,live (PR pending),not indexed,2026-11-07
+trading journal template,informational,unknown,unknown,https://memestreet.net/lessons/journal,live (PR pending),not indexed,2026-11-07
+knowing when to stop,informational,unknown,unknown,https://memestreet.net/lessons/stopping,live (PR pending),not indexed,2026-11-07
+backtesting overfitting,informational,unknown,unknown,https://memestreet.net/lessons/backtesting,live (PR pending),not indexed,2026-11-07
+walk-forward and out-of-sample testing,informational,unknown,unknown,https://memestreet.net/lessons/walk-forward,live (PR pending),not indexed,2026-11-07
+sharpe ratio profit factor explained,informational,unknown,unknown,https://memestreet.net/lessons/performance-stats,live (PR pending),not indexed,2026-11-07
+building and judging a trading bot,informational,unknown,unknown,https://memestreet.net/lessons/bots,live (PR pending),not indexed,2026-11-07
+"market makers, order books and high-frequency trading",informational,unknown,unknown,https://memestreet.net/lessons/market-makers,live (PR pending),not indexed,2026-11-07
+"ipos, splits, dividend dates and other corporate actions",informational,unknown,unknown,https://memestreet.net/lessons/corporate-actions,live (PR pending),not indexed,2026-11-07
+"brokers, fees and regulation",informational,unknown,unknown,https://memestreet.net/lessons/brokers,live (PR pending),not indexed,2026-11-07
+taxes: a general overview,informational,unknown,unknown,https://memestreet.net/lessons/taxes,live (PR pending),not indexed,2026-11-07
+why most day traders lose,informational,unknown,unknown,https://memestreet.net/lessons/trading-vs-investing,live (PR pending),not indexed,2026-11-07
+trading scams to avoid,informational,unknown,unknown,https://memestreet.net/lessons/scams,live (PR pending),not indexed,2026-11-07
+the basics first,informational,unknown,unknown,https://memestreet.net/lessons/basics-first,live (PR pending),not indexed,2026-11-07
+what carries over from meme street,informational,unknown,unknown,https://memestreet.net/lessons/what-carries-over,live (PR pending),not indexed,2026-11-07
+how to write a trading plan,informational,unknown,unknown,https://memestreet.net/lessons/trading-plan,live (PR pending),not indexed,2026-11-07
+trading checklist before every trade,informational,unknown,unknown,https://memestreet.net/lessons/checklist,live (PR pending),not indexed,2026-11-07
+reviewing your trades,informational,unknown,unknown,https://memestreet.net/lessons/review,live (PR pending),not indexed,2026-11-07
+trading terms glossary,informational,unknown,unknown,https://memestreet.net/lessons/glossary,live (PR pending),not indexed,2026-11-07

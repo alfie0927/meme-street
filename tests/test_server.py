@@ -140,7 +140,9 @@ class ServerTests(unittest.TestCase):
         self.assertIn("/sitemap.xml", body)
         status, body, _ = http(self.srv, "/sitemap.xml")
         self.assertEqual(status, 200)
-        self.assertIn("/learn</loc>", body)
+        self.assertIn("/lessons/position-sizing</loc>", body)
+        self.assertEqual(body.count("/daily</loc>"), 1)
+        self.assertNotIn("/terms</loc>", body)
 
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")

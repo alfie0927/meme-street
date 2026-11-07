@@ -1,0 +1,158 @@
+"""The Learn lessons as plain pages for search engines and new visitors (`/lessons`, `/lessons/{id}`; 2026-11-07).
+
+The in-game Learn page loads its lessons with JavaScript, so a search engine sees none of them. These pages are made
+on the server from the same `content/learn-*.md` (learning.load_content), with a title, description, canonical
+address and schema.org data each, and link back into the game for the live charts and chart tests."""
+import html
+import json
+import re
+
+import learning
+
+CSS = """:root{--bg:#08090b;--line:#262d33;--line2:#1a1f24;--txt:#dce3e8;--mut:#7d8a93;--up:#3ad07a;--acc:#4cc3cc;
+ --mono:ui-monospace,"Cascadia Mono","SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.65 var(--mono)}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+header{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--txt)}.brand img{width:26px;height:26px;border-radius:3px}
+.sp{flex:1}.btn{display:inline-block;padding:8px 14px;border-radius:2px;border:1px solid var(--line);color:var(--txt);font:600 14px var(--mono)}
+.btn.go{background:var(--up);border-color:var(--up);color:#04140a}.btn:hover{text-decoration:none;border-color:var(--acc)}
+.crumb{color:var(--mut);font-size:13px;margin:22px 0 8px}h1{font:700 clamp(24px,5vw,34px)/1.25 var(--mono);margin:0 0 10px}
+.lead{font-size:17px;color:#b9c3ca;margin:0 0 20px}h2{font:700 16px var(--mono);margin:30px 0 6px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+p,li{color:#c6cfd5}.box{border-left:3px solid var(--acc);background:#4cc3cc10;padding:10px 14px;margin:14px 0}
+.box.warn{border-color:#e0a03a;background:#e0a03a10}.box.tip{border-color:var(--up);background:#3ad07a10}
+.tbl{overflow-x:auto}table{border-collapse:collapse;margin:12px 0;font-size:14px}td,th{border:1px solid var(--line);padding:6px 10px;text-align:left}
+.try{border:1px solid var(--line);padding:12px 14px;margin:14px 0}.nav{display:flex;justify-content:space-between;gap:12px;margin:30px 0;flex-wrap:wrap}
+.cta{border:1px solid var(--up);padding:16px;margin:30px 0}.cta p{margin:0 0 10px}
+ol.toc,ul.toc{padding-left:20px}.toc li{margin:4px 0}.toc small{color:var(--mut)}
+footer{padding:30px 0 40px;color:var(--mut);font-size:13px}"""
+HEAD = ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,'
+        'initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#08090b"><title>{t}</title>'
+        '<meta name="description" content="{d}"><link rel="canonical" href="{url}"><meta property="og:title" content="{t}">'
+        '<meta property="og:description" content="{d}"><meta property="og:url" content="{url}"><meta property="og:type" '
+        'content="article"><meta property="og:image" content="https://memestreet.net/brand/memestreet_header_peaks.png">'
+        '<link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">'
+        '<script type="application/ld+json">{ld}</script><style>{css}</style></head><body><div class="wrap">'
+        '<header><a class="brand" href="/"><img src="/brand/memestreet_logo_peaks.png" alt="" width="26" height="26">'
+        'Meme Street</a><span class="sp"></span><a href="/lessons" class="btn">Lessons</a><a href="/#join" class="btn go">'
+        'Play free</a></header>')
+CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every account starts with 1,000 MB of practice '
+       'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
+       '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
+FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/about">About Meme Street</a>'
+        ' · <a href="/bots/guide">Trading bots</a><br>Everything on Meme Street is fictional and nothing is investment '
+        'advice. MB are practice money with no cash value.</footer></div></body></html>')
+
+
+def inline(s):
+    """Escaped text with the curriculum's **bold** and [text](/path) (site paths only, as the Learn page allows)."""
+    s = html.escape(s, quote=False)
+    s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
+    return re.sub(r"\[([^\]]+)\]\((/[^)\s\"]*)\)", r'<a href="\2">\1</a>', s)
+
+
+def body_html(lesson):
+    out = []
+    for b in lesson["body"]:
+        if "p" in b:
+            out.append(f"<p>{inline(b['p'])}</p>")
+        elif "h" in b:
+            out.append(f"<h2>{inline(b['h'])}</h2>")
+        elif "list" in b:
+            out.append("<ul>" + "".join(f"<li>{inline(x)}</li>" for x in b["list"]) + "</ul>")
+        elif "table" in b:
+            head, *rows = b["table"]
+            out.append('<div class="tbl"><table><tr>' + "".join(f"<th>{inline(c)}</th>" for c in head) + "</tr>"
+                       + "".join("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in r) + "</tr>" for r in rows)
+                       + "</table></div>")
+        elif "test" in b:
+            out.append(f'<div class="try">Chart test: <a href="/learn?test={b["test"]}">try one on a real Meme Street '
+                       "chart</a>, then see what the price did next.</div>")
+        elif "chart" in b:
+            out.append(f'<div class="try">This lesson has a live example chart: <a href="/learn?l={lesson["id"]}">open '
+                       "it in the game</a>.</div>")
+        elif "try" in b:
+            out.append(f'<div class="try">Try it: <a href="{html.escape(b["href"])}">{inline(b["try"])}</a></div>')
+        else:
+            k = next(k for k in ("here", "tip", "warn") if k in b)
+            label = {"here": "On Meme Street", "tip": "Tip", "warn": "Watch out"}[k]
+            out.append(f'<div class="box {k}"><b>{label}:</b> {inline(b[k])}</div>')
+    return "".join(out)
+
+
+class Lessons:
+    def __init__(self, site):
+        self.site = site
+        self.tracks, self.lessons = learning.load_content()
+        self.by_id = {x["id"]: x for x in self.lessons}
+        self.track = {t["id"]: t for t in self.tracks}
+        self.hub_text = (f"{len(self.lessons)} free trading lessons in {len(self.tracks)} tracks: charts, candlesticks, "
+                         "indicators, orders, risk management, shorting, options and trading psychology, each a few "
+                         "minutes long, with practice on a live market.")
+
+    def paths(self):
+        return ["/lessons"] + [f"/lessons/{x['id']}" for x in self.lessons]
+
+    def page(self, lid):
+        """A lesson's page, or None if there is no such lesson."""
+        x = self.by_id.get(lid)
+        if x is None:
+            return None
+        i = self.lessons.index(x)
+        tr = self.track[x["track"]]
+        url = f"{self.site}/lessons/{lid}"
+        ld = [{"@context": "https://schema.org", "@type": "LearningResource", "name": x["title"], "description": x["summary"],
+               "url": url, "timeRequired": f"PT{x['minutes']}M", "learningResourceType": "lesson", "isAccessibleForFree": True,
+               "inLanguage": "en", "educationalLevel": "beginner",
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": tr["title"], "item": f"{self.site}/lessons#{tr['id']}"},
+                  {"@type": "ListItem", "position": 3, "name": x["title"], "item": url}]}]
+        siblings = [y for y in self.lessons if y["track"] == x["track"]]
+        nav = '<div class="nav">'
+        if i > 0:
+            nav += f'<a href="/lessons/{self.lessons[i - 1]["id"]}">&larr; {html.escape(self.lessons[i - 1]["title"])}</a>'
+        if i + 1 < len(self.lessons):
+            nav += f'<a href="/lessons/{self.lessons[i + 1]["id"]}">{html.escape(self.lessons[i + 1]["title"])} &rarr;</a>'
+        nav += "</div>"
+        toc = "".join(f"<li><b>{html.escape(y['title'])}</b></li>" if y is x else
+                      f"<li><a href=\"/lessons/{y['id']}\">{html.escape(y['title'])}</a></li>" for y in siblings)
+        return (HEAD.format(t=html.escape(f"{x['title']} | Meme Street trading lessons"), d=html.escape(x["summary"]),
+                            url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
+                + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
+                f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
+                + body_html(x) + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+
+    def hub(self):
+        url = self.site + "/lessons"
+        d = self.hub_text
+        ld = {"@context": "https://schema.org", "@type": "Course", "name": "Learn to trade: the Meme Street course",
+              "description": d, "url": url, "isAccessibleForFree": True, "inLanguage": "en",
+              "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"},
+              "hasCourseInstance": {"@type": "CourseInstance", "courseMode": "online", "courseWorkload": "PT"
+                                    + str(sum(x["minutes"] for x in self.lessons)) + "M"},
+              "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD", "category": "Free"}}
+        parts = []
+        for t in self.tracks:
+            items = "".join(f'<li><a href="/lessons/{x["id"]}">{html.escape(x["title"])}</a> <small>{x["minutes"]} min · '
+                            f'{inline(x["summary"])}</small></li>' for x in self.lessons if x["track"] == t["id"])
+            parts.append(f'<h2 id="{t["id"]}">{html.escape(t["title"])}</h2><p>{inline(t["blurb"])}</p><ol class="toc">{items}</ol>')
+        return (HEAD.format(t="Learn to trade: free stock trading lessons | Meme Street", d=html.escape(d), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
+                + f'<p class="crumb">Lessons</p><h1>Learn to trade, free</h1><p class="lead">{html.escape(d)} Read them '
+                "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
+                + CTA + "".join(parts) + FOOT)
+
+
+if __name__ == "__main__":
+    L = Lessons("https://memestreet.net")
+    assert len(L.paths()) == len(L.lessons) + 1
+    for x in L.lessons:
+        s = L.page(x["id"])
+        assert s.count("<h1>") == 1 and f'href="https://memestreet.net/lessons/{x["id"]}"' in s, x["id"]
+        assert "**" not in s and "<script>" not in s.split("</script>", 1)[1], x["id"]
+    assert L.page("nope") is None and L.hub().count("/lessons/") >= len(L.lessons)
+    assert inline("**a** [b](/x) <i>") == '<b>a</b> <a href="/x">b</a> &lt;i&gt;'
+    print("ok", len(L.lessons), "lessons")

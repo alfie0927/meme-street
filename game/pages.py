@@ -6,6 +6,7 @@ import os
 
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 
+import lessonpages
 import paths
 from netutil import TICKER_RENAMES
 
@@ -41,7 +42,8 @@ def add_pages(app):
             for tag in ('<meta name="description"', '<meta property="og:title"', '<meta property="og:description"'):
                 i = s.index(tag)                               # the home page's own copies go
                 s = s[:i] + s[s.index(">", i) + 1:]
-            cache.clear()
+            for k in [k for k in cache if k[1] != key[1]]:   # (a page of an older index.html)
+                del cache[k]
             cache[key] = s
         return HTMLResponse(cache[key], headers={"Cache-Control": "no-store"})
 
@@ -70,7 +72,10 @@ def add_pages(app):
         return await brand_file("favicon.ico")
 
     site = os.environ.get("SITE_URL", "https://memestreet.net").rstrip("/")
-    public = ("/daily", "/", "/about", "/learn", "/daily", "/leaders", "/bots/guide", "/terms", "/privacy")
+    lessons = lessonpages.Lessons(site)
+    # (pages with their own content; not /learn or /leaders, which are the game's page and empty without JavaScript,
+    # nor /terms and /privacy, which are noindex)
+    public = ["/daily", "/", "/about", "/bots/guide"] + lessons.paths()
 
     @app.get("/robots.txt")
     async def robots():
@@ -104,6 +109,28 @@ def add_pages(app):
     @app.get("/daily")
     async def daily():
         return daily_page()
+
+    @app.get("/lessons")
+    async def lessons_hub():
+        """Every Learn lesson, listed by track (lessonpages.py)."""
+        return HTMLResponse(lessons.hub(), headers={"Cache-Control": "public, max-age=300"})
+
+    @app.get("/lessons/{lesson_id}")
+    async def lesson_page(lesson_id: str):
+        s = lessons.page(lesson_id)
+        if s is None:
+            return JSONResponse({"error": "not found"}, status_code=404)
+        return HTMLResponse(s, headers={"Cache-Control": "public, max-age=300"})
+
+    @app.get("/learn")
+    async def learn_page():
+        return page_as("/learn", "Learn to trade: lessons and chart tests | Meme Street", lessons.hub_text)
+
+    @app.get("/leaders")
+    async def leaders_page():
+        return page_as("/leaders", "Leaderboards: today and all time | Meme Street",
+                       "Who is up the most on Meme Street today and of all time, by return and by profit. Ranks count "
+                       "returns, so buying MB cannot buy a better place.")
 
     @app.get("/about")
     async def about_page():
@@ -139,5 +166,5 @@ def add_pages(app):
         the order and refuses if the shop is not in test mode."""
         return FileResponse(os.path.join(web, "shop_pay.html"), headers={"Cache-Control": "no-store"})
 
-    for route in ("holdings", "portfolio", "history", "profile", "social", "leaders", "shop", "learn", "calendar", "bots"):
+    for route in ("holdings", "portfolio", "history", "profile", "social", "shop", "calendar", "bots"):
         app.add_api_route("/" + route, lambda: page(), methods=["GET"], include_in_schema=False)
