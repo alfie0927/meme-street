@@ -246,8 +246,8 @@ def main(work):
             if ch < 0: return 0.0
             return wt[min(len(sc["vo"][:ch].split()), len(wt) - 1)][0]
 
-        sc["t0"] = round(t, 3); vs = t + 0.05
-        if i: vo.append([whoosh, round(max(0, t - 0.12), 3)])                 # every scene change sounds the same
+        sc["t0"] = round(t, 3); vs = t + (0.12 if i else 0.05)
+        if i: vo.append([whoosh, round(max(0, t - 0.24), 3)])   # every scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald')
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
         cap = digits(tw)                                       # the captions: the written words, numbers in digits ('two oh three' 203),
