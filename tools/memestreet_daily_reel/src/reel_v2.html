@@ -35,7 +35,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 <div id="stage"></div>
 <div class="opts" id="opts"></div>
 <div class="caps" id="caps"></div>
-<div id="outro" style="position:absolute;z-index:2;inset:0;background:rgba(8,10,11,.8);opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:430px;box-sizing:border-box">
+<div id="outro" style="position:absolute;z-index:2;inset:0;background:rgba(8,10,11,.72);opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:430px;box-sizing:border-box">
  <img id="oLogo" src="../assets/logo.png" style="width:150px;height:150px;border-radius:36px">
  <div id="oText" class="qa" style="margin-top:40px;font:700 64px/1.15 'Cascadia Mono',monospace;text-align:center;max-width:900px"></div>
  <div id="oDaily" class="qa" style="margin-top:34px;font:700 34px/1.2 'Cascadia Mono',monospace;color:#8b96a3;text-align:center"></div>
@@ -341,12 +341,14 @@ function render(T){
  hd.innerHTML=hookTxt?(()=>{const ws=s.text.split(' '),key=ws.map(w=>/\d/.test(w)).some(x=>x)?ws.map(w=>/\d/.test(w)):ws.map((_,k)=>k===ws.length-1);return '<span>'+ws.map((w,k)=>`<span style="color:${key[k]?AM:'#fff'}">${esc(w)}</span>`).join(' ')+'</span>'})():s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';const hb=back(seg(t,s.t0,s.t0+.4));hd.style.padding=s.kind==='question'?'0 150px':'0';hd.style.boxSizing='border-box';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px) scale(${.85+.15*hb})`;fit(hd,180,hookTxt?84:62);
  if(s.kind==='outro'){let k=i;while(k>0&&SC[k].chart==null)k--;drawChart(SC[k].chart!=null?k:i,SC[k].chart!=null?SC[k].t1-.01:t)}else drawChart(i,t);   // (v2: the sign-off sits over the last chart, dimmed: no separate end card)
  // cards, big text
- let st='';
+ const stageOf=(s,t)=>{let st='';
  if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(230,720/Math.max(1,N)),y=560+(720-N*gap)/2+k*gap;   // (the stack fills the stage down to the captions)
   st+=`<div class="card qa" style="top:${y}px;height:${gap-24}px;opacity:${cl(a)};transform:translateX(${(1-a)*-60}px) scale(${.92+.08*a})">${icon(it.icon)}<div><div class="tx">${esc(it.text)}</div>${it.sub?`<div class="sb">${esc(it.sub)}</div>`:''}</div></div>`})}
  if(s.kind==='stick')st+=drawSticks(s,t);
  if(s.kind==='story'||s.kind==='hook'&&s.layout)st+=drawStory(s,t);   // (a stock story's hook is illustrated)
  if(s.kind==='big'||s.kind==='hook'&&s.chart==null&&!s.layout){const ws=(s.text||'').split(' '),n=ws.length;st+=`<div class="big qa">${ws.map((w,k)=>{const at=s.text_t?s.text_t[k]:s.vs+(s.ve-s.vs)*.7*k/Math.max(1,n),a=back(seg(t,at-.05,at+.25));return `<span style="opacity:${cl(a)};transform:translateY(${(1-a)*40}px) scale(${.8+.2*a})">${esc(w)}</span>`}).join(' ')}</div>`}
+ return st};let st=stageOf(s,t);
+ if(s.kind==='outro'&&i>0&&SC[i-1].chart==null){let k=i-1;while(k>0&&!SC[k].layout)k--;if(SC[k].layout)st=stageOf(SC[k],SC[k].t1-.01).replace(/ qa/g,'').replace(/<div class="slab[^>]*>[^<]*<\/div>/g,'')}   // (v2: with no chart, the sign-off sits over the last illustrated scene, dimmed, without its tags)
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
   st+=`<svg style="position:absolute;left:460px;top:1290px;opacity:${a};transform:scale(${1+.1*Math.pow(1-((t-s.think_t[0])%.4)/.4,3)})" width="160" height="160"><circle cx="80" cy="80" r="64" fill="#2a2110" stroke="#4a3a1c" stroke-width="12"/><circle cx="80" cy="80" r="64" fill="none" stroke="${AM}" stroke-width="12" stroke-dasharray="${402*(1-u)} 500" transform="rotate(-90 80 80)" stroke-linecap="round"/><text x="80" y="99" text-anchor="middle" font-size="54" font-weight="800" fill="${AM}">${Math.ceil(left)}</text></svg>`}   // (big and amber: a timer, not dead air)
