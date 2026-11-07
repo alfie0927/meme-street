@@ -472,7 +472,7 @@ def check(spec, facts, charts, category=None):
             errs += board_check(k, s, A, Bt)
             ev = LAYOUT_EVENT.get(s.get("layout")) or next((b.get("do") for b in Bt if b.get("do") in EVENT_VERBS), None)
             if not ev: errs.append(f"scene {k}: nothing happens; add one beat (hit, fall, launch, emit, grow or burst) that acts out the line")
-            if events and events[-1] == ev: errs.append(f"scene {k}: the scene before also opens with a {ev}; make something different happen")
+            if ev and events and events[-1] == ev: errs.append(f"scene {k}: the scene before also opens with a {ev}; make something different happen")
             events.append(ev)
             for q in P:
                 if q.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {q.get('p')!r}; use one of {', '.join(WORLD_PROPS)}")
