@@ -8,17 +8,17 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 #film{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover;opacity:0}
 #fshade{position:absolute;inset:0;opacity:0;background:linear-gradient(to bottom,rgba(5,7,9,.9) 0%,rgba(5,7,9,.45) 27%,rgba(5,7,9,0) 42%,rgba(5,7,9,0) 58%,rgba(5,7,9,.6) 68%,rgba(5,7,9,.92) 100%)}
 .head,.caps{text-shadow:0 2px 14px rgba(0,0,0,.85)}
-.hdr{position:absolute;left:70px;right:70px;top:250px;height:84px;display:flex;align-items:center;justify-content:space-between}
-.hdr .l{display:flex;align-items:center;gap:20px;font:700 44px/1 'Cascadia Mono',monospace}.hdr img{width:84px;height:84px;border-radius:18px}
-.tag{padding:14px 26px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 28px/1 'Cascadia Mono',monospace;letter-spacing:1px;text-transform:uppercase}
-.prog{position:absolute;left:70px;right:70px;top:360px;height:6px;border-radius:3px;background:#161b21;overflow:hidden}
+.hdr{position:absolute;left:60px;right:60px;top:250px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.hdr .l{display:flex;align-items:center;gap:14px;font:700 30px/1 'Cascadia Mono',monospace;color:#c9d1d9}.hdr img{width:56px;height:56px;border-radius:13px}
+.tag{padding:9px 18px;border-radius:999px;background:#4fc6c8;color:#07121a;font:700 21px/1 'Cascadia Mono',monospace;letter-spacing:1px;text-transform:uppercase}
+.prog{position:absolute;left:60px;right:60px;top:330px;height:3px;border-radius:3px;background:#161b21;overflow:hidden}
 .prog i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#4fc6c8,#3dd68c)}
-.head{text-wrap:balance;position:absolute;left:60px;right:60px;top:400px;height:130px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 58px/1.12 'Cascadia Mono',monospace;letter-spacing:-1px}
+.head{text-wrap:balance;position:absolute;left:60px;right:60px;top:380px;height:130px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 54px/1.12 'Cascadia Mono',monospace;letter-spacing:-1px}
 .head b{display:inline-block;margin-right:20px;padding:8px 18px;border-radius:16px;background:#e8b14a;color:#07121a;font-size:44px;vertical-align:middle}
 #stage{position:absolute;left:0;top:0;width:1080px;height:1920px}
 .opts{position:absolute;left:62px;right:62px;top:1180px;height:104px;display:flex;gap:16px}
 .opt{flex:1;height:104px;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:20px;background:#13171c;border:3px solid #2a2f35;text-align:center;font:700 32px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
-.caps{position:absolute;z-index:3;left:70px;right:70px;top:1305px;max-height:120px;text-align:center;font:700 46px/1.3 'Cascadia Mono',monospace;color:#e6e9ec}
+.caps{position:absolute;z-index:3;left:70px;right:70px;top:1320px;max-height:110px;text-align:center;font:700 42px/1.3 'Cascadia Mono',monospace;color:#e6e9ec}
 .caps span{display:inline-block;margin:0 9px;transition:none}
 .card{position:absolute;left:62px;right:62px;height:150px;border-radius:24px;background:#0d1116;border:3px solid #23282e;display:flex;align-items:center;gap:28px;padding:0 34px;box-sizing:border-box}
 .card .ic{width:100px;height:100px;flex:none}.card .tx{font:700 46px/1.15 'Cascadia Mono',monospace}.card .sb{font:600 26px/1.3 'Cascadia Mono',monospace;color:#8b96a3;margin-top:6px}
@@ -91,7 +91,8 @@ function drawChart(i,t){
  const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
  const short=k=>k<0||SC[k].kind==='stick'||SC[k].kind==='question'||(SC[k].kind==='answer'&&k>0&&SC[k-1].kind==='question'),hh0=k=>short(k)?620:740,
   bh=i>0&&SC[i-1].chart===s.chart?lerp(hh0(i-1),hh0(i),io(seg(t,s.t0,s.t0+.6))):hh0(i);   // (eased, so the chart never jumps)
- const B={x:62,y:540,w:s.kind==='stick'?720:956,h:bh},PL={x:B.x+20,y:B.y+60,w:B.w-170,h:bh-190},VOL={y:B.y+bh-115,h:90};
+ const hasVol=SC.some(q=>q.chart===s.chart&&(q.cues||[]).some(c=>c.do==='mark'&&c.side==='vol'));   // (the references show no volume unless it is the point)
+ const B={x:30,y:520,w:s.kind==='stick'?720:1020,h:bh},PL={x:B.x+10,y:B.y+56,w:B.w-162,h:hasVol?bh-170:bh-80},VOL={y:B.y+bh-105,h:hasVol?85:0};
  const w0=w[0],w1=Math.max(w[0]+8,w[1]);let lo=1e9,hi=-1e9;
  const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r));   // (only what is shown sets the scale, so the axis never gives the answer away)
  for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
@@ -103,8 +104,7 @@ function drawChart(i,t){
  const X=k=>PL.x+(k-w0+.5)/(w1-w0+1)*PL.w,Y=v=>PL.y+(hi-v)/(hi-lo)*PL.h,bw=PL.w/(w1-w0+1);
  const vv=[];for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)vv.push(C[k][4]);vv.sort((a,b)=>a-b);const vmax=Math.max(1,2.2*(vv[vv.length>>1]||1));
  let post='',g=`<g opacity="${fade}"><defs><clipPath id="cp"><rect x="${PL.x-6}" y="${B.y+50}" width="${PL.w+12}" height="${B.h-60}"/></clipPath></defs>`;
- g+=`<rect x="${B.x}" y="${B.y}" width="${B.w}" height="${B.h}" rx="28" fill="#0b0f13" stroke="#23272d" stroke-width="3"/><g clip-path="url(#cp)">`;
- for(let q=0;q<5;q++){const v=lerp(lo+(hi-lo)*.1,hi-(hi-lo)*.1,q/4);g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${Y(v)}" y2="${Y(v)}" stroke="#151a1f" stroke-width="2"/><text x="${PL.x+PL.w+16}" y="${Y(v)+8}" font-size="24" fill="${MUTE}">${v.toFixed(2)}</text>`}
+ g+=`<g clip-path="url(#cp)">`;   // (no panel: the chart sits straight on the page, full width, like the references)
  const D=drawings(i,t),taken=[],free=(a,b,c,d)=>!taken.some(q=>a<q[2]&&q[0]<c&&b<q[3]&&q[1]<d);   // (every tag's box: a new tag never lands on one)
  {const k=Math.min(n-1,Math.floor(r));if(k>=0){const x=X(k),yc=Y(C[k][3]);taken.push([x-bw,Y(C[k][1])-8,x+bw,Y(C[k][2])+8],[PL.x+PL.w-40,yc-30,PL.x+PL.w+140,yc+30])}}   // (the newest candle and the price tag stay clear of tags)
  const cb=[];for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)cb.push([X(k)-bw/2,Y(C[k][1])-4,X(k)+bw/2,Y(C[k][2])+4]);
@@ -131,7 +131,7 @@ function drawChart(i,t){
  g+='</g>'+post;
  const lk=Math.min(n-1,Math.floor(r));if(lk>=Math.floor(w0)){const k=lk,gg=cl(r-k+1),c=lerp(C[k][0],C[k][3],out(gg)),f0=Math.max(0,Math.floor(w0)),up=f0<k?c>=C[f0][3]:c>=C[k][0],y=Y(c);
   g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${y}" y2="${y}" stroke="${up?G:RD}" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/><rect x="${PL.x+PL.w+6}" y="${y-23}" width="132" height="46" rx="9" fill="${up?G:RD}"/><text x="${PL.x+PL.w+72}" y="${y+10}" text-anchor="middle" font-size="27" font-weight="700" fill="#07121a">${c.toFixed(2)}</text>`}
- const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+42}" font-size="28" font-weight="700" fill="${MUTE}">${esc(lab)}</text>`;
+ const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+36}" font-size="23" font-weight="700" fill="${MUTE}" opacity=".8">${esc(lab)}</text>`;
  el.innerHTML=g+'</g>'}
 // ---- background: two slow glows, so even a still scene breathes
 function drawBg(t){return;document.getElementById('bg').innerHTML=`<defs><radialGradient id="g1"><stop offset="0" stop-color="#4fc6c8" stop-opacity=".10"/><stop offset="1" stop-color="#4fc6c8" stop-opacity="0"/></radialGradient><radialGradient id="g2"><stop offset="0" stop-color="#3dd68c" stop-opacity=".07"/><stop offset="1" stop-color="#3dd68c" stop-opacity="0"/></radialGradient></defs>

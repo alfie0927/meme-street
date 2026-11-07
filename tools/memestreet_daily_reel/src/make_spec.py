@@ -283,6 +283,9 @@ RULES = """Rules:
   (stick scenes too: give them the chart). Talking about volume? Mark the candle with side "vol".
 - A mark, shade or zoom only points at candles already on screen at that moment: at or before the scene's "show"
   (or where the scene before it on the same chart ended), or revealed earlier in the same scene.
+- Few cuts, like the owner's reference reels: keep one chart on screen and let it evolve from scene to scene (reveal,
+  mark, shade, zoom, lines); switch to cards, big text, Rookie and Pro or a story scene only when the chart cannot show
+  the point. Every switch of what fills the screen is a cut; a stock story allows 5, any other reel 3 (the outro is free).
 - Big text and outro text are words of that scene's line, word for word, in order.
 - Titles are titles: each head names that scene's idea, 2 to 5 words, never a copy of what the voice says, and the same
   style through the reel. A hook over a chart puts the reel's theme in its text, as a title; a hook
@@ -331,6 +334,12 @@ def check(spec, facts, charts, category=None):
     if not sc or sc[0].get("kind") != "hook": errs.append("the first scene must be a hook")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (75, 140, True))
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
+    look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
+    body = [s for s in sc if s.get("kind") != "outro"]
+    cuts = sum(1 for a, b in zip(body, body[1:]) if look(a) != look(b))
+    if cuts > (5 if category == "Stock story" else 3):         # (what fills the screen changes this often: choppy next to the references)
+        errs.append(f"the screen changes {cuts} times before the outro; keep one chart on screen and let it evolve (at most "
+                    f"{5 if category == 'Stock story' else 3} switches)")
     worlds = [s for s in sc if s.get("layout")]
     for k, s in enumerate(sc):
         if s.get("kind") == "story" or s.get("layout"):
