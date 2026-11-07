@@ -52,3 +52,4 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 <!-- newest last: "- YYYY-MM-DD: rule" -->
 - 2026-11-07: The voice is Kokoro (af_heart) again, not ElevenLabs (REEL_VOICE=kokoro), with words it says wrongly fixed in pronounce.json.
 - 2026-11-07: Captions ease in word by word and each line eases out before the next; a line never leaves one word on its own.
+- 2026-11-07: A stock story is just the company, never its chart: the seven beats of the November stories (an illustrated odd fact, what it is, how it makes money, why it matters, what's unique, risks and what moves it, the sign-off), with richer animation. Reading a stock's chart is a separate format with its own structure (Chart breakdown).
