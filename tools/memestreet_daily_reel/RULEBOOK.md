@@ -53,3 +53,5 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - 2026-11-07: The voice is Kokoro (af_heart) again, not ElevenLabs (REEL_VOICE=kokoro), with words it says wrongly fixed in pronounce.json.
 - 2026-11-07: Captions ease in word by word and each line eases out before the next; a line never leaves one word on its own.
 - 2026-11-07: A stock story is just the company, never its chart: the seven beats of the November stories (an illustrated odd fact, what it is, how it makes money, why it matters, what's unique, risks and what moves it, the sign-off), with richer animation. Reading a stock's chart is a separate format with its own structure (Chart breakdown).
+- 2026-11-07: Story scenes are literal and creative, never abstract: a ranch is fenced pens with the animals and a hut; demand is people joining a line one by one; what moves a stock can be candles falling across the screen and bursting into the next scene. At most 2 labels a scene, never one naming the obvious; nothing cut off at the edges.
+- 2026-11-07: The sign-off comes in slowly and gently (no sudden cut) and holds a moment.
