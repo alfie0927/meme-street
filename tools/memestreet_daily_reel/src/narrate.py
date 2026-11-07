@@ -13,7 +13,7 @@ from kokoro_onnx import Kokoro
 from voice import MODEL, NUM, trim, dur, words, norm_words
 from pronounce import say_as, digits
 
-GAP, LEAD, TAIL, THINK = 0.24, 0.1, 0.6, 1.6        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
+GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6   # (TAIL 1.6: the sign-off holds a moment, the owner 2026-11-07)        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
 SR = 24000
 
 def tone(path, freqs, length, vol=0.25):

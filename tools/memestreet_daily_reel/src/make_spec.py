@@ -26,8 +26,9 @@ CATEGORIES = {
     "Stock story": "Just the company, never its chart (the owner, 2026-11-07; the four November stock stories that did best "
                    "had no chart). Seven beats, in this order: (1) the hook, one odd and specific fact about what it does "
                    "('This company sells rain.'), over a story scene; (2) what it is: its name and what it does, a story "
-                   "scene; (3) how it makes money: a cards scene of 3 items with icons; (4) why it matters: a story scene "
-                   "(compare: the old way against its way, or flow); (5) what's unique: a story scene that grows (grow or "
+                   "scene (pens when it has a home: a ranch, farm, clinic, depot); (3) how it makes money: a cards scene of 3 items with icons; (4) why it matters: a story scene "
+                   "(line when people want it, compare for the old way against its way, or flow); a scene on what moves the "
+                   "stock may be candles (they fall, then burst into the next scene); (5) what's unique: a story scene that grows (grow or "
                    "network); (6) risks and what moves its stock: a cards scene of 2 or 3 items with the warn icon, from "
                    "the good and bad news in the facts; (7) the outro, inviting viewers to trade it. No chart scene, no "
                    "candles, no price moves.",
@@ -303,10 +304,14 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
    director's shot list: the subject, what it is doing, where, the light, the camera move. E.g. 'A green dragon hauls a
    wooden crate on chains over a misty mountain ranch at golden hour, wings beating slowly, camera tracking alongside'"}
    (only when video is available: a full-screen realistic video clip with the title and captions over it)
- {"kind":"story","head":"title, max 5 words","vo":"...","layout":"flow|network|hero|grow|risk|compare",
+ {"kind":"story","head":"title, max 5 words","vo":"...","layout":"pens|line|candles|hero|flow|grow|risk|compare|network",
    "props":[{"p":"<prop>","color":"teal|green|amber|red|purple|grey","label":"max 3 words, or empty","say":"exact phrase from vo: it pops in then"}]}
-   (an animated 2D scene in the house style. Layouts: flow = props[:-1] are stations left to right and the last prop travels through them
-    (two portals and a crate: teleport freight); network = each prop is a node on a glowing globe, links fill in (2-8);
+   (an animated 2D scene in the house style. Layouts: pens = the company's home: two gated enclosures, each with two of
+    props[0] (the animals or products, e.g. dragons) and props[1] in the middle (e.g. a hut); line = props[0] (the company)
+    bottom left, then six of props[1] (people) pop up one by one into a line: demand, a waiting list (label props[1]
+    'Waiting list'); candles = red candles fall across the whole screen and burst into the next scene: what moves or hurts
+    the stock (props[0] may carry the label); flow = props[:-1] are stations left to right and the last prop travels through them
+    (two portals and a crate: teleport freight); network = each prop is a node on a glowing globe, links fill in (2-8; only for a company that really is a network);
     hero = props[0] is the company, big in the middle (a flier circles above its plinth), the rest stand around it;
     grow = up to 5 columns rise one by one on their words (good news, growth); risk = props[0] is the company, the rest
     are warnings or shields that fly in and hit it (bad news); compare = props[0] the old way (shown grey), props[1] the new
@@ -317,7 +322,7 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
 _R = open(os.path.join(HERE, "reel.html"), encoding="utf-8").read()
 WORLD_PROPS = re.findall(r"^ (\w+)\(c(?:,u)?\)\{", _R[_R.index("const PROP2D={"):_R.index("function prop2d(")], re.M)   # (the 2D story kit in reel.html)
 WORLD_LAYOUTS = re.findall(r"lay==='(\w+)'", _R)
-LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3}   # (what each layout in reel.html draws; more are never seen)
+LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3, "pens": 2, "line": 2, "candles": 1}   # (what each layout in reel.html draws; more are never seen)
 FLIERS = ("dragon", "bird", "plane", "drone", "fish", "rocket")   # (a flying hero leaves 3 side slots, not 4)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
@@ -405,11 +410,13 @@ def check(spec, facts, charts, category=None):
             P = s.get("props") or []
             if s.get("layout") not in WORLD_LAYOUTS: errs.append(f"scene {k}: layout must be one of {', '.join(WORLD_LAYOUTS)}")
             cap = LAYOUT_PROPS.get(s.get("layout"), 8) - (s.get("layout") == "hero" and (P[:1] or [{}])[0].get("p") in FLIERS)
+            if sum(1 for q in P if q.get("label")) > 2: errs.append(f"scene {k}: at most 2 labels in a scene (the owner: fewer tags, clearer pictures)")
             if not 1 <= len(P) <= cap: errs.append(f"scene {k}: a {s.get('layout')} scene draws 1 to {cap} props; this one has {len(P)}")
             for q in P:
                 if q.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {q.get('p')!r}; use one of {', '.join(WORLD_PROPS)}")
                 if q.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: colour {q.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
                 if len(str(q.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {q.get('label')!r} is over 3 words")
+                if q.get("label") and q["label"].strip().lower().rstrip("s") == str(q.get("p", "")).lower(): errs.append(f"scene {k}: a {q.get('p')} needs no label saying so; label only what the picture cannot say")
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
     if category == "Stock story":
         if not 3 <= len(worlds) <= 5:

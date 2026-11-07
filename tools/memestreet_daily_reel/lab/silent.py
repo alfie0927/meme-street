@@ -9,7 +9,7 @@ import json, os, re, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 from pronounce import digits
 
-GAP, LEAD, TAIL, THINK = 0.24, 0.1, 0.6, 1.6            # (as narrate.py)
+GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6            # (as narrate.py)
 WPS, COMMA, STOP = 3.9, 0.28, 0.36
 key = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
 
