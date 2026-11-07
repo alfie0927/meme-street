@@ -50,7 +50,7 @@ def references(rd, imgs, stills=True):
                     "low captions with the key word coloured; one idea per beat; one ask at the end. Compare this reel to them."}
 
 
-def motion(mp4, cuts, fps=30):
+def motion(mp4, cuts, fps=30, impacts=()):
     """How the picture moves, measured: jumps (a frame that changes far more than its neighbours, away from a scene cut:
     something snapping in or jerking) and drift (seconds where the whole frame keeps changing: a background that swims)."""
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", mp4, "-vf", f"fps={fps},scale=135:240,format=gray", "-f", "rawvideo", "-"],
@@ -58,7 +58,7 @@ def motion(mp4, cuts, fps=30):
     F = np.frombuffer(raw, np.uint8).reshape(-1, 240, 135).astype(np.float32)
     if len(F) < 3: return {"jumps": [], "drift_secs": []}
     d = np.abs(np.diff(F, axis=0)).mean(axis=(1, 2)); med = float(np.median(d))
-    near = lambda i: any(-3 <= i + 1 - c * fps <= 16 for c in cuts)   # (a scene may slide in over half a second)
+    near = lambda i: any(-3 <= i + 1 - c * fps <= 16 for c in cuts) or any(-2 <= i + 1 - c * fps <= 12 for c in impacts)   # (a scene may slide in over half a second; a storyboard's crash is meant)
     jumps = [round((i + 1) / fps, 2) for i in range(len(d)) if d[i] > max(6, 5 * med) and not near(i)]
     drift = [k for k in range(len(d) // fps) if float(np.median(d[k * fps:(k + 1) * fps])) > .3]   # (a calm reel: 0.04; the swimming 3D one: 0.73)
     return {"jumps": jumps[:20], "drift_secs": drift[:20], "median_change": round(med, 2)}
@@ -100,6 +100,8 @@ def pack(work, out, rd, only=None, refs=True):
     for i, s in enumerate(R["scenes"]):                      # each scene: as it lands, mid-line, and its last moment
         if only is not None and i not in only: continue
         ts =[s["t0"] + 0.35, (s.get("vs", s["t0"]) + s.get("ve", s["t1"])) / 2, s["t1"] - 0.08]
+        hit = [b["ti"] + 0.1 for b in s.get("beats", []) if b.get("do") in ("hit", "fall", "burst", "launch") and b.get("ti")]
+        if hit: ts[1] = min(hit)                             # (a storyboard scene's middle frame is its first impact: he sees the crash)
         parts = []
         for k, t in enumerate(ts):
             p = os.path.join(rd, f"_s{i}_{k}.jpg"); ff("-ss", f"{max(0, t):.2f}", "-i", mp4, "-frames:v", "1", "-vf", "scale=360:-1", p); parts.append(p)
@@ -137,6 +139,7 @@ def pack(work, out, rd, only=None, refs=True):
         for c in s.get("cues", []):
             if c.get("text") or c.get("label"): on_screen.setdefault("cue_texts", []).append(f"{c['do']}: {c.get('text') or c.get('label')} @ {c.get('t')}s")
         if s.get("items"): on_screen["cards"] = [x.get("text") for x in s["items"]]
+        if s.get("beats"): on_screen["storyboard"] = [f"{b.get('do')} {b.get('who', '')}{' into ' + b['with'] if b.get('with') else ''}{' to ' + str(b['to']) if b.get('to') else ''}{' ' + b['what'] if b.get('what') else ''}{' ' + repr(b['text']) if b.get('text') else ''} on '{b.get('say', '')}' @ {b.get('t')}s (impact {b.get('ti')}s)" for b in s["beats"]]
         if s.get("figures"): on_screen["figures"] = [f"{f.get('label', '')} ({f.get('color', 'white')}, {f.get('pose', 'stand')})" for f in s["figures"]]
         scenes.append({"scene": i, "kind": s["kind"], "from_s": s["t0"], "to_s": s["t1"], "has_chart": s.get("chart") is not None,
                        "script": s["vo"], "heard": " ".join(w for w, _, _ in hw), "words_per_sec_talking": round(r, 2) if r else None,
@@ -153,7 +156,7 @@ def pack(work, out, rd, only=None, refs=True):
                              "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps)},
               "references": references(rd, imgs, refs),
               "script_vs_heard_differences": misheard,
-              "motion": dict(motion(mp4, [x["t0"] for x in R["scenes"][1:]]), note="jumps: times a frame changes far more than its neighbours away from a scene cut (a snap or jerk); drift_secs: seconds where most of the frame keeps changing (a swimming picture). Both are visual faults; check the frames at those times."),
+              "motion": dict(motion(mp4, [x["t0"] for x in R["scenes"][1:]], impacts=R.get("impacts", [])), note="jumps: times a frame changes far more than its neighbours away from a scene cut or a storyboard impact (a snap or jerk); drift_secs: seconds where most of the frame keeps changing (a swimming picture). Both are visual faults; check the frames at those times."),
               "transcript_notes": "The script is shown as the voice is told to say it. Whisper writes 'Meem Street dot net' as "
                                   "MemeStreet.net or Meme Street, numbers as digits ('93' for 'ninety-three', '15%' for "
                                   "'fifteen percent') and may split or join words: those are not mispronunciations. A "
@@ -168,7 +171,8 @@ fictional companies, memestreet.net). The owner decides what good looks like: th
 feedback after reels post. Your job is narrow: stop a reel that would embarrass the page. Flag only BLOCKERS:
 1. A fact that is wrong: a number, price, move or claim that contradicts the chart on screen or the facts.
 2. Voice and screen disagree: the voice says something the screen contradicts, or the story depends on something the
-   screen never shows (e.g. "price fell to 58" while the tag reads 64; a quiz question the chart cannot answer).
+   screen never shows (e.g. "price fell to 58" while the tag reads 64; a quiz question the chart cannot answer; a storyboard
+   beat the report lists that the frames never show).
 3. A broken frame: text on text, text cut off, an empty stage for over 2 seconds, a garbled or unreadable scene.
 4. A word the listener hears wrongly (the transcript of the final mix against the script; a number written as digits,
    or a homophone, is not a mispronunciation), or a garbled stretch of voice.
@@ -184,7 +188,7 @@ Every issue carries evidence or it is thrown away: the image file(s) where it sh
 "images", and/or a "report" quote copied character for character from report.json. Say where (scene, time; scenes count
 from 0), what is wrong, the concrete fix, and the owner of the fix: "script" (the writer controls each scene's kind,
 spoken line, head and on-screen text, cues, chart reveals, marks, shades, zooms and lines, cards, figures, bubbles,
-story layouts and props) or "renderer" (how the house template draws things).
+story layouts, props, storyboard actors and beats) or "renderer" (how the house template draws things).
 
 In round 2 you get the blockers from round 1 as a checklist: answer each "fixed" or "still_wrong" with evidence from this
 cut, and raise a new blocker only if this cut shows one.

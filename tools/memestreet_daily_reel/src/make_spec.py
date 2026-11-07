@@ -318,18 +318,42 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
     hero = props[0] is the company, big in the middle (a flier circles above its plinth), the rest stand around it;
     grow = up to 5 columns rise one by one on their words (good news, growth); risk = props[0] is the company, the rest
     are warnings or shields that fly in and hit it (bad news); compare = props[0] the old way (shown grey), props[1] the new
-    way, props[2] the thing they move. Props: %s)
+    way, props[2] the thing they move; stage = the living backdrop and an empty ground, for actors alone. Props: %s)
+   Any story scene (and a hook with a layout) adds a storyboard, so something happens: "actors":[{"id":"truck","p":"<prop>","color":"teal",
+    "at":"left|mid|right|sky-left|sky-mid|sky-right|off-left|off-right","size":"s|m|l","label":"max 3 words, or empty"}] (up to 5) and
+    "beats":[{"say":"exact phrase from vo","do":"enter|move|hit|fall|launch|emit|grow|tint|count|burst","who":"<actor id>",
+    "to":"<slot> (move, launch; s|m|l for grow; 'off' for a fall off the screen)","with":"<actor id> (hit)","what":"fire|coins|smoke|sparks|rain|hearts (emit)",
+    "color":"<colour> (tint)","text":"e.g. '3 jobs' (count)"}] (up to 8, in time order). A beat happens on its word: enter slides in; move
+    walks to a slot; hit drives into the other actor (both shake, a boom); fall drops to the ground, or off the screen, with a thud; launch
+    flies to a slot with a whoosh; emit pours out of the actor for a second (coins chime); grow swells to a size; tint changes colour;
+    count counts its number up over the actor; burst blows the actor up with a boom. Actors stand on the layout's picture.
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 """
 
 _R = open(os.path.join(HERE, "reel.html"), encoding="utf-8").read()
 WORLD_PROPS = re.findall(r"^ (\w+)\(c(?:,u)?\)\{", _R[_R.index("const PROP2D={"):_R.index("function prop2d(")], re.M)   # (the 2D story kit in reel.html)
 WORLD_LAYOUTS = re.findall(r"lay==='(\w+)'", _R)
-LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3, "pens": 2, "line": 2, "candles": 1, "earns": 4, "storm": 4}   # (what each layout in reel.html draws; more are never seen)
+WORLD_VERBS = re.findall(r"(\w+):[\d.]+", _R[_R.index("BEAT={"):_R.index("}", _R.index("BEAT={"))])        # (the storyboard verbs reel.html acts)
+WORLD_SLOTS = re.findall(r"'?([\w-]+)'?:\[", _R[_R.index("const SLOT={"):_R.index("}", _R.index("const SLOT={"))])
+EVENT_VERBS = ("hit", "fall", "launch", "burst", "emit", "grow"); LAYOUT_EVENT = {"earns": "emit", "storm": "hit", "candles": "burst"}   # (a layout with its own event)
+EMITS = ("fire", "coins", "smoke", "sparks", "rain", "hearts")
+LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3, "pens": 2, "line": 2, "candles": 1, "earns": 4, "storm": 4, "stage": 2}   # (what each layout in reel.html draws; more are never seen)
 FLIERS = ("dragon", "bird", "plane", "drone", "fish", "rocket")   # (a flying hero leaves 3 side slots, not 4)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
 RULES = """Rules:
+- Something happens in every story scene (the owner, 2026-11-07): one physical event, literal to the line, acted by beats (hit, fall,
+  launch, emit, grow or burst; a layout's own event counts: earns pays out, storm strikes, candles burst). "One escaped dragon shut a
+  motorway" is a dragon falling onto the road and a truck driving into it with a boom, not a dragon and a truck standing there. Two
+  scenes in a row never open with the same event, and a stock story uses at least 3 different ones. Never a figure of speech (no box
+  hitting a box for 'the market crashed'): the thing the line names does the thing the line says. Examples:
+  hook "One escaped dragon shut a motorway for a day": layout stage, actors dragon (sky-mid, l), truck (off-left), warning (right, label
+  'Motorway closed'); beats fall dragon to mid on 'escaped dragon', hit truck with dragon on 'shut a motorway', count '1 day' on 'for a day'.
+  "Demand is high, so there's a long waiting list": actors queue (right, s, 'Waiting list'), dragon (left); beats grow queue to l on
+  'long waiting list', emit hearts from dragon on 'Demand is high'. "It went up like crazy, then crashed": actors rocket (mid); beats
+  launch rocket to sky-mid on 'went up', fall rocket off on 'then crashed', burst rocket on 'crashed'. Invent your own for each line.
+- Any reel may use a story scene for its hook and one more for its payoff (the moment the lesson lands, acted out); a quiz for its hook
+  only, its reveal stays on the chart. Charts stay charts.
 - One label per idea in a story scene: a waiting list is a "queue" prop labelled "Waiting list", not a person plus separate
   labels. Animated "story" scenes (2D neon line art) show real things: a stock story has 2 or 3 (what the company does, its good news, its bad
   news), and any reel may use one when a real object acts out the line (a company, its product, money moving). A dragon-
@@ -394,6 +418,35 @@ def claude(messages, system):
 EMOJI = re.compile("[\U0001F000-\U0001FAFF☀-➿️]")
 
 
+def board_check(k, s, A, B):
+    """A scene's storyboard, if it has one: actors that exist on slots that exist, beats whose verbs reel.html acts, on words
+    of the line, naming actors of this scene."""
+    errs, ids = [], [a.get("id") for a in A]
+    if len(A) > 5: errs.append(f"scene {k}: at most 5 actors")
+    if len(B) > 8: errs.append(f"scene {k}: at most 8 beats")
+    if not all(ids) or len(set(ids)) != len(ids): errs.append(f"scene {k}: every actor needs its own id")
+    ats = [a.get("at") for a in A if a.get("at")]
+    if len(set(ats)) != len(ats): errs.append(f"scene {k}: two actors share a slot; give each its own")
+    for a in A:
+        if a.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {a.get('p')!r} for actor {a.get('id')}; use one of {', '.join(WORLD_PROPS)}")
+        if a.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: actor {a.get('id')} colour {a.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
+        if a.get("at") and a["at"] not in WORLD_SLOTS: errs.append(f"scene {k}: actor {a.get('id')} slot {a['at']!r} is not one of {', '.join(WORLD_SLOTS)}")
+        if a.get("size", "m") not in ("s", "m", "l"): errs.append(f"scene {k}: actor {a.get('id')} size is s, m or l")
+        if len(str(a.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {a.get('label')!r} is over 3 words")
+    for b in B:
+        if b.get("do") not in WORLD_VERBS: errs.append(f"scene {k}: no beat called {b.get('do')!r}; use one of {', '.join(WORLD_VERBS)}"); continue
+        if b.get("who") not in ids: errs.append(f"scene {k}: beat {b['do']} names actor {b.get('who')!r}, which this scene has not got")
+        if b["do"] == "hit" and (b.get("with") not in ids or b.get("with") == b.get("who")): errs.append(f"scene {k}: a hit names the other actor in 'with'")
+        if b["do"] in ("move", "launch") and b.get("to") not in WORLD_SLOTS: errs.append(f"scene {k}: {b['do']} needs 'to', one of {', '.join(WORLD_SLOTS)}")
+        if b["do"] == "grow" and b.get("to", "l") not in ("s", "m", "l"): errs.append(f"scene {k}: grow 'to' is s, m or l")
+        if b["do"] == "fall" and b.get("to") not in (None, "off"): errs.append(f"scene {k}: fall 'to' is left out (the ground) or 'off'")
+        if b["do"] == "emit" and b.get("what") not in EMITS: errs.append(f"scene {k}: emit 'what' is one of {', '.join(EMITS)}")
+        if b["do"] == "tint" and b.get("color") not in WORLD_COLOURS: errs.append(f"scene {k}: tint needs a colour")
+        if b["do"] == "count" and not re.search(r"\d", str(b.get("text", ""))): errs.append(f"scene {k}: count 'text' has the number in it")
+        if b.get("say") and b["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: beat {b['do']} says {b['say']!r}, which is not in its line")
+    return errs
+
+
 def check(spec, facts, charts, category=None):
     """What is wrong with the script, in words Claude can fix."""
     errs = []
@@ -407,14 +460,20 @@ def check(spec, facts, charts, category=None):
     if cuts > (6 if category == "Stock story" else 3):         # (what fills the screen changes this often: choppy next to the references)
         errs.append(f"the screen changes {cuts} times before the outro; keep one chart on screen and let it evolve (at most "
                     f"{6 if category == 'Stock story' else 3} switches)")
-    worlds = [s for s in sc if s.get("layout")]
+    worlds = [s for s in sc if s.get("layout")]; events = []
     for k, s in enumerate(sc):
         if s.get("kind") == "story" or s.get("layout"):
             P = s.get("props") or []
             if s.get("layout") not in WORLD_LAYOUTS: errs.append(f"scene {k}: layout must be one of {', '.join(WORLD_LAYOUTS)}")
             cap = LAYOUT_PROPS.get(s.get("layout"), 8) - (s.get("layout") == "hero" and (P[:1] or [{}])[0].get("p") in FLIERS)
-            if sum(1 for q in P if q.get("label")) > (3 if s.get("layout") in ("earns", "storm") else 2): errs.append(f"scene {k}: at most 2 labels in a scene, 3 in earns and storm (the owner: fewer tags, clearer pictures)")
-            if not 1 <= len(P) <= cap: errs.append(f"scene {k}: a {s.get('layout')} scene draws 1 to {cap} props; this one has {len(P)}")
+            A = s.get("actors") or []; Bt = s.get("beats") or []
+            if sum(1 for q in P + A if q.get("label")) > (3 if s.get("layout") in ("earns", "storm") else 2): errs.append(f"scene {k}: at most 2 labels in a scene, 3 in earns and storm (the owner: fewer tags, clearer pictures)")
+            if not (0 if A else 1) <= len(P) <= cap: errs.append(f"scene {k}: a {s.get('layout')} scene draws 1 to {cap} props; this one has {len(P)}")
+            errs += board_check(k, s, A, Bt)
+            ev = LAYOUT_EVENT.get(s.get("layout")) or next((b.get("do") for b in Bt if b.get("do") in EVENT_VERBS), None)
+            if not ev: errs.append(f"scene {k}: nothing happens; add one beat (hit, fall, launch, emit, grow or burst) that acts out the line")
+            if events and events[-1] == ev: errs.append(f"scene {k}: the scene before also opens with a {ev}; make something different happen")
+            events.append(ev)
             for q in P:
                 if q.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {q.get('p')!r}; use one of {', '.join(WORLD_PROPS)}")
                 if q.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: colour {q.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
@@ -427,6 +486,8 @@ def check(spec, facts, charts, category=None):
                         f"what it is, how it earns, why it matters, what's unique, what can hurt it; this script has {len(worlds)}")
         if any(s.get("chart") is not None for s in sc):
             errs.append("a stock story is just the company: no chart scenes (a chart read is the Chart breakdown format)")
+        if len(set(events) - {None}) < 3:
+            errs.append("a stock story's scenes need at least 3 different kinds of event across the reel (hit, fall, launch, emit, grow, burst)")
         if sc and not sc[0].get("layout"):
             errs.append("a stock story's hook is illustrated: give scene 0 a story layout and props that show the odd fact (its text is the title)")
         for lay, what in (("earns", "how it makes money (layout earns: its 3 jobs)"), ("storm", "what can hurt it (layout storm: 2 or 3 risks)")):

@@ -13,6 +13,28 @@ from kokoro_onnx import Kokoro
 from voice import MODEL, NUM, trim, dur, words, norm_words
 from pronounce import say_as, digits
 
+BEAT = {"enter": (0, "pop"), "move": (0, None), "hit": (.6, "boom"), "fall": (.5, "thud"), "launch": (0, "whoosh"), "emit": (0, None),
+        "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None)}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
+EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow")
+
+
+def beats(sc, vs, at, vo, sfx):
+    """Time a scene's storyboard beats on their words (t), note each impact (ti), and add the verb's sound: a hit or a
+    fall sounds at the impact, the rest as they start; coins chime; a count ticks. Returns the impact times."""
+    out = []
+    for b in sc.get("beats", []):
+        b["t"] = round(vs + at(b["say"]) if b.get("say") else vs + 0.3, 3)
+        d, s = BEAT.get(b.get("do"), (0, None)); b["ti"] = round(b["t"] + d, 3)
+        if b.get("do") == "emit": s = "chime" if b.get("what") == "coins" else "pop"
+        if b.get("do") == "count":
+            for k in range(min(6, int((re.findall(r"\d+", str(b.get("text", ""))) or ["0"])[0]) or 1)): vo.append([sfx("tick"), round(b["t"] + .15 * k, 3)])
+        elif s: vo.append([sfx(s), b["ti"] if b["do"] in ("hit", "fall") else b["t"]])
+        if b.get("do") in EVENTS: out.append(b["ti"])
+    P = sc.get("props") or []                             # (a layout's own events are impacts too: the storm's strikes, the candles' burst)
+    if sc.get("layout") == "storm": out += [p["t"] for p in P[1:] if p.get("t") is not None]
+    return out
+
+
 GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6   # (TAIL 1.6: the sign-off holds a moment, the owner 2026-11-07)        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
 SR = 24000
 
@@ -201,10 +223,10 @@ def main(work):
     for d in ("vo", "sfx"):
         os.makedirs(os.path.join(work, d), exist_ok=True)
     A = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
-    if not os.path.exists(os.path.join(A, "sfx_pop.wav")):
+    if not os.path.exists(os.path.join(A, "sfx_thud.wav")):
         import sounds; sounds.main()                           # (the house sounds, made once: sounds.py)
     tick, chime, pop, whoosh = (os.path.join(A, f"sfx_{x}.wav") for x in ("tick", "chime", "pop", "whoosh"))
-    t, vo = LEAD, []
+    t, vo, impacts = LEAD, [], []
     for i, sc in enumerate(S["scenes"]):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
         speed = float(os.environ.get("VOICE_SPEED", "1.0"))
@@ -263,6 +285,7 @@ def main(work):
             c["t"] = round(vs + at(c.get("say", "")), 3)
             if c.get("do") in ("mark", "bubble", "item", "line"): vo.append([pop, c["t"]])
         for x in sc.get("opt_t", []): vo.append([pop, x])
+        impacts += beats(sc, vs, at, vo, lambda x: os.path.join(A, f"sfx_{x}.wav"))   # (storyboard beats: timed, sounded, their impacts kept for the critic)
         t = vs + d
         if sc["kind"] == "question":                          # the viewer's moment: a ticking countdown, not silence
             think = float(sc.get("think", THINK)); sc["think_t"] = [round(t + 0.15, 3), round(t + 0.15 + think, 3)]
@@ -272,10 +295,11 @@ def main(work):
             vo.append([chime, round(t, 3)])
         t += GAP if i < len(S["scenes"]) - 1 else TAIL
         sc["t1"] = round(t, 3)
+        if sc.get("layout") == "candles": impacts.append(round(sc["t1"] - .55, 3))   # (the candles' burst is an impact too)
     for sc in S["scenes"]:                                     # realistic video shots (footage.py), fitted to their scenes
         if sc.get("shot"):
             film(sc, work)
-    S["T"] = round(t, 2); S["vo"] = vo; S["num"] = None
+    S["T"] = round(t, 2); S["vo"] = vo; S["num"] = None; S["impacts"] = sorted(impacts)
     S["daily"] = live_daily()
     json.dump(S, open(os.path.join(work, "timeline.json"), "w"))
     print(f"narration: {len(S['scenes'])} scenes, {S['T']:.1f}s")

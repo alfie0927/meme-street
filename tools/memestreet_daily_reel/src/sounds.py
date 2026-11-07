@@ -1,6 +1,6 @@
 """The house sounds of every reel, all synthesised here (no samples, no licences): a soft music loop that sits under
 the voice, and a small fixed set of effects (whoosh on a scene change, pop when something appears, tick for a quiz
-countdown, chime on a reveal). Usage: python3 src/sounds.py  (writes assets/music.wav and assets/sfx_*.wav once)
+countdown, chime on a reveal, boom for a crash or a burst, thud for a fall). Usage: python3 src/sounds.py  (writes assets/music.wav and assets/sfx_*.wav once)
 """
 import os
 import numpy as np
@@ -55,11 +55,28 @@ def pop():
     return (np.sin(2 * np.pi * np.cumsum(f) / SR) * env(n, 0.002, 0.03) * 0.4).astype(np.float32)
 
 
+def boom(length=0.5):
+    """A crash: a low noise burst with a thump that sinks from 110 to 45 Hz."""
+    n = int(length * SR); t = np.arange(n) / SR; noise = np.convolve(np.random.default_rng(2).standard_normal(n), np.ones(24) / 24, mode="same")
+    f = 110 - 65 * t / t[-1]; thump = np.sin(2 * np.pi * np.cumsum(f) / SR)
+    w = (noise * 0.8 + thump) * env(n, 0.003, 0.18)
+    return (w / np.abs(w).max() * 0.5).astype(np.float32)
+
+
+def thud(length=0.22):
+    """A landing: a short sine drop from 90 to 40 Hz with a touch of noise."""
+    n = int(length * SR); t = np.arange(n) / SR; f = 90 - 50 * t / t[-1]
+    w = (np.sin(2 * np.pi * np.cumsum(f) / SR) + 0.15 * np.random.default_rng(3).standard_normal(n)) * env(n, 0.002, 0.07)
+    return (w / np.abs(w).max() * 0.4).astype(np.float32)
+
+
 def main():
     os.makedirs(ASSETS, exist_ok=True)
     sf.write(os.path.join(ASSETS, "music.wav"), music(), SR)
     sf.write(os.path.join(ASSETS, "sfx_whoosh.wav"), whoosh(), SR)
     sf.write(os.path.join(ASSETS, "sfx_pop.wav"), pop(), SR)
+    sf.write(os.path.join(ASSETS, "sfx_boom.wav"), boom(), SR)
+    sf.write(os.path.join(ASSETS, "sfx_thud.wav"), thud(), SR)
     sf.write(os.path.join(ASSETS, "sfx_tick.wav"), (tone(1800, 0.05, 0.01) * 0.25).astype(np.float32), SR)
     sf.write(os.path.join(ASSETS, "sfx_chime.wav"), ((tone(880, 0.6, 0.15) + tone(1320, 0.6, 0.15)) * 0.2).astype(np.float32), SR)
     print("wrote", ", ".join(sorted(f for f in os.listdir(ASSETS) if f.endswith(".wav"))))

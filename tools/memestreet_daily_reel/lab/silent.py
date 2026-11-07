@@ -10,6 +10,27 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(
 from pronounce import digits
 
 GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6            # (as narrate.py)
+BEAT = {"enter": (0, "pop"), "move": (0, None), "hit": (.6, "boom"), "fall": (.5, "thud"), "launch": (0, "whoosh"), "emit": (0, None),
+        "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None)}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
+EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow")
+
+
+def beats(sc, vs, at, vo, sfx):
+    """Time a scene's storyboard beats on their words (t), note each impact (ti), and add the verb's sound: a hit or a
+    fall sounds at the impact, the rest as they start; coins chime; a count ticks. Returns the impact times."""
+    out = []
+    for b in sc.get("beats", []):
+        b["t"] = round(vs + at(b["say"]) if b.get("say") else vs + 0.3, 3)
+        d, s = BEAT.get(b.get("do"), (0, None)); b["ti"] = round(b["t"] + d, 3)
+        if b.get("do") == "emit": s = "chime" if b.get("what") == "coins" else "pop"
+        if b.get("do") == "count":
+            for k in range(min(6, int((re.findall(r"\d+", str(b.get("text", ""))) or ["0"])[0]) or 1)): vo.append(["tick", round(b["t"] + .15 * k, 3)])
+        elif s: vo.append([s, b["ti"] if b["do"] in ("hit", "fall") else b["t"]])
+        if b.get("do") in EVENTS: out.append(b["ti"])
+    P = sc.get("props") or []                             # (a layout's own events are impacts too: the storm's strikes, the candles' burst)
+    if sc.get("layout") == "storm": out += [p["t"] for p in P[1:] if p.get("t") is not None]
+    return out
+
 WPS, COMMA, STOP = 3.9, 0.28, 0.36
 key = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
 
@@ -40,7 +61,7 @@ def at(vo, wt, phrase):
 
 
 def main(work):
-    S = json.load(open(os.path.join(work, "spec.json"), encoding="utf-8")); t = LEAD
+    S = json.load(open(os.path.join(work, "spec.json"), encoding="utf-8")); t = LEAD; impacts = []
     for i, sc in enumerate(S["scenes"]):
         tw = sc["vo"].split(); wt, d = times(tw)
         sc["t0"] = round(t, 3); vs = t + 0.05; sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
@@ -53,12 +74,14 @@ def main(work):
             sc["opt_t"] = [round(vs + x, 3) for x in follow([o.split()[0] for o in sc["options"]], tw, wt, d)]
         for p in sc.get("props", []): p["t"] = round(vs + (at(sc["vo"], wt, p["say"]) if p.get("say") else 0.2), 3)
         for c in sc.get("cues", []): c["t"] = round(vs + at(sc["vo"], wt, c.get("say", "")), 3)
+        impacts += beats(sc, vs, lambda ph: at(sc["vo"], wt, ph), [], None)
         t = vs + d
         if sc["kind"] == "question":
             think = float(sc.get("think", THINK)); sc["think_t"] = [round(t + 0.15, 3), round(t + 0.15 + think, 3)]; t += 0.15 + think
         t += GAP if i < len(S["scenes"]) - 1 else TAIL
         sc["t1"] = round(t, 3)
-    S["T"] = round(t, 2); S["vo"] = []; S["num"] = None; S.setdefault("daily", None)
+        if sc.get("layout") == "candles": impacts.append(round(sc["t1"] - .55, 3))   # (the candles' burst is an impact too)
+    S["T"] = round(t, 2); S["vo"] = []; S["num"] = None; S.setdefault("daily", None); S["impacts"] = sorted(impacts)
     json.dump(S, open(os.path.join(work, "timeline.json"), "w", encoding="utf-8"))
     print(f"silent timeline: {len(S['scenes'])} scenes, {S['T']:.1f}s")
 

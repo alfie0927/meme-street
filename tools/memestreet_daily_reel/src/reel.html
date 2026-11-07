@@ -266,6 +266,26 @@ const PROP2D={
 // a dragon breathes fire now and then (every 4.2 s, for about a second): a flame cone from its mouth
 function breath(u){const b=(u%4.2)-2.6,f=b>0&&b<1.1?Math.sin(Math.PI*b/1.1):0;if(f<=0)return '';let g='';
  for(let k=0;k<9;k++){const q=k/8,x=178+q*100*f,y=-150+q*24*f+5*Math.sin(u*14+k),r=(4+q*18)*f;g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${k%3===1?SCOL.red:SCOL.amber}" opacity="${(.9*(1-q*.5)).toFixed(2)}"/>`}return g}
+// storyboard beats (the owner, 2026-11-07: something happens in every scene): actors stand on slots and verbs act on their words
+const SLOT={left:[230,0],mid:[540,0],right:[850,0],'sky-left':[230,-330],'sky-mid':[540,-330],'sky-right':[850,-330],'off-left':[-260,0],'off-right':[1340,0]},DEFSLOT=['left','right','mid','sky-mid','sky-left'];   // (x, and height above the ground)
+const KSZ={s:[200,180],m:[330,290],l:[480,420]},BEAT={enter:.4,move:.7,hit:.6,fall:.5,launch:.9,emit:1.2,grow:.8,burst:.6,tint:.4,count:.8};   // (each verb's length in seconds; make_spec reads the names)
+function boomFx(cx,cy,ex,R,c){let g='';for(let k=0;k<40;k++){const a=k/40*Math.PI*2,r=R*.05+ex*R;g+=`<circle cx="${(cx+Math.cos(a)*r).toFixed(0)}" cy="${(cy+Math.sin(a)*r*.75).toFixed(0)}" r="${(16*(1-ex)+3).toFixed(1)}" fill="${k%3?c:SCOL.amber}" opacity="${(1-ex).toFixed(2)}"/>`}
+ return g+`<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${(ex*R*.65).toFixed(0)}" fill="${SCOL.amber}" opacity="${(.18*(1-ex)).toFixed(2)}"/>`}
+const aSlot=(s,a)=>SLOT[a.at]||SLOT[DEFSLOT[(s.actors||[]).indexOf(a)]]||SLOT.mid;
+const aK=(s,a)=>{const sl=aSlot(s,a),z=a.size||'m',bx=KSZ[sl[1]<0&&z==='l'?'m':z];return fitK({p:a.p},3,bx[0],bx[1])};   // (a sky actor is at most medium)
+function actorState(s,a,t,depth){const G=STAGE.ground,A=s.actors||[],B=(s.beats||[]).filter(b=>b.t!=null&&(b.who===a.id||b.with===a.id)).sort((p,q)=>p.t-q.t),sl=aSlot(s,a);   // where an actor is at t: its slot, then every beat up to t folded in
+ let x=sl[0],y=G+sl[1],col=a.color||'teal',alive=true,rot=0,sh=0,rest=true,grow=1;
+ for(const b of B){if(t<b.t)continue;const Dn=BEAT[b.do]||.5,u=seg(t,b.t,b.t+Dn),d=t-b.t-Dn;if(u<1)rest=false;
+  if(b.do==='enter'&&b.who===a.id)x+=(x<540?-1:1)*160*(1-out(u));
+  else if(b.do==='move'&&b.who===a.id){const to=SLOT[b.to]||sl;x+=(to[0]-x)*io(u);y+=(G+to[1]-y)*io(u)}
+  else if(b.do==='launch'&&b.who===a.id){const to=SLOT[b.to]||SLOT['sky-mid'];x+=(to[0]-x)*io(u);y+=(G+to[1]-y)*io(u)-300*Math.sin(Math.PI*u)}
+  else if(b.do==='hit'){if(b.who===a.id){const o=A.find(q=>q.id===b.with),O=o&&(depth||0)<2?actorState(s,o,b.t,(depth||0)+1):{x:540,y:G},ow=o?KSZ[o.size||'m'][0]:270,w=(ow+KSZ[a.size||'m'][0])*.21,cx=O.x-Math.sign(O.x-x||1)*w;x+=(cx-x)*u*u;y+=(O.y-y)*u*u;if(u>=1)rot=-10}
+   if(u>=1)sh=6*Math.sin(d*40)*Math.max(0,1-d/.4)}
+  else if(b.do==='fall'&&b.who===a.id){const ty=b.to==='off'?G+420:G;y+=(ty-y)*u*u;rot+=25*u;if(u>=1&&b.to==='off')alive=false;else if(u>=1)sh=4*Math.sin(d*40)*Math.max(0,1-d/.3)}
+  else if(b.do==='grow'&&b.who===a.id){const r=KSZ[KSZ[b.to]?b.to:'l'][1]/KSZ[a.size||'m'][1];grow*=1+(r-1)*back(u)}
+  else if(b.do==='tint'&&b.who===a.id&&u>=.5)col=SCOL[b.color]?b.color:col;
+  else if(b.do==='burst'&&b.who===a.id)alive=false}
+ return {x,y,col,alive,rot,sh,rest,grow}}
 // each prop's real size at scale 1 (width, height), so a slot can fit it: a wide dragon never spills onto its neighbours
 const PSZ={hut:[200,195],cloud:[230,250],sun:[200,220],snowflake:[190,220],turbine:[230,280],clock:[180,200],hourglass:[130,225],moon:[200,220],bed:[240,230],kraken:[180,240],sub:[340,200],kelp:[160,220],shell:[220,180],hover:[230,170],potion:[190,240],cauldron:[250,240],goldbar:[260,120],wand:[200,220],queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
  ship:[330,150],plane:[300,170],rocket:[140,260],drone:[260,170],train:[400,100],coin:[120,130],coins:[130,120],bar:[80,200],arrow:[140,230],
@@ -279,7 +299,7 @@ const STAGE={x0:80,x1:1000,ground:1180,top:600};
 const FLY=['dragon','bird','plane','drone','fish','rocket'];
 function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0?Math.min(P[k].t,s.t0+.3):P[k].t):null,G=STAGE.ground,lay=s.layout||'hero';let g='';   // (the lead prop is up from the start: no empty stage)
  const lab=(k,x,y)=>{if(P[k]&&P[k].label)L.push({text:P[k].label,x,y,color:sc2(P[k]),a:T0(k)==null?1:cl(seg(t,T0(k),T0(k)+.3))})};
- const si=SC.indexOf(s),tint=sc2(P[0]||{}),pan=-70*io(seg(t,s.t0,s.t1)),dark=lay==='storm'?io(seg(t,s.t0+.1,s.t0+.8)):0;let bg='';
+ const si=SC.indexOf(s),tint=sc2(P[0]||(s.actors||[])[0]||{}),pan=-70*io(seg(t,s.t0,s.t1)),dark=lay==='storm'?io(seg(t,s.t0+.1,s.t0+.8)):0;let bg='';
  {// a living world, edge to edge (the owner, 2026-11-07: less stiff): a sky glowing at the horizon, twinkling stars, slow
   // clouds, and hills at two depths that slide as the camera drifts; all slow, so nothing swims
   bg+=`<rect x="0" y="480" width="1080" height="${G-480}" fill="url(#sky${si})"/>`;
@@ -294,8 +314,7 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
   let y=650;for(let k=0;k<n;k++){const at=s.t0+.1+k*d/n,a=out(seg(t,at,at+.35)),x=110+k*(860/(n-1)),up=k%4===2,h=up?42:70+((k*37)%60),y0=y;y+=up?-26:30+((k*23)%22);
    if(a<=0)break;const yy=(up?y:y0)-(1-a)*160,col=up?SCOL.green:SCOL.red;
    g+=`<g opacity="${(cl(a)*(1-ex)).toFixed(2)}"><line x1="${x}" y1="${(yy-22).toFixed(0)}" x2="${x}" y2="${(yy+h+22).toFixed(0)}" stroke="${col}" stroke-width="4"/><rect x="${x-22}" y="${yy.toFixed(0)}" width="44" height="${h}" rx="4" fill="${col}"/></g>`}
-  if(ex>0){for(let k=0;k<40;k++){const a=k/40*Math.PI*2,r=30+ex*640;g+=`<circle cx="${(540+Math.cos(a)*r).toFixed(0)}" cy="${(930+Math.sin(a)*r*.75).toFixed(0)}" r="${(16*(1-ex)+3).toFixed(1)}" fill="${k%3?SCOL.red:SCOL.amber}" opacity="${(1-ex).toFixed(2)}"/>`}
-   g+=`<circle cx="540" cy="930" r="${(ex*420).toFixed(0)}" fill="${SCOL.amber}" opacity="${(.18*(1-ex)).toFixed(2)}"/>`}
+  if(ex>0)g+=boomFx(540,930,ex,640,SCOL.red);
   lab(0,540,STAGE.top+70)}
  else if(lay==='pens'){const an=P[0]||{p:'dragon',color:'amber'},hut=P[1]||{p:'hut',color:'amber'},pens=[[80,455],[625,1000]],ak=fitK(an,.85,170,130);   // (two gated enclosures with the animals, the hut between)
   pens.forEach(([x0,x1],q)=>{const a=out(seg(t,s.t0+.05+q*.2,s.t0+.6+q*.2)),y0=G-110;   // (a ranch fence: two rails, posts wide apart, low enough to see the animals over)
@@ -367,6 +386,24 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
   const two=(P[1]||{}).p==='portal';if(two){g+=prop2d(P[1],660,G-20,.85,t,T0(1),1)+prop2d(Object.assign({},P[1],{color:'purple'}),920,G-20,.85,t,T0(1),2)}else g+=prop2d(P[1]||{p:'portal'},790,G-20,.9,t,T0(1),1);
   const q2=((t-s.t0)*.45)%1,fx=600+380*q2;if(!two||fx<660||fx>920)g+=prop2d(mv,fx,G-30,.5,t,null,8);
   lab(0,290,STAGE.top+70);lab(1,790,STAGE.top+70)}
+ else if(lay==='stage'){}   // (the living backdrop and an empty ground: a storyboard's actors alone)
+ let cam=0;{const A=s.actors||[],Bt=s.beats||[],h=a=>(PSZ[a.p]||[0,220])[1]*aK(s,a);   // the storyboard: actors over the setting, their labels only while they stand still; the beats' effects
+  A.forEach((a,j)=>{const S=actorState(s,a,t);if(!S.alive)return;const k=aK(s,a)*S.grow,en=Bt.find(b=>b.do==='enter'&&b.who===a.id),t0=en&&en.t!=null?en.t:s.t0+.2;
+   g+=`<g transform="translate(${S.sh.toFixed(1)} 0) rotate(${S.rot.toFixed(1)} ${S.x.toFixed(0)} ${S.y.toFixed(0)})">${prop2d(Object.assign({},a,{color:S.col}),S.x,S.y,k,t,t0,j+20)}</g>`;
+   if(a.label&&S.rest&&t>=t0)L.push({text:a.label,x:S.x,y:S.y-h(a)*S.grow-40,color:sc2({color:S.col}),a:cl(seg(t,t0,t0+.3))})});
+  Bt.forEach(b=>{if(b.t==null||t<b.t)return;const Dn=BEAT[b.do]||.5,ti=b.t+Dn,a=A.find(q=>q.id===b.who);if(!a)return;const S=actorState(s,a,Math.min(t,ti)),c=sc2({color:S.col}),H=h(a),k=aK(s,a);
+   if(b.do==='hit'&&t>=ti){const r=seg(t,ti,ti+.6),o=A.find(q=>q.id===b.with),O=o?actorState(s,o,ti):S,cx=(S.x+O.x)/2,cy=S.y-H*.4,oc=sc2({color:(o||a).color});if(r<1){
+     g+=`<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${(30+110*out(r)).toFixed(0)}" fill="none" stroke="${SCOL.amber}" stroke-width="${(7*(1-r)).toFixed(1)}" opacity="${(1-r).toFixed(2)}"/>`;
+     for(let q=0;q<10;q++){const an=Math.PI*(.15+.7*q/9),rr=60+240*r;g+=`<circle cx="${(cx+Math.cos(an)*rr).toFixed(0)}" cy="${(cy-Math.sin(an)*rr+260*r*r).toFixed(0)}" r="${(7*(1-r)+2).toFixed(1)}" fill="${q%2?c:oc}" opacity="${(1-r).toFixed(2)}"/>`}
+     bg+=`<rect x="0" y="480" width="1080" height="810" fill="#fff" opacity="${(.15*(1-seg(t,ti,ti+.25))).toFixed(3)}"/>`;const d=t-ti;cam=5*Math.sin(d*45)*Math.max(0,1-d/.35)}}
+   else if(b.do==='fall'&&b.to!=='off'&&t>=ti){const r=seg(t,ti,ti+.4);if(r<1)for(let q=0;q<4;q++)g+=`<ellipse cx="${(S.x+(q-1.5)*70*(1+r)).toFixed(0)}" cy="${(STAGE.ground-10-30*r).toFixed(0)}" rx="${(22+30*r).toFixed(0)}" ry="${(9+6*r).toFixed(0)}" fill="#9aa3ad" opacity="${(.4*(1-r)).toFixed(2)}"/>`}
+   else if(b.do==='launch'&&t<ti){for(let q=1;q<=5;q++){const P=actorState(s,a,t-.06*q);g+=`<circle cx="${P.x.toFixed(0)}" cy="${(P.y-H*.5).toFixed(0)}" r="${(9-q*1.4).toFixed(1)}" fill="${SCOL.amber}" opacity="${(.6-q*.1).toFixed(2)}"/>`}}
+   else if(b.do==='emit'&&t<ti){const u=t-b.t,W=b.what||'sparks',top=S.y-H;
+     if(W==='fire')g+=`<g transform="translate(${S.x.toFixed(0)} ${S.y.toFixed(0)}) scale(${k.toFixed(3)})">${breath(u+2.6)}</g>`;
+     else for(let q=0;q<8;q++){const f=((u*1.1+q/8)%1),an=-Math.PI/2+(q/8-.5)*1.6,r=f*200,px=W==='rain'?S.x+(q-3.5)*60:S.x+Math.cos(an)*r,py=W==='rain'?top-200+f*(H+200):top-Math.abs(Math.sin(an))*r*1.1+(W==='coins'?f*f*220:0),o=(1-f).toFixed(2);
+      g+=W==='coins'?`<g transform="translate(${px.toFixed(0)} ${py.toFixed(0)}) scale(.3)" opacity="${o}">${PROP2D.coin(SCOL.amber,t+q)}</g>`:W==='smoke'?`<circle cx="${px.toFixed(0)}" cy="${py.toFixed(0)}" r="${(10+30*f).toFixed(0)}" fill="#8b96a3" opacity="${(.35*(1-f)).toFixed(2)}"/>`:W==='rain'?`<line x1="${px.toFixed(0)}" y1="${py.toFixed(0)}" x2="${(px-6).toFixed(0)}" y2="${(py+26).toFixed(0)}" stroke="#8fa3c8" stroke-width="3" opacity=".6"/>`:W==='hearts'?`<path transform="translate(${px.toFixed(0)} ${py.toFixed(0)})" d="M0 8 C-14 -4 -14 -18 -4 -18 C2 -18 0 -12 0 -10 C0 -12 -2 -18 4 -18 C14 -18 14 -4 0 8 Z" fill="#ff7eb6" opacity="${o}"/>`:`<line x1="${S.x.toFixed(0)}" y1="${top.toFixed(0)}" x2="${px.toFixed(0)}" y2="${py.toFixed(0)}" stroke="${SCOL.amber}" stroke-width="3" opacity="${(.7*(1-f)).toFixed(2)}"/>`}}
+   else if(b.do==='burst'){const ex=seg(t,b.t,ti);if(ex<1)g+=boomFx(S.x,S.y-H*.5,ex,KSZ[a.size||'m'][0]*1.2,c)}
+   else if(b.do==='count'&&b.text){const n=parseInt((String(b.text).match(/\d+/)||['0'])[0]),u=out(seg(t,b.t,ti));L.push({text:String(b.text).replace(/\d+/,String(Math.round(n*u))),x:S.x,y:S.y-H-(a.label?110:40),color:c,a:cl(seg(t,b.t,b.t+.3))})}})}
  const labs=L.filter(l=>l.a>0).sort((a,b)=>a.y-b.y),placed=[];
  const zl=1+.04*io(seg(t,s.t0,s.t1)),html=labs.map(l=>{const w=l.text.length*23+40,lx=540+(l.x-540)*zl,ly=G-200+(l.y-G+200)*zl;let x=Math.max(70+w/2,Math.min(1010-w/2,lx)),y=Math.max(STAGE.top,Math.min(1240,ly));   // (tags ride the push-in with their props)
   while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+20&&Math.abs(q[1]-y)<66))y+=68;placed.push([x,y,w]);   // (a clear gap between tags, never touching)
@@ -374,7 +411,7 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
  const pv=SC[si-1],e=io(seg(t,s.t0,s.t0+.5)),slide=pv&&pv.layout&&si>0&&e<1;   // (one illustrated scene into the next: a whip pan, the old world slides out as the new one slides in)
  const fade=slide?1:out(seg(t,s.t0,s.t0+.35));
  const zm=1+.04*io(seg(t,s.t0,s.t1));   // (a slow, eased push-in across the scene: alive, never jerky)
- const me=`<svg style="position:absolute;left:0;top:0;opacity:${fade};transform-origin:540px ${G-200}px;transform:scale(${zm.toFixed(4)})" width="1080" height="1920"><defs><linearGradient id="sky${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tint}" stop-opacity="0"/><stop offset="1" stop-color="${tint}" stop-opacity="${(.2-.12*dark).toFixed(2)}"/></linearGradient><clipPath id="sclip${si}"><rect x="0" y="480" width="1080" height="810"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip${si})">${bg}<g filter="url(#sglow)">${g}</g></g></svg>`+html;
+ const me=`<svg style="position:absolute;left:0;top:0;opacity:${fade};transform-origin:540px ${G-200}px;transform:translate(${cam.toFixed(1)}px,0) scale(${zm.toFixed(4)})" width="1080" height="1920"><defs><linearGradient id="sky${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tint}" stop-opacity="0"/><stop offset="1" stop-color="${tint}" stop-opacity="${(.2-.12*dark).toFixed(2)}"/></linearGradient><clipPath id="sclip${si}"><rect x="0" y="480" width="1080" height="810"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip${si})">${bg}<g filter="url(#sglow)">${g}</g></g></svg>`+html;
  if(!slide)return me;
  const box=(x,inner)=>`<div style="position:absolute;left:0;top:0;width:1080px;height:1920px;transform:translateX(${x.toFixed(0)}px)">${inner}</div>`,st=Math.sin(Math.PI*e);
  let streak='';for(let k=0;k<7;k++)streak+=`<div style="position:absolute;left:${(k*157)%900}px;top:${560+k*100}px;width:${260+(k*90)%240}px;height:3px;border-radius:2px;background:${tint};opacity:${(.5*st).toFixed(2)}"></div>`;
