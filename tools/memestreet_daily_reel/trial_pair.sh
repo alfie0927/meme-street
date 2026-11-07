@@ -4,7 +4,7 @@
 # shares one with followers if it performs) five minutes apart, so each pair compares the two versions on the same
 # facts, chart, hour and audience pool. The regular slots are untouched. Results: lab/insights.py.
 # Back to back (the owner: "run continuously so we can see improvements every new version"): the timer starts the next
-# pair once 4.5 hours have passed since the last (5 pairs a day, the owner's choice), and only when no regular slot due within 6
+# pair once 9.5 hours have passed since the last (about 5 Trial Reels a day, the owner's choice), and only when no regular slot due within 6
 # hours is waiting for its reel. Each pair is the next of eight formats and carries the version of RULES_V2.md it was made
 # with (lab/evolve.py makes a new version each day from the results).
 #   ./trial_pair.sh                    the next pair, posted as soon as it is made
@@ -16,7 +16,7 @@ mkdir -p logs queue
 exec 8>queue/.auto.lock; flock 8                     # (one reel job at a time: the server has room for one)
 A="${1:-}"
 if [ -z "$A" ]; then                                 # (back to back: the next pair is made as soon as the last one is)
-  [ -n "$(find queue -name trial.json -newermt "-270 minutes" 2>/dev/null)" ] && { echo "a pair in the last 4.5 hours: waiting (5 pairs a day, spread out)"; exit 0; }
+  [ -n "$(find queue -name trial.json -newermt "-570 minutes" 2>/dev/null)" ] && { echo "a pair in the last 9.5 hours: waiting (about 5 Trial Reels a day, spread out)"; exit 0; }
   for h in 0300 0600 0900 1200 1300 1800 2100; do      # (the regular reels come first: a slot due within 6 hours without its reel waits for the maker)
     for d in "$(date -u +%F)" "$(date -u -d tomorrow +%F)"; do
       ds=$(( $(date -u -d "$d ${h:0:2}:${h:2:2}" +%s) - $(date -u +%s) ))
