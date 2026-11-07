@@ -1,0 +1,9 @@
+[Unit]
+Description=Make the Trial Reels pair at 06:30 UTC (posted 15:30 and 15:35 UTC)
+
+[Timer]
+OnCalendar=*-*-* 06:30:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

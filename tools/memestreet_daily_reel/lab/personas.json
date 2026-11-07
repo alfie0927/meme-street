@@ -1,0 +1,18 @@
+{
+ "note": "Who Instagram shows a small finance reel to. Most views of a small account's reel come from non-followers whose recent viewing looks like the reel's topic, plus a broad test batch. Weights sum to 1; rebuild from the account's follower and reach demographics once insights are readable.",
+ "personas": [
+  {"id": "jay", "w": 0.12, "who": "Jay, 19, UK uni student. Opened a trading app last month, watches money TikToks, wants quick wins. Swipes on anything that feels like a lecture or an ad."},
+  {"id": "tyler", "w": 0.08, "who": "Tyler, 16, US high schooler. Gaming and meme pages; stocks only through meme-stock jokes. Stops for absurd, funny or game-like things, gone in a second if it looks like school."},
+  {"id": "diego", "w": 0.08, "who": "Diego, 30, Spain, crypto and options gambler. Loves dramatic pumps and crashes, big numbers, 'I lost everything' stories. Bored by slow explanations."},
+  {"id": "lena", "w": 0.09, "who": "Lena, 23, Germany, marketing assistant. Follows personal-finance creators, has never traded. Wants simple, clear, friendly explainers; leaves if jargon shows up early."},
+  {"id": "priya", "w": 0.08, "who": "Priya, 27, India/US, software engineer, index-fund investor. Curious about charts but allergic to hype and get-rich-quick; respects precise, honest content."},
+  {"id": "marcus", "w": 0.07, "who": "Marcus, 34, US, part-time futures day trader who knows technical analysis well. Skeptical of beginner content, comments when something is wrong, saves genuinely good setups."},
+  {"id": "sam", "w": 0.06, "who": "Sam, 45, Australia, dad with ETFs, scrolls in the evening. Likes practical lessons he can use; dislikes fast, loud edits."},
+  {"id": "omar", "w": 0.08, "who": "Omar, 26, Canada, gamer who loves strategy games, puzzles and quizzes. Will play along with a 'guess what happens next' challenge and comment his answer if it's quick."},
+  {"id": "chloe", "w": 0.09, "who": "Chloe, 21, US, scrolls for entertainment, no interest in finance. Instagram tests reels on people like her; she stops only for something surprising, funny or visually striking."},
+  {"id": "hannah", "w": 0.05, "who": "Hannah, 38, UK nurse, anxious about money, has never invested. Stops for relatable money stakes, leaves at charts with no explanation."},
+  {"id": "ben", "w": 0.06, "who": "Ben, 29, Ireland, follows meme pages and finance memes (wallstreetbets humour). Shares things to friends' group chat when they're funny or savage."},
+  {"id": "aisha", "w": 0.05, "who": "Aisha, 24, Nigeria/UK, finance graduate working at a bank. Spots inaccuracies, saves good educational content, shares useful tips with colleagues."},
+  {"id": "follower", "w": 0.09, "who": "Kai, 22, already follows @memestreetgame and has played its Daily Chart twice. Sees the brand header and knows what to expect; watches if the reel promises something new."}
+ ]
+}

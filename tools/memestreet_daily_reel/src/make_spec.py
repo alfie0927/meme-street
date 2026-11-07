@@ -11,7 +11,7 @@ Claude to fix at most twice. Output: <work>/spec.json and <work>/caption.txt.
 import json, os, random, re, subprocess, sys, time, urllib.error, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(HERE, "ig"))
-import hookscore, detect
+import detect
 from pronounce import LEX
 
 SITE = os.environ.get("MS_BASE_LOCAL", "http://127.0.0.1:8000")
@@ -107,6 +107,45 @@ SHORT_EVIDENCE = [
     ["68x", "'More trades = more money' and other beliefs that cost traders. (6-second loop)"],
     ["10x", "The harsh reality of trading."], ["2x on a small account", "One loss. That's all it takes for emotion to grab the wheel."]]
 CHART_COUNT = {"Chart quiz": 3, "Guess the move": 2, "Speed cheat sheet": 3}
+V2 = os.environ.get("REEL_V2") == "1"   # (the version-2 test track, posted as Trial Reels against the current reels: the owner's go, 2026-11-07)
+V2_FORMAT = {
+    "Chart quiz": "One question on one real game chart: a question scene (the game's options, each with a short label of at most 4 "
+                  "words in \"labels\", a 5-second countdown), then an answer scene (the rest of the chart plays out, the right "
+                  "option lights up, one line on why). Ask viewers to comment their answer before the reveal."}
+V2_SAY = [("the reel's title, 2 to 5 words: its theme (e.g. 'Spot The Doji'), not the line",
+           "the on-screen hook, 2 to 7 words: the reel's question, dare or stake, put in other words than the voice "
+           "(e.g. 'Where Is Your Stop?', 'Only 1 In 5 Get This', 'One Dragon Cost 12%'), never an abstract theme"),
+          ("the hook's title is the reel's theme", "the hook's on-screen text is the reel's question, dare or stake in other words than the voice"),
+          ("A hook over a chart puts the reel's theme in its text, as a title;",
+           "A hook over a chart puts the reel's question, dare or stake in its text (other words than the voice);")]
+
+
+def v2_system(system):
+    """Version 2's instructions: its rules first (RULES_V2.md), and the title rules that clash with them restated."""
+    head = "RULES UNDER TEST (version 2). Where they differ from anything below, the owner's rulebook included, these win:\n"
+    if system.startswith(head): return system
+    for a, b in V2_SAY: system = system.replace(a, b)
+    return head + open(os.path.join(ROOT, "RULES_V2.md"), encoding="utf-8").read() + "\n\n" + system
+
+
+def v2_brief(B):
+    """The same facts in version 2's shape (a quiz keeps only its first chart) and with its instructions."""
+    import copy
+    B = copy.deepcopy(B)
+    if B["category"] in V2_FORMAT:
+        B["ask"]["what_this_reel_is"] = V2_FORMAT[B["category"]]
+        if B["category"] == "Chart quiz":
+            B["ask"]["facts"]["charts"] = B["ask"]["facts"]["charts"][:1]; B["charts"] = B["charts"][:1]
+    B["system"] = v2_system(B["system"]); B["v2"] = True
+    return B
+
+
+def pair(slot, w1, w2, category=None):
+    """One brief, two reels: the current rules (w1) and version 2 (w2), on the same facts and chart (the Trial Reels test)."""
+    B = brief(slot, category)
+    save(write(B), B, w1)
+    B2 = v2_brief(B)
+    save(write(B2), B2, w2)
 
 
 def get(path, body=None):
@@ -265,6 +304,8 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
 _R = open(os.path.join(HERE, "reel.html"), encoding="utf-8").read()
 WORLD_PROPS = re.findall(r"^ (\w+)\(c(?:,u)?\)\{", _R[_R.index("const PROP2D={"):_R.index("function prop2d(")], re.M)   # (the 2D story kit in reel.html)
 WORLD_LAYOUTS = re.findall(r"lay==='(\w+)'", _R)
+LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3}   # (what each layout in reel.html draws; more are never seen)
+FLIERS = ("dragon", "bird", "plane", "drone", "fish", "rocket")   # (a flying hero leaves 3 side slots, not 4)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
 RULES = """Rules:
@@ -349,7 +390,8 @@ def check(spec, facts, charts, category=None):
         if s.get("kind") == "story" or s.get("layout"):
             P = s.get("props") or []
             if s.get("layout") not in WORLD_LAYOUTS: errs.append(f"scene {k}: layout must be one of {', '.join(WORLD_LAYOUTS)}")
-            if not 1 <= len(P) <= 8: errs.append(f"scene {k}: a story scene has 1 to 8 props")
+            cap = LAYOUT_PROPS.get(s.get("layout"), 8) - (s.get("layout") == "hero" and (P[:1] or [{}])[0].get("p") in FLIERS)
+            if not 1 <= len(P) <= cap: errs.append(f"scene {k}: a {s.get('layout')} scene draws 1 to {cap} props; this one has {len(P)}")
             for q in P:
                 if q.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {q.get('p')!r}; use one of {', '.join(WORLD_PROPS)}")
                 if q.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: colour {q.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
@@ -379,13 +421,14 @@ def check(spec, facts, charts, category=None):
                 if f in c and isinstance(ch, int) and 0 <= ch < len(charts) and not 0 <= c[f] < len(charts[ch]["candles"]):
                     errs.append(f"scene {k}: candle {c[f]} is outside chart {ch}")
     errs += shown_check(sc, charts) + speech_check(sc)
-    if sc and sc[0].get("kind") == "hook":                 # the hook as spoken (the screen and the caption follow it, never swapped)
-        res, score, _, flags = hookscore.run(sc[0].get("vo", ""))
-        if score < 50:
-            weak = "; ".join(f"{k.lower()} {v[0]:.0f}: {v[1]}" for k, v in sorted(res.items(), key=lambda x: x[1][0])[:3])
-            errs.append(f"the spoken hook scores {score:.0f}/100 (needs 50+); its weakest parts: {weak}" + (f"; {'; '.join(flags)}" if flags else "") +
-                        ". A hook that scores: 5-12 words, a number or a named thing up front, something lost or won, said to 'you' "
-                        "(e.g. 'This one candle cost you fifteen percent.' scores 84); keep the caption's first line saying the same thing")
+    # (no hook-score gate since 2026-11-07: on 48 finance Shorts it did not separate winners (41) from losers (43); the owner retired it)
+    for k, s in enumerate(sc):                             # version 2: a quiz option's short label, one per option, at most 4 words
+        if s.get("labels") is not None:
+            d = (charts[s["chart"]].get("drill") or {}) if isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {}
+            if s.get("kind") != "question" or not isinstance(s["labels"], list) or len(s["labels"]) != len(d.get("options") or []):
+                errs.append(f"scene {k}: labels are for a question scene: one per option of its chart ({len(d.get('options') or [])}), in the same order")
+            elif any(len(str(x).split()) > 4 for x in s["labels"]):
+                errs.append(f"scene {k}: every label is at most 4 words")
     if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and not sc[0].get("layout") and sc[0].get("text"):
         k = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split()]
         tx, vx = k(sc[0]["text"]), k(sc[0].get("vo", ""))
@@ -503,6 +546,8 @@ def finish(spec, charts, category):
         tone = lambda x: x.get("tone", "level")
         if s["kind"] == "question" and d:
             s["options"], s["answer"], s["show"] = d["options"], d["answer"], ch["upto"]
+            if isinstance(s.get("labels"), list) and len(s["labels"]) == len(d["options"]):   # (version 2: the short labels are shown,
+                s["options_full"], s["options"] = d["options"], s["labels"]                   #  the game's own wording kept for the check)
             s["win"] = [ch["win"][0], ch["end"]]
             s.setdefault("cues", []).append({"say": "", "do": "options", "from": "template"})
             s["cues"] += [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
@@ -559,9 +604,10 @@ def system_prompt(category):
     rb = os.path.join(ROOT, "RULEBOOK.md")              # (the owner's rulebook: highest priority, read before every reel)
     book = ("THE OWNER'S RULEBOOK. These rules override everything below; follow every one:\n" +
             open(rb, encoding="utf-8").read() + "\n\n") if os.path.exists(rb) else ""
-    return book + ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
+    s = book + ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
             "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
             "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS)))
+    return v2_system(s) if V2 else s
 
 
 def brief(slot, category=None, remake=None):
@@ -805,6 +851,9 @@ if __name__ == "__main__":
         if errs:
             raise SystemExit("fix: " + "; ".join(errs))
         save(spec, B, a[1])
+    elif a[0] == "pair":                                 # <slot> <work v1> <work v2>: one brief, the current reel and version 2
+        pair(a[1], a[2], a[3], cat)
     else:                                                # <slot> <work>: brief, write, save
         B = brief(a[0], cat, rem)
+        if V2: B = v2_brief(B)
         save(write(B), B, a[1])

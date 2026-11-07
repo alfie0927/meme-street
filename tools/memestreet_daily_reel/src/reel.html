@@ -116,7 +116,7 @@ function drawChart(i,t){
  D.filter(d=>d.do==='mark'&&d.side!=='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),y=d.side!=='low'?Y(C[k][1]):Y(C[k][2]),rr=Math.max(13,Math.min(20,bw*.9));taken.push([x-rr,y-rr,x+rr,y+rr])});   // (rings first: no tag lands on a mark)
  D.filter(d=>d.do==='line').forEach(d=>cb.push([PL.x,Y(d.price)-2,PL.x+PL.w,Y(d.price)+2]));   // (no tag wedged on another line)
  D.filter(d=>d.do==='line').forEach(d=>{const col=TONE[d.tone]||AM,a=out(seg(d.age,0,.6)),y=Y(d.price);g+=`<line x1="${PL.x}" x2="${PL.x+(PL.w-16)*a}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="4" stroke-dasharray="16 10"/>`;
-  if(d.label){const lw=d.label.length*18+34,c2=[y-52,y+8].flatMap(v=>[PL.x+8,PL.x+PL.w-lw-8,PL.x+PL.w*.35-lw/2,PL.x+PL.w*.65-lw/2].map(u=>[u,v])),fit=f=>c2.find(([u,v])=>v>=PL.y-6&&v+44<=B.y+B.h-10&&f(u-8,v-16,u+lw+8,v+60)),[lx,ly]=fit(clear)||fit(free)||c2.find(([u,v])=>v>=PL.y-6)||c2[0];taken.push([lx,ly,lx+lw,ly+44]);   // (never up into the chart's title row; close lines: their tags go to opposite ends)
+  if(d.label){const lw=d.label.length*18+34,c2=[y-52,y+8,y-104,y+60,y-156,y+112].flatMap(v=>[PL.x+8,PL.x+PL.w-lw-8,PL.x+PL.w*.35-lw/2,PL.x+PL.w*.65-lw/2].map(u=>[u,v])),fit=f=>c2.find(([u,v])=>v>=PL.y-6&&v+44<=B.y+B.h-10&&f(u-8,v-16,u+lw+8,v+60)),[lx,ly]=fit(clear)||fit(free)||c2.find(([u,v])=>v>=PL.y-6)||c2[0];taken.push([lx,ly,lx+lw,ly+44]);   // (never up into the chart's title row; close lines: their tags go to opposite ends)
    g+=`<g opacity="${a}"><rect x="${lx}" y="${ly}" width="${lw}" height="44" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text x="${lx+17}" y="${ly+31}" font-size="28" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
  const pill=(x,y,lab,col,a,ys)=>{const pw=String(lab).length*17+32,at=(u,v)=>[cl(u,PL.x+pw/2,PL.x+PL.w-pw/2),v];
   const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),fit=f=>c2.find(([u,v])=>f(u-pw/2-10,v-37,u+pw/2+10,v+37)),[px,py]=fit(free)||at(x,y);   // (the nearest free spot: a tag stays by its mark)
@@ -206,7 +206,7 @@ const PROP2D={
  coin(c,u){const sx=Math.abs(Math.cos(u*1.4))*.9+.1;return `<g transform="translate(0 -70) scale(${sx} 1)"><circle r="60" ${bd(c)}/><circle r="42" ${ln(c,3)} opacity=".6"/><path d="M-16 18 V-18 L0 2 L16 -18 V18" ${ln(c,5)}/></g>`},
  coins(c){let g='';for(let k=0;k<5;k++)g+=`<ellipse cx="${(k%2)*6-3}" cy="${-14-k*22}" rx="62" ry="16" ${bd(c,3.5)}/>`;return g},
  bar(c){return `<rect x="-38" y="-200" width="76" height="200" rx="6" ${bd(c)}/><line x1="-38" y1="-200" x2="38" y2="-200" ${ln(c,7)}/>`},
- arrow(c){return `<path d="M0 -230 L70 -150 H28 V0 H-28 V-150 H-70 Z" ${bd(c)}/>`},
+ arrow(c){return c===SCOL.red?`<path d="M0 0 L70 -80 H28 V-230 H-28 V-80 H-70 Z" ${bd(c)}/>`:`<path d="M0 -230 L70 -150 H28 V0 H-28 V-150 H-70 Z" ${bd(c)}/>`},   // (red falls: it points down)
  shield(c){return `<path d="M0 -230 Q60 -215 90 -200 Q90 -60 0 0 Q-90 -60 -90 -200 Q-60 -215 0 -230 Z" ${bd(c)}/><path d="M-34 -118 L-8 -90 L40 -146" ${ln(c,7)}/>`},
  warning(c){return `<path d="M0 -200 L100 -20 H-100 Z" ${bd(c,5)}/><line x1="0" y1="-140" x2="0" y2="-80" ${ln(c,9)}/><circle cx="0" cy="-50" r="6" fill="${c}"/>`},
  gear(c,u){let d='';for(let k=0;k<=20;k++){const a=k/20*Math.PI*2+u*.5,r=k%2?70:88;d+=(k?'L':'M')+(Math.cos(a)*r).toFixed(1)+' '+(-110+Math.sin(a)*r).toFixed(1)}return `<path d="${d}Z" ${bd(c)}/><circle cx="0" cy="-110" r="26" ${ln(c,4)}/>`},
@@ -262,11 +262,11 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?P[k].t
   for(let k=0;k<n;k++){const x=200+600*k/(n-1),h=(130+k*(380/(n-1)))*out(seg(t,on(k),on(k)+.8));if(h<=0)continue;
    g+=`<rect x="${x-55}" y="${G-h}" width="110" height="${h}" rx="8" ${bd(SCOL.green)}/><line x1="${x-55}" y1="${G-h}" x2="${x+55}" y2="${G-h}" ${ln(SCOL.green,8)}/>`;lab(k,x,G-h-40)}
   const ar=out(seg(t,on(n-1),on(n-1)+1));if(ar>0)g+=`<g opacity="${ar}">${prop2d({p:'arrow',color:'green'},950,G-300-ar*50,.6,t,null,9)}</g>`}
- else if(lay==='risk'){const hit=k=>T0(k+1)??s.vs+.6+k*.9,first=hit(0),red=seg(t,first,first+.6),wob=2*Math.sin((t-first)*5)*Math.max(0,1-(t-first)/1.5)*(t>=first?1:0),slots=[[170,G-160],[910,G-160],[540,G-430]],hk=fitK(P[0]||{p:'building'},2,400,420);
+ else if(lay==='risk'){const hit=k=>T0(k+1)??s.vs+.6+k*.9,first=hit(0),red=seg(t,first,first+.6),wob=2*Math.sin((t-first)*5)*Math.max(0,1-(t-first)/1.5)*(t>=first?1:0),four=P.length>4,slots=four?[[170,G-40],[910,G-40],[170,G-330],[910,G-330]]:[[170,G-160],[910,G-160],[540,G-430]],hk=fitK(P[0]||{p:'building'},2,400,420);   // (4 hits: two a side)
   const h=Object.assign({},P[0]||{p:'building',color:'teal'});g+=`<g transform="rotate(${wob.toFixed(2)} 540 ${G})">${prop2d(h,540,G,hk,t,T0(0),0)}</g>`;
   if(red>0)g+=`<g opacity="${(red*.75).toFixed(2)}">${prop2d(Object.assign({},h,{color:'red'}),540,G,hk,t,null,0)}</g>`;lab(0,540,G-(PSZ[h.p]||[0,230])[1]*hk-40);
-  P.slice(1,4).forEach((p,k)=>{const a=out(seg(t,hit(k)-.45,hit(k)));if(a<=0)return;const [tx,ty]=slots[k],sx=tx<540?-260:tx>540?260:0,sy=tx===540?-200:0;
-   const wp=Object.assign({p:'warning',color:'red'},p),wk=fitK(wp,1,220,170);g+=prop2d(wp,tx+sx*(1-a),ty+sy*(1-a),wk,t,null,k+1);lab(k+1,tx,ty-(PSZ[wp.p]||[0,200])[1]*wk-36)})}
+  P.slice(1,1+slots.length).forEach((p,k)=>{const a=out(seg(t,hit(k)-.45,hit(k)));if(a<=0)return;const [tx,ty]=slots[k],sx=tx<540?-260:tx>540?260:0,sy=tx===540?-200:0;
+   const wp=Object.assign({p:'warning',color:'red'},p),wk=fitK(wp,1,four?200:220,four?130:170);g+=prop2d(wp,tx+sx*(1-a),ty+sy*(1-a),wk,t,null,k+1);lab(k+1,tx,ty-(PSZ[wp.p]||[0,200])[1]*wk-36)})}
  else if(lay==='compare'){const mv=P[2]||{p:'crate',color:'amber'},card=(x,c,title)=>`<rect x="${x}" y="${STAGE.top+20}" width="440" height="${G-STAGE.top}" rx="22" fill="#0b0f13" stroke="${c}" stroke-width="3" opacity=".9"/>`;
   g+=card(70,SCOL.grey)+card(570,sc2(P[1]||{color:'teal'}));
   const path='M120 1080 C 220 900, 300 1120, 380 940 S 420 760, 470 820';g+=`<path d="${path}" ${ln(SCOL.grey,3)} stroke-dasharray="10 10" opacity=".6"/>`;

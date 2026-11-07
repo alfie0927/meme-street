@@ -177,8 +177,26 @@ def film(sc, work):
     sc["film"] = {"dir": os.path.abspath(out), "n": len(glob.glob(os.path.join(out, "f*.jpg"))), "fps": FILM_FPS}
 
 
+def el_enough(S):
+    """ElevenLabs reads the whole reel or none of it: when the plan's characters left would not cover this reel (with room
+    for retakes), Kokoro reads all of it, so a reel is never in two voices."""
+    key = os.environ.get("ELEVEN_API_KEY", "").strip()
+    if not key: return False
+    need = 1.3 * sum(len(say_as(sc["vo"].strip())) for sc in S["scenes"])
+    try:
+        import urllib.request
+        d = json.loads(urllib.request.urlopen(urllib.request.Request("https://api.elevenlabs.io/v1/user/subscription",
+                                                                     headers={"xi-api-key": key}), timeout=20).read())
+        left = d["character_limit"] - d["character_count"]
+    except Exception:
+        return True                                        # (no answer: try ElevenLabs; a failed line still falls back)
+    if left < need: print(f"ElevenLabs has {left} characters left, this reel needs about {need:.0f}: Kokoro reads it all", flush=True)
+    return left >= need
+
+
 def main(work):
     S = json.load(open(os.path.join(work, "spec.json")))
+    el_all = el_enough(S)
     K = Kokoro(os.path.join(MODEL, "kokoro-v1.0.onnx"), os.path.join(MODEL, "voices-v1.0.bin"))
     for d in ("vo", "sfx"):
         os.makedirs(os.path.join(work, d), exist_ok=True)
@@ -190,7 +208,7 @@ def main(work):
     for i, sc in enumerate(S["scenes"]):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
         speed = float(os.environ.get("VOICE_SPEED", "1.0"))
-        el = bool(os.environ.get("ELEVEN_API_KEY", "").strip())
+        el = el_all
         h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS] + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
         a = None
         if os.path.exists(h + ".json"):                        # (a line the last cut already voiced: a remake redoes only what changed)

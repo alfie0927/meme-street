@@ -88,6 +88,9 @@ def main(folder, dry=False):
         print(f"[dry run] {MODE} login - would post {mp4} ({os.path.getsize(mp4)//1024} KB) with caption:\n{caption}"); return
     refresh_token(); tok = token(); uid = ig_id(tok)
     base = {"media_type": "REELS", "caption": caption, "share_to_feed": "true", "access_token": tok}
+    trial = json.load(open(os.path.join(folder, "trial.json"))) if os.path.exists(os.path.join(folder, "trial.json")) else None
+    if trial:                                              # a Trial Reel: non-followers only, off the grid; Instagram shares it with
+        base["trial_params"] = json.dumps({"graduation_strategy": "SS_PERFORMANCE"}); base.pop("share_to_feed")   # followers if it performs
     pub_dir, pub_url = os.environ.get("PUBLIC_VIDEO_DIR"), os.environ.get("PUBLIC_VIDEO_URL")
     if MODE == "instagram" or (pub_dir and pub_url):
         if not (pub_dir and pub_url): raise SystemExit("set PUBLIC_VIDEO_DIR and PUBLIC_VIDEO_URL in config.env (see README)")
@@ -115,7 +118,7 @@ def main(folder, dry=False):
     else:
         raise SystemExit("timed out waiting for Instagram to process the video")
     r = http("POST", f"{HOST}/{V}/{uid}/media_publish", {"creation_id": cid, "access_token": tok})
-    json.dump({"media_id": r.get("id"), "posted_at": time.strftime("%F %T UTC", time.gmtime())}, open(flag, "w"))
+    json.dump({"media_id": r.get("id"), "posted_at": time.strftime("%F %T UTC", time.gmtime()), **({"trial": trial} if trial else {})}, open(flag, "w"))
     print("published reel, media id", r.get("id"))
 
 if __name__ == "__main__":

@@ -132,7 +132,7 @@ def pack(work, out, rd, only=None, refs=True):
         for a0, b0, n in m.get_matching_blocks():
             for q in range(n):
                 sync.append(round(s["wt"][a0 + q][0] - hw[b0 + q][1], 2))
-        on_screen = {k: s[k] for k in ("head", "text", "badge", "options", "shot", "layout") if s.get(k)}
+        on_screen = {k: s[k] for k in ("head", "text", "badge", "options", "options_full", "shot", "layout") if s.get(k)}
         if s.get("props"): on_screen["story_props"] = [f"{p.get('p')} ({p.get('color', 'teal')}) '{p.get('label', '')}' on '{p.get('say', '')}' @ {p.get('t')}s" for p in s["props"]]
         for c in s.get("cues", []):
             if c.get("text") or c.get("label"): on_screen.setdefault("cue_texts", []).append(f"{c['do']}: {c.get('text') or c.get('label')} @ {c.get('t')}s")
@@ -197,9 +197,15 @@ Reply with JSON only:
              "lesson": "a rule for every future reel", "evidence": [{"image": "scene03_chart_12.1s-15.0s.jpg"}, {"report": "\\"secs\\": 0.62"}]}]}"""
 
 
+PAGE = os.environ.get("REEL_PAGE", "reel.html")          # (reel_v2.html: the version-2 test track)
+
+
 def rulebook():
     p = os.path.join(ROOT, "RULEBOOK.md")
-    return "\n\nTHE OWNER'S RULEBOOK:\n" + open(p, encoding="utf-8").read() if os.path.exists(p) else ""
+    s = "\n\nTHE OWNER'S RULEBOOK:\n" + open(p, encoding="utf-8").read() if os.path.exists(p) else ""
+    if os.environ.get("REEL_V2") == "1":                 # (a version-2 test reel follows these where they differ: not a rulebook break)
+        s += "\n\nRULES UNDER TEST (version 2, approved by the owner for Trial Reels; they win where they differ):\n" + open(os.path.join(ROOT, "RULES_V2.md"), encoding="utf-8").read()
+    return s
 
 
 def ask_critic(rd, rnd, prev, changed=None, model=None):
@@ -323,7 +329,7 @@ def loop(work, out):
         old = scenes
         try:
             run(["python3", "src/narrate.py", work])
-            run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("REVIEW_FPS", "30"))
+            run(["python3", "src/render.py", work, out], PAGE=PAGE, FPS=os.environ.get("REVIEW_FPS", "30"))
         except SystemExit as e:   # a QA gate stopped it (garbled voice, text on text): that is a send-back, not the end
             why = e.code[0] if isinstance(e.code, list) else str(e.code)
             rev = {"approved": False, "scores": None, "verdict": "The automatic checks stopped this cut before review: " + why,
@@ -373,10 +379,10 @@ def loop(work, out):
         if rev["approved"]:
             if os.environ.get("AUTO_FPS", "30") != os.environ.get("REVIEW_FPS", "30"):   # (the cut he approved is what posts: 30 fps, as
                 try:                                                                       #  Reels are; a 60 fps re-render took 45 min)
-                    run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ["AUTO_FPS"])
+                    run(["python3", "src/render.py", work, out], PAGE=PAGE, FPS=os.environ["AUTO_FPS"])
                 except SystemExit as e:
                     print(f"the smoother re-render failed ({e.code}); the approved cut posts as it is", flush=True)
-                    run(["python3", "src/render.py", work, out], PAGE="reel.html", FPS=os.environ.get("REVIEW_FPS", "30"))
+                    run(["python3", "src/render.py", work, out], PAGE=PAGE, FPS=os.environ.get("REVIEW_FPS", "30"))
             json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"),
                        "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
             return rnd
