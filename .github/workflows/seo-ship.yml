@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           pip install -r requirements.txt ruff==0.6.9 mypy==1.11.2
-          ruff check --select E,F,W --ignore E501,E731,E741,E401 game tools tests
+          ruff check --select E,F,W --ignore E501,E731,E741,E401 game tests   # (where SEO files are; tools/ is never on the list)
           mypy game tools/realism.py tools/pricing_model.py --ignore-missing-imports
           (cd game && python lessonpages.py)
           cd tests && python -m unittest test_server.ServerTests.test_search_engines_get_robots_and_a_sitemap \
