@@ -6,6 +6,7 @@ import math
 import os
 import statistics
 import tempfile
+import time
 import unittest
 
 from _helpers import IsolatedServer, engine, join, make_engine, quiet
@@ -414,6 +415,7 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(http(srv, "/api/admin/daily/reset", "POST", {"confirm": "no"}, headers=adm)[0], 400)
             status, text, _ = http(srv, "/api/admin/daily/reset", "POST", {"confirm": "NEW"}, headers=adm)
             self.assertTrue(json.loads(text)["ok"], text)
+            time.sleep(0.25)                                                          # (a fast machine asks again within the 0.2 s limit)
             self.assertEqual(json.loads(http(srv, "/api/daily", headers=h)[1])["status"], "new")     # the visitor can play the new one
 
     def test_on_the_site_and_switchable_off(self):

@@ -8,7 +8,7 @@ Rules baked in (house style):
   * no stop-loss placement; say "watch in case it turns into a fake breakout" instead
   * only trades someone could have taken live: enter/exit at a candle close, after the signal
 """
-import json, sys, os, math
+import json, sys, os
 import numpy as np
 
 MIN_TRADE = 0.004      # ignore trades smaller than 0.4%
@@ -27,7 +27,7 @@ def say_price(p):
 
 def analyse(d, own_name=""):
     g = d["game"]; C = g["candles"]; H = g.get("history", 60); n = len(C)
-    o = np.array([c[0] for c in C]); hi = np.array([c[1] for c in C]); lo = np.array([c[2] for c in C])
+    o = np.array([c[0] for c in C])
     cl = np.array([c[3] for c in C]); vol = np.array([c[4] for c in C], float)
     green = cl >= o
     hold = g.get("hold", cl[-1] / cl[H] - 1)

@@ -40,7 +40,7 @@ class NoBotsTests(unittest.TestCase):
         stats = e.house_stats()
         self.assertNotIn("bots_pnl", stats)
         self.assertAlmostEqual(stats["liquidity_pnl"], stats["house_pnl"] - stats["fees"])
-        self.assertNotIn("bots", e.admin_overview())
+        self.assertEqual(e.admin_overview()["bots"]["total"], 0)       # (the Overview's card for the house bots, off here)
         e._series_t = 0.0
         e._sample_series()
         self.assertNotIn("bots_pnl", e.series[-1])

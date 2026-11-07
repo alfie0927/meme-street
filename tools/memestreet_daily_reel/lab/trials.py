@@ -19,7 +19,7 @@ def winner(a, b):
 
 
 def main():
-    from post_instagram import http, token, HOST, V
+    from post_instagram import token
     import insights
     tok = token(); pairs = {}
     for f in glob.glob(os.path.join(ROOT, "queue", "*", "posted.json")):

@@ -126,7 +126,7 @@ See §16 for what the tests cover and when to run which one. The tests never tou
 .venv\Scripts\python.exe -m mypy game tools\realism.py tools\pricing_model.py --ignore-missing-imports
 ```
 
-Ruff checks for errors, warnings and the pyflakes rules (unused names and imports, undefined names); long lines, lambdas given a name, `l` for a candle's low and several imports on one line are the house style. mypy is a light pass: most functions have no type annotations, so it checks what it can see.
+Ruff checks for errors, warnings and the pyflakes rules (unused names and imports, undefined names); long lines, lambdas given a name, `l` for a candle's low and several imports on one line are the house style; so, in the reel tools (`tools/memestreet_daily_reel`, `ruff.toml`), are several statements to a line and setting `sys.path` before the imports. mypy is a light pass: most functions have no type annotations, so it checks what it can see.
 
 ### Market checks
 ```powershell

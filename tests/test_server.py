@@ -735,7 +735,7 @@ class ServerTests(unittest.TestCase):
             a.send({"type": "chat", "text": "can I talk"})
             self.assertIn("muted", a.recv_until("chat_error")["msg"])
             http(self.srv, "/api/admin/mute", "POST", {"name": "modtarget", "seconds": 0}, admin)
-            time.sleep(0.3)
+            time.sleep(1.6)                                              # (chat's 1.5 s gap, on the game's clock)
             a.send({"type": "chat", "text": "back again"})
             self.assertEqual(a.recv_until("chat")["msg"]["text"], "back again")
         finally:

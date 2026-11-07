@@ -1,0 +1,3 @@
+# The reel tools are written compactly on purpose (several statements to a line, sys.path set before imports).
+[lint.per-file-ignores]
+"tools/memestreet_daily_reel/**" = ["E701", "E702", "E402"]
