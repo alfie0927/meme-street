@@ -86,16 +86,31 @@ def respellings(words):
            '{"word": ["respelling", "respelling", "respelling"], ...}\n\n' + "\n".join(words))
     r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", "sonnet", "--disallowedTools",
                         "Bash,Edit,Write,Read,WebFetch,WebSearch,Glob,Grep,Task,NotebookEdit"],
-                       input=ask, capture_output=True, text=True, timeout=600, cwd="/tmp",
+                       input=ask, capture_output=True, text=True, encoding="utf-8", timeout=600, cwd=LAB,
                        env={k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"})
     return json.loads(re.search(r"\{.*\}", r.stdout, re.S).group(0))
+
+
+HOMOPHONES = {("herd", "heard"), ("meet", "meat"), ("sell", "cell"), ("sells", "cells"), ("know", "no"), ("knew", "new"),
+              ("piece", "peace"), ("read", "red"), ("four", "for"), ("practise", "practice"), ("you're", "your"), ("hire", "higher"),
+              ("queuing", "cueing")}   # (said right; alone, Whisper can only guess the spelling)
+
+
+def real(s):
+    """A suspect worth fixing: not a number Whisper wrote in digits, not a word with a sound-alike, not a lexicon term
+    that is meant to change (BOS -> break of structure)."""
+    w, h = s["word"].lower(), s["heard"].lower().strip(" .,")
+    from pronounce import digits
+    if re.fullmatch(r"[\d.%-]+( candle)?", h) or "".join(c for c, _, _ in digits(s["word"].split())).lower().replace("-", " ") == h: return False
+    if (w, h) in HOMOPHONES: return False
+    return key(s["said_as"]) != key(h)
 
 
 def fix():
     """For each suspect: a respelling Kokoro says so Whisper hears the real word. A suspect heard wrongly only because
     Whisper does not know the word (an invented name) passes once a respelling lands; one with no respelling that works
     is reported, not changed."""
-    T = json.load(open(os.path.join(DATA, "lex_test.json"), encoding="utf-8"))["suspects"]
+    T = [s for s in json.load(open(os.path.join(DATA, "lex_test.json"), encoding="utf-8"))["suspects"] if real(s)]
     ear = Ear(); R = respellings([s["word"] for s in T]); out = []
     for s in T:
         tried = []
