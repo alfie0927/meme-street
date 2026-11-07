@@ -58,7 +58,7 @@ def motion(mp4, cuts, fps=30):
     F = np.frombuffer(raw, np.uint8).reshape(-1, 240, 135).astype(np.float32)
     if len(F) < 3: return {"jumps": [], "drift_secs": []}
     d = np.abs(np.diff(F, axis=0)).mean(axis=(1, 2)); med = float(np.median(d))
-    near = lambda i: any(abs(i + 1 - c * fps) <= 3 for c in cuts)
+    near = lambda i: any(-3 <= i + 1 - c * fps <= 16 for c in cuts)   # (a scene may slide in over half a second)
     jumps = [round((i + 1) / fps, 2) for i in range(len(d)) if d[i] > max(6, 5 * med) and not near(i)]
     drift = [k for k in range(len(d) // fps) if float(np.median(d[k * fps:(k + 1) * fps])) > .3]   # (a calm reel: 0.04; the swimming 3D one: 0.73)
     return {"jumps": jumps[:20], "drift_secs": drift[:20], "median_change": round(med, 2)}

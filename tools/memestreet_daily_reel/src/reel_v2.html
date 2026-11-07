@@ -261,10 +261,13 @@ const PROP2D={
  dragon(c,u){const f=Math.sin(u*2.2),wing=`<path d="M-10 -120 Q-40 ${-210-50*f} 30 ${-250-40*f} Q50 ${-200-30*f} 70 ${-190-25*f} Q60 -150 30 -125 Z" ${bd(c,4)} fill-opacity=".55"/>`;
   return `<path d="M-150 -95 Q-120 -60 -70 -95 Q-30 -125 40 -118 Q90 -112 110 -140 Q130 -165 160 -158 L175 -150 L158 -140 Q140 -138 128 -118 Q100 -82 40 -80 Q-20 -76 -70 -70 Q-115 -55 -150 -95 Z" ${bd(c)}/>`+
    `<path d="M158 -158 L150 -182 L166 -162 M140 -162 L128 -184 L146 -164" ${ln(c,3.5)}/><circle cx="160" cy="-150" r="4" fill="${SCOL.amber}"/><path d="M-150 -95 L-178 -112 L-168 -88 Z" ${bd(c,3.5)}/>`+
-   `<path d="M-20 -78 L-30 -30 M40 -80 L45 -32" ${ln(c,5)}/>`+wing},
+   `<path d="M-20 -78 L-30 -30 M40 -80 L45 -32" ${ln(c,5)}/>`+wing+breath(u)},
  bird(c,u){const f=Math.sin(u*3);return `<path d="M-60 -120 Q0 -95 60 -120 Q20 -128 0 -118 Q-20 -128 -60 -120 Z" ${bd(c,3.5)}/><path d="M-5 -120 Q-60 ${-150-40*f} -120 ${-140-50*f} M5 -120 Q60 ${-150-40*f} 120 ${-140-50*f}" ${ln(c,4.5)}/><circle cx="62" cy="-122" r="4" fill="${SCOL.amber}"/>`},
  fish(c,u){const w=14*Math.sin(u*2.5);return `<path d="M-90 -100 Q-20 -160 90 -100 Q-20 -40 -90 -100 Z" ${bd(c)}/><path d="M-88 -100 L-150 ${-140+w} L-140 -100 L-150 ${-60+w} Z" ${bd(c,3.5)}/><circle cx="55" cy="-108" r="6" fill="${c}"/>`},
 };
+// a dragon breathes fire now and then (every 4.2 s, for about a second): a flame cone from its mouth
+function breath(u){const b=(u%4.2)-2.6,f=b>0&&b<1.1?Math.sin(Math.PI*b/1.1):0;if(f<=0)return '';let g='';
+ for(let k=0;k<9;k++){const q=k/8,x=178+q*100*f,y=-150+q*24*f+5*Math.sin(u*14+k),r=(4+q*18)*f;g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${k%3===1?SCOL.red:SCOL.amber}" opacity="${(.9*(1-q*.5)).toFixed(2)}"/>`}return g}
 // each prop's real size at scale 1 (width, height), so a slot can fit it: a wide dragon never spills onto its neighbours
 const PSZ={hut:[200,195],cloud:[230,250],sun:[200,220],snowflake:[190,220],turbine:[230,280],clock:[180,200],hourglass:[130,225],moon:[200,220],bed:[240,230],kraken:[180,240],sub:[340,200],kelp:[160,220],shell:[220,180],hover:[230,170],potion:[190,240],cauldron:[250,240],goldbar:[260,120],wand:[200,220],queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
  ship:[330,150],plane:[300,170],rocket:[140,260],drone:[260,170],train:[400,100],coin:[120,130],coins:[130,120],bar:[80,200],arrow:[140,230],
@@ -275,11 +278,20 @@ const fitK=(p,k,w,h)=>{const z=PSZ[(p||{}).p]||[200,220];return Math.min(k,w/z[0
 function prop2d(p,x,y,k,t,t0,j){const a=t0==null?1:back(seg(t,t0-.05,t0+.35)),u=Math.max(0,t-(t0||0));if(a<=0)return '';const f=PROP2D[(p||{}).p]||PROP2D.crate;
  return `<g transform="translate(${x} ${(y+4*Math.sin(t*1.2+j)).toFixed(1)}) scale(${(k*(.85+.15*a)).toFixed(3)})" opacity="${cl(a).toFixed(3)}">${f(sc2(p),u)}</g>`}
 const STAGE={x0:80,x1:1000,ground:1180,top:600};
+const FLY=['dragon','bird','plane','drone','fish','rocket'];
 function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0?Math.min(P[k].t,s.t0+.3):P[k].t):null,G=STAGE.ground,lay=s.layout||'hero';let g='';   // (the lead prop is up from the start: no empty stage)
  const lab=(k,x,y)=>{if(P[k]&&P[k].label)L.push({text:P[k].label,x,y,color:sc2(P[k]),a:T0(k)==null?1:cl(seg(t,T0(k),T0(k)+.3))})};
- {const tint=sc2(P[0]||{});   // a quiet backdrop (far hills, never moving) and a filled ground, in the lead prop's colour
-  g+=`<path d="M60 ${G} L190 ${G-150} L300 ${G-60} L430 ${G-210} L560 ${G-90} L690 ${G-180} L820 ${G-70} L1020 ${G-160} L1020 ${G} Z" fill="${tint}" opacity=".06"/>`;
-  g+=`<rect x="60" y="${G}" width="960" height="90" fill="${tint}" opacity=".12"/><line x1="60" y1="${G}" x2="1020" y2="${G}" stroke="${tint}" stroke-width="3" opacity=".5"/>`}
+ const si=SC.indexOf(s),tint=sc2(P[0]||{}),pan=-70*io(seg(t,s.t0,s.t1)),dark=lay==='storm'?io(seg(t,s.t0+.1,s.t0+.8)):0;let bg='';
+ {// a living world, edge to edge (the owner, 2026-11-07: less stiff): a sky glowing at the horizon, twinkling stars, slow
+  // clouds, and hills at two depths that slide as the camera drifts; all slow, so nothing swims
+  bg+=`<rect x="0" y="480" width="1080" height="${G-480}" fill="url(#sky${si})"/>`;
+  for(let k=0;k<22;k++){const x=(k*137)%1000+40,y=510+(k*89)%(G-720),tw=.2+.35*(.5+.5*Math.sin(t*1.3+k*2.1));bg+=`<circle cx="${x}" cy="${y}" r="${k%4?2:3}" fill="#fff" opacity="${(tw*(1-dark)).toFixed(2)}"/>`}
+  for(let k=0;k<3;k++){const w=230+k*70,x=((k*430+(t-s.t0)*(9+k*4))%1500)-220+pan*.2,y=560+k*60;
+   bg+=`<g fill="#cfd8e3" opacity="${(.07*(1-dark)).toFixed(3)}"><ellipse cx="${x.toFixed(0)}" cy="${y}" rx="${w/2}" ry="${w/7}"/><ellipse cx="${(x-w*.18).toFixed(0)}" cy="${y-w*.07}" rx="${w/4}" ry="${w/6}"/><ellipse cx="${(x+w*.13).toFixed(0)}" cy="${y-w*.1}" rx="${w/5}" ry="${w/6.5}"/></g>`}
+  const hills=(pts,dx,o)=>`<path d="M-120 ${G} ${pts.map(([x,y])=>`L${(x+dx).toFixed(0)} ${G-y}`).join(' ')} L1200 ${G} Z" fill="${tint}" opacity="${o}"/>`;
+  bg+=hills([[-120,120],[80,190],[260,90],[420,240],[600,110],[760,200],[930,80],[1100,170],[1200,120]],pan*.35,.06);
+  bg+=hills([[-120,60],[140,120],[330,40],[520,100],[700,30],[880,110],[1060,50],[1200,70]],pan*.8,.09);
+  bg+=`<rect x="0" y="${G}" width="1080" height="${1290-G}" fill="${tint}" opacity=".13"/><line x1="0" y1="${G}" x2="1080" y2="${G}" stroke="${tint}" stroke-width="3" opacity=".5"/>`}
  if(lay==='candles'){const n=14,d=Math.max(1.5,(s.t1-s.t0)*.65),ex=seg(t,s.t1-.55,s.t1+.05);   // (the owner, 2026-11-07: candles fall across the whole screen, then burst into the next scene)
   let y=650;for(let k=0;k<n;k++){const at=s.t0+.1+k*d/n,a=out(seg(t,at,at+.35)),x=110+k*(860/(n-1)),up=k%4===2,h=up?42:70+((k*37)%60),y0=y;y+=up?-26:30+((k*23)%22);
    if(a<=0)break;const yy=(up?y:y0)-(1-a)*160,col=up?SCOL.green:SCOL.red;
@@ -301,6 +313,28 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
   const a0=T0(1)??s.vs+.6,gp=Math.max(.3,Math.min(.6,(s.ve-a0)/(n+1)));
   for(let k=0;k<n;k++)g+=prop2d(who,470+k*92,G,fitK(who,.95,80,200),t,a0+k*gp,k+2);
   if(P[1]&&P[1].label)L.push({text:P[1].label,x:470+(n-1)*46,y:G+62,color:sc2(P[1]),a:cl(seg(t,a0+n*gp,a0+n*gp+.4))})}
+ else if(lay==='earns'){const lead=P[0]||{p:'dragon',color:'amber'},J=P.slice(1,4),n=Math.max(1,J.length),xs=J.map((_,k)=>n===1?540:200+680*k/(n-1)),on=k=>T0(k+1)??s.vs+.5+k*1.2,fly=FLY.includes(lead.p);   // (how it earns: the company goes to each job in turn, and each job pays: coins fly up into the pile)
+  J.forEach((p,k)=>{const kk=fitK(p,2,240,240);g+=prop2d(p,xs[k],G,kk,t,on(k)-.3,k+1);lab(k+1,xs[k],G-290)});   // (tags above the jobs, under the flier's path)
+  const pile=[960,640];let got=0;
+  J.forEach((_,k)=>{const r=seg(t,on(k)+.1,on(k)+.6);if(r>0&&r<1)g+=`<circle cx="${xs[k]}" cy="${G-120}" r="${(30+110*out(r)).toFixed(0)}" fill="none" stroke="${SCOL.amber}" stroke-width="${(6*(1-r)).toFixed(1)}" opacity="${(1-r).toFixed(2)}"/>`;
+   for(let j=0;j<3;j++){const t0=on(k)+.2+j*.16,q=seg(t,t0,t0+.75);if(q>=1){got++;continue}if(q<=0)continue;const e=io(q),x=xs[k]+(pile[0]-xs[k])*e,y=G-140+(pile[1]-(G-140))*e-260*Math.sin(Math.PI*e);
+    g+=`<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${(.32+.1*Math.sin(Math.PI*e)).toFixed(2)})">${PROP2D.coin(SCOL.amber,t)}</g>`}});
+  for(let c=0;c<got;c++)g+=`<ellipse cx="${pile[0]+(c%2?6:-6)}" cy="${pile[1]-c*14}" rx="52" ry="13" fill="${SCOL.amber}" fill-opacity=".35" stroke="${SCOL.amber}" stroke-width="4"/>`;
+  if(fly){let cx=540;for(let k=0;k<n;k++){const e=io(seg(t,on(k)-.7,on(k)));cx+=(xs[k]-cx)*e}
+   g+=prop2d(lead,Math.min(cx,820),G-330+10*Math.sin(t*1.4),fitK(lead,1,280,170),t,T0(0),0)}
+  else g+=prop2d(lead,540,G-330,fitK(lead,.9,200,170),t,T0(0),0)}
+ else if(lay==='storm'){const lead=P[0]||{p:'building',color:'teal'},Rk=P.slice(1,4),hit=k=>Math.max(s.t0+.8+k*.5,T0(k+1)??s.vs+.6+k*1.1),hk=fitK(lead,1.8,400,360),sl=[[170,G-40],[910,G-40],[170,G-340]],H=(PSZ[lead.p]||[0,230])[1]*hk;   // (what can hurt it: a storm rolls in over the company, and each risk strikes as lightning)
+  for(let k=0;k<5;k++){const x=110+k*215+(1-dark)*(k<2?-520:k>2?520:0),y=575+(k%2)*45-(1-dark)*(k===2?260:0);g+=`<g fill="#2b2740" opacity="${(.92*dark).toFixed(2)}"><ellipse cx="${x}" cy="${y}" rx="175" ry="58"/><ellipse cx="${x-55}" cy="${y-32}" rx="95" ry="58"/><ellipse cx="${x+45}" cy="${y-22}" rx="80" ry="50"/></g>`}
+  if(dark>0)for(let k=0;k<30;k++){const x=(k*73)%1080,y=640+((t*700+k*137)%(G-640));g+=`<line x1="${x}" y1="${y.toFixed(0)}" x2="${x-6}" y2="${(y+24).toFixed(0)}" stroke="#8fa3c8" stroke-width="2" opacity="${(.3*dark).toFixed(2)}"/>`}
+  let nh=0,sh=0;Rk.forEach((_,k)=>{if(t>=hit(k)){nh++;sh=2.5*Math.sin((t-hit(k))*28)*Math.max(0,1-(t-hit(k))/.5)}});
+  g+=`<g transform="translate(${sh.toFixed(1)} 0)">${prop2d(lead,540,G,hk,t,T0(0),0)}</g>`;
+  if(nh)g+=`<g opacity="${(.22*nh).toFixed(2)}" transform="translate(${sh.toFixed(1)} 0)">${prop2d(Object.assign({},lead,{color:'red'}),540,G,hk,t,null,0)}</g>`;
+  Rk.forEach((p,k)=>{const b=seg(t,hit(k)-.05,hit(k)+.4);if(b>0&&b<1){let d=`M${380+k*160} 610`;for(let z=1;z<=5;z++)d+=` L${(380+k*160+(540-380-k*160)*z/5+(z%2?40:-40)*(z<5)).toFixed(0)} ${(610+(G-H*.6-610)*z/5).toFixed(0)}`;
+    g+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="${(9*(1-b)).toFixed(1)}" stroke-linejoin="round" opacity="${(1-b).toFixed(2)}"/><path d="${d}" fill="none" stroke="${SCOL.amber}" stroke-width="${(18*(1-b)).toFixed(1)}" opacity="${(.35*(1-b)).toFixed(2)}"/>`;
+    bg+=`<rect x="0" y="480" width="1080" height="810" fill="#fff" opacity="${(.12*(1-b)).toFixed(3)}"/>`}
+   const a=out(seg(t,hit(k)-.1,hit(k)+.35));if(a<=0)return;const [tx,ty]=sl[k],wp=Object.assign({p:'warning',color:'red'},p),wk=fitK(wp,1.5,230,190);
+   g+=prop2d(wp,tx,ty-(1-a)*120,wk,t,null,k+1);lab(k+1,tx,ty-(PSZ[wp.p]||[0,200])[1]*wk-36)});
+  lab(0,540,G+60)}
  else if(lay==='flow'){const st=P.slice(0,Math.max(1,P.length-1)).slice(0,3),mv=P.length>1?P[P.length-1]:{p:'crate',color:'amber'},n=st.length,xs=st.map((_,k)=>n===1?540:220+640*k/(n-1)),portal=n>1&&st.every(p=>p.p==='portal');
   st.forEach((p,k)=>{const kk=fitK(p,1.7,n>2?280:380,400);g+=prop2d(p,xs[k],G,kk,t,T0(k),k);lab(k,xs[k],G-(PSZ[p.p]||[0,220])[1]*kk-40)});
   const a0=T0(P.length-1)??s.vs;for(let j=0;j<3;j++){const q=((Math.max(0,t-a0)*.11+j/3)%1),x=STAGE.x0+(STAGE.x1-STAGE.x0)*q,inGap=portal&&x>xs[0]&&x<xs[n-1],near=Math.min(...xs.map(v=>Math.abs(x-v)));
@@ -339,9 +373,14 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
  const zl=1+.04*io(seg(t,s.t0,s.t1)),html=labs.map(l=>{const w=l.text.length*23+40,lx=540+(l.x-540)*zl,ly=G-200+(l.y-G+200)*zl;let x=Math.max(70+w/2,Math.min(1010-w/2,lx)),y=Math.max(STAGE.top,Math.min(1240,ly));   // (tags ride the push-in with their props)
   while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+20&&Math.abs(q[1]-y)<66))y+=68;placed.push([x,y,w]);   // (a clear gap between tags, never touching)
   return `<div class="slab qa" style="left:${x}px;top:${y}px;color:${l.color};border-color:${l.color};opacity:${l.a}">${esc(l.text)}</div>`}).join('');
- const fade=out(seg(t,s.t0,s.t0+.35));
+ const pv=SC[si-1],e=io(seg(t,s.t0,s.t0+.5)),slide=pv&&pv.layout&&si>0&&e<1;   // (one illustrated scene into the next: a whip pan, the old world slides out as the new one slides in)
+ const fade=slide?1:out(seg(t,s.t0,s.t0+.35));
  const zm=1+.04*io(seg(t,s.t0,s.t1));   // (a slow, eased push-in across the scene: alive, never jerky)
- return `<svg style="position:absolute;left:0;top:0;opacity:${fade};transform-origin:540px ${G-200}px;transform:scale(${zm.toFixed(4)})" width="1080" height="1920"><defs><clipPath id="sclip"><rect x="60" y="578" width="960" height="700"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip)"><g filter="url(#sglow)">${g}</g></g></svg>`+html}
+ const me=`<svg style="position:absolute;left:0;top:0;opacity:${fade};transform-origin:540px ${G-200}px;transform:scale(${zm.toFixed(4)})" width="1080" height="1920"><defs><linearGradient id="sky${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tint}" stop-opacity="0"/><stop offset="1" stop-color="${tint}" stop-opacity="${(.2-.12*dark).toFixed(2)}"/></linearGradient><clipPath id="sclip${si}"><rect x="0" y="480" width="1080" height="810"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip${si})">${bg}<g filter="url(#sglow)">${g}</g></g></svg>`+html;
+ if(!slide)return me;
+ const box=(x,inner)=>`<div style="position:absolute;left:0;top:0;width:1080px;height:1920px;transform:translateX(${x.toFixed(0)}px)">${inner}</div>`,st=Math.sin(Math.PI*e);
+ let streak='';for(let k=0;k<7;k++)streak+=`<div style="position:absolute;left:${(k*157)%900}px;top:${560+k*100}px;width:${260+(k*90)%240}px;height:3px;border-radius:2px;background:${tint};opacity:${(.5*st).toFixed(2)}"></div>`;
+ return box(-1080*e,drawStory(pv,pv.t1-.01).replace(/ qa/g,'').replace(/<div class="slab[^>]*>[^<]*<\/div>/g,''))+box(1080*(1-e),me)+streak}
 function drawSticks(s,t){const F=s.figures||[];if(!F.length)return '';
  if(s.chart!=null)return `<svg style="position:absolute;left:0;top:0" width="1080" height="1920">${drawFigure(s,F[0],0,t,912,1150,1.25,300)}</svg>`;
  const n=F.length,sc=n===1?1.9:n===2?1.55:1.25,xs=n===1?[540]:n===2?[330,750]:[220,540,860];

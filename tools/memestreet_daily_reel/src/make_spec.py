@@ -26,11 +26,11 @@ CATEGORIES = {
     "Stock story": "Just the company, never its chart (the owner, 2026-11-07; the four November stock stories that did best "
                    "had no chart). Seven beats, in this order: (1) the hook, one odd and specific fact about what it does "
                    "('This company sells rain.'), over a story scene; (2) what it is: its name and what it does, a story "
-                   "scene (pens when it has a home: a ranch, farm, clinic, depot); (3) how it makes money: a cards scene of 3 items with icons; (4) why it matters: a story scene "
+                   "scene (pens when it has a home: a ranch, farm, clinic, depot); (3) how it makes money: a story scene, layout earns (its 3 jobs, each paying out); (4) why it matters: a story scene "
                    "(line when people want it, compare for the old way against its way, or flow); a scene on what moves the "
                    "stock may be candles (they fall, then burst into the next scene); (5) what's unique: a story scene that grows (grow or "
-                   "network); (6) risks and what moves its stock: a cards scene of 2 or 3 items with the warn icon, from "
-                   "the good and bad news in the facts; (7) the outro, inviting viewers to trade it. No chart scene, no "
+                   "network); (6) risks and what moves its stock: a story scene, layout storm (2 or 3 risks strike), from "
+                   "the bad news in the facts; (7) the outro, inviting viewers to trade it. No chart scene, no "
                    "candles, no price moves.",
     "Chart breakdown": "One game company's real recent chart, read like an analyst, in its own structure: (1) the hook, the "
                        "chart's biggest move said as a stake ('This stock fell 12% in a day. The chart warned you.'), with the "
@@ -304,13 +304,16 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
    director's shot list: the subject, what it is doing, where, the light, the camera move. E.g. 'A green dragon hauls a
    wooden crate on chains over a misty mountain ranch at golden hour, wings beating slowly, camera tracking alongside'"}
    (only when video is available: a full-screen realistic video clip with the title and captions over it)
- {"kind":"story","head":"title, max 5 words","vo":"...","layout":"pens|line|candles|hero|flow|grow|risk|compare|network",
+ {"kind":"story","head":"title, max 5 words","vo":"...","layout":"pens|earns|line|storm|candles|hero|flow|grow|risk|compare|network",
    "props":[{"p":"<prop>","color":"teal|green|amber|red|purple|grey","label":"max 3 words, or empty","say":"exact phrase from vo: it pops in then"}]}
    (an animated 2D scene in the house style. Layouts: pens = the company's home: two gated enclosures, each with two of
     props[0] (the animals or products, e.g. dragons) and props[1] in the middle (e.g. a hut); line = props[0] (the company)
     bottom left, then six of props[1] (people) pop up one by one into a line: demand, a waiting list (label props[1]
     'Waiting list'); candles = red candles fall across the whole screen and burst into the next scene: what moves or hurts
-    the stock (props[0] may carry the label); flow = props[:-1] are stations left to right and the last prop travels through them
+    the stock (props[0] may carry the label); earns = how it makes money: props[0] the company (a flier flies from job to
+    job), props[1..3] its 3 jobs, each a prop with a 1-3 word label, and each pays out coins on its word; storm = what can
+    hurt it: props[0] the company, props[1..3] the risks (a warning or a fitting prop, each labelled), a storm rolls in and
+    each risk strikes as lightning on its word; flow = props[:-1] are stations left to right and the last prop travels through them
     (two portals and a crate: teleport freight); network = each prop is a node on a glowing globe, links fill in (2-8; only for a company that really is a network);
     hero = props[0] is the company, big in the middle (a flier circles above its plinth), the rest stand around it;
     grow = up to 5 columns rise one by one on their words (good news, growth); risk = props[0] is the company, the rest
@@ -322,7 +325,7 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
 _R = open(os.path.join(HERE, "reel.html"), encoding="utf-8").read()
 WORLD_PROPS = re.findall(r"^ (\w+)\(c(?:,u)?\)\{", _R[_R.index("const PROP2D={"):_R.index("function prop2d(")], re.M)   # (the 2D story kit in reel.html)
 WORLD_LAYOUTS = re.findall(r"lay==='(\w+)'", _R)
-LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3, "pens": 2, "line": 2, "candles": 1}   # (what each layout in reel.html draws; more are never seen)
+LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3, "pens": 2, "line": 2, "candles": 1, "earns": 4, "storm": 4}   # (what each layout in reel.html draws; more are never seen)
 FLIERS = ("dragon", "bird", "plane", "drone", "fish", "rocket")   # (a flying hero leaves 3 side slots, not 4)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
@@ -410,7 +413,7 @@ def check(spec, facts, charts, category=None):
             P = s.get("props") or []
             if s.get("layout") not in WORLD_LAYOUTS: errs.append(f"scene {k}: layout must be one of {', '.join(WORLD_LAYOUTS)}")
             cap = LAYOUT_PROPS.get(s.get("layout"), 8) - (s.get("layout") == "hero" and (P[:1] or [{}])[0].get("p") in FLIERS)
-            if sum(1 for q in P if q.get("label")) > 2: errs.append(f"scene {k}: at most 2 labels in a scene (the owner: fewer tags, clearer pictures)")
+            if sum(1 for q in P if q.get("label")) > (3 if s.get("layout") in ("earns", "storm") else 2): errs.append(f"scene {k}: at most 2 labels in a scene, 3 in earns and storm (the owner: fewer tags, clearer pictures)")
             if not 1 <= len(P) <= cap: errs.append(f"scene {k}: a {s.get('layout')} scene draws 1 to {cap} props; this one has {len(P)}")
             for q in P:
                 if q.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {q.get('p')!r}; use one of {', '.join(WORLD_PROPS)}")
@@ -419,15 +422,15 @@ def check(spec, facts, charts, category=None):
                 if q.get("label") and q["label"].strip().lower().rstrip("s") == str(q.get("p", "")).lower(): errs.append(f"scene {k}: a {q.get('p')} needs no label saying so; label only what the picture cannot say")
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
     if category == "Stock story":
-        if not 3 <= len(worlds) <= 5:
-            errs.append(f"a stock story tells the company in 3 to 5 story scenes (kind \"story\" with a layout and props): the hook, "
-                        f"what it is, why it matters, what's unique; this script has {len(worlds)}")
+        if not 5 <= len(worlds) <= 7:
+            errs.append(f"a stock story tells the company in 5 to 7 story scenes (kind \"story\" with a layout and props): the hook, "
+                        f"what it is, how it earns, why it matters, what's unique, what can hurt it; this script has {len(worlds)}")
         if any(s.get("chart") is not None for s in sc):
             errs.append("a stock story is just the company: no chart scenes (a chart read is the Chart breakdown format)")
         if sc and not sc[0].get("layout"):
             errs.append("a stock story's hook is illustrated: give scene 0 a story layout and props that show the odd fact (its text is the title)")
-        if sum(1 for s in sc if s.get("kind") == "cards") < 2:
-            errs.append("a stock story has 2 cards scenes: how it makes money (3 items), and risks and what moves it (2 or 3, warn icon)")
+        for lay, what in (("earns", "how it makes money (layout earns: its 3 jobs)"), ("storm", "what can hurt it (layout storm: 2 or 3 risks)")):
+            if not any(s.get("layout") == lay for s in sc): errs.append(f"a stock story has a story scene on {what}, not cards")
     if category == "Chart breakdown" and any(s.get("kind") == "story" or (s.get("kind") not in ("outro",) and s.get("chart") is None) for s in sc):
         errs.append("a chart breakdown keeps its one chart on screen in every scene but the outro (no story scenes)")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
