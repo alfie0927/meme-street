@@ -75,7 +75,7 @@ ROTATION = {"0600": ["Technical lesson", "Trading mistake"], "1200": ["Chart qui
             "2100": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Guess the move"],
             "0300": ["Chart twist", "One trick", "Big players", "Speed cheat sheet", "Myth or fact"]}
 ROTATION["0900"] = ["Hard truth"]
-ROTATION["1300"] = ["Truth list"]
+ROTATION["1300"] = ["Stick skit", "Chart twist"]   # (was Truth list: a 7 s "read the caption" reel can never meet the bar of the owner's references)
 ROTATION["2100"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
 ROTATION["0300"] += ["Trader levels", "Explained like you're 5", "Stick skit"]
 # (no "pattern" questions: triangles, wedges, channels and flags need slanted trendlines the renderer cannot draw yet;
