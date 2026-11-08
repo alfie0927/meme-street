@@ -62,7 +62,7 @@ WHY: Higher rates shrink the present value of far-off profits the most.
 
 Q: A rate rise was 95% expected and happens. What usually happens to the market?
 - A big fall
-+ Little reaction: it was already priced in
++ Little reaction
 - A big rise, always
 WHY: Prices move on surprises; an expected decision is no surprise.
 

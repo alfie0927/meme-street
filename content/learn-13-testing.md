@@ -36,7 +36,7 @@ WHY: With enough tries, some settings fit the past's noise perfectly and fail on
 
 Q: A backtest buys at the open using that day's closing price to decide. What is wrong?
 - Nothing
-+ Look-ahead bias: the close was not known at the open
++ Look-ahead bias
 - Survivorship bias
 WHY: The rule uses information from the future.
 

@@ -29,14 +29,14 @@ Once you own a stock, you notice the news that agrees with you and ignore the re
 HERE: The quest ladder on your profile rewards the habits that fight these biases: putting a stop-loss on positions, closing trades that had a stop (win or lose), setting take-profits, holding winners for an hour. It never rewards volume or luck.
 
 Q: You have lost three trades today and feel you must make it back now. What is this?
-+ The urge to revenge trade: time to stop for the day
++ The urge to revenge trade
 - A good time to double the size
 - Recency bias in a winning strategy
 WHY: Trading to recover a loss is driven by emotion, and usually makes it worse.
 
 Q: Why do traders tend to sell winners early and hold losers?
 - Winners are riskier
-+ Loss aversion: losses hurt more than gains please, so people avoid realising them
++ Loss aversion
 - It is the best strategy
 WHY: The pain of admitting a loss keeps losers open; the relief of a gain closes winners too soon.
 

@@ -136,7 +136,7 @@ WHY: 3 × 4% = 12%.
 
 Q: A stock falls 20% then rises 25% (back to the start). What happened to a 3x leveraged position over those two moves, ignoring costs and margin calls?
 - It is back to the start
-+ It is down: -60% then +75% leaves 70% of the money
++ It is down
 - It is up
 WHY: 0.4 × 1.75 = 0.7: leverage turns the same round trip into a 30% loss.
 

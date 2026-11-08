@@ -72,7 +72,7 @@ WHY: Plan on the timeframe that matches the holding period, with one up for cont
 On a **linear** scale each price step is the same height: a move from 10 to 20 looks as big as 100 to 110. On a **log** scale equal **percentage** moves are the same height: 10 to 20 (+100%) looks as big as 100 to 200. Use log for long charts and for anything that has moved a lot, or a stock's early history looks flat and its recent moves enormous.
 
 Q: A stock went from 2 to 4, then from 40 to 80. On a log scale, how do the two moves compare?
-+ They look the same height: both are +100%
++ They look the same height
 - The second looks twenty times bigger
 - The first looks bigger
 WHY: Log scales show percentage moves equally.
@@ -94,7 +94,7 @@ A **trend** is a series of swings in one direction. Prices never move in straigh
 Mark the last few swing highs and lows. Two higher highs and two higher lows make an uptrend. The trend is intact until the structure breaks: in an uptrend, the first close below the last higher low is the first warning that it may be ending.
 
 Q: A chart makes highs of 50, 54, 58 and lows of 46, 49, 53. What is it?
-+ An uptrend: higher highs and higher lows
++ An uptrend
 - A downtrend
 - A range
 WHY: Every high and every low is above the one before.
@@ -175,7 +175,7 @@ A **range** is a market going sideways between support and resistance. Ranges ar
 Late in a range the candles often shrink and volume dries up: the market goes quiet. Volatility comes in waves, and a very quiet market tends to be followed by a lively one. Bollinger Bands narrowing to a "squeeze" is the classic picture.
 
 Q: What often comes just before a breakout?
-+ A quiet spell: small candles and low volume
++ A quiet spell
 - A huge spike in volume inside the range
 - A gap
 WHY: Volatility comes in waves: the squeeze, then the move.
@@ -197,7 +197,7 @@ Many breakouts fail: the price pokes out, triggers everyone's buy orders, and fa
 
 Q: The price closes above resistance at 110, then two candles later closes back at 108 on heavy volume. What is this?
 - A successful breakout taking a breather
-+ A fake breakout: the move could not hold above the level
++ A fake breakout
 - A gap being filled
 WHY: A real breakout holds above the level; a quick close back inside, on volume, is the crowd that bought the break getting out.
 

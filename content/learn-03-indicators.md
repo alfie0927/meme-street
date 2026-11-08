@@ -74,7 +74,7 @@ WHY: MACD = EMA 12 minus EMA 26; its 9-candle EMA is the signal line.
 The most useful signal from an oscillator: the **price makes a new high but the RSI makes a lower high** (bearish divergence). The price is still rising, but on less momentum. The mirror image at a low is bullish divergence. It warns that a trend is tiring; it does not say when it ends, and a strong trend can show divergence several times before turning.
 
 Q: The price makes a higher high but the RSI makes a lower high. What is this?
-+ Bearish divergence: the rise is losing momentum
++ Bearish divergence
 - Bullish divergence
 - A golden cross
 WHY: Price up, momentum down: the move is tiring.
@@ -147,7 +147,7 @@ A running total that adds the volume of every up candle and subtracts every down
 
 Q: The price is flat but the OBV keeps rising. What might be happening?
 - Nothing
-+ Volume is coming in on up candles: possible quiet buying
++ Volume is coming in on up candles
 - The stock is about to be delisted
 WHY: OBV adds up-candle volume and subtracts down-candle volume, so it can rise while the price is flat.
 
@@ -207,13 +207,13 @@ Many indicators work in trends and fail in ranges (moving averages) or the other
 The **average directional index** measures trend strength from 0 to 100, regardless of direction. Below about 20: no real trend, range tools work better. Above 25: a trend worth following. Its companions +DI and -DI show which side is stronger.
 
 Q: ADX is at 12 and falling. What does that tell a trend follower?
-+ There is little trend to follow: expect whipsaws
++ There is little trend to follow
 - A strong downtrend is under way
 - A breakout is about to happen
 WHY: ADX measures the strength of a trend, not its direction; below about 20 the market is drifting sideways.
 
 Q: The ADX reads 14. What does it suggest?
-+ No strong trend: range tools may work better
++ No strong trend
 - A very strong uptrend
 - A very strong downtrend
 WHY: ADX measures strength, not direction, and readings under about 20 mean no real trend.
@@ -244,7 +244,7 @@ RSI, stochastic, CCI, Williams %R and momentum are all built from the same close
 
 Q: RSI, stochastic and Williams %R all say "oversold". How much confirmation is that?
 - Three independent confirmations
-+ Little more than one: they are built from the same recent prices
++ Little more than one
 - None at all
 WHY: Indicators from one family repeat the same information.
 
@@ -268,7 +268,7 @@ Each one is a summary of past prices. In the right conditions it helps; in the w
 Q: How do you get rid of all false signals?
 - Find the perfect settings
 - Use more indicators
-+ You cannot: you manage them with stops and position size
++ You cannot
 WHY: Every indicator misleads sometimes; risk management is what keeps the false signals cheap.
 
 ### What actually makes money

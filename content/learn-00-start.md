@@ -15,18 +15,18 @@ Meme Street is a practice stock market. The companies are fictional, the prices 
 Every trade costs a fee of **0.1%** of its size, like a broker's commission. Buy 100 MB of a stock and sell it straight back and you have paid about 0.2 MB. There is no spread and no slippage on shares: you always get the price on the screen.
 
 Q: You buy 200 MB of a stock and sell it again a moment later at the same price. Roughly what has it cost you?
-- Nothing
 + About 0.4 MB in fees
-- About 20 MB
+- Nothing: the sale cancels the purchase
+- About 20 MB, a tenth of the trade
 WHY: 0.1% on the way in and 0.1% on the way out: 0.2% of 200 MB is 0.4 MB.
 
 ### What moves prices
 Prices move with the market as a whole, with each company's news and earnings, with the economy's data releases, and with the way traders as a crowd behave around trends and price levels. **No player's trade ever moves a price**, however big, so nobody can push a stock around: your skill is in reading the market, never in moving it.
 
 Q: A player with a huge account buys a lot of one stock. What happens to its price?
-- It rises because of the buying
 + Nothing: players' trades never move prices here
-- It falls
+- It rises because so much money is buying it
+- It falls as other players sell to the buyer
 WHY: On Meme Street prices follow the market, news and the economy. No trade, however large, moves them.
 
 HERE: The market drifts slowly upwards over the long run, with corrections, bear markets and long sideways stretches, as real markets do. Charts respect and break support and resistance, form trends and ranges and the classic patterns, at realistic rates. Nothing is rigged for or against you, and no simple rule wins without skill.
@@ -35,9 +35,9 @@ HERE: The market drifts slowly upwards over the long run, with corrections, bear
 One **game day** is 30 real minutes: 5 minutes of quiet pre-market, a 20-minute regular session and 5 minutes of quiet after-hours. A game year is about 7.6 real days, so a company reports its earnings roughly every two real days. The market never closes.
 
 Q: How long is one game day?
-- 24 hours
-- 5 minutes
 + 30 real minutes
+- 24 hours, like a real day
+- 5 minutes, then it starts again
 WHY: Pre-market (5 minutes), the regular session (20) and after-hours (5): a game day every half hour.
 
 TIP: The leaderboards rank your return on the money you put in, so buying more MB never buys you a better place.
@@ -73,9 +73,9 @@ WHY: 1% of 1,000 MB is 10 MB of risk. A 5% fall on 200 MB is 10 MB, so 200 MB is
 Press Buy, then **Set bracket**: a stop-loss and a take-profit placed together. Whichever is hit first closes the position and cancels the other. You can see and move both on the Holdings page, in the *Take profit* and *Stop-loss* columns, and they show on the chart as red and green lines.
 
 Q: What does a bracket do?
-- Buys at two prices
-+ Places a stop-loss and a take-profit together; the one that is hit first cancels the other
-- Doubles the position
++ Places a stop-loss and a take-profit together
+- Buys at two prices, one after the other
+- Doubles the position when the price falls
 WHY: One-cancels-other: whichever exit is reached first closes the trade and removes the other order.
 
 ### 5. Leave it alone
@@ -101,9 +101,9 @@ The chart with candle sizes from 30 seconds to a year, **indicators** (17 free, 
 - **History**: every trade and payment, which you can download.
 
 Q: Where do you see every open position with its stop-loss and take-profit?
-- The market page
 + The Holdings page
-- The Calendar
+- The market page's table
+- The Calendar's event list
 WHY: Holdings lists every position with its exits, which you can set or move there.
 
 ### The economy

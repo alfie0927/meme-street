@@ -36,7 +36,7 @@ WHY: Net income is the bottom line of the income statement.
 
 Q: A company reports rising profits, but its cash from operations falls year after year. What should you think?
 - Nothing, profit is what matters
-+ It deserves a closer look: profits that do not turn into cash can be a warning
++ It deserves a closer look
 - It is a sign of strong growth
 WHY: Cash pays the bills; persistent gaps between profit and cash flow are a classic red flag.
 
@@ -176,7 +176,7 @@ HERE: Companies report every quarter (about every 46 real hours), only in pre-ma
 
 Q: A company reports EPS of 2.10 against a forecast of 2.40. What is likely?
 - A rise: profit was positive
-+ A fall: it missed the forecast
++ A fall
 - No move
 WHY: The market reacts to the surprise against expectations.
 
@@ -188,7 +188,7 @@ WHY: After big surprises prices often keep adjusting in the same direction.
 
 Q: A takeover rumour lifts a stock 15% over a week. The deal is confirmed and the stock falls. Why?
 - The deal was bad
-+ The news was already in the price: buy the rumour, sell the news
++ The news was already in the price
 - Confirmations always lower prices
 WHY: When news is expected, buyers act early; on confirmation they take their profit.
 

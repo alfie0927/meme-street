@@ -9,9 +9,9 @@ A **stock** is ownership of a company, divided into **shares**. If a company has
 Growing costs money. A company can borrow it (and pay interest whatever happens) or sell part of itself to investors (who share in the profits and the risks). Selling shares to the public for the first time is an **initial public offering (IPO)**. After that, the shares trade between investors on a stock exchange, and the company is **listed** or **public**.
 
 Q: Why does a company hold an IPO?
-- To pay its staff
-+ To raise money by selling part of itself to the public for the first time
-- Because the law requires it every year
++ To raise money by selling part of itself to the public
+- To pay its staff and suppliers in shares
+- Because the law requires one every year
 WHY: An initial public offering raises money and lets the shares trade on an exchange afterwards.
 
 ### Why shares are worth anything
@@ -30,9 +30,9 @@ WHY: Limited liability: shareholders are never responsible for the company's deb
 - **Limited liability**: the most you can lose is what you paid. You never owe the company's debts.
 
 Q: What does a share represent?
-- A loan to the company
 + A small piece of ownership of the company
-- A promise of a fixed return
+- A loan to the company that it repays
+- A promise of a fixed yearly return
 WHY: Shares are ownership. A loan is a bond, and nothing about a share is fixed or promised.
 
 HERE: About 15 new companies list in a game year, from every industry and of every size. Each is announced on the news wire half an hour before it trades, and lists at its announced price: there is no first-day pop to chase. Companies also leave: when the market is full, the smallest company outside the MSI 50 is bought by the biggest in its industry, for cash at the market price.
@@ -49,22 +49,22 @@ An **index** is one number that sums up many stocks. The S&P 500 follows 500 lar
 Q: In a market-value-weighted index, which company moves it most?
 + The one with the largest market value
 - The one with the highest share price
-- They all count the same
+- They all count the same whatever their size
 WHY: Weighting by market value means the biggest companies matter most, whatever their share price.
 
 ### Funds and ETFs
 An **exchange-traded fund (ETF)** is a fund that holds a basket of assets and trades like a single share. One trade buys you the whole index, a whole industry or a theme. That is **diversification** in one click: one company's disaster is a small part of the fund.
 
 Q: How are Meme Street's themed funds (AIFX, GRNX...) weighted?
-- By market value
 + Equally: every member counts the same
-- By share price
+- By market value, like the MSI 50
+- By share price, the highest first
 WHY: They are equal-weighted, so each member's return counts the same, unlike the MSI 50.
 
 Q: What does buying one share of an index fund give you?
-- One share of the largest company
 + A small piece of every company in the index
-- A loan to the exchange
+- One share of the largest company in it
+- A loan to the exchange that runs the index
 WHY: The fund holds the whole basket, so one share spreads your money across all of it.
 
 ### Leveraged and inverse funds
@@ -81,8 +81,8 @@ SUMMARY: How big a company is, how much of it trades, and why that matters to a 
 
 Q: Stock A is 10 MB with 2 billion shares. Stock B is 400 MB with 20 million shares. Which company is bigger?
 + A: 20 billion against 8 billion
-- B, because its price is higher
-- They are the same size
+- B, because its share price is 40 times higher
+- They are the same size: price and shares cancel out
 WHY: Market cap is price times shares: 10 × 2 billion = 20 billion; 400 × 20 million = 8 billion.
 
 | Size | Market cap | Typical behaviour |
@@ -94,18 +94,18 @@ WHY: Market cap is price times shares: 10 × 2 billion = 20 billion; 400 × 20 m
 **Volume** is how many shares traded in a period: the bars under the chart. High volume means many participants agreed on the price; a move on high volume carries more conviction than one on thin volume.
 
 Q: A price breaks out on volume three times the usual. What does the volume suggest?
-- Nothing at all
 + Many participants took part, so the move has more conviction
-- The move is certain to continue
+- Nothing at all: volume is only noise
+- The move is certain to continue for the day
 WHY: Volume shows participation. It adds weight to a move, but nothing is ever certain.
 
 ### Liquidity
 A **liquid** market is one where you can buy or sell a lot quickly without moving the price: lots of volume, tight spreads, many buyers and sellers. Big companies are liquid. Small ones can be **illiquid**: in a real market, a big sell order can push the price down as it fills, and the gap between the best bid and the best offer can be wide.
 
 Q: Why is a small, illiquid stock costlier to trade in a real market?
-- Its fees are higher by law
 + Spreads are wider and big orders move the price as they fill
-- It cannot be sold at all
+- Its fees are set higher by the regulator
+- It cannot be sold at all once bought
 WHY: Few buyers and sellers means wide spreads and price impact: hidden costs on every trade.
 
 HERE: Market cap and the size band (small, mid or large) are on every company's page, and the market table can be sorted by market cap. Volume follows the number of shares, so the big companies trade the most. Liquidity is never a problem here: every trade fills at the price on the screen, whatever its size. In real markets it is one of the main costs of trading small companies.
@@ -118,7 +118,7 @@ On a real exchange every stock has two prices at any moment:
 - The **spread** is the gap between them.
 
 Q: On Meme Street, what does a round trip in a share cost?
-+ About 0.2%: the 0.1% fee each way, with no spread
++ About 0.2%
 - The spread plus the fee
 - Nothing
 WHY: Shares trade at one price here, so the fee is the only cost. Options do have a spread.
@@ -135,9 +135,9 @@ If a stock is bid 99.98 and offered at 100.02, buying and selling straight back 
 The spread is a cost on every round trip, on top of commission. A strategy that trades often and aims for small gains can be destroyed by spreads alone. Traders on small stocks use **limit orders** (an order to buy at the bid or below, rather than at the ask) to avoid paying it.
 
 Q: Who usually earns the spread?
-- The government
 + Market makers and whoever is on the other side of your trade
-- The company
+- The government, as a tax on each trade
+- The company whose shares are being traded
 WHY: Market makers quote both sides and earn the difference, in exchange for always being there to trade.
 
 HERE: Shares here have **no spread**: you buy and sell at the same displayed price, and the only cost is the 0.1% fee each way. **Options do have a bid and an ask**, as on a real exchange, about 6% of the option's value apart (wider, as a share, for cheap far-out contracts): you buy at the ask and sell at the bid. Open a stock's **Options** tab to see them.
@@ -155,18 +155,18 @@ A price moves when buyers are more eager than sellers, or the other way round. I
 - **The crowd**: trends attract buyers, levels where the price turned before attract orders, and fear and greed swing prices further than the news alone would.
 
 Q: What makes a price rise?
-- The company asking for it to rise
 + Buyers being more eager than sellers at the current price
-- High volume, always
+- The company asking the exchange for it to rise
+- High volume, always, whichever way it leans
 WHY: More demand than supply at a price pushes it up until enough sellers appear.
 
 ### Expectations are already in the price
 Markets look ahead. If everyone expects a great quarter, the price already reflects it before the report. A great quarter that was **less great than expected** can send the price down. What moves prices is the **surprise**: the difference between what happened and what was expected.
 
 Q: A company reports record profits and its shares fall. What is the most likely reason?
-- The report was faked
 + The profits were below what the market expected
-- Shares always fall on earnings day
+- The report was faked by the company
+- Shares always fall on an earnings day
 WHY: Prices already contain expectations. A result below them disappoints, even if it is a record.
 
 ### Random noise
@@ -174,7 +174,7 @@ Much of any minute's or hour's movement is noise: orders arriving at random. Rea
 
 Q: A stock drifts 0.4% in a quiet hour with no news at all. The most likely cause?
 - A hidden earnings leak
-+ Ordinary noise: buyers and sellers arriving at random
++ Ordinary noise
 - A trading halt
 WHY: Most small moves are noise. Prices wander without a reason, which is why one candle rarely means anything on its own.
 
@@ -203,8 +203,8 @@ WHY: 5 minutes of pre-market, 20 of regular session, 5 of after-hours.
 
 Q: Why are prices jumpier in extended hours in a real market?
 + Fewer people trade, so small orders move prices and spreads widen
-- The rules allow bigger moves
-- Companies only report then
+- The rules allow bigger moves after hours
+- Companies only report their results then
 WHY: Thin trading means less liquidity: each order matters more.
 
 Companies usually report earnings **outside** the regular session, so the reaction shows up as a gap at the next open.
@@ -225,8 +225,8 @@ If the whole market falls far enough in a day, everything stops. In the US the l
 
 Q: What is the purpose of a market-wide circuit breaker?
 + To pause trading in a crash so people have time to think
-- To guarantee prices stop falling
-- To let the exchange fix prices
+- To guarantee that prices stop falling
+- To let the exchange set the prices itself
 WHY: It buys time; it does not stop the fall from continuing after the pause.
 
 ### What a halt means for you
@@ -236,14 +236,14 @@ WHY: It buys time; it does not stop the fall from continuing after the pause.
 
 Q: Meme Street has no trading halts. What does that mean for your stop-loss in a crash?
 + It can still fill, at whatever price the market has reached
-- It is cancelled until the market calms
-- It fills at exactly your stop price
+- It is cancelled until the market calms down again
+- It fills at exactly your stop price, guaranteed
 WHY: Trading never pauses here, so orders are checked every second and fill at the price of that moment.
 
 Q: Your stock is halted while you hold it. What can you do?
-- Sell at the last price
 + Nothing until trading resumes
-- Cancel the trade
+- Sell at the last traded price
+- Cancel the trade and get your money back
 WHY: A halt stops all trading. Orders wait, and fill at whatever price trading resumes at.
 
 HERE: **There are no halts.** The game used to pause a stock after an extreme move and the whole market after a big fall in the index, but that only ever stopped players, never prices, so it was removed: you can trade straight through any crash. Gaps still happen (at the open, on earnings, on big news), and a stop-loss fills at the first price past it.

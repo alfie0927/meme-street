@@ -11,9 +11,9 @@ Most beginners decide how much to **buy**. Professionals decide how much to **lo
 Risk at most **1% of your account** on any one trade (some use 0.5%, some up to 2%). "Risk" means what you lose if the stop is hit, not the size of the position.
 
 Q: What does "risk 1%" mean?
-- Buy positions worth 1% of the account
 + Lose at most about 1% of the account if the stop is hit
-- Expect to make 1%
+- Buy positions worth 1% of the account each
+- Expect to make 1% on each trade
 WHY: Risk is the loss at the stop, not the size of the position.
 
 ### Position size from the stop
@@ -76,9 +76,9 @@ WHY: Reward 6 (46 - 40), risk 2 (40 - 38): 3 to 1.
 At a given reward to risk, you break even (before costs) when:
 
 Q: At 2 to 1, what win rate breaks even before costs?
-- 50%
 + About 33%
-- 10%
+- 50%, one win for each loss
+- 10%, since the wins are big
 WHY: Win 1 in 3: +2R once, -1R twice, 0 overall.
 
 | Reward to risk | Break-even win rate |
@@ -108,9 +108,9 @@ Q: 40% wins averaging +2R, 60% losses averaging -1R. Expectancy?
 WHY: 0.4 × 2 - 0.6 × 1 = 0.2R.
 
 Q: Wins 50% of the time at +1R, loses 50% at -1R, and pays costs. What is the expectancy?
-- Positive
 + Slightly negative, because of costs
-- Exactly zero
+- Positive, because half the trades win
+- Exactly zero: wins and losses cancel
 WHY: Zero before costs; costs make it negative.
 
 [calc expectancy]
@@ -130,7 +130,7 @@ Even with an edge, the order of wins and losses is random. A strategy that wins 
 
 Q: A strategy has lost seven trades in a row. What does that prove?
 - It has stopped working
-+ Very little on its own: streaks happen even with an edge
++ Very little on its own
 - It is due a win
 WHY: Losing streaks are normal; and the next trade is not "due" anything either.
 
@@ -191,9 +191,9 @@ SUMMARY: When five positions are really one bet, and how to spread risk.
 Long five chip makers, risking 1% on each, is not 5% spread over five ideas. They are one idea (chips go up) and they will often all hit their stops on the same day. Count correlated positions as one when you add up your risk.
 
 Q: You hold five banks, each risking 1%. How much risk is that really?
-- 1%, since they are spread out
 + Closer to 5% on one idea, because banks move together
-- 0.2%
+- 1%, since the risk is spread across five
+- 0.2%, a fifth of the usual risk
 WHY: Highly correlated positions behave like one big position.
 
 ### Diversification
@@ -203,7 +203,7 @@ Spreading money over things that do not move together reduces the swings of the 
 In calm markets, stocks drift on their own news. In a sell-off, almost everything falls together: correlations jump towards 1 exactly when diversification is needed most. Safe havens (government bonds, gold) are the usual exception.
 
 Q: What tends to happen to correlations in a market sell-off?
-+ They rise: most stocks fall together
++ They rise
 - They fall to zero
 - Nothing changes
 WHY: In panics, investors sell everything at once; diversification across stocks helps least when needed most.
@@ -212,9 +212,9 @@ WHY: In panics, investors sell everything at once; diversification across stocks
 **Beta** measures how much a stock moves with the market: beta 1.5 means it tends to move 1.5% when the market moves 1%. A portfolio of high-beta stocks is a leveraged bet on the market, however many names are in it.
 
 Q: A stock has a beta of 2. The market falls 3%. What might the stock do, from beta alone?
-- Rise 6%
 + Fall about 6%
-- Fall 1.5%
+- Rise 6%, the opposite of the market
+- Fall 1.5%, half the market's drop
 WHY: Beta 2 means roughly twice the market's move: 2 × -3% = -6%.
 
 HERE: Companies here move with the market (through their beta), with their industry and on their own news, and a whole industry can fall while the market rises. In corrections and bear markets the market's share of every move gets bigger, so stocks fall together, as in real markets. **BOND** (Steady Bonds) and **GLDN** (Golden Reserve) are the safe havens.
@@ -229,9 +229,9 @@ SUMMARY: The chance of losing so much that you cannot recover, and how fast it g
 Take a trader with a genuine edge: they win half their trades, and win 1.5 times what they lose. Over 500 trades, the chance of halving the account at some point:
 
 Q: Can a strategy with a real edge still go broke?
-- No, an edge guarantees profit
 + Yes, if it risks too much on each trade
-- Only if it trades options
+- No, an edge guarantees a profit in the end
+- Only if it trades options or uses leverage
 WHY: Big bets let a run of bad luck do damage that the edge cannot repair in time.
 
 | Risk per trade | Chance of losing half the account |
@@ -247,15 +247,15 @@ Same strategy, same edge; the only difference is the size of each bet. Without a
 Large bets make the account's path depend on luck in the short run, and the drawdown maths means a deep hole is very hard to climb out of. A small, steady risk keeps you in the game long enough for an edge to show.
 
 Q: Two traders have the same edge. One risks 1% a trade, the other 10%. After eight losses in a row, who is still trading normally?
-+ The 1% trader, down about 8%; the other has lost more than half
-- Both: eight losses is nothing
-- Neither: the edge is gone
++ The 1% trader, down about 8%
+- Both: eight losses in a row is nothing
+- Neither: the edge is gone after a run
 WHY: 1% eight times is about an 8% drawdown. 10% compounded eight times leaves about 43% of the account.
 
 Q: Same strategy, same edge. What changes the risk of ruin the most?
 + The share of the account risked on each trade
-- The colour scheme of the chart
-- The number of indicators used
+- The colour scheme of the chart you trade from
+- The number of indicators used on the chart
 WHY: Bet size is the main lever: small bets make ruin very unlikely for a strategy with an edge.
 
 ### All-in is the extreme
@@ -277,9 +277,9 @@ Put the stop where the chart says the idea is wrong:
 - Traded a pattern: beyond the other side of the pattern.
 
 Q: You buy a breakout above 120 from a range of 100 to 120. Where does the stop belong?
-- At 119.99
 + Back inside the range, somewhat below 120
-- At 100, always
+- At 119.99, just under the breakout level
+- At 100, the bottom of the range, always
 WHY: A close back inside the range means the breakout failed; a little margin keeps it out of the noise.
 
 ### Outside the noise
@@ -287,8 +287,8 @@ Prices wobble. A stop closer than about one ATR from the entry is inside normal 
 
 Q: The stock's ATR is 2 MB. You want a stop 0.3 MB from your entry. What is the problem?
 + It is inside normal noise and likely to be hit by chance
-- It is too far away
-- There is no problem
+- It is too far away for a day trade
+- There is no problem with a tight stop
 WHY: A typical candle moves 2 MB; a 0.3 MB stop will be touched by ordinary movement.
 
 ### Not exactly where everyone else's is

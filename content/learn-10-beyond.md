@@ -119,7 +119,7 @@ HERE: There are no coins here, but the **crypto industry** has eight companies (
 
 Q: What is behind the price of most cryptocurrencies?
 - Their quarterly earnings
-+ What buyers will pay: adoption, scarcity and sentiment
++ What buyers will pay
 - A government guarantee
 WHY: Most tokens have no cash flows; their value is set by demand.
 
