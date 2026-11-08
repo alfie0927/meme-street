@@ -1,4 +1,5 @@
 # Risk management {risk}
+TIER: pro
 The most important track. How much to risk, how to size a position from the stop, the maths of winning and losing, drawdowns, correlation and the risk of ruin.
 
 ## The 1% rule and sizing by risk {position-sizing} [7]

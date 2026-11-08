@@ -1,4 +1,5 @@
 # Strategies and trading styles {strategies}
+TIER: pro
 Trend following, mean reversion, breakouts and momentum; scalping to investing; value, growth and dividends; pairs and hedges; and why holding the market is so hard to beat.
 
 ## Trend following and momentum {trend-following} [6]

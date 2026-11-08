@@ -1,4 +1,5 @@
 # How real markets work {real-markets}
+TIER: pro
 Order books, market makers and high-frequency trading, corporate actions, brokers and regulation, and a general look at taxes.
 
 ## Market makers, order books and high-frequency trading {market-makers} [7]

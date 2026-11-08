@@ -1,4 +1,5 @@
 # Putting it together {plan}
+TIER: pro
 Your own trading plan, a checklist before every trade, a weekly review, and a glossary of every term in the course.
 
 ## Writing your trading plan {trading-plan} [7]

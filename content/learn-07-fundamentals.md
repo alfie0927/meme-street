@@ -1,4 +1,5 @@
 # Fundamentals {fundamentals}
+TIER: pro
 What a company earns, owns and owes, how it is valued, dividends and dilution, earnings season, and why sectors are valued differently.
 
 ## The three financial statements {statements} [7]

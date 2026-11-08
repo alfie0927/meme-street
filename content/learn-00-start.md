@@ -1,4 +1,5 @@
 # Start here {start}
+TIER: pro
 How Meme Street works, your first trade with a stop, and where everything is. Read these three first.
 
 ## How Meme Street works {welcome} [4]

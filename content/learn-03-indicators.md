@@ -1,4 +1,5 @@
 # Indicators {indicators}
+TIER: pro
 Moving averages, momentum oscillators, volatility bands, volume tools and Fibonacci: what each measures, how traders use it, and why every one of them gives false signals.
 
 ## Moving averages {moving-averages} [7]

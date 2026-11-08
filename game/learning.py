@@ -174,7 +174,10 @@ def parse_learn(text, tracks=None, lessons=None):
             lessons.append(lesson)
             continue
         if lesson is None:
-            track["blurb"] = (track["blurb"] + " " + line).strip()
+            if line.startswith("TIER: "):                        # free | pro | expert: who may open the unit's lessons (rubric v2)
+                track["tier"] = line[6:].strip().lower()
+            else:
+                track["blurb"] = (track["blurb"] + " " + line).strip()
             continue
         body = lesson["body"]
         if q[0] is not None:                                     # inside a question: its answers, then WHY

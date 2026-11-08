@@ -1,4 +1,5 @@
 # Orders and trade management {orders}
+TIER: pro
 Order types, brackets, trailing stops, scaling in and out, and the costs that eat into every trade: slippage, gaps and fees.
 
 ## Market, limit, stop and stop-limit orders {order-types} [7]

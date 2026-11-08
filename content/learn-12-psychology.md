@@ -1,4 +1,5 @@
 # Psychology {psychology}
+TIER: pro
 The biases that cost traders more than any bad indicator, judging decisions by process, journals and routines, and knowing when to stop.
 
 ## The biases that cost money {biases} [8]

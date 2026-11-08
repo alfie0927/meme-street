@@ -1,4 +1,5 @@
 # Market basics {basics}
+TIER: pro
 What a share is, how exchanges, indices and funds work, what market cap, volume and the spread mean, and why prices move.
 
 ## Stocks, shares and why companies list {stocks-shares} [5]

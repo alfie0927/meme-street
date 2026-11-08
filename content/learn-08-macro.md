@@ -1,4 +1,5 @@
 # Macro and the economy {macro}
+TIER: pro
 Inflation, central banks and interest rates, the data that moves markets, why the surprise matters, the business cycle, risk-on and risk-off, and the yield curve.
 
 ## Inflation and central banks {inflation} [6]

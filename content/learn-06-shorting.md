@@ -1,4 +1,5 @@
 # Shorting and leverage {shorting}
+TIER: pro
 Profiting from falls, what it costs, short squeezes, margin and leverage, and why leverage cuts both ways.
 
 ## How shorting works {shorting-basics} [6]

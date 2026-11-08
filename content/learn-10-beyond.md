@@ -1,4 +1,5 @@
 # Beyond stocks {beyond}
+TIER: pro
 Bonds and yields, commodities, currencies, crypto, property, and index funds against picking stocks.
 
 ## Bonds and yields {bonds} [6]

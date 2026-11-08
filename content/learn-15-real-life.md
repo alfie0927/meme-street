@@ -1,4 +1,5 @@
 # From game to real life {real-life}
+TIER: pro
 Trading against investing, why most day traders lose, spotting scams, the money basics to sort first, and what carries over from Meme Street.
 
 ## Trading against investing, and why most day traders lose {trading-vs-investing} [7]

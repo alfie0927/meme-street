@@ -1,4 +1,5 @@
 # Reading charts {charts}
+TIER: pro
 Candles, timeframes, trends, support and resistance, breakouts, volume, the classic patterns and gaps: the core of technical analysis, practised on real charts.
 
 ## Candlesticks {candlesticks} [6]

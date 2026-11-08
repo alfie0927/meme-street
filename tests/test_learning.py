@@ -667,7 +667,7 @@ class LearnCheckTests(unittest.TestCase):
             with open(_os.path.join(tmp, "learn-00-x.md"), "w", encoding="utf-8") as f:
                 f.write(chr(10).join(lines) + chr(10))
             bad = {n: ok for n, ok, _ in lc.run(_os.path.join(tmp, "learn-*.md"), tests_text="")}
-            self.assertFalse(bad["no lesson over 600 prose words"])
+            self.assertFalse(bad["no lesson over 500 prose words"])
             self.assertFalse(bad["no near-duplicate questions"])
             self.assertFalse(bad["every chart lesson has a chart or a test"])
             self.assertFalse(bad["every [try] link resolves"])

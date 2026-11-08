@@ -1,4 +1,5 @@
 # Testing and automation {testing}
+TIER: pro
 Advanced. Backtesting and the overfitting trap, walk-forward and out-of-sample testing, the statistics that judge a strategy, and building a trading bot.
 
 ## Backtesting and the overfitting trap {backtesting} [7]
