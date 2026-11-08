@@ -78,10 +78,17 @@ def body_html(lesson):
             out.append(f'<div class="try"><b>Check yourself:</b> {inline(b["q"])} <a href="/learn?l={lesson["id"]}">Answer it in the game</a>.</div>')
         elif "task" in b:
             out.append(f'<div class="try"><b>Do it on the market:</b> {inline(b["text"])} <a href="/learn?l={lesson["id"]}">Open the lesson</a>.</div>')
+        elif "calc" in b:
+            out.append(f'<div class="try"><b>Work it out:</b> a {b["calc"]} calculation with fresh numbers each day. '
+                       f'<a href="/learn?l={lesson["id"]}">Do it in the game</a>.</div>')
+        elif "mine" in b:
+            out.append(f'<div class="try">In the game this lesson shows <a href="/learn?l={lesson["id"]}">your own trading '
+                       "numbers</a> next to the idea.</div>")
         else:
-            k = next(k for k in ("here", "tip", "warn") if k in b)
-            label = {"here": "On Meme Street", "tip": "Tip", "warn": "Watch out"}[k]
-            out.append(f'<div class="box {k}"><b>{label}:</b> {inline(b[k])}</div>')
+            k = next((k for k in ("here", "tip", "warn") if k in b), None)     # an unknown block is skipped, never a 500 (loop 10)
+            if k:
+                label = {"here": "On Meme Street", "tip": "Tip", "warn": "Watch out"}[k]
+                out.append(f'<div class="box {k}"><b>{label}:</b> {inline(b[k])}</div>')
     return "".join(out)
 
 

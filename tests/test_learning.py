@@ -624,6 +624,16 @@ class ChallengeTests(unittest.TestCase):
 class LearnCheckTests(unittest.TestCase):
     """The Learn loop's automated rubric (tools/learn_check.py): a report over the real course, and a broken course fails."""
 
+    def test_every_public_lesson_page_renders(self):
+        """/lessons/{id} for every lesson, including the ones with [calc] and [mine] blocks, which once raised (loop 10)."""
+        import lessonpages
+        _, lessons = learning.load_content()
+        for x in lessons:
+            h = lessonpages.body_html(x)
+            self.assertTrue(h, x["id"])
+        sizing = next(x for x in lessons if x["id"] == "position-sizing")
+        self.assertIn("Work it out", lessonpages.body_html(sizing))
+
     def test_the_check_reports_and_flags_a_broken_course(self):
         import importlib.util
         import os as _os
