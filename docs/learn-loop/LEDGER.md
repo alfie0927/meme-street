@@ -9,10 +9,11 @@ B = `tools/learn_check.py` (checks passing / total). C = the simulated learner r
 | 1 | 2026-11-08 | 6/9 | (none: B failed) | B: the core units' questions all at the end (7% under a section) | Market basics interleaved: its 21 questions moved under the section each tests; the duplicate 'beats the forecast' question replaced by one on noise; the interleave check now counts a question as placed when reading follows it | (this commit) | B: 33 thin lessons, longest-option 71%, interleave 20%; next: Reading charts |
 | 2 | 2026-11-08 | 6/9 | (none: B failed) | B: core units' questions at the end (20%) | Reading charts interleaved: 30 questions moved under the section each tests; Ranges and breakouts gains a fake-breakout question. Another session has uncommitted edits in docs/HOW_IT_WORKS.md and the reel tools; this iteration touched neither | (this commit) | B: 33 thin lessons, longest-option 71%, interleave 41%; next: Indicators |
 | 3 | 2026-11-08 | 6/9 | (none: B failed) | B: core units' questions at the end (41%) | Indicators interleaved: 21 questions moved under the section each tests | (this commit) | B: 33 thin lessons, longest-option 71%, interleave 55%; next: Orders, then Risk |
+| 4 | 2026-11-08 | 7/9 | (none: B failed) | B: core units' questions at the end (55%) | Orders and Risk interleaved: 36 questions and the four generated calculations moved under the section each tests; the placement rule counts the one exercise right after a section's last paragraph. The interleave check passes (97%) | (this commit) | B: 33 thin lessons, longest-option 71%; next: the longest-option bias in the core units (rewrite options to balanced lengths) |
 
 ## Backlog the walkthroughs left (the loop picks from here when the checks are green)
 
-- do next: interleave the questions of the remaining five core units (Market basics, Reading charts, Indicators, Orders, Risk), one unit per iteration
+- done (loops 1-4): the six core units interleaved
 - rewrite recall questions in the core units as scenarios; balance option lengths (B will fail until under 45%)
 - on-topic chart tests in the lessons that teach a kind (`[test pattern flag]`, `[test candle hammer]`); Bollinger and VWAP overlays in `lrnSvg`
 - two formats: which chart? (two charts, pick one) and place the stop (click a price)

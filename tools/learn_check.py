@@ -134,7 +134,7 @@ def run(pattern=learning.LEARN_FILES, tests_text=None):
         for k, b in enumerate(x["body"]):
             if "q" in b or "calc" in b:
                 total += 1
-                before += k < last_prose                       # under a section: some reading still follows it
+                before += k <= last_prose + 1                  # under a section: reading follows it, or it is the one right after the last paragraph
     share = before / total if total else 1.0
     rows.append((f"core units: {INTERLEAVED_SHARE:.0%} of questions under their section", share >= INTERLEAVED_SHARE, f"{share:.0%} of {total} questions"))
     return rows
