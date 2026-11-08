@@ -32,7 +32,7 @@ function drawLearn(){
   <div class="lrn-prog"><div class="lrn-xp"><div><strong>${numText(d.xp,0)}</strong><small>XP · ${esc(d.level?d.level.name:'')}</small></div><div title="Days in a row with any XP (calendar days, UTC), not the game's 30-minute day"><strong>${d.streak?'🔥 ':''}${d.streak}</strong><small>day streak</small></div><div><strong>${d.total?Math.round(d.passed/d.total*100):0}%</strong><small>of the course</small></div></div>
    ${d.level&&d.level.next?`<span class="mut">${numText(d.level.next-d.xp,0)} XP to ${esc(LRN_LEVELS[d.level.n]||'the next level')}</span>${pbar(d.xp-d.level.floor,(d.level.next-d.level.floor)||1)}`:''}
    <span class="mut">Today: <b>${d.today}</b> of ${token?`<select id="lrn-goal" aria-label="Daily goal">${(d.goals||[20,50,100]).map(g=>`<option value="${g}" ${g===d.goal?'selected':''}>${g}</option>`).join('')}</select>`:d.goal} XP${d.today>=d.goal?' · goal reached':''}</span>${pbar(d.today,d.goal||1)}<span class="mut">${tr[1]?`Chart tests: ${tr[0]} of ${tr[1]} right`:'No chart tests yet'}</span>
-   <span class="mut">${d.xp_rules?`XP: ${d.xp_rules.right} for a right answer, ${d.xp_rules.wrong} for a wrong one, ${d.xp_rules.pass} for each lesson passed, ${d.xp_rules.task} for each market task. The streak counts calendar days (UTC) with any XP.`:''}</span>
+   <span class="mut">${d.xp_rules?`XP: ${d.xp_rules.right} for a right answer (a wrong one earns nothing and comes back at the end of the lesson), ${d.xp_rules.pass} for each lesson passed, ${d.xp_rules.task} for each market task. The streak counts calendar days (UTC) with any XP.`:''}</span>
    ${token?`<span class="up">${d.today>=d.goal?`Goal reached. Come back tomorrow: any XP ${d.streak>=1?`keeps your ${d.streak}-day streak going`:'starts a streak'}.`:d.streak?`Any XP today keeps your ${d.streak}-day streak; ${d.goal-d.today} more reaches the goal.`:'Any XP today starts a streak; come back tomorrow to keep it.'}</span>`:''}
    ${d.league?`<div class="lrn-league"><b>This week's learners</b>${d.league.rows.length?`<ol>${d.league.rows.slice(0,10).map(r=>`<li><a href="/player/${encodeURIComponent(r.name)}">${esc(r.name)}</a><span>${numText(r.xp,0)} XP</span></li>`).join('')}</ol>`:'<span class="mut">Nobody has earned XP yet this week: be the first.</span>'}${d.league.rank?`<span class="mut">You are #${d.league.rank} of ${d.league.learners} with ${numText(d.league.xp,0)} XP this week.</span>`:token&&d.league.rows.length?'<span class="mut">Earn XP this week to be on it.</span>':''}</div>`:''}</div></div>
   ${token?'':'<p class="hint">You are not signed in: you can read everything, answer every question and take every test, but your progress, XP and streak are not kept. <a href="/#join">Create an account</a> to keep them.</p>'}
@@ -125,24 +125,52 @@ const lrnDone=i=>!!(lrnLesson&&lrnLesson.done&&lrnLesson.done.includes(i));
 function lrnHead(){
  const L=lrnLesson,n=(L.done||[]).length,t=L.total||0;
  return t?`<span class="lrn-exs ${L.passed?'up':''}">${L.passed?'Passed ✓':`${n} of ${t} exercise${t===1?'':'s'} done`}</span>`:''}
+// ---- a lesson is a run of cards (rubric v2 A4-A6): a goal screen, one card at a time, mistakes redone at the end, an end screen.
+// A passed lesson reopens as a recap of every card with the answers given.
+let lrnRun=null;
+function lrnCards(L){                                      // a heading rides on the card after it; every other block is a card; done exercises are skipped
+ const cards=[];let h=null;
+ L.body.forEach(b=>{if(b.h){h=b;return}const ex=(b.q||b.test||b.task)?b.i:null;if(ex!==null&&lrnDone(ex)){h=null;return}
+  cards.push({blocks:h?[h,b]:[b],ex,kind:b.task?'task':b.test?'test':b.q?'q':'teach'});h=null});
+ return cards}
 function drawLesson(){
- const L=lrnLesson;$('learn-card').classList.add('reading');
- const nav=`<div class="lrn-nav">${L.prev?`<a href="/learn?l=${encodeURIComponent(L.prev.id)}">← ${esc(L.prev.title)}</a>`:'<span></span>'}${L.next?`<a href="/learn?l=${encodeURIComponent(L.next.id)}" class="${L.passed?'lrn-go':''}">${esc(L.next.title)} →</a>`:''}</div>`;
- const first=L.body.findIndex(b=>b.q||b.task||b.test);
- let seen=0,hideFrom=false,html='';                       // exercises come one at a time: the ones after the first unanswered question or test wait (LP14d)
- L.body.forEach((b,k)=>{const isEx=!!(b.q||b.test||b.task);
-  if(k===first)html+=`<p class="mut lrn-exh" style="margin:0 0 6px">Check yourself as you read: the lesson is passed when every exercise is done. ${token?'Right answers earn more XP, but a wrong one still counts and is explained.':'Sign in to keep your XP and passes.'}</p>`;
-  let h=lrnBlock(b);
-  if(isEx&&!b.task){if(hideFrom)h=h.replace(/^<div class="lrn-box/,'<div hidden data-lrn-later class="lrn-box');else if(!lrnDone(b.i))hideFrom=true}
-  html+=h});
- setHtml($('learn-body'),`<div class="lrn-crumb"><a href="/learn">Learn</a> › ${esc(L.track_title)}</div><h3 style="margin:8px 0 2px">${esc(L.title)}</h3><p class="mut" style="margin:0">${L.minutes} minutes · <span id="lrn-head">${lrnHead()}</span></p>
-  <div class="lesson-body">${html}</div>${nav}`);
+ const L=lrnLesson;$('learn-card').classList.add('reading');lrnRun=null;
+ const crumb=`<div class="lrn-crumb"><a href="/learn">Learn</a> › ${esc(L.track_title)}</div>`;
+ if(L.passed){
+  const nav=`<div class="lrn-nav">${L.prev?`<a href="/learn?l=${encodeURIComponent(L.prev.id)}">← ${esc(L.prev.title)}</a>`:'<span></span>'}${L.next?`<a href="/learn?l=${encodeURIComponent(L.next.id)}" class="lrn-go">${esc(L.next.title)} →</a>`:''}</div>`;
+  setHtml($('learn-body'),`${crumb}<h3 style="margin:8px 0 2px">${esc(L.title)}</h3><p class="mut" style="margin:0">${L.minutes} minutes · <span id="lrn-head">${lrnHead()}</span> · a recap: your answers are kept, nothing is earned twice</p>
+   <div class="lesson-body">${L.body.map(lrnBlock).join('')}</div>${nav}`);
+  document.querySelectorAll('#learn-body [data-lrn-ex]').forEach(el=>lrnExample(el,el.dataset.lrnEx));
+  document.querySelectorAll('#learn-body [data-lrn-test]').forEach(el=>lrnTest(el,el.dataset.lrnTest));return}
+ const cards=lrnCards(L),done=(L.done||[]).length;
+ lrnRun={cards,i:-1,queue:[],right:0,wrong:0,xp:0,run:0,redo:false};
+ setHtml($('learn-body'),`${crumb}<div class="lrn-goal"><h3>${esc(L.title)}</h3><p class="lrn-goalp">${lrnText(L.summary||'')}</p>
+  <p class="mut">${L.minutes} min · ${cards.length} card${cards.length===1?'':'s'} · ${L.total} exercise${L.total===1?'':'s'}${done?` · ${done} already done`:''}</p>
+  <div class="bar"><button class="buy" data-lrn-start>${done?'Continue':'Start'}</button>${L.prev?`<a class="btn" href="/learn?l=${encodeURIComponent(L.prev.id)}">← ${esc(L.prev.title)}</a>`:''}</div>
+  ${token?'':'<p class="hint">Sign in to keep your XP and passes.</p>'}</div>`)}
+function lrnNext(){
+ const R=lrnRun,L=lrnLesson;if(!R)return;
+ R.i++;
+ if(R.i>=R.cards.length){if(R.queue.length){R.cards=R.queue;R.queue=[];R.i=0;R.redo=true}else{lrnEnd();return}}
+ const c=R.cards[R.i];if(c.ex!==null&&lrnDone(c.ex)){lrnNext();return}                 // done meanwhile (a retaken chart test)
+ const n=R.cards.length,pos=R.i+1;
+ const foot=c.kind==='teach'?`<div class="bar lrn-foot"><button class="buy" data-lrn-next>Next</button></div>`:c.kind==='task'?`<div class="bar lrn-foot"><button data-lrn-skip>Skip for now</button></div>`:'';
+ setHtml($('learn-body'),`<div class="lrn-crumb"><a href="/learn">Learn</a> › ${esc(L.track_title)} › ${esc(L.title)}</div>
+  <div class="lrn-bar" role="progressbar" aria-valuenow="${pos}" aria-valuemin="1" aria-valuemax="${n}"><i style="width:${Math.round(100*(pos-1)/n)}%"></i></div>
+  <p class="mut lrn-pos">${R.redo?'Mistakes to redo · ':''}card ${pos} of ${n}<span id="lrn-head">${lrnHead()}</span></p>
+  <div class="lesson-body lrn-card">${c.blocks.map(lrnBlock).join('')}</div>${foot}`);
  document.querySelectorAll('#learn-body [data-lrn-ex]').forEach(el=>lrnExample(el,el.dataset.lrnEx));
- document.querySelectorAll('#learn-body [data-lrn-test]:not([hidden])').forEach(el=>lrnTest(el,el.dataset.lrnTest))}
-function lrnReveal(){
- const nx=document.querySelector('#learn-body [data-lrn-later]');if(!nx)return;
- nx.hidden=false;nx.removeAttribute('data-lrn-later');if(nx.dataset.lrnTest!==undefined)lrnTest(nx,nx.dataset.lrnTest);
- nx.scrollIntoView({behavior:'smooth',block:'nearest'})}
+ document.querySelectorAll('#learn-body [data-lrn-test]').forEach(el=>lrnTest(el,el.dataset.lrnTest));
+ window.scrollTo(0,0)}
+function lrnPraise(text){const el=document.createElement('div');el.className='lrn-praise';el.textContent=text;document.body.appendChild(el);setTimeout(()=>el.remove(),1500)}
+async function lrnEnd(){
+ const R=lrnRun,L=lrnLesson;lrnRun=null;
+ const n=R.right+R.wrong,acc=n?Math.round(100*R.right/n):null,left=(L.total||0)-(L.done||[]).length;
+ const d=token?await api('/api/learn'):null,st=d&&!d.error&&d.tracks?d:null;
+ setHtml($('learn-body'),`<div class="lrn-end ${L.passed?'passed':''}">${L.passed?'<div class="lrn-burst" aria-hidden="true"></div><h3>Lesson complete</h3>':`<h3>Almost there</h3><p class="mut">${left} task${left===1?'':'s'} on the market left: the lesson is passed the moment ${left===1?'it is':'they are'} done.</p>`}
+  ${acc===100&&n>=3?'<p class="up">A perfect run.</p>':''}
+  <div class="lrn-stats"><div><strong>+${R.xp}</strong><small>XP this run</small></div>${acc!==null?`<div><strong>${acc}%</strong><small>accuracy</small></div>`:''}${st?`<div><strong>${st.streak?'🔥 ':''}${st.streak}</strong><small>day streak</small></div><div><strong>${st.today} / ${st.goal}</strong><small>XP today</small></div>`:''}</div>
+  <div class="bar">${L.next?`<a class="btn" href="/learn?l=${encodeURIComponent(L.next.id)}">${L.passed?'Next':'Later'}: ${esc(L.next.title)} →</a>`:''}<a class="btn" href="/learn">Back to the path</a></div></div>`)}
 // a question answered in place: right or wrong, the right answer and why (learning.learn_answer)
 async function lrnAnswer(box,choice){
  if(box._busy)return;box._busy=true;const i=+box.dataset.lrnQ,review=box.dataset.lrnReview!==undefined,lesson=box.dataset.lrnLesson||(lrnLesson&&lrnLesson.id),num=box.dataset.lrnNum!==undefined;
@@ -155,12 +183,16 @@ async function lrnAnswer(box,choice){
  box.querySelector('.lrn-qs').textContent=a.right?'Right':'Answered';
  if(review){if(a.xp)toast(`+${a.xp} XP`,true,2000);return}
  lrnProgress(a)}
-// progress that came back with an answer (a question, a chart test or a task check): the header, XP, a pass
+// progress that came back with an answer (a question, a chart test or a task check): the header, the run's tally, a Continue button, a pass
 function lrnProgress(a){
  const L=lrnLesson;if(!L||!a||a.done===undefined)return;
  const was=L.passed;L.done=a.done;L.passed=a.passed;
  const h=$('lrn-head');if(h)h.innerHTML=lrnHead();
- lrnReveal();
+ const R=lrnRun;
+ if(R){const c=R.cards[R.i];R.xp+=a.xp||0;
+  if(c&&c.kind!=='task'&&a.right!==undefined){if(a.right){R.right++;R.run++;if(R.run===3)lrnPraise('3 in a row!');else if(R.run===5)lrnPraise('5 in a row. Perfect so far.');else if(R.run===10)lrnPraise('10 in a row!')}else{R.wrong++;R.run=0;if(!R.queue.includes(c))R.queue.push(c)}}
+  const foot=document.querySelector('#learn-body .lrn-foot'),btn=`<div class="bar lrn-foot"><button class="buy" data-lrn-next>Continue</button></div>`;
+  if(foot)foot.outerHTML=btn;else $('learn-body').insertAdjacentHTML('beforeend',btn)}
  if(a.xp)toast(`+${a.xp} XP${a.passed&&!was?' with the pass':''}${a.today!==undefined?` · ${a.today} of ${a.goal} today`:''}`,true,2500);
  if(a.passed&&!was){const go=document.querySelector('.lrn-nav a:last-child');if(go)go.classList.add('lrn-go')}}   // (the server's own notice says "Lesson passed")
 async function lrnRecheck(box){
@@ -244,6 +276,7 @@ function lrnSvg(o,slots){
 
 $('learn-card').addEventListener('click',e=>{
  const t=e.target;
+ if(t.dataset.lrnStart!==undefined||t.dataset.lrnNext!==undefined||t.dataset.lrnSkip!==undefined){lrnNext();return}
  const qb=t.closest('[data-lrn-q]');if(qb&&t.dataset.lrnChoice!==undefined){lrnAnswer(qb,+t.dataset.lrnChoice);return}
  if(qb&&t.dataset.lrnNumgo!==undefined){const v=parseFloat(qb.querySelector('input').value);if(!isFinite(v)){toast('Type a number first',false);return}lrnAnswer(qb,v);return}
  const pb=t.closest('[data-place-q]');if(pb&&t.dataset.placePick!==undefined){lrnPlacePick(pb,+t.dataset.placePick);return}

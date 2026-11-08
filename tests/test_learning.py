@@ -92,15 +92,15 @@ class LessonTests(unittest.TestCase):
         les = e.lesson("stocks-shares", p)                                        # questions only
         qs = [b for b in les["body"] if "q" in b]
         self.assertFalse(les["passed"])
-        first = e.learn_answer(p, "stocks-shares", qs[0]["i"], 99)               # wrong: explained, counts once, a little XP
+        first = e.learn_answer(p, "stocks-shares", qs[0]["i"], 99)               # wrong: explained, earns nothing, completes nothing (rubric v2 A5)
         self.assertFalse(first["right"])
         self.assertTrue(first["why"] and first["answer"] in range(3))
-        self.assertEqual(first["xp"], learning.XP_WRONG)
-        self.assertEqual(p.xp, learning.XP_WRONG)
-        again = e.learn_answer(p, "stocks-shares", qs[0]["i"], first["answer"])
-        self.assertNotIn("xp", again)                                             # the second answer earns nothing
+        self.assertEqual((first["xp"], p.xp, first["done"]), (0, 0, []))
+        again = e.learn_answer(p, "stocks-shares", qs[0]["i"], first["answer"])   # right the second time: the card is done and paid once
+        self.assertEqual((again["xp"], again["done"]), (learning.XP_RIGHT, [qs[0]["i"]]))
+        self.assertEqual(e.learn_answer(p, "stocks-shares", qs[0]["i"], first["answer"])["xp"], 0)   # a third answer earns nothing
         for b in qs[1:]:
-            e.learn_answer(p, "stocks-shares", b["i"], 0)
+            e.learn_answer(p, "stocks-shares", b["i"], e.learn_answer(p, "stocks-shares", b["i"], 99)["answer"])
         self.assertIn("stocks-shares", p.passed)
         self.assertEqual(e.lesson("stocks-shares", p)["passed"], True)
         self.assertGreaterEqual(p.xp, learning.XP_WRONG + learning.XP_PASS)
@@ -112,7 +112,7 @@ class LessonTests(unittest.TestCase):
         w = e._lesson_by_id["welcome"]
         for k, kind in learning.exercises(w):                                     # every question of Welcome answered, its task not done:
             if kind != "task":                                                    # the next lesson moves on (loop 12)
-                e.learn_answer(p, "welcome", k, 0)
+                e.learn_answer(p, "welcome", k, e.learn_answer(p, "welcome", k, 99)["answer"])
         v2 = e.lessons_view(p)
         self.assertNotEqual(v2["next"], "welcome")
         self.assertTrue(next(x for x in v2["tracks"][0]["lessons"] if x["id"] == "welcome")["task_pending"])
@@ -137,7 +137,7 @@ class LessonTests(unittest.TestCase):
         self.assertEqual(task["task"], "stop")
         for b in les["body"]:
             if "q" in b:
-                e.learn_answer(p, "first-trade", b["i"], 0)
+                e.learn_answer(p, "first-trade", b["i"], e.learn_answer(p, "first-trade", b["i"], 99)["answer"])
         self.assertNotIn("first-trade", p.passed)                                 # the task is still to do
         e.trade(p, "NVXA", "buy", 0.2)
         self.assertIn("trade", p.tasks)                                           # the first trade is the welcome lesson's task
@@ -399,7 +399,7 @@ class LessonTests(unittest.TestCase):
             if x["track"] == "start":
                 for k, kind in learning.exercises(x):
                     if kind == "q":
-                        e.learn_answer(p, x["id"], k, 0)
+                        e.learn_answer(p, x["id"], k, e.learn_answer(p, x["id"], k, 99)["answer"])
         for kind in ("trade", "stop"):
             e._learn_task(p, kind)
         self.assertTrue(all(x["id"] in p.passed for x in e.path_lessons if x["track"] == "start"))
@@ -419,10 +419,10 @@ class LessonTests(unittest.TestCase):
         wrong = e.learn_answer(p, "position-sizing", calc["i"], spec["num"] * 2)
         self.assertFalse(wrong["right"])
         self.assertAlmostEqual(wrong["answer"], spec["num"], places=3)
-        self.assertEqual(wrong["xp"], learning.XP_WRONG)
-        again = e.learn_answer(p, "position-sizing", calc["i"], spec["num"] * 1.01)             # within 2%: right, but already answered
+        self.assertEqual(wrong["xp"], 0)
+        again = e.learn_answer(p, "position-sizing", calc["i"], spec["num"] * 1.01)             # within 2%: right, and the card is done now
         self.assertTrue(again["right"])
-        self.assertNotIn("xp", again)
+        self.assertEqual(again["xp"], learning.XP_RIGHT)
         self.assertFalse(e.learn_answer(p, "position-sizing", calc["i"], "nope")["right"])
         for kind in learning.CALC_KINDS:
             c = e._calc(p, "x", 0, kind)
@@ -709,7 +709,9 @@ class LearningServerTests(unittest.TestCase):
             time.sleep(0.3)
             a = json.loads(http(srv, "/api/learn/answer", "POST", {"lesson": "stocks-shares", "i": qi, "choice": 0}, headers=h)[1])
             self.assertIn("why", a)
-            self.assertIn(a["xp"], (learning.XP_RIGHT, learning.XP_WRONG))
+            if not a["right"]:                                                     # a wrong answer earns nothing; answer again, right
+                a = json.loads(http(srv, "/api/learn/answer", "POST", {"lesson": "stocks-shares", "i": qi, "choice": a["answer"]}, headers=h)[1])
+            self.assertEqual(a["xp"], learning.XP_RIGHT)
             self.assertEqual(a["total"], les["total"])
             time.sleep(0.3)
             d = json.loads(http(srv, "/api/learn", headers=h)[1])
@@ -740,24 +742,17 @@ class LearningBrowserTests(unittest.TestCase):
             await d.check("and no challenges or MB to earn (switched off)", "document.querySelectorAll('.chal').length+'|'+document.getElementById('learn-body').innerText",
                           lambda t: t.startswith("0|") and "Challenges" not in t and "MB a week" not in t)
             await pg.goto(base + "/learn?l=support-resistance", 3)
-            await d.check("a lesson opens to read", "document.querySelector('.lesson-body') && document.querySelector('.lesson-body').innerText.length",
-                          lambda n: bool(n) and n > 1500, wait=10)
-            await d.check("with a real chart as an example", "document.querySelectorAll('[data-lrn-ex] svg').length", 1, wait=10)
-            await pg.js("document.querySelector('[data-lrn-show]').click()")
-            await d.check("whose answer can be shown", "document.querySelector('[data-lrn-ex] .lrn-out').innerText",
-                          lambda t: "changes every quarter of an hour" in t, wait=5)
-            await pg.js("while(document.querySelector('[data-lrn-later]'))lrnReveal()")   # exercises come one at a time; show them all
-            await d.check("and a chart test to answer", "document.querySelectorAll('[data-lrn-test] [data-lrn-pick]').length",
-                          lambda n: n >= 2, wait=10)
-            await pg.js("document.querySelector('[data-lrn-test] [data-lrn-pick]').click()")
-            await d.check("an answer shows what came next", "document.querySelector('[data-lrn-test] .lrn-out').innerText",
-                          lambda t: "Another chart" in t and ("Right." in t or "Not this time." in t), wait=8)
-            await d.check("and marks the right choice", "document.querySelectorAll('[data-lrn-test] .lrn-opts button.right').length", 1)
-            await d.check("with questions to answer", "document.querySelectorAll('[data-lrn-q] [data-lrn-choice]').length", lambda n: n >= 4)
+            await d.check("a lesson opens on its goal screen", "document.querySelector('.lrn-goal') && document.querySelector('.lrn-goal').innerText",
+                          lambda t: bool(t) and "Start" in t and "card" in t, wait=10)
+            await pg.js("document.querySelector('[data-lrn-start]').click()")
+            await d.check("the first card shows under a progress bar", "document.querySelectorAll('.lrn-bar, .lrn-card').length", 2, wait=5)
+            await pg.js("for(let k=0;k<30&&!document.querySelector('[data-lrn-q] [data-lrn-choice]');k++){const b=document.querySelector('[data-lrn-next]');if(!b)break;b.click()}")
+            await d.check("Next moves through the teach cards to a question", "document.querySelectorAll('[data-lrn-q] [data-lrn-choice]').length", lambda n: n >= 2, wait=5)
             await pg.js("document.querySelector('[data-lrn-q] [data-lrn-choice]').click()")
             await d.check("an answer is marked and explained", "document.querySelector('[data-lrn-q] .lrn-out').innerText",
                           lambda t: "Right." in t or "Not this one." in t, wait=8)
-            await d.check("and the header counts it", "document.getElementById('lrn-head').innerText", lambda t: "of" in t and "done" in t, wait=5)
+            await d.check("and a Continue button follows it", "document.querySelectorAll('[data-lrn-next]').length", 1, wait=5)
+            await d.check("and the header counts the run", "document.getElementById('lrn-head').innerText", lambda t: "of" in t and "done" in t, wait=5)
             await pg.goto(base + "/learn", 3)
             await d.check("and the path shows the XP earned", "document.querySelector('.lrn-prog').innerText",
                           lambda t: "XP" in t and "0 of" not in t.split("XP")[0], wait=10)

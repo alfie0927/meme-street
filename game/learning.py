@@ -60,7 +60,7 @@ TASK_KINDS = {"trade": "Make a trade", "stop": "Put a stop-loss on a position", 
               "bracket": "Place a bracket", "planned": "Close a position that had a stop", "short": "Open a short",
               "limit": "Place a limit order", "trail": "Place a trailing stop", "option": "Buy an option",
               "note": "Write a note on a trade", "short_stop": "Put a stop-loss above a short"}
-XP_RIGHT, XP_WRONG, XP_PASS, XP_TASK, GOAL = 10, 2, 20, 30, 50       # XP per exercise right or wrong, per lesson passed, per task; the daily goal (50: one lesson, not two answers)
+XP_RIGHT, XP_WRONG, XP_PASS, XP_TASK, GOAL = 10, 0, 20, 30, 50       # XP per exercise right or wrong (nothing: it comes back, rubric v2 A5), per lesson passed, per task; the daily goal
 TEST_TIMEFRAMES = {"1m": "1-minute", "5m": "5-minute", "15m": "15-minute", "1h": "1-hour"}
 TEST_PENDING = 3000          # chart tests waiting for an answer, at most (the oldest go first)
 TEST_KEEP = 3 * 3600         # and for at most this long
@@ -554,9 +554,11 @@ class LearningMixin:
             return out
         if p is not None:
             done = p.ex.setdefault(lesson_id, [])
-            if i not in done:
+            if right and i not in done:                    # a right answer completes the card; a wrong one is asked again at the end of the run (rubric v2 A5)
                 done.append(i)
-                out["xp"] = self._xp(p, XP_RIGHT if right else XP_WRONG) + self._pass_check(p, x)
+                out["xp"] = self._xp(p, XP_RIGHT) + self._pass_check(p, x)
+            else:
+                out["xp"] = 0
             out.update(self._lesson_progress(p, x))
         return out
 
@@ -847,9 +849,11 @@ class LearningMixin:
             x = self._lesson_by_id.get(lesson_id) if lesson_id else None
             if x and isinstance(i, int) and 0 <= i < len(x["body"]) and "test" in x["body"][i]:
                 done = p.ex.setdefault(lesson_id, [])
-                if i not in done:
+                if right and i not in done:                # as for a question: only a right answer completes the card (rubric v2 A5)
                     done.append(i)
-                    out["xp"] = self._xp(p, XP_RIGHT if right else XP_WRONG) + self._pass_check(p, x)
+                    out["xp"] = self._xp(p, XP_RIGHT) + self._pass_check(p, x)
+                else:
+                    out["xp"] = 0
                 out.update(self._lesson_progress(p, x))
         return out
 
