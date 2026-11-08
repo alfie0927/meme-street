@@ -136,6 +136,10 @@ A share of the profit paid in cash, usually every quarter. The **dividend yield*
 
 The dates that matter:
 
+Q: A share at 50 MB pays 2 MB a year in dividends. What is the dividend yield, in percent?
+= 4 ±0.1
+WHY: 2 ÷ 50 = 4%.
+
 - **Declaration**: the company announces the dividend.
 - **Ex-dividend date**: buy before it to get the dividend; buy on or after it and you do not. On that morning the price usually **drops by about the dividend**, because the cash is leaving the company.
 - **Payment date**: the cash arrives.
@@ -151,6 +155,12 @@ Buying just before the ex-date to "collect" a dividend gains nothing: the price 
 ### Buybacks
 
 The company buys its own shares and cancels them. Each remaining share owns a bigger slice, so EPS rises. It returns cash like a dividend, and is often more tax-efficient in real markets.
+
+Q: A company buys back and cancels a tenth of its shares, with profit unchanged. What happens to EPS?
++ It rises, since the profit is split among fewer shares
+- It falls, because the company spent its cash on the buyback
+- Nothing: EPS depends only on the profit, not on the share count
+WHY: Fewer shares, same profit: each share's slice is bigger.
 
 ### Dilution
 
@@ -189,6 +199,12 @@ WHY: The market reacts to the surprise against expectations.
 - **Miss**: below.
 
 The **size of the surprise** drives the reaction, not the result itself. A record profit that misses forecasts can fall; a loss smaller than feared can rise.
+
+Q: A company reports a record profit that is below the forecast. What usually happens to the shares?
++ They fall: the surprise was negative
+- They rise, because a record profit is good news whatever the forecast
+- Nothing, because the record and the miss cancel each other out
+WHY: Prices move on the gap to expectations, not on the result itself.
 
 ### Guidance
 
@@ -241,6 +257,12 @@ WHY: Banks are valued on book value and rates, software on growth. A P/E only me
 - **Utilities and telecoms**: steady, regulated, high dividends, low growth. Valued like bonds: they suffer when rates rise.
 - **Energy and materials**: profits swing with oil, gas and metal prices. Valued on the cycle: a low P/E at the top of a cycle can be a trap.
 - **Consumer staples** (food, household goods): steady demand in good times and bad. **Defensive**: they hold up in recessions.
+
+Q: Interest rates rise sharply. Which sector's shares are hit by the rate move itself, not by the economy?
++ Utilities, valued like bonds
+- Energy, because oil prices follow interest rates closely
+- Consumer discretionary, because shoppers watch rates
+WHY: Steady dividend payers are priced against bonds; when bond yields rise, their shares fall.
 
 - **Consumer discretionary** (cars, travel, luxury): **cyclical**: booms and busts with the economy.
 - **Real estate (REITs)**: valued on rental income and the value of the property; sensitive to rates.

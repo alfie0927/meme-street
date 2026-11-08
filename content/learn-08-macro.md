@@ -13,6 +13,12 @@ SUMMARY: What inflation is, why central banks fight it, and how they do it.
 - High inflation eats savings and wages, and makes planning hard.
 - Falling prices (deflation) can be worse: people delay spending, and debts get heavier.
 
+Q: Inflation runs at 2% a year. How do most central banks see that?
++ As normal: it is roughly what they aim for
+- As dangerously high, needing an immediate rate rise
+- As deflation, since prices are barely moving at all
+WHY: Around 2% is the target most central banks set.
+
 ### Central banks
 
 A **central bank** (the Federal Reserve in the US, the Bank of England, the European Central Bank) sets the short-term **interest rate**, the price of borrowing money for the whole economy.
@@ -27,6 +33,12 @@ WHY: Above-target inflation calls for higher rates to cool demand.
 - Economy too weak: **cut rates**. Borrowing gets cheaper, spending picks up.
 
 Its decisions are announced on scheduled dates, and markets spend weeks guessing them.
+
+Q: The economy is weak and inflation is low. What does the central bank usually do with rates?
++ Cuts them, to make borrowing cheaper
+- Raises them, to attract savers back into the banks
+- Leaves them, since rates only ever answer to inflation
+WHY: Cheaper borrowing is the lever for a weak economy.
 
 ### "Hawkish" and "dovish"
 
@@ -182,13 +194,10 @@ SUMMARY: Expansion, peak, contraction and recovery; bull and bear markets; which
 
 Economies move in a **cycle**:
 
-1. **Recovery**: growth picks up from a low, rates are low, profits rebound.
-
-2. **Expansion**: strong growth, rising employment, inflation starts to build.
-
-3. **Peak**: growth slows, inflation is high, central banks tighten.
-
-4. **Contraction (recession)**: output falls, unemployment rises, rates are cut.
+- **Recovery**: growth picks up from a low, rates are low, profits rebound.
+- **Expansion**: strong growth, rising employment, inflation starts to build.
+- **Peak**: growth slows, inflation is high, central banks tighten.
+- **Contraction (recession)**: output falls, unemployment rises, rates are cut.
 
 ### Market phases
 
@@ -230,6 +239,12 @@ Rotation is a tendency, not a timetable, and the cycle is only obvious in hindsi
 
 HERE: The market here moves through hidden phases (bull, sideways, correction, bear and recovery) with realistic lengths: bull markets last longest, corrections are short and sharp, bear markets are deep. The economy shifts the odds: hot inflation with tight money makes corrections and bear markets likelier, shrinking growth a bear market, strong growth a bull market.
 
+Q: Which phase of the market cycle lasts longest here, as in real markets?
++ The bull market
+- The correction, which drags on for months at a time
+- The recovery that follows a bear market
+WHY: Bull markets run longest; corrections and bears are shorter and sharper.
+
 HERE: Nothing on the site tells you the phase; you read it from the charts and the data, as in real life. Deep falls can end with a **panic low**: a sudden plunge on huge volume, a rebound, and a recovery.
 
 ## Risk-on, risk-off and safe havens {risk-on-off} [5]
@@ -241,6 +256,12 @@ SUMMARY: The market's mood swings, and where money hides when it is scared.
 - **Gold**.
 - Some currencies (the US dollar, the Swiss franc, the yen).
 - Defensive companies.
+
+Q: Which of these tends to rise when investors are scared?
++ Gold
+- Small companies with fast growth and no profits yet
+- Crypto and industrial commodities
+WHY: Gold is a safe haven; the others are what gets sold in a risk-off move.
 
 ### Reading the mood
 

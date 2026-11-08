@@ -49,6 +49,12 @@ Because losing streaks happen to every trader. With 1% a trade, ten losses in a 
 ### Allowing for gaps
 A stop can gap. Holding through earnings or into a big release, the real risk can be several times the stop distance: size down further, or step aside.
 
+Q: You plan to hold a position through an earnings report. How should the size change?
++ Smaller, because the real risk can be several times the stop
+- Larger, because earnings bring the biggest moves and the best chances
+- The same: the stop protects the position whatever the news brings
+WHY: A stop can gap on news; sizing for the stop distance alone understates the risk.
+
 HERE: The **Position size and risk** tool under every stock's chart does this sum: type the stop, choose 0.5%, 1% or 2% of your equity, choose a target (1.5R, 2R or 3R), and it says how many shares, what you lose at the stop and what you make at the target. **Fill in the trade and the bracket** sets it all up.
 
 [try /stock/CLDR] Open CloudRail, pick a stop from the chart and let the risk tool size a 1% trade.
@@ -141,6 +147,12 @@ Win 80% of trades at +0.5R and lose 20% at -3R (a trader who takes small profits
 
 ### Low win rate, winning strategy
 Trend followers often win only 35 to 40% of their trades, with a few big winners paying for many small losses. It feels bad most days and works.
+
+Q: A trend follower wins only 38% of the time and still makes money over a year. How?
++ A few big winners pay for many small losses
+- The losses are not counted until the strategy is reviewed
+- The win rate is wrong: no strategy below 50% can profit
+WHY: Expectancy is win rate times payoff; a low win rate with big winners is positive.
 
 ### Streaks are normal
 Even with an edge, the order of wins and losses is random. A strategy that wins 40% of the time has about an even chance of **eight losses in a row** somewhere in 100 trades. If eight losses in a row would end your account or your nerve, your risk per trade is too high.

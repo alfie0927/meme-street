@@ -75,13 +75,13 @@ Some funds aim to move two or three times the index each day, or the opposite wa
 
 HERE: The **MSI 50** is the market's index: the 50 largest companies, weighted by market value and re-ranked every game day. There are **21 industry indices** (XTECH, XFINA, XENER...), six **themed funds** that weight their members equally (AIFX for AI and cloud, GRNX clean energy, DIVX dividend payers, FINX fintech and crypto, SPCX space, FRNT the imaginary industries), and four leveraged funds on the MSI 50:
 
-HERE: Q: The MSI 50 is re-ranked every game day. What decides which companies are in it?
+Q: The MSI 50 is re-ranked every game day. What decides which companies are in it?
 + Market value: the 50 largest
 - Trading volume over the last game day, the 50 busiest stocks
 - The share price alone, the 50 most expensive shares
 WHY: The MSI 50 is weighted and chosen by market value, like most big indices.
 
-**2LMSI** and **3LMSI** (two and three times), **2SMSI** and **3SMSI** (two and three times the opposite). A fund's page lists its holdings and their weights.
+HERE: **2LMSI** and **3LMSI** (two and three times), **2SMSI** and **3SMSI** (two and three times the opposite). A fund's page lists its holdings and their weights.
 
 [try /stock/MSI] Open the MSI 50 and look at its holdings: which company has the biggest weight?
 
