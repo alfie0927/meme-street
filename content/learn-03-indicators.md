@@ -9,6 +9,13 @@ A **moving average** is the average closing price of the last N candles, recalcu
 ### SMA and EMA
 - **Simple (SMA)**: every one of the N closes counts the same.
 - **Exponential (EMA)**: recent closes count more, so it turns faster, and gets shaken out by noise more often.
+
+Q: Which average turns faster when the trend changes?
++ The exponential, since recent closes count more
+- The simple, because it counts every close the same
+- Neither: both turn at the same candle by definition
+WHY: Weighting recent closes more makes the EMA react sooner, and get shaken more often.
+
 A short average (9, 10, 20) follows the price closely; a long one (100, 200) shows the big trend and turns slowly.
 
 Q: Which average reacts faster to the latest price?
@@ -49,6 +56,13 @@ SUMMARY: Oscillators that measure the speed of a move, overbought and oversold, 
 
 ### RSI (relative strength index)
 Compares the size of recent up moves with recent down moves, on a scale of 0 to 100 (14 candles by default).
+
+Q: The RSI compares what over its 14 candles?
++ The size of recent rises with recent falls
+- The price with its moving average of the same length
+- Today's volume with the volume of the last 14 candles
+WHY: RSI is a ratio of up moves to down moves, scaled to 0-100.
+
 - Above **70**: **overbought**: the price has risen fast.
 - Below **30**: **oversold**: it has fallen fast.
 Overbought does **not** mean "sell". In a strong uptrend the RSI can stay above 70 for a long time while the price keeps rising. Many traders use 40 to 50 as support for the RSI in an uptrend instead.
@@ -94,6 +108,12 @@ SUMMARY: Measuring how much a price moves, the squeeze, and sizing stops by vola
 ### Bollinger Bands
 
 A 20-candle moving average with a band two standard deviations above and below it. When the price is volatile the bands widen; when it is quiet they narrow.
+
+Q: A stock's Bollinger Bands have widened sharply this week. What happened?
++ The price became more volatile
+- The price rose above its 20-candle average
+- Volume fell, so the bands lost their anchor
+WHY: The bands are two standard deviations wide: they widen when moves get bigger.
 
 - **The squeeze**: bands at their narrowest in a long time. Volatility comes in waves, so a squeeze often comes before a big move (the bands do not say which way).
 - **Riding the band**: in a strong trend the price can hug the upper band for a long time. Touching it is not a sell signal.
@@ -165,6 +185,12 @@ Like the RSI, but with volume included (MFI), or a measure of whether candles cl
 
 ### The volume average
 The simplest volume tool: a moving average over the volume bars, so you can see at a glance whether today's volume is above or below normal.
+
+Q: Today's volume bar sits far above its 20-candle average. What does that tell you?
++ Far more shares traded than usual
+- The price is above its own 20-candle average
+- Money is flowing out of the stock
+WHY: The volume average is the normal level; a bar far above it is unusual participation.
 
 HERE: The 20-candle **volume average** is free. VWAP (on intraday charts, starting each game day), OBV, the Money Flow Index and Chaikin Money Flow are Pro. The Daily Chart has its own VWAP and 20 EMA switches for everyone.
 
@@ -263,6 +289,13 @@ A sensible set uses one tool from each family:
 - **Momentum**: one oscillator (is the move speeding up or tiring?).
 - **Volatility**: ATR or bands (how far is normal, where does the stop go?).
 - **Volume**: volume bars and their average (is anyone taking part?).
+
+Q: You have two moving averages and the MACD on your chart. What family is missing?
++ Volatility, such as ATR or bands
+- Momentum, since the MACD measures trend only
+- Nothing: three indicators always cover the families
+WHY: Averages are trend, MACD is momentum; nothing on that chart measures how much the price moves.
+
 Then the chart itself (trend structure and levels) comes first, and the indicators second.
 
 Q: Which set covers different kinds of information?

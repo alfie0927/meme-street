@@ -9,6 +9,12 @@ A **candle** sums up one stretch of time (a minute, an hour, a day) in four pric
 - **Close**: the last.
 - **High** and **low**: the extremes.
 
+Q: A candle closes above where it opened. What colour is its body?
++ Green, or hollow
+- Red, because the price moved during the period
+- It depends on whether the high was above the open
+WHY: Close above open is a green (or hollow) body; close below open is red.
+
 The thick **body** runs from the open to the close: green (or hollow) when the close is above the open, red when below. The thin **wicks** (or shadows) reach up to the high and down to the low.
 
 ### What the shape says
@@ -93,6 +99,12 @@ A **trend** is a series of swings in one direction. Prices never move in straigh
 - **Downtrend**: **lower highs** and **lower lows**.
 - **Range** (sideways): highs and lows at about the same prices.
 
+Q: A chart makes a higher high, then a pullback that stops above the last low. What is this?
++ An uptrend: higher highs and higher lows
+- A downtrend, because the price pulled back
+- A range, since the price went both up and down
+WHY: Higher highs and higher lows are the definition of an uptrend; pullbacks are part of it.
+
 ### Reading it
 Mark the last few swing highs and lows. Two higher highs and two higher lows make an uptrend. The trend is intact until the structure breaks: in an uptrend, the first close below the last higher low is the first warning that it may be ending.
 
@@ -132,6 +144,12 @@ SUMMARY: Where prices tend to turn, why, and how to judge how strong a level is.
 - **Memory**: traders who bought at a level and saw it fall want to sell when they get their money back there (resistance). Those who missed a bounce want to buy the next time (support).
 - **Orders**: stop-losses and limit orders collect just beyond obvious levels.
 - **Round numbers**: 50, 100, 150 attract orders because people think in round numbers.
+
+Q: Why does a level where many traders bought, and then watched the price fall, tend to act as resistance later?
++ They sell when the price gets back to their entry
+- The exchange marks the level and rejects orders above it
+- Buyers always return to the same price out of habit
+WHY: Trapped buyers want their money back; their selling caps the price at that level.
 
 - **The previous day's high, low and close**, and long moving averages, are watched by everyone.
 
@@ -218,6 +236,12 @@ Price tells you what happened; volume tells you how many people took part. The s
 - **Breakouts on high volume**: more likely to be real.
 - **New highs on falling volume**: fewer buyers are joining in; the trend may be tiring.
 - **Climax volume**: an enormous spike at the end of a long move, often marking the top or bottom (a blow-off or a panic).
+
+Q: An uptrend shows high volume on the rises and low volume on the pullbacks. What does that say?
++ The trend is healthy: buyers press, sellers hesitate
+- The trend is tiring, because pullbacks should carry the most volume
+- Nothing: volume only matters at breakouts
+WHY: Impulses on volume and pullbacks on thin volume are the shape of a healthy trend.
 
 - **Volume drying up** in a range: the squeeze before the breakout.
 
@@ -328,6 +352,12 @@ Two parallel lines containing a trend: buy near the lower line in a rising chann
 ### Cup and handle
 A rounded bottom (the cup), a rise back to the old high, a small pullback (the handle), then a break above the rim.
 
+Q: A cup and handle: where is the buy trigger?
++ A close above the rim, after the handle
+- The bottom of the cup, where the price is cheapest
+- The first candle of the handle's pullback
+WHY: The pattern completes when the price breaks above the old high (the rim) after the handle.
+
 ### Not every pause continues
 A flag or triangle that never breaks out was just a pause, and some break the wrong way. The rules are the same as for any pattern: wait for the close beyond the trigger, put the stop beyond the other side, aim for the measured move.
 
@@ -341,6 +371,12 @@ A **gap** is a jump between one candle's close and the next one's open, with no 
 - **Common gap**: small, inside a range, usually filled quickly (the price comes back to the previous close).
 - **Breakaway gap**: out of a range on big news and volume, the start of a new move; often not filled for a long time.
 - **Runaway gap**: in the middle of a strong trend, as late buyers rush in.
+
+Q: A stock gaps out of a three-month range on earnings and heavy volume. Which kind of gap is it most likely to be?
++ A breakaway gap
+- A common gap that will fill within the day
+- An exhaustion gap at the end of the move
+WHY: Out of a range, on news and volume: the breakaway gap, the one least likely to fill soon.
 
 - **Exhaustion gap**: a last jump at the end of a trend, soon filled as the move collapses.
 
@@ -367,6 +403,12 @@ WHY: A gap that starts a new move out of a range is a breakaway gap; they often 
 ### Fair value gaps
 On any timeframe, three candles where the first one's high is below the third one's low (in a fast rise) leave a **fair value gap**: a stretch the price moved through so fast that little traded there. Traders watch for the price to come back into it, where it often finds support or resistance.
 
+Q: In a fast rise, three candles leave a stretch the price moved through without trading. What is it called?
++ A fair value gap
+- A breakaway gap, since the price broke out
+- An exhaustion gap, since the move was fast
+WHY: A fair value gap is the untraded stretch between the first candle's high and the third's low.
+
 HERE: The regular session opens with a jump every game day, and earnings come out in the quiet sessions, so a game-day view shows the gap between one close and the next open. The real-time charts are continuous, but fast moves leave fair value gaps on every candle size. The Daily Chart's after-game breakdown marks fair value gaps the chart tested.
 
 [chart breakout]
@@ -376,6 +418,12 @@ SUMMARY: Using a higher timeframe for direction and a lower one for timing.
 Most traders read at least two timeframes:
 - The **higher** one (say, hourly) sets the direction and the big levels.
 - The **lower** one (say, 5-minute) times the entry and places a tight, logical stop.
+
+Q: Which timeframe decides the direction you trade, and which times the entry?
++ The higher one decides, the lower one times
+- The lower one decides, because it reacts first to the market
+- Both decide the direction; neither is for timing
+WHY: Direction from above, timing from below.
 
 ### An example
 The hourly chart is in an uptrend, and the price has pulled back to a support level that has held twice. On the 5-minute chart, the fall into the level slows, a higher low forms, and the price breaks a small downtrend line. That is an entry in the direction of the bigger trend, at a level, with a stop just below the small higher low.
