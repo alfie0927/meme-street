@@ -71,6 +71,12 @@ Q: Which stock is most at risk of a squeeze?
 - An index fund
 WHY: The more shorts and the longer they would take to cover, the more violent the rush.
 
+Q: A heavily shorted stock jumps 15% on modest news and keeps climbing all day. What is the most likely engine?
+- Dividend buyers rushing in before the record date
++ Shorts covering: their buying feeds the rise
+- Market makers widening the spread to slow the trading
+WHY: Forced covering is buying. Each short that gives up pushes the price into the next one's stop.
+
 ## Margin, leverage, margin calls and liquidation {margin-leverage} [7]
 SUMMARY: Trading with borrowed money: margin, maintenance, margin calls and forced closing.
 **Leverage** means controlling a position bigger than your own money, by borrowing the rest. At **5x**, 100 MB of your own controls 500 MB of stock; the broker lends you 400 MB and charges interest on it.

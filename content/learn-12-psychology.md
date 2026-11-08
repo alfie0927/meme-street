@@ -153,3 +153,9 @@ Q: Which is a sign of being on tilt?
 + Trading bigger and faster after losses
 - Journaling your trades
 WHY: Escalating size and pace after losses is the classic tilt pattern.
+
+Q: You have lost 3% today, your daily limit, and you see a setup you love. What do you do?
+- Take it, with double size, to win the day back
+- Take it at normal size: limits are for beginners
++ Stop for the day; the setup will have cousins tomorrow
+WHY: Loss limits exist for exactly this moment. Tilt makes every setup look perfect.

@@ -36,6 +36,12 @@ Q: What is a sensible approach to learning to trade with real money?
 - Quit your job and trade full time from the start
 WHY: Learning is expensive; keep the cost of the lessons small.
 
+Q: Studies of retail day traders usually find what share are profitable after costs over a year?
+- About half of them, as in any fair game of chance
++ A small minority, often well under one in five
+- Most of them, once they have had some practice
+WHY: Costs, overtrading and competition against professionals make consistent day-trading profit rare.
+
 ## Spotting scams {scams} [6]
 SUMMARY: The warning signs of investment fraud, and the most common schemes.
 Wherever there is money and hope, there are scams. The warning signs repeat:
@@ -72,6 +78,12 @@ Q: You are asked to pay a "release fee" before you can withdraw your profits. Wh
 - You should pay it quickly
 WHY: Real brokers do not hold your money hostage for fees.
 
+Q: A stranger online shows screenshots of 300% monthly returns and offers to trade your money for a fee. What is this?
+- A rare chance that should be taken before it closes
+- Normal marketing for a hedge fund looking for clients
++ Almost certainly a scam: those returns and that offer do not exist
+WHY: Guaranteed or absurd returns, urgency and strangers asking for money are the standard pattern.
+
 ## The basics first {basics-first} [6]
 SUMMARY: An emergency fund, paying off expensive debt, and long-term index investing before any trading.
 Before risking money in markets, the boring basics do more for most people than any trading strategy.
@@ -106,6 +118,12 @@ Q: Roughly how long does money take to double at 8% a year?
 + 9 years
 - 20 years
 WHY: The rule of 72: 72 ÷ 8 = 9.
+
+Q: You have 2,000 in credit-card debt at 25% interest and want to start trading with 2,000. What comes first?
++ Paying off the debt: a guaranteed 25% beats any trade
+- Trading: the market can return more than 25% a year
+- Splitting the money half and half to do both at once
+WHY: No strategy reliably beats a 25% cost of debt; clearing it is the best return available.
 
 ## What carries over from Meme Street {what-carries-over} [6]
 SUMMARY: The skills that transfer to real markets, and the differences to remember.
@@ -145,3 +163,9 @@ Q: You were consistently calm and profitable in practice. What is a sensible fir
 + Start much smaller, and grow as your behaviour holds up
 - Use leverage to make it worthwhile
 WHY: Real money changes behaviour; prove you can stay disciplined first.
+
+Q: On Meme Street your buy order filled exactly at the displayed price. In a real market, what is different?
+- Nothing: real brokers also fill at the displayed price
++ There is a spread and slippage, so you pay a little more
+- Real orders fill at a better price than the one shown
+WHY: Real markets have a bid, an ask and moving prices; the game simplifies this on purpose.

@@ -221,6 +221,12 @@ Q: Why can a low P/E at the top of a commodity boom be a trap?
 - Commodity companies never pay dividends
 WHY: Cyclical earnings flatter the P/E at the peak.
 
+Q: A bank trades on a P/E of 8 and a software company on 40. Which is the better buy from those numbers alone?
+- The bank, because 8 is far cheaper than 40 whatever the business
+- The software company, because growth justifies any price
++ Neither: sectors are valued on different yardsticks
+WHY: Banks are valued on book value and rates, software on growth. A P/E only means something against the same kind of business.
+
 ## Analysts and credit ratings {ratings} [5]
 SUMMARY: Price targets, upgrades and downgrades, and what credit ratings measure.
 ### Analyst notes
@@ -242,3 +248,9 @@ Q: Which rating is the lowest "investment grade"?
 + BBB
 - CCC
 WHY: BBB is the bottom of investment grade; below it is high yield or "junk".
+
+Q: An analyst cuts a stock from Buy to Hold and the price drops 4% at the open. What did the market react to?
++ The change in view, not the word "Hold" itself
+- The analyst's fee, which the company must now pay in full
+- A rule that forces every fund to sell on any downgrade
+WHY: Ratings matter as changes of expectation: a downgrade says a respected voice has become less sure.

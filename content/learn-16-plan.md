@@ -45,6 +45,12 @@ Q: A great-looking trade appears that is not one of your setups. What does the p
 - Take it at double size
 WHY: The plan's value comes from following it; exceptions are where discipline leaks.
 
+Q: Your plan says "trade only pullbacks in uptrends on the hourly". A friend tips a stock crashing on news. What does the plan say?
+- Take it small, since a tip is information
+- Take it: the plan is only a rough guideline
++ Pass: it is not your setup
+WHY: A plan's job is to decide in advance so the moment does not. Setups outside it are someone else's trade.
+
 ## A checklist before every trade {checklist} [5]
 SUMMARY: Ten questions to answer before pressing Buy.
 Pilots use checklists because skilled people skip steps under pressure. So do traders. Before every trade:
@@ -116,6 +122,12 @@ Q: Which matters most in a review?
 + Whether trades followed the plan, and which mistakes repeat
 - The colour of the chart
 WHY: Behaviour and process are what you can control and improve.
+
+Q: Your weekly review shows your winners average +1R and your losers -2.5R. What is the first thing to fix?
++ The losers: stops are being moved or ignored
+- The winners: take profit sooner to lock them in
+- Nothing: a 50% win rate covers the difference
+WHY: Losses bigger than the planned 1R mean the stop is not being respected, and that destroys any edge.
 
 ## Glossary {glossary} [10]
 SUMMARY: Every term in the course, in a sentence each.

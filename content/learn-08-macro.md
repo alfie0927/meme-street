@@ -35,6 +35,12 @@ Q: What does "dovish" mean?
 - Refusing to change rates
 WHY: Doves favour easier policy; hawks favour tighter.
 
+Q: Inflation comes in at 5% against a forecast of 3%. What does the market now expect the central bank to do?
+- Cut rates to help households cope with the prices
++ Raise rates, or keep them higher for longer
+- Nothing: central banks ignore any single release
+WHY: Hot inflation means tighter money, and prices move on that expectation within seconds.
+
 ## How interest rates affect stocks {rates} [6]
 SUMMARY: The channels from the policy rate to share prices, and which companies feel it most.
 Higher interest rates pull share prices down through several channels:
@@ -65,6 +71,12 @@ Q: A rate rise was 95% expected and happens. What usually happens to the market?
 + Little reaction
 - A big rise, always
 WHY: Prices move on surprises; an expected decision is no surprise.
+
+Q: Rates are expected to rise 0.25% and the central bank raises exactly 0.25%. What happens to prices on the news?
+- A sharp fall, because rates went up at all today
+- A sharp rise, because the uncertainty is finally over
++ Little: the move was already priced in
+WHY: Markets price expectations. Only the difference between the decision and the forecast moves them.
 
 ## Jobs, GDP, PMI and retail sales {data-releases} [6]
 SUMMARY: The big economic releases, what each measures, and how often they come.
@@ -216,6 +228,12 @@ Q: Which tends to fall most in a risk-off move?
 - Government bonds
 WHY: The riskiest assets are sold first when fear takes over.
 
+Q: Gold and government bonds rise while small growth stocks fall hard in the same hour. What is the mood?
++ Risk-off: money is hiding in safe assets
+- Risk-on: investors are hunting for bigger returns
+- Neutral: the two moves cancel each other out
+WHY: Safe havens up and speculative assets down is the signature of fear.
+
 ## The yield curve, explained simply {yield-curve} [5]
 SUMMARY: Short and long interest rates, what an inverted curve means, and why people watch it.
 Governments borrow for different lengths of time: 3 months, 2 years, 10 years, 30 years. The interest rate (the **yield**) on each is different. Plot them from shortest to longest and you get the **yield curve**.
@@ -246,3 +264,9 @@ Q: What has an inverted yield curve often come before?
 - An immediate stock market crash
 - Higher growth
 WHY: It reflects expectations that rates must fall because the economy will weaken.
+
+Q: Two-year yields climb above ten-year yields. What has happened to the curve?
+- It has steepened, a sign of strong growth in the years ahead
++ It has inverted, which has often come before a recession
+- Nothing unusual: short rates are normally higher than long ones
+WHY: Normally longer loans pay more. When short rates exceed long ones, investors expect cuts and weaker growth.

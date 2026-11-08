@@ -30,6 +30,12 @@ Q: Which bond's price is most sensitive to a change in rates?
 - They are equally sensitive
 WHY: Longer maturity means longer duration: more of its value is affected by the new rate.
 
+Q: You hold a 10-year bond paying 3%. Market rates rise to 5%. What happens to its price?
+- It rises, because bonds are safe when rates go up
+- Nothing: the coupon is fixed, so the price is fixed too
++ It falls, so its yield rises towards 5%
+WHY: Nobody pays full price for 3% when new bonds pay 5%; the price drops until the yields match.
+
 ## Commodities {commodities} [6]
 SUMMARY: Oil, gas, metals and crops: what drives them, and how they differ from shares.
 **Commodities** are raw materials: energy (crude oil, natural gas), metals (gold, copper), and agricultural goods (wheat, corn). They have no earnings and pay no dividends; their prices come from **supply and demand**.
@@ -96,6 +102,12 @@ Q: The central bank raises rates more than expected. What does its currency tend
 - Nothing
 WHY: Higher rates attract money into the currency.
 
+Q: A UK company earns half its revenue in dollars. The pound strengthens 10% against the dollar. What happens to its reported profits?
++ They fall: each dollar earned is worth fewer pounds
+- They rise: a strong pound helps every exporter
+- Nothing: exchange rates only affect banks and airlines
+WHY: Earnings abroad are translated back into the home currency; a stronger pound shrinks them.
+
 ## Crypto: what is different {crypto} [6]
 SUMMARY: Digital assets, how they differ from shares, and the extra risks.
 **Cryptocurrencies** (Bitcoin, Ether and thousands of others) are digital tokens recorded on a **blockchain**: a shared ledger kept by many computers instead of one bank.
@@ -129,6 +141,12 @@ Q: You lose the private key to a self-held wallet. What happens?
 - The coins return to the exchange
 WHY: Without the key nobody can move the coins.
 
+Q: A coin falls 30% over a weekend while stock markets are closed. What does that show about the difference from shares?
+- Crypto is regulated more tightly than shares at weekends
++ Crypto trades around the clock, with no closing bell to pause a move
+- Coins publish their earnings reports on Saturdays
+WHY: No sessions, no halts and often thin liquidity: moves happen at any hour of any day.
+
 ## REITs, and index funds against stock picking {reits-index} [6]
 SUMMARY: Property through the stock market, and why most investors are better off owning the whole market.
 ### REITs
@@ -158,3 +176,9 @@ Q: What have long-term studies found about most actively managed funds?
 + Most fail to beat their index after fees over long periods
 - They always match the index exactly
 WHY: Costs and competition make beating the index hard to sustain.
+
+Q: Over twenty years, roughly what share of professional stock-picking funds beat a simple index fund after fees?
+- Almost all of them, thanks to their research teams
+- About half of them, as chance alone would suggest
++ A minority, often under one in five
+WHY: Fees and competition make beating the market rare over long periods, which is why index funds are the default.

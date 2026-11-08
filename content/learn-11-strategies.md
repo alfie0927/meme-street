@@ -88,6 +88,12 @@ Q: What does waiting for a retest trade off?
 - Higher fees
 WHY: Some breakouts never come back; those that do and hold are more reliable.
 
+Q: You buy a breakout and it fails inside two candles, stopping you out for -1R. What is the right conclusion?
++ Nothing is wrong: most breakouts fail and the stop did its job
+- The method is broken and should be dropped for good
+- The stop was too wide and should be much tighter next time
+WHY: Breakout trading wins by catching the few that run; the failures are the cost of entry.
+
 ## Scalping, day trading, swing trading and investing {styles} [6]
 SUMMARY: The four time horizons, what each demands, and how costs change with them.
 | Style | Holding time | Timeframe | Trades | Needs |
@@ -115,6 +121,12 @@ Q: A day trade goes wrong and you decide to "hold it as an investment". What is 
 + You have changed the plan to avoid taking a loss, without a reason to own it for years
 - Investments cannot lose
 WHY: Switching style mid-trade is usually loss aversion in disguise.
+
+Q: You have a full-time job and can look at charts for twenty minutes in the evening. Which style fits?
+- Scalping 30-second candles after work each night
++ Swing trading on daily charts, or investing
+- Day trading the open from a phone during meetings
+WHY: The style must fit the time you have; short timeframes need constant attention.
 
 ## Value, growth, dividends and dollar-cost averaging {investing-styles} [6]
 SUMMARY: The main ways long-term investors choose shares, and a simple way to invest regularly.
@@ -146,6 +158,12 @@ Q: You invest 100 MB every week whatever the price. What is this called?
 + Dollar-cost averaging
 - Scalping
 WHY: Fixed amounts at fixed intervals: dollar-cost averaging.
+
+Q: You invest the same 100 MB every month regardless of the price. What does that achieve?
+- A guarantee of beating the market over the years
+- The lowest possible entry price for the whole position
++ More shares when prices are low, fewer when high
+WHY: Dollar-cost averaging removes timing from the decision and smooths the entry price.
 
 ## Pairs trading and hedging {pairs-hedging} [6]
 SUMMARY: Betting on one stock against another, and protecting a position you want to keep.
@@ -179,6 +197,12 @@ Q: You own a stock and buy a put on it before earnings. What have you done?
 - Sold the stock
 WHY: The put pays off if the price falls, offsetting the loss on the shares.
 
+Q: You are long a chip maker and short the technology index against it. The whole market falls 5%. What happens to the pair?
++ Little: the short offsets most of the market's fall
+- You lose twice, because both sides are technology
+- You gain 5% from the short alone and keep the long
+WHY: A hedge removes the market's move and leaves the bet on the stock against its sector.
+
 ## Why holding the market is hard to beat {hold-market} [5]
 SUMMARY: Costs, competition and compounding: the honest benchmark for any strategy.
 Every strategy should be compared with the simplest alternative: **buy the index and hold it**. It costs almost nothing, needs no skill, and over long periods has beaten most professionals.
@@ -210,3 +234,9 @@ Q: Why does missing a few of the market's best days hurt long-run returns so muc
 - Prices only rise on Mondays
 - It does not matter
 WHY: The best days are few and often come in turbulent times, exactly when people jump out.
+
+Q: A trader made 12% last year. The index made 15%. How did the trader do?
+- Well: 12% is a strong return in any year
++ Worse than holding the market, with more effort and risk
+- It depends on how many trades were made to get it
+WHY: The honest benchmark is what doing nothing would have made.

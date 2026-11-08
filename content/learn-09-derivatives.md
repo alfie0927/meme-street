@@ -255,6 +255,12 @@ Q: A cash-settled 50 call expires with the stock at 58. What do you receive per 
 - Nothing
 WHY: Cash settlement pays the intrinsic value: 58 - 50.
 
+Q: You hold a European call that is deep in the money a week before expiry. What can you do with it today?
+- Exercise it now and take the shares at the strike price
+- Nothing: a European option can only be held to expiry
++ Sell it; you cannot exercise it before expiry
+WHY: European style means exercise only at expiry, but the option itself can be sold at any time before.
+
 ## Futures: contracts, margin, contango and backwardation {futures} [6]
 SUMMARY: Agreements to buy or sell later, how their margin works, and the shape of a futures curve.
 A **futures contract** is an agreement to buy or sell something (oil, wheat, gold, an index, a currency) at a set price on a set future date. Unlike an option, **both sides are obliged**.
@@ -284,6 +290,12 @@ Q: In contango, how do later futures compare with the spot price?
 + Higher
 - The same
 WHY: Contango is an upward-sloping futures curve.
+
+Q: A futures position moves against you overnight and your margin falls below the maintenance level. What happens?
++ A margin call: you add money or the position is closed
+- Nothing happens until the contract reaches expiry
+- The exchange cancels the contract at your entry price
+WHY: Futures settle daily: losses are taken from margin every day, and a shortfall must be topped up at once.
 
 ## CFDs, swaps, and leveraged fund decay {other-products} [6]
 SUMMARY: Contracts for difference, swaps in one paragraph, and why leveraged and inverse funds lose value over time.
@@ -318,3 +330,9 @@ Q: Why are CFDs risky for beginners?
 - They are illegal everywhere
 - They never pay out
 WHY: Leverage magnifies losses; regulators' own figures show most retail CFD traders lose.
+
+Q: A 3x leveraged fund tracks an index that rises 10% and then falls back to where it started. Where is the fund?
+- Exactly where it started, the same as the index
++ Below where it started, because of the daily reset
+- Up about 30%, three times the first day's move
+WHY: Daily compounding of leveraged moves erodes value on a round trip: the decay of leveraged funds.

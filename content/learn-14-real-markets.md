@@ -39,6 +39,12 @@ Q: How do market makers earn a living?
 - From the exchange's profits
 WHY: Buying at the bid and selling at the ask, many times a day.
 
+Q: You place a market order to buy 10,000 shares of a thinly traded stock. What happens to your average price?
++ It rises as your order eats through the ask side of the book
+- It stays at the quoted ask for the whole order
+- It falls, because big orders are given a discount
+WHY: Each price level has limited shares; a big order takes them in turn, moving the price against you.
+
 ## IPOs, splits, dividend dates and other corporate actions {corporate-actions} [7]
 SUMMARY: The events that change a company's shares, and what each means for a holder.
 ### IPOs
@@ -72,6 +78,12 @@ Q: A company agrees to be bought at 50 a share. Its stock trades at 48. Why the 
 - The buyer is overpaying
 WHY: The discount is the market's price for the deal's risk and the wait.
 
+Q: You own 100 shares at 80 and the company does a 4-for-1 split. What do you hold afterwards?
+- 100 shares at about 320, four times the price
++ 400 shares at about 20, the same value
+- 25 shares at about 320, a quarter of the count
+WHY: A split changes the number of shares and the price, not what you own.
+
 ## Brokers, fees and regulation {brokers} [6]
 SUMMARY: How to choose a broker, the costs to compare, and who protects your money.
 ### What a broker does
@@ -104,6 +116,12 @@ Q: How do many "commission-free" brokers earn money?
 - From the government
 WHY: Zero commission rarely means zero cost.
 
+Q: A broker advertises zero commission. How might it still earn from your trades?
+- It does not: zero commission means zero cost to you
+- By charging the company whose shares you are buying
++ By selling your orders to market makers, and from the spread
+WHY: Payment for order flow and spreads are real costs that never show as a fee.
+
 ## Taxes: a general overview {taxes} [5]
 SUMMARY: The usual ways trading and investing are taxed, in general terms only.
 Tax rules differ a great deal between countries and change often. This is a general picture, not advice: check the rules where you live, or ask a qualified adviser.
@@ -132,3 +150,9 @@ Q: Why does frequent trading often cost more tax than buying and holding?
 + Every gain is realised and taxed each year, often at higher short-term rates
 - Holding is never taxed
 WHY: Holding defers tax until sale and often qualifies for lower long-term rates.
+
+Q: You sell a winner after eleven months in a country that taxes short-term gains more heavily. What did timing cost you?
++ A higher rate than holding a few weeks longer would have
+- Nothing: the tax depends only on the size of the profit
+- A fine from the exchange for selling too early
+WHY: Holding periods often change the rate; it is worth knowing the rules where you live.

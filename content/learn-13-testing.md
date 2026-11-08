@@ -77,6 +77,12 @@ Q: You test on the out-of-sample data, tweak, and test again, ten times. What ha
 - Nothing
 WHY: Each look leaks information into the design.
 
+Q: A strategy earned 40% a year on the data it was tuned on and 2% on data it had never seen. What does that tell you?
++ It was fitted to the past and does not generalise
+- It works, and the new data was simply unlucky
+- The in-sample result is the one to trust and trade
+WHY: Out-of-sample results are the only honest ones; a big gap means overfitting.
+
 ## Sharpe, drawdown and profit factor {performance-stats} [6]
 SUMMARY: The numbers that judge a strategy beyond its total return.
 Return alone says little: how much risk was taken to get it?
@@ -112,6 +118,12 @@ Q: A backtest shows a Sharpe ratio of 6. What is the most likely explanation?
 + An error, look-ahead bias or overfitting
 - A normal result
 WHY: Sharpe ratios that high are extremely rare in real trading; suspect the test first.
+
+Q: Strategy A: +30% with a 40% drawdown. Strategy B: +18% with an 8% drawdown. Which is the better risk-adjusted result?
+- A: the higher return is all that matters in the end
++ B: far more return for each unit of pain
+- They are equal once the fees are included
+WHY: Return against drawdown is what you could actually live through; A's fall would stop most traders.
 
 ## Building and judging a trading bot {bots} [7]
 SUMMARY: Turning a strategy into rules a computer can follow, and testing it honestly.
@@ -153,3 +165,9 @@ Q: What is a bot better at than a person?
 + Following the rules every time, without fear or fatigue
 - Knowing when the market has changed
 WHY: Consistency is a bot's strength; judgement and context are not.
+
+Q: Your bot made 20 trades in a backtest and all 20 won. What should you think?
+- It is ready for real money straight away
+- Lower the stop so that it wins even more often
++ Too few trades to prove anything; look for a flaw
+WHY: Twenty trades is a sample, not evidence. A perfect record usually means a bug or a fit to the past.
