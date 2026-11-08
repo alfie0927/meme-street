@@ -109,6 +109,10 @@ class LessonTests(unittest.TestCase):
         view = e.lessons_view(p)
         self.assertEqual((view["passed"], view["xp"], view["streak"], view["today"]), (1, p.xp, 1, p.xp))
         self.assertEqual(view["next"], "welcome")                                 # the first unpassed lesson
+        steps = [x for t in view["tracks"] for x in t["lessons"] if x["ex_total"]]
+        self.assertEqual([x["id"] for x in steps if not x["locked"]], ["welcome", "stocks-shares"])   # the rest is locked (rubric v2 A3)
+        self.assertEqual(e.lesson("first-trade", p)["locked"], {"id": "welcome", "title": e._lesson_by_id["welcome"]["title"]})
+        self.assertNotIn("locked", e.lesson("first-trade"))                        # a visitor browses freely
         w = e._lesson_by_id["welcome"]
         for k, kind in learning.exercises(w):                                     # every question of Welcome answered, its task not done:
             if kind != "task":                                                    # the next lesson moves on (loop 12)
@@ -160,8 +164,8 @@ class LessonTests(unittest.TestCase):
         e, p = self.e, self.p
         t = e.placement_new()
         qs = t["questions"]
-        self.assertEqual(len(qs), learning.PLACEMENT_UNITS)
-        self.assertEqual([q["track"] for q in qs], [tr["id"] for tr in e.tracks[1:1 + learning.PLACEMENT_UNITS]])
+        self.assertEqual(len(qs), len(e.tracks) - 1)                               # every unit after Start (rubric v2 A1)
+        self.assertEqual([q["track"] for q in qs], [tr["id"] for tr in e.tracks[1:]])
         self.assertTrue(all("answer" not in q and q["options"] for q in qs))
         def shown(who, q):                                                          # the right answer's slot as `who` sees it
             b = e._lesson_by_id[q["lesson"]]["body"][q["i"]]
@@ -192,7 +196,10 @@ class LessonTests(unittest.TestCase):
         q2 = join(e, "expert")
         all_right = [{"lesson": q["lesson"], "i": q["i"], "choice": shown(q2, q)} for q in qs]
         r2 = e.placement_grade(q2, all_right)
-        self.assertEqual((r2["start"]["track"], q2.placed), (e.tracks[1 + learning.PLACEMENT_UNITS]["title"], e.tracks[1 + learning.PLACEMENT_UNITS]["id"]))
+        self.assertEqual((r2["start"]["track"], q2.placed), (None, "all"))         # every unit known
+        q3 = join(e, "fresh")
+        self.assertEqual(e.placement_skip(q3)["placed"], "start")                   # "Start from the beginning" (rubric v2 A1)
+        self.assertEqual(e.lessons_view(q3)["placed"], "start")
 
     def test_wrong_answers_make_a_weak_skill_and_a_review_that_pays_a_little_and_passes_nothing(self):
         e, p = self.e, self.p
@@ -710,6 +717,7 @@ class LearningServerTests(unittest.TestCase):
             a = json.loads(http(srv, "/api/learn/answer", "POST", {"lesson": "stocks-shares", "i": qi, "choice": 0}, headers=h)[1])
             self.assertIn("why", a)
             if not a["right"]:                                                     # a wrong answer earns nothing; answer again, right
+                time.sleep(0.3)
                 a = json.loads(http(srv, "/api/learn/answer", "POST", {"lesson": "stocks-shares", "i": qi, "choice": a["answer"]}, headers=h)[1])
             self.assertEqual(a["xp"], learning.XP_RIGHT)
             self.assertEqual(a["total"], les["total"])
@@ -735,13 +743,19 @@ class LearningBrowserTests(unittest.TestCase):
             await d.check("a new player is pointed at the first lesson", "document.getElementById('learn-banner').innerHTML",
                           lambda t: "first lesson" in t and "l=welcome" in t, wait=8)
             await pg.goto(base + "/learn", 3)
+            await d.check("a new account sees the placement test alone", "document.querySelectorAll('.lrn-first').length+'|'+document.querySelectorAll('.lrn-track').length", "1|0", wait=10)
+            await pg.js("document.querySelector('[data-place-skip]').click()")
             await d.check("every track is listed", "document.querySelectorAll('.lrn-track').length", lambda n: n >= 17, wait=10)
+            await d.check("with the lessons after the next one locked", "document.querySelectorAll('.lrn-ls li.locked').length", lambda n: n >= 80)
             await d.check("with all its lessons", "document.querySelectorAll('.lrn-ls li').length", lambda n: n >= 90)
             await d.check("and every kind of chart test", "document.querySelectorAll('.lrn-test').length",
                           lambda n: n >= len(drills.KINDS) + 1)
             await d.check("and no challenges or MB to earn (switched off)", "document.querySelectorAll('.chal').length+'|'+document.getElementById('learn-body').innerText",
                           lambda t: t.startswith("0|") and "Challenges" not in t and "MB a week" not in t)
             await pg.goto(base + "/learn?l=support-resistance", 3)
+            await d.check("a lesson further down the path is locked", "document.querySelector('.lrn-goal') && document.querySelector('.lrn-goal').innerText",
+                          lambda t: bool(t) and "locked" in t and "Finish" in t, wait=10)
+            await pg.goto(base + "/learn?l=welcome", 3)
             await d.check("a lesson opens on its goal screen", "document.querySelector('.lrn-goal') && document.querySelector('.lrn-goal').innerText",
                           lambda t: bool(t) and "Start" in t and "card" in t, wait=10)
             await pg.js("document.querySelector('[data-lrn-start]').click()")

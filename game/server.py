@@ -1526,7 +1526,8 @@ class LessonAnswer(BaseModel):
 
 
 class Placement(BaseModel):
-    answers: list
+    answers: list = []
+    skip: bool = False            # "Start from the beginning": the path shows from now on (rubric v2 A1)
 
 
 class Goal(BaseModel):
@@ -1571,6 +1572,8 @@ async def learn_placement_grade(b: Placement, request: Request, x_token: str = H
     are marked passed."""
     if learn_slow(request, x_token, "placement_grade", 0.5):
         return JSONResponse({"error": "slow down"}, status_code=429)
+    if b.skip:
+        return await run(engine.placement_skip, learner(x_token))
     return await run(engine.placement_grade, learner(x_token), b.answers[:20])
 
 

@@ -25,6 +25,7 @@ async function loadLearn(){
 function drawLearn(){
  const d=lrnData;$('learn-card').classList.remove('reading');
  const tr=d.tests.reduce((a,t)=>[a[0]+t.right,a[1]+t.n],[0,0]);
+ if(token&&!d.placed&&!d.passed&&!d.xp){drawPlacement(true);return}            // a new account's first visit: the placement, alone (rubric v2 A1)
  const next=d.tracks.flatMap(t=>t.lessons).find(x=>x.id===d.next);
  setHtml($('learn-body'),`<div class="lrn-top"><div><h3 style="margin:0 0 6px">Learn to trade</h3>
   <p class="about" style="margin:0">A path of ${d.total} short lessons, from what a share is to options, macro and trading bots. Every lesson has a few exercises: questions, and in many lessons a chart test on a real chart from this market or something to do on the live market. It never costs MB.</p>
@@ -36,7 +37,7 @@ function drawLearn(){
    ${token?`<span class="up">${d.today>=d.goal?`Goal reached. Come back tomorrow: any XP ${d.streak>=1?`keeps your ${d.streak}-day streak going`:'starts a streak'}.`:d.streak?`Any XP today keeps your ${d.streak}-day streak; ${d.goal-d.today} more reaches the goal.`:'Any XP today starts a streak; come back tomorrow to keep it.'}</span>`:''}
    ${d.league?`<div class="lrn-league"><b>This week's learners</b>${d.league.rows.length?`<ol>${d.league.rows.slice(0,10).map(r=>`<li><a href="/player/${encodeURIComponent(r.name)}">${esc(r.name)}</a><span>${numText(r.xp,0)} XP</span></li>`).join('')}</ol>`:'<span class="mut">Nobody has earned XP yet this week: be the first.</span>'}${d.league.rank?`<span class="mut">You are #${d.league.rank} of ${d.league.learners} with ${numText(d.league.xp,0)} XP this week.</span>`:token&&d.league.rows.length?'<span class="mut">Earn XP this week to be on it.</span>':''}</div>`:''}</div></div>
   ${token?'':'<p class="hint">You are not signed in: you can read everything, answer every question and take every test, but your progress, XP and streak are not kept. <a href="/#join">Create an account</a> to keep them.</p>'}
-  ${token&&!d.passed&&!d.placed?`<div class="lrn-place"><div><b>Already know some of this?</b><span class="mut">Twelve quick questions, one from each of the first twelve units, find where your path should start. Units you know are marked passed.</span></div><a class="btn" href="/learn?place=1">Take the placement test</a></div>`:''}
+  ${token&&!d.passed&&!d.placed?`<div class="lrn-place"><div><b>Already know some of this?</b><span class="mut">One quick question from each unit finds where your path should start. Units you know are marked passed.</span></div><a class="btn" href="/learn?place=1">Take the placement test</a></div>`:''}
   ${token?lrnMineHtml(d.mine,false):''}
   ${token?lrnHabitsHtml(d.challenges):''}
   ${d.weak&&d.weak.length?`<div class="lrn-place lrn-weak"><div><b>Your weak spots</b><span class="mut">${d.weak.map(w=>`${esc(w.name)} (${w.right} of ${w.n} right)`).join(' · ')}. A review asks you again, with other questions from those units.</span></div><a class="btn" href="/learn?review=1">Review</a></div>`:''}
@@ -44,19 +45,21 @@ function drawLearn(){
    const steps=t.lessons.filter(x=>x.ex_total>0),refs=t.lessons.filter(x=>!x.ex_total);   // a lesson without exercises (the glossary) is reference, not a step (loop 11)
    const fin=steps.length&&done===steps.length;
    return `<section class="lrn-track${fin?' done collapsed':''}" data-unit="${esc(t.id)}"><div class="lrn-th" ${fin?'data-lrn-unfold title="Finished: click to open"':''}><span class="lrn-n">${fin?'✓':k||'S'}</span><div><b>${esc(t.title)}</b><small>${fin?'Finished':`${done} of ${steps.length} passed`}</small></div></div><p class="mut">${lrnText(t.blurb)}</p>${pbar(done,steps.length||1)}
-    <ol class="lrn-ls">${steps.map(x=>`<li class="${x.passed?'done':x.next?'next':''}"><a href="/learn?l=${encodeURIComponent(x.id)}" title="${esc(x.summary)}">${esc(x.title)}</a><small>${x.passed?'Passed':x.task_pending?'Task pending':x.ex_done?`${x.ex_done} of ${x.ex_total}`:x.next?'Next':x.minutes+' min'}</small></li>`).join('')}</ol>${refs.length?`<p class="mut" style="margin:4px 0 0">Reference, not a step: ${refs.map(x=>`<a href="/learn?l=${encodeURIComponent(x.id)}">${esc(x.title)}</a>`).join(', ')}</p>`:''}</section>`}).join('')}</div>
+    <ol class="lrn-ls">${steps.map(x=>`<li class="${x.passed?'done':x.next?'next':x.locked?'locked':''}"><a href="/learn?l=${encodeURIComponent(x.id)}" title="${esc(x.summary)}">${esc(x.title)}</a><small>${x.passed?'Passed':x.task_pending?'Task pending':x.ex_done?`${x.ex_done} of ${x.ex_total}`:x.next?'Next':x.locked?'🔒 '+x.minutes+' min':x.minutes+' min'}</small></li>`).join('')}</ol>${refs.length?`<p class="mut" style="margin:4px 0 0">Reference, not a step: ${refs.map(x=>`<a href="/learn?l=${encodeURIComponent(x.id)}">${esc(x.title)}</a>`).join(', ')}</p>`:''}</section>`}).join('')}</div>
   <h3 class="sp">Chart tests</h3><p class="hint" style="margin-top:0">Practice on its own: a real chart from the game, stopped at a moment worth asking about. Pick your answer, then the chart shows what came next.</p>
   <div class="lrn-tests">${d.tests.map(t=>`<a class="lrn-test" href="/learn?test=${t.kind}"><b>${esc(t.title)}</b><small>${esc(t.about)}</small><span class="mut">${t.n?`${t.right} of ${t.n} right`:'Not tried yet'}</span></a>`).join('')}<a class="lrn-test" href="/learn?test=any"><b>Mixed</b><small>Any of the above, at random.</small><span class="mut">The all-round test</span></a></div>`)}
 
 // ---- the placement test (LP6): twelve questions, one per unit, graded together; the path starts at the first unit missed
 let lrnPlace=null;
-async function drawPlacement(){
+async function drawPlacement(first){
  $('learn-card').classList.add('reading');
- setHtml($('learn-body'),'<div class="lrn-crumb"><a href="/learn">Learn</a> › Placement test</div><p class="mut">Loading the questions…</p>');
+ const crumb=first?'':'<div class="lrn-crumb"><a href="/learn">Learn</a> › Placement test</div>';
+ setHtml($('learn-body'),crumb+'<p class="mut">Loading the questions…</p>');
  const d=await api('/api/learn/placement');if(!d||d.error||!d.questions){setHtml($('learn-body'),'<p>Could not load the test. <a href="/learn">Back to the path</a></p>');return}
  lrnPlace={qs:d.questions,picks:{}};
- setHtml($('learn-body'),`<div class="lrn-crumb"><a href="/learn">Learn</a> › Placement test</div><h3 style="margin:8px 0 2px">Where should your path start?</h3>
-  <p class="about" style="margin:0 0 8px">One question from each of the first twelve units, in the order of the course. Answer them all, then <b>See where to start</b>. The units you get right in a row from the first are marked passed and your path begins at the first one you miss. ${token?'':'<b>Sign in first</b> to have the result kept.'}</p>
+ setHtml($('learn-body'),`${crumb}<div class="${first?'lrn-first':''}"><h3 style="margin:8px 0 2px">${first?'Where should your path start?':'Where should your path start?'}</h3>
+  <p class="about" style="margin:0 0 8px">${first?`One question from each unit tells us where to start you: the units you know are marked passed and your path begins at the first one you miss.`:`One question from each unit, in the order of the course. Answer them all, then <b>See where to start</b>. The units you get right in a row from the first are marked passed and your path begins at the first one you miss.`} ${token?'':'<b>Sign in first</b> to have the result kept.'}</p>
+  ${first?'<p class="mut" style="margin:0 0 10px">New to all of this? <button class="btn" data-place-skip>Start from the beginning</button></p>':''}</div>
   <div class="lesson-body">${d.questions.map((x,n)=>`<div class="lrn-box lrn-qbox" data-place-q="${n}"><div class="lrn-qh"><b>${n+1}. ${esc(x.title)}</b><span class="mut lrn-qs"></span></div><p class="lrn-q">${lrnText(x.q)}</p><div class="lrn-opts">${x.options.map((o,i)=>`<button data-place-pick="${i}">${esc(o)}</button>`).join('')}</div><div class="lrn-out"></div></div>`).join('')}</div>
   <div class="bar" style="margin-top:12px"><button class="buy" id="place-go" disabled>See where to start</button><span class="hint" id="place-note">Answer all ${d.questions.length} first.</span></div><div id="place-result"></div>`)}
 function lrnPlacePick(box,i){
@@ -71,7 +74,7 @@ async function lrnPlaceGrade(){
   box.querySelectorAll('[data-place-pick]').forEach(b=>{b.disabled=true;const k=+b.dataset.placePick;if(k===res.answer)b.classList.add('right');else if(k===P.picks[n])b.classList.add('wrong')});
   box.querySelector('.lrn-qs').textContent=res.right?'Right':'Missed';box.querySelector('.lrn-out').innerHTML=`<p class="mut">${lrnText(res.why)}</p>`});
  const st=r.start,known=r.known||[];lrnView=null;
- setHtml($('place-result'),`<div class="lrn-next" style="margin-top:14px"><div><small>Your level</small><b>${known.length?`You know ${known.length===1?known[0]:known.slice(0,-1).join(', ')+' and '+known[known.length-1]}.`:'Start from the beginning.'}</b><span class="mut">${st&&st.lesson?`Your path starts at <b>${esc(st.track||'Start here')}</b>, with “${esc(st.lesson.title)}”.`:'You know every unit asked: carry on from the advanced units.'}${r.passed!==undefined?` ${r.passed} lesson${r.passed===1?'':'s'} marked passed.`:token?'':' Sign in and take it again to keep this.'}</span></div>${st&&st.lesson?`<a class="buy" href="/learn?l=${encodeURIComponent(st.lesson.id)}">Start there</a>`:'<a class="buy" href="/learn">The path</a>'}</div>`);
+ setHtml($('place-result'),`<div class="lrn-next" style="margin-top:14px"><div><small>Your level</small><b>${known.length?`You know ${known.length===1?known[0]:known.slice(0,-1).join(', ')+' and '+known[known.length-1]}.`:'Start from the beginning.'}</b><span class="mut">${st&&st.lesson?`Your path starts at <b>${esc(st.track||'Start here')}</b>, with “${esc(st.lesson.title)}”.`:'You know every unit: the whole path is open to review.'}${r.passed!==undefined?` ${r.passed} lesson${r.passed===1?'':'s'} marked passed.`:token?'':' Sign in and take it again to keep this.'}</span></div>${st&&st.lesson?`<a class="buy" href="/learn?l=${encodeURIComponent(st.lesson.id)}">Start there</a>`:'<a class="buy" href="/learn">The path</a>'}</div>`);
  $('place-result').scrollIntoView({behavior:'smooth',block:'center'})}
 
 // ---- the review (LP5): fresh questions on the units missed most and a chart test of each kind missed most
@@ -142,6 +145,9 @@ function drawLesson(){
    <div class="lesson-body">${L.body.map(lrnBlock).join('')}</div>${nav}`);
   document.querySelectorAll('#learn-body [data-lrn-ex]').forEach(el=>lrnExample(el,el.dataset.lrnEx));
   document.querySelectorAll('#learn-body [data-lrn-test]').forEach(el=>lrnTest(el,el.dataset.lrnTest));return}
+ if(L.locked){setHtml($('learn-body'),`${crumb}<div class="lrn-goal"><h3>🔒 ${esc(L.title)}</h3><p class="lrn-goalp">${lrnText(L.summary||'')}</p>
+  <p class="mut">${L.minutes} min · ${L.total} exercise${L.total===1?'':'s'} · locked: the path opens one lesson at a time.</p>
+  <div class="bar"><a class="btn buy" href="/learn?l=${encodeURIComponent(L.locked.id)}">Finish “${esc(L.locked.title)}” first</a><a class="btn" href="/learn">The path</a></div></div>`);return}
  const cards=lrnCards(L),done=(L.done||[]).length;
  lrnRun={cards,i:-1,queue:[],right:0,wrong:0,xp:0,run:0,redo:false};
  setHtml($('learn-body'),`${crumb}<div class="lrn-goal"><h3>${esc(L.title)}</h3><p class="lrn-goalp">${lrnText(L.summary||'')}</p>
@@ -279,6 +285,7 @@ $('learn-card').addEventListener('click',e=>{
  if(t.dataset.lrnStart!==undefined||t.dataset.lrnNext!==undefined||t.dataset.lrnSkip!==undefined){lrnNext();return}
  const qb=t.closest('[data-lrn-q]');if(qb&&t.dataset.lrnChoice!==undefined){lrnAnswer(qb,+t.dataset.lrnChoice);return}
  if(qb&&t.dataset.lrnNumgo!==undefined){const v=parseFloat(qb.querySelector('input').value);if(!isFinite(v)){toast('Type a number first',false);return}lrnAnswer(qb,v);return}
+ if(t.dataset.placeSkip!==undefined){postJson('/api/learn/placement',{skip:true},{'X-Token':token||''}).then(()=>{lrnView=null;loadLearn()});return}
  const pb=t.closest('[data-place-q]');if(pb&&t.dataset.placePick!==undefined){lrnPlacePick(pb,+t.dataset.placePick);return}
  const uf=t.closest('[data-lrn-unfold]');if(uf){uf.closest('.lrn-track').classList.toggle('collapsed');return}
  if(t.id==='place-go'){lrnPlaceGrade();return}

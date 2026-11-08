@@ -55,7 +55,7 @@ def level_of(xp):
     k = max(i for i, (floor, _) in enumerate(LEVELS) if xp >= floor)
     return {"name": LEVELS[k][1], "floor": LEVELS[k][0], "next": LEVELS[k + 1][0] if k + 1 < len(LEVELS) else None, "n": k + 1}
 ATTEMPTS_MAX, WEAK_MIN, WEAK_BELOW, XP_REVIEW, LEAGUE = 300, 3, 0.7, 5, 20   # the review (LP5) and the weekly league (LP7)
-PLACEMENT_UNITS = 12         # the placement test asks one question from each of this many units after Start here (LP6)
+PLACEMENT_UNITS = 99         # the placement test asks one question from each unit after Start here: every unit (rubric v2 A1; LP6 asked 12)
 TASK_KINDS = {"trade": "Make a trade", "stop": "Put a stop-loss on a position", "target": "Put a take-profit on a position",
               "bracket": "Place a bracket", "planned": "Close a position that had a stop", "short": "Open a short",
               "limit": "Place a limit order", "trail": "Place a trailing stop", "option": "Buy an option",
@@ -609,7 +609,7 @@ class LearningMixin:
                 stop = True
         if not results:
             return {"error": "No answers"}
-        start = next((t for t in self.tracks[1:] if t["id"] not in known), None)      # None: every unit asked is known
+        start = next((t for t in self.tracks[1:] if t["id"] not in known), None)      # None: every unit is known
         unit_ids = set(known) | ({"start"} if known else set())
         first = next((x for x in self.lessons if x["track"] not in unit_ids), None)
         out = {"results": results, "known": [t["title"] for t in self.tracks if t["id"] in known],
@@ -622,6 +622,28 @@ class LearningMixin:
             p.placed = start["id"] if start else "all"
             out["passed"] = len(p.passed)
         return out
+
+    def placement_skip(self, p):
+        """"Start from the beginning": the placement declined, so the path shows from now on (rubric v2 A1)."""
+        if p is None:
+            return {"error": "Sign in first"}
+        if not p.placed:
+            p.placed = "start"
+        return {"placed": p.placed}
+
+    def _next_id(self, p):
+        """The path's next lesson: the first unpassed one with an exercise left to do on the page, not one waiting only
+        on a market task (loop 12); failing that, the first unpassed one."""
+        first_open = None
+        for x in self.lessons:
+            ex = exercises(x)
+            if not ex or (p is not None and x["id"] in p.passed):
+                continue
+            ex_i = set(self._ex_done(p, x)) if p else set()
+            first_open = first_open or x["id"]
+            if any(kind != "task" for k, kind in ex if k not in ex_i):
+                return x["id"]
+        return first_open
 
     def trading_summary(self, p):
         """The player's own trading, for the path and the risk lessons (LP10): the last seven days of closes from the
@@ -671,24 +693,18 @@ class LearningMixin:
         next one to do), the player's XP, streak and daily goal, the chart tests (with `p`'s score), and the challenges
         when they are on. `p` is None for a visitor."""
         done = p.lessons_passed if p else {}
-        by_track, next_id, first_open = {}, None, None
-        for x in self.lessons:                               # the next lesson: the first unpassed one with something to do here, not one
-            ex = exercises(x)                                # waiting only on a market task (loop 12); failing that, the first unpassed
-            ex_i = set(self._ex_done(p, x)) if p else set()
-            passed = bool(p and x["id"] in p.passed)
-            if not passed and ex:
-                first_open = first_open or x["id"]
-                if next_id is None and any(kind != "task" for k, kind in ex if k not in ex_i):
-                    next_id = x["id"]
-        next_id = next_id or first_open
-        for x in self.lessons:
+        by_track, next_id = {}, self._next_id(p)
+        ids = [x["id"] for x in self.lessons]
+        at = ids.index(next_id) if next_id in ids else len(ids)
+        for k, x in enumerate(self.lessons):
             ex = exercises(x)
             ex_i = set(self._ex_done(p, x)) if p else set()
             passed = bool(p and x["id"] in p.passed)
             by_track.setdefault(x["track"], []).append(
                 {"id": x["id"], "title": x["title"], "minutes": x.get("minutes", 5), "summary": x.get("summary", ""),
                  "read": x["id"] in done, "passed": passed, "ex_done": len(ex_i), "ex_total": len(ex), "next": x["id"] == next_id,
-                 "task_pending": bool(ex_i) and not passed and all(kind == "task" for k, kind in ex if k not in ex_i)})
+                 "task_pending": bool(ex_i) and not passed and all(kind == "task" for k, kind in ex if k not in ex_i),
+                 "locked": p is not None and not passed and bool(ex) and k > at})     # after the next lesson: locked until it is passed (rubric v2 A3)
         tracks = [{"id": t["id"], "title": t["title"], "blurb": t.get("blurb", ""), "lessons": by_track.get(t["id"], [])}
                   for t in self.tracks]
         score = p.drills if p else {}
@@ -750,6 +766,10 @@ class LearningMixin:
             out.update(self._lesson_progress(p, x))
             if any("mine" in b for b in body):
                 out["mine"] = self.trading_summary(p)
+            nid = self._next_id(p)
+            ids = [y["id"] for y in self.lessons]
+            if x["id"] not in p.passed and exercises(x) and nid in ids and ids.index(x["id"]) > ids.index(nid):
+                out["locked"] = {"id": nid, "title": self._lesson_by_id[nid]["title"]}      # the lesson to finish first (rubric v2 A3)
         return out
 
     # ------------------------------------------------------------------ chart tests (drills.py)
