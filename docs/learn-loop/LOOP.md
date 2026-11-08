@@ -20,8 +20,8 @@ iteration is one finding fixed, tested, documented and committed. Run it with
    mark "won't do" (the owner's "do next" rows come first). A persona scoring 18 or more with nothing of size S or
    larger is marked **clean** in the ledger.
 4. **Fix.** The smallest change that closes the finding, written as a re-runnable patch script in the scratchpad
-   (exact-string edits, CRLF-tolerant, skipping edits already applied), then run. Content edits by hand only in the
-   units the rubric names. Add or adjust a test when logic changed. Update `docs/HOW_IT_WORKS.md` §10.10 and the
+   (exact-string edits, CRLF-tolerant, skipping edits already applied), then run. Content edits by hand in any unit,
+   new units and lessons included (rubric v2 asks for 130 lessons in 20 units); a new unit is one iteration's finding. Add or adjust a test when logic changed. Update `docs/HOW_IT_WORKS.md` §10.10 and the
    roadmap's LP line. Rerun step 2; if it cannot be made green, revert your own edits (`git checkout -- <files>`) and
    record the attempt as failed with the reason.
 5. **Restart the local server:** kill the listener on port 8000 (`netstat -ano | grep :8000`, `taskkill //PID <pid>
@@ -33,8 +33,8 @@ iteration is one finding fixed, tested, documented and committed. Run it with
    line the session requires. Append the ledger row (iteration, date, B result, C score, finding, change, files,
    commit hash, what is left) and commit it too.
 7. **Stop or continue.** Stop and write a final report row when: B passes, C1-C3 are each marked clean in their last
-   run, and two consecutive iterations found nothing of size S or larger. Stop after iteration 12 regardless, with a
-   report. Otherwise schedule the next iteration in a few minutes (nothing external to wait for).
+   run, and two consecutive iterations found nothing of size S or larger. Stop after twelve iterations since the
+   run's start (the row after the last `STOPPED` row, or row 1), with a report. Otherwise schedule the next iteration in a few minutes (nothing external to wait for).
 8. **Report** to the owner in one short message: score, finding, change, commit hash.
 
 ## Failsafes (so a broken loop stops instead of spending tokens)
@@ -54,8 +54,8 @@ with `stop: true`). The owner restarts it by hand after looking.
    or a patch script exits on a string it cannot find twice running.
 5. **Agents.** At most one Explore agent per iteration. If it errors or returns no score, record "walkthrough failed",
    skip to the next persona next iteration, do not run it again now.
-6. **Hard caps.** Twelve iterations a run, and four hours from the run's first ledger row, whichever first; an
-   iteration that would cross either writes the final report instead.
+6. **Hard caps.** Twelve iterations a run (counted from the row after the last `STOPPED` row), and four hours from
+   the run's first ledger row, whichever first; an iteration that would cross either writes the final report instead.
 7. **Scope creep.** A finding whose fix would touch files outside `game/learning.py`, `game/drills.py`,
    `web/learn.js`, `web/chart.js`, the learn parts of `web/index.html`, `content/learn-*.md`, `tests/test_learning.py`
    and the three docs is recorded as **needs the owner** and skipped, not attempted.
