@@ -224,7 +224,7 @@ def _trend(c, rng):
                          "first lower low in an uptrend is the first warning.")
 
 
-def _pattern(c, rng):
+def _pattern(c, rng, want=None):
     n, u = len(c), unit(c)
     pool = []
     for swing in (3 * u, 5 * u):
@@ -237,7 +237,11 @@ def _pattern(c, rng):
         return None
     by = {}
     for x in pool:
+        if want and want.lower() not in PATTERN_NAMES[x[0]["kind"]].lower():
+            continue
         by.setdefault(x[0]["kind"], []).append(x)
+    if not by:
+        return None
     p, o, swing = rng.choice(by[rng.choice(sorted(by))])          # every kind as likely, however common
     right = PATTERN_NAMES[p["kind"]]
     others = [k for k in PATTERN_NAMES if k != p["kind"]]
@@ -341,13 +345,13 @@ def candle_kind(c, i, atr):
     return None
 
 
-def _candle(c, rng):
+def _candle(c, rng, want=None):
     n = len(c)
     atr = atr_series(c)
     by = {}
     for i in range(LOOK, n - AFTER):
         k = candle_kind(c, i, atr)
-        if k:
+        if k and not (want and want.lower() not in CANDLES[k].lower()):
             by.setdefault(k, []).append(i)
     if not by:
         return None
@@ -543,10 +547,16 @@ MAKERS = {"level": _level, "trend": _trend, "pattern": _pattern, "breakout": _br
           "ma": _ma, "fib": _fib, "rr": _rr, "stop": _stop, "next": _next}
 
 
-def make(kind, candles, rng):
-    """One test of `kind` from these candles ([o, h, l, c, v], oldest first), or None."""
+def make(kind, candles, rng, opt=None):
+    """One test of `kind` from these candles ([o, h, l, c, v], oldest first), or None. `opt` narrows a kind to what a
+    lesson teaches (LP15): "support" or "resistance" for `level`, a word of a pattern's name for `pattern` ("flag",
+    "triangle", "double", "head"), a word of a candle's name for `candle` ("hammer", "doji", "engulfing", "star")."""
     if kind not in MAKERS or len(candles) < LOOK + AFTER + 20:
         return None
     if any(x[2] <= 0 or x[1] < x[2] for x in candles):
         return None
+    if opt and kind == "level":
+        return _level(candles, rng, only={"support": 1, "resistance": -1}.get(opt))
+    if opt and kind in ("pattern", "candle"):
+        return MAKERS[kind](candles, rng, want=opt)
     return MAKERS[kind](candles, rng)

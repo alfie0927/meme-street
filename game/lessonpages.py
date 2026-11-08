@@ -74,6 +74,10 @@ def body_html(lesson):
                        "it in the game</a>.</div>")
         elif "try" in b:
             out.append(f'<div class="try">Try it: <a href="{html.escape(b["href"])}">{inline(b["try"])}</a></div>')
+        elif "q" in b:
+            out.append(f'<div class="try"><b>Check yourself:</b> {inline(b["q"])} <a href="/learn?l={lesson["id"]}">Answer it in the game</a>.</div>')
+        elif "task" in b:
+            out.append(f'<div class="try"><b>Do it on the market:</b> {inline(b["text"])} <a href="/learn?l={lesson["id"]}">Open the lesson</a>.</div>')
         else:
             k = next(k for k in ("here", "tip", "warn") if k in b)
             label = {"here": "On Meme Street", "tip": "Tip", "warn": "Watch out"}[k]

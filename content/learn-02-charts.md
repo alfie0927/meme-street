@@ -29,6 +29,24 @@ A single candle is weak evidence. It means most **at a level that matters** (a h
 
 HERE: The chart can show candles, hollow candles, bars, a line of closes, or Heikin-Ashi candles (each averaged with the one before, so a trend reads as a run of one colour). The box under the chart switches between them.
 
+Q: A candle opens at 50, rises to 55, falls to 48 and closes at 49. What colour is its body?
+- Green
++ Red
+- No body
+WHY: It closed (49) below where it opened (50): a red body, with a long upper wick to 55.
+
+Q: Where does a hammer mean the most?
++ On a support level after a fall
+- In the middle of a range
+- Anywhere, it always means a rise
+WHY: Candle signals need context: a rejection of lower prices matters at a level the market already respects.
+
+Q: What does a long upper wick tell you?
+- Buyers held the high to the close
++ The price went up but sellers pushed it back down before the close
+- Volume was high
+WHY: The wick shows the high was reached but not held.
+
 ## Timeframes and the price scale {timeframes} [5]
 SUMMARY: Why the same stock looks different on a 1-minute and a 1-day chart, and when to use a log scale.
 Every candle size tells a different story. A strong uptrend on the daily chart can contain dozens of falls on the 5-minute chart; a breakout on the 1-minute chart can be a ripple inside a range on the hourly.
@@ -44,6 +62,26 @@ On a **linear** scale each price step is the same height: a move from 10 to 20 l
 HERE: Candle sizes run from 30 seconds to a year, in real time: a 1-hour candle is two game days. Each shows up to 2,000 candles. **Log** is a switch in the box under the chart. Remember the game's clock: a game day is 30 minutes, so the hourly chart covers weeks of game time.
 
 TIP: Use a few candle sizes and see whether they agree. When the hourly is trending up and the 5-minute pulls back to support, the two agree on a long trade.
+
+[chart trend]
+
+Q: You plan to hold a trade for a few hours. Which timeframe suits planning it?
+- 30-second candles
++ 15-minute or hourly candles
+- Monthly candles
+WHY: Plan on the timeframe that matches the holding period, with one up for context.
+
+Q: A stock went from 2 to 4, then from 40 to 80. On a log scale, how do the two moves compare?
++ They look the same height: both are +100%
+- The second looks twenty times bigger
+- The first looks bigger
+WHY: Log scales show percentage moves equally.
+
+Q: On the 5-minute chart a stock looks like it is crashing; on the daily chart it is a small dip in an uptrend. Which chart is right?
+- The 5-minute: it is more detailed
+- The daily: short charts are only noise
++ Both: the higher one gives the direction, the lower one the timing
+WHY: Each timeframe answers a different question. Traders read the trend on a higher one and time entries on a lower one.
 
 ## Trends: higher highs and higher lows {trends} [6]
 SUMMARY: How to tell an uptrend, a downtrend and a range from the swing points.
@@ -64,6 +102,24 @@ Trends end in a few ways: a **climax** (a last fast move on huge volume, a blow-
 HERE: Trends here move in **legs**: an impulse then a pullback, again and again. The last push of a trend often comes on less momentum and less volume than the ones before: the divergence that warns a trend is tiring.
 
 [test trend]
+
+Q: A chart makes highs of 50, 54, 58 and lows of 46, 49, 53. What is it?
++ An uptrend: higher highs and higher lows
+- A downtrend
+- A range
+WHY: Every high and every low is above the one before.
+
+Q: In an uptrend, what is the first sign it may be ending?
+- A red candle
++ A close below the last higher low
+- A new high
+WHY: The structure of higher lows is what defines the trend; breaking it is the warning.
+
+Q: Where does a stop naturally go on a long trade in an uptrend?
+- Just below the entry, whatever the chart
++ Below the last higher low
+- There is no need for one in a trend
+WHY: If the price falls below the last higher low, the uptrend's structure is broken and the idea is wrong.
 
 ## Support and resistance {support-resistance} [7]
 SUMMARY: Where prices tend to turn, why, and how to judge how strong a level is.
@@ -91,7 +147,25 @@ No level always holds. Strong levels hold a little more often than not; weak one
 
 HERE: Levels here come from swing highs and lows, round numbers, the previous game day's high, low and close, today's open, the 52-week high and low, and the 20, 50 and 200-day averages. Strong levels hold roughly 60% of the time and weak ones about 45%, and a level tested over and over gets weaker each time: realistic odds you can learn to read, and never a sure thing.
 
-[test level]
+[test level support]
+
+Q: A stock has bounced off 80 three times. What is 80?
++ A support level, and a strong one
+- A resistance level
+- Nothing meaningful
+WHY: Repeated bounces show buyers defending the price.
+
+Q: A resistance at 120 breaks and the price runs to 130. Where might it find support on a pullback?
+- 100
++ Around 120, the old resistance
+- 130
+WHY: Role reversal: broken resistance often becomes support.
+
+Q: Which level is likely strongest?
+- A price touched once, a long time ago
++ A swing high that is also a round number and the 50-day average
+- A level that has been tested five times in the last hour
+WHY: Confluence makes levels stronger; repeated tests in a short time wear a level down.
 
 ## Ranges and breakouts {ranges-breakouts} [6]
 SUMMARY: Prices stuck between support and resistance, the squeeze before the move, and breakouts that run or fail.
@@ -113,6 +187,18 @@ HERE: Ranges here always end in a breakout, more often upwards in a rising marke
 
 [test breakout]
 
+Q: A range is 100 to 110 and the price breaks out above 110. What is a first target from the range's height?
+- 111
++ 120
+- 200
+WHY: The height (10) added to the breakout point (110) gives 120.
+
+Q: What often comes just before a breakout?
++ A quiet spell: small candles and low volume
+- A huge spike in volume inside the range
+- A gap
+WHY: Volatility comes in waves: the squeeze, then the move.
+
 ## Volume: confirming moves and spotting fakes {volume} [5]
 SUMMARY: What volume adds to a price chart, and the patterns traders read in it.
 Price tells you what happened; volume tells you how many people took part. The same price move means more when many shares changed hands.
@@ -128,6 +214,26 @@ Price tells you what happened; volume tells you how many people took part. The s
 Volume is evidence, not proof. Real breakouts sometimes come on quiet volume, and loud breakouts sometimes fail. It shifts the odds; it does not settle them.
 
 HERE: Volume bars sit under every chart (green for a candle that closed up, red for down), and the free indicators include the 20-candle volume average drawn over them. Indices and funds have no volume of their own. Volume here is busier in trend impulses than pullbacks, bigger on breakouts and climaxes, and quieter late in a range, as in real markets.
+
+[test breakout]
+
+Q: A stock makes a new high, but on half the volume of the previous high. What might that mean?
++ Fewer buyers are joining in; the trend may be tiring
+- The trend is certain to continue
+- Nothing, volume does not matter
+WHY: A rise on shrinking volume shows less participation: a warning, not a certainty.
+
+Q: In a healthy uptrend, how does volume usually behave?
+- Highest on the pullbacks
++ Higher on the rises, lower on the pullbacks
+- Exactly the same on every candle
+WHY: Buyers are keen on the way up and sellers half-hearted on the way down.
+
+Q: A stock breaks above resistance on a third of its usual volume. What should that make you think?
+- Low volume means a cleaner, safer breakout
++ Few traders took part, so the breakout is more likely to fail
+- Volume does not matter for breakouts
+WHY: A move most traders did not join lacks conviction; real breakouts usually come with a surge in volume.
 
 ## Reversal patterns {reversal-patterns} [7]
 SUMMARY: Double tops and bottoms, head and shoulders, and wedges: shapes that often mark a trend's end.
@@ -154,6 +260,24 @@ Patterns are probabilities. Some complete and reach their target; some break out
 
 HERE: Patterns form here at realistic rates, at the end of trends and in ranges, and they end three ways: they work (break out and run to about their measured move, a bit more than a third of the time), they bust (break out a little and turn back), or they fail before breaking out. A pattern that has broken out is right a little more often than not. The drawing tools include a head and shoulders tool and position boxes for planning the trade.
 
+Q: When is a double top complete?
+- When the second top forms
++ When the price closes below the neckline
+- When volume rises
+WHY: Until the neckline breaks, it is just two highs; the trigger is the close below the low between them.
+
+Q: A head and shoulders has a head at 120 and a neckline at 100. Where is the measured-move target after the break?
+- 100
++ 80
+- 60
+WHY: Height 20 (120 - 100), taken from the neckline: 100 - 20 = 80.
+
+Q: Which way does a rising wedge usually break?
+- Upwards
++ Downwards
+- Sideways for ever
+WHY: The narrowing climb shows the buying is weakening; it usually breaks down.
+
 ## Continuation patterns {continuation-patterns} [7]
 SUMMARY: Flags, triangles, channels and the cup and handle: pauses inside a trend.
 **Continuation patterns** are pauses inside a trend, after which it often resumes.
@@ -178,6 +302,24 @@ A flag or triangle that never breaks out was just a pause, and some break the wr
 
 [test pattern]
 
+Q: A stock jumps from 40 to 50, then drifts down to 47 in a neat channel. What might this be?
++ A bull flag
+- A head and shoulders
+- A double bottom
+WHY: A sharp pole followed by a shallow, orderly pullback is a flag.
+
+Q: Which triangle usually breaks upwards?
++ Ascending: flat highs, rising lows
+- Descending: flat lows, falling highs
+- All of them, always
+WHY: Rising lows show buyers stepping in higher each time against the same sellers.
+
+Q: The bull flag's pole was 10 and the flag breaks out at 47. What is the classic target?
+- 50
++ 57
+- 67
+WHY: The pole's height (10) added to the breakout (47).
+
 ## Gaps and fair value gaps {gaps} [5]
 SUMMARY: Why prices jump, the kinds of gap, and the gaps traders expect to be revisited.
 A **gap** is a jump between one candle's close and the next one's open, with no trading in between. On daily charts they come at the open, after news or earnings released while the market was quiet.
@@ -194,6 +336,26 @@ A **gap** is a jump between one candle's close and the next one's open, with no 
 On any timeframe, three candles where the first one's high is below the third one's low (in a fast rise) leave a **fair value gap**: a stretch the price moved through so fast that little traded there. Traders watch for the price to come back into it, where it often finds support or resistance.
 
 HERE: The regular session opens with a jump every game day, and earnings come out in the quiet sessions, so a game-day view shows the gap between one close and the next open. The real-time charts are continuous, but fast moves leave fair value gaps on every candle size. The Daily Chart's after-game breakdown marks fair value gaps the chart tested.
+
+[chart breakout]
+
+Q: A stock gaps up out of a long range on big news and volume and keeps going. What kind of gap is it?
+- Common gap
++ Breakaway gap
+- Exhaustion gap
+WHY: A gap that starts a new move out of a range is a breakaway gap; they often stay open.
+
+Q: What does it mean for a gap to fill?
++ The price comes back to where it was before the gap
+- The gap gets wider
+- Volume returns to normal
+WHY: Filling a gap means trading back through the empty stretch to the old close.
+
+Q: A stock gaps up 8% at the open on earnings, then spends the day falling back towards where it closed yesterday. What is this called?
++ Filling the gap
+- A breakaway gap
+- A squeeze
+WHY: When the price trades back through the empty space, the gap is filled; many are, which is why traders watch them.
 
 ## Reading several timeframes {multi-timeframe} [5]
 SUMMARY: Using a higher timeframe for direction and a lower one for timing.
@@ -212,4 +374,24 @@ Flicking through candle sizes until one confirms what you already want to do is 
 
 HERE: The chart's candle sizes are buttons beside the stock's name, and your drawings stay on the right prices and times when you switch between them, so a level drawn on the hourly shows on the 5-minute.
 
-[try /stock/CLDR] Open CloudRail, draw the nearest support on the hourly chart, then switch to 5-minute candles and watch how the price behaves near it.
+[try /stock/CLDR?tf=1h] Open CloudRail on hourly candles, draw the nearest support, then switch to 5-minute candles and watch how the price behaves near it.
+
+[test trend]
+
+Q: The hourly chart is in a downtrend; the 5-minute shows a rally. What is the rally most likely to be?
++ A pullback inside the bigger downtrend
+- The start of a new uptrend, certainly
+- Nothing to do with the hourly
+WHY: The higher timeframe sets the context; a lower-timeframe rally against it is usually a pullback.
+
+Q: What is the lower timeframe mainly used for?
+- Choosing the trend
++ Timing the entry and placing a tight, logical stop
+- Nothing, only the higher one matters
+WHY: Direction from above, timing from below.
+
+Q: The daily trend is up, the hourly chart has pulled back to support and the 15-minute chart has just turned up. What is the setup?
+- A short: the hourly chart fell
+- Nothing: the timeframes disagree
++ A pullback entry in the direction of the higher trend
+WHY: The three agree in sequence: direction from the daily, a place from the hourly, a trigger from the 15-minute.

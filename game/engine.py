@@ -6,7 +6,6 @@ import newsgen
 import relations
 import economy
 import learning
-import ladder
 import chartprefs
 import bots
 import daily
@@ -263,6 +262,7 @@ class Player:
         self.divs = {}           # dividends received (paid, for shorts) per ticker
         self.borrow = {}         # borrow fees paid per shorted ticker
         self.log = deque(maxlen=100)   # this player's last trades (for the admin page)
+        self.notes = {}          # a note per trade, keyed by its time to 3 decimals: the journal (ROADMAP U11, 2026-11-07)
         self.entry_fee = {}      # fees paid opening each open position (so realised P&L is net of all fees)
         self.realized = {}       # realised profit or loss per ticker, net of fees
         self.fees_paid = 0.0
@@ -286,17 +286,16 @@ class Player:
         self.created = 0.0       # when the account was made
         self.trades = 0
         self.guest = False       # True only for the one hidden, read-only visitor (Engine.guest)
-        social.init_player(self)   # achievements, quests, following, chat limits (see social.py)
+        social.init_player(self)   # achievements, following, chat limits (see social.py)
         economy.init_player(self)  # birth year, Pro, MB by source, spending cap (see economy.py)
         learning.init_player(self)  # lessons passed, challenge progress (see learning.py)
-        ladder.init_player(self)    # the Bronze-to-Diamond quest ladder, and the title and name colour worn (ladder.py)
         chartprefs.init_player(self)   # indicators, chart type and drawings, kept on the server (chartprefs.py)
         options.init_player(self)      # option positions (options.py)
         bots.init_player(self)         # trading bots (Expert, bots.py)
         housebots.init_player(self)    # a house bot's persona (housebots.py); None for a person
 
 
-class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin, ladder.LadderMixin,
+class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.LearningMixin,
              chartprefs.ChartsMixin, options.OptionsMixin, bots.BotsMixin, daily.DailyMixin,
              housebots.HouseBotsMixin):
     def __init__(self, content_glob=paths.CONTENT_GLOB, state_file=paths.STATE_FILE, ledger_path=None,
@@ -1215,7 +1214,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         p.last_trade[ticker] = self.now
         p.trades += 1
         self.trades_total += 1
-        self._learn_after_trade(p, ticker)              # the "planned trade" challenge (learning.py)
+        self._learn_after_trade(p, ticker, "short" if side == "sell" and p.hold.get(ticker, 0.0) < 0 else side)   # the path's tasks (learning.py)
         return True, msg
 
     def _margin_calls(self):
@@ -2167,7 +2166,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     self.house += owed
                     p.divs[s.ticker] = p.divs.get(s.ticker, 0.0) - owed
                     self._emit("dividend", p, s.ticker, shares=0.0, price=amt, cash=-owed, house=owed, notional=owed)
-            self._paper_dividend(s.ticker, amt)
             factor = 1 - amt / price
             s.fair *= factor
             s.fair_open *= factor
@@ -2583,7 +2581,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 self.house -= cd
                 self._emit("delist_payout", player, ticker, shares=-sh, price=stock.price, cash=cd, house=-cd,
                            notional=abs(cd), shortfall=short)
-        self._paper_delist(ticker, stock.price)
         self._emit("delist", None, ticker, house=0.0)
         self._archive_stock(stock, reason, stock.price)
         self.delisted.append(ticker)
@@ -2803,12 +2800,13 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     # ---------- orders: limit, stop-loss and take-profit ----------
     ORDER_KINDS = {"limit_buy": "Limit buy", "limit_sell": "Limit sell", "stop_loss": "Stop-loss",
-                   "take_profit": "Take-profit"}
+                   "take_profit": "Take-profit", "trailing_stop": "Trailing stop"}
 
     def _order_view(self, o):
         return {"id": o["id"], "ticker": o["ticker"], "kind": o["kind"], "label": self.ORDER_KINDS[o["kind"]],
                 "side": o["side"], "cond": o["cond"], "trigger": o["trigger"], "pct": o.get("pct"),
-                "amount": o.get("amount"), "created": o["created"], "expires": o["expires"], "oco": o.get("oco")}
+                "amount": o.get("amount"), "created": o["created"], "expires": o["expires"], "oco": o.get("oco"),
+                "trail": o.get("trail")}
 
     def place_order(self, p, ticker, kind, trigger, pct=None, amount=None, oco=None):
         """Leave an order that the server carries out for you. It is checked every second against the live price and,
@@ -2819,7 +2817,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         limit_buy   buys when the price falls to the trigger or below (a bargain)
         limit_sell  sells (or shorts) when the price rises to the trigger or above
         stop_loss   closes your position when it moves against you to the trigger (needs a position)
-        take_profit closes your position when it moves in your favour to the trigger (needs a position)"""
+        take_profit closes your position when it moves in your favour to the trigger (needs a position)
+        trailing_stop a stop-loss that follows the price: `trigger` is the distance in percent (0.1 to 50) and the stop
+                    sits that far behind the best price seen since, never moving the other way (2026-11-07, ROADMAP U11)"""
         gate = self.email_gate(p)
         if gate:
             return False, gate
@@ -2831,7 +2831,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if not (isinstance(trigger, (int, float)) and not isinstance(trigger, bool) and math.isfinite(trigger)
                 and 0 < trigger < 1e9):
             return False, "Bad trigger price"
-        close_only = kind in ("stop_loss", "take_profit")
+        close_only = kind in ("stop_loss", "take_profit", "trailing_stop")
         if amount is not None:
             if not (isinstance(amount, (int, float)) and not isinstance(amount, bool) and math.isfinite(amount)
                     and 0 < amount < 1e12):
@@ -2861,7 +2861,12 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             if abs(held) < 1e-9:
                 return False, f"A {self.ORDER_KINDS[kind].lower()} needs a position in {ticker}"
             pos = 1 if held > 0 else -1
-            against = kind == "stop_loss"
+            against = kind in ("stop_loss", "trailing_stop")
+            if kind == "trailing_stop":
+                if not 0.1 <= trigger <= 50:
+                    return False, "A trailing stop follows the price at a distance of 0.1% to 50%"
+                trail = trigger / 100
+                trigger = price * (1 - trail) if pos > 0 else price * (1 + trail)
             # a long loses when the price falls and gains when it rises; a short the other way round
             goes_down = (pos > 0) == against
             side = "sell" if pos > 0 else "buy"
@@ -2878,9 +2883,13 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             order["pct"] = float(pct)
         else:
             order["amount"] = float(amount)
+        if kind == "trailing_stop":
+            order["trail"] = trail
         p.orders.append(order)
         p.orders_dirty = True
-        self._learn_order(p, ticker, kind)
+        self._learn_order(p, ticker, "stop_loss" if kind == "trailing_stop" else kind, trigger, raw=kind)
+        if kind == "trailing_stop":
+            return True, f"Trailing stop placed: {ticker} follows the price {trail * 100:g}% behind, now at {trigger:.4g}"
         return True, f"{self.ORDER_KINDS[kind]} placed: {ticker} {'at or below' if cond == 'le' else 'at or above'} {trigger:.4g}"
 
     def place_bracket(self, p, ticker, take_profit, stop_loss):
@@ -2899,6 +2908,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p.orders = [o for o in p.orders if o.get("oco") != group]
             p.orders_dirty = True
             return False, m2
+        self._learn_task(p, "bracket")
         return True, f"Bracket placed on {ticker}: take profit at {take_profit:.4g}, stop-loss at {stop_loss:.4g}"
 
     def cancel_order(self, p, order_id):
@@ -2970,6 +2980,10 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         group = order.get("oco")
         p.orders = [o for o in p.orders if o is not order and not (group and o.get("oco") == group)]
         p.orders_dirty = True
+        if filled:                                        # how positions end: the path's "your trading" card (LP9)
+            k = {"stop_loss": "exit_stop", "take_profit": "exit_target", "trailing_stop": "exit_trail"}.get(order["kind"])
+            if k:
+                p.counters[k] = p.counters.get(k, 0) + 1
         if why:
             self._notify(p, why)
 
@@ -2989,6 +3003,11 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 if self.now >= o["expires"]:
                     self._drop_order(p, o, f"{label} in {o['ticker']} expired without being triggered.")
                     continue
+                if o.get("trail"):                        # a trailing stop follows the price, never the other way
+                    want = s.price * (1 - o["trail"]) if o["cond"] == "le" else s.price * (1 + o["trail"])
+                    if (o["cond"] == "le" and want > o["trigger"]) or (o["cond"] == "ge" and want < o["trigger"]):
+                        o["trigger"] = round(want, 8)
+                        p.orders_dirty = True
                 hit = s.price <= o["trigger"] if o["cond"] == "le" else s.price >= o["trigger"]
                 if not hit:
                     continue
@@ -3029,7 +3048,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         for p in self.players.values():
             e = self.equity(p)
             self._track_drawdown(p, e)
-            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token, "style": self.style_of(p),
+            row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token,
                    "gain": e - p.season_base}
             everyone.append(row)
             if self.traded_today(p):
@@ -3043,7 +3062,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _season_boundary(self):
         """When the current season ends. A season is one real day (`season_seconds`, 86400) and ends at midnight UTC,
-        so it coincides with the daily tournament and the daily quests."""
+        so it coincides with the Daily Chart."""
         length = float(self.settings.get("season_seconds", 86400))
         return (math.floor(self.now / length) + 1) * length
 
@@ -3121,19 +3140,17 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p.realized, p.divs, p.borrow = {}, {}, {}
             p.fees_paid, p.trades, p.margin_calls = 0.0, 0, 0
             p.log.clear()
+            p.notes = {}
             p.curve.clear()
             p.orders, p.orders_dirty = [], True
             p.notices.clear()
             social.reset_progress(p)
-            ladder.init_player(p)                         # the quest ladder starts again too (like the achievements)
             p.mb_by_source = {"grant": target}            # where their MB came from starts again with the new balance
             p.chal, p.challenge_mb, p.stop_seen = {}, {}, []   # challenges too: the MB they paid went with the old balance
             self._notify(p, f"The game was reset: it is Day 1 again and everyone starts with {target:,.0f} MB.")
         self.season_no = 1
         self.history = []
         self.season_end = self._season_boundary()
-        self.tournaments, self._sandboxes = [], {}
-        self.tournament_history.clear()
         self.margin_log.clear()
         self.margin_calls = 0
         self.trades_total = 0
@@ -3178,7 +3195,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _forget(self, p):
         """Remove every trace of an account outside the shop's books: the player, its sessions, its email and codes,
-        others' follows of it, its place on the boards, its Daily Chart game and stats, and its contest entries."""
+        others' follows of it, its place on the boards, and its Daily Chart game and stats."""
         tok = p.token
         self.players.pop(tok, None)
         self.by_token.pop(tok, None)
@@ -3194,10 +3211,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if isinstance(d, dict):
             d.get("plays", {}).pop(tok, None)
             (d.get("stats") or {}).pop(tok, None)
-        for t in self.tournaments:
-            t.get("entrants", {}).pop(tok, None)
-        for sb in self._sandboxes.values():
-            sb.players.pop(tok, None)
 
     def reset_with_backup(self, folder):
         """`reset_to_day_one`, after copying the save, the chart file and the ledger into `folder`."""
@@ -3213,7 +3226,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
 
     def _end_season(self):
         self._board()
-        self._ladder_day_end()                           # top-10 and top-3 finishes count on the quest ladder
         top = [(r["name"], round(r["ret"] * 100, 1)) for r in self.board[:5]]
         self.history.append({"season": self.season_no, "top": top})
         self.history = self.history[-10:]
@@ -3269,7 +3281,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             self._dividends()
         self._borrow_fees()
         self._margin_calls()
-        self._paper_tick()
         self._reserve_check()
         self._orders_tick()
         self._settle_options()
@@ -3572,7 +3583,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         out = {"cash": round(p.cash, 2), "equity": round(e, 2), "ret": round(self.season_return(p, e), 4),
                "pnl": round(e - p.deposited, 2), "holdings": hold, "rank": self.rank.get(p.token),
                "pro": self.is_pro(p), "expert": self.is_expert(p), "low": e < float(self.settings.get("restart_below", 50.0)),
-               "lessons": len(p.lessons_passed)}
+               "lessons": len(p.passed)}
         if p.opts or getattr(p, "opts_dirty", False):   # option positions (options.py), and once more when the last goes
             out["opts"] = self.options_view(p)
             p.opts_dirty = bool(p.opts)
@@ -3590,7 +3601,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         return notes
 
     def board_view(self):
-        return [{"name": r["name"], "equity": round(r["equity"], 2), "ret": round(r["ret"], 4), "style": r.get("style"),
+        return [{"name": r["name"], "equity": round(r["equity"], 2), "ret": round(r["ret"], 4),
                  } for r in self.board[:10]]
 
     def sector_view(self):
@@ -3718,9 +3729,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                    "total_equity": sum(self.equity(p) for p in humans), "total_cash": sum(p.cash for p in humans)}
         social = {"chat_last_hour": sum(1 for m in self.chat if m["t"] > now - 3600), "chat_kept": len(self.chat),
                   "reported_messages": len({r["id"] for r in self.chat_reports}),
-                  "muted": sum(1 for t, u in self.muted.items() if u > now), "appeals_open": sum(1 for a in self.appeals if a.get("status") == "open"),
-                  "contests_running": len(self.tournaments), "contest_entrants": sum(len(t.get("entrants", [])) for t in self.tournaments)}
-        keys = ("signup_bonus", "contest_balance", "email_mode", "require_password", "index_size", "earnings_quarter_days", "earnings_jitter_days",
+                  "muted": sum(1 for t, u in self.muted.items() if u > now), "appeals_open": sum(1 for a in self.appeals if a.get("status") == "open")}
+        keys = ("signup_bonus", "email_mode", "require_password", "index_size", "earnings_quarter_days", "earnings_jitter_days",
                 "volatility_scale", "reserve_floor_frac", "reserve_stress_frac", "reserve_floor_min", "house_seed", "moonshot_max",
                 "moonshot_mean_seconds", "catalyst_mean_seconds", "event_mean_seconds", "sector_shock_mean_seconds", "premarket_seconds",
                 "aftermarket_seconds", "chat_enabled", "chat_min_trades", "trust_proxy")
@@ -3849,6 +3859,26 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
     HISTORY_KINDS = ("buy", "sell", "short", "cover", "margin_call", "dividend", "borrow", "credit", "debit",
                      "delist_payout", "purchase", "opt_buy", "opt_sell", "opt_expire", "lend", "repay")
 
+    NOTE_MAX, NOTES_MAX = 200, 300
+
+    def set_note(self, p, t, text):
+        """A note on one of your trades, keyed by its time (the History page's journal, ROADMAP U11, 2026-11-07). Empty
+        text removes it; the newest 300 notes are kept; nothing here touches money."""
+        try:
+            key = f"{float(t):.3f}"
+        except (TypeError, ValueError):
+            return False, "No such trade"
+        text = " ".join(str(text or "").split())[:self.NOTE_MAX]
+        if not text:
+            p.notes.pop(key, None)
+            return True, "Note removed"
+        p.notes[key] = text
+        self._learn_task(p, "note")
+        if len(p.notes) > self.NOTES_MAX:
+            for k in sorted(p.notes, key=float)[:len(p.notes) - self.NOTES_MAX]:
+                del p.notes[k]
+        return True, "Note saved"
+
     def history_for(self, p, limit=100, before=None, kinds=None, ticker=None):
         """A player's ledger entries, newest first, with paging (`before` is the `seq` of the last one seen); only one
         stock's with `ticker` (the chart's trade markers)."""
@@ -3861,13 +3891,13 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             rows = rows[:limit]
             events = [{"seq": r["seq"], "t": r["t"], "kind": r["kind"], "ticker": r["ticker"],
                        "shares": abs(r["shares"]), "price": r["price"], "mb": r["notional"], "fee": r["fee"],
-                       "pnl": r["pnl"], "cash": r["cash_delta"],
+                       "pnl": r["pnl"], "cash": r["cash_delta"], "note": p.notes.get(f"{r['t']:.3f}"),
                        "src": (r.get("extra") or {}).get("source", "grant") if r["kind"] == "credit" else None}
                       for r in rows]
             return {"events": events, "more": more, "next_before": events[-1]["seq"] if events and more else None,
                     "source": "ledger"}
         events = [{"seq": None, "t": x["t"], "kind": x["k"], "ticker": x["tk"], "shares": x["sh"], "price": x["px"],
-                   "mb": x["mb"], "fee": x["fee"], "pnl": None, "cash": None}
+                   "mb": x["mb"], "fee": x["fee"], "pnl": None, "cash": None, "note": p.notes.get(f"{x['t']:.3f}")}
                   for x in reversed(p.log) if x["k"] in kinds and (ticker is None or x["tk"] == ticker)][:limit]
         return {"events": events, "more": False, "next_before": None, "source": "memory"}
 
@@ -4044,9 +4074,9 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                           "orders": p.orders, "pw": p.pw, "ips": p.ips, "created": p.created,
                           "email": p.email, "email_verified": p.email_verified, "email_pending": p.email_pending,
                           "entry_fee": p.entry_fee, "realized": p.realized, "fees_paid": p.fees_paid, "trades": p.trades,
-                          "log": list(p.log), "margin_calls": p.margin_calls,
+                          "log": list(p.log), "margin_calls": p.margin_calls, "notes": p.notes,
                           "social": social.dump_player(p), "economy": economy.dump_player(p),
-                          "learning": learning.dump_player(p), "ladder": ladder.dump_player(p),
+                          "learning": learning.dump_player(p),
                           "chart": chartprefs.dump_player(p),
                           "lev": p.lev, "loan": p.loan, "loan_int": p.loan_int, "collat": p.collat,
                           "options": options.dump_player(p), "bots": bots.dump_player(p), "house": housebots.dump_player(p),
@@ -4468,6 +4498,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 if self.ledger is not None and p not in retiring:
                     p.curve.extend(self.ledger.curve(p.token, 1440))
                 p.log.extend(x.get("log", []))
+                p.notes = {str(k)[:24]: str(v)[:200] for k, v in list(dict(x.get("notes", {})).items())[-300:]}
                 p.margin_calls = int(x.get("margin_calls", 0))
                 for tk, shares in p.hold.items():  # saves from before cost tracking: entry = current price
                     p.cost.setdefault(tk, shares * self.stocks[tk].price)
@@ -4476,7 +4507,6 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 social.load_player(p, x.get("social", {}))
                 economy.load_player(p, x.get("economy", {}))
                 learning.load_player(p, x.get("learning", {}))
-                ladder.load_player(p, x.get("ladder", {}))
                 chartprefs.load_player(p, x.get("chart", {}))
                 self.players[p.token] = p
                 self.by_token[p.token] = p

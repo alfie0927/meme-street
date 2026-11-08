@@ -7,7 +7,7 @@ import random
 import tempfile
 import unittest
 
-from _helpers import advance, drift, engine, join, quiet
+from _helpers import advance, drift, engine, join, make_engine, quiet
 
 FEE = engine.FEE
 
@@ -215,6 +215,26 @@ class HistoryTests(unittest.TestCase):
 
     def test_money_is_conserved(self):
         self.assertLess(abs(drift(self.e)), 1e-6)
+
+
+class TradeNoteTests(unittest.TestCase):
+    """The History page's journal (ROADMAP U11, 2026-11-07): a note per trade, kept with the player."""
+
+    def test_a_note_is_kept_with_the_trade_and_shows_in_the_history(self):
+        e = make_engine(21)
+        p = join(e, "noter")
+        e.trade(p, "NVXA", "buy", 0.2)
+        t = p.log[-1]["t"]
+        self.assertTrue(e.set_note(p, t, "  bought the   breakout ")[0])
+        self.assertEqual(p.notes[f"{t:.3f}"], "bought the breakout")
+        self.assertEqual(e.history_for(p)["events"][0]["note"], "bought the breakout")
+        self.assertTrue(e.set_note(p, t, "")[0])
+        self.assertEqual(p.notes, {})
+        self.assertFalse(e.set_note(p, "x", "hi")[0])
+        for k in range(320):                                                      # the newest 300 are kept
+            e.set_note(p, 1000.0 + k, "n")
+        self.assertEqual(len(p.notes), 300)
+        self.assertNotIn("1000.000", p.notes)
 
 
 if __name__ == "__main__":

@@ -36,9 +36,7 @@ class SourcesAndStartTests(unittest.TestCase):
         self.assertEqual(p.mb_by_source, {"grant": 1000.0})
         shipped = _raw_read(e)[3]                       # the content packs as shipped (the test worlds force 1,000 anyway)
         self.assertEqual(shipped["signup_bonus"], 1000)
-        self.assertEqual(shipped["contest_balance"], 1000)
         self.assertEqual(engine.START_CASH, 1000.0)
-        self.assertEqual(engine.social.CONTEST_BALANCE, 1000.0)
 
     def test_every_credit_carries_its_source_and_counts_as_money_put_in(self):
         e = make_engine(2)

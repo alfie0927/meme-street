@@ -188,22 +188,6 @@ class RequiredModeTests(unittest.TestCase):
         self.assertTrue(self.e.trade(self.p, "NVXA", "buy", 0.1)[0])
         self.assertTrue(self.e.post_chat(self.p, "hello there")[0])
 
-    def test_contests_are_closed_to_unverified_players_and_a_verified_one_can_trade_its_paper_account(self):
-        e = make_engine(7)
-        e.now = (int(e.now // 86400) + 1) * 86400 + 100              # early in a UTC day, when the contest is open
-        e.tick(now=e.now)
-        e._social_t = 0
-        e._social_tick()
-        tid = next(t for t in e.tournaments if t["kind"] == "marathon")["id"]
-        e.settings["email_mode"] = "required"
-        p = join(e, "racer")
-        self.assertIn("Verify your email", e.tournament_join(p, tid)[1])
-        self.assertTrue(e.email_confirm(p, e.email_begin(p, "racer@example.com")[2])[0])
-        self.assertTrue(e.tournament_join(p, tid)[0])
-        e.now += 2
-        ok, msg = e.contest_trade(p, tid, "NVXA", "buy", 0.2)                  # the paper account is not gated a second time
-        self.assertTrue(ok, msg)
-
     def test_with_no_setting_email_is_off_until_mail_is_set_up_and_a_bad_value_falls_back_to_that(self):
         self.assertEqual(self.e.email_mode(), "off")
         self.e.default_email_mode = "optional"                    # what the server does once it can really send mail

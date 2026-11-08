@@ -590,23 +590,6 @@ async def handle_message(conn, p, raw):
                 logger.exception("order failed")
                 ok, msg = False, "Order error"
             conn.push(dumps({"type": "result", "ok": ok, "msg": msg}))
-        elif kind == "contest_trade":
-            now = time.time()
-            if now - conn.last_query.get("contest_trade", 0.0) < 0.2:
-                conn.push(dumps({"type": "result", "ok": False, "msg": "Slow down a little"}))
-                return
-            conn.last_query["contest_trade"] = now
-            try:
-                raw_amount = m.get("amount")
-                ok, msg = await run(engine.contest_trade, p, str(m.get("id")), str(m.get("ticker")),
-                                    str(m.get("side")), float(m.get("pct") or 0),
-                                    None if raw_amount in (None, "") else float(raw_amount))
-            except (ValueError, TypeError):
-                ok, msg = False, "Bad trade request"
-            except Exception:
-                logger.exception("contest trade failed")
-                ok, msg = False, "Trade error"
-            conn.push(dumps({"type": "result", "ok": ok, "msg": "Contest (paper money): " + msg, "contest": True}))
         elif kind in ("history", "company"):
             now = time.time()
             if now - conn.last_query.get(kind, 0.0) < 0.2:  # lookups are heavier than trades
@@ -1060,6 +1043,18 @@ async def history(x_token: str = Header(""), limit: int = 100, before: int = 0, 
                              kinds, ticker.upper()[:8] or None)
 
 
+class Note(BaseModel):
+    t: float
+    text: str = ""
+
+
+@app.post("/api/history/note")
+async def history_note(b: Note, x_token: str = Header("")):
+    """A note on one of your trades: the journal on the History page (§11). Empty text removes it."""
+    res = await with_player(x_token, "history_note", engine.set_note, b.t, b.text, interval=0.3)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
 # ---- the chart set-up kept per player (chartprefs.py): indicators, chart type, drawings
 @app.get("/api/chart")
 async def chart_get(x_token: str = Header("")):
@@ -1141,14 +1136,17 @@ class TestPay(BaseModel):
 
 
 def shop_view(p):
-    out = engine.economy_view(p)
+    out = engine.economy_view(p) if p is not None else engine.economy_view_guest()
     out.update({"selling": payments.selling, "mode": payments.mode})
     return out
 
 
 @app.get("/api/shop")
 async def shop(x_token: str = Header("")):
-    """The shop page: prices, Pro status, the age and spending rules, past purchases and the free restart."""
+    """The shop page: prices, Pro status, the age and spending rules, past purchases and the free restart. A visitor
+    without an account gets the prices alone (2026-11-07, ROADMAP M10)."""
+    if not engine.player_for(x_token or ""):
+        return await run(shop_view, None)
     return await with_player(x_token, "shop", shop_view)
 
 
@@ -1338,7 +1336,7 @@ async def close_all(x_token: str = Header("")):
 
 @app.get("/api/me")
 async def me(x_token: str = Header("")):
-    """Achievements, daily quests, tournaments, who you follow, and your ranks."""
+    """Achievements, who you follow, your account and your ranks."""
     return await with_player(x_token, "me", engine.me_for)
 
 
@@ -1346,12 +1344,6 @@ async def me(x_token: str = Header("")):
 async def boards(x_token: str = Header("")):
     """The season, risk-adjusted and all-time leaderboards."""
     return await with_player(x_token, "boards", engine.boards_for)
-
-
-@app.post("/api/tournament/join")
-async def tournament_join(b: Ident, x_token: str = Header("")):
-    res = await with_player(x_token, "tjoin", engine.tournament_join, b.id, interval=0.5)
-    return res if isinstance(res, JSONResponse) else acted(res)
 
 
 @app.get("/api/profile/{name}")
@@ -1468,6 +1460,9 @@ def ops_info():
 class TestAnswer(BaseModel):
     id: str
     choice: int
+    lesson: str | None = None        # the lesson this test is an exercise of, and the index of its block
+    i: int | None = None
+    review: bool = False             # a review answer: remembered, a little XP, never a pass (§10.10)
 
 
 def learner(x_token):
@@ -1497,12 +1492,12 @@ async def learn_lesson(lesson_id: str, x_token: str = Header("")):
 
 
 @app.get("/api/learn/test")
-async def learn_test(request: Request, kind: str = "any", example: int = 0, x_token: str = Header("")):
+async def learn_test(request: Request, kind: str = "any", example: int = 0, opt: str = "", x_token: str = Header("")):
     """A chart test on a real game chart: the question (answer it with POST), or with `example=1` a lesson's example,
     answer included. Public."""
     if learn_slow(request, x_token, "example" if example else "test", 0.3):     # (a lesson loads one of each at once)
         return JSONResponse({"error": "slow down"}, status_code=429)
-    return await run(engine.drill_example if example else engine.drill_new, kind)
+    return await run(engine.drill_example if example else engine.drill_new, kind, (opt[:16].lower() or None))
 
 
 @app.get("/api/reel/stock/{ticker}")
@@ -1516,10 +1511,77 @@ async def reel_stock(ticker: str, request: Request, tf: str = "1h"):
 
 @app.post("/api/learn/test")
 async def learn_test_answer(b: TestAnswer, request: Request, x_token: str = Header("")):
-    """Mark a chart test: right or wrong, the candles that came next, and the player's score for the kind."""
+    """Mark a chart test: right or wrong, the candles that came next, and the player's score for the kind. With `lesson`
+    and `i` it is one of that lesson's exercises (§10.10)."""
     if learn_slow(request, x_token, "test_answer", 0.3):
         return JSONResponse({"error": "slow down"}, status_code=429)
-    return await run(engine.drill_answer, learner(x_token), b.id, b.choice)
+    return await run(engine.drill_answer, learner(x_token), b.id, b.choice, b.lesson, b.i, b.review)
+
+
+class LessonAnswer(BaseModel):
+    lesson: str
+    i: int
+    choice: float                        # a slot for a multiple-choice question, a number for a number question
+    review: bool = False
+
+
+class Placement(BaseModel):
+    answers: list
+
+
+class Goal(BaseModel):
+    goal: int
+
+
+@app.post("/api/learn/goal")
+async def learn_goal(b: Goal, x_token: str = Header("")):
+    """Pick the daily XP goal: 20, 50 or 100 (§10.10)."""
+    res = await with_player(x_token, "learn_goal", engine.set_goal, b.goal, interval=0.5)
+    return res if isinstance(res, JSONResponse) else acted(res)
+
+
+@app.get("/api/learn/review")
+async def learn_review(request: Request, x_token: str = Header("")):
+    """A review session for the player's weak skills (§10.10): questions from the units missed most and the chart-test
+    kinds missed most."""
+    if learn_slow(request, x_token, "review", 0.5):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.review_new, learner(x_token))
+
+
+@app.get("/api/learn/league")
+async def learn_league(request: Request, x_token: str = Header("")):
+    """This week's learners by XP (§10.10), with the viewer's rank. Public."""
+    if learn_slow(request, x_token, "league", 0.5):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.league, learner(x_token))
+
+
+@app.get("/api/learn/placement")
+async def learn_placement(request: Request, x_token: str = Header("")):
+    """The placement test: one question per unit, in order, without answers (§10.10). Public."""
+    if learn_slow(request, x_token, "placement", 0.5):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.placement_new, learner(x_token))
+
+
+@app.post("/api/learn/placement")
+async def learn_placement_grade(b: Placement, request: Request, x_token: str = Header("")):
+    """Grade the placement test: each answer marked, the units known, where the path starts; a player's known units
+    are marked passed."""
+    if learn_slow(request, x_token, "placement_grade", 0.5):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    return await run(engine.placement_grade, learner(x_token), b.answers[:20])
+
+
+@app.post("/api/learn/answer")
+async def learn_answer(b: LessonAnswer, request: Request, x_token: str = Header("")):
+    """Answer a lesson's question: right or wrong, the right answer and why; a player's first answer earns XP and may
+    pass the lesson (§10.10). Public: a visitor's answer is marked and forgotten."""
+    if learn_slow(request, x_token, "learn_answer", 0.2):
+        return JSONResponse({"error": "slow down"}, status_code=429)
+    choice = int(b.choice) if float(b.choice).is_integer() and 0 <= b.choice <= 8 else b.choice
+    return await run(engine.learn_answer, learner(x_token), b.lesson, b.i, choice, b.review)
 
 
 class OptionBuy(BaseModel):
@@ -1808,20 +1870,6 @@ async def admin_refund(b: Ident, x_admin_key: str = Header("")):
     if ok:
         await run(engine.save, False)
     return {"ok": ok, "msg": msg}
-
-
-class LadderStyle(BaseModel):
-    title: str = ""
-    color: str = ""
-
-
-@app.post("/api/ladder/style")
-async def ladder_style(b: LadderStyle, x_token: str = Header("")):
-    """Wear an unlocked title and name colour ("" for none)."""
-    def work(p):
-        ok, msg = engine.set_style(p, b.title, b.color)
-        return {"ok": ok, "msg": msg, "style": engine.style_of(p)}
-    return await with_player(x_token, "ladder_style", work, interval=0.5)
 
 
 class ProGrant(BaseModel):

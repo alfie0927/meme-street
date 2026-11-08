@@ -141,8 +141,8 @@ def add_pages(app):
     @app.get("/leaders")
     async def leaders_page():
         return page_as("/leaders", "Leaderboards: today and all time | Meme Street",
-                       "Who is up the most on Meme Street today and of all time, by return and by profit. Ranks count "
-                       "returns, so buying MB cannot buy a better place.")
+                       "Who is up the most on Meme Street today and of all time, by return and by profit. The return boards "
+                       "count returns on money put in, so buying MB cannot buy a better place on them.")
 
     @app.get("/about")
     async def about_page():

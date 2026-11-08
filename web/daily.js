@@ -28,7 +28,7 @@ const dlyDate=d=>new Date(d.day*86400000).toLocaleDateString(undefined,{day:'num
 const DLY_WORD={buy:'Bought',sell:'Sold',short:'Shorted',cover:'Covered'};
 // the levels the chart tested, shown once the game is over and only while their drop-down is open (dlyLvOpen): the colour
 // is how its last test went
-let dlyLvOpen=false;
+let dlyLvOpen=true;   // (open by default since 2026-11-07, TA-D10: the levels are the lesson)
 const DLY_LV={held:'#4cc3cc',broke:'#f0883e','fake break':'#d2a8ff'},DLY_LVNAME={support:'Support',resistance:'Resistance',fvg:'Fair value gap'};
 // the chart: the lead-in and the candles so far, your trades as arrows, the last price
 function dlySvg(g){
@@ -81,9 +81,19 @@ function dlyCard(g,d,anim){
   <div class="dly-place">${g.rank?`<b>${dlyPlace(g.rank)}</b> of ${numText(g.of,0)}`:''}${better===null?(g.rank?' · the first to finish today':''):better>0?` · better than ${Math.round(better*100)}% of players`:''}</div>
   ${dlySquares(g.grid||[],anim)}
   <div class="dly-vs">The stock did <b class="${clsP(g.hold)}">${pc(g.hold)}</b>: ${!g.trades.length?'you sat it out.':g.ret>g.hold+1e-9?'you beat it.':'it beat you.'}</div>
+  ${g.best&&g.best.ret>0.0005?`<div class="dly-vs dly-best">What you could have done: <b>${g.best.side==='long'?'buy':'short'}</b> at second ${g.best.from-(d.history-1)}, <b>${g.best.side==='long'?'sell':'cover'}</b> at second ${g.best.to-(d.history-1)}, for <b class="up">${pc(g.best.ret)}</b>. The levels it tested are under the chart.</div>`:''}
   ${dlyStatRow(d.stats)}
   <div class="dly-share"><button class="dly-go" data-dly-share>Share</button><button class="dly-alt" data-dly-pic>Story picture</button></div>
+  ${d.visitor?'':`<div class="dly-share dly-step"><a class="dly-alt" href="${dlyLesson(g)}">The lesson for this chart</a><a class="dly-alt" href="/">Trade a live stock</a></div>`}
   <div class="dly-next">Next chart in <b class="dly-cd">${dlyHMS(d.next-engineNow())}</b></div></div>`}
+// the lesson that fits what the chart did: no level tested, a trend; a fake break or more breaks than holds, ranges and
+// breakouts; otherwise support and resistance (TA-D10)
+function dlyLesson(g){const o=(g.levels||[]).flatMap(l=>l.tests.map(t=>t[1]));if(!o.length)return '/learn?l=trends';
+ if(o.includes('fake break')||o.filter(x=>x==='broke').length>o.filter(x=>x==='held').length)return '/learn?l=ranges-breakouts';return '/learn?l=support-resistance'}
+// the lesson that fits what the chart did: no level tested, a trend; a fake break or more breaks than holds, ranges and
+// breakouts; otherwise support and resistance (TA-D10)
+function dlyLesson(g){const o=(g.levels||[]).flatMap(l=>l.tests.map(t=>t[1]));if(!o.length)return '/learn?l=trends';
+ if(o.includes('fake break')||o.filter(x=>x==='broke').length>o.filter(x=>x==='held').length)return '/learn?l=ranges-breakouts';return '/learn?l=support-resistance'}
 function dlyPop(html,label){
  let box=$('dly-pop');if(!box){box=document.createElement('div');box.id='dly-pop';document.body.appendChild(box)}
  setHtml(box,`<div class="dly-pop-in dly-modal" role="dialog" aria-label="${label}"><button class="dly-x" data-dly-close aria-label="Close">&times;</button>${html}</div>`);

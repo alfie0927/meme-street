@@ -50,7 +50,8 @@ CATEGORIES = {
                    "player's return, and the invitation to play tomorrow's chart. Charts scenes with reveal cues through "
                    "the day, marks at the trade candles, a cards scene for the scorecard. The outro ends: \"Tomorrow's "
                    "Daily Chart drops at midnight. Beat it at memestreet.net.\" When the facts say plan_beat_holding is false, "
-                   "say briefly in the first or second scene that just buying at the open and holding did better today.",
+                   "own it in the first or second scene, in the owner's voice: the stock did better than us today, just buying at the "
+                   "open and holding beat these trades, but we trade proper setups, not hope (say 'holding' and 'setups').",
     # the viral formats from the research of 2026-11-04 (swipe.md: 169 shorts and TikToks, 11 accounts, ranked by how far
     # each beat its own account's median). The formula is copied, never a script.
     "Chart twist": "VIRAL (top format, 37x its account's median): a real chart that looks one way ('it still looked bearish'), "
@@ -545,8 +546,11 @@ def check(spec, facts, charts, category=None):
             errs.append("only a reel about the Daily Chart mentions it: end with \"Join free at memestreet.net.\"")
     if sc and "memestreet.net" not in sc[-1].get("vo", "").lower():
         errs.append("the last scene's line must end by saying memestreet.net (spoken as 'Meem Street dot net')")
-    if facts.get("plan_beat_holding") is False and not re.search(r"\bhold", " ".join(x.get("vo", "") for x in sc[:2]).lower()):
-        errs.append("buying at the open and holding beat today's trades: say so briefly in the first or second scene (use the word 'holding')")
+    if facts.get("plan_beat_holding") is False:
+        early = " ".join(x.get("vo", "") for x in sc[:2]).lower()
+        if not re.search(r"\bhold", early) or not re.search(r"\bsetups?\b", early):
+            errs.append("buying at the open and holding beat today's trades: own it in the first or second scene (the owner: 'the stock did "
+                        "better than us today, but we trade proper setups'); say 'holding' and 'setups'")
     cap = spec.get("caption", "")
     if DISCLAIMER not in cap: errs.append(f"the caption must contain exactly: {DISCLAIMER}")
     if EMOJI.search(cap + json.dumps(sc)): errs.append("no emoji anywhere")

@@ -312,6 +312,8 @@ const IND=[
  ['volma','Volume average','Volume','volume',0,'#e3b341','The 20-candle average of volume, drawn over the volume bars: a bar well above it is unusual activity.','volume moving average ma',(C,x,P)=>({lines:[{v:smaOf(C.v,P.n),c:'#e3b341',label:'Vol MA '+P.n}]}),{n:20}],
 ];
 const IND_BY=Object.fromEntries(IND.map(x=>[x[0],x]));
+// the lesson that explains each group of indicators (LP8): shown in an indicator's settings pop-up
+const IND_LESSON={'Moving averages':['moving-averages','Moving averages'],'Momentum':['momentum','Momentum: RSI, MACD and stochastic'],'Volatility':['volatility','Volatility: Bollinger Bands and ATR'],'Bands and channels':['volatility','Volatility: Bollinger Bands and ATR'],'Volume':['volume-tools','Volume tools: VWAP, OBV and money flow'],'Levels':['fibonacci','Fibonacci retracements and extensions'],'Trend':['trend-strength','Trend strength: ADX, SuperTrend and Ichimoku']};
 const ind=new Set(lsGet('ms_ind',['sma20']).filter(k=>IND_BY[k]));
 // each indicator's settings: the player's values (indSet) over its defaults (the tenth item above). `src` picks the price
 // the indicator is worked out from (close by default), `c` its colour.
@@ -368,7 +370,7 @@ function drawIndPop(){
  let rows=IND.filter(x=>inTab(x)&&match(x,false));if(!rows.length&&words.length)rows=IND.filter(x=>inTab(x)&&match(x,true));
  const groups={};rows.forEach(x=>(groups[x[2]]=groups[x[2]]||[]).push(x));
  $('ind-tabs').querySelectorAll('[data-ind-filter]').forEach(b=>b.classList.toggle('on',b.dataset.indFilter===indFilter));
- setHtml($('ind-list'),rows.length?Object.entries(groups).map(([g,xs])=>`<div class="ind-group">${esc(g)}</div>`+xs.map(x=>`<button class="ind-row ${ind.has(x[0])?'on':''}" data-ind="${x[0]}"><span class="ind-dot" style="background:${x[5]}"></span><span class="ind-name">${esc(x[1])}${ind.has(x[0])?' <span class="up">✓</span>':''}</span><span class="ind-tag ${x[4]?'pro':'free'}">${x[4]?'PRO':'FREE'}</span><small title="${esc(x[6])}">${esc(x[6])}${x[4]&&!pro?' Pro members only.':''}</small></button>`).join('')).join('')
+ setHtml($('ind-list'),rows.length?Object.entries(groups).map(([g,xs])=>`<div class="ind-group">${esc(g)}</div>`+xs.map(x=>`<button class="ind-row ${ind.has(x[0])?'on':''}" data-ind="${x[0]}" title="${esc(x[6])}${IND_LESSON[x[2]]?' Lesson: '+esc(IND_LESSON[x[2]][1]):''}"><span class="ind-dot" style="background:${x[5]}"></span><span class="ind-name">${esc(x[1])}${ind.has(x[0])?' <span class="up">✓</span>':''}</span><span class="ind-tag ${x[4]?'pro':'free'}">${x[4]?'PRO':'FREE'}</span><small title="${esc(x[6])}">${esc(x[6])}${x[4]&&!pro?' Pro members only.':''}</small></button>`).join('')).join('')
   :'<p class="hint" style="margin:8px">Nothing matches. Try “average”, “RSI”, “volume”, “trend” or “fib”.</p>')}
 function openIndPop(open){const pop=$('ind-pop');if(!pop)return;pop.hidden=!open;if(open){$('ind-q').value='';drawIndPop();setTimeout(()=>$('ind-q').focus(),0)}}
 document.addEventListener('click',e=>{
@@ -396,7 +398,8 @@ function openIndCfg(k,anchor){
  box.innerHTML=`<b>${esc(d[1])}</b>`+Object.keys(D).map(p=>`<label>${esc(names[p])}<input type="number" data-cfg="${p}" value="${P[p]}" min="${p==='k'?0.1:1}" max="${p==='k'?20:500}" step="${p==='k'?0.1:1}"></label>`).join('')
   +(SRC_OK.has(k)?`<label>Source<select data-cfg="src">${Object.entries(SRC_NAMES).map(([v,n])=>`<option value="${v}" ${(P.src||'c')===v?'selected':''}>${esc(n)}</option>`).join('')}</select></label>`:'')
   +`<label>Colour<input type="color" data-cfg="c" value="${indCol(d)}"></label>`
-  +`<div class="bar" style="margin:6px 0 0"><button data-cfg-reset>Reset</button><button class="buy" data-cfg-done>Done</button></div>`;
+  +`<div class="bar" style="margin:6px 0 0"><button data-cfg-reset>Reset</button><button class="buy" data-cfg-done>Done</button></div>`
+  +(IND_LESSON[d[2]]?`<p class="hint" style="margin:6px 0 0">${esc(d[6])} Lesson: <a href="/learn?l=${IND_LESSON[d[2]][0]}">${esc(IND_LESSON[d[2]][1])}</a></p>`:'');
  box.hidden=false;
  if(anchor){const bx=$('chart-box').getBoundingClientRect(),ar=anchor.getBoundingClientRect();box.style.left=Math.max(0,Math.min(bx.width-260,ar.left-bx.left-150))+'px';box.style.top=(ar.bottom-bx.top+6)+'px'}}
 function cfgInput(el){
@@ -660,3 +663,8 @@ document.addEventListener('click',e=>{
  $('b-tp').value=riskPlan.target.toPrecision(6);$('b-sl').value=riskPlan.stop.toPrecision(6);
  toast(`Filled in: press ${riskPlan.long?'Buy':'Sell'} for ${numText(riskPlan.cost)} MB, then Set bracket`,true,5000)});
 
+// apply-it-now links from the lessons (LP12): /stock/X?ind=rsi,sma20&tf=1h switches those indicators on and picks the
+// candle size before the chart first draws (a Pro indicator stays locked for a free player, as the chip shows)
+(()=>{try{const q=new URLSearchParams(location.search),i=q.get('ind'),t=q.get('tf');
+ if(i){i.split(',').forEach(k=>{if(IND_BY[k])ind.add(k)});savePrefs()}
+ if(t&&PERIODS.some(p=>p[0]===t))chartPeriod=t}catch(e){}})();

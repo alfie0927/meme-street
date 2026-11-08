@@ -5,6 +5,8 @@ The most important track. How much to risk, how to size a position from the stop
 SUMMARY: Deciding how much to lose before deciding how much to buy.
 Most beginners decide how much to **buy**. Professionals decide how much to **lose**, and let that set the size.
 
+[mine]
+
 ### The 1% rule
 Risk at most **1% of your account** on any one trade (some use 0.5%, some up to 2%). "Risk" means what you lose if the stop is hit, not the size of the position.
 
@@ -30,12 +32,28 @@ HERE: The **Position size and risk** tool under every stock's chart does this su
 
 [try /stock/CLDR] Open CloudRail, pick a stop from the chart and let the risk tool size a 1% trade.
 
+[calc sizing]
+
+Q: The stop moves twice as far away. What happens to the position size at the same risk?
++ It halves
+- It doubles
+- It stays the same
+WHY: Size = risk ÷ distance; double the distance, half the size.
+
+Q: What does "risk 1%" mean?
+- Buy positions worth 1% of the account
++ Lose at most about 1% of the account if the stop is hit
+- Expect to make 1%
+WHY: Risk is the loss at the stop, not the size of the position.
+
 ## R-multiples and reward to risk {r-multiples} [6]
 SUMMARY: Measuring every trade in units of its own risk, and what a reward-to-risk ratio buys you.
 **R** is the amount you risk on a trade: the distance from entry to stop, in MB. Measuring results in R makes trades of different sizes comparable.
 - Stopped out: **-1R**.
 - Took profit at twice the risk: **+2R**.
 - Closed at break-even: **0R**.
+
+[mine]
 
 ### Reward to risk
 The distance to the target divided by the distance to the stop. A long at 100 with a stop at 95 (risk 5) and a target at 110 (reward 10) is **2 to 1**.
@@ -54,10 +72,32 @@ At 3 to 1 you can be wrong three times out of four and still break even. That is
 ### The catch
 A far target is hit less often. A 3 to 1 trade with a target the price is unlikely to reach is not better than a 1.5 to 1 trade with a realistic one. The target must be somewhere the chart says the price can get to: the next resistance, a measured move.
 
+[calc r]
+
 [test rr]
+
+Q: Long at 40, stop at 38, take-profit at 46. What is the reward to risk?
+- 2 to 1
++ 3 to 1
+- 1 to 3
+WHY: Reward 6 (46 - 40), risk 2 (40 - 38): 3 to 1.
+
+Q: At 2 to 1, what win rate breaks even before costs?
+- 50%
++ About 33%
+- 10%
+WHY: Win 1 in 3: +2R once, -1R twice, 0 overall.
+
+Q: You risked 15 MB and made 45 MB. What is the result in R?
++ +3R
+- +45R
+- +1R
+WHY: 45 ÷ 15 = 3.
 
 ## Win rate, payoff and expectancy {expectancy} [7]
 SUMMARY: Why a high win rate can lose money and a low one can win, and what to expect from a streak.
+[mine]
+
 ### Expectancy
 What a strategy makes on average per trade:
 
@@ -79,6 +119,26 @@ Ten trades say almost nothing about a strategy: luck dominates. Judge a strategy
 
 HERE: Your Portfolio page lists your best and worst closed trades and your realised profit; the History page can be downloaded to a spreadsheet to work out your own win rate, average win, average loss and expectancy.
 
+[calc expectancy]
+
+Q: Wins 50% of the time at +1R, loses 50% at -1R, and pays costs. What is the expectancy?
+- Positive
++ Slightly negative, because of costs
+- Exactly zero
+WHY: Zero before costs; costs make it negative.
+
+Q: 40% wins averaging +2R, 60% losses averaging -1R. Expectancy?
++ +0.2R per trade
+- -0.2R per trade
+- +0.8R per trade
+WHY: 0.4 × 2 - 0.6 × 1 = 0.2R.
+
+Q: A strategy has lost seven trades in a row. What does that prove?
+- It has stopped working
++ Very little on its own: streaks happen even with an edge
+- It is due a win
+WHY: Losing streaks are normal; and the next trade is not "due" anything either.
+
 ## Drawdown maths {drawdown} [5]
 SUMMARY: Why losses hurt more than gains help, and why protecting capital comes first.
 A **drawdown** is the fall from an account's peak to a low. Its cruel maths: the bigger the loss, the much bigger the gain needed to get back.
@@ -93,6 +153,8 @@ A **drawdown** is the fall from an account's peak to a low. Its cruel maths: the
 
 Lose half and you must double what is left just to get back to where you started. That asymmetry is why every professional's first rule is to keep losses small: a 10% hole is an inconvenience, a 50% hole is a career.
 
+[mine]
+
 ### Maximum drawdown
 The deepest drawdown a strategy or an account has had. Two strategies that made the same return are not equal if one of them fell 15% along the way and the other 60%: the second was far riskier and far harder to stick with.
 
@@ -100,6 +162,26 @@ The deepest drawdown a strategy or an account has had. Two strategies that made 
 After a drawdown, cut the size, not the discipline. Trading bigger to "win it back" is how drawdowns become blow-ups.
 
 HERE: The Leaders page and your profile show your **worst drawdown**, and your Portfolio's equity curve shows every one of them: the drops from the peak. The leaderboards rank return on the money you put in, so a big drawdown hurts your rank just as it would hurt a real account.
+
+[calc drawdown]
+
+Q: An account falls from 1,000 to 500 MB. What gain does it need to get back to 1,000?
+- 50%
++ 100%
+- 200%
+WHY: 500 must double to reach 1,000.
+
+Q: Two strategies both made 40% last year. One had a 15% maximum drawdown, the other 55%. Which was riskier?
++ The one with the 55% drawdown
+- They were equally risky
+- The one with the 15% drawdown
+WHY: The same return through a much deeper fall means far more risk taken.
+
+Q: After a big drawdown, what is the sensible response?
+- Trade bigger to win it back quickly
++ Trade smaller and stick to the plan
+- Stop using stops
+WHY: Bigger size after losses turns a drawdown into a blow-up.
 
 ## Correlation and diversification {correlation} [6]
 SUMMARY: When five positions are really one bet, and how to spread risk.
@@ -120,6 +202,24 @@ In calm markets, stocks drift on their own news. In a sell-off, almost everythin
 HERE: Companies here move with the market (through their beta), with their industry and on their own news, and a whole industry can fall while the market rises. In corrections and bear markets the market's share of every move gets bigger, so stocks fall together, as in real markets. **BOND** (Steady Bonds) and **GLDN** (Golden Reserve) are the safe havens.
 
 [try /stock/XTECH] Open the technology index and compare its chart with the MSI 50's: how closely do they move together?
+
+Q: You hold five banks, each risking 1%. How much risk is that really?
+- 1%, since they are spread out
++ Closer to 5% on one idea, because banks move together
+- 0.2%
+WHY: Highly correlated positions behave like one big position.
+
+Q: What tends to happen to correlations in a market sell-off?
++ They rise: most stocks fall together
+- They fall to zero
+- Nothing changes
+WHY: In panics, investors sell everything at once; diversification across stocks helps least when needed most.
+
+Q: A stock has a beta of 2. The market falls 3%. What might the stock do, from beta alone?
+- Rise 6%
++ Fall about 6%
+- Fall 1.5%
+WHY: Beta 2 means roughly twice the market's move: 2 × -3% = -6%.
 
 ## Risk of ruin {risk-of-ruin} [6]
 SUMMARY: The chance of losing so much that you cannot recover, and how fast it grows with the size of each bet.
@@ -145,9 +245,29 @@ Putting everything into one trade risks ruin on a single outcome, however good t
 
 HERE: There is no limit on position size: you can put your whole account into one stock, and with leverage control several times your account. Nothing stops you except your own rules. If you do run out, the low-funds banner offers a free restart, but on a real account there is none.
 
+Q: Same strategy, same edge. What changes the risk of ruin the most?
++ The share of the account risked on each trade
+- The colour scheme of the chart
+- The number of indicators used
+WHY: Bet size is the main lever: small bets make ruin very unlikely for a strategy with an edge.
+
+Q: Can a strategy with a real edge still go broke?
+- No, an edge guarantees profit
++ Yes, if it risks too much on each trade
+- Only if it trades options
+WHY: Big bets let a run of bad luck do damage that the edge cannot repair in time.
+
+Q: Two traders have the same edge. One risks 1% a trade, the other 10%. After eight losses in a row, who is still trading normally?
++ The 1% trader, down about 8%; the other has lost more than half
+- Both: eight losses is nothing
+- Neither: the edge is gone
+WHY: 1% eight times is about an 8% drawdown. 10% compounded eight times leaves about 43% of the account.
+
 ## Where stops go {stop-placement} [6]
 SUMMARY: Stops at the point where the idea is wrong, outside the noise, and not where everyone else's are.
 A stop has one job: to get you out when the reason for the trade is no longer true.
+
+[mine]
 
 ### Technical stops
 Put the stop where the chart says the idea is wrong:
@@ -168,4 +288,24 @@ Stops cluster just beyond obvious levels and round numbers. Prices often poke th
 ### Never move a stop further away
 Moving a stop away from the price as it approaches is turning a planned loss into an unplanned bigger one. Move it only towards profit.
 
-[test stop]
+[test level support]
+
+Q: You buy a breakout above 120 from a range of 100 to 120. Where does the stop belong?
+- At 119.99
++ Back inside the range, somewhat below 120
+- At 100, always
+WHY: A close back inside the range means the breakout failed; a little margin keeps it out of the noise.
+
+Q: The stock's ATR is 2 MB. You want a stop 0.3 MB from your entry. What is the problem?
++ It is inside normal noise and likely to be hit by chance
+- It is too far away
+- There is no problem
+WHY: A typical candle moves 2 MB; a 0.3 MB stop will be touched by ordinary movement.
+
+Q: The price is falling towards your stop. What do you do?
+- Move the stop further down to give it room
++ Leave it: it is where the idea is wrong
+- Remove it
+WHY: Widening a stop under pressure turns a planned small loss into a bigger one.
+
+[task planned] Close a position that had a stop-loss while it was open, win or lose.

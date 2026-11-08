@@ -1,20 +1,16 @@
-"""The social side of the game: achievements, daily quests, risk-adjusted rankings, tournaments, public profiles,
-following and a moderated chat.
+"""The social side of the game: badges (achievements), the day and all-time boards, public profiles, following and a
+moderated chat. (The daily quests, the quest ladder and the daily contest were removed on 2026-11-07: ROADMAP U10.)
 
 It is a mixin for the Engine: the engine owns the players and the money, this file owns everything built on top of
 them. Nothing here ever changes anyone's cash or any price, and every reward is cosmetic (badges, streaks), so none
 of it can create an edge or break the token books.
 """
 import math
-import random
 import re
-import sys
 import unicodedata
 from collections import deque
 
-import ladder
 from accounts import mask_email
-from contest import Sandbox, dump_account, load_account
 
 # ---------------------------------------------------------------------------------------------- achievements
 # (id, name, description). They are checked after every trade and every few seconds.
@@ -39,32 +35,8 @@ ACHIEVEMENTS = [
      "Hold a stock through a REVERSAL headline and close it at a profit within ten minutes."),
     ("up_10", "Up ten", "Reach a day return of +10%."),
     ("up_25", "Up twenty-five", "Reach a day return of +25%."),
-    ("podium", "On the podium", "Finish in the top three of a daily contest."),
-    ("quest_day", "Daily grind", "Complete all of a day's quests."),
 ]
 ACH_NAMES = {a[0]: a[1] for a in ACHIEVEMENTS}
-
-# ---------------------------------------------------------------------------------------------- daily quests
-# (id, text, metric, lowest goal, highest goal, multiplier). Each day's three quests are drawn from this list with a
-# generator seeded by the date, so everyone gets the same ones and they reset at midnight UTC.
-QUESTS = [
-    ("trades", "Make {goal} trades", "trades", 4, 12, 1),
-    ("sectors", "Trade stocks in {goal} different sectors", "sectors", 2, 4, 1),
-    ("profit_close", "Close {goal} position{s} at a profit", "profit_closes", 1, 3, 1),
-    ("short", "Open a short", "shorts", 1, 1, 1),
-    ("positions", "Hold {goal} different positions at once", "max_positions", 3, 6, 1),
-    ("index", "Trade an index, ETF or leveraged product", "index_trades", 1, 1, 1),
-    ("dividend", "Receive a dividend", "dividends", 1, 1, 1),
-    ("volume", "Trade {goal} MB in total", "volume", 2, 8, 100),
-]
-
-# ---------------------------------------------------------------------------------------------- contests
-# kind -> (name, length in seconds, seconds during which you can still join)
-CONTESTS = {
-    "marathon": ("Daily Marathon", 86400, 43200),
-}
-CONTEST_BALANCE = 1000.0                             # every entrant starts with the same paper balance (MB)
-
 
 # ---------------------------------------------------------------------------------------------- chat rules
 BAD_WORDS = ["fuck", "shit", "bitch", "asshole", "cunt", "nigger", "faggot", "slut", "whore", "bastard"]   # also match "fucking", "shitty"
@@ -107,22 +79,16 @@ CHAT_PER_MINUTE = 15
 FOLLOW_MAX = 20
 SNAP_EVERY = 30             # seconds between holdings snapshots (shown to others after a delay)
 
-PLAYER_FIELDS = ("achievements", "counters", "quests_done", "quest_streak", "quest_last_full", "maxdd", "peak",
-                 "badges", "public", "following", "daily", "opened", "strikes")
+PLAYER_FIELDS = ("achievements", "counters", "maxdd", "peak", "public", "following", "opened", "strikes")
 
 
 def init_player(p):
     """Give a Player every field the social features use."""
     p.achievements = {}          # achievement id -> time unlocked
     p.counters = {}              # lifetime counts: trades, shorts, profitable closes, ...
-    p.daily = {}                 # today's progress for the quests
     p.opened = {}                # ticker -> when the position currently held was opened
-    p.quests_done = {}           # day number -> quest ids completed
-    p.quest_streak = 0
-    p.quest_last_full = -10      # the last day on which every quest was completed
     p.peak = None                # best season return index so far (for the drawdown)
     p.maxdd = 0.0                # worst fall from that peak this season, as a share of the peak
-    p.badges = []                # tournament medals
     p.public = False             # share the (delayed) portfolio and results with other players?
     p.following = []
     p.strikes = 0                # automatic mutes so far (each is longer than the last)
@@ -149,7 +115,6 @@ def load_player(p, x):
             setattr(p, k, x[k])
     p.achievements = {k: float(v) for k, v in dict(p.achievements).items() if k in ACH_NAMES}
     p.following = [str(n) for n in p.following][:FOLLOW_MAX]
-    p.badges = list(p.badges)[-30:]
     p.maxdd = float(p.maxdd or 0.0)
     p.strikes = int(p.strikes or 0)
     p.opened = {k: float(v) for k, v in dict(p.opened).items() if k in p.hold}
@@ -179,9 +144,6 @@ class SocialMixin:
         self.appeal_seq = 0
         self.pending_deletes = []                  # messages the engine removed by itself, for the server to tell the pages
         self._bad_re, self._bad_key = _BAD_RE, ()
-        self.tournaments = []                      # contests that have not finished yet
-        self._sandboxes = {}                       # contest id -> its paper accounts (see contest.py)
-        self.tournament_history = deque(maxlen=20)
         self.last_reversal = {}                    # ticker -> time of its latest REVERSAL headline
         self._social_t = 0.0
         self._holdsnap_t = 0.0
@@ -193,7 +155,6 @@ class SocialMixin:
 
     def social_dump(self):
         return {"chat_seq": self.chat_seq, "chat": list(self.chat), "muted": self.muted,
-                "tournaments": self._dump_tournaments(), "tournament_history": list(self.tournament_history),
                 "reports": list(self.chat_reports), "mod_log": list(self.mod_log), "appeals": self.appeals[-100:],
                 "appeal_seq": self.appeal_seq}
 
@@ -201,8 +162,6 @@ class SocialMixin:
         self.chat_seq = int(d.get("chat_seq", 0))
         self.chat.extend(m for m in d.get("chat", []) if m.get("channel", "global") == "global")
         self.muted = {k: float(v) for k, v in dict(d.get("muted", {})).items()}
-        self._load_tournaments(d.get("tournaments", []))
-        self.tournament_history.extend(d.get("tournament_history", []))
         self.chat_reports.extend(d.get("reports", []))
         self.mod_log.extend(d.get("mod_log", []))
         self.appeals = [a for a in d.get("appeals", []) if isinstance(a, dict) and a.get("token") in self.by_token]
@@ -221,14 +180,6 @@ class SocialMixin:
         name = str(name).lower()
         return next((x for x in self.players.values() if x.name.lower() == name), None)
 
-    def _daily(self, p):
-        """This player's progress today (UTC day); it resets when the day changes."""
-        day = int(self.now // 86400)
-        if p.daily.get("day") != day:
-            p.daily = {"day": day, "trades": 0, "sectors": [], "profit_closes": 0, "shorts": 0, "max_positions": 0,
-                       "index_trades": 0, "dividends": 0, "volume": 0.0}
-        return p.daily
-
     # ------------------------------------------------------------------------------------------ hooks from the engine
     def _on_open(self, p, ticker):
         """A position was just opened from nothing."""
@@ -244,34 +195,20 @@ class SocialMixin:
         c = p.counters
         c["trades"] = c.get("trades", 0) + 1
         c[kind] = c.get(kind, 0) + 1
-        d = self._daily(p)
-        d["trades"] += 1
-        d["volume"] += notional
         if s.asset_type == "index":
             c["index_trades"] = c.get("index_trades", 0) + 1
-            d["index_trades"] += 1
         if self._is_haven(s):
             c["haven_trades"] = c.get("haven_trades", 0) + 1
-        if s.asset_type == "equity" and s.sector not in d["sectors"]:
-            d["sectors"].append(s.sector)
-        if kind == "short":
-            d["shorts"] += 1
-        d["max_positions"] = max(d["max_positions"], len(p.hold))
         close_pnl = pnl if kind in ("sell", "cover") else None
         if close_pnl is not None and close_pnl > 0:
-            d["profit_closes"] += 1
             c["profit_closes"] = c.get("profit_closes", 0) + 1
         self._check_achievements(p, close=(kind, s.ticker, close_pnl, held_since) if close_pnl is not None else None)
-        self._check_quests(p)
-        self._ladder_on_trade(p, kind, s, close_pnl, held_since)                 # the quest ladder (ladder.py)
+        self._learn_close(p, s.ticker, close_pnl, closed)                    # closes, stops and R for the path (learning.py)
 
     def _on_dividend(self, p, amount):
         if amount > 0:
             p.counters["dividends"] = p.counters.get("dividends", 0) + 1
-            self._daily(p)["dividends"] += 1
             self._check_achievements(p)
-            self._check_quests(p)
-            self._ladder_check(p)
 
     # ------------------------------------------------------------------------------------------ achievements
     def _unlock(self, p, ach_id):
@@ -325,50 +262,6 @@ class SocialMixin:
         if ret >= 0.25:
             self._unlock(p, "up_25")
 
-    # ------------------------------------------------------------------------------------------ quests
-    def quests_for_day(self, day):
-        rng = random.Random(f"quests-{day}")
-        out = []
-        for qid, text, metric, lo, hi, mult in rng.sample(QUESTS, 3):
-            goal = rng.randint(lo, hi) * mult
-            out.append({"id": qid, "text": text.format(goal=goal, s="" if goal == 1 else "s"), "metric": metric, "goal": goal})
-        return out
-
-    def _quest_progress(self, p, quest):
-        d = self._daily(p)
-        m = quest["metric"]
-        if m == "sectors":
-            return len(d["sectors"])
-        if m == "max_positions":
-            return max(d["max_positions"], len([t for t in p.hold if t in self.stocks]))
-        return d.get(m, 0)
-
-    def _check_quests(self, p):
-        day = int(self.now // 86400)
-        self._daily(p)
-        quests = self.quests_for_day(day)
-        done = p.quests_done.setdefault(str(day), [])
-        for q in quests:
-            if q["id"] not in done and self._quest_progress(p, q) >= q["goal"]:
-                done.append(q["id"])
-                self._notify(p, f"Quest complete: {q['text']}")
-        if len(done) == len(quests) and p.quest_last_full != day:
-            p.quest_streak = p.quest_streak + 1 if p.quest_last_full == day - 1 else 1
-            p.quest_last_full = day
-            self._unlock(p, "quest_day")
-            self._notify(p, f"All of today's quests done! Streak: {p.quest_streak} day{'' if p.quest_streak == 1 else 's'}.")
-        for key in [k for k in p.quests_done if int(k) < day - 7]:
-            p.quests_done.pop(key)
-
-    def quests_for(self, p):
-        day = int(self.now // 86400)
-        self._daily(p)
-        done = set(p.quests_done.get(str(day), []))
-        quests = [{**q, "progress": min(self._quest_progress(p, q), q["goal"]), "done": q["id"] in done}
-                  for q in self.quests_for_day(day)]
-        return {"day": day, "quests": quests, "streak": p.quest_streak if p.quest_last_full >= day - 1 else 0,
-                "resets_in": int((day + 1) * 86400 - self.now)}
-
     # ------------------------------------------------------------------------------------------ rankings
     def _ratio(self, p, equity=None):
         """Equity relative to the season's base (which already includes deposits): 1.0 at the start of a season."""
@@ -402,7 +295,7 @@ class SocialMixin:
             if not p or not self.ever_traded(p):
                 continue
             gain = r["equity"] - p.deposited
-            pnl.append({"name": r["name"], "token": r["token"], "pnl": gain, "style": r.get("style"),
+            pnl.append({"name": r["name"], "token": r["token"], "pnl": gain,
                         "ret": gain / p.deposited if p.deposited > 0 else 0.0})
         pnl.sort(key=lambda x: -x["pnl"])
         ret = sorted(pnl, key=lambda x: -x["ret"])
@@ -412,10 +305,10 @@ class SocialMixin:
 
     def boards_for(self, p, top=20):
         def trim(rows, keys):
-            return [{"rank": i + 1, "me": r["token"] == p.token, "style": r.get("style"), **{k: r[k] for k in keys}}
+            return [{"rank": i + 1, "me": r["token"] == p.token, **{k: r[k] for k in keys}}
                     for i, r in enumerate(rows[:top])]
         def day(rows):
-            return [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"], "style": r.get("style"),
+            return [{"rank": i + 1, "me": r["token"] == p.token, "name": r["name"],
                      "ret": r["ret"], "gain": r.get("gain", 0.0), "equity": r["equity"]} for i, r in enumerate(rows[:top])]
         # four boards: today and all time, each by return (%) and by profit (MB)
         return {"season": day(self.board), "day_pnl": day(self.board_day_pnl),
@@ -426,174 +319,6 @@ class SocialMixin:
                 "counts": {"season": len(self.board), "day_pnl": len(self.board_day_pnl), "pnl": len(self.boards["pnl"]),
                            "ret": len(self.boards.get("ret", []))},
                 "players": len(self.players)}
-
-    # ------------------------------------------------------------------------------------------ contests
-    # A contest is a fixed-balance paper-trading day: every entrant gets the same paper balance when they join and
-    # trades it at the live prices under the real rules (see contest.py). The paper account is separate from the real
-    # one, so a contest cannot change anyone's real balance, the house reserve or any price. Prizes are medals.
-    def _player_class(self):
-        return sys.modules[type(self).__module__].Player
-
-    def _contest_balance(self):
-        return float(self.settings.get("contest_balance", CONTEST_BALANCE))
-
-    def _tournament_tick(self):
-        for kind, (name, period, join_window) in CONTESTS.items():
-            start = int(self.now // period) * period
-            tid = f"{kind}-{start}"
-            if not any(t["id"] == tid for t in self.tournaments) and \
-                    not any(h["id"] == tid for h in self.tournament_history):
-                self.tournaments.append({"id": tid, "kind": kind, "name": name, "start": start, "end": start + period,
-                                         "join_until": start + float(self.settings.get("contest_join_seconds", join_window)),
-                                         "entrants": {}, "v": 2})
-        for t in list(self.tournaments):
-            if self.now >= t["end"]:
-                self.tournaments.remove(t)
-                self._finish_tournament(t)
-
-    def _sandbox(self, t):
-        sb = self._sandboxes.get(t["id"])
-        if sb is None:
-            sb = self._sandboxes[t["id"]] = Sandbox(self)
-        return sb
-
-    def _paper_tick(self):
-        for sb in self._sandboxes.values():
-            sb.tick()
-            for token, a in sb.players.items():
-                if a.notices:
-                    real = self.by_token.get(token)
-                    if real:
-                        for text in a.notices:
-                            self._notify(real, "Contest: " + text)
-                    a.notices.clear()
-
-    def _paper_dividend(self, ticker, amt):
-        for sb in self._sandboxes.values():
-            sb.dividend(ticker, amt)
-
-    def _paper_delist(self, ticker, price):
-        for sb in self._sandboxes.values():
-            sb.delist(ticker, price)
-
-    def _account(self, t, token):
-        sb = self._sandboxes.get(t["id"])
-        return sb.players.get(token) if sb else None
-
-    def tournament_return(self, t, token):
-        a = self._account(t, token)
-        ent = t["entrants"].get(token)
-        if a is None or not ent or ent["base"] <= 0:
-            return 0.0
-        return (self.equity(a) - ent["base"]) / ent["base"]
-
-    def tournament_standings(self, t):
-        rows = []
-        for token in t["entrants"]:
-            p = self.by_token.get(token)
-            if p:
-                rows.append({"name": p.name, "ret": self.tournament_return(t, token), "token": token})
-        rows.sort(key=lambda r: -r["ret"])
-        return rows
-
-    def _finish_tournament(self, t):
-        rows = self.tournament_standings(t)
-        for place, r in enumerate(rows[:3], 1):
-            p = self.by_token.get(r["token"])
-            if p:
-                p.badges.append({"tournament": t["name"], "place": place, "t": self.now, "ret": r["ret"]})
-                del p.badges[:-30]
-                self._notify(p, f"{t['name']}: you finished #{place} of {len(rows)} with {r['ret'] * 100:+.1f}%!")
-                self._unlock(p, "podium")
-        for r in rows[3:]:
-            p = self.by_token.get(r["token"])
-            if p:
-                self._notify(p, f"{t['name']} is over: you finished #{rows.index(r) + 1} of {len(rows)} "
-                                f"with {r['ret'] * 100:+.1f}%.")
-        self.tournament_history.append({"id": t["id"], "name": t["name"], "end": t["end"], "entrants": len(rows),
-                                        "results": [{"name": r["name"], "ret": r["ret"]} for r in rows[:10]]})
-        self._sandboxes.pop(t["id"], None)
-
-    def tournament_join(self, p, tid):
-        t = next((x for x in self.tournaments if x["id"] == tid), None)
-        if t is None:
-            return False, "No such contest"
-        gate = self.email_gate(p)
-        if gate:
-            return False, gate
-        if p.token in t["entrants"]:
-            return False, "You have already joined"
-        if self.now >= t["join_until"]:
-            return False, "Entries are closed for this contest"
-        base = self._contest_balance()
-        acct = self._player_class()(p.name)
-        acct.token, acct.cash = p.token, base
-        self._sandbox(t).players[p.token] = acct
-        t["entrants"][p.token] = {"base": base, "at": self.now}
-        return True, f"You joined the {t['name']} with {base:,.0f} MB of paper money. Trade it from the Contest tab."
-
-    def contest_trade(self, p, tid, ticker, side, pct, amount=None):
-        """A paper trade in a contest, under the same rules as a real one."""
-        t = next((x for x in self.tournaments if x["id"] == tid), None)
-        a = self._account(t, p.token) if t else None
-        if a is None:
-            return False, "You are not in that contest"
-        if self.now >= t["end"]:
-            return False, "That contest is over"
-        return self._sandbox(t).trade(a, str(ticker), side, pct, amount)
-
-    def _account_view(self, t, token):
-        a = self._account(t, token)
-        if a is None:
-            return None
-        rows = []
-        for tk, sh in sorted(a.hold.items()):
-            s = self.stocks.get(tk)
-            if s:
-                avg = a.cost.get(tk, 0.0) / abs(sh) if sh else 0.0
-                rows.append({"ticker": tk, "name": s.name, "shares": sh, "price": s.price, "avg": avg,
-                             "pnl": (s.price - avg) * sh})
-        return {"cash": a.cash, "free": self.free_cash(a), "equity": self.equity(a), "positions": rows,
-                "trades": a.trades, "margin_calls": a.margin_calls, "fees": a.fees_paid}
-
-    def tournaments_for(self, p):
-        out = []
-        for t in self.tournaments:
-            joined = p.token in t["entrants"]
-            mine = None
-            if joined:
-                rows = self.tournament_standings(t)
-                rank = next((i + 1 for i, r in enumerate(rows) if r["token"] == p.token), None)
-                mine = {"ret": self.tournament_return(t, p.token), "rank": rank, "of": len(rows),
-                        "account": self._account_view(t, p.token)}
-            out.append({"id": t["id"], "name": t["name"], "kind": t["kind"], "start": t["start"], "end": t["end"],
-                        "join_until": t["join_until"], "open": self.now < t["join_until"] and not joined,
-                        "balance": self._contest_balance(), "entrants": len(t["entrants"]), "joined": joined,
-                        "mine": mine,
-                        "top": [{"name": r["name"], "ret": r["ret"]} for r in self.tournament_standings(t)[:5]]})
-        return {"active": out, "finished": list(self.tournament_history)[::-1][:6]}
-
-    def _dump_tournaments(self):
-        out = []
-        for t in self.tournaments:
-            sb = self._sandboxes.get(t["id"])
-            out.append({**t, "accounts": {tok: dump_account(a) for tok, a in sb.players.items()} if sb else {}})
-        return out
-
-    def _load_tournaments(self, rows):
-        """Contests from before paper accounts existed are dropped: their entrants had no paper balance."""
-        PlayerCls = self._player_class()
-        self.tournaments, self._sandboxes = [], {}
-        for t in rows:
-            if t.get("kind") not in CONTESTS or t.get("v") != 2:
-                continue
-            accounts = t.pop("accounts", {})
-            self.tournaments.append(t)
-            sb = self._sandbox(t)
-            for tok, x in accounts.items():
-                if tok in t["entrants"]:
-                    sb.players[tok] = load_account(PlayerCls, tok, x, self.stocks)
-            t["entrants"] = {tok: e for tok, e in t["entrants"].items() if tok in sb.players}
 
     # ------------------------------------------------------------------------------------------ public profiles
     def _snapshot_holdings(self):
@@ -628,12 +353,9 @@ class SocialMixin:
         out = {"name": p.name, "public": p.public,
                "achievements": [{"id": a, "name": ACH_NAMES[a], "t": t}
                                 for a, t in sorted(p.achievements.items(), key=lambda kv: kv[1])],
-               "badges": list(p.badges),
                "followers": sum(1 for x in self.players.values() if p.name in x.following),
                "following_them": viewer is not None and p.name in viewer.following, "me": mine,
-               "style": self.style_of(p), "ladder": {"done": len(p.ladder["done"]), "total": len(ladder.LADDER),
-                                                      "tiers": {t: sum(1 for q in p.ladder["done"] if ladder.LADDER_BY[q][1] == t)
-                                                                for t, _ in ladder.TIERS}}}
+               "daily": self.daily_stats_for(p), "learning": self.learning_summary(p)}
         if p.public or mine:     # results and holdings are only shown to others when the player opted in
             eq = self.equity(p)
             out.update({"trades": p.trades, "season_ret": self.season_return(p, eq),
@@ -706,8 +428,6 @@ class SocialMixin:
             share = {"kind": entry["k"], "ticker": entry["tk"], "shares": entry["sh"], "price": entry["px"]}
         self.chat_seq += 1
         msg = {"id": self.chat_seq, "t": self.now, "name": p.name, "text": body, "channel": channel, "share": share}
-        if self.style_of(p):
-            msg["style"] = self.style_of(p)                                    # a Diamond title or name colour (ladder.py)
         p.last_chat, p.last_chat_text = self.now, (body, channel)
         p.chat_times.append(self.now)
         self.chat.append(msg)
@@ -856,19 +576,16 @@ class SocialMixin:
                 "reports": list(self.chat_reports)[::-1],
                 "muted": [{"name": self.by_token[t].name, "left": int(u - self.now)}
                           for t, u in self.muted.items() if u > self.now and t in self.by_token],
-                "appeals": self.appeals_for_admin(), "mod_log": list(self.mod_log)[-40:][::-1],
-                "tournaments": [{"id": t["id"], "entrants": len(t["entrants"])} for t in self.tournaments]}
+                "appeals": self.appeals_for_admin(), "mod_log": list(self.mod_log)[-40:][::-1]}
 
     # ------------------------------------------------------------------------------------------ the periodic work
     def _social_tick(self):
-        """Every 5 seconds: tournaments, time-based achievements and quests, holdings snapshots."""
+        """Every 5 seconds: time-based achievements and holdings snapshots."""
         if self.now - self._social_t < 5:
             return
         self._social_t = self.now
-        self._tournament_tick()
         for p in self.players.values():
             self._check_achievements(p)
-            self._check_quests(p)
         self._snapshot_holdings()
 
     def _end_season_social(self):
@@ -880,8 +597,7 @@ class SocialMixin:
         return {"name": p.name,
                 "achievements": [{"id": a[0], "name": a[1], "description": a[2], "t": p.achievements.get(a[0])}
                                  for a in ACHIEVEMENTS],
-                "unlocked": len(p.achievements), "total": len(ACHIEVEMENTS), "badges": list(p.badges),
-                "quests": self.quests_for(p), "tournaments": self.tournaments_for(p),
+                "unlocked": len(p.achievements), "total": len(ACHIEVEMENTS),
                 "following": list(p.following),
                 "public": p.public, "muted": max(0, int(self.muted.get(p.token, 0) - self.now)), "strikes": p.strikes,
                 "appeal": next((a["status"] for a in reversed(self.appeals) if a["token"] == p.token), None),
@@ -891,6 +607,6 @@ class SocialMixin:
                             "email_pending": mask_email(p.email_pending), "email_mode": self.email_mode()},
                 "chat_ready": self._chat_gate(p) is None, "chat_gate": self._chat_gate(p),
                 "chat_trades_left": max(0, int(self.settings.get("chat_min_trades", 3)) - int(p.counters.get("trades", 0))),
-                "counters": dict(p.counters), "dd": p.maxdd, "ladder": self.ladder_view(p),
+                "counters": dict(p.counters), "dd": p.maxdd, "daily": self.daily_stats_for(p), "learning": self.learning_summary(p),
                 "invite": self.invite_code(p), "invited": self.invited_count(p),
                 "rank": {"season": self.rank.get(p.token), "pnl": self.rank_pnl.get(p.token)}}

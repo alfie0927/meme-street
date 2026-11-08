@@ -417,7 +417,7 @@ class EconomyMixin:
         return p.email, f"Your Meme Street receipt: {what}", body
 
     def reward_block(self, p):
-        """Why `p` gets no MB from a challenge or a quest right now, or None. With `rewards_need_email` on (once real
+        """Why `p` gets no MB from a challenge right now, or None. With `rewards_need_email` on (once real
         email is set up, ROADMAP O1 and R6), only an account with a verified address is paid."""
         if self.settings.get("rewards_need_email", False) and not getattr(p, "email_verified", False):
             return "verify your email address on the Profile page to earn MB"
@@ -563,6 +563,12 @@ class EconomyMixin:
         return True, f"Your cash is back to {self._start_balance():,.0f} MB"
 
     # ------------------------------------------------------------------ what the pages see
+    def economy_view_guest(self):
+        """The shop for a visitor without an account: the prices, nothing personal (2026-11-07, ROADMAP M10)."""
+        return {"catalog": self.shop_catalog(), "subs": {}, "pro": False, "pro_until": None, "expert": False, "expert_until": None,
+                "min_age": int(self.settings.get("min_age", 13)), "deal_until": None, "deal_days": self.deal_days(), "deals_left": [],
+                "orders": [], "mb_by_source": {}, "guest": True}
+
     def economy_view(self, p):
         cat = self.shop_catalog()
         mine = sorted((o for o in self.shop_orders.values() if o["token"] == p.token and o["status"] != "pending"),

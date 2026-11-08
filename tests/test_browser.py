@@ -47,6 +47,7 @@ class BrowserSmoke(unittest.TestCase):
             await pg.js("document.getElementById('nm').value='smoke'+Math.floor(Math.random()*9999)")
             await pg.js("document.getElementById('joinbtn').click()")
             await asyncio.sleep(3)
+            await pg.js("localStorage.ms_short_ok='true'")          # the first short asks once (U11): already answered
             await check("market table has rows", "document.querySelectorAll('#rows tr').length", lambda n: n > 30)
             await check("no mood element in the header", "!!document.getElementById('mood')", False)
             await check("the market tab's leaderboard has no Score column",
@@ -188,6 +189,7 @@ class Driver:
         await self.pg.js(f"document.getElementById('nm').value='{prefix}'+Math.floor(Math.random()*9999)")
         await self.pg.js("document.getElementById('joinbtn').click()")
         await asyncio.sleep(3)
+        await self.pg.js("localStorage.ms_short_ok='true'")     # the first short asks once (U11): already answered
 
     def verdict(self, test, errors):
         test.assertEqual(errors, [], "JavaScript errors on the page")
@@ -374,24 +376,8 @@ class BrowserPages(unittest.TestCase):
             await d.check("my row is highlighted on both", "document.querySelectorAll('.lb-table tr.me').length", 2)
             # profile
             await pg.goto(base + "/profile", 3)
-            await d.check("three quests", "document.querySelectorAll('#quests .quest').length", 3, wait=10)
-            await d.check("achievement grid is full", "document.querySelectorAll('#achs .ach').length", lambda n: n >= 20)
+            await d.check("badge grid is full", "document.querySelectorAll('#achs .ach').length", lambda n: n >= 19)
             await d.check("first steps is unlocked", "document.querySelectorAll('#achs .ach:not(.locked)').length", lambda n: n >= 1)
-            await d.check("the daily contest is listed", "document.getElementById('tours').innerText",
-                          lambda t: "Daily Marathon" in t and "Hourly Sprint" not in t and "paper money" in t)
-            await d.check("the paper trading panel is hidden until I join", "document.getElementById('contest-play').style.display", "none")
-            await pg.js("document.querySelector('#tours [data-join]').click()")
-            await d.check("joining shows my rank", "document.getElementById('tours').innerText",
-                          lambda t: "rank 1 of 1" in t, wait=10)
-            await d.check("the paper panel opens with the full balance", "document.getElementById('cp-summary').innerText",
-                          lambda t: "1,000.00" in t, wait=10)     # contest_balance in base.json
-            await pg.js("(()=>{const s=document.getElementById('cp-ticker');s.value='GOLD';document.getElementById('cp-pct').value='0.5';document.getElementById('cp-buy').click()})()")
-            await d.check("a paper buy shows as a paper position", "document.getElementById('cp-pos').innerText",
-                          lambda t: "GOLD" in t, wait=10)
-            await asyncio.sleep(1.4)                                   # (one second between trades in the same stock)
-            await pg.js("document.querySelector('#cp-pos [data-cclose]').click()")
-            await d.check("closing the paper position empties the table", "document.getElementById('cp-pos').innerText",
-                          lambda t: "No paper positions yet" in t, wait=10)
             await pg.js("(()=>{const c=document.getElementById('pub-toggle');c.checked=true;c.dispatchEvent(new Event('change',{bubbles:true}))})()")
             await asyncio.sleep(1.5)
             await pg.goto(base + "/profile", 3)
@@ -413,9 +399,9 @@ class BrowserPages(unittest.TestCase):
             await pg.js("document.querySelector('.lb-table tr.me a').click()")
             await asyncio.sleep(3)
             await d.check("player page shows who it is", "document.getElementById('player-body').innerText",
-                          lambda t: "This is you" in t and "Day return" in t, wait=8)
-            await d.check("player page shows achievements", "document.getElementById('player-body').innerText",
-                          lambda t: "achievements" in t.lower() and "First steps" in t)
+                          lambda t: "This is you" in t and "Today" in t, wait=8)
+            await d.check("player page shows badges", "document.getElementById('player-body').innerText",
+                          lambda t: "badges" in t.lower() and "First steps" in t)
             await pg.goto(base + "/player/nobody_at_all", 3)
             await d.check("unknown player is handled", "document.getElementById('player-body').innerText",
                           lambda t: "No trader" in t, wait=8)
@@ -770,7 +756,7 @@ class BrowserGuest(unittest.TestCase):
             await d.check("the live table is full", "document.querySelectorAll('#rows tr').length", lambda n: n > 100, wait=8)
             await d.check("a welcome card says what this is", shown("#guest-hero"))
             await d.check("there are no buy/sell controls to tap", "[...document.querySelectorAll('.ticket,#rows .hold-act')].every(e=>getComputedStyle(e).display==='none')")
-            await d.check("the menu offers the market and the lessons", "[...document.querySelectorAll('#nav a')].filter(a=>getComputedStyle(a).display!=='none').length", 2)
+            await d.check("the menu offers the market, the lessons, the Daily and the shop", "[...document.querySelectorAll('#nav a')].filter(a=>getComputedStyle(a).display!=='none').length", 4)
             await d.check("their own money is not shown", "getComputedStyle(document.getElementById('cash').closest('.stat')).display", "none")
             await d.check("prices are moving (live)", "(()=>{const a=document.querySelector('#rows tr[data-k=NVXA] .px').textContent;return new Promise(r=>setTimeout(()=>r(a),6000)).then(a=>a.length>0)})()")
             await pg.js("document.querySelector('#rows tr[data-k=NVXA] .tick-cell').click()")

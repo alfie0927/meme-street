@@ -228,6 +228,32 @@ class DailyMixin:
                 "avg": st["sum"] / st["played"] if st["played"] else None, "best": st["best"], "beat": st["beat"]}
 
     @staticmethod
+    def _daily_best(cs):
+        """The best single trade the two minutes offered, long or short: in at one close, out at a later one (TA-D10,
+        2026-11-07). `from` and `to` are candle indexes; the result card turns them into seconds into the game."""
+        closes = [c[3] for c in cs[HISTORY - 1:]]
+        lo = hi = 0
+        best = {"side": "long", "ret": 0.0, "from": 0, "to": 0}
+        for j in range(1, len(closes)):
+            up, down = closes[j] / closes[lo] - 1, closes[hi] / closes[j] - 1
+            if up > best["ret"]:
+                best = {"side": "long", "ret": up, "from": lo, "to": j}
+            if down > best["ret"]:
+                best = {"side": "short", "ret": down, "from": hi, "to": j}
+            if closes[j] < closes[lo]:
+                lo = j
+            if closes[j] > closes[hi]:
+                hi = j
+        best["from"] += HISTORY - 1
+        best["to"] += HISTORY - 1
+        best["ret"] = round(best["ret"], 6)
+        return best
+
+    def daily_stats_for(self, p):
+        """A player's Daily Chart stats for the profile pages (TA-D11), or None before the first chart was ever made."""
+        return self._daily_stats(p) if self.__dict__.get("daily_game") else None
+
+    @staticmethod
     def _daily_grid(play, cs):
         """One square per stretch of the two minutes: +1 if the account's worth rose over it, -1 if it fell, 0 if flat."""
         trades = sorted(play["trades"], key=lambda t: t[0])
@@ -339,6 +365,7 @@ class DailyMixin:
             out["lo"] = min(c[2] for c in cs[HISTORY:])
             out["grid"] = self._daily_grid(play, cs)
             out["levels"] = d["chart"].get("levels", [])                 # (only once the game is over: they tell the future)
+            out["best"] = self._daily_best(cs)                          # what you could have done (TA-D10)
         return out
 
     def daily_view(self, p):

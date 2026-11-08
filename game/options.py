@@ -377,6 +377,7 @@ class OptionsMixin:
         self.trades_total += 1
         self._emit("opt_buy", p, ticker, shares=qty, price=ask, cash=-(cost + fee), house=cost, fee=fee, notional=cost,
                    id=pos["id"], otype=kind, K=K, exp=exp)
+        self._learn_task(p, "option")                                              # the path's task (learning.py)
         return True, (f"Bought {n:,} {ticker} {self._opt_name(kind, K, exp)} contract{'s' if n != 1 else ''} at {ask:,.4g} "
                       f"MB a share: {cost:,.2f} MB")
 

@@ -398,5 +398,48 @@ class NoEdgeTests(unittest.TestCase):
         self.assertGreater(sum(p.trades for p in players), 5)
 
 
+class TrailingStopTests(unittest.TestCase):
+    """A trailing stop (2026-11-07, ROADMAP U11): a stop-loss that follows the price at a fixed distance and never
+    moves the other way."""
+
+    def test_it_follows_the_price_up_and_closes_the_long_on_the_way_down(self):
+        e, p, s = setup(16)
+        e.trade(p, TK, "buy", 0.4)
+        step(e, 2)
+        self.assertFalse(e.place_order(p, TK, "trailing_stop", 80)[0])          # 0.1% to 50% behind
+        ok, msg = e.place_order(p, TK, "trailing_stop", 5)
+        self.assertTrue(ok, msg)
+        o = p.orders[0]
+        self.assertEqual((o["kind"], o["trail"], o["side"], o["cond"]), ("trailing_stop", 0.05, "sell", "le"))
+        self.assertAlmostEqual(o["trigger"], s.price * 0.95, places=6)
+        start = s.price
+        s.fair = start * 1.3                                                     # the price climbs: the stop follows
+        for _ in range(60):
+            e.tick(now=e.now + 1)
+            if s.price > start * 1.1:
+                break
+        self.assertGreater(s.price, start * 1.1)
+        self.assertIn(TK, p.hold)
+        top = p.orders[0]["trigger"]
+        self.assertAlmostEqual(top, max(s.price, start) * 0.95, delta=start * 0.05)
+        self.assertGreater(top, start * 0.95 * 1.05)
+        s.fair = top * 0.98                                                      # it falls back through the stop
+        for _ in range(60):
+            e.tick(now=e.now + 1)
+            if TK not in p.hold:
+                break
+        self.assertNotIn(TK, p.hold)
+        self.assertEqual(p.orders, [])
+
+    def test_it_needs_a_position_and_sits_above_a_short(self):
+        e, p, s = setup(17)
+        self.assertIn("needs a position", e.place_order(p, TK, "trailing_stop", 5)[1])
+        e.trade(p, TK, "sell", 0.3)
+        self.assertTrue(e.place_order(p, TK, "trailing_stop", 2)[0])
+        o = p.orders[0]
+        self.assertEqual((o["side"], o["cond"]), ("buy", "ge"))
+        self.assertAlmostEqual(o["trigger"], s.price * 1.02, places=6)
+
+
 if __name__ == "__main__":
     unittest.main()
