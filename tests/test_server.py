@@ -141,8 +141,16 @@ class ServerTests(unittest.TestCase):
         status, body, _ = http(self.srv, "/sitemap.xml")
         self.assertEqual(status, 200)
         self.assertIn("/lessons/position-sizing</loc>", body)
+        self.assertIn("/tools/position-size-calculator</loc>", body)
         self.assertEqual(body.count("/daily</loc>"), 1)
         self.assertNotIn("/terms</loc>", body)
+
+    def test_the_position_size_calculator_is_a_plain_page(self):
+        status, body, _ = http(self.srv, "/tools/position-size-calculator")
+        self.assertEqual(status, 200)
+        self.assertIn("<h1>Position size calculator</h1>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/tools/position-size-calculator"', body)
+        self.assertIn('id="stop"', body)
 
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")
