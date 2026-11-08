@@ -142,7 +142,14 @@ HERE: Your Portfolio page lists your best and worst closed trades and your reali
 
 ## Drawdown maths {drawdown} [5]
 SUMMARY: Why losses hurt more than gains help, and why protecting capital comes first.
+
 A **drawdown** is the fall from an account's peak to a low. Its cruel maths: the bigger the loss, the much bigger the gain needed to get back.
+
+Q: An account falls from 1,000 to 500 MB. What gain does it need to get back to 1,000?
+- 50%
++ 100%
+- 200%
+WHY: 500 must double to reach 1,000.
 
 | Loss | Gain needed to recover |
 | 10% | 11% |
@@ -157,6 +164,7 @@ Lose half and you must double what is left just to get back to where you started
 [mine]
 
 ### Maximum drawdown
+
 The deepest drawdown a strategy or an account has had. Two strategies that made the same return are not equal if one of them fell 15% along the way and the other 60%: the second was far riskier and far harder to stick with.
 
 Q: Two strategies both made 40% last year. One had a 15% maximum drawdown, the other 55%. Which was riskier?
@@ -166,6 +174,7 @@ Q: Two strategies both made 40% last year. One had a 15% maximum drawdown, the o
 WHY: The same return through a much deeper fall means far more risk taken.
 
 ### Recovering
+
 After a drawdown, cut the size, not the discipline. Trading bigger to "win it back" is how drawdowns become blow-ups.
 
 Q: After a big drawdown, what is the sensible response?
@@ -173,12 +182,6 @@ Q: After a big drawdown, what is the sensible response?
 + Trade smaller and stick to the plan
 - Stop using stops
 WHY: Bigger size after losses turns a drawdown into a blow-up.
-
-Q: An account falls from 1,000 to 500 MB. What gain does it need to get back to 1,000?
-- 50%
-+ 100%
-- 200%
-WHY: 500 must double to reach 1,000.
 
 [calc drawdown]
 

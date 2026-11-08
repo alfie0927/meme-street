@@ -216,12 +216,15 @@ TIP: The sessions change **how much** prices move, never which way: the open is 
 
 ## Trading halts and circuit breakers {halts} [4]
 SUMMARY: Why real exchanges pause trading after extreme moves, and why Meme Street does not.
+
 When prices move too far, too fast, real exchanges hit the brakes.
 
 ### A halt in one stock
+
 A stock can be **halted** when news is pending (the company asks for time to publish something important) or when the price moves beyond set limits within minutes (in the US, the *limit up, limit down* bands). Trading stops for a few minutes, then reopens, often at a very different price.
 
 ### Market-wide circuit breakers
+
 If the whole market falls far enough in a day, everything stops. In the US the levels are falls of 7% and 13% in the S&P 500 (a 15-minute pause each) and 20% (closed for the day). They are meant to give people time to think instead of panicking.
 
 Q: What is the purpose of a market-wide circuit breaker?
@@ -231,21 +234,22 @@ Q: What is the purpose of a market-wide circuit breaker?
 WHY: It buys time; it does not stop the fall from continuing after the pause.
 
 ### What a halt means for you
+
 - You cannot get out while a stock is halted.
 - Your stop-loss cannot fill during the halt; when trading resumes it fills at whatever price the stock opens at, which may be far past your stop.
 - The reopening is often a gap.
-
-Q: Meme Street has no trading halts. What does that mean for your stop-loss in a crash?
-+ It can still fill, at whatever price the market has reached
-- It is cancelled until the market calms down and reopens again
-- It fills at exactly your stop price, guaranteed
-WHY: Trading never pauses here, so orders are checked every second and fill at the price of that moment.
 
 Q: Your stock is halted while you hold it. What can you do?
 + Nothing until trading resumes
 - Sell at the last traded price
 - Cancel the trade and get your money back
 WHY: A halt stops all trading. Orders wait, and fill at whatever price trading resumes at.
+
+Q: Meme Street has no trading halts. What does that mean for your stop-loss in a crash?
++ It can still fill, at whatever price the market has reached
+- It is cancelled until the market calms down and reopens again
+- It fills at exactly your stop price, guaranteed
+WHY: Trading never pauses here, so orders are checked every second and fill at the price of that moment.
 
 HERE: **There are no halts.** The game used to pause a stock after an extreme move and the whole market after a big fall in the index, but that only ever stopped players, never prices, so it was removed: you can trade straight through any crash. Gaps still happen (at the open, on earnings, on big news), and a stop-loss fills at the first price past it.
 

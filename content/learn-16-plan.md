@@ -4,9 +4,11 @@ Your own trading plan, a checklist before every trade, a weekly review, and a gl
 
 ## Writing your trading plan {trading-plan} [7]
 SUMMARY: One page that decides, in advance, what you trade, how, and how much.
+
 A **trading plan** is the set of decisions you make once, calmly, so you do not have to make them in the heat of a trade. Write it down; keep it to one page.
 
 ### What goes in it
+
 - **Goal**: what you are trying to learn or achieve, and over what time.
 - **Markets**: which stocks, indices or commodities, and which you avoid.
 - **Timeframes**: the candle size you plan on and the one you time entries on.
@@ -17,22 +19,10 @@ A **trading plan** is the set of decisions you make once, calmly, so you do not 
 - **Review**: when and how you will review your trades.
 
 ### Using it
+
 - Trade only the setups in the plan. A trade that is not in the plan is not taken, however good it looks.
 - Change the plan only during a review, never during a trade.
 - Judge yourself on following it.
-
-### A sample plan
-| Part | Example |
-| Markets | the MSI 50 and the ten largest companies |
-| Timeframes | hourly for direction, 5-minute for entries |
-| Setup | pullback to support or the 50 EMA in an hourly uptrend |
-| Entry | a bullish candle closing above the 5-minute high of the pullback |
-| Stop | below the support, plus half an ATR |
-| Target | the last swing high, at least 2R |
-| Risk | 1% a trade, 3% open at most, stop after three losses in a day |
-| Avoid | the minute after a release; earnings days for the stock |
-
-[try /stock/MSI] Open the MSI 50 and write your own one-page plan for trading it.
 
 Q: When should you change your trading plan?
 + During a scheduled review, never in the middle of a trade
@@ -52,32 +42,32 @@ Q: Your plan says "trade only pullbacks in uptrends on the hourly". A friend tip
 + Pass: it is not your setup
 WHY: A plan's job is to decide in advance so the moment does not. Setups outside it are someone else's trade.
 
+### A sample plan
+
+| Part | Example |
+| Markets | the MSI 50 and the ten largest companies |
+| Timeframes | hourly for direction, 5-minute for entries |
+| Setup | pullback to support or the 50 EMA in an hourly uptrend |
+| Entry | a bullish candle closing above the 5-minute high of the pullback |
+| Stop | below the support, plus half an ATR |
+| Target | the last swing high, at least 2R |
+| Risk | 1% a trade, 3% open at most, stop after three losses in a day |
+| Avoid | the minute after a release; earnings days for the stock |
+
+[try /stock/MSI] Open the MSI 50 and write your own one-page plan for trading it.
+
 ## A checklist before every trade {checklist} [5]
 SUMMARY: Ten questions to answer before pressing Buy.
+
 Pilots use checklists because skilled people skip steps under pressure. So do traders. Before every trade:
 
 1. **Is this one of my setups?** If not, stop here.
+
 2. **What is the trend** on my higher timeframe? Am I trading with it?
+
 3. **Where are the levels**: the nearest support and resistance, round numbers, the day's high and low?
+
 4. **What is on the calendar**: an economic release, this company's earnings, an ex-dividend date?
-5. **Where is my stop**, and why there (where is the idea wrong)?
-6. **Where is my target**, and can the price realistically reach it? Is the reward at least 1.5 to 2 times the risk?
-7. **How big**: what size makes the loss at the stop 1% of my account?
-8. **How much risk is already open**, and is this trade correlated with it?
-9. **How do I feel**: calm, or chasing, bored, or angry?
-10. **Are the stop and target set** as orders the moment I am in?
-
-If any answer is "I don't know", that is the answer: no trade yet.
-
-[test any]
-
-HERE: The tools for the list are all on a stock's page: the chart and its levels, the calendar link in *Upcoming events*, the order panel's bracket, and the **Position size and risk** tool for questions 5 to 7.
-
-Q: You cannot say where your stop would go. What does the checklist say?
-+ No trade yet
-- Trade without a stop this time
-- Use a 10% stop
-WHY: An unanswered question means the trade is not ready.
 
 Q: The company reports earnings in 20 minutes. Which checklist item does that affect?
 - None
@@ -85,38 +75,49 @@ Q: The company reports earnings in 20 minutes. Which checklist item does that af
 - Only the target
 WHY: Known events change the risk of the trade.
 
+5. **Where is my stop**, and why there (where is the idea wrong)?
+
+6. **Where is my target**, and can the price realistically reach it? Is the reward at least 1.5 to 2 times the risk?
+
+7. **How big**: what size makes the loss at the stop 1% of my account?
+
+8. **How much risk is already open**, and is this trade correlated with it?
+
+9. **How do I feel**: calm, or chasing, bored, or angry?
+
+10. **Are the stop and target set** as orders the moment I am in?
+
+If any answer is "I don't know", that is the answer: no trade yet.
+
+Q: You cannot say where your stop would go. What does the checklist say?
++ No trade yet
+- Trade without a stop this time
+- Use a 10% stop
+WHY: An unanswered question means the trade is not ready.
+
+[test any]
+
+HERE: The tools for the list are all on a stock's page: the chart and its levels, the calendar link in *Upcoming events*, the order panel's bracket, and the **Position size and risk** tool for questions 5 to 7.
+
 ## Reviewing your trades {review} [5]
 SUMMARY: A weekly review that turns trades into lessons.
+
 Once a week, sit down with your journal and your trade history.
 
 [mine]
 
 ### The numbers
+
 - Number of trades, win rate, average win and loss **in R**, expectancy.
 - Largest loss: was it within plan?
 - Fees paid.
 - Your return against holding the MSI 50 over the same week.
 
 ### The behaviour
+
 - How many trades followed the plan exactly?
 - Which mistakes repeated: late entries, moved stops, trades outside the plan, oversizing after wins?
 - Which trades were the best by **process**, not by result?
-
-### The decision
-Choose **one** thing to change next week: one setup to drop, one rule to tighten, one habit to stop. Changing everything at once makes it impossible to know what worked.
-
-### Patience with the numbers
-A week is a small sample. Look for patterns over a month or more before deciding a setup does or does not work.
-
-HERE: The Portfolio page shows your equity curve, realised profit, fees, and best and worst trades; the History page downloads every trade; the Leaders page shows your worst drawdown. The weekly habits on the Learn page track stops, planned exits, targets and sizing, and your trading card there shows your stop coverage and average R over time.
-
-[try /portfolio] Open your portfolio and write down three numbers: your return, your fees, and your worst trade.
-
-Q: How many things should you change after a weekly review?
-+ One, so you can tell whether it helped
-- Everything that went wrong
-- Nothing, ever
-WHY: One change at a time keeps the cause and effect clear.
 
 Q: Which matters most in a review?
 - How much money the best trade made
@@ -129,6 +130,24 @@ Q: Your weekly review shows your winners average +1R and your losers -2.5R. What
 - The winners: take profit sooner to lock them in
 - Nothing: a 50% win rate covers the difference
 WHY: Losses bigger than the planned 1R mean the stop is not being respected, and that destroys any edge.
+
+### The decision
+
+Choose **one** thing to change next week: one setup to drop, one rule to tighten, one habit to stop. Changing everything at once makes it impossible to know what worked.
+
+Q: How many things should you change after a weekly review?
++ One, so you can tell whether it helped
+- Everything that went wrong
+- Nothing, ever
+WHY: One change at a time keeps the cause and effect clear.
+
+### Patience with the numbers
+
+A week is a small sample. Look for patterns over a month or more before deciding a setup does or does not work.
+
+HERE: The Portfolio page shows your equity curve, realised profit, fees, and best and worst trades; the History page downloads every trade; the Leaders page shows your worst drawdown. The weekly habits on the Learn page track stops, planned exits, targets and sizing, and your trading card there shows your stop coverage and average R over time.
+
+[try /portfolio] Open your portfolio and write down three numbers: your return, your fees, and your worst trade.
 
 ## Glossary {glossary} [10]
 SUMMARY: Every term in the course, in a sentence each.

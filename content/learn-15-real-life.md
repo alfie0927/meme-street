@@ -4,26 +4,19 @@ Trading against investing, why most day traders lose, spotting scams, the money 
 
 ## Trading against investing, and why most day traders lose {trading-vs-investing} [7]
 SUMMARY: Two different games, and the evidence on how day traders do.
+
 ### Two different games
+
 - **Investing**: buying good assets (often the whole market) and holding for years, letting the economy's growth and compounding do the work. Low cost, low effort, and historically rewarding over long periods.
 - **Trading**: buying and selling over minutes to weeks to profit from price moves. You compete directly with professionals, pay costs on every trade, and need a real, tested edge.
 
 ### The evidence
+
 Large studies of real accounts tell the same story again and again:
+
 - In a well-known study of every day trader in Brazil's futures market over several years, the large majority who kept at it lost money, and fewer than 1% earned more than the minimum wage.
 - Studies of Taiwan's market, one of the most active for day trading, found that fewer than 1% of day traders were reliably profitable year after year.
 - Brokers offering CFDs in Europe must publish the share of retail accounts that lose money: usually 60% to 80%.
-
-### Why
-- **Costs**: commissions, spreads, slippage and taxes add up on every trade.
-- **Competition**: the other side is often a professional with better data and faster execution.
-- **Psychology**: overtrading, revenge trading, holding losers, big size after wins.
-- **Leverage**: it turns ordinary mistakes into ruinous ones.
-
-### What it means
-Treat trading as a skill to build slowly, with small amounts you can afford to lose, while your long-term money is invested simply. Meme Street is the place to make the beginner's mistakes for free.
-
-HERE: The game's market is built to give no free money: no simple rule beats holding the MSI 50, costs included. If you beat it over hundreds of trades with sensible risk, that is skill worth something; if you do not, that is what most people find in real markets too, and it cost you nothing to learn.
 
 Q: What do large studies of real day traders find?
 + The large majority lose money, and very few are consistently profitable
@@ -31,21 +24,48 @@ Q: What do large studies of real day traders find?
 - About half win and half lose
 WHY: Study after study finds only a small minority profit after costs over time.
 
-Q: What is a sensible approach to learning to trade with real money?
-- Use savings and leverage to learn quickly
-+ Small amounts you can afford to lose, while long-term money is invested simply
-- Quit your job and trade full time from the start
-WHY: Learning is expensive; keep the cost of the lessons small.
-
 Q: Studies of retail day traders usually find what share are profitable after costs over a year?
 - About half of them, as in any fair game of chance
 + A small minority, often well under one in five
 - Most of them, once they have had some practice
 WHY: Costs, overtrading and competition against professionals make consistent day-trading profit rare.
 
+### Why
+
+- **Costs**: commissions, spreads, slippage and taxes add up on every trade.
+- **Competition**: the other side is often a professional with better data and faster execution.
+- **Psychology**: overtrading, revenge trading, holding losers, big size after wins.
+- **Leverage**: it turns ordinary mistakes into ruinous ones.
+
+### What it means
+
+Treat trading as a skill to build slowly, with small amounts you can afford to lose, while your long-term money is invested simply. Meme Street is the place to make the beginner's mistakes for free.
+
+Q: What is a sensible approach to learning to trade with real money?
+- Use savings and leverage to learn quickly
++ Small amounts you can afford to lose, while long-term money is invested simply
+- Quit your job and trade full time from the start
+WHY: Learning is expensive; keep the cost of the lessons small.
+
+HERE: The game's market is built to give no free money: no simple rule beats holding the MSI 50, costs included. If you beat it over hundreds of trades with sensible risk, that is skill worth something; if you do not, that is what most people find in real markets too, and it cost you nothing to learn.
+
 ## Spotting scams {scams} [6]
 SUMMARY: The warning signs of investment fraud, and the most common schemes.
+
 Wherever there is money and hope, there are scams. The warning signs repeat:
+
+Q: A message offers "a guaranteed 3% a week, withdraw any time". What is it most likely to be?
++ A scam
+- A government bond
+- A normal investment
+WHY: Guaranteed high returns do not exist in markets.
+
+Q: A stranger online shows screenshots of 300% monthly returns and offers to trade your money for a fee. What is this?
+- A rare chance that should be taken before it closes
+- Normal marketing for a hedge fund looking for clients
++ Almost certainly a scam: those returns and that offer do not exist
+WHY: Guaranteed or absurd returns, urgency and strangers asking for money are the standard pattern.
+
 - **Guaranteed returns**, or returns far above anything normal ("2% a day", "100% a month"). Nothing in markets is guaranteed.
 - **Pressure and urgency**: "only today", "spots are limited", "act now".
 - **Secrecy**: a "secret system" only they know, which they will sell you instead of using it.
@@ -55,6 +75,7 @@ Wherever there is money and hope, there are scams. The warning signs repeat:
 - **Screenshots of profits** and luxury lifestyles as proof.
 
 ### Common schemes
+
 - **Ponzi schemes**: early investors are paid with later investors' money until it collapses.
 - **Pump and dump**: promoters hype a tiny stock or token, then sell into the buying they created.
 - **Signal groups and "account managers"**: pay for tips or hand over your account; the fees are the business.
@@ -62,51 +83,30 @@ Wherever there is money and hope, there are scams. The warning signs repeat:
 - **Romance and "pig-butchering" scams**: a new online friend introduces an investment opportunity.
 - **Recovery scams**: after a loss, someone offers to recover your money for a fee.
 
-### Protect yourself
-Use regulated firms you found yourself, never share passwords or codes, never move money because of pressure, and if it sounds too good to be true, it is.
-
-HERE: Meme Street's MB have no cash value and can never be withdrawn or sold, and nobody from the game will ever ask for your password, offer you "signals", or offer to trade for you. Anyone who does is not us.
-
-Q: A message offers "a guaranteed 3% a week, withdraw any time". What is it most likely to be?
-+ A scam
-- A government bond
-- A normal investment
-WHY: Guaranteed high returns do not exist in markets.
-
 Q: You are asked to pay a "release fee" before you can withdraw your profits. What should you think?
 - That is normal
 + It is a classic sign of a fake platform: the profits are not real
 - You should pay it quickly
 WHY: Real brokers do not hold your money hostage for fees.
 
-Q: A stranger online shows screenshots of 300% monthly returns and offers to trade your money for a fee. What is this?
-- A rare chance that should be taken before it closes
-- Normal marketing for a hedge fund looking for clients
-+ Almost certainly a scam: those returns and that offer do not exist
-WHY: Guaranteed or absurd returns, urgency and strangers asking for money are the standard pattern.
+### Protect yourself
+
+Use regulated firms you found yourself, never share passwords or codes, never move money because of pressure, and if it sounds too good to be true, it is.
+
+HERE: Meme Street's MB have no cash value and can never be withdrawn or sold, and nobody from the game will ever ask for your password, offer you "signals", or offer to trade for you. Anyone who does is not us.
 
 ## The basics first {basics-first} [6]
 SUMMARY: An emergency fund, paying off expensive debt, and long-term index investing before any trading.
+
 Before risking money in markets, the boring basics do more for most people than any trading strategy.
 
 ### 1. An emergency fund
+
 Three to six months of essential spending, in cash you can reach at once. It stops a broken boiler or a lost job from forcing you to sell investments at the worst moment or borrow at high rates.
 
 ### 2. Pay off expensive debt
+
 Credit cards and payday loans often charge 20% to 30% a year or more. Paying one off is a guaranteed return at that rate; no trading strategy reliably beats it.
-
-### 3. Use tax-free accounts and workplace pensions
-Employer pension contributions are often the best return available anywhere: free money matched on what you put in.
-
-### 4. Invest for the long term, simply
-A low-cost index fund, bought regularly (dollar-cost averaging) and held for years, is how most people build wealth from markets. Compounding does the heavy lifting: money growing at 7% a year doubles about every ten years.
-
-### 5. Then, if you want, trade
-With money you can afford to lose, as a skill to build.
-
-TIP: The rule of 72: divide 72 by the yearly return to get roughly how many years money takes to double. At 6%, about 12 years; at 9%, about 8.
-
-HERE: None of this applies to MB, which are practice money. It is the order real money should go in.
 
 Q: You have a credit card debt at 25% a year and some savings. What is usually the best first use of the savings?
 + Paying off the credit card
@@ -114,21 +114,39 @@ Q: You have a credit card debt at 25% a year and some savings. What is usually t
 - Buying options
 WHY: Clearing the debt is a certain 25% return; trading is not.
 
-Q: Roughly how long does money take to double at 8% a year?
-- 4 years
-+ 9 years
-- 20 years
-WHY: The rule of 72: 72 ÷ 8 = 9.
-
 Q: You have 2,000 in credit-card debt at 25% interest and want to start trading with 2,000. What comes first?
 + Paying off the debt: a guaranteed 25% beats any trade
 - Trading: the market can return more than 25% a year
 - Splitting the money half and half to do both at once
 WHY: No strategy reliably beats a 25% cost of debt; clearing it is the best return available.
 
+### 3. Use tax-free accounts and workplace pensions
+
+Employer pension contributions are often the best return available anywhere: free money matched on what you put in.
+
+### 4. Invest for the long term, simply
+
+A low-cost index fund, bought regularly (dollar-cost averaging) and held for years, is how most people build wealth from markets. Compounding does the heavy lifting: money growing at 7% a year doubles about every ten years.
+
+Q: Roughly how long does money take to double at 8% a year?
+- 4 years
++ 9 years
+- 20 years
+WHY: The rule of 72: 72 ÷ 8 = 9.
+
+### 5. Then, if you want, trade
+
+With money you can afford to lose, as a skill to build.
+
+TIP: The rule of 72: divide 72 by the yearly return to get roughly how many years money takes to double. At 6%, about 12 years; at 9%, about 8.
+
+HERE: None of this applies to MB, which are practice money. It is the order real money should go in.
+
 ## What carries over from Meme Street {what-carries-over} [6]
 SUMMARY: The skills that transfer to real markets, and the differences to remember.
+
 ### What carries over
+
 - **Reading charts**: candles, trends, support and resistance, breakouts and patterns behave here at realistic rates, with realistic failures.
 - **Indicators and drawing tools**: the same formulas as any trading platform.
 - **Risk management**: position sizing from the stop, R-multiples, drawdown maths, risk of ruin. These are identical.
@@ -138,6 +156,7 @@ SUMMARY: The skills that transfer to real markets, and the differences to rememb
 - **Your own behaviour**: FOMO, revenge trading, moving stops. You will find these here, cheaply.
 
 ### What is different
+
 | Meme Street | Real markets |
 | no spread, no slippage on shares | spreads and slippage on every trade |
 | your trades never move prices | big orders move prices; liquidity varies |
@@ -148,16 +167,21 @@ SUMMARY: The skills that transfer to real markets, and the differences to rememb
 | no tax, no currency | tax on gains and dividends; currency risk |
 | MB are worth nothing | losses are real money, and feel very different |
 
-### The biggest difference
-Real money feels different. Traders who were calm in practice freeze or panic with their savings at stake. Start real trading much smaller than you practised, and grow only as your behaviour holds up.
-
-[try /daily] Play today's Daily Chart: two minutes, one go, the same chart for everyone. It is the quickest practice of reading a chart under a little pressure.
-
 Q: Which skill carries over from Meme Street to real markets unchanged?
 + Sizing positions from the stop and managing risk
 - Assuming trades never move prices
 - Trading through halts
 WHY: Risk maths is the same everywhere; market structure details differ.
+
+Q: On Meme Street your buy order filled exactly at the displayed price. In a real market, what is different?
+- Nothing: real brokers also fill at the displayed price
++ There is a spread and slippage, so you pay a little more
+- Real orders fill at a better price than the one shown
+WHY: Real markets have a bid, an ask and moving prices; the game simplifies this on purpose.
+
+### The biggest difference
+
+Real money feels different. Traders who were calm in practice freeze or panic with their savings at stake. Start real trading much smaller than you practised, and grow only as your behaviour holds up.
 
 Q: You were consistently calm and profitable in practice. What is a sensible first step with real money?
 - Start with the same size you used in practice
@@ -165,8 +189,4 @@ Q: You were consistently calm and profitable in practice. What is a sensible fir
 - Use leverage to make it worthwhile
 WHY: Real money changes behaviour; prove you can stay disciplined first.
 
-Q: On Meme Street your buy order filled exactly at the displayed price. In a real market, what is different?
-- Nothing: real brokers also fill at the displayed price
-+ There is a spread and slippage, so you pay a little more
-- Real orders fill at a better price than the one shown
-WHY: Real markets have a bid, an ask and moving prices; the game simplifies this on purpose.
+[try /daily] Play today's Daily Chart: two minutes, one go, the same chart for everyone. It is the quickest practice of reading a chart under a little pressure.

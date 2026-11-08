@@ -88,10 +88,13 @@ HERE: Free: **RSI 14**, the **Stochastic** (14, 3, 3) and **Momentum** (10). Pro
 
 ## Volatility: Bollinger Bands and ATR {volatility} [6]
 SUMMARY: Measuring how much a price moves, the squeeze, and sizing stops by volatility.
+
 **Volatility** is how much a price moves, whichever way. It matters for where you put stops, how big your position is, and when quiet markets are about to wake up.
 
 ### Bollinger Bands
+
 A 20-candle moving average with a band two standard deviations above and below it. When the price is volatile the bands widen; when it is quiet they narrow.
+
 - **The squeeze**: bands at their narrowest in a long time. Volatility comes in waves, so a squeeze often comes before a big move (the bands do not say which way).
 - **Riding the band**: in a strong trend the price can hug the upper band for a long time. Touching it is not a sell signal.
 - **Back to the middle**: in a range, moves to a band often return to the average.
@@ -103,21 +106,23 @@ Q: Bollinger Bands are at their narrowest in weeks. What does that suggest?
 WHY: Volatility comes in waves; the squeeze says a move may come, not which way.
 
 ### ATR (average true range)
+
 The average size of a candle's full range (including gaps) over the last 14 candles, in price. If a stock's ATR is 2 MB, a typical candle moves about 2 MB.
+
 - **Stops**: a stop closer than about one ATR is inside normal noise and will be hit by chance. Many traders place stops 1.5 to 3 ATR away, or just beyond a level plus a fraction of an ATR.
 - **Position size**: a more volatile stock means a wider stop, so a smaller position for the same risk.
-
-Q: Two stocks, the same risk budget. Stock B's ATR is twice stock A's. How should the positions compare?
-+ B's should be about half as big, because its stop is twice as far
-- B's should be twice as big to match its larger moves and bigger range
-- The same: the risk budget is all that counts
-WHY: Risk = size × stop distance. A stop twice as far needs half the size for the same risk.
 
 Q: A stock's ATR is 3 MB. Where would a 0.5 MB stop most likely be?
 + Inside normal noise, likely to be hit by chance
 - Safely outside the noise of a 3 MB range
 - Exactly right for a stock that moves 3 MB in a candle
 WHY: A typical candle moves 3 MB; a 0.5 MB stop will be touched by ordinary wobbles.
+
+Q: Two stocks, the same risk budget. Stock B's ATR is twice stock A's. How should the positions compare?
++ B's should be about half as big, because its stop is twice as far
+- B's should be twice as big to match its larger moves and bigger range
+- The same: the risk budget is all that counts
+WHY: Risk = size × stop distance. A stop twice as far needs half the size for the same risk.
 
 HERE: Bollinger Bands, Keltner Channels, Donchian Channels, ATR, historical volatility and Bollinger bandwidth and %B are Pro indicators. The long and short **position** drawing tools (free) place their stop and target 1.5 and 3 ATR from the entry. Volatility here clusters as it does in real markets: calm spells and storms, with volatility rising more after falls than after rises, and the end of a range is quieter than its start.
 
