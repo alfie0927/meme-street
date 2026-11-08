@@ -222,6 +222,9 @@ class LessonTests(unittest.TestCase):
         d = e.drill_answer(p, q["id"], 0, review=True)
         self.assertEqual(p.attempts[-1][1], "rsi")
         self.assertIn("weak", d)
+        q2 = e.drill_new("rsi")
+        rsi_right = e._drill_q[q2["id"]][1]
+        self.assertEqual(e.drill_answer(p, q2["id"], rsi_right, review=True)["xp"], 0)      # a kind pays once a day in review
         for _ in range(301):
             e._attempt(p, "basics", True)
         self.assertEqual(len(p.attempts), learning.ATTEMPTS_MAX)
@@ -237,6 +240,12 @@ class LessonTests(unittest.TestCase):
         self.assertEqual([(r["name"], r["xp"]) for r in lg["rows"]], [("rival", 50), ("student", 30)])
         self.assertEqual((lg["rank"], lg["xp"], lg["learners"]), (2, 30, 2))
         self.assertIsNone(e.league(None)["rank"])
+        bot = join(e, "housebot1")
+        bot.hb = {"style": "scalper"}                                              # a house bot learns nothing (loop 9)
+        self.assertEqual(e._xp(bot, 40), 0)
+        self.assertEqual(bot.xp, 0)
+        self.assertNotIn("housebot1", [r["name"] for r in e.league(p)["rows"]])
+        self.assertEqual(e.learning_summary(p)["units_total"], len({x["track"] for x in e.path_lessons}))
         self.assertEqual(e.lessons_view(p)["league"]["rank"], 2)
         self.assertEqual(e.learning_summary(p)["week_xp"], 30)
 
@@ -712,6 +721,7 @@ class LearningBrowserTests(unittest.TestCase):
             await pg.js("document.querySelector('[data-lrn-show]').click()")
             await d.check("whose answer can be shown", "document.querySelector('[data-lrn-ex] .lrn-out').innerText",
                           lambda t: "changes every quarter of an hour" in t, wait=5)
+            await pg.js("while(document.querySelector('[data-lrn-later]'))lrnReveal()")   # exercises come one at a time; show them all
             await d.check("and a chart test to answer", "document.querySelectorAll('[data-lrn-test] [data-lrn-pick]').length",
                           lambda n: n >= 2, wait=10)
             await pg.js("document.querySelector('[data-lrn-test] [data-lrn-pick]').click()")

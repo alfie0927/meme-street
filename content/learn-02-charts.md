@@ -372,6 +372,9 @@ Most traders read at least two timeframes:
 ### An example
 The hourly chart is in an uptrend, and the price has pulled back to a support level that has held twice. On the 5-minute chart, the fall into the level slows, a higher low forms, and the price breaks a small downtrend line. That is an entry in the direction of the bigger trend, at a level, with a stop just below the small higher low.
 
+A real chart from this market read for direction, the first half of the job. The timing half is done on the same stock with a smaller candle size, which the buttons beside its name switch to.
+[chart trend]
+
 Q: The daily trend is up, the hourly chart has pulled back to support and the 15-minute chart has just turned up. What is the setup?
 + A pullback entry in the direction of the higher trend
 - A short: the hourly chart fell to support, so the trend is down
@@ -400,4 +403,3 @@ HERE: The chart's candle sizes are buttons beside the stock's name, and your dra
 
 [try /stock/CLDR?tf=1h] Open CloudRail on hourly candles, draw the nearest support, then switch to 5-minute candles and watch how the price behaves near it.
 
-[test trend]

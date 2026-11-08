@@ -343,8 +343,9 @@ class LearningMixin:
         return str(int(self.now // 86400))
 
     def _xp(self, p, n):
-        """Earn XP, today (the daily goal and the learning streak count by UTC day; 60 days are kept)."""
-        if p is None or n <= 0:
+        """Earn XP, today (the daily goal and the learning streak count by UTC day; 60 days are kept). House bots trade
+        like people but learn nothing: no XP, so the league is people only (loop 9)."""
+        if p is None or n <= 0 or getattr(p, "hb", None) is not None:
             return 0
         day = self._learn_day()
         before, today_before = p.xp, p.xp_days.get(day, 0)
@@ -432,7 +433,8 @@ class LearningMixin:
         """This week's learners (LP7): the LEAGUE players with the most XP this ISO week, and the viewer's own rank.
         No MB: XP is the only prize."""
         week = self._week_key()
-        rows = sorted(((q.xp_weeks.get(week, 0), q.name, q.token) for q in self.players.values() if q.xp_weeks.get(week, 0) > 0),
+        rows = sorted(((q.xp_weeks.get(week, 0), q.name, q.token) for q in self.players.values()
+                       if q.xp_weeks.get(week, 0) > 0 and getattr(q, "hb", None) is None),
                       key=lambda r: (-r[0], r[1]))
         mine = next((k + 1 for k, r in enumerate(rows) if p is not None and r[2] == p.token), None)
         return {"week": week, "rows": [{"name": n, "xp": x} for x, n, _ in rows[:LEAGUE]], "rank": mine,
@@ -648,9 +650,13 @@ class LearningMixin:
 
     def learning_summary(self, p):
         """The learning record for the profile pages (LP8)."""
+        units = {}
+        for x in self.path_lessons:
+            units.setdefault(x["track"], []).append(x["id"] in p.passed)
         return {"xp": p.xp, "level": level_of(p.xp), "streak": self.learn_streak(p), "passed": len(p.passed), "total": len(self.path_lessons), "tasks_total": len(TASK_KINDS),
                 "today": p.xp_days.get(self._learn_day(), 0), "goal": p.goal, "tasks": len(p.tasks), "weak": self.weak_skills(p),
-                "week_xp": p.xp_weeks.get(self._week_key(), 0)}
+                "week_xp": p.xp_weeks.get(self._week_key(), 0),
+                "units_done": sum(1 for v in units.values() if all(v)), "units_total": len(units)}
 
     # ------------------------------------------------------------------ lessons
     def lessons_view(self, p=None):
@@ -812,14 +818,17 @@ class LearningMixin:
         kind, answer, reveal, _ = got
         right = isinstance(choice, int) and not isinstance(choice, bool) and choice == answer
         out = dict(reveal, right=right)
-        self._attempt(p, kind, right)
+        if not review:
+            self._attempt(p, kind, right)
         if p is not None:
             sc = p.drills.setdefault(kind, [0, 0])
             sc[0] += int(right)
             sc[1] += 1
             out["score"] = list(sc)
-            if review:
-                out["xp"] = self._xp(p, XP_REVIEW) if right else 0
+            if review:                                     # a review test pays once a day per kind (loop 9: "Another chart" is not a farm)
+                paid = self._paid_today(p, "test:" + kind)
+                self._attempt(p, kind, right, "test:" + kind)
+                out["xp"] = self._xp(p, XP_REVIEW) if right and not paid else 0
                 out["weak"] = self.weak_skills(p)
                 return out
             x = self._lesson_by_id.get(lesson_id) if lesson_id else None
