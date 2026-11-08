@@ -11,11 +11,12 @@ B = `tools/learn_check.py` (checks passing / total). C = the simulated learner r
 | 3 | 2026-11-08 | 6/9 | (none: B failed) | B: core units' questions at the end (41%) | Indicators interleaved: 21 questions moved under the section each tests | (this commit) | B: 33 thin lessons, longest-option 71%, interleave 55%; next: Orders, then Risk |
 | 4 | 2026-11-08 | 7/9 | (none: B failed) | B: core units' questions at the end (55%) | Orders and Risk interleaved: 36 questions and the four generated calculations moved under the section each tests; the placement rule counts the one exercise right after a section's last paragraph. The interleave check passes (97%) | (this commit) | B: 33 thin lessons, longest-option 71%; next: the longest-option bias in the core units (rewrite options to balanced lengths) |
 | 5 | 2026-11-08 | 7/9 | (none: B failed) | B: the right answer is the longest option in 71% of questions | 40 questions in Start, Market basics, Orders and Risk rewritten with wrong options as detailed as the right one; 23 right answers across all units lost a trailing ': explanation' (the WHY keeps it). Share now 56% | (this commit) | B: 33 thin lessons, longest-option 56% (target under 45%); next: Reading charts and Indicators options |
+| 6 | 2026-11-08 | 8/9 | (none: B failed) | B: the right answer is the longest option in 56% of questions | Reading charts and Indicators: 25 questions rewritten with wrong options as detailed as the right one; then across the six core units the longest wrong option of 44 questions gained a plausible qualifier. Share now 36%: the check passes | (this commit) | B: 33 thin lessons (2 exercises each, all outside the core units); next: a third exercise for each |
 
 ## Backlog the walkthroughs left (the loop picks from here when the checks are green)
 
 - done (loops 1-4): the six core units interleaved
-- rewrite recall questions in the core units as scenarios; balance option lengths (B will fail until under 45%)
+- done (loops 5-6): option lengths balanced in the core units; recall questions in the core units still to turn into scenarios
 - on-topic chart tests in the lessons that teach a kind (`[test pattern flag]`, `[test candle hammer]`); Bollinger and VWAP overlays in `lrnSvg`
 - two formats: which chart? (two charts, pick one) and place the stop (click a price)
 - tailoring: the next lesson skips mastered units; a daily set of five on `/learn`; the placement offer after a long absence

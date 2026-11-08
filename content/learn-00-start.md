@@ -25,7 +25,7 @@ Prices move with the market as a whole, with each company's news and earnings, w
 
 Q: A player with a huge account buys a lot of one stock. What happens to its price?
 + Nothing: players' trades never move prices here
-- It rises because so much money is buying it
+- It rises because so much money is buying it at once
 - It falls as other players sell to the buyer
 WHY: On Meme Street prices follow the market, news and the economy. No trade, however large, moves them.
 
@@ -75,7 +75,7 @@ Press Buy, then **Set bracket**: a stop-loss and a take-profit placed together. 
 Q: What does a bracket do?
 + Places a stop-loss and a take-profit together
 - Buys at two prices, one after the other
-- Doubles the position when the price falls
+- Doubles the position when the price falls back
 WHY: One-cancels-other: whichever exit is reached first closes the trade and removes the other order.
 
 ### 5. Leave it alone

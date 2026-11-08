@@ -12,7 +12,7 @@ Risk at most **1% of your account** on any one trade (some use 0.5%, some up to 
 
 Q: What does "risk 1%" mean?
 + Lose at most about 1% of the account if the stop is hit
-- Buy positions worth 1% of the account each
+- Buy positions worth 1% of the account each, so twenty at a time
 - Expect to make 1% on each trade
 WHY: Risk is the loss at the stop, not the size of the position.
 
@@ -192,7 +192,7 @@ Long five chip makers, risking 1% on each, is not 5% spread over five ideas. The
 
 Q: You hold five banks, each risking 1%. How much risk is that really?
 + Closer to 5% on one idea, because banks move together
-- 1%, since the risk is spread across five
+- 1%, since the risk is spread across five different companies
 - 0.2%, a fifth of the usual risk
 WHY: Highly correlated positions behave like one big position.
 
@@ -278,7 +278,7 @@ Put the stop where the chart says the idea is wrong:
 
 Q: You buy a breakout above 120 from a range of 100 to 120. Where does the stop belong?
 + Back inside the range, somewhat below 120
-- At 119.99, just under the breakout level
+- At 119.99, just under the breakout level itself
 - At 100, the bottom of the range, always
 WHY: A close back inside the range means the breakout failed; a little margin keeps it out of the noise.
 
@@ -288,7 +288,7 @@ Prices wobble. A stop closer than about one ATR from the entry is inside normal 
 Q: The stock's ATR is 2 MB. You want a stop 0.3 MB from your entry. What is the problem?
 + It is inside normal noise and likely to be hit by chance
 - It is too far away for a day trade
-- There is no problem with a tight stop
+- There is no problem with a tight stop: it keeps the loss small
 WHY: A typical candle moves 2 MB; a 0.3 MB stop will be touched by ordinary movement.
 
 ### Not exactly where everyone else's is

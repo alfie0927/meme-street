@@ -31,9 +31,9 @@ WHY: The fast average moving above the slow one is the golden cross; the opposit
 An average is made of past prices, so it always turns **after** the price has. By the time two averages cross, much of the move has happened. In a range, averages flatten and crossovers flip back and forth (**whipsaws**), each one a small loss. Averages are a filter for direction, not a crystal ball.
 
 Q: Why do crossover systems lose money in a range?
-- Ranges have no volume
 + The averages flatten and cross back and forth, each signal a small loss
-- They work best in ranges
+- Ranges have no volume to carry a crossover signal through to a real trend
+- They work best in ranges, so a loss means a bug
 WHY: Whipsaws: a flat market makes averages cross repeatedly with no follow-through.
 
 HERE: Free on every chart: SMA 10, 20, 50, 100 and 200, and EMA 9, 12, 20, 26, 50, 100 and 200, with your own length, source and colour in each one's settings. The 20, 50 and 200-day averages are also among the levels the price model treats as support and resistance. Pro adds the weighted, Hull, double and triple exponential, and volume-weighted averages.
@@ -53,9 +53,9 @@ Compares the size of recent up moves with recent down moves, on a scale of 0 to 
 Overbought does **not** mean "sell". In a strong uptrend the RSI can stay above 70 for a long time while the price keeps rising. Many traders use 40 to 50 as support for the RSI in an uptrend instead.
 
 Q: The RSI is 78 in a strong uptrend. What does that tell you on its own?
-- Sell now
 + The price has risen fast; it is not a sell signal by itself
-- The trend has ended
+- Sell now, before the RSI falls back under 70
+- The trend has ended and will reverse from here within a few candles
 WHY: Overbought describes the speed of the rise. Strong trends stay overbought for long stretches.
 
 ### Stochastic
@@ -65,9 +65,9 @@ Where the close sits within the recent high-low range, 0 to 100, with a slower s
 The difference between a 12 and a 26-candle EMA (the MACD line), a 9-candle EMA of that (the signal line), and the gap between them as a histogram. MACD crossing above its signal is bullish momentum; a shrinking histogram means the move is slowing.
 
 Q: What is the MACD line?
-- The 200-day average
 + The difference between a 12 and a 26-candle EMA
-- The RSI smoothed
+- The 200-day average drawn under the price as a separate line
+- The RSI smoothed with a 9-candle average
 WHY: MACD = EMA 12 minus EMA 26; its 9-candle EMA is the signal line.
 
 ### Divergence
@@ -97,8 +97,8 @@ A 20-candle moving average with a band two standard deviations above and below i
 
 Q: Bollinger Bands are at their narrowest in weeks. What does that suggest?
 + The market is quiet, and a bigger move may follow, in either direction
-- The price will fall
-- Nothing ever happens after a squeeze
+- The price will fall as the bands close in on it
+- Nothing ever happens after a squeeze like this one, the bands stay narrow
 WHY: Volatility comes in waves; the squeeze says a move may come, not which way.
 
 ### ATR (average true range)
@@ -107,15 +107,15 @@ The average size of a candle's full range (including gaps) over the last 14 cand
 - **Position size**: a more volatile stock means a wider stop, so a smaller position for the same risk.
 
 Q: Two stocks, the same risk budget. Stock B's ATR is twice stock A's. How should the positions compare?
-- B's should be twice as big
 + B's should be about half as big, because its stop is twice as far
-- The same
+- B's should be twice as big to match its larger moves and bigger range
+- The same: the risk budget is all that counts
 WHY: Risk = size × stop distance. A stop twice as far needs half the size for the same risk.
 
 Q: A stock's ATR is 3 MB. Where would a 0.5 MB stop most likely be?
-- Safely outside the noise
 + Inside normal noise, likely to be hit by chance
-- Exactly right
+- Safely outside the noise of a 3 MB range
+- Exactly right for a stock that moves 3 MB in a candle
 WHY: A typical candle moves 3 MB; a 0.5 MB stop will be touched by ordinary wobbles.
 
 HERE: Bollinger Bands, Keltner Channels, Donchian Channels, ATR, historical volatility and Bollinger bandwidth and %B are Pro indicators. The long and short **position** drawing tools (free) place their stop and target 1.5 and 3 ATR from the entry. Volatility here clusters as it does in real markets: calm spells and storms, with volatility rising more after falls than after rises, and the end of a range is quieter than its start.
@@ -131,15 +131,15 @@ The **volume-weighted average price**: the average price of every share traded s
 - It starts again every session.
 
 Q: The price has been above VWAP all afternoon. What does that say about the day's buyers?
-- Volume is falling
 + On average, everyone who bought today is in profit
-- The stock is overbought
+- Volume is falling as the session goes on into the close
+- The stock is overbought and due to fall
 WHY: VWAP is the day's average price weighted by volume; above it, the average buyer of the day is ahead.
 
 Q: The price is above the session's VWAP. What does that suggest?
 + Buyers have been in control so far this session
-- The stock is overvalued
-- Volume is low
+- The stock is overvalued against its peers in the sector
+- Volume is low compared with yesterday
 WHY: Above the average price paid today, today's buyers are on average in profit; it is read as strength.
 
 ### On-balance volume (OBV)
@@ -191,8 +191,8 @@ Partly because so many traders watch the same levels and place orders there. The
 
 Q: In a healthy uptrend, where do pullbacks often stop?
 + Between 38.2% and 61.8% of the swing
-- Below 100% of the swing
-- Never at any Fibonacci level
+- Below 100% of the swing, past its start
+- Never at any Fibonacci level in practice
 WHY: That middle zone is where traders most often see trend pullbacks end.
 
 HERE: **Auto Fibonacci** (free) draws the retracement levels between the highest and lowest price on screen. The drawing tools have a **Fibonacci retracement** (drag from the start of a swing to its end) and a **Fibonacci extension** (click the start, the end and the end of the pullback).
@@ -225,9 +225,9 @@ How recently the price made its highest high and lowest low in a window. A recen
 Trailing lines under the price in an uptrend and above it in a downtrend. When the price crosses the line it flips sides. Traders use them as **trailing stops**: they follow the trend and get out when it turns, at the cost of being shaken out by deep pullbacks.
 
 Q: How do traders often use SuperTrend or the Parabolic SAR?
-- As a price target
 + As a trailing stop that follows the trend
-- To measure volume
+- As a price target for the next move
+- To measure the volume behind a trend as it develops
 WHY: The line trails the price and flips when the trend turns, which makes it a natural trailing stop.
 
 ### Ichimoku Cloud

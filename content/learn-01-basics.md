@@ -10,7 +10,7 @@ Growing costs money. A company can borrow it (and pay interest whatever happens)
 
 Q: Why does a company hold an IPO?
 + To raise money by selling part of itself to the public
-- To pay its staff and suppliers in shares
+- To pay its staff and suppliers in shares instead of cash
 - Because the law requires one every year
 WHY: An initial public offering raises money and lets the shares trade on an exchange afterwards.
 
@@ -31,7 +31,7 @@ WHY: Limited liability: shareholders are never responsible for the company's deb
 
 Q: What does a share represent?
 + A small piece of ownership of the company
-- A loan to the company that it repays
+- A loan to the company that it repays with interest
 - A promise of a fixed yearly return
 WHY: Shares are ownership. A loan is a bond, and nothing about a share is fixed or promised.
 
@@ -58,13 +58,13 @@ An **exchange-traded fund (ETF)** is a fund that holds a basket of assets and tr
 Q: How are Meme Street's themed funds (AIFX, GRNX...) weighted?
 + Equally: every member counts the same
 - By market value, like the MSI 50
-- By share price, the highest first
+- By share price, the highest-priced share first
 WHY: They are equal-weighted, so each member's return counts the same, unlike the MSI 50.
 
 Q: What does buying one share of an index fund give you?
 + A small piece of every company in the index
 - One share of the largest company in it
-- A loan to the exchange that runs the index
+- A loan to the exchange that runs and lists the index
 WHY: The fund holds the whole basket, so one share spreads your money across all of it.
 
 ### Leveraged and inverse funds
@@ -96,7 +96,7 @@ WHY: Market cap is price times shares: 10 × 2 billion = 20 billion; 400 × 20 m
 Q: A price breaks out on volume three times the usual. What does the volume suggest?
 + Many participants took part, so the move has more conviction
 - Nothing at all: volume is only noise
-- The move is certain to continue for the day
+- The move is certain to continue for the rest of the session
 WHY: Volume shows participation. It adds weight to a move, but nothing is ever certain.
 
 ### Liquidity
@@ -104,7 +104,7 @@ A **liquid** market is one where you can buy or sell a lot quickly without movin
 
 Q: Why is a small, illiquid stock costlier to trade in a real market?
 + Spreads are wider and big orders move the price as they fill
-- Its fees are set higher by the regulator
+- Its fees are set higher by the regulator to protect small investors
 - It cannot be sold at all once bought
 WHY: Few buyers and sellers means wide spreads and price impact: hidden costs on every trade.
 
@@ -137,7 +137,7 @@ The spread is a cost on every round trip, on top of commission. A strategy that 
 Q: Who usually earns the spread?
 + Market makers and whoever is on the other side of your trade
 - The government, as a tax on each trade
-- The company whose shares are being traded
+- The company whose shares are being traded, as a small dividend
 WHY: Market makers quote both sides and earn the difference, in exchange for always being there to trade.
 
 HERE: Shares here have **no spread**: you buy and sell at the same displayed price, and the only cost is the 0.1% fee each way. **Options do have a bid and an ask**, as on a real exchange, about 6% of the option's value apart (wider, as a share, for cheap far-out contracts): you buy at the ask and sell at the bid. Open a stock's **Options** tab to see them.
@@ -156,7 +156,7 @@ A price moves when buyers are more eager than sellers, or the other way round. I
 
 Q: What makes a price rise?
 + Buyers being more eager than sellers at the current price
-- The company asking the exchange for it to rise
+- The company asking the exchange for it to rise before the open
 - High volume, always, whichever way it leans
 WHY: More demand than supply at a price pushes it up until enough sellers appear.
 
@@ -166,7 +166,7 @@ Markets look ahead. If everyone expects a great quarter, the price already refle
 Q: A company reports record profits and its shares fall. What is the most likely reason?
 + The profits were below what the market expected
 - The report was faked by the company
-- Shares always fall on an earnings day
+- Shares always fall on an earnings day, whatever the numbers
 WHY: Prices already contain expectations. A result below them disappoints, even if it is a record.
 
 ### Random noise
@@ -203,7 +203,7 @@ WHY: 5 minutes of pre-market, 20 of regular session, 5 of after-hours.
 
 Q: Why are prices jumpier in extended hours in a real market?
 + Fewer people trade, so small orders move prices and spreads widen
-- The rules allow bigger moves after hours
+- The rules allow bigger moves after hours than in the regular session
 - Companies only report their results then
 WHY: Thin trading means less liquidity: each order matters more.
 
@@ -226,7 +226,7 @@ If the whole market falls far enough in a day, everything stops. In the US the l
 Q: What is the purpose of a market-wide circuit breaker?
 + To pause trading in a crash so people have time to think
 - To guarantee that prices stop falling
-- To let the exchange set the prices itself
+- To let the exchange set the prices itself until the panic passes
 WHY: It buys time; it does not stop the fall from continuing after the pause.
 
 ### What a halt means for you
@@ -236,7 +236,7 @@ WHY: It buys time; it does not stop the fall from continuing after the pause.
 
 Q: Meme Street has no trading halts. What does that mean for your stop-loss in a crash?
 + It can still fill, at whatever price the market has reached
-- It is cancelled until the market calms down again
+- It is cancelled until the market calms down and reopens again
 - It fills at exactly your stop price, guaranteed
 WHY: Trading never pauses here, so orders are checked every second and fill at the price of that moment.
 

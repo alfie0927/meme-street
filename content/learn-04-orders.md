@@ -29,7 +29,7 @@ WHY: A stop becomes a market order when triggered; a gap past it fills at the ne
 
 Q: What is the main risk of a stop-limit order?
 + In a gap past the limit it does not fill at all
-- It fills at a terrible price in a fast market
+- It fills at a terrible price in a fast market, worse than a stop
 - It costs more in fees than a plain stop
 WHY: The limit protects the price but removes the guarantee of getting out.
 
@@ -56,13 +56,13 @@ A **bracket** is two exit orders around a position: a **stop-loss** below (for a
 
 Q: You bracket a long from 100 with a stop at 95 and a target at 112. The price reaches 112. What is still open?
 + Nothing: the target filled and cancelled the stop
-- The stop-loss, still waiting at 95 for a fall
+- The stop-loss, still waiting at 95 for a fall back down
 - Both orders, until you cancel one of them
 WHY: A bracket is one-cancels-other: when one exit fills, the other is removed.
 
 Q: Your bracket's take-profit fills. What happens to the stop-loss?
 + It is cancelled automatically
-- It stays open as a new order
+- It stays open as a new separate order
 - It moves up to break-even
 WHY: One-cancels-other: the first exit to fill removes the other.
 
@@ -74,7 +74,7 @@ WHY: One-cancels-other: the first exit to fill removes the other.
 Q: Where should the stop of a bracket go?
 + Where the trade idea is proved wrong, outside normal noise
 - At a round 5% below the entry, always
-- As close to the entry as the broker allows
+- As close to the entry as the broker allows, to lose little
 WHY: The stop marks the point where your reason for the trade no longer holds.
 
 HERE: The order panel has a one-click **bracket**. On the Holdings page, every position has *Take profit* and *Stop-loss* columns you can click to set or move them; when both are set they are paired as a bracket. The **Position size and risk** tool works out the size from the stop and fills in the trade and the bracket for you.
@@ -108,7 +108,7 @@ Sell part of the position at a first target (often a third or a half) and let th
 Q: Why take a partial profit and trail the rest?
 + To bank some profit while keeping a chance of a bigger move
 - To pay fewer fees on the way out
-- Because the rules require two exits
+- Because the rules require two exits on every single position
 WHY: It balances the fear of giving back a profit against the hope of catching a big trend.
 
 ### Scaling in
@@ -117,7 +117,7 @@ Building a position in steps: half at the first signal, the rest when the trade 
 Q: What is the danger of averaging down on a losing position?
 + The position grows exactly when the trade is going wrong
 - You pay lower fees on the extra shares
-- There is no danger if the company is good
+- There is no danger if the company is good and the price is low
 WHY: Adding to a loser increases your exposure to an idea the market is already disagreeing with.
 
 HERE: There is no automatic trailing stop: you trail by hand, moving the stop-loss up on the Holdings page or by dragging your plan along. Sell part of a position with the size chips (25%, 50%...) or by typing an amount in MB. Adding to a position averages your entry price, shown as the amber dotted line on the chart.
@@ -138,7 +138,7 @@ A stop is a promise to **try** to get out at your price. If a stock closes at 50
 
 Q: Why can a loss be bigger than the stop distance?
 + The price can gap past the stop, and the stop fills at the next price
-- Stops are optional and brokers often ignore them
+- Stops are optional and brokers often ignore them when the market moves fast
 - Brokers move stops to collect their fees
 WHY: A stop is not a guaranteed price: a gap fills it at whatever price comes next.
 

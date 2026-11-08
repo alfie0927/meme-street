@@ -14,9 +14,9 @@ The thick **body** runs from the open to the close: green (or hollow) when the c
 A candle is a small story of who won that period. A long green body: buyers in control from start to finish. A long upper wick: buyers pushed the price up, then sellers pushed it back down. A tiny body: neither side won.
 
 Q: What does a long upper wick tell you?
-- Buyers held the high to the close
 + The price went up but sellers pushed it back down before the close
-- Volume was high
+- Buyers held the high all the way to the close, so the candle is strong
+- Volume was high, whichever way it closed
 WHY: The wick shows the high was reached but not held.
 
 Q: A candle opens at 50, rises to 55, falls to 48 and closes at 49. What colour is its body?
@@ -57,15 +57,15 @@ Every candle size tells a different story. A strong uptrend on the daily chart c
 - Shorter timeframes have more noise relative to the move you are trying to catch, and costs matter more.
 
 Q: On the 5-minute chart a stock looks like it is crashing; on the daily chart it is a small dip in an uptrend. Which chart is right?
-- The 5-minute: it is more detailed
-- The daily: short charts are only noise
 + Both: the higher one gives the direction, the lower one the timing
+- The 5-minute: it shows far more detail of the move than the daily
+- The daily: anything shorter is only noise
 WHY: Each timeframe answers a different question. Traders read the trend on a higher one and time entries on a lower one.
 
 Q: You plan to hold a trade for a few hours. Which timeframe suits planning it?
-- 30-second candles
 + 15-minute or hourly candles
-- Monthly candles
+- 30-second candles, the finest
+- Monthly candles, the widest view
 WHY: Plan on the timeframe that matches the holding period, with one up for context.
 
 ### Linear and log scale
@@ -112,9 +112,9 @@ WHY: If the price falls below the last higher low, the uptrend's structure is br
 Trends end in a few ways: a **climax** (a last fast move on huge volume, a blow-off top or panic low), a slow fade where pushes get weaker and volume shrinks, or a reversal pattern such as a double top. None is certain until the structure actually breaks.
 
 Q: In an uptrend, what is the first sign it may be ending?
-- A red candle
 + A close below the last higher low
-- A new high
+- A single red candle after a long rise
+- A new high above the last one
 WHY: The structure of higher lows is what defines the trend; breaking it is the warning.
 
 HERE: Trends here move in **legs**: an impulse then a pullback, again and again. The last push of a trend often comes on less momentum and less volume than the ones before: the divergence that warns a trend is tiring.
@@ -133,8 +133,8 @@ SUMMARY: Where prices tend to turn, why, and how to judge how strong a level is.
 
 Q: A stock has bounced off 80 three times. What is 80?
 + A support level, and a strong one
-- A resistance level
-- Nothing meaningful
+- A resistance level that keeps capping it
+- Nothing meaningful: three is coincidence
 WHY: Repeated bounces show buyers defending the price.
 
 ### How strong is a level?
@@ -144,18 +144,18 @@ WHY: Repeated bounces show buyers defending the price.
 - **Recent tests**: a level tested again and again in a short time is being worn down, and tends to break.
 
 Q: Which level is likely strongest?
-- A price touched once, a long time ago
 + A swing high that is also a round number and the 50-day average
-- A level that has been tested five times in the last hour
+- A price touched once, a long time ago, and never again
+- A level tested five times in the last hour on no volume at all
 WHY: Confluence makes levels stronger; repeated tests in a short time wear a level down.
 
 ### Role reversal
 A broken resistance often becomes support on the way back (and broken support becomes resistance). The *retest* of a broken level is a classic entry.
 
 Q: A resistance at 120 breaks and the price runs to 130. Where might it find support on a pullback?
-- 100
 + Around 120, the old resistance
-- 130
+- 100, the old bottom of the range
+- 130, where the run stopped
 WHY: Role reversal: broken resistance often becomes support.
 
 ### Levels fail
@@ -217,24 +217,24 @@ Price tells you what happened; volume tells you how many people took part. The s
 - **Volume drying up** in a range: the squeeze before the breakout.
 
 Q: In a healthy uptrend, how does volume usually behave?
-- Highest on the pullbacks
 + Higher on the rises, lower on the pullbacks
-- Exactly the same on every candle
+- Highest on the pullbacks, low on the rises
+- Exactly the same on every candle of the trend
 WHY: Buyers are keen on the way up and sellers half-hearted on the way down.
 
 Q: A stock makes a new high, but on half the volume of the previous high. What might that mean?
 + Fewer buyers are joining in; the trend may be tiring
-- The trend is certain to continue
-- Nothing, volume does not matter
+- The trend is certain to continue to a new high on the next candle
+- Nothing: volume does not matter at a high
 WHY: A rise on shrinking volume shows less participation: a warning, not a certainty.
 
 ### Caveats
 Volume is evidence, not proof. Real breakouts sometimes come on quiet volume, and loud breakouts sometimes fail. It shifts the odds; it does not settle them.
 
 Q: A stock breaks above resistance on a third of its usual volume. What should that make you think?
-- Low volume means a cleaner, safer breakout
 + Few traders took part, so the breakout is more likely to fail
-- Volume does not matter for breakouts
+- Low volume means a cleaner, safer breakout to buy straight away
+- Volume does not matter for breakouts at all
 WHY: A move most traders did not join lacks conviction; real breakouts usually come with a surge in volume.
 
 HERE: Volume bars sit under every chart (green for a candle that closed up, red for down), and the free indicators include the 20-candle volume average drawn over them. Indices and funds have no volume of their own. Volume here is busier in trend impulses than pullbacks, bigger on breakouts and climaxes, and quieter late in a range, as in real markets.
@@ -249,9 +249,9 @@ Chart patterns are shapes the swings make, repeated often enough to have names. 
 Two highs at about the same price with a dip between them. The low of the dip is the **neckline**. The pattern is complete only when the price **closes below the neckline**; until then it is just two highs. A **double bottom** is the mirror image after a fall.
 
 Q: When is a double top complete?
-- When the second top forms
 + When the price closes below the neckline
-- When volume rises
+- When the second top forms at the same level
+- When volume rises on the second top
 WHY: Until the neckline breaks, it is just two highs; the trigger is the close below the low between them.
 
 ### Head and shoulders
@@ -344,8 +344,8 @@ WHY: When the price trades back through the empty space, the gap is filled; many
 
 Q: What does it mean for a gap to fill?
 + The price comes back to where it was before the gap
-- The gap gets wider
-- Volume returns to normal
+- The gap gets wider over the following days as more traders join
+- Volume returns to normal after the jump
 WHY: Filling a gap means trading back through the empty stretch to the old close.
 
 Q: A stock gaps up out of a long range on big news and volume and keeps going. What kind of gap is it?
@@ -373,15 +373,15 @@ Most traders read at least two timeframes:
 The hourly chart is in an uptrend, and the price has pulled back to a support level that has held twice. On the 5-minute chart, the fall into the level slows, a higher low forms, and the price breaks a small downtrend line. That is an entry in the direction of the bigger trend, at a level, with a stop just below the small higher low.
 
 Q: The daily trend is up, the hourly chart has pulled back to support and the 15-minute chart has just turned up. What is the setup?
-- A short: the hourly chart fell
-- Nothing: the timeframes disagree
 + A pullback entry in the direction of the higher trend
+- A short: the hourly chart fell to support, so the trend is down
+- Nothing: the three timeframes disagree
 WHY: The three agree in sequence: direction from the daily, a place from the hourly, a trigger from the 15-minute.
 
 Q: What is the lower timeframe mainly used for?
-- Choosing the trend
 + Timing the entry and placing a tight, logical stop
-- Nothing, only the higher one matters
+- Choosing the trend you will trade with
+- Nothing: only the higher one ever matters to a careful trader
 WHY: Direction from above, timing from below.
 
 ### When they disagree
@@ -390,7 +390,7 @@ If the hourly is falling and the 5-minute is rising, the 5-minute rally is a pul
 Q: The hourly chart is in a downtrend; the 5-minute shows a rally. What is the rally most likely to be?
 + A pullback inside the bigger downtrend
 - The start of a new uptrend, certainly
-- Nothing to do with the hourly
+- Nothing to do with the hourly chart at all
 WHY: The higher timeframe sets the context; a lower-timeframe rally against it is usually a pullback.
 
 ### Do not hunt for a timeframe that agrees
