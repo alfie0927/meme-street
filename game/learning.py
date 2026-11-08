@@ -60,7 +60,7 @@ TASK_KINDS = {"trade": "Make a trade", "stop": "Put a stop-loss on a position", 
               "bracket": "Place a bracket", "planned": "Close a position that had a stop", "short": "Open a short",
               "limit": "Place a limit order", "trail": "Place a trailing stop", "option": "Buy an option",
               "note": "Write a note on a trade", "short_stop": "Put a stop-loss above a short"}
-XP_RIGHT, XP_WRONG, XP_PASS, XP_TASK, GOAL = 10, 2, 20, 30, 20       # XP per exercise right or wrong, per lesson passed, per task; the daily goal
+XP_RIGHT, XP_WRONG, XP_PASS, XP_TASK, GOAL = 10, 2, 20, 30, 50       # XP per exercise right or wrong, per lesson passed, per task; the daily goal (50: one lesson, not two answers)
 TEST_TIMEFRAMES = {"1m": "1-minute", "5m": "5-minute", "15m": "15-minute", "1h": "1-hour"}
 TEST_PENDING = 3000          # chart tests waiting for an answer, at most (the oldest go first)
 TEST_KEEP = 3 * 3600         # and for at most this long
@@ -676,6 +676,7 @@ class LearningMixin:
         out = {"tracks": tracks, "read": sum(1 for x in self.lessons if x["id"] in done), "total": len(self.path_lessons),
                "passed": len(p.passed) if p else 0, "next": next_id, "tests": tests, "challenges": [],
                "xp": p.xp if p else 0, "level": level_of(p.xp if p else 0), "goals": list(GOALS), "streak": self.learn_streak(p) if p else 0, "placed": p.placed if p else None,
+               "xp_rules": {"right": XP_RIGHT, "wrong": XP_WRONG, "pass": XP_PASS, "task": XP_TASK},
                "weak": self.weak_skills(p) if p else [], "league": self.league(p),
                "today": p.xp_days.get(self._learn_day(), 0) if p else 0, "goal": p.goal if p else GOAL}
         if p is not None:

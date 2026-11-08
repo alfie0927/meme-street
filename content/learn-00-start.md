@@ -42,7 +42,7 @@ WHY: Pre-market (5 minutes), the regular session (20) and after-hours (5): a gam
 
 TIP: The leaderboards rank your return on the money you put in, so buying more MB never buys you a better place.
 
-[task trade] Make your first trade: open any stock's page and buy a little of it.
+[task trade] Make your first trade: open a company's page and buy about 10 MB of it.
 
 ## Your first trade, with a stop {first-trade} [5]
 SUMMARY: Buying, setting a stop-loss and a take-profit, and sizing the trade from the stop.
