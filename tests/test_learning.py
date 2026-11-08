@@ -109,6 +109,13 @@ class LessonTests(unittest.TestCase):
         view = e.lessons_view(p)
         self.assertEqual((view["passed"], view["xp"], view["streak"], view["today"]), (1, p.xp, 1, p.xp))
         self.assertEqual(view["next"], "welcome")                                 # the first unpassed lesson
+        w = e._lesson_by_id["welcome"]
+        for k, kind in learning.exercises(w):                                     # every question of Welcome answered, its task not done:
+            if kind != "task":                                                    # the next lesson moves on (loop 12)
+                e.learn_answer(p, "welcome", k, 0)
+        v2 = e.lessons_view(p)
+        self.assertNotEqual(v2["next"], "welcome")
+        self.assertTrue(next(x for x in v2["tracks"][0]["lessons"] if x["id"] == "welcome")["task_pending"])
         self.assertIn("error", e.learn_answer(p, "stocks-shares", 0, 0))          # not a question
         self.assertIn("error", e.learn_answer(p, "nope", 0, 0))
         self.assertEqual(p.cash, 1000.0)                                          # nothing here pays MB
@@ -225,6 +232,14 @@ class LessonTests(unittest.TestCase):
         q2 = e.drill_new("rsi")
         rsi_right = e._drill_q[q2["id"]][1]
         self.assertEqual(e.drill_answer(p, q2["id"], rsi_right, review=True)["xp"], 0)      # a kind pays once a day in review
+        served = e._review_served.get(p.token, set())
+        other = next((f"{x['id']}:{k}" for x in e.lessons if x["id"] in p.lessons_passed for k, kind in learning.exercises(x)
+                      if kind == "q" and f"{x['id']}:{k}" not in served), None)
+        if other:                                                                  # a question the review did not serve pays nothing (loop 12)
+            lid, k = other.rsplit(":", 1)
+            b = e._lesson_by_id[lid]["body"][int(k)]
+            right_slot = e._perm(p, lid, int(k), len(b["options"])).index(b["answer"])
+            self.assertEqual(e.learn_answer(p, lid, int(k), right_slot, review=True)["xp"], 0)
         for _ in range(301):
             e._attempt(p, "basics", True)
         self.assertEqual(len(p.attempts), learning.ATTEMPTS_MAX)

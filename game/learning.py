@@ -299,6 +299,7 @@ class LearningMixin:
         self._lesson_by_id = {x["id"]: x for x in self.lessons}
         self.path_lessons = [x for x in self.lessons if exercises(x)]      # a lesson with nothing to do (the glossary) is a reference, not a step
         self._drill_q = collections.OrderedDict()       # test id -> (kind, answer, the reveal, when asked)
+        self._review_served = {}                        # token -> the question keys the last review served (only those pay, loop 12)
         self._drill_ex = {}                              # kind -> (when found, a lesson's example chart)
 
     def _challenges(self):
@@ -427,6 +428,7 @@ class LearningMixin:
                 items.append({"lesson": lid, "i": k, "q": b["q"], "options": [b["options"][j] for j in perm], "name": w["name"]})
         if not items:
             return {"error": "Nothing to review yet: open the lessons of your weak units first", "weak": weak}
+        self._review_served[p.token] = {f"{it['lesson']}:{it['i']}" for it in items if "lesson" in it}
         return {"items": items, "weak": weak, "xp_review": XP_REVIEW}
 
     def league(self, p=None):
@@ -541,9 +543,9 @@ class LearningMixin:
             right = picked == b["answer"]
             out = {"right": right, "answer": perm.index(b["answer"]), "why": b["why"]}      # (the answer as a shown slot)
         key = f"{lesson_id}:{i}"
-        paid = p is not None and review and self._paid_today(p, key)
+        paid = p is not None and review and (self._paid_today(p, key) or key not in self._review_served.get(p.token, ()))
         self._attempt(p, x["track"], right, key)
-        if p is not None and review:
+        if p is not None and review:                       # only a question the review served today pays (loop 12: no replaying every answered question)
             out["xp"] = self._xp(p, XP_REVIEW) if right and not paid else 0
             out["weak"] = self.weak_skills(p)
             return out
@@ -664,16 +666,24 @@ class LearningMixin:
         next one to do), the player's XP, streak and daily goal, the chart tests (with `p`'s score), and the challenges
         when they are on. `p` is None for a visitor."""
         done = p.lessons_passed if p else {}
-        by_track, next_id = {}, None
+        by_track, next_id, first_open = {}, None, None
+        for x in self.lessons:                               # the next lesson: the first unpassed one with something to do here, not one
+            ex = exercises(x)                                # waiting only on a market task (loop 12); failing that, the first unpassed
+            ex_i = set(self._ex_done(p, x)) if p else set()
+            passed = bool(p and x["id"] in p.passed)
+            if not passed and ex:
+                first_open = first_open or x["id"]
+                if next_id is None and any(kind != "task" for k, kind in ex if k not in ex_i):
+                    next_id = x["id"]
+        next_id = next_id or first_open
         for x in self.lessons:
             ex = exercises(x)
-            ex_done = len(self._ex_done(p, x)) if p else 0
+            ex_i = set(self._ex_done(p, x)) if p else set()
             passed = bool(p and x["id"] in p.passed)
-            if next_id is None and not passed and ex:
-                next_id = x["id"]
             by_track.setdefault(x["track"], []).append(
                 {"id": x["id"], "title": x["title"], "minutes": x.get("minutes", 5), "summary": x.get("summary", ""),
-                 "read": x["id"] in done, "passed": passed, "ex_done": ex_done, "ex_total": len(ex), "next": x["id"] == next_id})
+                 "read": x["id"] in done, "passed": passed, "ex_done": len(ex_i), "ex_total": len(ex), "next": x["id"] == next_id,
+                 "task_pending": bool(ex_i) and not passed and all(kind == "task" for k, kind in ex if k not in ex_i)})
         tracks = [{"id": t["id"], "title": t["title"], "blurb": t.get("blurb", ""), "lessons": by_track.get(t["id"], [])}
                   for t in self.tracks]
         score = p.drills if p else {}
