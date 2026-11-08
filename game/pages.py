@@ -87,7 +87,7 @@ def add_pages(app):
     lessons = lessonpages.Lessons(site)
     # (pages with their own content; not /learn or /leaders, which are the game's page and empty without JavaScript,
     # nor /terms and /privacy, which are noindex)
-    public = ["/daily", "/", "/about", "/bots/guide"] + lessons.paths()
+    public = ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH] + lessons.paths()
 
     @app.get("/robots.txt")
     async def robots():
@@ -126,6 +126,11 @@ def add_pages(app):
     async def lessons_hub():
         """Every Learn lesson, listed by track (lessonpages.py)."""
         return HTMLResponse(lessons.hub(), headers={"Cache-Control": "public, max-age=300"})
+
+    @app.get(lessonpages.CALC_PATH)
+    async def position_size_calculator():
+        """A free position size calculator (lessonpages.py), for searches such as "position size calculator"."""
+        return HTMLResponse(lessons.calculator(), headers={"Cache-Control": "public, max-age=300"})
 
     @app.get("/lessons/{lesson_id}")
     async def lesson_page(lesson_id: str):

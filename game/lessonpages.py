@@ -40,9 +40,54 @@ HEAD = ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
 CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every account starts with 1,000 MB of practice '
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
-FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/about">About Meme Street</a>'
+FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
+        'Position size calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
+
+CALC_PATH = "/tools/position-size-calculator"
+CALC_TITLE = "Position size calculator: how many shares to buy for a 1% risk | Meme Street"
+CALC_DESC = ("Free position size calculator. Enter your account, the risk you accept, your entry and your stop, and it "
+             "gives the number of shares, the amount at risk and the profit at your target. Works for long and short trades.")
+CALC_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> › Tools</p><h1>Position size calculator</h1>
+<p class="lead">Position size = (account &times; risk %) &divide; (entry &minus; stop). Enter the four numbers and the
+calculator gives the number of shares to buy so that, if your stop is hit, you lose only the share of your account you chose.</p>
+<form id="f" class="try" onsubmit="return false">
+<p><label>Account size <input id="acct" type="number" min="0" step="any" value="1000"></label>
+<label>Risk per trade, % of account <input id="risk" type="number" min="0" step="any" value="1"></label></p>
+<p><label>Entry price <input id="entry" type="number" min="0" step="any" value="50"></label>
+<label>Stop price <input id="stop" type="number" min="0" step="any" value="48"></label>
+<label>Target, in R (reward &divide; risk) <input id="rr" type="number" min="0" step="any" value="2"></label></p>
+</form>
+<div id="out" class="box tip" aria-live="polite">Enter your numbers above.</div>
+<noscript><p>This calculator needs JavaScript. The sum is: shares = (account &times; risk %) &divide; |entry &minus; stop|.</p></noscript>
+<h2>How it works</h2>
+<p>Your risk is the amount you lose if the stop is hit, not the size of the trade. Take the account times the risk
+percentage (1% of 1,000 is 10). Divide it by the distance from entry to stop (50 to 48 is 2 per share) and you get the shares
+to buy (5). The position is then 5 &times; 50 = 250, which is 25% of the account, yet a stop-out costs only 1%.</p>
+<p>The wider the stop, the smaller the position. If the stop is above the entry the trade is a short, and the same formula
+applies.</p>
+<div class="box warn"><b>Watch out:</b> a stop can gap, so the real loss can be bigger than the number shown. The result also
+leaves out fees and does not check that you can afford the position. On Meme Street the fee is 0.1% on each side of a trade.</div>
+<p>Learn the idea behind it in <a href="/lessons/position-sizing">The 1% rule and sizing by risk</a>, then
+<a href="/lessons/stop-placement">where to put the stop</a> and <a href="/lessons/r-multiples">what R multiples mean</a>.
+In the game, the <b>Position size and risk</b> tool under every stock's chart does this sum and fills in the trade for you.</p>
+<script>
+(function(){var $=function(i){return document.getElementById(i)},o=$("out");
+function fmt(x){return x.toLocaleString("en-US",{maximumFractionDigits:2})}
+function go(){var a=+$("acct").value,r=+$("risk").value,e=+$("entry").value,s=+$("stop").value,rr=+$("rr").value;
+if(!(a>0&&r>0&&e>0&&s>0)||e===s){o.textContent="Enter an account, a risk %, an entry and a stop that differs from the entry.";return}
+var d=Math.abs(e-s),risk=a*r/100,n=risk/d,val=n*e,short=s>e,t=short?e-d*rr:e+d*rr;
+var h="<b>"+(short?"Short":"Long")+" "+fmt(n)+" shares</b> (position "+fmt(val)+", "+fmt(val/a*100)+"% of the account).<br>"
++"If the stop at "+fmt(s)+" is hit you lose "+fmt(risk)+" ("+fmt(r)+"% of the account); the stop is "+fmt(d/e*100)+"% from entry.";
+if(rr>0)h+="<br>At "+fmt(rr)+"R the target is "+fmt(t)+" and the profit "+fmt(risk*rr)+".";
+if(t<=0&&rr>0)h+=" (That target is below zero, so a short cannot reach it.)";
+o.innerHTML=h}
+document.getElementById("f").addEventListener("input",go);go()})();
+</script>"""
+
+CALC_LINK = ('<div class="try">Try it: the <a href="/tools/position-size-calculator">free position size calculator</a> '
+             "does this sum for you.</div>")
 
 
 def inline(s):
@@ -123,7 +168,22 @@ class Lessons:
                             url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
                 f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
-                + body_html(x) + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+                + body_html(x) + (CALC_LINK if lid == "position-sizing" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+
+    def calculator(self):
+        """The free position size calculator (works without an account; the sum runs in the page)."""
+        url = self.site + CALC_PATH
+        ld = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Position size calculator",
+               "url": url, "description": CALC_DESC, "applicationCategory": "FinanceApplication",
+               "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": "Position size calculator", "item": url}]}]
+        css = CSS + "label{display:inline-block;margin:6px 14px 6px 0}input{display:block;margin-top:4px;width:11em;max-width:100%;" \
+            "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
+        return (HEAD.format(t=html.escape(CALC_TITLE), d=html.escape(CALC_DESC), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=css) + CALC_BODY + CTA + FOOT)
 
     def hub(self):
         url = self.site + "/lessons"
@@ -143,7 +203,8 @@ class Lessons:
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade, free</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
-                + CTA + "".join(parts) + FOOT)
+                + CTA + '<p class="try">Free tool: <a href="/tools/position-size-calculator">position size calculator</a></p>'
+                + "".join(parts) + FOOT)
 
 
 if __name__ == "__main__":
@@ -153,6 +214,9 @@ if __name__ == "__main__":
         s = L.page(x["id"])
         assert s.count("<h1>") == 1 and f'href="https://memestreet.net/lessons/{x["id"]}"' in s, x["id"]
         assert "**" not in s and "<script>" not in s.split("</script>", 1)[1], x["id"]
+    c = L.calculator()
+    assert c.count("<h1>") == 1 and f'href="https://memestreet.net{CALC_PATH}"' in c and c.count("<script>") == 1
+    assert 'href="/tools/position-size-calculator"' in L.page("position-sizing")
     assert L.page("nope") is None and L.hub().count("/lessons/") >= len(L.lessons)
     assert inline("**a** [b](/x) <i>") == '<b>a</b> <a href="/x">b</a> &lt;i&gt;'
     print("ok", len(L.lessons), "lessons")
