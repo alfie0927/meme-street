@@ -41,6 +41,7 @@ function drawLearn(){
   ${token?lrnMineHtml(d.mine,false):''}
   ${token?lrnHabitsHtml(d.challenges):''}
   ${d.weak&&d.weak.length?`<div class="lrn-place lrn-weak"><div><b>Your weak spots</b><span class="mut">${d.weak.map(w=>`${esc(w.name)} (${w.right} of ${w.n} right)`).join(' · ')}. A review asks you again, with other questions from those units.</span></div><a class="btn" href="/learn?review=1">Review</a></div>`:''}
+  ${token&&d.allowance&&d.allowance.tier==='free'?`<div class="lrn-place lrn-allow"><div><b>${d.allowance.limited?`Your ${d.allowance.limit} free lessons for today are done.`:`Free: ${d.allowance.limit} lessons a day, ${d.allowance.used} done today.`}</b><span class="mut">The day resets at ${new Date(d.allowance.reset*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} your time. Pro opens the whole path; the review and the chart tests are always open.</span></div><a class="btn" href="/shop">Pro</a></div>`:''}
   <h3 class="sp">The path</h3><div class="lrn-tracks">${d.tracks.map((t,k)=>{const done=t.lessons.filter(x=>x.passed).length;
    const steps=t.lessons.filter(x=>x.ex_total>0),refs=t.lessons.filter(x=>!x.ex_total);   // a lesson without exercises (the glossary) is reference, not a step (loop 11)
    const fin=steps.length&&done===steps.length;
@@ -145,6 +146,9 @@ function drawLesson(){
    <div class="lesson-body">${L.body.map(lrnBlock).join('')}</div>${nav}`);
   document.querySelectorAll('#learn-body [data-lrn-ex]').forEach(el=>lrnExample(el,el.dataset.lrnEx));
   document.querySelectorAll('#learn-body [data-lrn-test]').forEach(el=>lrnTest(el,el.dataset.lrnTest));return}
+ if(L.gate){const A=L.allowance||{};setHtml($('learn-body'),`${crumb}<div class="lrn-goal"><h3>🔒 ${esc(L.title)}</h3><p class="lrn-goalp">${lrnText(L.summary||'')}</p>
+  <p class="mut">${L.gate==='expert'?'This unit is part of Expert.':`Your ${A.limit} free lessons for today are done. The day resets at ${A.reset?new Date(A.reset*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'midnight UTC'} your time.`} The review and the chart tests are always open.</p>
+  <div class="bar"><a class="btn buy" href="/shop">${L.gate==='expert'?'Expert':'Pro'} in the shop</a><a class="btn" href="/learn?review=1">Review</a><a class="btn" href="/learn">The path</a></div></div>`);return}
  if(L.locked){setHtml($('learn-body'),`${crumb}<div class="lrn-goal"><h3>🔒 ${esc(L.title)}</h3><p class="lrn-goalp">${lrnText(L.summary||'')}</p>
   <p class="mut">${L.minutes} min · ${L.total} exercise${L.total===1?'':'s'} · locked: the path opens one lesson at a time.</p>
   <div class="bar"><a class="btn buy" href="/learn?l=${encodeURIComponent(L.locked.id)}">Finish “${esc(L.locked.title)}” first</a><a class="btn" href="/learn">The path</a></div></div>`);return}

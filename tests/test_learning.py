@@ -87,6 +87,38 @@ class LessonTests(unittest.TestCase):
         self.assertTrue(qs and all("answer" not in b and "why" not in b and "i" in b for b in qs))
         self.assertEqual(les["total"], len([b for b in les["body"] if "q" in b or "task" in b or "test" in b]))
 
+    def test_the_free_day_is_two_lessons_and_pro_lifts_it(self):
+        e, p = self.e, self.p
+
+        def pass_lesson(who, lid):
+            x = e._lesson_by_id[lid]
+            for k, kind in learning.exercises(x):
+                if kind == "q":
+                    who_ans = e.learn_answer(who, lid, k, 99)
+                    e.learn_answer(who, lid, k, who_ans["answer"])
+        pass_lesson(p, "stocks-shares")
+        pass_lesson(p, "exchanges-indices")
+        self.assertEqual(p.day_passes[e._learn_day()], 2)
+        a = e.allowance(p)
+        self.assertEqual((a["used"], a["limit"], a["tier"], a["limited"]), (2, learning.FREE_LESSONS_A_DAY, "free", True))
+        self.assertGreater(a["reset"], e.now)
+        les = e.lesson("cap-volume", p)                                            # a third, unstarted lesson: limited today
+        self.assertEqual(les["gate"], "limited")
+        q = next(k for k, kind in learning.exercises(e._lesson_by_id["cap-volume"]) if kind == "q")
+        self.assertEqual(e.learn_answer(p, "cap-volume", q, 0)["gate"], "limited")
+        self.assertIn("error", e.learn_answer(p, "cap-volume", q, 0))
+        self.assertNotIn("gate", e.lesson("stocks-shares", p))                      # passed lessons stay open as a recap
+        p.day_passes = {"1": 2}                                                     # another day: the allowance is fresh
+        self.assertNotIn("gate", e.lesson("cap-volume", p))
+        p.day_passes = {e._learn_day(): 2}
+        p.pro_until = e.now + 3600                                                  # Pro: no limit
+        self.assertEqual(e.tier_of(p), "pro")
+        self.assertNotIn("gate", e.lesson("cap-volume", p))
+        self.assertFalse(e.lessons_view(p)["allowance"]["limited"])
+        self.assertTrue(all(t["tier"] in ("free", "pro", "expert") for t in e.lessons_view(p)["tracks"]))
+        self.assertEqual(e.allowance(None)["tier"], "free")                         # a visitor is never gated
+        self.assertNotIn("gate", e.lesson("cap-volume"))
+
     def test_answering_earns_xp_and_passes_the_lesson_when_every_exercise_is_done(self):
         e, p = self.e, self.p
         les = e.lesson("stocks-shares", p)                                        # questions only

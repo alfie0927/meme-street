@@ -43,7 +43,8 @@ CHALLENGES = [          # this week's habits (LP11, 2026-11-07): the old challen
     {"id": "week_sized", "title": "Sized by the stop", "how": "Place 3 stops this week that risk under 2% of your account.",
      "period": "week", "target": 3, "reward": 30, "counter": "sized"},
 ]
-PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen", "drills", "passed", "ex", "xp", "xp_days", "goal", "tasks", "placed", "attempts", "xp_weeks", "stop_px", "r_log")
+PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen", "drills", "passed", "ex", "xp", "xp_days", "goal", "tasks", "placed", "attempts", "xp_weeks", "stop_px", "r_log", "day_passes")
+FREE_LESSONS_A_DAY = 2       # a free player finishes this many lessons a day; Pro lifts it, Expert adds the Expert units (rubric v2 A8)
 COIN_KINDS = {"next"}        # chart tests built to score 50%: never a weak spot (LP9)
 LEVELS = [(0, "Trainee"), (200, "Apprentice"), (600, "Trader"), (1500, "Analyst"), (3000, "Strategist"), (6000, "Master")]   # XP levels (LP14)
 GOALS = (20, 50, 100)        # the daily XP goals a player can pick
@@ -82,6 +83,7 @@ def init_player(p):
     p.attempts = []            # [day, skill, right] per exercise answered: a unit id or a chart-test kind (LP5, the newest 300)
     p.xp_weeks = {}            # ISO week -> XP earned that week (LP7, the weekly league; 8 weeks kept)
     p.stop_px = {}             # ticker -> {stop, entry, sh, risk} from the first stop on an open position: R at the close (LP9)
+    p.day_passes = {}          # UTC day number (str) -> lessons passed that day (the free day, rubric v2 A8; 60 days kept)
     p.r_log = []               # R multiples of closed positions that had a stop (the newest 100)
 
 
@@ -106,6 +108,7 @@ def load_player(p, x):
     p.placed = str(p.placed) if getattr(p, "placed", None) else None
     p.attempts = [[int(a[0]), str(a[1]), bool(a[2])] + ([str(a[3])] if len(a) > 3 and a[3] else []) for a in list(getattr(p, "attempts", None) or []) if len(a) in (3, 4)][-ATTEMPTS_MAX:]
     p.stop_px = {str(k): v for k, v in dict(getattr(p, "stop_px", None) or {}).items() if isinstance(v, dict)}
+    p.day_passes = {str(k): int(v) for k, v in dict(getattr(p, "day_passes", None) or {}).items()}
     p.r_log = [float(r) for r in list(getattr(p, "r_log", None) or [])][-100:]
     p.xp_weeks = {str(k): int(v) for k, v in dict(getattr(p, "xp_weeks", None) or {}).items()}
 
@@ -469,6 +472,10 @@ class LearningMixin:
         if lesson["id"] in p.passed or not ex or len(self._ex_done(p, lesson)) < len(ex):
             return 0
         p.passed[lesson["id"]] = self.now
+        day = self._learn_day()
+        p.day_passes[day] = p.day_passes.get(day, 0) + 1
+        for k in sorted(p.day_passes)[:-60]:
+            del p.day_passes[k]
         self._xp(p, XP_PASS)
         self._notify(p, f"Lesson passed: {lesson['title']} (+{XP_PASS} XP)")
         unit = [x for x in self.path_lessons if x["track"] == lesson["track"]]
@@ -545,6 +552,9 @@ class LearningMixin:
             picked = perm[choice] if isinstance(choice, int) and not isinstance(choice, bool) and 0 <= choice < len(perm) else None
             right = picked == b["answer"]
             out = {"right": right, "answer": perm.index(b["answer"]), "why": b["why"]}      # (the answer as a shown slot)
+        if p is not None and not review and self._lesson_gate(p, x):
+            return {"error": "Two lessons done today: back tomorrow, or Pro for the whole path" if self._lesson_gate(p, x) == "limited"
+                    else "This unit needs Expert", "gate": self._lesson_gate(p, x)}
         key = f"{lesson_id}:{i}"
         paid = p is not None and review and (self._paid_today(p, key) or key not in self._review_served.get(p.token, ()))
         self._attempt(p, x["track"], right, key)
@@ -622,6 +632,38 @@ class LearningMixin:
             p.placed = start["id"] if start else "all"
             out["passed"] = len(p.passed)
         return out
+
+    def tier_of(self, p):
+        """"expert", "pro" or "free": what the player's passes open (economy.is_pro / is_expert when the engine has them)."""
+        if p is None:
+            return "free"
+        is_expert, is_pro = getattr(self, "is_expert", None), getattr(self, "is_pro", None)
+        if is_expert and is_expert(p):
+            return "expert"
+        if is_pro and is_pro(p):
+            return "pro"
+        return "free"
+
+    def allowance(self, p):
+        """The free day (rubric v2 A8): lessons finished today against FREE_LESSONS_A_DAY, the tier, and when the day
+        resets (UTC midnight, as the goal and the streak)."""
+        tier = self.tier_of(p)
+        used = p.day_passes.get(self._learn_day(), 0) if p is not None else 0
+        return {"used": used, "limit": FREE_LESSONS_A_DAY, "tier": tier, "limited": tier == "free" and used >= FREE_LESSONS_A_DAY,
+                "reset": (int(self.now // 86400) + 1) * 86400}
+
+    def _lesson_gate(self, p, x):
+        """Why a player may not work on lesson `x` now: "limited" (the free day is used up and the lesson is not started),
+        "expert" (the unit needs Expert), or None. The placement, the review and chart practice are never gated."""
+        if p is None or x["id"] in p.passed:
+            return None
+        track = next((t for t in self.tracks if t["id"] == x["track"]), {})
+        tier = self.tier_of(p)
+        if track.get("tier") == "expert" and tier != "expert":
+            return "expert"
+        if tier == "free" and not p.ex.get(x["id"]) and p.day_passes.get(self._learn_day(), 0) >= FREE_LESSONS_A_DAY:
+            return "limited"
+        return None
 
     def placement_skip(self, p):
         """"Start from the beginning": the placement declined, so the path shows from now on (rubric v2 A1)."""
@@ -715,7 +757,10 @@ class LearningMixin:
                "xp": p.xp if p else 0, "level": level_of(p.xp if p else 0), "goals": list(GOALS), "streak": self.learn_streak(p) if p else 0, "placed": p.placed if p else None,
                "xp_rules": {"right": XP_RIGHT, "wrong": XP_WRONG, "pass": XP_PASS, "task": XP_TASK},
                "weak": self.weak_skills(p) if p else [], "league": self.league(p),
-               "today": p.xp_days.get(self._learn_day(), 0) if p else 0, "goal": p.goal if p else GOAL}
+               "today": p.xp_days.get(self._learn_day(), 0) if p else 0, "goal": p.goal if p else GOAL,
+               "allowance": self.allowance(p)}
+        for t in tracks:
+            t["tier"] = next((u.get("tier", "pro") for u in self.tracks if u["id"] == t["id"]), "pro")
         if p is not None:
             week = self._week_key()
             for c in self._challenges():
@@ -770,6 +815,10 @@ class LearningMixin:
             ids = [y["id"] for y in self.lessons]
             if x["id"] not in p.passed and exercises(x) and nid in ids and ids.index(x["id"]) > ids.index(nid):
                 out["locked"] = {"id": nid, "title": self._lesson_by_id[nid]["title"]}      # the lesson to finish first (rubric v2 A3)
+            gate = self._lesson_gate(p, x)
+            if gate:
+                out["gate"] = gate                                                       # "limited" (the free day) or "expert" (rubric v2 A8)
+                out["allowance"] = self.allowance(p)
         return out
 
     # ------------------------------------------------------------------ chart tests (drills.py)
@@ -867,7 +916,7 @@ class LearningMixin:
                 out["weak"] = self.weak_skills(p)
                 return out
             x = self._lesson_by_id.get(lesson_id) if lesson_id else None
-            if x and isinstance(i, int) and 0 <= i < len(x["body"]) and "test" in x["body"][i]:
+            if x and isinstance(i, int) and 0 <= i < len(x["body"]) and "test" in x["body"][i] and not self._lesson_gate(p, x):
                 done = p.ex.setdefault(lesson_id, [])
                 if right and i not in done:                # as for a question: only a right answer completes the card (rubric v2 A5)
                     done.append(i)
