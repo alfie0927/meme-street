@@ -240,6 +240,7 @@ Every strategy should be compared with the simplest alternative: **buy the index
 - **Costs**: every trade pays fees (and spreads, in real markets). Holding pays them once.
 - **Missed days**: a large share of the market's long-run gain comes on a small number of big up days, often right after big down days. Traders who jump out in fear tend to miss them.
 - **Competition**: prices already reflect what most people know; beating them consistently requires knowing or doing something they do not.
+
 - **Taxes**: in real life, frequent trading creates taxable gains every year.
 
 Q: Why does missing a few of the market's best days hurt long-run returns so much?

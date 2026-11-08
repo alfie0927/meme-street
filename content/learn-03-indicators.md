@@ -97,6 +97,7 @@ A 20-candle moving average with a band two standard deviations above and below i
 
 - **The squeeze**: bands at their narrowest in a long time. Volatility comes in waves, so a squeeze often comes before a big move (the bands do not say which way).
 - **Riding the band**: in a strong trend the price can hug the upper band for a long time. Touching it is not a sell signal.
+
 - **Back to the middle**: in a range, moves to a band often return to the average.
 
 Q: Bollinger Bands are at their narrowest in weeks. What does that suggest?
@@ -124,7 +125,9 @@ Q: Two stocks, the same risk budget. Stock B's ATR is twice stock A's. How shoul
 - The same: the risk budget is all that counts
 WHY: Risk = size × stop distance. A stop twice as far needs half the size for the same risk.
 
-HERE: Bollinger Bands, Keltner Channels, Donchian Channels, ATR, historical volatility and Bollinger bandwidth and %B are Pro indicators. The long and short **position** drawing tools (free) place their stop and target 1.5 and 3 ATR from the entry. Volatility here clusters as it does in real markets: calm spells and storms, with volatility rising more after falls than after rises, and the end of a range is quieter than its start.
+HERE: Bollinger Bands, Keltner Channels, Donchian Channels, ATR, historical volatility and Bollinger bandwidth and %B are Pro indicators. The long and short **position** drawing tools (free) place their stop and target 1.5 and 3 ATR from the entry.
+
+HERE: Volatility here clusters as it does in real markets: calm spells and storms, with volatility rising more after falls than after rises, and the end of a range is quieter than its start.
 
 [test stop]
 

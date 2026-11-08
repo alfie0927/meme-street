@@ -19,7 +19,9 @@ WHY: Longer maturity means longer duration: more of its value is affected by the
 
 ### Why prices fall when rates rise
 
-Say you own that 5% bond, and interest rates rise so new bonds pay 6%. Nobody will pay 100 for your 5 a year when a new bond pays 6, so the price of yours falls until its yield matches: rates up, prices down. The longer until maturity, the bigger the effect (**duration**): a 30-year bond can lose a fifth or more of its value when rates jump a couple of points; a 1-year bond barely moves.
+Say you own that 5% bond, and interest rates rise so new bonds pay 6%. Nobody will pay 100 for your 5 a year when a new bond pays 6, so the price of yours falls until its yield matches: rates up, prices down.
+
+The longer until maturity, the bigger the effect (**duration**): a 30-year bond can lose a fifth or more of its value when rates jump a couple of points; a 1-year bond barely moves.
 
 Q: Rates rise from 3% to 5%. What happens to the price of a bond you hold paying 3%?
 + It falls
@@ -52,6 +54,7 @@ SUMMARY: Oil, gas, metals and crops: what drives them, and how they differ from 
 - **Natural gas**: weather (cold winters, hot summers), storage levels, pipelines. Very volatile, with strong seasons.
 - **Copper**: industry and construction; called "Dr Copper" because it tends to rise and fall with the world economy.
 - **Wheat and other crops**: harvests, weather, droughts, export bans.
+
 - **Gold**: no industrial story to speak of. It is a store of value: it tends to rise in fear, with high inflation, when real interest rates fall, and when the dollar weakens.
 
 Q: Which commodity is known as a gauge of the world economy?

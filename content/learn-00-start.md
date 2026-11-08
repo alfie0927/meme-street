@@ -12,6 +12,12 @@ Meme Street is a practice stock market. The companies are fictional, the prices 
 - **Indices and funds**: the MSI 50 (the 50 largest companies), an index for each industry, six themed funds, and funds that move two or three times the market, up or down.
 - **Options** on every company and commodity.
 
+Q: You want one trade that moves with the whole market rather than with one company. What do you buy?
++ An index fund such as the MSI 50
+- A commodity such as gold, which tracks the market as a whole
+- The largest single company, since it leads the market
+WHY: An index fund holds many companies at once; one company's news is a small part of it.
+
 ### What it costs
 Every trade costs a fee of **0.1%** of its size, like a broker's commission. Buy 100 MB of a stock and sell it straight back and you have paid about 0.2 MB. There is no spread and no slippage on shares: you always get the price on the screen.
 
@@ -52,6 +58,12 @@ A trade has three prices: where you get in, where you admit you were wrong, and 
 ### 1. Pick a stock and read its chart
 Open a stock's page from the market table. Look at the chart on a few candle sizes: which way is it going, where has it turned before? The lessons in *Reading charts* cover this.
 
+Q: Before buying, you look at the chart on several candle sizes. What are you looking for?
++ The direction, and where the price has turned before
+- The exact second at which the price will start to rise
+- The number of other players holding the stock right now
+WHY: A chart tells you the trend and the levels. It never tells you the moment.
+
 ### 2. Decide where you are wrong before you buy
 If you buy because the price bounced off a level, the trade is wrong if the price falls back well below that level. That price is your **stop-loss**. Decide it first, before the price on the screen decides for you.
 
@@ -62,7 +74,9 @@ Q: When should you decide where your stop-loss goes?
 WHY: The stop is where the trade idea is wrong. Decide it while you are calm, before money is at stake.
 
 ### 3. Size the trade from the stop
-Under the order panel on a stock's page is **Position size and risk**. Type your stop, pick how much of your account you are willing to lose if it is hit (1% is a good start) and a target. It tells you how many MB to buy, what you lose at the stop and what you make at the target, and **Fill in the trade and the bracket** sets it all up for you.
+Under the order panel on a stock's page is **Position size and risk**. Type your stop, pick how much of your account you are willing to lose if it is hit (1% is a good start) and a target.
+
+It tells you how many MB to buy, what you lose at the stop and what you make at the target, and **Fill in the trade and the bracket** sets it all up for you.
 
 Q: You will risk 1% of a 1,000 MB account. The stop is 5% below your entry. How big can the position be?
 - 10 MB
@@ -95,6 +109,12 @@ Every listing, with its price, the change over the last 30 minutes (one game day
 
 ### A stock's page
 The chart with candle sizes from 30 seconds to a year, **indicators** (17 free, 32 more with Pro), **drawing tools** (lines, channels, Fibonacci, long and short position boxes), the order panel, the position-size tool, the company's description, financials, earnings history and news. The **Options** tab beside the chart has the option chain.
+
+Q: Where do you set an indicator or draw a level on a chart?
++ On the stock's page, above the order panel
+- On the market page, in the news widget beside the table
+- On the Calendar, next to the company's earnings date
+WHY: The chart with its indicators and drawing tools lives on each stock's page.
 
 ### Your money
 - **Holdings**: every open position, its stop-loss and take-profit, and your open orders.

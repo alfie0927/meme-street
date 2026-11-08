@@ -70,7 +70,9 @@ Q: You plan to hold a trade for a few hours. Which timeframe suits planning it?
 WHY: Plan on the timeframe that matches the holding period, with one up for context.
 
 ### Linear and log scale
-On a **linear** scale each price step is the same height: a move from 10 to 20 looks as big as 100 to 110. On a **log** scale equal **percentage** moves are the same height: 10 to 20 (+100%) looks as big as 100 to 200. Use log for long charts and for anything that has moved a lot, or a stock's early history looks flat and its recent moves enormous.
+On a **linear** scale each price step is the same height: a move from 10 to 20 looks as big as 100 to 110. On a **log** scale equal **percentage** moves are the same height: 10 to 20 (+100%) looks as big as 100 to 200.
+
+Use log for long charts and for anything that has moved a lot, or a stock's early history looks flat and its recent moves enormous.
 
 Q: A stock went from 2 to 4, then from 40 to 80. On a log scale, how do the two moves compare?
 + They look the same height
@@ -130,6 +132,7 @@ SUMMARY: Where prices tend to turn, why, and how to judge how strong a level is.
 - **Memory**: traders who bought at a level and saw it fall want to sell when they get their money back there (resistance). Those who missed a bounce want to buy the next time (support).
 - **Orders**: stop-losses and limit orders collect just beyond obvious levels.
 - **Round numbers**: 50, 100, 150 attract orders because people think in round numbers.
+
 - **The previous day's high, low and close**, and long moving averages, are watched by everyone.
 
 Q: A stock has bounced off 80 three times. What is 80?
@@ -215,6 +218,7 @@ Price tells you what happened; volume tells you how many people took part. The s
 - **Breakouts on high volume**: more likely to be real.
 - **New highs on falling volume**: fewer buyers are joining in; the trend may be tiring.
 - **Climax volume**: an enormous spike at the end of a long move, often marking the top or bottom (a blow-off or a panic).
+
 - **Volume drying up** in a range: the squeeze before the breakout.
 
 Q: In a healthy uptrend, how does volume usually behave?
@@ -283,7 +287,9 @@ Patterns are probabilities. Some complete and reach their target; some break out
 
 [chart pattern]
 
-HERE: Patterns form here at realistic rates, at the end of trends and in ranges, and they end three ways: they work (break out and run to about their measured move, a bit more than a third of the time), they bust (break out a little and turn back), or they fail before breaking out. A pattern that has broken out is right a little more often than not. The drawing tools include a head and shoulders tool and position boxes for planning the trade.
+HERE: Patterns form here at realistic rates, at the end of trends and in ranges, and they end three ways: they work (break out and run to about their measured move, a bit more than a third of the time), they bust (break out a little and turn back), or they fail before breaking out.
+
+HERE: A pattern that has broken out is right a little more often than not. The drawing tools include a head and shoulders tool and position boxes for planning the trade.
 
 ## Continuation patterns {continuation-patterns} [7]
 SUMMARY: Flags, triangles, channels and the cup and handle: pauses inside a trend.
@@ -335,6 +341,7 @@ A **gap** is a jump between one candle's close and the next one's open, with no 
 - **Common gap**: small, inside a range, usually filled quickly (the price comes back to the previous close).
 - **Breakaway gap**: out of a range on big news and volume, the start of a new move; often not filled for a long time.
 - **Runaway gap**: in the middle of a strong trend, as late buyers rush in.
+
 - **Exhaustion gap**: a last jump at the end of a trend, soon filled as the move collapses.
 
 Q: A stock gaps up 8% at the open on earnings, then spends the day falling back towards where it closed yesterday. What is this called?
@@ -403,4 +410,3 @@ Flicking through candle sizes until one confirms what you already want to do is 
 HERE: The chart's candle sizes are buttons beside the stock's name, and your drawings stay on the right prices and times when you switch between them, so a level drawn on the hourly shows on the 5-minute.
 
 [try /stock/CLDR?tf=1h] Open CloudRail on hourly candles, draw the nearest support, then switch to 5-minute candles and watch how the price behaves near it.
-

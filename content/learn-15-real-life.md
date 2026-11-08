@@ -16,6 +16,7 @@ Large studies of real accounts tell the same story again and again:
 
 - In a well-known study of every day trader in Brazil's futures market over several years, the large majority who kept at it lost money, and fewer than 1% earned more than the minimum wage.
 - Studies of Taiwan's market, one of the most active for day trading, found that fewer than 1% of day traders were reliably profitable year after year.
+
 - Brokers offering CFDs in Europe must publish the share of retail accounts that lose money: usually 60% to 80%.
 
 Q: What do large studies of real day traders find?
@@ -70,6 +71,7 @@ WHY: Guaranteed or absurd returns, urgency and strangers asking for money are th
 - **Pressure and urgency**: "only today", "spots are limited", "act now".
 - **Secrecy**: a "secret system" only they know, which they will sell you instead of using it.
 - **Unregulated firms**, or firms copying the name of a real one. Check the regulator's register yourself.
+
 - **Difficulty withdrawing**: fees, delays and excuses when you ask for your money back.
 - **Contact out of the blue**: messages on social media, dating apps, WhatsApp groups, cold calls.
 - **Screenshots of profits** and luxury lifestyles as proof.
@@ -80,6 +82,7 @@ WHY: Guaranteed or absurd returns, urgency and strangers asking for money are th
 - **Pump and dump**: promoters hype a tiny stock or token, then sell into the buying they created.
 - **Signal groups and "account managers"**: pay for tips or hand over your account; the fees are the business.
 - **Fake trading platforms**: a website shows growing "profits" in an account that never held real investments; withdrawals are impossible.
+
 - **Romance and "pig-butchering" scams**: a new online friend introduces an investment opportunity.
 - **Recovery scams**: after a loss, someone offers to recover your money for a fee.
 
@@ -151,6 +154,7 @@ SUMMARY: The skills that transfer to real markets, and the differences to rememb
 - **Indicators and drawing tools**: the same formulas as any trading platform.
 - **Risk management**: position sizing from the stop, R-multiples, drawdown maths, risk of ruin. These are identical.
 - **Orders**: stops, limits, brackets, and stops filling past their price in a gap.
+
 - **Reading the news and the calendar**: surprises against forecasts, earnings beats and misses.
 - **Options**: priced the way real options are, with real Greeks and an IV crush.
 - **Your own behaviour**: FOMO, revenge trading, moving stops. You will find these here, cheaply.

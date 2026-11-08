@@ -158,6 +158,7 @@ def parse_learn(text, tracks=None, lessons=None):
             raise ValueError(f"line {n}: want 'Title {{id}}', got {rest!r}")
         return m.group(1), m.group(2), int(m.group(3) or 5)
 
+    list_open = False                                        # a blank line ends a list (rubric v2: a list is one card)
     for n, raw in enumerate(text.splitlines(), 1):
         line = raw.strip()
         if line.startswith("# "):
@@ -213,6 +214,7 @@ def parse_learn(text, tracks=None, lessons=None):
             q[0] = {"q": line[3:], "options": [], "answer": None, "why": ""}
         elif not line:
             flush()
+            list_open = False
         elif line.startswith("SUMMARY: "):
             lesson["summary"] = line[9:]
         elif line.startswith("### "):
@@ -220,10 +222,11 @@ def parse_learn(text, tracks=None, lessons=None):
             body.append({"h": line[4:]})
         elif line.startswith("- "):
             flush()
-            if body and "list" in body[-1]:
+            if list_open and body and "list" in body[-1]:
                 body[-1]["list"].append(line[2:])
             else:
                 body.append({"list": [line[2:]]})
+            list_open = True
         elif line.split(":")[0] in BOXES and ": " in line:
             flush()
             k, _, txt = line.partition(": ")

@@ -26,6 +26,7 @@ WHY: A price has no ceiling, so neither does a short's loss.
 - **Unlimited loss**: a stock can only fall to zero (a 100% gain for a short), but it can rise without limit. A short at 50 that runs to 150 has lost twice its value.
 - **Borrow fees**: you pay to borrow the shares, every day you hold them. Hard-to-borrow stocks cost much more.
 - **Dividends**: a short pays the dividend to the lender.
+
 - **The market's drift**: over the long run markets rise, so a short works against the tide.
 - **Recalls and squeezes**: the lender can ask for the shares back, and a crowded short can be squeezed (next lesson).
 
@@ -45,7 +46,11 @@ WHY: Borrowed shares cost a fee, and dividends go to the lender.
 
 To profit from falling prices, to hedge a long position (long a company, short its industry index), and because a market where prices can only be bet upwards is a less honest market. Short sellers have exposed many frauds.
 
-HERE: Press **Sell** on a stock you do not hold and the button says **Short**. The amount you short is taken out of your cash and held as collateral; when you cover, you get it back plus your gain or minus your loss. A short pays a **borrow fee** every second it is open (more on a volatile stock, and more when many players are short the same stock: about 0.10% a real hour on gold, 0.14% on Novaxis, 0.27% on DOGO when few are short), pays any dividend that goes ex while it is open, and is closed by a **margin call** if your equity falls below the safety level for all your shorts. You cannot be long and short the same stock at once.
+HERE: Press **Sell** on a stock you do not hold and the button says **Short**. The amount you short is taken out of your cash and held as collateral; when you cover, you get it back plus your gain or minus your loss.
+
+HERE: A short pays a **borrow fee** every second it is open (more on a volatile stock, and more when many players are short the same stock: about 0.10% a real hour on gold, 0.14% on Novaxis, 0.27% on DOGO when few are short), pays any dividend that goes ex while it is open, and is closed by a **margin call** if your equity falls below the safety level for all your shorts.
+
+HERE: You cannot be long and short the same stock at once.
 
 [try /stock/DOGO] Open DOGO Inc and read the costs line under the trade buttons: it shows the borrow fee per hour.
 
@@ -131,7 +136,9 @@ WHY: Your money is a tenth of the position; a 10% fall loses all of it (here the
 
 Real brokers close you out before that, at the maintenance level.
 
-HERE: Leverage is part of **Pro**: 1x, 2x, 3x, 5x or 10x on any listing except the leveraged funds. Each position stands on its own margin: when its equity falls to **half the margin it started with**, it is closed at the market price (after a 25% move against you at 2x, 10% at 5x, 5% at 10x). The position box and the Holdings page show the leverage, the loan and **the price where it closes by itself**. The loan costs about 0.06% a real hour. A gap past that price takes the rest from your cash. Plain shorts have their own margin call (previous lesson).
+HERE: Leverage is part of **Pro**: 1x, 2x, 3x, 5x or 10x on any listing except the leveraged funds. Each position stands on its own margin: when its equity falls to **half the margin it started with**, it is closed at the market price (after a 25% move against you at 2x, 10% at 5x, 5% at 10x).
+
+HERE: The position box and the Holdings page show the leverage, the loan and **the price where it closes by itself**. The loan costs about 0.06% a real hour. A gap past that price takes the rest from your cash. Plain shorts have their own margin call (previous lesson).
 
 ## Why leverage magnifies losses {leverage-maths} [5]
 SUMMARY: Leverage changes the size of the bet, never the odds, and makes recovery harder.

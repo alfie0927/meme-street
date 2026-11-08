@@ -40,7 +40,9 @@ WHY: The limit protects the price but removes the guarantee of getting out.
 | Stop | yes, once triggered | no |
 | Stop-limit | no | yes, if it fills |
 
-HERE: You can place **limit buys** (the price falls to your trigger), **limit sells** (it rises to your trigger; with no shares, this opens a short), **stop-losses** and **take-profits** (they only close a position, never open or flip one) and **brackets**. Every order is a market trade that happens later: it fills at the market price of the moment it triggers, which in a jump can be past your trigger. There are no stop-limit or stop-entry orders. Up to 20 open orders (6 in one stock), each for up to 7 days. Orders show on the chart as lines with tags.
+HERE: You can place **limit buys** (the price falls to your trigger), **limit sells** (it rises to your trigger; with no shares, this opens a short), **stop-losses** and **take-profits** (they only close a position, never open or flip one) and **brackets**.
+
+HERE: Every order is a market trade that happens later: it fills at the market price of the moment it triggers, which in a jump can be past your trigger. There are no stop-limit or stop-entry orders. Up to 20 open orders (6 in one stock), each for up to 7 days. Orders show on the chart as lines with tags.
 
 [try /stock/NVXA] Open the order panel under Novaxis's chart and look at each kind of order (you do not have to place one).
 
@@ -87,7 +89,9 @@ HERE: The order panel has a one-click **bracket**. On the Holdings page, every p
 ## Trailing stops, partial exits and scaling {trailing-scaling} [6]
 SUMMARY: Letting winners run, taking some profit, and building or reducing a position in steps.
 ### Trailing stops
-A **trailing stop** follows the price: in a long trade it moves up as the price rises, staying a set distance (a percentage, a few ATRs) below the high, and never moves down. It locks in profit while leaving the trade room to run. The trade-off: too tight and an ordinary pullback stops you out of a good trend; too loose and you give back a lot before it triggers.
+A **trailing stop** follows the price: in a long trade it moves up as the price rises, staying a set distance (a percentage, a few ATRs) below the high, and never moves down.
+
+It locks in profit while leaving the trade room to run. The trade-off: too tight and an ordinary pullback stops you out of a good trend; too loose and you give back a lot before it triggers.
 
 Q: You are long from 100, the price is 120 and your trailing stop is 8% below the high. Where is it?
 + About 110.40

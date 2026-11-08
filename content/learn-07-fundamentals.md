@@ -51,6 +51,7 @@ SUMMARY: The handful of numbers worth checking first, and what they tell you.
 
 - **Revenue growth**: is the business getting bigger? Fast growth is what investors pay most for.
 - **Margins**: how much of each sale is kept. **Net margin** = net income ÷ revenue. A 25% margin keeps 25p of every pound; 3% keeps 3p. Rising margins mean the business is getting more efficient or more powerful; shrinking ones mean costs or competition are biting.
+
 - **EPS (earnings per share)** = net income ÷ shares outstanding. The profit attributable to each share, and the number earnings reports are judged on.
 - **Debt**: borrowed money that must be repaid with interest whatever happens. Manageable debt helps a company grow; too much can sink it in a bad year.
 - **Cash**: the cushion. Cash minus debt (**net cash**, or net debt if negative) says how much room a company has.
@@ -167,7 +168,9 @@ Q: Why do buybacks raise EPS?
 - They cut costs
 WHY: Cancelling shares means each remaining share's slice of the profit is bigger.
 
-HERE: Dividend payers pay once a quarter, declared with the earnings report, which says whether the dividend was raised, cut or suspended. About 5 minutes later, in the regular session, the stock goes **ex-dividend**: holders receive it, shorts pay it, and the price drops by the dividend, so holding through the date has no expected gain. Companies announce **buybacks** (the share count shrinks at the next report) and **public offerings** of 1 to 4% new shares (which raise the share count, lower EPS, and do not move the price on their own).
+HERE: Dividend payers pay once a quarter, declared with the earnings report, which says whether the dividend was raised, cut or suspended. About 5 minutes later, in the regular session, the stock goes **ex-dividend**: holders receive it, shorts pay it, and the price drops by the dividend, so holding through the date has no expected gain.
+
+HERE: Companies announce **buybacks** (the share count shrinks at the next report) and **public offerings** of 1 to 4% new shares (which raise the share count, lower EPS, and do not move the price on their own).
 
 ## Earnings season: guidance, beats and misses {earnings} [7]
 SUMMARY: How results are judged against forecasts, why prices react to surprises, and "buy the rumour, sell the news".
@@ -215,7 +218,9 @@ Q: A takeover rumour lifts a stock 15% over a week. The deal is confirmed and th
 - Confirmations always lower prices
 WHY: When news is expected, buyers act early; on confirmation they take their profit.
 
-HERE: Companies report every quarter (about every 46 real hours), only in pre-market or after-hours. Three game days before, analysts publish a **forecast EPS**, shown in *Upcoming events* and on the Calendar. The report says whether the company **beat, matched or missed**, and the price reacts to the size of the surprise: often 2.5 to 4 times an ordinary day's move. After a big surprise the price keeps drifting the same way for about three game days. A company's page lists every past report and the stories that drove it: those stories moved the price when they broke, so the report mostly confirms them.
+HERE: Companies report every quarter (about every 46 real hours), only in pre-market or after-hours. Three game days before, analysts publish a **forecast EPS**, shown in *Upcoming events* and on the Calendar. The report says whether the company **beat, matched or missed**, and the price reacts to the size of the surprise: often 2.5 to 4 times an ordinary day's move.
+
+HERE: After a big surprise the price keeps drifting the same way for about three game days. A company's page lists every past report and the stories that drove it: those stories moved the price when they broke, so the report mostly confirms them.
 
 [try /calendar] Open the calendar, find a company reporting soon and look up its forecast EPS.
 
@@ -232,9 +237,11 @@ WHY: Banks are valued on book value and rates, software on growth. A P/E only me
 
 - **Technology and software**: high growth and high margins, valued on growth: high P/E and P/S are normal. Very sensitive to interest rates, because much of their value lies far in the future.
 - **Banks and insurers**: valued on their book value and returns on it. They often **gain** when interest rates rise (they earn more on loans).
+
 - **Utilities and telecoms**: steady, regulated, high dividends, low growth. Valued like bonds: they suffer when rates rise.
 - **Energy and materials**: profits swing with oil, gas and metal prices. Valued on the cycle: a low P/E at the top of a cycle can be a trap.
 - **Consumer staples** (food, household goods): steady demand in good times and bad. **Defensive**: they hold up in recessions.
+
 - **Consumer discretionary** (cars, travel, luxury): **cyclical**: booms and busts with the economy.
 - **Real estate (REITs)**: valued on rental income and the value of the property; sensitive to rates.
 - **Crypto and young growth companies**: valued on hope and adoption; the most volatile.

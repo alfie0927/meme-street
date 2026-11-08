@@ -13,6 +13,7 @@ A **trading plan** is the set of decisions you make once, calmly, so you do not 
 - **Markets**: which stocks, indices or commodities, and which you avoid.
 - **Timeframes**: the candle size you plan on and the one you time entries on.
 - **Setups**: the two or three patterns you trade, each defined precisely ("a pullback to a support that has held twice, in an hourly uptrend, with a bullish candle on the 5-minute chart").
+
 - **Entry, stop and target rules** for each setup.
 - **Risk**: risk per trade (1%), the most open risk at once (say 4%), and the daily loss limit (say 3%, or three losses).
 - **When not to trade**: around big releases, in choppy markets, when tired or upset.

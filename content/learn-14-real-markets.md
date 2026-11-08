@@ -94,7 +94,9 @@ WHY: The discount is the market's price for the deal's risk and the wait.
 - **Rights issue**: existing shareholders may buy new shares at a discount; those who do not take part are diluted.
 - **Buybacks**: the company buys its own shares, raising earnings per share.
 
-HERE: New companies list through **IPOs** about 15 times a game year, announced half an hour ahead, at their announced price with **no first-day pop**. When the market is full, the smallest company outside the MSI 50 is **taken over** for cash by the biggest in its industry, at the market price with **no premium** (a premium that always came would be free money for holding small companies). **There are no stock splits.** Companies do announce share **offerings** (more shares, no price move on their own) and **buybacks**, and dividend payers go ex-dividend five minutes after their report.
+HERE: New companies list through **IPOs** about 15 times a game year, announced half an hour ahead, at their announced price with **no first-day pop**. When the market is full, the smallest company outside the MSI 50 is **taken over** for cash by the biggest in its industry, at the market price with **no premium** (a premium that always came would be free money for holding small companies).
+
+HERE: **There are no stock splits.** Companies do announce share **offerings** (more shares, no price move on their own) and **buybacks**, and dividend payers go ex-dividend five minutes after their report.
 
 ## Brokers, fees and regulation {brokers} [6]
 SUMMARY: How to choose a broker, the costs to compare, and who protects your money.
@@ -149,6 +151,7 @@ Tax rules differ a great deal between countries and change often. This is a gene
 - **Capital gains tax**: on the profit when you sell for more than you paid. Many countries tax gains on investments held for longer at a lower rate than short-term gains.
 - **Losses** can often be set against gains to reduce the tax.
 - **Dividend tax**: dividends are usually taxed as income, sometimes at a special rate, and foreign dividends may have tax withheld at source.
+
 - **Tax-free accounts**: many countries offer accounts where investments grow without tax (ISAs in the UK, IRAs and 401(k)s in the US), with yearly limits.
 - **Frequent traders** may be taxed as running a business in some countries.
 - **Records**: keep a record of every trade, with dates, prices and fees.

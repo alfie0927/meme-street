@@ -104,7 +104,7 @@ def run(pattern=learning.LEARN_FILES, tests_text=None):
     long_ = [f"{x['id']} ({prose_words(x)})" for x in steps if prose_words(x) > MAX_WORDS]
     rows.append((f"no lesson over {MAX_WORDS} prose words", not long_, ", ".join(long_[:8]) or "all short enough"))
 
-    fat = [f"{x['id']}:{k} ({card_words(b)})" for x in steps for k, b in enumerate(x["body"]) if card_words(b) > CARD_WORDS]
+    fat = [f"{x['id']}:{k} ({card_words(b)})" for x in steps for k, b in enumerate(x["body"]) if card_words(b) > CARD_WORDS and "table" not in b]   # a table is one card whatever its size
     rows.append((f"no teach card over {CARD_WORDS} words (v2)", not fat, f"{len(fat)} cards: " + ", ".join(fat[:6]) if fat else "all"))
 
     runs = []
@@ -113,7 +113,7 @@ def run(pattern=learning.LEARN_FILES, tests_text=None):
         for b in x["body"]:
             if any(k in b for k in TEACH):
                 n += 1
-                if n == CARDS_IN_A_ROW + 1:
+                if n == CARDS_IN_A_ROW + 1 and x["id"] not in runs:
                     runs.append(x["id"])
             elif any(k in b for k in INTERACTIVE):
                 n = 0

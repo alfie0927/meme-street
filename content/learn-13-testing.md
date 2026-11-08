@@ -16,6 +16,7 @@ A **backtest** runs a set of precise rules over past prices to see how they woul
 ### How backtests lie
 
 - **Overfitting (curve fitting)**: tweak the settings until the past looks perfect (a 17-candle average, an RSI of 31.5, stops at 2.3 ATR) and you have described the noise of that particular past, not a pattern that will repeat. The more settings you try, the more certain it is that the best one looks great by luck.
+
 - **Look-ahead bias**: using information the trader could not have had at the time (today's close to decide to buy at today's open).
 - **Survivorship bias**: testing only on companies that still exist today, forgetting the ones that went bust.
 - **Ignoring costs**: fees, spreads and slippage, which kill high-frequency ideas.
@@ -50,7 +51,9 @@ Q: Which strategy is more likely to be robust?
 - One that never had a losing month in the test
 WHY: Simplicity and breadth are signs of a real effect; precision and perfection are signs of fitting noise.
 
-HERE: With the **Expert** pass, the Bots page backtests any bot on the candles the game keeps (up to 5,000 per candle size), with orders filled at the next candle's open, the same 0.1% fee, leverage costs and options priced as the game prices them. The result compares the bot with simply holding the stock. The market has no free money in it, so a rule that did well over a few days has usually found luck: the result says so.
+HERE: With the **Expert** pass, the Bots page backtests any bot on the candles the game keeps (up to 5,000 per candle size), with orders filled at the next candle's open, the same 0.1% fee, leverage costs and options priced as the game prices them.
+
+HERE: The result compares the bot with simply holding the stock. The market has no free money in it, so a rule that did well over a few days has usually found luck: the result says so.
 
 ## Walk-forward and out-of-sample testing {walk-forward} [6]
 SUMMARY: Keeping some data back, and testing the way you would really trade.

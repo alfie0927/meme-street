@@ -11,6 +11,7 @@ An **option** is a contract that gives its buyer the **right, but not the obliga
 - A **put** is the right to **sell** at the strike. It pays off if the price ends **below** the strike.
 - The **strike** is the fixed price.
 - The **expiry** is the date the right ends.
+
 - The **premium** is what you pay for the option, up front. For a buyer it is the most you can lose.
 
 ### At expiry
@@ -48,7 +49,9 @@ WHY: One contract is on 100 shares: 100 × 2.40.
 - **Insurance**: a put protects shares you own against a fall.
 - **Betting on volatility**, not only direction (later lessons).
 
-HERE: Every company and commodity has options, for every player, free ones included. A stock's **Options** tab shows five expiries (the next regular close and 2, 7, 30 and 90 game days later), 13 strikes around the price, calls on the left and puts on the right, with a bid and an ask. One contract is on 100 shares; you buy whole contracts at the ask and sell at the bid, with the usual 0.1% fee. Click any option to see its details and a profit-or-loss chart at expiry.
+HERE: Every company and commodity has options, for every player, free ones included. A stock's **Options** tab shows five expiries (the next regular close and 2, 7, 30 and 90 game days later), 13 strikes around the price, calls on the left and puts on the right, with a bid and an ask.
+
+HERE: One contract is on 100 shares; you buy whole contracts at the ask and sell at the bid, with the usual 0.1% fee. Click any option to see its details and a profit-or-loss chart at expiry.
 
 [try /stock/NVXA] Open Novaxis's Options tab, click a call near the price, and read its breakeven and its profit-or-loss chart.
 
@@ -113,7 +116,9 @@ The **Greeks** measure how an option's price changes when one thing changes and 
 
 ### Delta
 
-How much the option moves for a 1-point move in the stock. A call's delta is between 0 and 1; a put's between 0 and -1. An at-the-money call has a delta of about 0.5: it moves about half as much as the stock. Delta is also roughly the chance of finishing in the money. A contract with a delta of 0.4 moves like 40 shares.
+How much the option moves for a 1-point move in the stock. A call's delta is between 0 and 1; a put's between 0 and -1.
+
+An at-the-money call has a delta of about 0.5: it moves about half as much as the stock. Delta is also roughly the chance of finishing in the money. A contract with a delta of 0.4 moves like 40 shares.
 
 Q: A call has a delta of 0.6. The stock rises 2. Roughly how much does the call gain?
 + 1.2
@@ -200,7 +205,9 @@ WHY: Being right on direction is not enough if the move is smaller than expected
 
 At-the-money options tell you the move the market expects: roughly, the price of an at-the-money straddle (a call plus a put) is the expected size of the move by expiry.
 
-HERE: IV here comes from what the stock has really been doing (its realised volatility, the bigger of a short and a long window), scaled by the current calm or storm, plus a 15% premium. Ordinary stocks have a put skew, the wildest a call skew, commodities none. When a report falls before an expiry, that expiry's IV includes the earnings jump, and it vanishes once the report is out: the **IV crush**. The Options tab shows each expiry's IV and the move the options expect.
+HERE: IV here comes from what the stock has really been doing (its realised volatility, the bigger of a short and a long window), scaled by the current calm or storm, plus a 15% premium. Ordinary stocks have a put skew, the wildest a call skew, commodities none.
+
+HERE: When a report falls before an expiry, that expiry's IV includes the earnings jump, and it vanishes once the report is out: the **IV crush**. The Options tab shows each expiry's IV and the move the options expect.
 
 ## Option strategies {option-strategies} [9]
 SUMMARY: Covered calls, protective puts, spreads, straddles and strangles, and iron condors.
@@ -255,7 +262,9 @@ Q: Who collects time decay?
 - Nobody
 WHY: Time value melts in the seller's favour; buyers pay it.
 
-HERE: On Meme Street you can **buy** calls and puts and sell back what you hold; you cannot sell (write) options you do not own. So **protective puts**, long calls and puts, **long straddles** and **long strangles** can all be built here; covered calls, spreads that sell an option, and iron condors need a real broker. A check on the engine found that buying straddles and strangles at random loses on average, whatever the expiry and the mood, as theory says.
+HERE: On Meme Street you can **buy** calls and puts and sell back what you hold; you cannot sell (write) options you do not own. So **protective puts**, long calls and puts, **long straddles** and **long strangles** can all be built here; covered calls, spreads that sell an option, and iron condors need a real broker.
+
+HERE: A check on the engine found that buying straddles and strangles at random loses on average, whatever the expiry and the mood, as theory says.
 
 ## Exercise and assignment: European and American {exercise} [5]
 SUMMARY: When an option can be used, what happens at expiry, and cash settlement.
@@ -298,7 +307,9 @@ WHY: Cash settlement pays the intrinsic value: 58 - 50.
 
 In-the-money options are usually exercised automatically; out-of-the-money ones expire worthless.
 
-HERE: Options here are **European and cash-settled**: no shares ever change hands. At expiry an in-the-money contract pays its intrinsic value (times 100) into your cash with no fee, and an out-of-the-money one expires worthless. Before then you can sell it back at the bid at any time, which is how you take a profit early. A contract can be bought until a minute before it expires.
+HERE: Options here are **European and cash-settled**: no shares ever change hands. At expiry an in-the-money contract pays its intrinsic value (times 100) into your cash with no fee, and an out-of-the-money one expires worthless.
+
+HERE: Before then you can sell it back at the bid at any time, which is how you take a profit early. A contract can be bought until a minute before it expires.
 
 ## Futures: contracts, margin, contango and backwardation {futures} [6]
 SUMMARY: Agreements to buy or sell later, how their margin works, and the shape of a futures curve.
@@ -347,7 +358,9 @@ SUMMARY: Contracts for difference, swaps in one paragraph, and why leveraged and
 
 ### CFDs (contracts for difference)
 
-A contract with a broker that pays the change in an asset's price, without owning the asset. Leveraged, available long or short, with overnight financing charges. Popular with retail traders outside the US (where they are banned). Regulators require brokers to publish the share of retail accounts that lose money on CFDs, and it is usually between 60% and 80%. You are trading against the broker, and the leverage is the danger.
+A contract with a broker that pays the change in an asset's price, without owning the asset. Leveraged, available long or short, with overnight financing charges. Popular with retail traders outside the US (where they are banned).
+
+Regulators require brokers to publish the share of retail accounts that lose money on CFDs, and it is usually between 60% and 80%. You are trading against the broker, and the leverage is the danger.
 
 Q: Why are CFDs risky for beginners?
 + They are leveraged, so small moves make big gains and losses, and most retail accounts lose

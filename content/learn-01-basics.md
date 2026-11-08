@@ -36,7 +36,9 @@ Q: What does a share represent?
 - A promise of a fixed yearly return
 WHY: Shares are ownership. A loan is a bond, and nothing about a share is fixed or promised.
 
-HERE: About 15 new companies list in a game year, from every industry and of every size. Each is announced on the news wire half an hour before it trades, and lists at its announced price: there is no first-day pop to chase. Companies also leave: when the market is full, the smallest company outside the MSI 50 is bought by the biggest in its industry, for cash at the market price.
+HERE: About 15 new companies list in a game year, from every industry and of every size. Each is announced on the news wire half an hour before it trades, and lists at its announced price: there is no first-day pop to chase.
+
+HERE: Companies also leave: when the market is full, the smallest company outside the MSI 50 is bought by the biggest in its industry, for cash at the market price.
 
 [try /] Open the market page, pick a company that interests you and read its description on its stock page.
 
@@ -71,7 +73,15 @@ WHY: The fund holds the whole basket, so one share spreads your money across all
 ### Leveraged and inverse funds
 Some funds aim to move two or three times the index each day, or the opposite way. They are tools for short-term bets, not for holding: the *Derivatives* track explains why they lose value over time in a choppy market.
 
-HERE: The **MSI 50** is the market's index: the 50 largest companies, weighted by market value and re-ranked every game day. There are **21 industry indices** (XTECH, XFINA, XENER...), six **themed funds** that weight their members equally (AIFX for AI and cloud, GRNX clean energy, DIVX dividend payers, FINX fintech and crypto, SPCX space, FRNT the imaginary industries), and four leveraged funds on the MSI 50: **2LMSI** and **3LMSI** (two and three times), **2SMSI** and **3SMSI** (two and three times the opposite). A fund's page lists its holdings and their weights.
+HERE: The **MSI 50** is the market's index: the 50 largest companies, weighted by market value and re-ranked every game day. There are **21 industry indices** (XTECH, XFINA, XENER...), six **themed funds** that weight their members equally (AIFX for AI and cloud, GRNX clean energy, DIVX dividend payers, FINX fintech and crypto, SPCX space, FRNT the imaginary industries), and four leveraged funds on the MSI 50:
+
+HERE: Q: The MSI 50 is re-ranked every game day. What decides which companies are in it?
++ Market value: the 50 largest
+- Trading volume over the last game day, the 50 busiest stocks
+- The share price alone, the 50 most expensive shares
+WHY: The MSI 50 is weighted and chosen by market value, like most big indices.
+
+**2LMSI** and **3LMSI** (two and three times), **2SMSI** and **3SMSI** (two and three times the opposite). A fund's page lists its holdings and their weights.
 
 [try /stock/MSI] Open the MSI 50 and look at its holdings: which company has the biggest weight?
 
@@ -141,7 +151,9 @@ Q: Who usually earns the spread?
 - The company whose shares are being traded, as a small dividend
 WHY: Market makers quote both sides and earn the difference, in exchange for always being there to trade.
 
-HERE: Shares here have **no spread**: you buy and sell at the same displayed price, and the only cost is the 0.1% fee each way. **Options do have a bid and an ask**, as on a real exchange, about 6% of the option's value apart (wider, as a share, for cheap far-out contracts): you buy at the ask and sell at the bid. Open a stock's **Options** tab to see them.
+HERE: Shares here have **no spread**: you buy and sell at the same displayed price, and the only cost is the 0.1% fee each way.
+
+HERE: **Options do have a bid and an ask**, as on a real exchange, about 6% of the option's value apart (wider, as a share, for cheap far-out contracts): you buy at the ask and sell at the bid. Open a stock's **Options** tab to see them.
 
 [try /stock/NVXA] Open the Options tab on Novaxis and compare an option's bid and ask.
 
@@ -185,10 +197,24 @@ HERE: Every headline is on the news wire as it breaks, and a company's page keep
 SUMMARY: When markets trade, why the open and the close are busy, and Meme Street's 30-minute day.
 Real exchanges have a **regular session** (New York: 9:30 to 16:00) and quieter **extended hours** before it (pre-market) and after it (after-hours). Fewer people trade in extended hours, so prices can jump on small orders and spreads are wider.
 
+Q: Why are prices jumpier in extended hours in a real market?
++ Fewer people trade, so small orders move prices and spreads widen
+- The rules allow bigger moves after hours than in the regular session
+- Companies only report their results then
+WHY: Thin trading means less liquidity: each order matters more.
+
 ### The shape of a day
 - **The open** is the busiest moment: orders that piled up overnight arrive at once, and the price often **gaps** away from the last close.
 - **The middle** of the day is calmer.
 - **The close** picks up again, as funds trade to match the closing price.
+
+Q: Which part of a real trading day is usually the busiest?
++ The open, when overnight orders arrive at once
+- The middle of the day, when most traders are at their desks
+- The last hour before the close, when the funds have finished for the day
+WHY: Overnight orders and news all arrive at the open; the middle of the day is the quiet part.
+
+Companies usually report earnings **outside** the regular session, so the reaction shows up as a gap at the next open.
 
 Q: When do companies here report their earnings?
 - In the middle of the regular session
@@ -196,21 +222,16 @@ Q: When do companies here report their earnings?
 - At random times
 WHY: As in real markets, reports come outside the regular session, so the reaction shows at the next open.
 
+### Meme Street's day
+HERE: A game day is 30 real minutes, on the real clock, the same for everyone: **pre-market** for 5 minutes (:00 to :05 and :30 to :35), the **regular session** for 20 (:05 to :25 and :35 to :55) and **after-hours** for 5. Trading never stops: pre-market and after-hours are just thin, with moves about a third of their usual size.
+
 Q: How long is Meme Street's regular session in each 30-minute game day?
 - 5 minutes
 + 20 minutes
 - 30 minutes
 WHY: 5 minutes of pre-market, 20 of regular session, 5 of after-hours.
 
-Q: Why are prices jumpier in extended hours in a real market?
-+ Fewer people trade, so small orders move prices and spreads widen
-- The rules allow bigger moves after hours than in the regular session
-- Companies only report their results then
-WHY: Thin trading means less liquidity: each order matters more.
-
-Companies usually report earnings **outside** the regular session, so the reaction shows up as a gap at the next open.
-
-HERE: A game day is 30 real minutes, on the real clock, the same for everyone: **pre-market** for 5 minutes (:00 to :05 and :30 to :35), the **regular session** for 20 (:05 to :25 and :35 to :55) and **after-hours** for 5. Trading never stops: pre-market and after-hours are just thin, with moves about a third of their usual size. The regular session opens with a burst and an **opening jump**, calms down, and picks up again into the close. Earnings come out only in pre-market or after-hours. The header shows the session and a countdown, and a coloured banner marks the quiet sessions.
+HERE: The regular session opens with a burst and an **opening jump**, calms down, and picks up again into the close. Earnings come out only in pre-market or after-hours. The header shows the session and a countdown, and a coloured banner marks the quiet sessions.
 
 TIP: The sessions change **how much** prices move, never which way: the open is no more likely to go up than down.
 
@@ -222,6 +243,12 @@ When prices move too far, too fast, real exchanges hit the brakes.
 ### A halt in one stock
 
 A stock can be **halted** when news is pending (the company asks for time to publish something important) or when the price moves beyond set limits within minutes (in the US, the *limit up, limit down* bands). Trading stops for a few minutes, then reopens, often at a very different price.
+
+Q: A company asks the exchange for time to publish important news. What happens to its stock?
++ Trading in it is halted until the news is out
+- Its price is frozen but trading carries on at that price
+- The exchange publishes the news itself and trading continues
+WHY: A news-pending halt stops trading so nobody deals before the news is public.
 
 ### Market-wide circuit breakers
 

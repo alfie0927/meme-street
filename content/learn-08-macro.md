@@ -44,7 +44,9 @@ Q: Inflation comes in at 5% against a forecast of 3%. What does the market now e
 - Nothing: central banks ignore any single release
 WHY: Hot inflation means tighter money, and prices move on that expectation within seconds.
 
-HERE: The economy here has growth, unemployment, inflation and a **policy rate** set by *the Reserve Board*. The board follows a rule: it raises rates when inflation runs above target or the economy runs hot, and cuts when they cool. Rate decisions come eight times a game year (about every 23 real hours), priced in advance as a probability ("a 0.25-point rise expected (72%)"). Consumer prices (CPI) are published about every 15 real hours. All of it is on the **Calendar**.
+HERE: The economy here has growth, unemployment, inflation and a **policy rate** set by *the Reserve Board*. The board follows a rule: it raises rates when inflation runs above target or the economy runs hot, and cuts when they cool.
+
+HERE: Rate decisions come eight times a game year (about every 23 real hours), priced in advance as a probability ("a 0.25-point rise expected (72%)"). Consumer prices (CPI) are published about every 15 real hours. All of it is on the **Calendar**.
 
 [try /calendar] Find the latest CPI figure and the policy rate on the calendar page.
 
@@ -56,6 +58,7 @@ Higher interest rates pull share prices down through several channels:
 - **Discounting**: a share is worth its future profits in today's money. Higher rates make future money worth less today, so companies whose profits lie far in the future (young growth companies) lose the most value.
 - **Competition**: when savings accounts and bonds pay 5%, shares have to offer more to attract money.
 - **Costs**: companies with debt pay more interest; consumers with mortgages and loans spend less.
+
 - **Growth**: higher rates slow the economy, and profits with it.
 
 Lower rates work the other way, which is why markets often rally when a central bank turns dovish.
@@ -126,7 +129,9 @@ Q: Why can a very strong jobs report make shares fall?
 - Reports are always followed by falls
 WHY: Strong data can mean the central bank tightens, which weighs on share prices.
 
-HERE: Releases come on a fixed calendar: **weekly jobless claims** every 7 game days; the **PMI, jobs report, CPI and retail sales** every 30.4 game days (about 15 real hours); **GDP** every quarter; the **rate decision** eight times a game year. Each comes 150 seconds into its game day (the rate decision later), with a forecast published days before. A strong figure is read both as good for growth and as pressure for higher rates.
+HERE: Releases come on a fixed calendar: **weekly jobless claims** every 7 game days; the **PMI, jobs report, CPI and retail sales** every 30.4 game days (about 15 real hours); **GDP** every quarter; the **rate decision** eight times a game year.
+
+HERE: Each comes 150 seconds into its game day (the rate decision later), with a forecast published days before. A strong figure is read both as good for growth and as pressure for higher rates.
 
 ## Why the surprise moves prices {surprise} [5]
 SUMMARY: Forecasts, consensus, and why markets move on the difference.
@@ -223,7 +228,9 @@ WHY: People keep buying food, power and medicine in bad times.
 
 Rotation is a tendency, not a timetable, and the cycle is only obvious in hindsight.
 
-HERE: The market here moves through hidden phases (bull, sideways, correction, bear and recovery) with realistic lengths: bull markets last longest, corrections are short and sharp, bear markets are deep. The economy shifts the odds: hot inflation with tight money makes corrections and bear markets likelier, shrinking growth a bear market, strong growth a bull market. Nothing on the site tells you the phase; you read it from the charts and the data, as in real life. Deep falls can end with a **panic low**: a sudden plunge on huge volume, a rebound, and a recovery.
+HERE: The market here moves through hidden phases (bull, sideways, correction, bear and recovery) with realistic lengths: bull markets last longest, corrections are short and sharp, bear markets are deep. The economy shifts the odds: hot inflation with tight money makes corrections and bear markets likelier, shrinking growth a bear market, strong growth a bull market.
+
+HERE: Nothing on the site tells you the phase; you read it from the charts and the data, as in real life. Deep falls can end with a **panic low**: a sudden plunge on huge volume, a rebound, and a recovery.
 
 ## Risk-on, risk-off and safe havens {risk-on-off} [5]
 SUMMARY: The market's mood swings, and where money hides when it is scared.
