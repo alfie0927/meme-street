@@ -1969,7 +1969,7 @@ The market's own checks are `python tools/chart_check.py` and `python tools/real
 
 ### Which check when
 
-The Learn section has its own loop (`docs/learn-loop/`): `LOOP.md` is one iteration (measure with `tools/learn_check.py` and the learning tests, walk through as a simulated learner, fix one finding, restart, commit, ledger), `RUBRIC.md` what right means, `LEDGER.md` what each iteration did.
+The Learn section has its own loop (`docs/learn-loop/`): `LOOP.md` is one iteration (measure with `tools/learn_check.py` and the learning tests, walk through as a simulated learner, fix one finding, restart, commit, ledger), `RUBRIC.md` what right means, `LEDGER.md` what each iteration did. Failsafes stop the run (a `STOPPED` ledger row) after two failed iterations in a row, a finding that comes back, three iterations without progress, environment trouble, twelve iterations or four hours.
 
 | You changed... | Run |
 |---|---|

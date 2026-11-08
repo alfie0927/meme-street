@@ -37,6 +37,29 @@ iteration is one finding fixed, tested, documented and committed. Run it with
    report. Otherwise schedule the next iteration in a few minutes (nothing external to wait for).
 8. **Report** to the owner in one short message: score, finding, change, commit hash.
 
+## Failsafes (so a broken loop stops instead of spending tokens)
+
+Every stop below writes a ledger row `STOPPED: <reason>` and, in `/loop` mode, ends the loop (`ScheduleWakeup`
+with `stop: true`). The owner restarts it by hand after looking.
+
+1. **Per-iteration budget.** An iteration is at most about 40 tool calls and two attempts at making the checks green.
+   Past that, revert your own edits, record the iteration as failed with the reason, and move on. **Two failed
+   iterations in a row stop the run.**
+2. **The same finding twice.** If the top finding is the one the previous iteration claimed to fix, the fix did not
+   stick: stop and report rather than trying again.
+3. **No progress.** If three iterations in a row improve neither the B pass count nor any C score, stop: the rubric or
+   the approach needs the owner, not more iterations.
+4. **Environment trouble.** Stop at once, never retry more than once, when: the tree changed under you (another
+   session), `git commit` fails, the tests fail to import, the server does not answer `/api/health` after a restart,
+   or a patch script exits on a string it cannot find twice running.
+5. **Agents.** At most one Explore agent per iteration. If it errors or returns no score, record "walkthrough failed",
+   skip to the next persona next iteration, do not run it again now.
+6. **Hard caps.** Twelve iterations a run, and four hours from the run's first ledger row, whichever first; an
+   iteration that would cross either writes the final report instead.
+7. **Scope creep.** A finding whose fix would touch files outside `game/learning.py`, `game/drills.py`,
+   `web/learn.js`, `web/chart.js`, the learn parts of `web/index.html`, `content/learn-*.md`, `tests/test_learning.py`
+   and the three docs is recorded as **needs the owner** and skipped, not attempted.
+
 ## Guard rails
 
 - Never deploy, never push, never touch `data/`, never run the whole test suite, never commit with `-a`.
