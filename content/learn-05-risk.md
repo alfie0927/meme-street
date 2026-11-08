@@ -37,6 +37,12 @@ WHY: Size = risk ÷ distance; double the distance, half the size.
 
 The wider the stop, the smaller the position. The risk stays the same.
 
+Q: Same account, same 1% risk. Trade A's stop is 2% away and trade B's is 8% away. Which position is bigger in MB?
++ Trade A, four times bigger
+- Trade B, because the wider stop needs more shares to matter
+- The same, since the risk is the same
+WHY: Risk ÷ stop distance sets the size: 1% ÷ 2% is four times 1% ÷ 8%.
+
 ### Why so little?
 Because losing streaks happen to every trader. With 1% a trade, ten losses in a row cost about 10% of the account: painful, recoverable. With 10% a trade, the same streak costs two thirds of it.
 
@@ -90,6 +96,12 @@ WHY: Win 1 in 3: +2R once, -1R twice, 0 overall.
 
 At 3 to 1 you can be wrong three times out of four and still break even. That is why traders look for trades where the target is well beyond the stop.
 
+Q: At 3 to 1 reward to risk, how often can you be wrong and still break even before costs?
++ Three times in four
+- Half the time, as in any fair bet
+- Once in four, because the target is far away
+WHY: One win of 3R pays for three losses of 1R.
+
 ### The catch
 A far target is hit less often. A 3 to 1 trade with a target the price is unlikely to reach is not better than a 1.5 to 1 trade with a realistic one. The target must be somewhere the chart says the price can get to: the next resistance, a measured move.
 
@@ -119,6 +131,10 @@ WHY: Zero before costs; costs make it negative.
 Expectancy = (win rate × average win) - (loss rate × average loss)
 
 In R: a strategy that wins 40% of the time, makes 2.5R when it wins and loses 1R when it loses expects 0.4 × 2.5 - 0.6 × 1 = **+0.4R per trade**. Over 100 trades risking 10 MB each, that is about +400 MB, before costs.
+
+Q: A strategy wins 40% of the time, makes 2.5R on a win and loses 1R on a loss. What is its expectancy per trade, in R?
+= 0.4 ±0.02
+WHY: 0.4 × 2.5 − 0.6 × 1 = 1.0 − 0.6 = 0.4R.
 
 ### High win rate, losing strategy
 Win 80% of trades at +0.5R and lose 20% at -3R (a trader who takes small profits quickly and lets losers run): 0.8 × 0.5 - 0.2 × 3 = **-0.2R per trade**. It feels great most days and empties the account.
@@ -247,6 +263,12 @@ WHY: Big bets let a run of bad luck do damage that the edge cannot repair in tim
 
 Same strategy, same edge; the only difference is the size of each bet. Without an edge, any size eventually loses: a trader who wins 40% at 1.5 to 1 (no edge) risking 2% a trade halves the account about a quarter of the time over 500 trades, and at 5% about four times in five.
 
+Q: Two traders run the same strategy with the same edge; one bets 2% a trade, the other 20%. Who is more likely to be ruined?
++ The 20% bettor, by a wide margin
+- Neither: the same edge gives the same risk of ruin
+- The 2% bettor, because small bets take longer to recover
+WHY: Ruin depends on the edge and on the number of bets the account can survive; 20% a bet leaves five.
+
 ### Why big bets kill
 Large bets make the account's path depend on luck in the short run, and the drawdown maths means a deep hole is very hard to climb out of. A small, steady risk keeps you in the game long enough for an edge to show.
 
@@ -298,8 +320,20 @@ WHY: A typical candle moves 2 MB; a 0.3 MB stop will be touched by ordinary move
 ### Not exactly where everyone else's is
 Stops cluster just beyond obvious levels and round numbers. Prices often poke through those levels, trigger the stops, and come back (a "stop run"). A stop slightly further than the obvious place, with the position sized to match, survives more of those.
 
+Q: Where do stops cluster, and what often happens there?
++ Just beyond obvious levels; the price pokes through and comes back
+- At random prices across the chart, which is why stop runs are a myth traders repeat
+- Exactly on round numbers, where the price never trades at all
+WHY: Everyone sees the same levels, so the stops sit just past them, and a stop run collects them.
+
 ### Arbitrary stops
 "I always use a 5% stop" ignores the chart: on a calm stock 5% is miles away; on a wild one it is inside a single candle's noise. Stops come from the chart and the volatility, and the size from the stop.
+
+Q: Why is a fixed 5% stop on every stock a mistake?
++ Noise differs: 5% is far on a calm stock and inside a candle on a wild one
+- Because brokers charge more for percentage-based stops than for stops set at a price
+- Because 5% is always too tight for any stock, whatever its volatility
+WHY: The stop belongs where the idea is wrong, which the chart decides, not a fixed percentage.
 
 ### Never move a stop further away
 Moving a stop away from the price as it approaches is turning a planned loss into an unplanned bigger one. Move it only towards profit.

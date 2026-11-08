@@ -42,6 +42,12 @@ WHY: The limit protects the price but removes the guarantee of getting out.
 
 HERE: You can place **limit buys** (the price falls to your trigger), **limit sells** (it rises to your trigger; with no shares, this opens a short), **stop-losses** and **take-profits** (they only close a position, never open or flip one) and **brackets**.
 
+Q: You hold no shares and place a limit sell above the current price. What happens when it triggers?
++ It opens a short position
+- Nothing: a sell needs shares you already own
+- It buys the shares first and then sells them at the trigger
+WHY: A sell with no shares behind it is a short; the limit sell is the order that opens it.
+
 HERE: Every order is a market trade that happens later: it fills at the market price of the moment it triggers, which in a jump can be past your trigger. There are no stop-limit or stop-entry orders. Up to 20 open orders (6 in one stock), each for up to 7 days. Orders show on the chart as lines with tags.
 
 [try /stock/NVXA] Open the order panel under Novaxis's chart and look at each kind of order (you do not have to place one).
@@ -103,6 +109,12 @@ Ways to trail a stop:
 - Below each new **higher low** in an uptrend.
 - A few **ATR** below the highest close.
 - Under a **moving average** or the SuperTrend line.
+
+Q: In an uptrend, where does a trailing stop that follows the structure go?
++ Just below each new higher low
+- A fixed percentage below the entry price, never moved
+- Above the latest swing high, to lock in the gain
+WHY: Each higher low is the last place the trend held; a close below it says the trend has broken.
 
 ### Moving to break-even
 Once a trade is well in profit (say, by one times the risk), many traders move the stop to the entry price. The trade can no longer lose (apart from a gap), at the cost of being stopped out by a normal pullback more often.

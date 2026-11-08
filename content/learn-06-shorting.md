@@ -7,11 +7,15 @@ SUMMARY: Selling what you do not own, buying it back later, and what it costs to
 
 **Shorting** is a bet that a price will fall. In a real market:
 
-1. Your broker lends you shares that belong to someone else.
+- Your broker lends you shares that belong to someone else.
+- You sell them at today's price.
+- Later you buy the same number back (**cover**) and return them.
 
-2. You sell them at today's price.
-
-3. Later you buy the same number back (**cover**) and return them.
+Q: In a real-market short, what comes first?
++ Borrowing the shares from a broker
+- Buying the shares back at a lower price than you sold
+- Paying the difference to the lender of the shares
+WHY: You cannot sell what you have not borrowed; the borrow is step one.
 
 If the price fell, you bought back cheaper and keep the difference. If it rose, you pay the difference.
 
@@ -47,6 +51,12 @@ WHY: Borrowed shares cost a fee, and dividends go to the lender.
 To profit from falling prices, to hedge a long position (long a company, short its industry index), and because a market where prices can only be bet upwards is a less honest market. Short sellers have exposed many frauds.
 
 HERE: Press **Sell** on a stock you do not hold and the button says **Short**. The amount you short is taken out of your cash and held as collateral; when you cover, you get it back plus your gain or minus your loss.
+
+Q: You press Sell on a stock you do not hold. What does the button do?
++ It opens a short; the amount is held as collateral
+- Nothing, because you cannot sell what you do not own here
+- It places a limit sell that waits for shares to arrive
+WHY: Sell with no shares is Short: the cash is set aside as collateral until you cover.
 
 HERE: A short pays a **borrow fee** every second it is open (more on a volatile stock, and more when many players are short the same stock: about 0.10% a real hour on gold, 0.14% on Novaxis, 0.27% on DOGO when few are short), pays any dividend that goes ex while it is open, and is closed by a **margin call** if your equity falls below the safety level for all your shorts.
 
@@ -138,6 +148,12 @@ Real brokers close you out before that, at the maintenance level.
 
 HERE: Leverage is part of **Pro**: 1x, 2x, 3x, 5x or 10x on any listing except the leveraged funds. Each position stands on its own margin: when its equity falls to **half the margin it started with**, it is closed at the market price (after a 25% move against you at 2x, 10% at 5x, 5% at 10x).
 
+Q: A leveraged position's equity falls to its maintenance level. What does a real broker do?
++ Closes the position before the loan is at risk
+- Waits until the position is worth nothing, then closes it
+- Lends more so that the position can stay open
+WHY: The maintenance level exists to protect the lender; the position is closed before the equity runs out.
+
 HERE: The position box and the Holdings page show the leverage, the loan and **the price where it closes by itself**. The loan costs about 0.06% a real hour. A gap past that price takes the rest from your cash. Plain shorts have their own margin call (previous lesson).
 
 ## Why leverage magnifies losses {leverage-maths} [5]
@@ -176,5 +192,11 @@ With 10x leverage, the drawdown table from the *Risk* track is reached ten times
 ### When leverage makes sense
 
 Professionals use leverage with **small risk per trade**: a tight, logical stop and a position sized so the loss at the stop is still 1% of the account. Leverage then lets a small stop-distance trade be big enough to matter, without risking more. Using leverage to make every trade bigger is the opposite: it raises the risk on every trade.
+
+Q: How do professionals use 10x leverage without 10x the danger?
++ A tight stop and a size that still risks 1% at the stop
+- A wider stop, so the position has more room to move around
+- They never use leverage above 2x in any market
+WHY: Leverage changes the size, not the risk per trade, if the stop and the size are set together.
 
 HERE: Leverage on Meme Street changes how big your bet is, never the odds: a leveraged position wins and loses the same price moves, several times as hard, and on average loses the interest and fees several times as fast.
