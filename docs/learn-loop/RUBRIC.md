@@ -36,10 +36,12 @@ far wider range of lessons, up to skills experienced traders do not have.
 7. **Tailored throughout.** The review asks about the skills missed most, the missed questions first; the habits and
    "Your trading" use the player's own trades; a unit mastered in the placement or the review is skipped by the path's
    next step; the daily goal and streak bring the learner back and say so.
-8. **Free, Pro, Expert.** The free course is limited: the Start unit, the first lesson of every unit and the placement
-   are free; the rest of the core and intermediate units need Pro; the advanced units need Expert. A locked lesson is
+8. **Free, Pro, Expert.** A free player can finish two lessons a day (each a few minutes); the allowance resets at
+   the same UTC midnight as the goal and the streak, and the path says so when it runs out ("Two lessons done today.
+   Back tomorrow, or Pro for the whole path"). Pro removes the limit for the core and intermediate units; Expert adds
+   the advanced units. The placement, the review and the chart-test practice are never limited. A locked lesson is
    visible on the path with its goal and a lock, and opening it shows what the tier unlocks and a link to the shop.
-   Nothing in the Learn section costs or pays MB, and nothing moves a price. (The owner's default split; change here.)
+   Nothing in the Learn section costs or pays MB, and nothing moves a price.
 9. **Range.** At least 130 lessons in at least 20 units. At least three advanced units (Expert) of at least five
    lessons each that teach what most retail traders never learn: market microstructure and order flow; volatility
    as an asset (implied vs realised, term structure, skew, VIX); second-order options Greeks and dealer positioning
@@ -49,6 +51,19 @@ far wider range of lessons, up to skills experienced traders do not have.
    the deflated Sharpe ratio. Each advanced lesson has at least one exercise that needs a calculation or a chart.
 10. **Nothing gameable.** Options shuffled, no position or length bias, wrong answers earn nothing, the review pays
     only for what it served, the league counts people only, the coin-flip test is out of the weak spots.
+11. **Power-ups.** Lessons give power-ups as rewards (a perfect run, a unit finished, a streak milestone, the daily
+    goal several days running), never for MB. They sit in an inventory on the path and on the stock page, each with
+    one line of what it does and how it was earned. The set, to be added to as the loop goes:
+    - **Streak freeze**: a missed day does not break the streak (one held at a time, used automatically).
+    - **See the future**: on one stock, draws the next five game minutes as faded candles on the live chart, so the
+      player can check their analysis before risking anything. They may trade on it. Once used, that player cannot
+      trade options for the rest of that game day (the chart's header says so), because a known path makes options
+      a certainty. The engine must commit to the path it showed: the preview is the future, not a forecast.
+    - **Second look**: redo one wrong card at once instead of at the end of the run.
+    - **Chart hint**: one chart test shows the level or pattern it is asking about.
+    - **Double XP**: the next lesson pays twice.
+    Each power-up is one row in a table in the content or the engine (name, effect, how earned, limits) so the checks
+    can read it; using one is a notice; "See the future" is marked on the trade in History.
 
 ## B. The automated checks: `python tools/learn_check.py`
 
@@ -74,6 +89,8 @@ exist yet: the first iterations build them (a check the loop adds counts as that
 | **new** Lessons and units | at least 130 lessons, at least 20 units, at least 3 Expert units of 5 or more lessons |
 | **new** Placement covers every unit | `PLACEMENT_UNITS` equals the unit count |
 | **new** Advanced lessons apply | every Expert lesson has a `[calc]`, a `= value` question, a `[test]` or a `[chart]` |
+| **new** Power-ups defined | every power-up has a name, effect, how earned and limits in one table; every lesson reward names a power-up in it |
+| **new** Daily allowance and power-ups tested | `tests/test_learning.py` covers the two-lesson day and its reset, the streak freeze, and "See the future" blocking options for the day and committing the path |
 
 Also every iteration: `python -m unittest test_learning test_drills` (from `tests/`), `node --check web/learn.js`,
 and the inline script of `web/index.html` parsed with node.
@@ -104,8 +121,8 @@ in rotation.
 15. Nothing on the path mentions MB, quests, medals or any removed feature; no copy promises what the page does not do.
 16. The phone layout at 380 px: one card fills the screen, buttons full width, no horizontal scroll.
 17. The animations are short, CSS only, and off under `prefers-reduced-motion`.
-18. The first locked Pro lesson shows its goal and a lock; opening it says what Pro unlocks and links to the shop in one tap.
-19. Tomorrow has a stated reason to come back (goal, streak, habits) and the profile shows the same record the path shows.
+18. After two lessons the path says the day's free lessons are done, when they reset, and what Pro unlocks, with the shop one tap away; the review and chart practice still work.
+19. Tomorrow has a stated reason to come back (goal, streak, habits, a power-up to earn) and the profile shows the same record the path shows.
 20. No dead end: every screen of the Learn section has a way back to the path.
 
 ### C2. Week two, placed at Risk, Pro subscriber, twenty lessons done
@@ -125,10 +142,10 @@ in rotation.
 13. Tasks completed on the market show up on the lessons that asked for them.
 14. A finished lesson can be reopened as a recap: the cards and the player's own answers, nothing re-earned.
 15. No question is repeated within a lesson or across units.
-16. Every unit's lessons have a similar number of cards (no 6-card lesson next to a 20-card one).
+16. A perfect run or a unit finished gave a power-up; the inventory shows it with one line of what it does; a streak freeze saved a missed day without a click.
 17. Nothing in units 7 onward is pure recall of one sentence of the text (sample five questions).
 18. A unit finished is celebrated once and visible on the profile; a perfect run is celebrated separately.
-19. Pro unlocks every core and intermediate lesson; the Expert units show their goals and a lock with what Expert adds.
+19. Pro removed the daily limit; the Expert units show their goals and a lock with what Expert adds.
 20. `/learn` and a lesson load in under a second on the local server, and nothing errors in the console.
 
 ### C3. An experienced trader with Expert, looking for what they do not know
@@ -144,9 +161,9 @@ in rotation.
 9. The sizing habit uses the actual risk at the stop and matches the rule the lessons teach.
 10. Every indicator lesson has a try-it link that opens a live chart with that indicator on and the right candle size.
 11. The orders, bracket, sizing and stop tools on the stock page each link to their lesson, and the indicator tooltips do too.
-12. The tasks cover a limit order, a trailing stop, a bracket, an option, a note on a trade, a short with a stop.
+12. "See the future" draws five game minutes of faded candles that the market then follows exactly; the trade on it is marked in History; options are blocked for that player until the game day ends, and the header says so.
 13. The Testing unit's lessons connect to the bots and backtests pages; the Real markets and Real life units say what carries over and what does not.
-14. Chart tests can be taken on their own, by kind, with a running score and the balance-by-design note; the review draws on them.
+14. Power-ups cannot be bought with MB, stacked past their limits, or used through the API after their limit; "See the future" works on one stock at a time.
 15. The glossary is reachable from any lesson and is not a step on the path.
 16. Nothing in the Learn section pays MB or changes a price; Expert is a subscription, not a purchase of answers.
 17. The HOW_IT_WORKS §10.10 description and the `learning.py` header docstring match what the pages do.
