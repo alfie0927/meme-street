@@ -52,18 +52,50 @@ far wider range of lessons, up to skills experienced traders do not have.
 10. **Nothing gameable.** Options shuffled, no position or length bias, wrong answers earn nothing, the review pays
     only for what it served, the league counts people only, the coin-flip test is out of the weak spots.
 11. **Power-ups.** Lessons give power-ups as rewards (a perfect run, a unit finished, a streak milestone, the daily
-    goal several days running), never for MB. They sit in an inventory on the path and on the stock page, each with
-    one line of what it does and how it was earned. The set, to be added to as the loop goes:
-    - **Streak freeze**: a missed day does not break the streak (one held at a time, used automatically).
-    - **See the future**: on one stock, draws the next five game minutes as faded candles on the live chart, so the
-      player can check their analysis before risking anything. They may trade on it. Once used, that player cannot
-      trade options for the rest of that game day (the chart's header says so), because a known path makes options
-      a certainty. The engine must commit to the path it showed: the preview is the future, not a forecast.
+    goal several days running, a placement well above the start), never for MB. They sit in an inventory on the path
+    and on the stock page, each with one line of what it does and how it was earned; using one is a notice. They
+    come in four kinds, and the loop builds them in this order:
+
+    **Learning** (no market edge; the common rewards, so most lessons pay something)
     - **Second look**: redo one wrong card at once instead of at the end of the run.
     - **Chart hint**: one chart test shows the level or pattern it is asking about.
     - **Double XP**: the next lesson pays twice.
-    Each power-up is one row in a table in the content or the engine (name, effect, how earned, limits) so the checks
-    can read it; using one is a notice; "See the future" is marked on the trade in History.
+    - **Fast forward**: skip a lesson's teach cards and take only its exercises; a perfect run passes it.
+    - **Extra lesson**: one more free lesson today (the free day is two).
+    - **Cheat sheet**: pin one lesson's goal and key lines on the stock page for a game day.
+    - **Mentor**: for the next five trades, before the order goes in, one line of what a careful trader would check
+      (stop placed, risk at the stop, trend on the higher timeframe), with a link to the lesson.
+
+    **Protection** (soften a mistake once; teach the habit)
+    - **Streak freeze**: a missed day does not break the streak (one held at a time, used automatically).
+    - **Streak repair**: restore a streak broken within the last three days (rarer than a freeze).
+    - **Rewind**: undo your last trade within sixty seconds, fees refunded; not after a stop or target filled.
+    - **Safety net**: the next loss beyond the stop's planned risk (a gap through the stop) is refunded up to the
+      planned risk; one held at a time, only on a trade that had a stop when it was opened.
+
+    **Insight** (reveal what the market hides; the rare rewards, a unit finished or a long streak)
+    - **See the future**: on one stock, draws the next five game minutes as faded candles on the live chart, so the
+      player can check their analysis before risking anything. The engine must commit to the path it showed: the
+      preview is the future, not a forecast.
+    - **Early news**: the next scheduled catalyst or earnings for one stock, two game minutes before everyone else.
+    - **Weather report**: whether the market's hidden regime is trending or ranging for the next ten minutes.
+    - **Bot x-ray**: which way the house bots are leaning on one stock for five minutes.
+    - **Replay**: any past game day of one stock, played candle by candle on a practice chart with paper trades
+      that touch no account. No edge, but it lives here because it shows the past the game hides.
+
+    Every Insight power-up except Replay follows the same rules: one stock at a time, one use at a time, the player
+    may trade on it, options are blocked for that player for the rest of the game day (the chart's header says so),
+    the trades made while it is active are marked in History and carry a small mark on the Leaders page.
+
+    **Flair** (cosmetic, shown on the league, the profile and chat for a week)
+    - **Perfect week**: the daily goal every day of a week.
+    - **Scholar**: a unit finished with every run perfect.
+    - **Placed high**: a placement that landed past the intermediate units.
+    - **Early bird**: the first lesson of the day done before the market's first half hour ends, five days running.
+
+    Each power-up is one row in a table in the content or the engine (name, kind, effect, how earned, limits) so the
+    checks can read it. Limits are part of the design: a Learning power-up is held up to three of a kind, Protection
+    one of a kind, Insight one of a kind, and nothing stacks past its limit through the API.
 
 ## B. The automated checks: `python tools/learn_check.py`
 
