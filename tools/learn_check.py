@@ -129,11 +129,12 @@ def run(pattern=learning.LEARN_FILES, tests_text=None):
     for x in lessons:
         if x["track"] not in CORE_UNITS:
             continue
-        last_h = max((k for k, b in enumerate(x["body"]) if "h" in b), default=-1)
+        prose = [k for k, b in enumerate(x["body"]) if any(t in b for t in ("p", "h", "list", "table"))]
+        last_prose = max(prose, default=-1)
         for k, b in enumerate(x["body"]):
             if "q" in b or "calc" in b:
                 total += 1
-                before += k < last_h
+                before += k < last_prose                       # under a section: some reading still follows it
     share = before / total if total else 1.0
     rows.append((f"core units: {INTERLEAVED_SHARE:.0%} of questions under their section", share >= INTERLEAVED_SHARE, f"{share:.0%} of {total} questions"))
     return rows
