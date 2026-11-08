@@ -33,7 +33,7 @@ function drawLearn(){
    ${d.level&&d.level.next?`<span class="mut">${numText(d.level.next-d.xp,0)} XP to ${esc(LRN_LEVELS[d.level.n]||'the next level')}</span>${pbar(d.xp-d.level.floor,(d.level.next-d.level.floor)||1)}`:''}
    <span class="mut">Today: <b>${d.today}</b> of ${token?`<select id="lrn-goal" aria-label="Daily goal">${(d.goals||[20,50,100]).map(g=>`<option value="${g}" ${g===d.goal?'selected':''}>${g}</option>`).join('')}</select>`:d.goal} XP${d.today>=d.goal?' · goal reached':''}</span>${pbar(d.today,d.goal||1)}<span class="mut">${tr[1]?`Chart tests: ${tr[0]} of ${tr[1]} right`:'No chart tests yet'}</span>
    <span class="mut">${d.xp_rules?`XP: ${d.xp_rules.right} for a right answer, ${d.xp_rules.wrong} for a wrong one, ${d.xp_rules.pass} for each lesson passed, ${d.xp_rules.task} for each market task. The streak counts calendar days (UTC) with any XP.`:''}</span>
-   ${token?`<span class="up">${d.today>=d.goal?`Goal reached. Come back tomorrow: any XP ${d.streak>=1?`keeps your ${d.streak}-day streak going`:'starts a streak'}.`:d.streak?`Earn ${d.goal-d.today} more XP today to keep your ${d.streak}-day streak.`:'Reach the goal today and come back tomorrow to start a streak.'}</span>`:''}
+   ${token?`<span class="up">${d.today>=d.goal?`Goal reached. Come back tomorrow: any XP ${d.streak>=1?`keeps your ${d.streak}-day streak going`:'starts a streak'}.`:d.streak?`Any XP today keeps your ${d.streak}-day streak; ${d.goal-d.today} more reaches the goal.`:'Any XP today starts a streak; come back tomorrow to keep it.'}</span>`:''}
    ${d.league?`<div class="lrn-league"><b>This week's learners</b>${d.league.rows.length?`<ol>${d.league.rows.slice(0,10).map(r=>`<li><a href="/player/${encodeURIComponent(r.name)}">${esc(r.name)}</a><span>${numText(r.xp,0)} XP</span></li>`).join('')}</ol>`:'<span class="mut">Nobody has earned XP yet this week: be the first.</span>'}${d.league.rank?`<span class="mut">You are #${d.league.rank} of ${d.league.learners} with ${numText(d.league.xp,0)} XP this week.</span>`:token&&d.league.rows.length?'<span class="mut">Earn XP this week to be on it.</span>':''}</div>`:''}</div></div>
   ${token?'':'<p class="hint">You are not signed in: you can read everything, answer every question and take every test, but your progress, XP and streak are not kept. <a href="/#join">Create an account</a> to keep them.</p>'}
   ${token&&!d.passed&&!d.placed?`<div class="lrn-place"><div><b>Already know some of this?</b><span class="mut">Twelve quick questions, one from each of the first twelve units, find where your path should start. Units you know are marked passed.</span></div><a class="btn" href="/learn?place=1">Take the placement test</a></div>`:''}
@@ -41,9 +41,10 @@ function drawLearn(){
   ${token?lrnHabitsHtml(d.challenges):''}
   ${d.weak&&d.weak.length?`<div class="lrn-place lrn-weak"><div><b>Your weak spots</b><span class="mut">${d.weak.map(w=>`${esc(w.name)} (${w.right} of ${w.n} right)`).join(' · ')}. A review asks you again, with other questions from those units.</span></div><a class="btn" href="/learn?review=1">Review</a></div>`:''}
   <h3 class="sp">The path</h3><div class="lrn-tracks">${d.tracks.map((t,k)=>{const done=t.lessons.filter(x=>x.passed).length;
-   const fin=t.lessons.length&&done===t.lessons.length;
-   return `<section class="lrn-track${fin?' done collapsed':''}" data-unit="${esc(t.id)}"><div class="lrn-th" ${fin?'data-lrn-unfold title="Finished: click to open"':''}><span class="lrn-n">${fin?'✓':k||'S'}</span><div><b>${esc(t.title)}</b><small>${fin?'Finished':`${done} of ${t.lessons.length} passed`}</small></div></div><p class="mut">${lrnText(t.blurb)}</p>${pbar(done,t.lessons.length||1)}
-    <ol class="lrn-ls">${t.lessons.map(x=>`<li class="${x.passed?'done':x.next?'next':''}"><a href="/learn?l=${encodeURIComponent(x.id)}" title="${esc(x.summary)}">${esc(x.title)}</a><small>${x.passed?'Passed':x.ex_done?`${x.ex_done} of ${x.ex_total}`:x.next?'Next':x.minutes+' min'}</small></li>`).join('')}</ol></section>`}).join('')}</div>
+   const steps=t.lessons.filter(x=>x.ex_total>0),refs=t.lessons.filter(x=>!x.ex_total);   // a lesson without exercises (the glossary) is reference, not a step (loop 11)
+   const fin=steps.length&&done===steps.length;
+   return `<section class="lrn-track${fin?' done collapsed':''}" data-unit="${esc(t.id)}"><div class="lrn-th" ${fin?'data-lrn-unfold title="Finished: click to open"':''}><span class="lrn-n">${fin?'✓':k||'S'}</span><div><b>${esc(t.title)}</b><small>${fin?'Finished':`${done} of ${steps.length} passed`}</small></div></div><p class="mut">${lrnText(t.blurb)}</p>${pbar(done,steps.length||1)}
+    <ol class="lrn-ls">${steps.map(x=>`<li class="${x.passed?'done':x.next?'next':''}"><a href="/learn?l=${encodeURIComponent(x.id)}" title="${esc(x.summary)}">${esc(x.title)}</a><small>${x.passed?'Passed':x.ex_done?`${x.ex_done} of ${x.ex_total}`:x.next?'Next':x.minutes+' min'}</small></li>`).join('')}</ol>${refs.length?`<p class="mut" style="margin:4px 0 0">Reference, not a step: ${refs.map(x=>`<a href="/learn?l=${encodeURIComponent(x.id)}">${esc(x.title)}</a>`).join(', ')}</p>`:''}</section>`}).join('')}</div>
   <h3 class="sp">Chart tests</h3><p class="hint" style="margin-top:0">Practice on its own: a real chart from the game, stopped at a moment worth asking about. Pick your answer, then the chart shows what came next.</p>
   <div class="lrn-tests">${d.tests.map(t=>`<a class="lrn-test" href="/learn?test=${t.kind}"><b>${esc(t.title)}</b><small>${esc(t.about)}</small><span class="mut">${t.n?`${t.right} of ${t.n} right`:'Not tried yet'}</span></a>`).join('')}<a class="lrn-test" href="/learn?test=any"><b>Mixed</b><small>Any of the above, at random.</small><span class="mut">The all-round test</span></a></div>`)}
 
@@ -130,7 +131,7 @@ function drawLesson(){
  const first=L.body.findIndex(b=>b.q||b.task||b.test);
  let seen=0,hideFrom=false,html='';                       // exercises come one at a time: the ones after the first unanswered question or test wait (LP14d)
  L.body.forEach((b,k)=>{const isEx=!!(b.q||b.test||b.task);
-  if(k===first)html+=`<h4 class="lrn-exh">Exercises</h4><p class="mut" style="margin:0 0 6px">Answer each one; the lesson is passed when all are done. ${token?'Right answers earn more XP, but a wrong one still counts and is explained.':'Sign in to keep your XP and passes.'}</p>`;
+  if(k===first)html+=`<p class="mut lrn-exh" style="margin:0 0 6px">Check yourself as you read: the lesson is passed when every exercise is done. ${token?'Right answers earn more XP, but a wrong one still counts and is explained.':'Sign in to keep your XP and passes.'}</p>`;
   let h=lrnBlock(b);
   if(isEx&&!b.task){if(hideFrom)h=h.replace(/^<div class="lrn-box/,'<div hidden data-lrn-later class="lrn-box');else if(!lrnDone(b.i))hideFrom=true}
   html+=h});
@@ -141,7 +142,7 @@ function drawLesson(){
 function lrnReveal(){
  const nx=document.querySelector('#learn-body [data-lrn-later]');if(!nx)return;
  nx.hidden=false;nx.removeAttribute('data-lrn-later');if(nx.dataset.lrnTest!==undefined)lrnTest(nx,nx.dataset.lrnTest);
- nx.scrollIntoView({behavior:'smooth',block:'center'})}
+ nx.scrollIntoView({behavior:'smooth',block:'nearest'})}
 // a question answered in place: right or wrong, the right answer and why (learning.learn_answer)
 async function lrnAnswer(box,choice){
  if(box._busy)return;box._busy=true;const i=+box.dataset.lrnQ,review=box.dataset.lrnReview!==undefined,lesson=box.dataset.lrnLesson||(lrnLesson&&lrnLesson.id),num=box.dataset.lrnNum!==undefined;
@@ -160,7 +161,7 @@ function lrnProgress(a){
  const was=L.passed;L.done=a.done;L.passed=a.passed;
  const h=$('lrn-head');if(h)h.innerHTML=lrnHead();
  lrnReveal();
- if(a.xp)toast(`+${a.xp} XP${a.today!==undefined?` · ${a.today} of ${a.goal} today`:''}`,true,2500);
+ if(a.xp)toast(`+${a.xp} XP${a.passed&&!was?' with the pass':''}${a.today!==undefined?` · ${a.today} of ${a.goal} today`:''}`,true,2500);
  if(a.passed&&!was){const go=document.querySelector('.lrn-nav a:last-child');if(go)go.classList.add('lrn-go')}}   // (the server's own notice says "Lesson passed")
 async function lrnRecheck(box){
  const d=await api('/api/learn/lesson/'+encodeURIComponent(lrnLesson.id));if(!d||d.error)return;

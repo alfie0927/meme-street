@@ -306,6 +306,6 @@ Q: The price is falling towards your stop. What do you do?
 - Remove it
 WHY: Widening a stop under pressure turns a planned small loss into a bigger one.
 
-[test level support]
+[test stop]
 
 [task planned] Close a position that had a stop-loss while it was open, win or lose.

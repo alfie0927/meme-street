@@ -26,7 +26,7 @@ The last few trades feel like the whole truth. Three losses in a row and the str
 ### Confirmation bias
 Once you own a stock, you notice the news that agrees with you and ignore the rest. **Cure**: before every trade, write down what would prove you wrong.
 
-HERE: The quest ladder on your profile rewards the habits that fight these biases: putting a stop-loss on positions, closing trades that had a stop (win or lose), setting take-profits, holding winners for an hour. It never rewards volume or luck.
+HERE: The weekly habits on the Learn page reward what fights these biases: a stop on every position, closing trades that had a stop (win or lose), take-profits set, positions sized to the risk at the stop. They pay XP, never MB, and never reward volume or luck.
 
 Q: You have lost three trades today and feel you must make it back now. What is this?
 + The urge to revenge trade

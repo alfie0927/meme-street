@@ -107,7 +107,7 @@ Choose **one** thing to change next week: one setup to drop, one rule to tighten
 ### Patience with the numbers
 A week is a small sample. Look for patterns over a month or more before deciding a setup does or does not work.
 
-HERE: The Portfolio page shows your equity curve, realised profit, fees, and best and worst trades; the History page downloads every trade; the Leaders page shows your worst drawdown. The quest ladder on your profile tracks stops, planned exits and other good habits over time.
+HERE: The Portfolio page shows your equity curve, realised profit, fees, and best and worst trades; the History page downloads every trade; the Leaders page shows your worst drawdown. The weekly habits on the Learn page track stops, planned exits, targets and sizing, and your trading card there shows your stop coverage and average R over time.
 
 [try /portfolio] Open your portfolio and write down three numbers: your return, your fees, and your worst trade.
 
