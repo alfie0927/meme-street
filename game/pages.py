@@ -24,6 +24,15 @@ DAILY_BODY = ("<main style=\"max-width:620px;margin:0 auto;padding:24px 16px;fon
               "chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p>"
               "<p>Turn on JavaScript to play. New to charts? Start with the <a href=\"/lessons\">free lessons</a> or read "
               "<a href=\"/about\">about Meme Street</a>.</p></main>")
+HOME_TEXT = ("Meme Street is a made-up stock market that runs around the clock. Learn to trade with 1,000 MB of practice "
+             "money (memebucks, no cash value) and no real cash at risk, with free lessons and a new chart game every day.")
+HOME_BODY = ("<main><h1>Meme Street: a stock market game with play money</h1>"
+             "<p>Meme Street is a made-up stock market that never closes, with 180+ companies, indices and funds, news that "
+             "moves prices and a daily leaderboard. Everyone starts with 1,000 MB (memebucks), practice money with no cash "
+             "value, so you can learn to trade without risking real cash.</p>"
+             "<p>Turn on JavaScript to watch the market live and trade. New to trading? Start with the "
+             "<a href=\"/lessons\">free lessons</a>, try the <a href=\"/daily\">Daily Chart</a>, or read "
+             "<a href=\"/about\">how Meme Street works</a>.</p></main>")
 SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart; the Learn page)
 
 
@@ -116,7 +125,7 @@ def add_pages(app):
 
     @app.get("/")
     async def index():
-        return page()
+        return page_as("/", "Meme Street: a stock market game with play money", HOME_TEXT, "", HOME_BODY)
 
     @app.get("/daily")
     async def daily():

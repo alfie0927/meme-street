@@ -163,9 +163,11 @@ class ServerTests(unittest.TestCase):
         self.assertIn("<noscript><main", body)
         self.assertIn("<h1>The Daily Chart: a daily stock market game</h1>", body)
         status, body, _ = http(self.srv, "/")
-        self.assertNotIn("<noscript><main", body)
-        self.assertIn("<title>Meme Street</title>", body)
-        self.assertNotIn("canonical", body)
+        self.assertIn("<title>Meme Street: a stock market game with play money</title>", body)
+        self.assertEqual(body.count('name="description"'), 1)
+        self.assertIn('rel="canonical" href="https://memestreet.net/"', body)
+        self.assertIn("<h1>Meme Street: a stock market game with play money</h1>", body)
+        self.assertIn('href="/lessons"', body)
 
     def test_bad_token_is_rejected(self):
         with connect(f"ws://127.0.0.1:{self.srv.port}/ws?token=nope") as ws:
