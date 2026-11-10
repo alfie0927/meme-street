@@ -2,7 +2,7 @@
 
 For the reels chat (the session that owns `tools/memestreet_daily_reel/`), from the growth plan
 ([docs/GROWTH_PLAN.md](../docs/GROWTH_PLAN.md), Part 3). Evidence: [instagram.md](instagram.md), pulled 10 Nov 2026.
-Items marked **owner** wait for the owner's yes on that plan decision; the rest are in the approved plan.
+The owner took the plan's defaults on 10 Nov, except one: **the posting schedule stays as it is.**
 
 ## What the numbers say (38 reels, 30 Oct to 9 Nov)
 
@@ -14,15 +14,13 @@ Items marked **owner** wait for the owner's yes on that plan decision; the rest 
 - Holds worst: **Daily recap** (n=7, 27%) and **Technical lesson** (n=5, 27%). Both open with a label or a
   definition: "Daily Chart #6 recap", "Chart quiz #2. Lock in…", "Price tells you what happened…".
 - Length shows no effect (over 60 s did as well as 30 s). The director reels' length is not the problem.
-- 6 to 8 reels a day from 7 Nov did not lift views: the median fell from 67 to 55.
+- 6 to 8 reels a day from 7 Nov did not lift views: the median fell from 67 to 55. (The owner keeps the schedule.)
 
 ## Changes, in order
 
-1. **One main reel a day** (**owner**, decision 5). The queue holds 50 rendered reels, three a day to 25 Nov. Post
-   one a day from it, strongest formats first (Stock story, Trader levels, Chart quiz, Hard truth, Chart twist,
-   Trading mistake), and keep the rest as a reserve rather than writing new ones. That saves Claude and voice
-   credits. Default slot: 21:00 UTC; the best reels went out then, though format explains most of that.
-2. **Pause the 23:00 UTC "Daily Chart #N recap"** until a question-first version wins a trial pair (point 5).
+1. **The posting schedule stays as it is** (the owner's decision, 10 Nov). The queue holds 50 rendered reels, three
+   a day to 25 Nov; the changes below reach them only through `./rerender.sh <slot>` or in new reels.
+2. **The 23:00 UTC "Daily Chart #N recap" keeps its slot** with the rebuilt opening (point 5).
 3. **Rotation:** take Technical lesson and Explained like you're 5 out of `ROTATION` (`src/make_spec.py:89-95`).
    The owner rated both Ugly in `RULEBOOK.md` "By format", and they hold 27% and 39%.
 4. **The first second.** Frame 1 shows the stake or the odd fact in big words, and the voice says it at 0 s.
@@ -33,9 +31,8 @@ Items marked **owner** wait for the owner's yes on that plan decision; the rest 
    "One escaped dragon shut a motorway for a day.", "Which level of trader are you right now?".
 5. **The Daily Chart reel, rebuilt and tested first.** `src/analyze.py` leads with "Daily Chart number N…" (lines
    166-171). Lead with the move instead ("It fell 12% in ten candles. Would you have sold?"), then the reveal, the
-   best trade, and "today's chart is in the bio". Post three as trial reels against three normal reels before it
-   becomes daily.
-6. **The ending: one ask, and a link people can tap** (**owner**, decisions 3 and 4). Spoken and in the end pill:
+   best trade, and "today's chart is in the bio". Test the new opening as trial reels against the old one.
+6. **The ending: one ask, and a link people can tap** (decisions 3 and 4, accepted 10 Nov). Spoken and in the end pill:
    "Play today's chart free. Link in bio." with `memestreet.net/daily` shown small (`memestreet.net/play` once that
    page is deployed). This replaces `RULEBOOK.md:41` "Join free at memestreet.net" and the pill at
    `src/reel.html:44` and `src/reel_v2.html:42`; the sign-off rules in `make_spec.py` (537-551, 747, 1210) follow.
@@ -45,7 +42,7 @@ Items marked **owner** wait for the owner's yes on that plan decision; the rest 
    "Today's chart: link in bio." Switch on the existing checker `src/ig/caption.py`.
 8. **Honest numbers:** drop the "N players took on this chart" line (`analyze.py:351-352`) until the boards mark
    house bots; today it counts the 72 bots as players.
-9. **AI label** (**owner**, decision 10): check whether the publishing API takes an AI-content flag; the pipeline
+9. **AI label** (decision 10, accepted 10 Nov): check whether the publishing API takes an AI-content flag; the pipeline
    sets none today (`src/post_instagram.py:90`).
 
 ## How to test

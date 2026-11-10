@@ -33,13 +33,13 @@ The audit ([growth/instagram.md](../growth/instagram.md), pulled through the API
 - **The leak starts on Instagram.** In 29 days 3,751 accounts saw the posts, 51 opened the profile and 2 tapped the link. The bio asked for a sign-up and its link went to the home page. So the profile fix comes first (drafted, about ten minutes on your phone), alongside the code wall.
 - **The followers are inactive.** Instagram cannot tell the gender of 438 of 440, and 5 of them saw anything in 29 days. Reach goes to non-followers anyway (99.9%), so this changes little; removing them is optional.
 - **What holds:** stock stories (56% still watching at 3 seconds) and Trader levels. **What loses people:** recap and definition openers (27%). So the Daily Chart reel is rebuilt and tested before it goes daily ([growth/reel-brief.md](../growth/reel-brief.md)).
-- **50 reels are already rendered and queued**, three a day to 25 November. One a day from the queue, best formats first, lasts about seven weeks without writing new ones.
+- **50 reels are already rendered and queued**, three a day to 25 November, so new openings and endings reach them only through a re-render (`rerender.sh`). The posting schedule stays as it is (your decision, 10 Nov).
 - The name field "Meme Street | Stock Market Game" is 31 characters, one over Instagram's limit. "Meme Street: Stock Market Game" fits.
 
 ## The plan on one page
 
 1. **The Daily Chart becomes the front door.** Every link (reel, bio, Story, post, directory) lands on today's chart, which needs no account. The account is offered after the result ("save your score and your streak"), takes under a minute and no longer waits for an emailed code.
-2. **Fewer, better reels.** One a day, in the formats that already hold viewers, the question on screen and spoken in the first second, a daily "Daily Chart" series, and links people can tap (bio, Story sticker, a personal reply to every comment).
+2. **Better reels.** The formats that already hold viewers, the question on screen and spoken in the first second, a daily "Daily Chart" series, and links people can tap (bio, Story sticker, a personal reply to every comment).
 3. **The first 100 players by hand.** A "beat my score" link, daily-game directories, the same videos on TikTok, Shorts and Facebook, communities, investing societies and teachers, small creators, search.
 4. **Underneath: counting.** The web server's visit log is switched on and every link carries a source tag, so each source is judged by finished games and new accounts, not by views.
 
@@ -59,7 +59,7 @@ Nothing in this plan costs money. Where a step could, it takes the free route be
 | Email | The mail service's free plan: Resend sends 3,000 a month and at most 100 a day. The reminder email stops at 70 a day, so sign-up codes always get through. | When reminder sign-ups pass about 70: first a weekly reminder or Brevo's free plan (300 a day), then ask you. |
 | A postal address in email footers | An address you already have, or no reminder email. | If you would rather pay for a PO box than use your own address. |
 | A lawyer's read (roadmap R4) | Nothing here waits on it; only ads did. | Before any ads. |
-| Reels | One a day instead of seven timer slots: less use of your Claude plan. | Not needed. |
+| Reels | The local voice and the Claude plan you already have; no paid tools. | Not needed. |
 | Server | The visit log uses a little disk on the server you already pay for. | Not at this size. |
 
 ## Your decisions
@@ -72,7 +72,7 @@ My default is in the third column. Reply "defaults" to take them all, or name th
 | 2 | Account first, confirm the email later (reverses 31 Oct) | Yes | The code step is the likeliest leak. If it was added against fake accounts, the boards can be limited to confirmed accounts instead. Tell me why it was added. |
 | 3 | Every reel points at today's chart | "Play free at memestreet.net/play" | Rulebook line 41 says only Daily reels mention the Daily Chart. This changes where the sign-off lands, not its length. |
 | 4 | The word "free" | Keep "free account" and "play free"; never "everything is free" | A note of yours from 13 Oct said copy must not call the site free. The reel sign-off and the Daily's sign-up box already do. The account is free and MB packs are extra, so the wording is true. |
-| 5 | How many reels | One main reel a day until the median passes 300 views | The timer has seven slots a day. Views fell as posting rose. It also saves Claude and voice credits. |
+| 5 | How many reels | **Decided 10 Nov: the posting schedule stays as it is** | Your decision. |
 | 6 | Reel length | Keep the director reels; test a 25 to 40 second cut of the same reel against the full one | At 6 seconds of average watch the opening is the limit, not the length. A test settles it. |
 | 7 | Count visits | Switch on the web server's log, kept 30 days, and change one sentence on the privacy page | The page says "no analytics" (line 29) though it already mentions short-lived server logs (line 27). |
 | 8 | House bots | A small "bot" tag on boards and profiles; not counted as "players" in reels | 72 of 86 names are bots. A newcomer who works that out stops trusting the board. "Can you beat the house bots?" is also a good hook. |
@@ -145,7 +145,7 @@ If the commit ban has to stay beyond a week, step 1 alone may be possible as a o
 | AI label | Decision 10. | `src/post_instagram.py:90` |
 
 **How many, and how we test**
-- One main reel a day (decision 5), at the hour your real followers are most active. Two again when the median passes 300 views.
+- The posting schedule stays as it is (your decision, 10 Nov).
 - At 30 views a reel, the lab's rule (a 3-point gap in skip rate picks the winner) is one viewer. So: change one thing at a time, in this order: the opening, the length, the ending. Judge after ten pairs, on medians. Pause the automatic "evolve" step until reels pass about 300 views (`lab/trials.py`, `lab/evolve.py`).
 - Each week the insights digest (best three and worst three by skip rate, with their opening lines) goes into the writer's brief, so the writer learns what held (`lab/insights.py` scheduled from `auto_reel.sh`; `brief()` in `src/make_spec.py:935-978`).
 
@@ -194,7 +194,7 @@ Hold. No price tests and no new paywalls while there are 14 players. One check: 
 
 | When | What | Deploy |
 |---|---|---|
-| Week 1 (9 to 15 Nov) | Part 1 tests. Visit log on. Instagram audit. Profile rewrite. The reel brief agreed: first second, rotation, address, one a day. Your own circle. | No (reels go by scp) |
+| Week 1 (9 to 15 Nov) | Part 1 tests. Visit log on. Instagram audit. Profile rewrite. The reel brief agreed: first second, rotation, address. Your own circle. | No (reels go by scp) |
 | Week 2 (16 to 22 Nov) | Daily Story and comment routine. Threads test. The tidy-up and deploy with Part 2 steps 1 to 6. Phone test inside Instagram's browser. `.agents/product-marketing.md`. | Yes |
 | Weeks 3 to 4 (23 Nov to 6 Dec) | Challenge link, reminder email, guest boards. TikTok and Shorts begin. Directories. First play-test post. Listings. **Review on 7 Dec.** | Yes |
 | Weeks 5 to 8 (7 Dec to 3 Jan) | Group boards and invite reward. Societies and creators. Show HN. Comparison pages and glossary. Streak badges. The New Year challenge. Length and ending tests on reels. **Review on 4 Jan.** | Yes |
@@ -218,7 +218,7 @@ Hold. No price tests and no new paywalls while there are 14 players. One check: 
 | People active in the week | 15 | 50 | 120 |
 
 **Stop rules**
-- Reels: three weeks under 100 median views with skips above 65% means a pause of 2 to 3 days and a change of format before posting more. Under 10 visits a day from Instagram on 4 Jan means three reels a week, and the time goes to the best other source.
+- Reels: three weeks under 100 median views with skips above 65% means a change of format. Under 10 visits a day from Instagram on 4 Jan means your own time goes to the best other source first (the posting schedule stays yours to change).
 - Any other source: under 5 finished Dailies a week after 4 weeks of trying, stop it.
 - Sign-up: if more than 1 attempt in 5 still fails after Part 2 (attempts in the log against accounts made), the form is still the leak: take out another field.
 - Email: any spam complaint, or more than 1 in 200 leaving after a send, stop and rethink.

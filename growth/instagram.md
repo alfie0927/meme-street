@@ -66,7 +66,8 @@ ALL 38 REELS: 0 comments, 7 sends (3 per 1,000 reached), 10 saves, 48 likes.
 7. **Posting hour: no conclusion.** 21:00 to 22:00 UTC looks best (hold 56%), but those slots were mostly stock
    stories and the 23:00 to 01:00 slots mostly recaps, so the format explains it.
 
-**STOP:** recap and label openers, definition openers, the 23:00 UTC recap as it is, six reels a day.
+**STOP:** recap and label openers, definition openers (the 23:00 UTC recap keeps its slot with a new opening; the
+posting schedule stays as it is, your decision of 10 Nov).
 **DO MORE:** stock stories, trader levels, and quizzes whose first line is the stake ("Most people get this wrong"),
 not the name of the format. The reel changes are in [reel-brief.md](reel-brief.md).
 
