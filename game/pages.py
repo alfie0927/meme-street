@@ -131,6 +131,12 @@ def add_pages(app):
     async def daily():
         return daily_page()
 
+    @app.get("/play")
+    async def play():
+        """The short address the reels say: today's Daily Chart, tagged as coming from a reel (growth plan, 2026-11-10).
+        Not in the sitemap: it only forwards."""
+        return RedirectResponse("/daily?ref=reel", status_code=307)
+
     @app.get("/lessons")
     async def lessons_hub():
         """Every Learn lesson, listed by track (lessonpages.py)."""

@@ -169,6 +169,16 @@ class ServerTests(unittest.TestCase):
         self.assertIn("<h1>Meme Street: a stock market game with play money</h1>", body)
         self.assertIn('href="/lessons"', body)
 
+    def test_play_forwards_to_todays_chart_tagged_as_a_reel(self):
+        """The short address the reels say (growth plan, 2026-11-10)."""
+        class Stay(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, *a, **k):
+                return None
+        with self.assertRaises(urllib.error.HTTPError) as got:
+            urllib.request.build_opener(Stay).open(self.srv.url + "/play", timeout=10)
+        self.assertEqual((got.exception.code, got.exception.headers["Location"]), (307, "/daily?ref=reel"))
+        self.assertNotIn("/play", http(self.srv, "/sitemap.xml")[1])
+
     def test_bad_token_is_rejected(self):
         with connect(f"ws://127.0.0.1:{self.srv.port}/ws?token=nope") as ws:
             m = json.loads(ws.recv(timeout=5))
@@ -499,7 +509,8 @@ class ServerTests(unittest.TestCase):
         try:
             c.recv_until("state")
             for path in ("/api/portfolio", "/api/history", "/api/history.csv", "/api/me", "/api/boards"):
-                self.assertEqual(http(self.srv, path)[0], 401, path)
+                if path != "/api/boards":                                   # (the boards are open to visitors, 2026-11-10)
+                    self.assertEqual(http(self.srv, path)[0], 401, path)
                 self.assertEqual(http(self.srv, path, headers={"X-Token": "nope"})[0], 401, path)
             c.send({"type": "trade", "ticker": "GOLD", "side": "buy", "pct": 0.2})
             self.assertTrue(c.recv_until("result")["ok"])
@@ -577,6 +588,11 @@ class ServerTests(unittest.TestCase):
                 self.assertIn(key, b)
             self.assertNotIn("risk", b)
             self.assertNotIn(c.token, json.dumps(b))
+            status, body, _ = http(self.srv, "/api/boards")             # a visitor sees the boards too, with no place of their own
+            self.assertEqual((status, json.loads(body)["mine"]), (200, {}))
+            self.assertNotIn(c.token, body)
+            status, body, _ = http(self.srv, "/api/profile/MeShape")    # and a player's page, as any other player would
+            self.assertEqual((status, json.loads(body)["name"], json.loads(body)["bot"]), (200, "MeShape", False))
         finally:
             c.close()
 

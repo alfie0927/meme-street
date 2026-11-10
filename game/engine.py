@@ -3049,7 +3049,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             e = self.equity(p)
             self._track_drawdown(p, e)
             row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token,
-                   "gain": e - p.season_base}
+                   "gain": e - p.season_base, "bot": bool(p.hb)}       # (bot: a house bot, tagged on the boards, 2026-11-10)
             everyone.append(row)
             if self.traded_today(p):
                 rows.append(row)
@@ -3583,7 +3583,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         out = {"cash": round(p.cash, 2), "equity": round(e, 2), "ret": round(self.season_return(p, e), 4),
                "pnl": round(e - p.deposited, 2), "holdings": hold, "rank": self.rank.get(p.token),
                "pro": self.is_pro(p), "expert": self.is_expert(p), "low": e < float(self.settings.get("restart_below", 50.0)),
-               "lessons": len(p.passed)}
+               "lessons": len(p.passed), "traded": self.ever_traded(p)}   # (traded: the first-steps banner, 2026-11-10)
         if p.opts or getattr(p, "opts_dirty", False):   # option positions (options.py), and once more when the last goes
             out["opts"] = self.options_view(p)
             p.opts_dirty = bool(p.opts)

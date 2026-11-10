@@ -232,6 +232,8 @@ Done: **TA-E1 to TA-E3**, **N1-N6**.
 
 ### M and B. Money and growth
 
+**Growth plan (2026-11-10):** [GROWTH_PLAN.md](GROWTH_PLAN.md), the owner-approved plan to get players, with no spending. Done on 10 Nov: an account without the emailed-code wall (`signup_verify` off; the address is confirmed later on the Profile), *Play today's chart* first in the home page's intro box, `/play` for the reels, a visitor's Daily result before the save box, *beat my score* links, the first unit outside the free day, house bots tagged, boards and player pages open to visitors, and the visit log's settings (`deploy/Caddyfile`, not switched on on the server yet) with `tools/visits.py` and the privacy page. Still open from it: G2 (the sign-up tried on a phone inside Instagram's browser), TA-D9 (the reminder email, waiting for R9), TA-D8, TA-D7, B5, one password box with a *show* switch, and the reel changes in `growth/reel-brief.md` for the reels chat. The posting schedule stays as it is (owner, 10 Nov).
+
 | # | Change | Why | How | Size |
 |---|---|---|---|---|
 | M11 | A Pro trial | The locked-tool moments are the real upsell; a taste sells better than a lock. | Seven days of Pro, started at sign-up or the first time a Pro tool is tapped, then the normal price; once per account; Stripe's trial on the monthly pass or a flag in the game. | S-M |

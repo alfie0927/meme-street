@@ -6,7 +6,15 @@ let dly=null,dlyG=null,dlyT=null,dlyBusy=false,dlyWasRunning=false,dlySize=Numbe
 const dlyHdr=()=>token?{'X-Token':token}:{'X-Visitor':visitorId()};   // (a logged-out visitor plays too, off the board)
 const DLY_ABOUT=`<div class="dly-about"><h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how every other player did.</p>
   <p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p></div>`;
-const DLY_SAVE=`<div class="dly-save"><b>Save your result</b><p>Make a free account and today's return goes on the leaderboard and starts your streak. Without one it is not kept.</p><button class="dly-go" data-dly-join>Create a free account</button></div>`;
+// a visitor's result first, then this under it, naming the result (growth plan, 2026-11-10)
+const dlySave=g=>`<div class="dly-save"><b>Save your ${g?pc(g.ret):'result'} and start your streak</b><p>Make a free account (under a minute) and today's result goes on the leaderboard. Without one it is not kept.</p><button class="dly-go" data-dly-join>Save my result</button></div>`;
+// "beat my score": a shared result carries the sharer's name, return in hundredths of a percent and the chart's number
+// (?vs=name~bp~number), shown to the friend before they play and beside their own result after (2026-11-10). The regex
+// is built in a try: an old browser without \p{} must not lose the whole page
+const dlyVs=(()=>{try{const m=new RegExp('^([\\p{L}\\p{N}_. -]{0,16})~(-?\\d{1,7})~(\\d{1,6})$','u').exec(new URLSearchParams(location.search).get('vs')||'');
+ return m?{name:m[1].trim(),ret:Number(m[2])/10000,number:Number(m[3])}:null}catch(e){return null}})();
+const dlyVsFor=d=>dlyVs&&d&&dlyVs.number===d.number?dlyVs:null;
+const dlyVsName=v=>v.name?esc(v.name):'Your friend';
 async function loadDaily(){
  const d=await api('/api/daily');if(!d||d.error||d.slow||d.notfound){if(guest){dly=null;drawDailyGuest()}return}
  dly=d;dlyG=d.game?Object.assign({},d.game):null;drawDaily();
@@ -65,8 +73,8 @@ function dlyHist(dist,mine){
 function dlyBoard(d){
  const me=S&&S.name,medal=['dly-gold','dly-silver','dly-bronze'];
  return `<h3 class="dly-h">Today's best <span class="mut">${numText(d.players,0)} played</span></h3>`
-  +(d.board.length?`<table class="dly-board"><tbody>${d.board.map((x,i)=>`<tr class="${x.name===me?'me':''}"><td class="dly-rk ${medal[i]||''}">${i+1}</td><td><a href="/player/${encodeURIComponent(x.name)}">${esc(x.name)}</a></td><td class="mut">${x.trades} trade${x.trades===1?'':'s'}</td><td class="${clsP(x.ret)} dly-r">${pc(x.ret)}</td></tr>`).join('')}</tbody></table>`:'<p class="mut">Nobody has finished today\'s chart yet. Be the first.</p>')
-  +(d.past.length?`<h3 class="dly-h">Winners of the last days</h3><table class="dly-board"><tbody>${d.past.map(p=>`<tr><td class="mut">${new Date(p.day*86400000).toLocaleDateString(undefined,{day:'numeric',month:'short',timeZone:'UTC'})}</td><td>${p.top[0]?esc(p.top[0].name):'-'}</td><td class="mut">${p.players} played</td><td class="${p.top[0]?clsP(p.top[0].ret):''} dly-r">${p.top[0]?pc(p.top[0].ret):'-'}</td></tr>`).join('')}</tbody></table>`:'')}
+  +(d.board.length?`<table class="dly-board"><tbody>${d.board.map((x,i)=>`<tr class="${x.name===me?'me':''}"><td class="dly-rk ${medal[i]||''}">${i+1}</td><td><a href="/player/${encodeURIComponent(x.name)}">${esc(x.name)}</a>${x.bot?BOT_TAG:''}</td><td class="mut">${x.trades} trade${x.trades===1?'':'s'}</td><td class="${clsP(x.ret)} dly-r">${pc(x.ret)}</td></tr>`).join('')}</tbody></table>`:'<p class="mut">Nobody has finished today\'s chart yet. Be the first.</p>')
+  +(d.past.length?`<h3 class="dly-h">Winners of the last days</h3><table class="dly-board"><tbody>${d.past.map(p=>`<tr><td class="mut">${new Date(p.day*86400000).toLocaleDateString(undefined,{day:'numeric',month:'short',timeZone:'UTC'})}</td><td>${p.top[0]?esc(p.top[0].name)+(p.top[0].bot?BOT_TAG:''):'-'}</td><td class="mut">${p.players} played</td><td class="${p.top[0]?clsP(p.top[0].ret):''} dly-r">${p.top[0]?pc(p.top[0].ret):'-'}</td></tr>`).join('')}</tbody></table>`:'')}
 const dlyHead=d=>`<div class="dly-head"><div><div class="dly-title">Daily Chart <span>#${d.number}</span></div><div class="dly-sub">${dlyDate(d)} · ${numText(d.players,0)} played today</div></div>
  <div class="dly-icons"><button class="dly-ic" data-dly-help aria-label="How to play">?</button><button class="dly-ic" data-dly-stats>Stats</button></div></div>`;
 const dlySquares=(grid,anim)=>`<div class="dly-grid${anim?' anim':''}">${grid.map((v,i)=>`<i class="${v>0?'u':v<0?'d':'f'}" style="animation-delay:${i*0.09}s"></i>`).join('')}</div>`;
@@ -81,15 +89,12 @@ function dlyCard(g,d,anim){
   <div class="dly-place">${g.rank?`<b>${dlyPlace(g.rank)}</b> of ${numText(g.of,0)}`:''}${better===null?(g.rank?' · the first to finish today':''):better>0?` · better than ${Math.round(better*100)}% of players`:''}</div>
   ${dlySquares(g.grid||[],anim)}
   <div class="dly-vs">The stock did <b class="${clsP(g.hold)}">${pc(g.hold)}</b>: ${!g.trades.length?'you sat it out.':g.ret>g.hold+1e-9?'you beat it.':'it beat you.'}</div>
+  ${(v=>v?`<div class="dly-vs dly-chal">${dlyVsName(v)} got <b class="${clsP(v.ret)}">${pc(v.ret)}</b>: ${g.ret>v.ret+1e-9?'you beat them.':g.ret<v.ret-1e-9?'they beat you this time.':'a tie.'}</div>`:'')(dlyVsFor(d))}
   ${g.best&&g.best.ret>0.0005?`<div class="dly-vs dly-best">What you could have done: <b>${g.best.side==='long'?'buy':'short'}</b> at second ${g.best.from-(d.history-1)}, <b>${g.best.side==='long'?'sell':'cover'}</b> at second ${g.best.to-(d.history-1)}, for <b class="up">${pc(g.best.ret)}</b>. The levels it tested are under the chart.</div>`:''}
   ${dlyStatRow(d.stats)}
   <div class="dly-share"><button class="dly-go" data-dly-share>Share</button><button class="dly-alt" data-dly-pic>Story picture</button></div>
-  ${d.visitor?'':`<div class="dly-share dly-step"><a class="dly-alt" href="${dlyLesson(g)}">The lesson for this chart</a><a class="dly-alt" href="/">Trade a live stock</a></div>`}
+  <div class="dly-share dly-step"><a class="dly-alt" href="${dlyLesson(g)}">The lesson for this chart</a><a class="dly-alt" href="/">Trade a live stock</a></div>
   <div class="dly-next">Next chart in <b class="dly-cd">${dlyHMS(d.next-engineNow())}</b></div></div>`}
-// the lesson that fits what the chart did: no level tested, a trend; a fake break or more breaks than holds, ranges and
-// breakouts; otherwise support and resistance (TA-D10)
-function dlyLesson(g){const o=(g.levels||[]).flatMap(l=>l.tests.map(t=>t[1]));if(!o.length)return '/learn?l=trends';
- if(o.includes('fake break')||o.filter(x=>x==='broke').length>o.filter(x=>x==='held').length)return '/learn?l=ranges-breakouts';return '/learn?l=support-resistance'}
 // the lesson that fits what the chart did: no level tested, a trend; a fake break or more breaks than holds, ranges and
 // breakouts; otherwise support and resistance (TA-D10)
 function dlyLesson(g){const o=(g.levels||[]).flatMap(l=>l.tests.map(t=>t[1]));if(!o.length)return '/learn?l=trends';
@@ -100,7 +105,7 @@ function dlyPop(html,label){
  box.style.display='flex';dlyCountdown()}
 function dlySummary(){
  const g=dlyG,d=dly;if(!g||!g.done||!d||!g.dist)return;lsSet('ms_daily_seen',d.day);
- dlyPop((d.visitor?DLY_SAVE:'')+dlyCard(g,d,true)+`<h3 class="dly-h">Everyone's returns today</h3>${dlyHist(g.dist,g.ret)}`,'Your result')}
+ dlyPop(dlyCard(g,d,true)+(d.visitor?dlySave(g):'')+`<h3 class="dly-h">Everyone's returns today</h3>${dlyHist(g.dist,g.ret)}`,'Your result')}
 function dlyHelp(){
  dlyPop(`<h3 class="dly-mt">How to play</h3><ul class="dly-rules">
   <li><b>One chart a day</b>, the same for everyone, with no name. A new one at midnight UTC.</li>
@@ -123,13 +128,13 @@ function drawDaily(){
  const st=d.status==='running'&&dlyG&&dlyG.done?'done':d.status;
  if(el._st!==st+d.visitor){el._st=st+d.visitor;
   if(st==='new')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p>
-   ${d.stats.streak?`<p class="dly-streak">Streak <b>${d.stats.streak}</b> day${d.stats.streak===1?'':'s'}: keep it going</p>`:''}<button class="dly-go" id="dly-start">Play</button>
+   ${d.stats.streak?`<p class="dly-streak">Streak <b>${d.stats.streak}</b> day${d.stats.streak===1?'':'s'}: keep it going</p>`:''}${(v=>v?`<p class="dly-chal"><b>${dlyVsName(v)}</b> got <b class="${clsP(v.ret)}">${pc(v.ret)}</b> on this chart. Beat it.</p>`:'')(dlyVsFor(d))}<button class="dly-go" id="dly-start">Play</button>
    <p class="dly-small">${d.visitor?'Free, no sign-up · ':''}One go a day · 1,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div>${d.visitor?DLY_ABOUT:''}</div>`);
   else if(st==='running')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-top"><div class="dly-timer" id="dly-timer"></div><div class="dly-pnl"><div class="dly-ret" id="dly-ret"></div><div class="dly-eq" id="dly-eq"></div></div></div>
    <div id="dly-chart" class="dly-chart"></div><div class="dly-pos" id="dly-pos"></div>
    <div class="dly-sizes" role="group" aria-label="Size">${[0.25,0.5,0.75,1].map((p,i)=>`<button data-dly-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
    <div class="dly-btns"><button class="dly-buy" data-dly="buy"><span id="dly-lb">Buy</span><small>B</small></button><button class="dly-sell" data-dly="sell"><span id="dly-ls">Sell</span><small>S</small></button></div></div>`);
-  else setHtml(el,`<div class="dly-wrap">${dlyHead(d)}${d.visitor?DLY_SAVE:''}<div id="dly-card"></div><h3 class="dly-h">Today's chart</h3><div id="dly-chart" class="dly-chart"></div><div id="dly-levels"></div><div id="dly-dist"></div><div id="dly-board"></div></div>`)}
+  else setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div id="dly-card"></div>${d.visitor?dlySave(dlyG):''}<h3 class="dly-h">Today's chart</h3><div id="dly-chart" class="dly-chart"></div><div id="dly-levels"></div><div id="dly-dist"></div><div id="dly-board"></div></div>`)}
  const g=dlyG;
  if(st==='running'&&g&&g.candles&&g.candles.length){
   setHtml($('dly-chart'),dlySvg(g));
@@ -159,7 +164,7 @@ function dlyLevelRows(lv){
 // sharing: the result as text (the squares, like Wordle's) and as a picture for an Instagram story (1080 x 1920). A phone
 // gets its share sheet; elsewhere the text is copied (and the picture saved, from its own button)
 function dlyShareText(g,d){
- return `Meme Street Daily Chart #${d.number}\n${pc(g.ret)}${g.rank?' · '+dlyPlace(g.rank)+' of '+numText(g.of,0):''}\n${(g.grid||[]).map(v=>v>0?'\u{1F7E9}':v<0?'\u{1F7E5}':'⬜').join('')}\n${d.stats.streak>1?'Streak '+d.stats.streak+'\n':''}https://memestreet.net/daily?ref=${S&&S.invite||'daily_share'}`}   // (the player's own invite code, for the admin's invite counts)
+ return `Meme Street Daily Chart #${d.number}\n${pc(g.ret)}${g.rank?' · '+dlyPlace(g.rank)+' of '+numText(g.of,0):''}\n${(g.grid||[]).map(v=>v>0?'\u{1F7E9}':v<0?'\u{1F7E5}':'⬜').join('')}\n${d.stats.streak>1?'Streak '+d.stats.streak+'\n':''}https://memestreet.net/daily?ref=${S&&S.invite||'daily_share'}&vs=${encodeURIComponent(((S&&S.name)||'')+'~'+Math.round(g.ret*10000)+'~'+d.number)}`}   // (the player's own invite code, for the admin's invite counts; vs: "beat my score")
 async function dlyPicture(g,d){
  const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),F='ui-monospace,Consolas,Menlo,monospace',L=96;
  const up=g.ret>=0,col=up?'#3ad07a':'#f25c54';

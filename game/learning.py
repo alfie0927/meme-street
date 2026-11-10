@@ -45,6 +45,7 @@ CHALLENGES = [          # this week's habits (LP11, 2026-11-07): the old challen
 ]
 PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen", "drills", "passed", "ex", "xp", "xp_days", "goal", "tasks", "placed", "attempts", "xp_weeks", "stop_px", "r_log", "day_passes")
 FREE_LESSONS_A_DAY = 2       # a free player finishes this many lessons a day; Pro lifts it, Expert adds the Expert units (rubric v2 A8)
+OPEN_TRACKS = {"start"}      # the first unit never uses up the free day, so a new player's first minutes are not cut short (growth plan, 2026-11-10)
 COIN_KINDS = {"next"}        # chart tests built to score 50%: never a weak spot (LP9)
 LEVELS = [(0, "Trainee"), (200, "Apprentice"), (600, "Trader"), (1500, "Analyst"), (3000, "Strategist"), (6000, "Master")]   # XP levels (LP14)
 GOALS = (20, 50, 100)        # the daily XP goals a player can pick
@@ -476,7 +477,8 @@ class LearningMixin:
             return 0
         p.passed[lesson["id"]] = self.now
         day = self._learn_day()
-        p.day_passes[day] = p.day_passes.get(day, 0) + 1
+        if lesson["track"] not in OPEN_TRACKS:
+            p.day_passes[day] = p.day_passes.get(day, 0) + 1
         for k in sorted(p.day_passes)[:-60]:
             del p.day_passes[k]
         self._xp(p, XP_PASS)
@@ -664,7 +666,8 @@ class LearningMixin:
         tier = self.tier_of(p)
         if track.get("tier") == "expert" and tier != "expert":
             return "expert"
-        if tier == "free" and not p.ex.get(x["id"]) and p.day_passes.get(self._learn_day(), 0) >= FREE_LESSONS_A_DAY:
+        if (tier == "free" and x["track"] not in OPEN_TRACKS and not p.ex.get(x["id"])
+                and p.day_passes.get(self._learn_day(), 0) >= FREE_LESSONS_A_DAY):
             return "limited"
         return None
 

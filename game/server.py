@@ -1341,15 +1341,25 @@ async def me(x_token: str = Header("")):
 
 
 @app.get("/api/boards")
-async def boards(x_token: str = Header("")):
-    """The season, risk-adjusted and all-time leaderboards."""
+async def boards(x_token: str = Header(""), x_visitor: str = Header("")):
+    """The season, risk-adjusted and all-time leaderboards. A visitor without an account sees them too (2026-11-10)."""
+    if not x_token:
+        if not rate_ok("v:" + x_visitor[:40], "boards", 0.25):
+            return JSONResponse({"error": "slow down"}, status_code=429)
+        return await run(engine.boards_for, None)
     return await with_player(x_token, "boards", engine.boards_for)
 
 
 @app.get("/api/profile/{name}")
-async def profile(name: str, x_token: str = Header("")):
-    """Another player's profile. Their results and (delayed) holdings are only included if they made them public."""
-    res = await with_player(x_token, "profile", lambda p, n: engine.public_profile(n, p), name)
+async def profile(name: str, x_token: str = Header(""), x_visitor: str = Header("")):
+    """Another player's profile. Their results and (delayed) holdings are only included if they made them public. A
+    visitor without an account sees what any other player would (2026-11-10)."""
+    if not x_token:
+        if not rate_ok("v:" + x_visitor[:40], "profile", 0.25):
+            return JSONResponse({"error": "slow down"}, status_code=429)
+        res = await run(engine.public_profile, name, None)
+    else:
+        res = await with_player(x_token, "profile", lambda p, n: engine.public_profile(n, p), name)
     if res is None:
         return JSONResponse({"error": "no such player"}, status_code=404)
     return res

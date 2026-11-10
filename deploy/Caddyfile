@@ -24,6 +24,46 @@ YOURDOMAIN {
 		-Server
 	}
 
+	# The visit log (growth plan 2026-11-10): which links and pages bring people, read by tools/visits.py, kept 30 days.
+	# No login token reaches it: the token travels in the X-Token header and in the WebSocket address (/ws?token=...),
+	# and both are taken out below, with the visitor id, the admin key, cookies and order and payment ids. Addresses are
+	# cut short (the last part of an IPv4 address becomes 0), as the privacy page says.
+	log {
+		output file /var/log/caddy/memestreet-access.log {
+			roll_size 20MiB
+			roll_keep_for 720h
+		}
+		format filter {
+			wrap json
+			fields {
+				request>headers>X-Token delete
+				request>headers>X-Visitor delete
+				request>headers>X-Admin-Key delete
+				request>headers>Cookie delete
+				request>headers>Authorization delete
+				request>headers>Cf-Connecting-Ip delete
+				request>headers>X-Forwarded-For delete
+				request>uri query {
+					delete token
+					delete t
+					delete order
+					delete session_id
+					delete key
+					delete code
+				}
+				request>remote_ip ip_mask {
+					ipv4 24
+					ipv6 48
+				}
+				request>client_ip ip_mask {
+					ipv4 24
+					ipv6 48
+				}
+				resp_headers delete
+			}
+		}
+	}
+
 	# --- Optional: put the admin page behind a second password. The admin key alone has no limit on wrong guesses
 	# (ROADMAP A10), so this is worth doing before real players arrive. Make a password hash with
 	#     caddy hash-password

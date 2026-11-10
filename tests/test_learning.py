@@ -108,6 +108,8 @@ class LessonTests(unittest.TestCase):
         self.assertEqual(e.learn_answer(p, "cap-volume", q, 0)["gate"], "limited")
         self.assertIn("error", e.learn_answer(p, "cap-volume", q, 0))
         self.assertNotIn("gate", e.lesson("stocks-shares", p))                      # passed lessons stay open as a recap
+        first = next(x for x in e.lessons if x["track"] in learning.OPEN_TRACKS and x["id"] not in p.passed)
+        self.assertNotIn("gate", e.lesson(first["id"], p))                         # the first unit never uses up the free day (2026-11-10)
         p.day_passes = {"1": 2}                                                     # another day: the allowance is fresh
         self.assertNotIn("gate", e.lesson("cap-volume", p))
         p.day_passes = {e._learn_day(): 2}
@@ -772,8 +774,8 @@ class LearningBrowserTests(unittest.TestCase):
         d = Driver(pg)
         try:
             await d.join(base, "learner")
-            await d.check("a new player is pointed at the first lesson", "document.getElementById('learn-banner').innerHTML",
-                          lambda t: "first lesson" in t and "l=welcome" in t, wait=8)
+            await d.check("a new player is shown their first steps, lesson 1 among them", "document.getElementById('learn-banner').innerHTML",
+                          lambda t: "first steps" in t and "l=welcome" in t, wait=8)
             await pg.goto(base + "/learn", 3)
             await d.check("a new account sees the placement test alone", "document.querySelectorAll('.lrn-first').length+'|'+document.querySelectorAll('.lrn-track').length", "1|0", wait=10)
             await pg.js("document.querySelector('[data-place-skip]').click()")
