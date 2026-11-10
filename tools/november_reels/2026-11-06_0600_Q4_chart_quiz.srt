@@ -1,0 +1,64 @@
+1
+00:00:00,350 --> 00:00:02,622
+Three charts. Three new skills to test.
+
+2
+00:00:02,991 --> 00:00:04,856
+Pullbacks, levels and momentum.
+
+3
+00:00:05,356 --> 00:00:09,835
+Question one. A strong uptrend, and now price is dipping toward its average.
+
+4
+00:00:10,183 --> 00:00:12,099
+Is this a pullback, or a reversal?
+
+5
+00:00:15,949 --> 00:00:16,665
+A pullback.
+
+6
+00:00:17,073 --> 00:00:23,290
+Volume dried up on the dip, and it held above the last higher low. A reversal usually breaks that low.
+
+7
+00:00:23,790 --> 00:00:28,136
+Question two. Price is falling again, with three lines drawn underneath.
+
+8
+00:00:28,475 --> 00:00:30,990
+Which one is real support? A, B, or C?
+
+9
+00:00:34,840 --> 00:00:35,338
+B.
+
+10
+00:00:35,732 --> 00:00:42,462
+Buyers stepped in at that level three times before, so traders are watching it. A and C are just lines on a chart.
+
+11
+00:00:42,962 --> 00:00:48,217
+Question three. Price just made a new high. Now check the RSI panel underneath.
+
+12
+00:00:48,591 --> 00:00:50,291
+Will this new high hold, or fail?
+
+13
+00:00:54,141 --> 00:00:54,845
+It failed.
+
+14
+00:00:55,182 --> 00:01:03,468
+Price made a higher high, but RSI made a lower one. That divergence showed momentum fading. It's a warning, not a certainty.
+
+15
+00:01:03,968 --> 00:01:06,712
+How many did you get? Tell me your score in the comments.
+
+16
+00:01:07,102 --> 00:01:10,734
+Practise on real charts from the game, at memestreet.net.
+

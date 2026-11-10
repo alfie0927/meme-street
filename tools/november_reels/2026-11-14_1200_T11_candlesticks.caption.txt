@@ -1,0 +1,11 @@
+Every chart is made of these. Here's how to read one.
+
+Each candle shows four prices: the open, the close, the high and the low. The body runs from open to close, and the wicks show the extremes. Green closed higher, red closed lower.
+
+Together, they tell a story. A long upper wick means buyers pushed up, and sellers pushed it back.
+
+Practise reading candles at memestreet.net
+
+Fictional market. Not investment advice.
+
+#MemeStreet #Candlesticks #TechnicalAnalysis #TradingForBeginners #LearnToTrade

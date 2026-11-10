@@ -1,0 +1,64 @@
+1
+00:00:00,350 --> 00:00:02,622
+Three charts. Three new skills to test.
+
+2
+00:00:02,991 --> 00:00:04,801
+Breakouts, momentum and traps.
+
+3
+00:00:05,301 --> 00:00:08,299
+Question one. Price just closed above resistance.
+
+4
+00:00:08,648 --> 00:00:10,104
+Real breakout, or fake?
+
+5
+00:00:13,954 --> 00:00:14,516
+Fake.
+
+6
+00:00:14,924 --> 00:00:21,789
+The break came on thin volume, and price couldn't hold above the level. Real breakouts usually hold it on a retest.
+
+7
+00:00:22,289 --> 00:00:27,484
+Question two. Price just made a new high. Now check the RSI panel underneath.
+
+8
+00:00:27,823 --> 00:00:29,523
+Will this new high hold, or fail?
+
+9
+00:00:33,373 --> 00:00:34,077
+It failed.
+
+10
+00:00:34,472 --> 00:00:42,757
+Price made a higher high, but RSI made a lower one. That divergence showed momentum fading. It's a warning, not a certainty.
+
+11
+00:00:43,257 --> 00:00:46,005
+Question three. Price just dipped below support.
+
+12
+00:00:46,379 --> 00:00:48,749
+Is this a real breakdown, or a bear trap?
+
+13
+00:00:52,599 --> 00:00:53,411
+A bear trap.
+
+14
+00:00:53,748 --> 00:01:00,843
+The dip came on thin volume, then buyers snapped it straight back above support. Sellers who shorted the break got caught.
+
+15
+00:01:01,343 --> 00:01:04,087
+How many did you get? Tell me your score in the comments.
+
+16
+00:01:04,478 --> 00:01:08,109
+Practise on real charts from the game, at memestreet.net.
+

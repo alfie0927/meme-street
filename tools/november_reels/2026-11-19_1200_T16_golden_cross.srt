@@ -1,0 +1,24 @@
+1
+00:00:00,350 --> 00:00:03,172
+Why do headlines get excited about a golden cross?
+
+2
+00:00:04,850 --> 00:00:07,811
+It's when a fast moving average crosses above a slow one.
+
+3
+00:00:08,180 --> 00:00:10,180
+It suggests the trend may be turning up.
+
+4
+00:00:12,350 --> 00:00:15,630
+A death cross is the opposite: fast crossing below slow.
+
+5
+00:00:15,978 --> 00:00:21,389
+But both arrive after much of the move has happened. They confirm a trend, they don't predict one.
+
+6
+00:00:21,889 --> 00:00:25,102
+Practise with moving averages at memestreet.net.
+

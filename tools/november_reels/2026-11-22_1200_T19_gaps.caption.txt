@@ -1,0 +1,9 @@
+Why do charts sometimes jump, with nothing in between?
+
+That's a gap: price opened far from the last close, often because of news or earnings. Some gap and go, running on strong volume. Others fade back and fill the gap. Volume after the gap is often the best clue.
+
+Meme Street has earnings every couple of days. Practise at memestreet.net
+
+Fictional market. Not investment advice.
+
+#MemeStreet #Gaps #Earnings #TechnicalAnalysis #LearnToTrade

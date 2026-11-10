@@ -1,0 +1,32 @@
+1
+00:00:00,350 --> 00:00:02,506
+Big traders watch one line all day.
+
+2
+00:00:02,874 --> 00:00:03,998
+It's called VWAP.
+
+3
+00:00:04,498 --> 00:00:07,238
+VWAP is the volume weighted average price.
+
+4
+00:00:07,586 --> 00:00:11,406
+It's the average price paid, with busier candles counting for more.
+
+5
+00:00:11,906 --> 00:00:15,049
+When price is above VWAP, buyers have the upper hand.
+
+6
+00:00:15,457 --> 00:00:19,736
+When it's below, sellers do. Many traders use it as a fair value line.
+
+7
+00:00:20,236 --> 00:00:23,129
+VWAP is one of the Pro indicators on Meme Street.
+
+8
+00:00:23,468 --> 00:00:25,304
+Practise at memestreet.net.
+

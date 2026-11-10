@@ -1,0 +1,40 @@
+1
+00:00:00,350 --> 00:00:01,732
+A lock that can't be picked.
+
+2
+00:00:04,850 --> 00:00:09,227
+Meet RuneWorks, from the alchemy industry on Meme Street's fictional market.
+
+3
+00:00:09,596 --> 00:00:13,417
+It makes locks sealed with alchemical runes, that no tool can open.
+
+4
+00:00:13,917 --> 00:00:20,819
+It earns from selling locks, vault contracts with banks and museums, and key services like re-keying and recovery.
+
+5
+00:00:21,917 --> 00:00:24,843
+Its customers include banks, museums, and homes.
+
+6
+00:00:25,191 --> 00:00:27,054
+Security you can actually trust.
+
+7
+00:00:29,917 --> 00:00:32,911
+Its edge is rune recipes that nobody else knows.
+
+8
+00:00:36,917 --> 00:00:45,153
+The risks? One broken lock would hurt its reputation, GoldMaker Labs is the other big name in alchemy, and home sales are slow.
+
+9
+00:00:45,561 --> 00:00:49,799
+On Meme Street, stories like these hit the news wire, and the price reacts.
+
+10
+00:00:50,299 --> 00:00:52,835
+Find RuneWorks, at memestreet.net.
+

@@ -1,0 +1,64 @@
+1
+00:00:00,350 --> 00:00:02,622
+Three charts. Three new skills to test.
+
+2
+00:00:02,991 --> 00:00:04,727
+Trends, flags and momentum.
+
+3
+00:00:05,227 --> 00:00:08,331
+Question one. It's choppy, with some deep pullbacks.
+
+4
+00:00:08,679 --> 00:00:11,351
+Is this an uptrend, a downtrend, or a range?
+
+5
+00:00:15,201 --> 00:00:16,029
+An uptrend.
+
+6
+00:00:16,438 --> 00:00:21,470
+Follow the swings, not the noise. Each high is higher than the last, and so is each low.
+
+7
+00:00:22,201 --> 00:00:26,464
+Question two. A sharp rally, then a quiet drift lower on light volume.
+
+8
+00:00:26,803 --> 00:00:28,792
+Does the move continue, or reverse?
+
+9
+00:00:32,642 --> 00:00:33,433
+It reversed.
+
+10
+00:00:33,827 --> 00:00:41,405
+It looked like a bull flag, but the drift kept going and broke the pole's base. Patterns fail too, which is why you'd use a stop.
+
+11
+00:00:41,905 --> 00:00:47,160
+Question three. Price just made a new high. Now check the RSI panel underneath.
+
+12
+00:00:47,534 --> 00:00:49,234
+Will this new high hold, or fail?
+
+13
+00:00:53,084 --> 00:00:53,788
+It failed.
+
+14
+00:00:54,125 --> 00:01:02,410
+Price made a higher high, but RSI made a lower one. That divergence showed momentum fading. It's a warning, not a certainty.
+
+15
+00:01:02,910 --> 00:01:05,654
+How many did you get? Tell me your score in the comments.
+
+16
+00:01:06,045 --> 00:01:09,677
+Practise on real charts from the game, at memestreet.net.
+

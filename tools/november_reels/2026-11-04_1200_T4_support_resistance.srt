@@ -1,0 +1,44 @@
+1
+00:00:00,350 --> 00:00:02,669
+Why does price keep stopping at the same spot?
+
+2
+00:00:04,350 --> 00:00:07,275
+Support is a level where buyers have stepped in before.
+
+3
+00:00:07,644 --> 00:00:09,602
+Resistance is where sellers have.
+
+4
+00:00:10,102 --> 00:00:13,379
+The more times a level is tested, the more traders watch it.
+
+5
+00:00:13,727 --> 00:00:17,655
+Old highs and lows, and round numbers, often act as levels too.
+
+6
+00:00:18,155 --> 00:00:21,074
+When resistance breaks, it often turns into support.
+
+7
+00:00:21,482 --> 00:00:23,565
+The old ceiling becomes the new floor.
+
+8
+00:00:24,065 --> 00:00:27,950
+But levels are zones, not exact lines, and they don't hold forever.
+
+9
+00:00:28,289 --> 00:00:31,229
+That's why a stop goes beyond the level, not right on it.
+
+10
+00:00:31,729 --> 00:00:37,344
+Meme Street's charts have support and resistance that hold, break and fake out, like a real market.
+
+11
+00:00:37,738 --> 00:00:40,343
+Practise reading them at memestreet.net.
+

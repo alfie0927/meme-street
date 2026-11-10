@@ -1,0 +1,28 @@
+1
+00:00:00,350 --> 00:00:02,925
+Most new traders put their stop in the wrong place.
+
+2
+00:00:03,294 --> 00:00:04,550
+Or don't use one at all.
+
+3
+00:00:05,350 --> 00:00:09,006
+Put it too tight, and ordinary noise stops you out of a good trade.
+
+4
+00:00:09,354 --> 00:00:13,770
+Put it too wide, or skip it, and one bad trade can wipe out weeks of gains.
+
+5
+00:00:14,850 --> 00:00:21,033
+A common rule is to place it just beyond the level that proves your idea wrong, like below the last swing low.
+
+6
+00:00:21,441 --> 00:00:27,672
+Meme Street has chart tests on exactly this, and stop-losses you can practise with, using practice money.
+
+7
+00:00:28,172 --> 00:00:30,960
+Practise placing your stops at memestreet.net.
+

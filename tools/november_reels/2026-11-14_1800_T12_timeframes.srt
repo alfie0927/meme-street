@@ -1,0 +1,28 @@
+1
+00:00:00,350 --> 00:00:02,907
+Same stock, three completely different charts.
+
+2
+00:00:03,276 --> 00:00:03,748
+How?
+
+3
+00:00:04,850 --> 00:00:09,127
+It's the timeframe. Each candle can cover a few seconds, or a whole day.
+
+4
+00:00:09,475 --> 00:00:15,151
+Group three candles into one, then six, and the noise smooths out. Same market, different zoom.
+
+5
+00:00:15,651 --> 00:00:20,947
+Many traders use longer candles to see the big trend, and shorter ones to time their entry.
+
+6
+00:00:22,151 --> 00:00:26,226
+Meme Street's charts go from thirty second candles to one year candles.
+
+7
+00:00:26,635 --> 00:00:28,470
+Practise at memestreet.net.
+

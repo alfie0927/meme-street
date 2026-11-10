@@ -1,0 +1,24 @@
+1
+00:00:00,350 --> 00:00:03,610
+You did everything right, and then the price dropped out of nowhere.
+
+2
+00:00:05,850 --> 00:00:12,362
+Usually, it wasn't nowhere. It was a scheduled release, like inflation, jobs, interest rates or earnings.
+
+3
+00:00:12,731 --> 00:00:15,899
+And it's the surprise against the forecast that moves the price.
+
+4
+00:00:16,399 --> 00:00:23,523
+Meme Street has an economy calendar with inflation, jobs, GDP and rate decisions, each with a forecast.
+
+5
+00:00:23,872 --> 00:00:29,358
+There are earnings every couple of days, and a live news wire, so you can practise trading around them.
+
+6
+00:00:29,858 --> 00:00:32,501
+Practise trading the news at memestreet.net.
+

@@ -1,0 +1,28 @@
+1
+00:00:00,350 --> 00:00:02,060
+How much should you put in one trade?
+
+2
+00:00:02,602 --> 00:00:03,927
+Here's the simple maths.
+
+3
+00:00:04,850 --> 00:00:07,463
+Start with your account, say one thousand MB.
+
+4
+00:00:07,812 --> 00:00:17,786
+Decide to risk one percent, so ten MB. If your stop is five percent away, your position is two hundred MB, because five percent of two hundred is ten.
+
+5
+00:00:18,286 --> 00:00:22,893
+That way, even ten losses in a row leave you with about ninety percent of your account.
+
+6
+00:00:23,301 --> 00:00:24,951
+No single trade can sink you.
+
+7
+00:00:25,786 --> 00:00:29,277
+Practise sizing with practice money at memestreet.net.
+

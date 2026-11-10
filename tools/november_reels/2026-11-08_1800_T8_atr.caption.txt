@@ -1,0 +1,11 @@
+Your stop keeps getting hit by normal noise?
+
+ATR, the average true range, measures how far price typically moves in one candle. Low when the market's calm, high when it's wild. It says nothing about direction, only size.
+
+Many traders use it to size stops, for example two ATRs from the entry, so ordinary noise doesn't knock them out.
+
+ATR is one of the Pro indicators on Meme Street. Practise at memestreet.net
+
+Fictional market. Not investment advice.
+
+#MemeStreet #ATR #StopLoss #RiskManagement #LearnToTrade

@@ -1,0 +1,36 @@
+1
+00:00:00,350 --> 00:00:02,016
+This company steers hurricanes.
+
+2
+00:00:04,850 --> 00:00:09,627
+Meet StormShield, a weather engineering company on Meme Street's fictional market.
+
+3
+00:00:09,996 --> 00:00:14,158
+Its coastal towers push storms back out to sea, before they reach land.
+
+4
+00:00:14,658 --> 00:00:23,632
+It earns from yearly protection fees paid by coastal cities, deals with insurers who share the savings, and emergency call-outs when a storm forms.
+
+5
+00:00:24,132 --> 00:00:28,109
+That means less damage, lower insurance bills, and safer coastlines.
+
+6
+00:00:32,132 --> 00:00:36,387
+Its edge is a network of towers along the coast, which takes years to build.
+
+7
+00:00:39,132 --> 00:00:45,343
+The risks? One storm it can't steer, rival CloudSeed, and neighbours who don't want storms pushed their way.
+
+8
+00:00:45,691 --> 00:00:49,929
+On Meme Street, stories like these hit the news wire, and the price reacts.
+
+9
+00:00:50,429 --> 00:00:53,147
+Find StormShield, at memestreet.net.
+

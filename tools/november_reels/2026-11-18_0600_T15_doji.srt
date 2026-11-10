@@ -1,0 +1,24 @@
+1
+00:00:00,350 --> 00:00:02,187
+What does a candle with no body mean?
+
+2
+00:00:04,850 --> 00:00:09,703
+That's a doji. Price moved around, but closed almost exactly where it opened.
+
+3
+00:00:10,072 --> 00:00:12,067
+It's a tie between buyers and sellers.
+
+4
+00:00:13,350 --> 00:00:19,242
+After a strong run, it can mean momentum is fading. In a sideways range, it means very little.
+
+5
+00:00:19,590 --> 00:00:21,841
+Either way, the next candle shows who won.
+
+6
+00:00:22,850 --> 00:00:25,618
+Practise reading candles at memestreet.net.
+

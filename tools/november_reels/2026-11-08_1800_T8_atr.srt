@@ -1,0 +1,40 @@
+1
+00:00:00,350 --> 00:00:02,697
+Your stop keeps getting hit by normal noise?
+
+2
+00:00:03,239 --> 00:00:04,573
+This indicator can help.
+
+3
+00:00:05,073 --> 00:00:10,610
+ATR, the average true range, measures how far price typically moves in one candle.
+
+4
+00:00:10,958 --> 00:00:13,393
+It says nothing about direction, only size.
+
+5
+00:00:13,893 --> 00:00:16,299
+When the market is calm, ATR is low.
+
+6
+00:00:16,707 --> 00:00:18,750
+When it's wild, ATR rises.
+
+7
+00:00:19,250 --> 00:00:24,662
+Many traders use it to size stops. For example, two ATRs away from the entry.
+
+8
+00:00:25,001 --> 00:00:28,057
+That keeps the stop outside the market's ordinary noise.
+
+9
+00:00:28,557 --> 00:00:31,791
+ATR is one of the Pro indicators on Meme Street.
+
+10
+00:00:32,185 --> 00:00:34,021
+Practise at memestreet.net.
+

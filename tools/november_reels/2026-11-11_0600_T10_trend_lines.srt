@@ -1,0 +1,32 @@
+1
+00:00:00,350 --> 00:00:03,119
+The simplest tool on any chart is a straight line.
+
+2
+00:00:04,350 --> 00:00:07,181
+In an uptrend, connect one swing low to the next.
+
+3
+00:00:07,550 --> 00:00:08,700
+That's your trend line.
+
+4
+00:00:09,200 --> 00:00:13,717
+When price comes back and bounces off it a third time, more traders start to trust it.
+
+5
+00:00:14,700 --> 00:00:18,273
+And when price breaks below it, that's a warning the trend may be ending.
+
+6
+00:00:18,621 --> 00:00:21,510
+Not a guarantee, but a reason to pay attention.
+
+7
+00:00:22,200 --> 00:00:25,725
+Trend lines are one of the drawing tools on Meme Street's charts.
+
+8
+00:00:26,133 --> 00:00:27,969
+Practise at memestreet.net.
+

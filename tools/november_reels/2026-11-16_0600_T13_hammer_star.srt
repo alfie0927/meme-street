@@ -1,0 +1,32 @@
+1
+00:00:00,350 --> 00:00:03,558
+Two candles that can warn you a move is running out of steam.
+
+2
+00:00:05,350 --> 00:00:08,922
+The hammer has a long lower wick, and a small body near the top.
+
+3
+00:00:09,291 --> 00:00:13,353
+After a fall, it shows sellers pushed price down, but buyers fought it back.
+
+4
+00:00:14,850 --> 00:00:19,922
+The shooting star is the opposite. A long upper wick, and a small body near the bottom.
+
+5
+00:00:20,271 --> 00:00:23,816
+After a rise, it shows buyers tried, and sellers pushed back.
+
+6
+00:00:24,350 --> 00:00:30,978
+Location matters. At support or resistance, they're worth noticing. In the middle of nowhere, they're just noise.
+
+7
+00:00:31,387 --> 00:00:33,426
+And wait for the next candle to confirm.
+
+8
+00:00:33,926 --> 00:00:36,398
+Practise spotting them at memestreet.net.
+

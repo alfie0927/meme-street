@@ -1,0 +1,28 @@
+1
+00:00:00,350 --> 00:00:02,395
+A sharp rally, then a quiet pause.
+
+2
+00:00:02,764 --> 00:00:04,007
+Here's what it might mean.
+
+3
+00:00:04,850 --> 00:00:11,058
+A bull flag starts with a sharp rally, the pole, then a quiet drift lower on light volume, the flag.
+
+4
+00:00:11,406 --> 00:00:14,814
+When price breaks out of the flag, the trend often continues.
+
+5
+00:00:15,350 --> 00:00:20,862
+But flags fail too. Watch out if it drifts too deep, or if volume is heavy on the pullback.
+
+6
+00:00:21,270 --> 00:00:23,606
+A stop below the flag limits the damage.
+
+7
+00:00:24,106 --> 00:00:26,671
+Practise spotting flags at memestreet.net.
+

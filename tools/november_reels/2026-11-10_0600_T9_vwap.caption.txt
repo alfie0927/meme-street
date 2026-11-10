@@ -1,0 +1,9 @@
+Big traders watch one line all day. It's called VWAP.
+
+VWAP is the volume-weighted average price: the average price paid, with busier candles counting for more. Above it, buyers have the upper hand. Below it, sellers do. Many traders use it as a fair-value line.
+
+VWAP is one of the Pro indicators on Meme Street. Practise at memestreet.net
+
+Fictional market. Not investment advice.
+
+#MemeStreet #VWAP #TechnicalAnalysis #DayTrading #LearnToTrade

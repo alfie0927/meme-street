@@ -1,0 +1,40 @@
+1
+00:00:00,350 --> 00:00:01,705
+Price tells you what happened.
+
+2
+00:00:02,074 --> 00:00:05,181
+Volume tells you how much conviction was behind it.
+
+3
+00:00:05,681 --> 00:00:08,620
+Volume is the number of shares traded in each candle.
+
+4
+00:00:08,969 --> 00:00:11,356
+It's those bars along the bottom of the chart.
+
+5
+00:00:11,856 --> 00:00:15,605
+A breakout on rising volume shows real participation.
+
+6
+00:00:16,013 --> 00:00:17,793
+Lots of traders agree on the move.
+
+7
+00:00:18,293 --> 00:00:23,037
+A move on thin volume is easier to reverse, because fewer traders are behind it.
+
+8
+00:00:23,793 --> 00:00:30,167
+And a sudden spike in volume often marks news, or a turning point, where buyers and sellers fight hardest.
+
+9
+00:00:30,667 --> 00:00:36,799
+On Meme Street, volume swells on breakouts and fades in quiet ranges, just like a real market.
+
+10
+00:00:37,137 --> 00:00:39,517
+Practise reading it at memestreet.net.
+

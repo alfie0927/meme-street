@@ -1,0 +1,36 @@
+1
+00:00:00,350 --> 00:00:01,978
+Every chart is made of these.
+
+2
+00:00:02,347 --> 00:00:03,707
+Here's how to read a candle.
+
+3
+00:00:04,850 --> 00:00:10,717
+Each candle shows four prices. Where it opened, where it closed, the highest point and the lowest point.
+
+4
+00:00:11,065 --> 00:00:14,369
+The thick part is the body, and the thin lines are the wicks.
+
+5
+00:00:15,350 --> 00:00:17,661
+A green candle closed higher than it opened.
+
+6
+00:00:18,069 --> 00:00:19,479
+A red one closed lower.
+
+7
+00:00:19,979 --> 00:00:26,634
+Read together, they tell a story. This one says buyers pushed price up, but sellers pushed it most of the way back.
+
+8
+00:00:26,973 --> 00:00:30,531
+A long upper wick like that is a sign of rejection from above.
+
+9
+00:00:31,031 --> 00:00:33,798
+Practise reading candles at memestreet.net.
+

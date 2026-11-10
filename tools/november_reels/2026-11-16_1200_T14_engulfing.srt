@@ -1,0 +1,32 @@
+1
+00:00:00,350 --> 00:00:02,617
+One candle that swallows the last one whole.
+
+2
+00:00:04,850 --> 00:00:09,092
+A small red candle, then a big green one whose body completely covers it.
+
+3
+00:00:09,461 --> 00:00:12,387
+That's a bullish engulfing. Buyers have taken over.
+
+4
+00:00:13,350 --> 00:00:18,460
+Flip it, and a small green candle followed by a big red one is a bearish engulfing.
+
+5
+00:00:18,808 --> 00:00:20,133
+Sellers have taken over.
+
+6
+00:00:21,850 --> 00:00:24,917
+They mean most after a long move, and on heavy volume.
+
+7
+00:00:25,325 --> 00:00:27,751
+But no candle is a guarantee on its own.
+
+8
+00:00:29,350 --> 00:00:31,821
+Practise spotting them at memestreet.net.
+

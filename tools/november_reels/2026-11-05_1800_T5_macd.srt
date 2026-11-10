@@ -1,0 +1,48 @@
+1
+00:00:00,350 --> 00:00:02,358
+MACD looks complicated.
+
+2
+00:00:02,727 --> 00:00:05,768
+It's really just two moving averages talking to each other.
+
+3
+00:00:06,268 --> 00:00:13,799
+MACD is the gap between a fast and a slow moving average, usually the twelve and twenty six period EMA.
+
+4
+00:00:14,147 --> 00:00:16,562
+When the fast one pulls away, the gap grows.
+
+5
+00:00:17,062 --> 00:00:20,324
+The signal line is a smoothed version of MACD.
+
+6
+00:00:20,732 --> 00:00:27,660
+When MACD crosses above it, momentum is turning up. When it crosses below, momentum is turning down.
+
+7
+00:00:28,160 --> 00:00:30,687
+The histogram shows the distance between the two.
+
+8
+00:00:31,026 --> 00:00:33,555
+Shrinking bars mean the momentum is fading.
+
+9
+00:00:34,055 --> 00:00:36,005
+Like any moving average, it lags.
+
+10
+00:00:36,399 --> 00:00:40,204
+And in choppy, sideways markets, it gives lots of false crosses.
+
+11
+00:00:40,704 --> 00:00:44,341
+MACD is one of the Pro indicators on Meme Street.
+
+12
+00:00:44,715 --> 00:00:47,095
+Practise reading it at memestreet.net.
+

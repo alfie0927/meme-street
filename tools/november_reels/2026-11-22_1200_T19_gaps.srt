@@ -1,0 +1,24 @@
+1
+00:00:00,350 --> 00:00:03,346
+Why do charts sometimes jump, with nothing in between?
+
+2
+00:00:04,850 --> 00:00:09,387
+That's a gap. Price opened far from the last close, with no trades in between.
+
+3
+00:00:09,756 --> 00:00:12,232
+Gaps are often caused by news, or earnings.
+
+4
+00:00:13,350 --> 00:00:18,596
+Some gap and go, and keep running on strong volume. Others fade back and fill the gap.
+
+5
+00:00:18,944 --> 00:00:21,381
+Volume after the gap is often the best clue.
+
+6
+00:00:21,881 --> 00:00:27,522
+Meme Street has earnings every couple of days. Practise trading the gaps at memestreet.net.
+

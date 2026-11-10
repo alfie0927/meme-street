@@ -1,0 +1,11 @@
+MACD looks complicated. It's really just two moving averages talking to each other.
+
+It's the gap between a fast and a slow average. The signal line smooths it out: crossing above means momentum is turning up, below means it's turning down. Shrinking histogram bars mean momentum is fading.
+
+Like any average, it lags, and it chops in sideways markets.
+
+MACD is one of the Pro indicators on Meme Street. Practise at memestreet.net
+
+Fictional market. Not investment advice.
+
+#MemeStreet #MACD #TechnicalAnalysis #Momentum #LearnToTrade

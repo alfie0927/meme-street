@@ -1,0 +1,64 @@
+1
+00:00:00,350 --> 00:00:02,622
+Three charts. Three new skills to test.
+
+2
+00:00:02,991 --> 00:00:04,903
+Breakouts, candles and pullbacks.
+
+3
+00:00:05,403 --> 00:00:08,401
+Question one. Price just closed above resistance.
+
+4
+00:00:08,749 --> 00:00:10,206
+Real breakout, or fake?
+
+5
+00:00:14,056 --> 00:00:14,595
+Real.
+
+6
+00:00:15,003 --> 00:00:21,944
+Volume surged on the break, and when price came back to test the level, it held. Even real breakouts can still fail.
+
+7
+00:00:22,444 --> 00:00:26,068
+Question two. After a long run up, three candles are marked.
+
+8
+00:00:26,406 --> 00:00:29,060
+Which one was the warning sign? A, B, or C?
+
+9
+00:00:32,910 --> 00:00:33,407
+B.
+
+10
+00:00:33,801 --> 00:00:43,609
+A big red candle swallowed the one before it, at the top of a long run, on heavy volume. One candle is never a guarantee, but it's a clue worth respecting.
+
+11
+00:00:44,109 --> 00:00:48,637
+Question three. A strong uptrend, and now price is dipping toward its average.
+
+12
+00:00:49,011 --> 00:00:50,928
+Is this a pullback, or a reversal?
+
+13
+00:00:54,778 --> 00:00:55,493
+A pullback.
+
+14
+00:00:55,830 --> 00:01:02,048
+Volume dried up on the dip, and it held above the last higher low. A reversal usually breaks that low.
+
+15
+00:01:02,548 --> 00:01:05,292
+How many did you get? Tell me your score in the comments.
+
+16
+00:01:05,683 --> 00:01:09,314
+Practise on real charts from the game, at memestreet.net.
+

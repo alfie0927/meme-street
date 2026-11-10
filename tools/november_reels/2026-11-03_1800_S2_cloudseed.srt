@@ -1,0 +1,44 @@
+1
+00:00:00,350 --> 00:00:01,672
+This company sells rain.
+
+2
+00:00:02,041 --> 00:00:02,843
+On demand.
+
+3
+00:00:04,850 --> 00:00:09,612
+Meet CloudSeed, a weather engineering company on Meme Street's fictional market.
+
+4
+00:00:09,960 --> 00:00:14,885
+Its drones seed passing clouds, so the rain falls exactly where a customer needs it.
+
+5
+00:00:15,385 --> 00:00:23,367
+It earns from rain contracts with farms, emergency drought response for cities, and keeping forests damp through the wildfire season.
+
+6
+00:00:23,867 --> 00:00:28,593
+For the economy, that means steadier harvests, fuller reservoirs, and fewer fires.
+
+7
+00:00:29,001 --> 00:00:32,061
+When the weather can be booked, farming gets a lot less risky.
+
+8
+00:00:32,561 --> 00:00:40,137
+Its edge is scale. CloudSeed runs the biggest seeding fleet, and years of weather data help it pick the right cloud every time.
+
+9
+00:00:40,637 --> 00:00:49,556
+The risks? A naturally wet year means fewer orders, rival StormShield is chasing the same customers, and regulators are watching the skies.
+
+10
+00:00:49,895 --> 00:00:54,020
+On Meme Street, stories like these hit the news wire, and the price moves.
+
+11
+00:00:54,520 --> 00:00:58,203
+Find CloudSeed, and trade the weather, at memestreet.net.
+

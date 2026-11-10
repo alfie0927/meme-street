@@ -1,0 +1,40 @@
+1
+00:00:00,350 --> 00:00:02,837
+When these bands squeeze tight, pay attention.
+
+2
+00:00:04,350 --> 00:00:10,745
+Bollinger Bands are a twenty period moving average, with a band two standard deviations above and below it.
+
+3
+00:00:11,114 --> 00:00:13,234
+They widen and narrow with volatility.
+
+4
+00:00:13,734 --> 00:00:16,477
+When the market goes quiet, the bands squeeze together.
+
+5
+00:00:18,734 --> 00:00:21,029
+A squeeze often comes before a bigger move.
+
+6
+00:00:21,377 --> 00:00:24,280
+But it doesn't tell you which direction that move will go.
+
+7
+00:00:24,780 --> 00:00:28,035
+And touching the upper band isn't a sell signal on its own.
+
+8
+00:00:28,443 --> 00:00:31,750
+In a strong trend, price can ride the band for a long time.
+
+9
+00:00:32,250 --> 00:00:35,585
+Bollinger Bands are one of the Pro indicators on Meme Street.
+
+10
+00:00:35,924 --> 00:00:38,528
+Practise reading them at memestreet.net.
+

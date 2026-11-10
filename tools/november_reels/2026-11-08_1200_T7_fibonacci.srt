@@ -1,0 +1,36 @@
+1
+00:00:00,350 --> 00:00:03,893
+Why do so many traders care about sixty one point eight percent?
+
+2
+00:00:04,850 --> 00:00:08,934
+A Fibonacci retracement is drawn from a swing low to a swing high.
+
+3
+00:00:09,303 --> 00:00:16,414
+It marks levels at twenty three point six, thirty eight point two, fifty and sixty one point eight percent of the move.
+
+4
+00:00:16,914 --> 00:00:21,184
+When price pulls back, traders watch those levels for a place where it might pause.
+
+5
+00:00:21,532 --> 00:00:26,199
+This time, it held near sixty one point eight percent, and buyers stepped back in.
+
+6
+00:00:26,699 --> 00:00:27,859
+But they aren't magic.
+
+7
+00:00:28,267 --> 00:00:32,672
+They work best when they line up with other support, and price misses them all the time.
+
+8
+00:00:33,172 --> 00:00:36,706
+Fibonacci is one of the drawing tools on Meme Street's charts.
+
+9
+00:00:37,045 --> 00:00:38,881
+Practise at memestreet.net.
+

@@ -1,0 +1,11 @@
+How much should you put in one trade? Here's the simple maths.
+
+Say you have 1,000 MB and risk 1% per trade: 10 MB. If your stop is 5% away, your position is 200 MB, because 5% of 200 is 10.
+
+That way, even ten losses in a row leave you with about 90% of your account. No single trade can sink you.
+
+Practise sizing with practice money at memestreet.net
+
+Fictional market. Not investment advice.
+
+#MemeStreet #PositionSizing #RiskManagement #TradingTips #LearnToTrade

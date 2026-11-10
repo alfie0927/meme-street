@@ -1,0 +1,36 @@
+1
+00:00:00,350 --> 00:00:03,177
+One number that tells you how the whole market's doing.
+
+2
+00:00:04,850 --> 00:00:07,999
+Meet the MSI 50, Meme Street's main index.
+
+3
+00:00:08,368 --> 00:00:11,593
+It tracks a basket of fifty companies in a single price.
+
+4
+00:00:13,350 --> 00:00:18,821
+Inside are fifty companies, rolled into one price, that you can trade like a single stock.
+
+5
+00:00:21,350 --> 00:00:26,861
+Traders use it to see how the whole market is doing at a glance, and to trade the market's direction.
+
+6
+00:00:29,350 --> 00:00:35,430
+Unlike a single stock, it's spread across many companies, so one bad day for one company matters less.
+
+7
+00:00:36,350 --> 00:00:43,939
+The risks? A broad sell-off hits it hard, the biggest companies move it most, and economic data can swing the whole basket.
+
+8
+00:00:44,288 --> 00:00:48,173
+On Meme Street, big news hits the news wire, and the index reacts.
+
+9
+00:00:48,673 --> 00:00:51,697
+Trade the MSI 50 at memestreet.net.
+
