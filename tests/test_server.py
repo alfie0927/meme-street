@@ -342,6 +342,9 @@ class ServerTests(unittest.TestCase):
     def test_admin_endpoints_need_the_key(self):
         self.assertEqual(http(self.srv, "/api/admin/overview")[0], 403)
         self.assertEqual(http(self.srv, "/api/admin/overview", headers={"X-Admin-Key": "wrong"})[0], 403)
+        self.assertEqual(http(self.srv, "/api/admin/visits")[0], 403)                # the visit log's numbers (2026-11-10)
+        status, body, _ = http(self.srv, "/api/admin/visits", headers={"X-Admin-Key": "testkey"})
+        self.assertEqual((status, len(json.loads(body)["days"])), (200, 7))
         status, body, _ = http(self.srv, "/api/admin/overview", headers={"X-Admin-Key": "testkey"})
         self.assertEqual(status, 200)
         stats = json.loads(body)["stats"]

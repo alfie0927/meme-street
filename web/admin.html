@@ -174,6 +174,7 @@ function drawAlerts(){const al=[...alertsA,...alertsB],bad=al.filter(a=>a[0]!=='
  $('alerts').innerHTML=(bad.length?bad:[['ok','All good: every MB is accounted for, the server is saving and backing up, and nothing is waiting for you.']]).map(a=>`<div class="${a[0]}">${esc(a[1])}</div>`).join('')}
 
 // ---------- the overview (every 5 seconds) ----------
+let visitsData=null;   // the visit log's numbers (/api/admin/visits, every 20 s; growth plan 2026-11-10)
 function render(o){
  const s=o.stats,r=s.risk;$('stamp').textContent='updated '+new Date().toLocaleTimeString();
  alertsA=[];
@@ -185,6 +186,8 @@ function render(o){
  const src=s.total_mb_by_source||{},fu=o.funnel,today=fu&&fu.signups.length?fu.signups[fu.signups.length-1].n:0;
  $('cards').innerHTML=kpi('Players',mb(s.humans),(fu?today+' signed up today · ':'')+(fu?fu.seen_24h+' seen in 24h':''))
   +kpi('On now',(o.online_players||[]).length,(o.guests||0)+' visitors watching')
+  +(visitsData&&visitsData.on&&visitsData.days.length?kpi('Visitors from Instagram',visitsData.days[0].instagram,`${visitsData.days[1]?visitsData.days[1].instagram:0} yesterday · ${visitsData.days.reduce((a,d)=>a+d.instagram,0)} in 7 days · ${visitsData.days[0].visitors} visitors today in all`)
+   :kpi('Visitors from Instagram','-',visitsData?'the visit log is off (deploy/Caddyfile)':'loading'))
   +(o.bots&&o.bots.total?kpi('Bots',o.bots.total,`${o.bots.active} active · ${o.bots.daily_today} played the Daily today · ${mb(o.bots.equity)} MB`):'')
   +kpi('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' a minute right now')
   +kpi('Total MB',mb(s.total_mb),'started '+mb(src.grant||0)+' · bought '+mb(src.purchase||0))
@@ -415,7 +418,7 @@ const refreshPlayers=()=>loadTab('players');
 let busy=false;
 async function tick(){if(busy)return;busy=true;
  const tab=(document.querySelector('#tabs button.on')||{dataset:{}}).dataset.tab,deep=tickN++%4===0;
- const jobs=[['/api/admin/overview',render],['/api/admin/chat',renderChat],...(deep?[['/api/admin/insights',renderInsights]]:[]),
+ const jobs=[...(deep?[['/api/admin/visits',d=>{visitsData=d}]]:[]),['/api/admin/overview',render],   // (visits first: the overview's card uses them)['/api/admin/chat',renderChat],...(deep?[['/api/admin/insights',renderInsights]]:[]),
   ...(TAB_DATA[tab]||[]),...(deep&&tab!=='players'?[['/api/admin/players',gotPlayers]]:[])];   // (the names for Find a player)
  try{await fetchAll(jobs)}
  catch(e){if(e.message==='forbidden')lock('That key was not accepted.');else $('stamp').textContent='error: '+e.message}

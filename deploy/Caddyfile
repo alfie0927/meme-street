@@ -27,11 +27,14 @@ YOURDOMAIN {
 	# The visit log (growth plan 2026-11-10): which links and pages bring people, read by tools/visits.py, kept 30 days.
 	# No login token reaches it: the token travels in the X-Token header and in the WebSocket address (/ws?token=...),
 	# and both are taken out below, with the visitor id, the admin key, cookies and order and payment ids. Addresses are
-	# cut short (the last part of an IPv4 address becomes 0), as the privacy page says.
+	# cut short (the last part of an IPv4 address becomes 0), as the privacy page says. Check a change with
+	# `sudo -u caddy caddy validate ...`: a validate run as root creates the log file owned by root, and the running Caddy
+	# then fails to reload with "permission denied" (switched on this way on 2026-11-10).
 	log {
 		output file /var/log/caddy/memestreet-access.log {
 			roll_size 20MiB
 			roll_keep_for 720h
+			mode 0640                    # readable by the caddy group, which the game's user joins (the admin page's numbers)
 		}
 		format filter {
 			wrap json

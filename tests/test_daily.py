@@ -58,6 +58,25 @@ class GameTests(unittest.TestCase):
         quiet(self.e)
         self.p = join(self.e, "dasher")
 
+    def test_the_reminder_email_is_opt_in_once_a_day_capped_and_stops_in_one_click(self):
+        e, p = self.e, self.p
+        self.assertFalse(e.daily_remind_set(p, True)["ok"])                          # no confirmed address: no email
+        p.email, p.email_verified = "dasher@example.com", True
+        self.assertTrue(e.daily_remind_set(p, True)["remind"])
+        self.assertTrue(e.daily_view(p)["remind"])
+        sent = e.daily_reminders("https://x")
+        self.assertEqual([s[0] for s in sent], ["dasher@example.com"])
+        self.assertIn("/daily?ref=mail_daily", sent[0][2])
+        self.assertIn("Meme Street Game", sent[0][2])
+        self.assertEqual(e.daily_reminders("https://x"), [])                        # once a day
+        q = join(e, "capped")
+        q.email, q.email_verified = "c@example.com", True
+        e.daily_remind_set(q, True)
+        self.assertEqual(e.daily_reminders("https://x", cap=1), [])                 # the day's cap is used up
+        self.assertFalse(e.daily_unsubscribe("wrong"))
+        self.assertTrue(e.daily_unsubscribe(sent[0][3].split("t=")[1]))
+        self.assertFalse(p.remind)
+
     def test_the_chart_is_the_same_for_everyone_and_kept_for_the_day(self):
         e = self.e
         q = join(e, "other")

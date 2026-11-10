@@ -4,10 +4,12 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from types import SimpleNamespace
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse, Response
+from email.utils import formataddr, parseaddr
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel
 import paths
 import errortrack
+import visitlog
 import bots as botlib
 from engine import GUEST_KEY, Engine
 from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, mask_email, password_problem, verify_password
@@ -123,7 +125,9 @@ async def game_loop():
 async def lifespan(app):
     task = asyncio.create_task(game_loop())
     checker = asyncio.create_task(payment_check_loop())
+    reminder = asyncio.create_task(daily_remind_loop())
     yield
+    reminder.cancel()
     checker.cancel()
     task.cancel()
     try:
@@ -328,9 +332,9 @@ def mail_allowed(now):
     return cap <= 0 or limits.count(("mail",), 3600, now) < cap
 
 
-def send_mail(to, subject, body):
+def send_mail(to, subject, body, headers=None):
     limits.add(("mail",), time.time())
-    return mailer.send(to, subject, body)
+    return mailer.send(to, subject, body, headers)
 
 
 def minutes():
@@ -1244,6 +1248,51 @@ async def check_payments(days=3):
     return report
 
 
+REMIND_FROM = "Meme Street Game"                   # the sender's name on the reminder (the owner, 2026-11-10)
+
+
+async def send_daily_reminders():
+    """The Daily Chart reminder email (daily.py): whoever opted in and has not had today's yet, within the hourly cap."""
+    if not mail_allowed(time.time()):
+        return 0
+    site = os.environ.get("SITE_URL", "https://memestreet.net").rstrip("/")
+    sender = formataddr((REMIND_FROM, parseaddr(mailer.sender)[1]))
+    items = await run(engine.daily_reminders, site)
+    for to, subject, body, link in items:
+        send_mail(to, subject, body, {"From": sender, "List-Unsubscribe": f"<{link}>",
+                                      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click"})
+    return len(items)
+
+
+async def daily_remind_loop():
+    while True:
+        await asyncio.sleep(600)                       # every ten minutes: the first run after a new chart sends the day's
+        try:
+            await send_daily_reminders()
+        except Exception:
+            logger.exception("daily reminders failed")
+
+
+class Remind(BaseModel):
+    on: bool
+
+
+@app.post("/api/daily/remind")
+async def daily_remind(b: Remind, x_token: str = Header("")):
+    """Opt in to (or out of) the Daily Chart reminder email; a confirmed address only."""
+    return await with_player(x_token, "remind", engine.daily_remind_set, b.on)
+
+
+@app.api_route("/api/unsub", methods=["GET", "POST"])
+async def unsubscribe(t: str = ""):
+    """The one-click link in every reminder (GET from the email, POST from a mail app's unsubscribe button)."""
+    ok = await run(engine.daily_unsubscribe, t[:64])
+    msg = "Done: you won't get the Daily Chart email any more." if ok else "That link is not valid any more."
+    return HTMLResponse("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>Meme Street</title>"
+                        f"<p style='font:16px system-ui;max-width:520px;margin:40px auto;padding:0 16px'>{msg} "
+                        "<a href='/daily'>Today's chart</a></p>", headers={"Cache-Control": "no-store"})
+
+
 async def payment_check_loop():
     while True:
         await asyncio.sleep(600)                       # (not at start-up: give the webhook a moment first)
@@ -1808,6 +1857,24 @@ async def admin_insights(x_admin_key: str = Header("")):
                          "lockouts_last_hour": sum(1 for x in admin_log if x["what"] == "locked out" and now - x["t"] < 3600),
                          "recent": list(admin_log)[::-1][:15]}
     return data
+
+
+_visits_cache: dict = {}
+
+
+@app.get("/api/admin/visits")
+async def admin_visits(x_admin_key: str = Header("")):
+    """Visitors per day and those from Instagram, from the web server's visit log (visitlog.py; growth plan 2026-11-10).
+    Read off the game's lock and kept two minutes: the log only grows."""
+    if not admin_ok(x_admin_key):
+        return JSONResponse({"error": "forbidden"}, status_code=403)
+    if time.time() - _visits_cache.get("t", 0) > 120:
+        def read():
+            paths = visitlog.log_paths()
+            today = time.strftime("%Y-%m-%d", time.gmtime())
+            return {"on": bool(paths), "days": visitlog.dashboard(visitlog.count(visitlog.lines_of(paths)), today)}
+        _visits_cache.update(t=time.time(), data=await asyncio.to_thread(read))
+    return _visits_cache["data"]
 
 
 @app.get("/api/admin/overview")

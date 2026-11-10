@@ -44,6 +44,7 @@ START_CASH = 1000.0
 CHIPS = (0.25, 0.5, 0.75, 1.0)
 DAY_SECONDS = 86400          # a real day, as the game's days (UTC)
 BOARD = 20
+REMIND_PER_DAY = 70          # reminder emails a day at most: the free mail plan sends 100, and sign-up codes need room (2026-11-10)
 # The Daily Chart is a game for reading charts, so its price model leans a little further into technical structure than
 # the market's (2026-10-26, on request: "more emphasis, not crazy"): levels come from swings and fair value gaps a player
 # can see on the one-second candles (a model bar is two candles), are tested more often, hold somewhat more often and
@@ -378,9 +379,50 @@ class DailyMixin:
                "chips": CHIPS, "stats": self._daily_stats(p),
                "board": board[:BOARD], "players": len(board), "past": d["past"], "guest": bool(getattr(p, "guest", False)),
                "status": "new" if play is None else "done" if play.get("done") or self.now - play["t0"] >= LIVE else "running",
-               "next": (d["day"] + 1) * DAY_SECONDS}
+               "next": (d["day"] + 1) * DAY_SECONDS, "remind": bool(getattr(p, "remind", False))}
         if play is not None:
             out["game"] = self._daily_state(play)
+        return out
+
+    # ---- the reminder email (TA-D9, growth plan 2026-11-10): opt-in, a confirmed address only, one a day when the new
+    # chart starts, at most REMIND_PER_DAY a day so sign-up codes always fit in the free mail plan, one-click unsubscribe
+    def daily_remind_set(self, p, on):
+        if on and not (p.email and p.email_verified):
+            return {"ok": False, "error": "Confirm your email address first: the code is on your Profile page."}
+        p.remind = bool(on)
+        if p.remind and not p.unsub:
+            p.unsub = secrets.token_urlsafe(16)
+        return {"ok": True, "remind": p.remind,
+                "msg": "We'll email you when each new chart starts." if p.remind else "No more Daily Chart emails."}
+
+    def daily_unsubscribe(self, t):
+        """The link in every reminder: True if it matched an account (which is now off the list)."""
+        for p in self.players.values():
+            if t and p.unsub and secrets.compare_digest(p.unsub, str(t)):
+                p.remind = False
+                return True
+        return False
+
+    def daily_reminders(self, site, cap=REMIND_PER_DAY):
+        """Today's reminders still to send, as (address, subject, body, unsubscribe link); each player is marked sent."""
+        d = self._dchart()
+        num, today = self._dnum(d), d["day"]
+        left = cap - sum(1 for p in self.players.values() if getattr(p, "remind_day", -1) == today)
+        out = []
+        for p in self.players.values():
+            if left <= 0:
+                break
+            if not (getattr(p, "remind", False) and p.email and p.email_verified and not p.hb and p.remind_day != today):
+                continue
+            p.remind_day, left = today, left - 1
+            streak = self._daily_stats(p).get("streak") or 0
+            link = f"{site}/api/unsub?t={p.unsub}"
+            body = (f"Daily Chart #{num} is live: two minutes on today's mystery chart, the same one for everyone.\n"
+                    + (f"Your streak: {streak} day{'s' if streak != 1 else ''}. Play today to keep it.\n" if streak else "")
+                    + f"\nPlay: {site}/daily?ref=mail_daily\n\n"
+                    f"You get this because you asked for it on Meme Street. Stop it with one click: {link}\n"
+                    "Meme Street Game · memestreet.game@gmail.com · practice money only, no cash value\n")
+            out.append((p.email, f"Daily Chart #{num} is live", body, link))
         return out
 
     def daily_start(self, p):

@@ -36,6 +36,8 @@ The audit ([growth/instagram.md](../growth/instagram.md), pulled through the API
 - **50 reels are already rendered and queued**, three a day to 25 November, so new openings and endings reach them only through a re-render (`rerender.sh`). The posting schedule stays as it is (your decision, 10 Nov).
 - The name field "Meme Street | Stock Market Game" is 31 characters, one over Instagram's limit. "Meme Street: Stock Market Game" fits.
 
+**Done on 10 Nov:** Part 2 steps 1 to 9 (the reminder email comes from "Meme Street Game"), the visit log switched on, and *Visitors from Instagram* on the admin page. Next: your profile edits and the daily Story (growth/instagram.md), the phone test once the code is live, and the reel brief for the reels chat.
+
 ## The plan on one page
 
 1. **The Daily Chart becomes the front door.** Every link (reel, bio, Story, post, directory) lands on today's chart, which needs no account. The account is offered after the result ("save your score and your streak"), takes under a minute and no longer waits for an emailed code.

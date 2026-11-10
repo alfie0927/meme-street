@@ -15,6 +15,8 @@ const dlyVs=(()=>{try{const m=new RegExp('^([\\p{L}\\p{N}_. -]{0,16})~(-?\\d{1,7
  return m?{name:m[1].trim(),ret:Number(m[2])/10000,number:Number(m[3])}:null}catch(e){return null}})();
 const dlyVsFor=d=>dlyVs&&d&&dlyVs.number===d.number?dlyVs:null;
 const dlyVsName=v=>v.name?esc(v.name):'Your friend';
+// the reminder email (TA-D9): opt-in from the result, a confirmed address only (daily.py daily_remind_set)
+const dlyRemindLabel=on=>on?'Daily email is on (turn it off)':'Email me when tomorrow\'s chart is out';
 async function loadDaily(){
  const d=await api('/api/daily');if(!d||d.error||d.slow||d.notfound){if(guest){dly=null;drawDailyGuest()}return}
  dly=d;dlyG=d.game?Object.assign({},d.game):null;drawDaily();
@@ -94,6 +96,7 @@ function dlyCard(g,d,anim){
   ${dlyStatRow(d.stats)}
   <div class="dly-share"><button class="dly-go" data-dly-share>Share</button><button class="dly-alt" data-dly-pic>Story picture</button></div>
   <div class="dly-share dly-step"><a class="dly-alt" href="${dlyLesson(g)}">The lesson for this chart</a><a class="dly-alt" href="/">Trade a live stock</a></div>
+  ${d.visitor?'':`<div class="dly-share"><button class="dly-alt" data-dly-remind>${dlyRemindLabel(d.remind)}</button></div>`}
   <div class="dly-next">Next chart in <b class="dly-cd">${dlyHMS(d.next-engineNow())}</b></div></div>`}
 // the lesson that fits what the chart did: no level tested, a trend; a fake break or more breaks than holds, ranges and
 // breakouts; otherwise support and resistance (TA-D10)
@@ -202,6 +205,9 @@ document.addEventListener('click',async e=>{
  if(t.closest('[data-dly-stats]')){dlyStatsPop();return}
  if(t.closest('[data-dly-share]')){dlyShare();return}
  if(t.closest('[data-dly-pic]')){dlySavePicture();return}
+ const rm=t.closest('[data-dly-remind]');if(rm&&dly){rm.disabled=true;const r=await postJson('/api/daily/remind',{on:!dly.remind},dlyHdr());rm.disabled=false;
+  if(r.ok){dly.remind=r.remind;document.querySelectorAll('[data-dly-remind]').forEach(b=>b.textContent=dlyRemindLabel(r.remind))}
+  toast(r.msg||r.error||'Error',!!r.ok,4500);return}
  if(t.closest('[data-dly-join]')){const b=$('dly-pop');if(b)b.style.display='none';openSignin('register');return}
  const sz=t.closest('[data-dly-size]');if(sz){dlySize=Number(sz.dataset.dlySize);lsSet('ms_daily_size',dlySize);drawDaily();return}
  if(t.id==='dly-start'){t.disabled=true;const r=await postJson('/api/daily/start',{},dlyHdr());t.disabled=false;

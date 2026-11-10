@@ -283,6 +283,9 @@ class Player:
         self.email = None        # the email address on the account (see accounts.py); only trusted once verified
         self.email_verified = False
         self.email_pending = None   # an address waiting for its code to be typed in
+        self.remind = False      # the Daily Chart reminder email, opted in (daily.py, 2026-11-10)
+        self.remind_day = -1     # the day it was last sent
+        self.unsub = ""          # the secret in its one-click unsubscribe link
         self.created = 0.0       # when the account was made
         self.trades = 0
         self.guest = False       # True only for the one hidden, read-only visitor (Engine.guest)
@@ -4073,6 +4076,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                           "deposited": p.deposited, "season_base": p.season_base, "cost": p.cost, "divs": p.divs, "borrow": p.borrow,
                           "orders": p.orders, "pw": p.pw, "ips": p.ips, "created": p.created,
                           "email": p.email, "email_verified": p.email_verified, "email_pending": p.email_pending,
+                          "remind": p.remind, "remind_day": p.remind_day, "unsub": p.unsub,
                           "entry_fee": p.entry_fee, "realized": p.realized, "fees_paid": p.fees_paid, "trades": p.trades,
                           "log": list(p.log), "margin_calls": p.margin_calls, "notes": p.notes,
                           "social": social.dump_player(p), "economy": economy.dump_player(p),
@@ -4494,6 +4498,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                 p.email = str(x["email"]) if x.get("email") else None
                 p.email_verified = bool(x.get("email_verified")) and p.email is not None
                 p.email_pending = str(x["email_pending"]) if x.get("email_pending") else None
+                p.remind, p.remind_day, p.unsub = bool(x.get("remind")), int(x.get("remind_day", -1)), str(x.get("unsub") or "")
                 p.created = float(x.get("created", 0.0))
                 if self.ledger is not None and p not in retiring:
                     p.curve.extend(self.ledger.curve(p.token, 1440))

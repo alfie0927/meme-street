@@ -1,79 +1,20 @@
-"""Visits per day and per source, from the web server's visit log (deploy/Caddyfile `log`, growth plan 2026-11-10).
+"""Visits per day and per source, from the web server's visit log (the counting is in game/visitlog.py; the admin page
+shows the same numbers).
 
     python3 tools/visits.py                       # on the server: /var/log/caddy/memestreet-access.log and its rolled copies
     python3 tools/visits.py FILE...               # other log files (plain or .gz)
     python3 tools/visits.py --selftest
 
-A visit is an address that loaded the game page and ran its script (the page asks for /api/auth_mode) on a day. Its
-source is the ?ref= of its first page that day, else the site it came from (the Referer), else "direct". For each day and
-source: visits, Daily Charts started (POST /api/daily/start), sign-up attempts (POST /api/register) and how many came
-through Instagram's own browser. The log keeps addresses cut short, so people on one small network count once.
+For each day and source: visits, Daily Charts started, sign-up attempts and how many came through Instagram's own
+browser.
 """
-import collections
 import datetime
-import glob
-import gzip
 import json
+import os
 import sys
-import urllib.parse
 
-LOG = "/var/log/caddy/memestreet-access.log"
-NOT_PAGES = ("/api/", "/js/", "/brand/", "/ws", "/reels/", "/favicon")
-
-
-def lines_of(paths):
-    for path in paths:
-        opener = gzip.open if path.endswith(".gz") else open
-        with opener(path, "rt", encoding="utf-8", errors="replace") as f:
-            yield from f
-
-
-def count(lines):
-    """day -> address -> what it did that day."""
-    days = collections.defaultdict(dict)
-    for line in lines:
-        try:
-            j = json.loads(line)
-        except ValueError:
-            continue
-        r = j.get("request") if isinstance(j, dict) else None
-        if not isinstance(r, dict):
-            continue
-        day = datetime.datetime.fromtimestamp(float(j.get("ts", 0)), datetime.timezone.utc).strftime("%Y-%m-%d")
-        who = r.get("client_ip") or r.get("remote_ip") or "?"
-        path, _, query = str(r.get("uri", "")).partition("?")
-        heads = r.get("headers") or {}
-        v = days[day].setdefault(who, {"src": None, "seen": False, "starts": 0, "signups": 0, "ig": False})
-        if any("Instagram" in ua for ua in heads.get("User-Agent", [])):
-            v["ig"] = True
-        method = r.get("method")
-        if v["src"] is None and method == "GET" and not path.startswith(NOT_PAGES):
-            ref = (urllib.parse.parse_qs(query).get("ref") or [""])[0].strip().lower()[:40]
-            host = urllib.parse.urlparse((heads.get("Referer") or [""])[0]).hostname or ""
-            v["src"] = ref or (host if host and not host.endswith("memestreet.net") else "direct")
-        if path == "/api/auth_mode":
-            v["seen"] = True
-        elif method == "POST" and path == "/api/daily/start":
-            v["starts"] += 1
-        elif method == "POST" and path == "/api/register":
-            v["signups"] += 1
-    return days
-
-
-def summary(days):
-    """day -> source -> [visits, Daily starts, sign-up attempts, through Instagram's browser]."""
-    out = {}
-    for day, people in days.items():
-        by = collections.defaultdict(lambda: [0, 0, 0, 0])
-        for v in people.values():
-            if v["seen"]:
-                b = by[v["src"] or "direct"]
-                b[0] += 1
-                b[1] += v["starts"]
-                b[2] += v["signups"]
-                b[3] += v["ig"]
-        out[day] = dict(by)
-    return out
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "game"))   # the game's code
+import visitlog  # noqa: E402
 
 
 def show(table):
@@ -99,13 +40,18 @@ def selftest():
              hit(200, "1.2.3.0", "POST", "/api/register"),
              hit(5, "5.6.7.0", "GET", "/", referer="https://www.google.com/"),
              hit(6, "5.6.7.0", "GET", "/api/auth_mode"),
+             hit(7, "4.4.4.0", "GET", "/daily?ref=ig_bio"),                   # our bio link, in a normal browser
+             hit(8, "4.4.4.0", "GET", "/api/auth_mode"),
              hit(9, "9.9.9.0", "GET", "/"),                                   # no script ran: a crawler, not a visit
              "not a log line",
              hit(86400, "1.2.3.0", "GET", "/learn", referer="https://memestreet.net/"),
              hit(86401, "1.2.3.0", "GET", "/api/auth_mode")]
-    got = summary(count(lines))
-    assert got["2026-11-10"] == {"reel": [1, 1, 1, 1], "www.google.com": [1, 0, 0, 0]}, got
+    days = visitlog.count(lines)
+    got = visitlog.summary(days)
+    assert got["2026-11-10"] == {"reel": [1, 1, 1, 1], "www.google.com": [1, 0, 0, 0], "ig_bio": [1, 0, 0, 0]}, got
     assert got["2026-11-11"] == {"direct": [1, 0, 0, 0]}, got
+    dash = visitlog.dashboard(days, "2026-11-11", 2)
+    assert [(r["day"], r["visitors"], r["instagram"]) for r in dash] == [("2026-11-11", 1, 0), ("2026-11-10", 3, 2)], dash
     print("visits.py self-check ok")
 
 
@@ -113,7 +59,7 @@ if __name__ == "__main__":
     if "--selftest" in sys.argv:
         selftest()
     else:
-        paths = sys.argv[1:] or sorted(glob.glob(LOG + "*"))
+        paths = sys.argv[1:] or visitlog.log_paths()
         if not paths:
-            sys.exit(f"no log at {LOG} (is the visit log on? deploy/Caddyfile)")
-        show(summary(count(lines_of(paths))))
+            sys.exit(f"no log at {visitlog.LOG} (is the visit log on? deploy/Caddyfile)")
+        show(visitlog.summary(visitlog.count(visitlog.lines_of(paths))))

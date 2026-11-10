@@ -69,8 +69,9 @@ class Mailer:
         return [dict(x) for x in reversed(self.log)]
 
     # ---- sending
-    def send(self, to, subject, body):
-        """Queue a message. Returns at once; `True` if it was accepted for sending."""
+    def send(self, to, subject, body, headers=None):
+        """Queue a message. Returns at once; `True` if it was accepted for sending. `headers` replace or add to the
+        message's own (a sender name, List-Unsubscribe)."""
         entry = {"t": time.time(), "to": to, "subject": subject, "state": "queued", "error": None}
         if not self.configured:
             entry["state"] = "console"
@@ -80,7 +81,7 @@ class Mailer:
             return True
         self.log.append(entry)
         try:
-            self._queue.put_nowait((entry, to, subject, body))
+            self._queue.put_nowait((entry, to, subject, body, headers))
         except queue.Full:
             entry["state"], entry["error"] = "dropped", "the mail queue is full"
             self.failed += 1
@@ -94,11 +95,14 @@ class Mailer:
                 self._thread = threading.Thread(target=self._worker, name="mailer", daemon=True)
                 self._thread.start()
 
-    def _message(self, to, subject, body):
+    def _message(self, to, subject, body, headers=None):
         msg = EmailMessage()
         msg["From"], msg["To"], msg["Subject"] = self.sender, to, subject
         msg["Date"] = formatdate(localtime=False)
         msg["Message-ID"] = make_msgid(domain=(self.sender.rpartition("@")[2].rstrip(">") or "localhost"))
+        for k, v in (headers or {}).items():
+            del msg[k]
+            msg[k] = v
         msg.set_content(body)
         return msg
 
@@ -123,10 +127,10 @@ class Mailer:
     def _worker(self):
         while True:
             try:
-                entry, to, subject, body = self._queue.get(timeout=60)
+                entry, to, subject, body, headers = self._queue.get(timeout=60)
             except queue.Empty:
                 return                                   # nothing to do for a minute: the thread ends, a new one starts when needed
-            msg = self._message(to, subject, body)
+            msg = self._message(to, subject, body, headers)
             for attempt in range(len(self.retry_delays) + 1):
                 try:
                     self._deliver(msg)
