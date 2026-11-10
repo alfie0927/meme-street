@@ -15,7 +15,7 @@
   - "Question two. After a long run up, three candles are marked. Which one was the warning sign? A, B, or C?"
   - "A chases the spike, and C buys before anything's confirmed. B is confirmed, and close to a clear stop just under the level."
 - **On camera I am:** calm, clear, teacher-like, short sentences; never hype.
-- **Words I actually use:** chart, candle, support, resistance, breakout, retest, volume, the level, confirmed, a clue, practise.
+- **Words I actually use:** chart, candle, support, resistance, breakout, retest, volume, the level, confirmed, practise.
 - **Words I would never say out loud:** "to the moon", "guaranteed", "get rich", "financial freedom", "game-changer", "unlock".
 - **Do I swear:** no
 - **Emoji in captions:** never
@@ -25,7 +25,7 @@
 
 ## My positions
 
-- One candle is never a guarantee, only a clue.
+- Show a signal working: what it says, what the price then did, and why; once, briefly, that it does not work every time.
 - Waiting for confirmation beats chasing a spike.
 - Practise on fictional charts before risking anything real.
 

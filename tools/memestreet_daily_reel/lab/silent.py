@@ -11,8 +11,8 @@ from pronounce import digits
 
 GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6            # (as narrate.py)
 BEAT = {"enter": (0, "pop"), "move": (0, None), "hit": (.6, "boom"), "fall": (.5, "thud"), "launch": (0, "whoosh"), "emit": (0, None),
-        "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None)}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
-EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow")
+        "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None), "fling": (0, "whoosh"), "crack": (0, "pop")}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
+EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow", "fling", "crack")
 
 
 def beats(sc, vs, at, vo, sfx):
@@ -20,7 +20,7 @@ def beats(sc, vs, at, vo, sfx):
     fall sounds at the impact, the rest as they start; coins chime; a count ticks. Returns the impact times."""
     out = []
     for b in sc.get("beats", []):
-        b["t"] = round(vs + at(b["say"]) if b.get("say") else vs + 0.3, 3)
+        b["t"] = round((vs + at(b["say"]) if b.get("say") else vs + 0.3) + float(b.get("after", 0)), 3)   # (a shot staggers its moves: "after")
         d, s = BEAT.get(b.get("do"), (0, None)); b["ti"] = round(b["t"] + d, 3)
         if b.get("do") == "emit": s = "chime" if b.get("what") == "coins" else "pop"
         if b.get("do") == "count":
@@ -68,7 +68,7 @@ def main(work):
         cap = digits(tw)
         sc["text_words"] = [c for c, _, _ in cap]
         sc["wt"] = [[round(vs + wt[a][0], 3), round(vs + wt[b][1], 3)] for _, a, b in cap]
-        if sc.get("text") and (sc["kind"] == "big" or sc.get("chart") is None):
+        if sc.get("text") and (sc["kind"] in ("big", "free") or sc.get("chart") is None):
             sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
         if sc.get("options"):
             sc["opt_t"] = [round(vs + x, 3) for x in follow([o.split()[0] for o in sc["options"]], tw, wt, d)]

@@ -14,10 +14,10 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 .prog{position:absolute;left:60px;right:60px;top:330px;height:3px;border-radius:3px;background:#161b21;overflow:hidden}
 .prog i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#4fc6c8,#3dd68c)}
 .head{text-wrap:balance;position:absolute;left:50px;right:50px;top:350px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font:700 54px/1.12 'Cascadia Mono',monospace;letter-spacing:-1px}
-.head b{display:inline-block;margin-right:20px;padding:8px 18px;border-radius:16px;background:#e8b14a;color:#07121a;font-size:44px;vertical-align:middle}
+.head .hb{display:inline-flex;align-items:center;gap:20px}.head b{padding:8px 18px;border-radius:16px;background:#e8b14a;color:#07121a;font-size:44px;line-height:1.12;text-shadow:none}   /* (the owner, 2026-11-08: no shadow on the Q badge, centred on the title's line) */
 #stage{position:absolute;left:0;top:0;width:1080px;height:1920px}
 .opts{position:absolute;left:62px;right:62px;top:1180px;height:104px;display:flex;gap:16px}
-.opt{flex:1;height:104px;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:20px;background:#13171c;border:3px solid #2a2f35;text-align:center;font:700 32px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
+.opt{flex:1;height:104px;box-sizing:border-box;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:20px;background:#13171c;border:3px solid #2a2f35;text-align:center;font:700 36px/1.1 'Cascadia Mono',monospace;color:#e6e9ec}
 .caps{position:absolute;z-index:3;left:50px;right:50px;top:1300px;max-height:120px;text-align:center;font:700 54px/1.25 'Cascadia Mono',monospace;color:#fff}
 .caps span{display:inline-block;margin:0 9px;transition:none}
 .card{position:absolute;left:62px;right:62px;height:150px;border-radius:24px;background:#0d1116;border:3px solid #23282e;display:flex;align-items:center;gap:28px;padding:0 34px;box-sizing:border-box}
@@ -44,8 +44,10 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 </div>
 <script>
 const R=window.__R,SC=R.scenes,CH=R.charts||[];
+const TOK=Object.assign({glow:5,push:.04,breath:.03},R.tok||{});if(R.tok&&R.tok.css){const st=document.createElement('style');st.textContent=R.tok.css;document.head.appendChild(st)}   // design tokens: the owner's ratings set these (lab gallery tries variants)
 if(SC.length)SC[0].t0=-.6;   // (the first scene has already landed at frame 1: a still black frame loses the thumb)
 const G='#3dd68c',RD='#f0585c',AM='#e8b14a',TE='#4fc6c8',GV='#1d4a33',RV='#4d2226',MUTE='#8b96a3';
+const MAO='#ff9f43',MAB='#4ea8ff';   // (the game's average colours: orange the 20, blue the 50)
 const TONE={level:AM,stop:RD,target:G,entry:TE,trigger:AM,green:G,red:RD,amber:AM,teal:TE};
 const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x)),seg=(t,a,b)=>cl((t-a)/(b-a)),lerp=(a,b,u)=>a+(b-a)*u;
 const io=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2,out=u=>1-Math.pow(1-u,3),back=u=>{const c=1.7;return 1+(c+1)*Math.pow(u-1,3)+c*Math.pow(u-1,2)};
@@ -65,14 +67,15 @@ const ICON={up:`<path d="M10 62 L34 38 L50 52 L76 22" stroke="${G}" stroke-width
 const icon=k=>`<svg class="ic" viewBox="0 0 84 84">${ICON[k]||ICON.idea}</svg>`;
 function sceneAt(t){let i=0;for(let k=0;k<SC.length;k++)if(t>=SC[k].t0-1e-3)i=k;return i}
 // ---- the chart state at time t: what is revealed, the window and the drawings, eased so nothing jumps
+const CPS=8;   // (candles drawn a second, the same in every reveal)
 function chartState(i,t){
  const s=SC[i];if(s.chart==null)return null;const C=CH[s.chart].candles,n=C.length;
  // the reveal: the scene starts at `show` (or where the previous scene on this chart ended) and grows at each reveal cue
  const prevSame=i>0&&SC[i-1].chart===s.chart?SC[i-1]:null;
  let r0=s.show!=null?s.show:(prevSame?endReveal(i-1):n-1),r=r0;
- (s.cues||[]).filter(c=>c.do==='reveal').forEach(c=>{const k=Math.min(n-1,c.to),d=Math.min(2.6,Math.max(.6,(k-r)/14));if(t>c.t)r=lerp(r,k,io(seg(t,c.t,c.t+d)));else if(k<r)r=k;});
+ let b0=r0;(s.cues||[]).filter(c=>c.do==='reveal').forEach(c=>{const k=Math.min(n-1,c.to),d=Math.max(.6,Math.min(Math.abs(k-b0)/CPS,s.t1-.15-c.t));if(t>c.t)r=lerp(r,k,seg(t,c.t,c.t+d));else if(k<r)r=k;b0=k});   // (one steady speed, CPS candles a second)
  if(i===0&&s.kind==='hook'){const k0=Math.max(1,r-8);r=lerp(k0,r,out(seg(t,.05,1.3)))}   // (v2: the newest candles replay in the first second: motion from frame 1)
- if(s.kind==='answer'&&s.reveal_to!=null){const st=s.t0+.1;r=Math.max(r,lerp(r0,s.reveal_to,io(seg(t,st,st+Math.min(2.4,Math.max(.8,(s.reveal_to-r0)/16))))))}
+ if(s.kind==='answer'&&s.reveal_to!=null){const st=s.t0+.1;r=Math.max(r,lerp(r0,s.reveal_to,seg(t,st,st+Math.max(.8,Math.min((s.reveal_to-r0)/CPS,s.t1-.2-st)))))}
  // the window: the scene's own, eased in from the previous scene's (a slow push-in on top, so the camera never sits still)
  const W=winOf(s),P=prevSame?zoomedWin(prevSame,prevSame.t1):(i>0&&SC[i-1].chart!=null?null:W),u=P?io(seg(t,s.t0,s.t0+.8)):1;
  let w=P?[lerp(P[0],W[0],u),lerp(P[1],W[1],u)]:W.slice();
@@ -84,24 +87,29 @@ function winOf(s){const C=CH[s.chart].candles;let w=s.win?s.win.slice():[0,C.len
 function zoomedWin(s,t){let w=winOf(s).slice();(s.cues||[]).filter(c=>c.do==='zoom'&&t>=c.t).forEach(c=>w=[c.from,c.to]);return w}
 function endReveal(i){const s=SC[i],C=CH[s.chart].candles;let r=s.show!=null?s.show:(i>0&&SC[i-1].chart===s.chart?endReveal(i-1):C.length-1);
  (s.cues||[]).filter(c=>c.do==='reveal').forEach(c=>r=Math.min(C.length-1,c.to));if(s.kind==='answer'&&s.reveal_to!=null)r=Math.max(r,s.reveal_to);return r}
+const keep=i=>i>0&&SC[i].chart!=null&&SC[i-1].chart===SC[i].chart&&!SC[i-1].film&&!(SC[i-1].kind==='hook'&&SC[i-1].layout);   // (the same chart in the next scene stays put: no fade, no pop, only the title changes; the owner, round 7: "if it's the same chart, why transition")
 function drawings(i,t){ // lines, marks and shades of this scene (and the scenes before it on the same chart, if it carries them)
- const out=[];let k=i;while(k>=0&&SC[k].chart===SC[i].chart){(SC[k].cues||[]).forEach(c=>{if(['line','mark','shade'].includes(c.do))out.push(Object.assign({},c,{age:k===i?t-c.t:9}))});if(!SC[k].carry)break;k--}
+ const out=[];let k=i;while(k>=0&&SC[k].chart===SC[i].chart){(SC[k].cues||[]).forEach(c=>{if(['line','mark','shade','arrow'].includes(c.do))out.push(Object.assign({},c,{age:k===i?t-c.t:9}))});if(!SC[k].carry)break;k--}
+ if(keep(i)&&!SC[i].carry){const same=(a,b)=>a.do===b.do&&(a.do==='line'||a.do==='arrow'?Math.abs(a.price-b.price)<=Math.abs(b.price)*.001:a.do==='mark'?a.i===b.i&&a.side===b.side:a.from===b.from&&a.to===b.to);   // (what the scene before drew: what stays is already there, what goes fades out)
+  drawings(i-1,1e9).forEach(c=>{const m=out.find(o=>o.age<9&&same(o,c));if(m)m.age=9;else{const fo=1-seg(t,SC[i].t0,SC[i].t0+.3);if(fo>0)out.push(Object.assign({},c,{age:9,fo}))}})}
  const seen=new Set();   // (a candle marked again later keeps only its newest mark: two tags on one candle push each other off it)
  return out.filter(c=>c.age>=-.05).filter(c=>c.do==='mark'?c.side==='vol'||!seen.has(c.i)&&seen.add(c.i):c.do==='line'?!seen.has('p'+Math.round(c.price*1000))&&seen.add('p'+Math.round(c.price*1000)):true)}   // (one line per price, the newest)
 function drawChart(i,t){
- const S=chartState(i,t),el=document.getElementById('chart');if(!S||SC[i].film){el.innerHTML='';return}   // (a video shot fills the frame)
- const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=out(seg(t,s.t0-.05,s.t0+.35));
+ const S=chartState(i,t),el=document.getElementById('chart');if(!S||SC[i].film||SC[i].kind==='hook'&&SC[i].layout){el.innerHTML='';return}   /* (an acted hook stands alone: the chart comes in from scene 1; the owner, 2026-11-08: props over the chart overlapped) */   // (a video shot fills the frame)
+ const {C,n,r,w,s,r0}=S,show=s.kind==='cards'||s.kind==='big'?0:1,fade=keep(i)?1:out(seg(t,s.t0-.05,s.t0+.35));
  const short=k=>k<0||SC[k].kind==='stick'||SC[k].kind==='question'||(SC[k].kind==='answer'&&k>0&&SC[k-1].kind==='question'),hh0=k=>short(k)?620:740,
   bh=i>0&&SC[i-1].chart===s.chart?lerp(hh0(i-1),hh0(i),io(seg(t,s.t0,s.t0+.6))):hh0(i);   // (eased, so the chart never jumps)
  const hasVol=SC.some(q=>q.chart===s.chart&&(q.cues||[]).some(c=>c.do==='mark'&&c.side==='vol'));   // (the references show no volume unless it is the point)
- const B={x:30,y:545,w:s.kind==='stick'?720:1020,h:bh},PL={x:B.x+10,y:B.y+56,w:B.w-162,h:hasVol?bh-170:bh-80},VOL={y:B.y+bh-105,h:hasVol?85:0};
+ const B={x:30,y:545,w:i>0&&SC[i-1].chart===s.chart?lerp(SC[i-1].kind==='stick'?720:1020,s.kind==='stick'?720:1020,io(seg(t,s.t0,s.t0+.6))):s.kind==='stick'?720:1020,h:bh},PL={x:B.x+10,y:B.y+56,w:B.w-162,h:hasVol?bh-170:bh-80},VOL={y:B.y+bh-105,h:hasVol?85:0};
  const w0=w[0],w1=Math.max(w[0]+8,w[1]);let lo=1e9,hi=-1e9;
  const rr=Math.min(n-1,Math.ceil(w1),Math.floor(r));   // (only what is shown sets the scale, so the axis never gives the answer away)
  for(let k=Math.max(0,Math.floor(w0));k<=rr;k++){lo=Math.min(lo,C[k][2]);hi=Math.max(hi,C[k][1])}
+ const AV=(p,k)=>{let m=0;for(let j=k-p+1;j<=k;j++)m+=C[j][3];return m/p},OV=(CH[s.chart].overlay||[]).map(o=>+String(o).replace(/\D/g,'')).filter(p=>p>1);   // (the averages the game draws: orange the 20, blue the 50)
+ OV.forEach(p=>{for(let k=Math.max(p-1,Math.floor(w0));k<=rr;k++){const m=AV(p,k);lo=Math.min(lo,m);hi=Math.max(hi,m)}});
  {const k=rr+1,gg=r-Math.floor(r);if(k<n&&k<=Math.ceil(w1)&&gg>0){const [o,h,l,c]=C[k],e=out(gg),cc=lerp(o,c,e);   // the growing candle moves the scale with it
   hi=Math.max(hi,Math.max(o,cc)+(h-Math.max(o,c))*gg);lo=Math.min(lo,Math.min(o,cc)-(Math.min(o,c)-l)*gg)}}
  const DA=drawings(i,1e9);   // (every line and mark of the scene, drawn yet or not, sets the scale: nothing jumps when one lands)
- DA.filter(d=>d.do==='line').forEach(d=>{lo=Math.min(lo,d.price);hi=Math.max(hi,d.price)});
+ DA.filter(d=>d.do==='line'||d.do==='arrow').forEach(d=>{lo=Math.min(lo,d.price);hi=Math.max(hi,d.price)});
  const pad=(hi-lo)*.1,mk=DA.filter(d=>d.do==='mark'&&d.side!=='vol');lo-=pad*(mk.some(d=>d.side==='low')?2.6:1);hi+=pad*(mk.some(d=>d.side!=='low')?2.6:1);   // (room for the markers)
  const X=k=>PL.x+(k-w0+.5)/(w1-w0+1)*PL.w,Y=v=>PL.y+(hi-v)/(hi-lo)*PL.h,bw=PL.w/(w1-w0+1);
  const vv=[];for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)vv.push(C[k][4]);vv.sort((a,b)=>a-b);const vmax=Math.max(1,2.2*(vv[vv.length>>1]||1));
@@ -111,29 +119,34 @@ function drawChart(i,t){
  {const k=Math.min(n-1,Math.floor(r));if(k>=0){const x=X(k),yc=Y(C[k][3]);taken.push([x-bw,Y(C[k][1])-8,x+bw,Y(C[k][2])+8],[PL.x+PL.w-40,yc-30,PL.x+PL.w+140,yc+30])}}   // (the newest candle and the price tag stay clear of tags)
  const cb=[];for(let k=Math.max(0,Math.floor(w0));k<=Math.min(n-1,Math.ceil(w1),Math.floor(r));k++)cb.push([X(k)-bw/2,Y(C[k][1])-4,X(k)+bw/2,Y(C[k][2])+4]);
  const clear=(a,b,c,d)=>free(a,b,c,d)&&!cb.some(q=>a<q[2]&&q[0]<c&&b<q[3]&&q[1]<d);   // (a tag off the candles where one fits: on them it hides the price)
- D.filter(d=>d.do==='shade').forEach(d=>{const col=TONE[d.tone]||TE,a=out(seg(d.age,0,.5)),x0=X(d.from)-bw/2,ww=(d.to-d.from+1)*bw*a;g+=`<rect x="${x0}" y="${PL.y-10}" width="${Math.max(0,ww)}" height="${PL.h+VOL.h+40}" rx="8" fill="${col}" opacity=".14"/>`});
+ D.filter(d=>d.do==='shade').forEach(d=>{const col=TONE[d.tone]||TE,a=out(seg(d.age,0,.5)),x0=X(d.from)-bw/2,ww=(d.to-d.from+1)*bw*a;g+=`<rect x="${x0}" y="${PL.y-10}" width="${Math.max(0,ww)}" height="${PL.h+VOL.h+40}" rx="8" fill="${col}" opacity="${.14*(d.fo??1)}"/>`});
  for(let k=Math.max(0,Math.floor(w0)-1);k<=Math.min(n-1,Math.ceil(w1)+1);k++){if(k>r+.999)break;const [o,h,l,c,v]=C[k],gg=cl(r-k+1),up=c>=o,col=up?G:RD,x=X(k),bwid=Math.max(3,bw*.72),cc=lerp(o,c,out(gg));
   const hh=Math.max(o,cc)+(h-Math.max(o,c))*gg,ll=Math.min(o,cc)-(Math.min(o,c)-l)*gg,vh=Math.min(1,v/vmax)*VOL.h*out(gg);
   g+=`<g opacity="${cl(gg*2)}"><line x1="${x}" x2="${x}" y1="${Y(hh)}" y2="${Y(ll)}" stroke="${col}" stroke-width="${Math.max(2.5,bw*.14)}"/><rect x="${x-bwid/2}" y="${Math.min(Y(o),Y(cc))}" width="${bwid}" height="${Math.max(2,Math.abs(Y(o)-Y(cc)))}" rx="${Math.min(2,bwid/4)}" fill="${col}"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh}" width="${bwid}" height="${vh}" fill="${up?GV:RV}"/></g>`}
+ OV.forEach(p=>{const pts=[];for(let k=Math.max(p-1,Math.floor(w0));k<=Math.min(n-1,Math.floor(r));k++)pts.push(`${X(k).toFixed(1)},${Y(AV(p,k)).toFixed(1)}`);   // (the owner, round 7: "where's the orange and blue line?")
+  if(pts.length>1)g+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${p<=20?MAO:MAB}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`});
  D.filter(d=>d.do==='mark'&&d.side!=='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),y=d.side!=='low'?Y(C[k][1]):Y(C[k][2]),rr=Math.max(13,Math.min(20,bw*.9));taken.push([x-rr,y-rr,x+rr,y+rr])});   // (rings first: no tag lands on a mark)
  D.filter(d=>d.do==='line').forEach(d=>cb.push([PL.x,Y(d.price)-2,PL.x+PL.w,Y(d.price)+2]));   // (no tag wedged on another line)
- D.filter(d=>d.do==='line').forEach(d=>{const col=TONE[d.tone]||AM,a=out(seg(d.age,0,.6)),y=Y(d.price);g+=`<line x1="${PL.x}" x2="${PL.x+(PL.w-16)*a}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="4" stroke-dasharray="16 10"/>`;
-  if(d.label){const lw=d.label.length*18+34,c2=[y-52,y+8,y-104,y+60,y-156,y+112].flatMap(v=>[PL.x+8,PL.x+PL.w-lw-8,PL.x+PL.w*.35-lw/2,PL.x+PL.w*.65-lw/2].map(u=>[u,v])),fit=f=>c2.find(([u,v])=>v>=PL.y-6&&v+44<=B.y+B.h-10&&f(u-8,v-16,u+lw+8,v+60)),[lx,ly]=fit(clear)||fit(free)||c2.find(([u,v])=>v>=PL.y-6)||c2[0];taken.push([lx,ly,lx+lw,ly+44]);   // (never up into the chart's title row; close lines: their tags go to opposite ends)
-   g+=`<g opacity="${a}"><rect x="${lx}" y="${ly}" width="${lw}" height="44" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text x="${lx+17}" y="${ly+31}" font-size="28" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
+ const LT=[];D.filter(d=>d.do==='line').forEach(d=>{const col=TONE[d.tone]||AM,a=out(seg(d.age,0,.6)),y=Y(d.price);g+=`<line x1="${PL.x}" x2="${PL.x+(PL.w-16)*a}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="4" stroke-dasharray="16 10" opacity="${d.fo??1}"/>`;
+  if(d.label){const lw=d.label.length*18+34,c2=[y-52,y+8,y-104,y+60,y-156,y+112].flatMap(v=>[PL.x+8,PL.x+PL.w-lw-8,PL.x+PL.w*.35-lw/2,PL.x+PL.w*.65-lw/2].map(u=>[u,v])),fit=f=>c2.find(([u,v])=>v>=PL.y-6&&v+44<=B.y+B.h-10&&f(u-8,v-16,u+lw+8,v+60)),[lx,ly]=fit((a,b,c,e)=>!LT.some(q=>a<q[2]&&q[0]<c&&b<q[3]&&q[1]<e))||c2[0];taken.push([lx,ly,lx+lw,ly+44]);LT.push([lx,ly,lx+lw,ly+44]);   // (at the start of its line, placed once: it never hops as the candles come in; the owner, round 7)   // (never up into the chart's title row; close lines: their tags go to opposite ends)
+   g+=`<g opacity="${a*(d.fo??1)}"><rect x="${lx}" y="${ly}" width="${lw}" height="44" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text x="${lx+17}" y="${ly+31}" font-size="28" font-weight="700" fill="${col}">${esc(d.label)}</text></g>`}});
  const pill=(x,y,lab,col,a,ys)=>{const pw=String(lab).length*17+32,at=(u,v)=>[cl(u,PL.x+pw/2,PL.x+PL.w-pw/2),v];
   const c2=(ys||[y]).flatMap(v=>[0,pw/2+28,-pw/2-28].map(dx=>at(x+dx,v))),fit=f=>c2.find(([u,v])=>f(u-pw/2-10,v-37,u+pw/2+10,v+37)),[px,py]=fit(free)||at(x,y);   // (the nearest free spot: a tag stays by its mark)
   y=py;taken.push([px-pw/2,y-23,px+pw/2,y+23]);return `<g transform="translate(${px} ${y}) scale(${a})"><rect x="${-pw/2}" y="-23" width="${pw}" height="46" rx="12" fill="#0b0f13" stroke="${col}" stroke-width="2.5"/><text y="10" text-anchor="middle" font-size="28" font-weight="700" fill="${col}">${esc(lab)}</text></g>`};
- D.filter(d=>d.do==='mark'&&d.side==='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length),ya=VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h,vh=Math.min(1,C[k][4]/vmax)*VOL.h,x=X(k),bwid=Math.max(4,bw*.64)+10;
+ D.filter(d=>d.do==='mark'&&d.side==='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),a=back(seg(d.age,0,.45))*(d.fo??1),col=TONE[d.tone]||AM,ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length),ya=VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h,vh=Math.min(1,C[k][4]/vmax)*VOL.h,x=X(k),bwid=Math.max(4,bw*.64)+10;
   g+=`<g opacity="${cl(a)}"><line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${ya}" y2="${ya}" stroke="${MUTE}" stroke-width="3" stroke-dasharray="10 8"/><rect x="${x-bwid/2}" y="${VOL.y+VOL.h-vh-5}" width="${bwid}" height="${vh+10}" rx="4" fill="none" stroke="${col}" stroke-width="4"/></g>`+(d.label?pill(x,VOL.y+VOL.h-vh-34,d.label,col,a):'')});
  post+=D.some(d=>d.do==='mark'&&d.side==='vol')?(()=>{const d=D.find(d=>d.do==='mark'&&d.side==='vol'),k=Math.max(0,Math.min(n-1,d.i)),ks=C.slice(Math.max(0,k-20),k),avg=ks.reduce((p,c)=>p+c[4],0)/Math.max(1,ks.length);return `<text x="${PL.x+PL.w+16}" y="${VOL.y+VOL.h-Math.min(1,avg/vmax)*VOL.h+8}" font-size="22" font-weight="700" fill="${MUTE}" opacity="${cl(back(seg(d.age,0,.45)))}">avg</text>`})():'';
- D.filter(d=>d.do==='mark'&&d.side!=='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),hiSide=d.side!=='low',y=hiSide?Y(C[k][1]):Y(C[k][2]),a=back(seg(d.age,0,.45)),col=TONE[d.tone]||AM,rr=Math.max(13,Math.min(20,bw*.9)),lab=String(d.label||'');
+ D.filter(d=>d.do==='mark'&&d.side!=='vol').forEach(d=>{const k=Math.max(0,Math.min(n-1,d.i)),x=X(k),hiSide=d.side!=='low',y=hiSide?Y(C[k][1]):Y(C[k][2]),a=back(seg(d.age,0,.45))*(d.fo??1),col=TONE[d.tone]||AM,rr=Math.max(13,Math.min(20,bw*.9)),lab=String(d.label||'');
   g+=`<g transform="translate(${x} ${y}) scale(${a})"><circle r="${rr}" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-width="3.5"/><circle r="4" fill="${col}"/></g>`;
   if(lab.length&&lab.length<=2){const bx=x+rr*.75+12,by=y+(hiSide?-1:1)*(rr*.75+12);g+=`<g transform="translate(${bx} ${by}) scale(${a})"><circle r="15" fill="${col}"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#07121a">${esc(lab)}</text></g>`}
   else if(lab){const sg=hiSide?-1:1;g+=pill(x,y+sg*(rr+34),lab,col,a,[y+sg*(rr+34),y+sg*(rr+86),y-sg*(rr+34)])}});
+ D.filter(d=>d.do==='arrow').forEach(d=>{const col=TONE[d.tone]||RD,a=out(seg(d.age,0,.5))*(d.fo??1),y=Y(d.price),k=Math.max(Math.floor(w0),Math.min(n-1,d.i!=null?d.i:Math.floor(r))),tip=X(k)-bw*.5-8,tail=Math.max(PL.x+4,tip-200),dx=(1-a)*-40;   // (the owner, round 7: "just have an arrow pointing to where the stop should be")
+  g+=`<g opacity="${a}" transform="translate(${dx} 0)"><line x1="${tail}" x2="${tip-24}" y1="${y}" y2="${y}" stroke="#0b0f13" stroke-width="15" stroke-linecap="round"/><line x1="${tail}" x2="${tip-24}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="8" stroke-linecap="round"/><path d="M${tip} ${y} l-30 -20 v40 z" fill="${col}" stroke="#0b0f13" stroke-width="3"/></g>`+(d.label?pill(Math.max(tail+60,PL.x+70),y-46,d.label,col,a,[y-46,y+46]):'')});
  g+='</g>'+post;
  const lk=Math.min(n-1,Math.floor(r));if(lk>=Math.floor(w0)){const k=lk,gg=cl(r-k+1),c=lerp(C[k][0],C[k][3],out(gg)),f0=Math.max(Math.floor(w0),k-5,0),up=f0<k?c>=C[f0][3]:c>=C[k][0],y=Y(c);   // (v2: coloured by the last few candles, the move on screen)
   g+=`<line x1="${PL.x}" x2="${PL.x+PL.w}" y1="${y}" y2="${y}" stroke="${up?G:RD}" stroke-width="1.5" stroke-dasharray="3 6" opacity=".55"/><rect x="${PL.x+PL.w+4}" y="${y-28}" width="150" height="56" rx="11" fill="${up?G:RD}"/><text x="${PL.x+PL.w+79}" y="${y+12}" text-anchor="middle" font-size="34" font-weight="700" fill="#07121a">${c.toFixed(2)}</text>`}
- const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+36}" font-size="23" font-weight="700" fill="${MUTE}" opacity=".8">${esc(lab)}</text>`;
+ const lab=CH[s.chart].label;if(lab)g+=`<text x="${PL.x+4}" y="${B.y+36}" font-size="30" font-weight="700" fill="#c9d1d9">${esc(lab)}</text>`;
+ OV.forEach((p,j)=>{g+=`<text x="${PL.x+PL.w+130}" y="${B.y+36+j*34}" text-anchor="end" font-size="26" font-weight="700" fill="${p<=20?MAO:MAB}">${p} avg</text>`});
  el.innerHTML=g+'</g>'}
 // ---- background: two slow glows, so even a still scene breathes
 function drawBg(t){return;document.getElementById('bg').innerHTML=`<defs><radialGradient id="g1"><stop offset="0" stop-color="#4fc6c8" stop-opacity=".10"/><stop offset="1" stop-color="#4fc6c8" stop-opacity="0"/></radialGradient><radialGradient id="g2"><stop offset="0" stop-color="#3dd68c" stop-opacity=".07"/><stop offset="1" stop-color="#3dd68c" stop-opacity="0"/></radialGradient></defs>
@@ -172,8 +185,8 @@ function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.P
  if(who.startsWith('pro'))g+=`<g transform="rotate(${tl} ${ex} ${ey+28*sc})" stroke="${col}" stroke-width="${3*sc}" fill="none"><circle cx="${ex-10*sc}" cy="${ey-4*sc}" r="${8*sc}"/><circle cx="${ex+10*sc}" cy="${ey-4*sc}" r="${8*sc}"/><path d="M${ex-2*sc} ${ey-4*sc}H${ex+2*sc}"/></g>`;   // Pro: glasses
  if(f.label&&f.label!==s.head)g+=`<text class="qa" x="${cx}" y="${gy+46*sc}" text-anchor="middle" font-size="${Math.round(30*Math.min(1.2,sc))}" font-weight="700" fill="${f.color==='amber'?AM:TE}">${esc(f.label)}</text>`;
  // speech bubble: pops on its cue, stays until the next one
- const bs=(s.cues||[]).filter(c=>c.do==='bubble'&&(c.fig||0)===k&&t>=c.t-.05);if(bs.length){const b=bs[bs.length-1],a=back(seg(t,b.t,b.t+.35)),txt=esc(b.text||''),w=Math.min(colW-16,470,(b.text||'').length*19+50),bf=Math.min(30,Math.floor((w-28)/Math.max(1,(b.text||'').length)/0.6));let bx=Math.max(70,Math.min(1010-w,ex-w/2)),byy=ey-28*sc-150,tail=`M${ex-12} ${byy+62}L${ex} ${byy+84}L${ex+12} ${byy+62}Z`;
-  if(byy<550){const left=ex>540;bx=left?ex-36*sc-w-20:ex+36*sc+20;bx=Math.max(40,Math.min(1040-w,bx));byy=ey-32;tail=left?`M${bx+w-2} ${byy+20}L${bx+w+20} ${byy+32}L${bx+w-2} ${byy+44}Z`:`M${bx+2} ${byy+20}L${bx-20} ${byy+32}L${bx+2} ${byy+44}Z`}   // (no room above: beside the head)
+ const bs=(s.cues||[]).filter(c=>c.do==='bubble'&&(c.fig||0)===k&&t>=c.t-.05);if(bs.length){const b=bs[bs.length-1],a=back(seg(t,b.t,b.t+.35)),txt=esc(b.text||''),w=Math.min(colW-16,470,(b.text||'').length*19+50),bf=Math.min(26,Math.floor((w-28)/Math.max(1,(b.text||'').length)/0.6));let bx=Math.max(70,Math.min(1010-w,ex-w/2)),byy=ey-28*sc-150,tail=`M${ex-12} ${byy+62}L${ex} ${byy+84}L${ex+12} ${byy+62}Z`;
+  if(byy<550){const left=cx>540,hx=ex+28*sc*Math.sin((tl||0)*Math.PI/180),hy=ey+28*sc-28*sc*Math.cos((tl||0)*Math.PI/180);bx=left?hx-56*sc-w:hx+56*sc;bx=Math.max(40,Math.min(1040-w,bx));byy=hy-28*sc-84;tail=left?`M${bx+w-50} ${byy+62}L${bx+w-12} ${byy+62}L${(hx-20*sc).toFixed(0)} ${(hy-24*sc).toFixed(0)}Z`:`M${bx+12} ${byy+62}L${bx+50} ${byy+62}L${(hx+20*sc).toFixed(0)} ${(hy-24*sc).toFixed(0)}Z`}   // (up and to the side of the head, clear of raised arms; the owner, round 5)
   g+=`<g class="qa" transform="translate(${ex} ${byy+60}) scale(${a}) translate(${-ex} ${-(byy+60)})"><rect x="${bx}" y="${byy}" width="${w}" height="64" rx="20" fill="#e6e9ec"/><path d="${tail}" fill="#e6e9ec"/><text x="${bx+w/2}" y="${byy+42}" text-anchor="middle" font-size="${bf}" font-weight="700" fill="#07121a">${txt}</text></g>`}
  return g+'</g>'}
 // ---- 2D animated story scenes (the PhaseJump look: flat neon line art on near-black). A story scene is
@@ -186,8 +199,7 @@ const bd=(c,w=4)=>`fill="${c}" fill-opacity=".2" stroke="${c}" stroke-width="${w
 // every prop is drawn standing on (0,0), about 200 px tall, facing right; u = seconds since it appeared
 const PROP2D={
  // ---- one or two signature props per game sector (2026-11-07): weather, time, dreams, creatures, ocean, anti-gravity, alchemy
- cloud(c,u){let g='';for(let k=0;k<7;k++){const x=-72+k*24,y=(u*230+k*41)%110;g+=`<line x1="${x}" y1="${-118+y}" x2="${x-6}" y2="${-96+y}" stroke="${SCOL.teal}" stroke-width="4" stroke-linecap="round" opacity="${(1-y/110).toFixed(2)}"/>`}
-  return g+`<path d="M-100 -130 Q-112 -178 -62 -182 Q-50 -232 4 -222 Q54 -246 78 -196 Q122 -192 108 -150 Q112 -128 84 -126 H-78 Q-102 -124 -100 -130 Z" ${bd(c)}/>`},
+ cloud(c,u){let g='';return g+`<path d="M-100 -130 Q-112 -178 -62 -182 Q-50 -232 4 -222 Q54 -246 78 -196 Q122 -192 108 -150 Q112 -128 84 -126 H-78 Q-102 -124 -100 -130 Z" ${bd(c)}/>`},
  sun(c,u){let g='';for(let k=0;k<10;k++){const a=k/10*Math.PI*2+u*.25;g+=`<line x1="${(Math.cos(a)*70).toFixed(1)}" y1="${(-120+Math.sin(a)*70).toFixed(1)}" x2="${(Math.cos(a)*96).toFixed(1)}" y2="${(-120+Math.sin(a)*96).toFixed(1)}" ${ln(c,5)}/>`}
   return g+`<circle cx="0" cy="-120" r="54" ${bd(c)}/>`},
  snowflake(c,u){let g='';for(let k=0;k<6;k++){const a=k/6*Math.PI*2+u*.3,x=Math.cos(a),y=Math.sin(a);g+=`<line x1="0" y1="-120" x2="${(x*92).toFixed(1)}" y2="${(-120+y*92).toFixed(1)}" ${ln(c,5)}/>`;
@@ -214,10 +226,10 @@ const PROP2D={
   for(let k=0;k<4;k++){const p=(u*.7+k/4)%1;g+=`<circle cx="${(-40+k*26).toFixed(0)}" cy="${(-20-p*70).toFixed(0)}" r="${(4+p*5).toFixed(1)}" fill="#fff" opacity="${(.8*(1-p)).toFixed(2)}"/>`}return g},
  cauldron(c,u){let g=`<path d="M-120 -130 H120 Q118 -20 0 -14 Q-118 -20 -120 -130 Z" ${bd(c)}/><ellipse cx="0" cy="-130" rx="120" ry="18" fill="${SCOL.green}" opacity=".6"/><line x1="-80" y1="-24" x2="-96" y2="0" ${ln(c,6)}/><line x1="80" y1="-24" x2="96" y2="0" ${ln(c,6)}/>`;
   for(let k=0;k<5;k++){const p=(u*.8+k/5)%1;g+=`<circle cx="${(-70+k*35+10*Math.sin(p*6)).toFixed(1)}" cy="${(-140-p*90).toFixed(0)}" r="${(6+p*10).toFixed(1)}" ${ln(SCOL.green,3)} opacity="${(1-p).toFixed(2)}"/>`}return g},
- goldbar(c,u){let g='';for(const [x,y] of [[-70,0],[70,0],[0,-62]])g+=`<path d="M${x-62} ${y} L${x-44} ${y-56} H${x+44} L${x+62} ${y} Z" ${bd(SCOL.amber)}/>`;
-  const s=((u*.4)%1)*240-120;return g+`<line x1="${s.toFixed(0)}" y1="-110" x2="${(s+30).toFixed(0)}" y2="-10" stroke="#fff" stroke-width="6" opacity=".35"/>`},
- wand(c,u){let g=`<line x1="-90" y1="-10" x2="60" y2="-170" ${ln('#e6e9ec',9)}/><path d="M60 -212 L71 -182 L102 -180 L77 -161 L86 -130 L60 -148 L34 -130 L43 -161 L18 -180 L49 -182 Z" ${bd(c)}/>`;
-  for(let k=0;k<5;k++){const a=k/5*Math.PI*2+u*.9,r=56+10*Math.sin(u*3+k);g+=`<circle cx="${(60+Math.cos(a)*r).toFixed(1)}" cy="${(-170+Math.sin(a)*r).toFixed(1)}" r="4" fill="#fff" opacity="${(.4+.6*Math.abs(Math.sin(u*2+k))).toFixed(2)}"/>`}return g},
+ egg(c,u){const w=2*Math.sin(u*7)*Math.min(1,u/2);return `<g transform="rotate(${w.toFixed(1)} 0 0)"><path d="M0 -230 C68 -230 96 -130 96 -86 C96 -28 54 0 0 0 C-54 0 -96 -28 -96 -86 C-96 -130 -68 -230 0 -230 Z" ${bd(c)}/><circle cx="-34" cy="-150" r="11" fill="${c}" opacity=".5"/><circle cx="30" cy="-96" r="15" fill="${c}" opacity=".5"/><circle cx="-18" cy="-60" r="8" fill="${c}" opacity=".5"/></g>`},   // (an egg that rocks before it hatches)
+ cage(c,u){let g=`<path d="M-120 0 V-200 Q0 -280 120 -200 V0" ${ln(c,6)}/><line x1="-130" y1="0" x2="130" y2="0" ${ln(c,8)}/>`;for(let x=-80;x<=80;x+=40)g+=`<line x1="${x}" y1="0" x2="${x}" y2="${-200-Math.round(56*(1-(x/120)**2))}" ${ln(c,5)}/>`;return g},
+ lake(c,u){const f=FILL>=0?io(FILL):Math.min(1,u/3.5),wl=-14-70*f;return `<path d="M-210 0 Q-214 -96 -150 -104 H150 Q214 -96 210 0 Z" ${ln(c,5)}/><path d="M-196 -6 Q-200 ${(wl-6).toFixed(0)} -180 ${wl.toFixed(0)} Q-90 ${(wl-8+4*Math.sin(u*3)).toFixed(0)} 0 ${wl.toFixed(0)} T180 ${wl.toFixed(0)} Q200 ${(wl-6).toFixed(0)} 196 -6 Z" fill="#5fa8e8" fill-opacity=".45"/>`},   // (a reservoir that fills)
+ goldbar(c,u){let g='';for(const [x,y] of [[-70,0],[70,0],[0,-62]])g+=`<path d="M${x-62} ${y} L${x-44} ${y-56} H${x+44} L${x+62} ${y} Z" fill="${SCOL.amber}" fill-opacity=".55" stroke="${SCOL.amber}" stroke-width="4" stroke-linejoin="round"/><path d="M${x-34} ${y-46} H${x+18}" stroke="#fff6d8" stroke-width="5" stroke-linecap="round" opacity=".7"/>`;return g},   // (solid ingots with a shine; the owner, 2026-11-08: the gold looked ugly)
  portal(c,u){let g='';for(let k=0;k<3;k++)g+=`<ellipse cx="0" cy="-110" rx="${62-k*12}" ry="${108-k*16}" ${ln(c,k?2.5:5)} opacity="${1-k*.25}" stroke-dasharray="${k?'14 10':'none'}" stroke-dashoffset="${-u*30*(k%2?1:-1)}"/>`;
   g+=`<ellipse cx="0" cy="-110" rx="44" ry="80" fill="${c}" opacity=".10"/>`;
   for(let k=0;k<5;k++){const a=k/5*Math.PI*2+u*1.1;g+=`<circle cx="${Math.cos(a)*62}" cy="${-110+Math.sin(a)*108}" r="4" fill="#fff"/>`}
@@ -237,9 +249,14 @@ const PROP2D={
  drone(c,u){let g=`<rect x="-50" y="-140" width="100" height="34" rx="10" ${bd(c)}/><line x1="-110" y1="-150" x2="110" y2="-150" ${ln(c,3)}/>`;
   for(const x of [-110,110])g+=`<ellipse cx="${x}" cy="-158" rx="${40*Math.abs(Math.cos(u*3))+8}" ry="6" ${ln(c,3)}/>`;
   return g+`<line x1="0" y1="-106" x2="0" y2="-70" ${ln(c,3)}/><rect x="-22" y="-70" width="44" height="40" rx="4" ${bd(SCOL.amber,3)}/>`},
- train(c){return [-150,-30,90].map((x,k)=>`<rect x="${x-55}" y="-100" width="110" height="78" rx="${k?6:22}" ${bd(c)}/><line x1="${x-38}" y1="-74" x2="${x+38}" y2="-74" ${ln(c,3)} opacity=".6"/><circle cx="${x-30}" cy="-14" r="11" ${bd(c,3)}/><circle cx="${x+30}" cy="-14" r="11" ${bd(c,3)}/>`).join('')+`<line x1="-230" y1="0" x2="170" y2="0" ${ln(c,3)} opacity=".5"/>`},
+ train(c){return `<path d="M150 -22 V-96 Q150 -112 166 -112 H196 Q246 -100 262 -40 L268 -22 Z" ${bd(c)}/><rect x="166" y="-100" width="30" height="26" rx="5" ${ln(c,3)}/><circle cx="182" cy="-14" r="12" ${bd(c,3)}/><circle cx="236" cy="-14" r="12" ${bd(c,3)}/>`+[-150,-30,90].map(x=>`<rect x="${x-55}" y="-100" width="110" height="78" rx="6" ${bd(c)}/><line x1="${x-38}" y1="-74" x2="${x+38}" y2="-74" ${ln(c,3)} opacity=".6"/><circle cx="${x-30}" cy="-14" r="11" ${bd(c,3)}/><circle cx="${x+30}" cy="-14" r="11" ${bd(c,3)}/>`).join('')+`<line x1="-230" y1="0" x2="280" y2="0" ${ln(c,3)} opacity=".5"/>`},   // (an engine at the front; the owner, round 2)
  coin(c,u){const sx=Math.abs(Math.cos(u*1.4))*.9+.1;return `<g transform="translate(0 -70) scale(${sx} 1)"><circle r="60" ${bd(c)}/><circle r="42" ${ln(c,3)} opacity=".6"/><path d="M-16 18 V-18 L0 2 L16 -18 V18" ${ln(c,5)}/></g>`},
- coins(c){let g='';for(let k=0;k<5;k++)g+=`<ellipse cx="${(k%2)*6-3}" cy="${-14-k*22}" rx="62" ry="16" ${bd(c,3.5)}/>`;return g},
+ coins(c){let g='';for(const [dx,n] of [[-52,4],[40,6]])for(let k=0;k<n;k++){const y=-16-k*20;g+=`<path d="M${dx-50} ${y} V${y+14} A50 13 0 0 0 ${dx+50} ${y+14} V${y}" fill="${c}" fill-opacity=".35" stroke="${c}" stroke-width="3"/><ellipse cx="${dx}" cy="${y}" rx="50" ry="13" fill="${c}" fill-opacity=".5" stroke="${c}" stroke-width="3"/>`}return g},   // (two stacks of coins, each coin with its edge; the owner, round 2)
+ chart(c,u){let g=`<rect x="-120" y="-210" width="240" height="190" rx="14" ${bd(c)}/>`;const H=[[-78,-70,30],[-42,-96,-24],[-6,-82,34],[30,-120,-30],[66,-108,40]];   // (a mini chart card: five candles, the house green and red)
+  H.forEach(([x,y,h],k)=>{const up=h>0,col=up?SCOL.green:SCOL.red,a=cl(u*3-k*.4);if(a<=0)return;const top=up?y-h:y;g+=`<g opacity="${a.toFixed(2)}"><line x1="${x}" y1="${top-14}" x2="${x}" y2="${top+Math.abs(h)+14}" stroke="${col}" stroke-width="3"/><rect x="${x-11}" y="${top}" width="22" height="${Math.abs(h)}" rx="3" fill="${col}"/></g>`});
+  return g+`<line x1="-100" y1="-40" x2="100" y2="-40" ${ln(c,2)} opacity=".5"/>`},
+ candle(c,u){return `<line x1="0" y1="-230" x2="0" y2="-10" stroke="${c}" stroke-width="6" stroke-linecap="round"/><rect x="-36" y="-190" width="72" height="140" rx="6" fill="${c}" fill-opacity=".85" stroke="${c}" stroke-width="4"/>`},   // (one candle: green up, red down, by its colour)
+ question(c,u){const b=1+.04*Math.sin(u*4);return `<g transform="translate(0 -110) scale(${b.toFixed(3)})"><rect x="-80" y="-100" width="160" height="200" rx="22" ${bd(c)}/><path d="M-30 -36 Q-30 -70 0 -70 Q32 -70 32 -40 Q32 -18 6 -6 Q0 -2 0 18" ${ln(c,12)}/><circle cx="0" cy="52" r="9" fill="${c}"/></g>`},   // (a question card, gently pulsing)
  bar(c){return `<rect x="-38" y="-200" width="76" height="200" rx="6" ${bd(c)}/><line x1="-38" y1="-200" x2="38" y2="-200" ${ln(c,7)}/>`},
  arrow(c){return c===SCOL.red?`<path d="M0 0 L70 -80 H28 V-230 H-28 V-80 H-70 Z" ${bd(c)}/>`:`<path d="M0 -230 L70 -150 H28 V0 H-28 V-150 H-70 Z" ${bd(c)}/>`},   // (red falls: it points down)
  shield(c){return `<path d="M0 -230 Q60 -215 90 -200 Q90 -60 0 0 Q-90 -60 -90 -200 Q-60 -215 0 -230 Z" ${bd(c)}/><path d="M-34 -118 L-8 -90 L40 -146" ${ln(c,7)}/>`},
@@ -270,27 +287,33 @@ function breath(u){const b=(u%4.2)-2.6,f=b>0&&b<1.1?Math.sin(Math.PI*b/1.1):0;if
  for(let k=0;k<9;k++){const q=k/8,x=178+q*100*f,y=-150+q*24*f+5*Math.sin(u*14+k),r=(4+q*18)*f;g+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${k%3===1?SCOL.red:SCOL.amber}" opacity="${(.9*(1-q*.5)).toFixed(2)}"/>`}return g}
 // storyboard beats (the owner, 2026-11-07: something happens in every scene): actors stand on slots and verbs act on their words
 const SLOT={left:[230,0],mid:[540,0],right:[850,0],'sky-left':[230,-330],'sky-mid':[540,-330],'sky-right':[850,-330],'off-left':[-260,0],'off-right':[1340,0]},DEFSLOT=['left','right','mid','sky-mid','sky-left'];   // (x, and height above the ground)
-const KSZ={s:[200,180],m:[330,290],l:[480,420]},BEAT={enter:.4,move:.7,hit:.6,fall:.5,launch:.9,emit:1.2,grow:.8,burst:.6,tint:.4,count:.8};   // (each verb's length in seconds; make_spec reads the names)
+const KSZ={s:[200,180],m:[330,290],l:[480,420]},BEAT={enter:.6,move:.7,hit:.6,fall:.5,launch:.9,emit:1.2,grow:.8,burst:.6,tint:.4,count:.8,fling:.9,crack:.9};   // (each verb's length in seconds; make_spec reads the names)
 function boomFx(cx,cy,ex,R,c){let g='';for(let k=0;k<40;k++){const a=k/40*Math.PI*2,r=R*.05+ex*R;g+=`<circle cx="${(cx+Math.cos(a)*r).toFixed(0)}" cy="${(cy+Math.sin(a)*r*.75).toFixed(0)}" r="${(16*(1-ex)+3).toFixed(1)}" fill="${k%3?c:SCOL.amber}" opacity="${(1-ex).toFixed(2)}"/>`}
  return g+`<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${(ex*R*.65).toFixed(0)}" fill="${SCOL.amber}" opacity="${(.18*(1-ex)).toFixed(2)}"/>`}
+let FILL=-1;const W0=b=>b.what||'sparks';
 const aSlot=(s,a)=>SLOT[a.at]||SLOT[DEFSLOT[(s.actors||[]).indexOf(a)]]||SLOT.mid;
 const aK=(s,a)=>{const sl=aSlot(s,a),z=a.size||'m',bx=KSZ[sl[1]<0&&z==='l'?'m':z];return fitK({p:a.p},3,bx[0],bx[1])};   // (a sky actor is at most medium)
 function actorState(s,a,t,depth){const G=STAGE.ground,A=s.actors||[],B=(s.beats||[]).filter(b=>b.t!=null&&(b.who===a.id||b.with===a.id)).sort((p,q)=>p.t-q.t),sl=aSlot(s,a);   // where an actor is at t: its slot, then every beat up to t folded in
- let x=sl[0],y=G+sl[1],col=a.color||'teal',alive=true,rot=0,sh=0,rest=true,grow=1;
+ let x=sl[0],y=G+sl[1],col=a.color||'teal',alive=true,rot=0,sh=0,rest=true,grow=1,crack=0,fade=1;
+ if(B.some(b=>b.do==='enter'&&b.who===a.id&&t<b.t))fade=0;   // (hidden until it enters: no one-frame flash; the owner, round 3 'glitchy')
  for(const b of B){if(t<b.t)continue;const Dn=BEAT[b.do]||.5,u=seg(t,b.t,b.t+Dn),d=t-b.t-Dn;if(u<1)rest=false;
-  if(b.do==='enter'&&b.who===a.id)x+=(x<540?-1:1)*160*(1-out(u));
+  if(b.do==='enter'&&b.who===a.id){y+=50*(1-io(u));fade=io(u)}   // (rises gently into place; the owner, round 2: the side slide looked jerky)
+  else if(b.do==='fling'&&b.who===a.id){const dir=b.to==='off-left'?-1:1,tau=u*.9;x+=dir*1250*tau;y+=-820*tau+1150*tau*tau;rot=dir*220*u;if(x<-320||x>1400)alive=false}   // (thrown: a real arc, fast then falling, tumbling away)
+  else if(b.do==='crack'&&b.who===a.id)crack=u;
   else if(b.do==='move'&&b.who===a.id){const to=SLOT[b.to]||sl;x+=(to[0]-x)*io(u);y+=(G+to[1]-y)*io(u)}
-  else if(b.do==='launch'&&b.who===a.id){const to=SLOT[b.to]||SLOT['sky-mid'];x+=(to[0]-x)*io(u);y+=(G+to[1]-y)*io(u)-300*Math.sin(Math.PI*u)}
-  else if(b.do==='hit'){if(b.who===a.id){const o=A.find(q=>q.id===b.with),O=o&&(depth||0)<2?actorState(s,o,b.t,(depth||0)+1):{x:540,y:G},ow=o?KSZ[o.size||'m'][0]:270,w=(ow+KSZ[a.size||'m'][0])*.21,cx=O.x-Math.sign(O.x-x||1)*w;x+=(cx-x)*u*u;y+=(O.y-y)*u*u;if(u>=1)rot=-10}
+  else if(b.do==='launch'&&b.who===a.id){const to=SLOT[b.to]||SLOT['sky-mid'];const arc=300*Math.min(1,Math.abs(to[0]-x)/300);x+=(to[0]-x)*io(u);y+=(G+to[1]-y)*io(u)-arc*Math.sin(Math.PI*u)}   /* (straight up has no arc: it never overshoots into the title) */
+  else if(b.do==='hit'){if(b.who===a.id){const o=A.find(q=>q.id===b.with),O=o&&(depth||0)<2?actorState(s,o,b.t+Dn,(depth||0)+1):{x:540,y:G},ow=o?KSZ[o.size||'m'][0]:270,w=(ow+KSZ[a.size||'m'][0])*.36,sg=Math.sign(O.x-x||1),cx=O.x-sg*w;x+=(cx-x)*u*u;y+=(O.y-y)*u*u;if(u>=1)x-=sg*45*out(Math.min(1,d/.35))}   /* (they meet edge to edge, then it recoils: never jammed into each other) */
+   if(b.with===a.id&&u>=1){const o=A.find(q=>q.id===b.who),ox=o?aSlot(s,o)[0]:0;x+=Math.sign(x-ox||1)*40*out(Math.min(1,d/.4))}   /* (the one that is hit is knocked back) */
    if(u>=1)sh=6*Math.sin(d*40)*Math.max(0,1-d/.4)}
-  else if(b.do==='fall'&&b.who===a.id){const ty=b.to==='off'?G+420:G;y+=(ty-y)*u*u;rot+=25*u;if(u>=1&&b.to==='off')alive=false;else if(u>=1)sh=4*Math.sin(d*40)*Math.max(0,1-d/.3)}
+  else if(b.do==='fall'&&b.who===a.id){const ty=b.to==='off'?G+420:G,hi=b.crash&&ty-y>150&&FLY.includes(a.p);if(hi){rot=(a.p==='rocket'?180:40)*io(u);if(a.p!=='rocket')x+=140*io(u)}y+=(ty-y)*u*u;if(u>=1&&b.to==='off')alive=false;else if(u>=1)sh=4*Math.sin(d*40)*Math.max(0,1-d/.3)}
   else if(b.do==='grow'&&b.who===a.id){const r=KSZ[KSZ[b.to]?b.to:'l'][1]/KSZ[a.size||'m'][1];grow*=1+(r-1)*back(u)}
   else if(b.do==='tint'&&b.who===a.id&&u>=.5)col=SCOL[b.color]?b.color:col;
   else if(b.do==='burst'&&b.who===a.id)alive=false}
- return {x,y,col,alive,rot,sh,rest,grow}}
+ if(!B.some(b=>b.do==='fling'&&b.who===a.id&&t>=b.t))y=Math.max(y,STAGE.top+(PSZ[a.p]||[0,220])[1]*aK(s,a)*grow);   // (a prop never rises into the title zone)
+ return {x,y,col,alive,rot,sh,rest,grow,crack,fade}}
 // each prop's real size at scale 1 (width, height), so a slot can fit it: a wide dragon never spills onto its neighbours
-const PSZ={hut:[200,195],cloud:[230,250],sun:[200,220],snowflake:[190,220],turbine:[230,280],clock:[180,200],hourglass:[130,225],moon:[200,220],bed:[240,230],kraken:[180,240],sub:[340,200],kelp:[160,220],shell:[220,180],hover:[230,170],potion:[190,240],cauldron:[250,240],goldbar:[260,120],wand:[200,220],queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
- ship:[330,150],plane:[300,170],rocket:[140,260],drone:[260,170],train:[400,100],coin:[120,130],coins:[130,120],bar:[80,200],arrow:[140,230],
+const PSZ={egg:[192,230],cage:[260,280],lake:[420,104],chart:[240,210],candle:[72,230],question:[200,285],hut:[200,195],cloud:[230,250],sun:[200,220],snowflake:[190,220],turbine:[230,280],clock:[180,200],hourglass:[130,225],moon:[200,220],bed:[240,230],kraken:[180,240],sub:[340,200],kelp:[160,220],shell:[220,180],hover:[230,170],potion:[190,240],cauldron:[250,240],goldbar:[260,120],wand:[200,220],queue:[380,215],portal:[140,230],crate:[90,90],node:[60,70],building:[100,230],city:[310,260],factory:[230,300],warehouse:[240,180],truck:[240,130],
+ ship:[330,150],plane:[300,170],rocket:[140,260],drone:[260,170],train:[480,112],coin:[120,130],coins:[200,135],bar:[80,200],arrow:[140,230],
  shield:[180,230],warning:[200,200],gear:[180,180],flask:[170,220],battery:[110,220],chip:[210,160],pipe:[360,110],tree:[150,230],
  mountain:[400,230],wave:[400,120],person:[90,215],dragon:[360,300],bird:[240,110],fish:[250,130]};
 const fitK=(p,k,w,h)=>{const z=PSZ[(p||{}).p]||[200,220];return Math.min(k,w/z[0],h/z[1])};
@@ -342,7 +365,7 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
   if(fly){let cx=540;for(let k=0;k<n;k++){const e=io(seg(t,on(k)-.7,on(k)));cx+=(xs[k]-cx)*e}
    g+=prop2d(lead,Math.min(cx,820),G-330+10*Math.sin(t*1.4),fitK(lead,1,280,170),t,T0(0),0)}
   else g+=prop2d(lead,540,G-330,fitK(lead,.9,200,170),t,T0(0),0)}
- else if(lay==='storm'){const lead=P[0]||{p:'building',color:'teal'},Rk=P.slice(1,4),hit=k=>Math.max(s.t0+.8+k*.5,T0(k+1)??s.vs+.6+k*1.1),hk=fitK(lead,1.8,400,360),sl=[[170,G-40],[910,G-40],[170,G-340]],H=(PSZ[lead.p]||[0,230])[1]*hk;   // (what can hurt it: a storm rolls in over the company, and each risk strikes as lightning)
+ else if(lay==='storm'){const lead=P[0]||{p:'building',color:'teal'},Rk=P.slice(1,4),hit=k=>Math.max(s.t0+.8+k*.5,T0(k+1)??s.vs+.6+k*1.1),hk=fitK(lead,1.8,400,Rk.length>2?270:360),H=(PSZ[lead.p]||[0,230])[1]*hk,sl=[[190,G-40],[890,G-40],[540,G-H-60]];   // (the owner, 2026-11-08: symmetric, the third risk above the company)   // (what can hurt it: a storm rolls in over the company, and each risk strikes as lightning)
   for(let k=0;k<5;k++){const x=110+k*215+(1-dark)*(k<2?-520:k>2?520:0),y=575+(k%2)*45-(1-dark)*(k===2?260:0);g+=`<g fill="#2b2740" opacity="${(.92*dark).toFixed(2)}"><ellipse cx="${x}" cy="${y}" rx="175" ry="58"/><ellipse cx="${x-55}" cy="${y-32}" rx="95" ry="58"/><ellipse cx="${x+45}" cy="${y-22}" rx="80" ry="50"/></g>`}
   if(dark>0)for(let k=0;k<30;k++){const x=(k*73)%1080,y=640+((t*700+k*137)%(G-640));g+=`<line x1="${x}" y1="${y.toFixed(0)}" x2="${x-6}" y2="${(y+24).toFixed(0)}" stroke="#8fa3c8" stroke-width="2" opacity="${(.3*dark).toFixed(2)}"/>`}
   let nh=0,sh=0;Rk.forEach((_,k)=>{if(t>=hit(k)){nh++;sh=2.5*Math.sin((t-hit(k))*28)*Math.max(0,1-(t-hit(k))/.5)}});
@@ -352,7 +375,7 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
     g+=`<path d="${d}" fill="none" stroke="#fff" stroke-width="${(9*(1-b)).toFixed(1)}" stroke-linejoin="round" opacity="${(1-b).toFixed(2)}"/><path d="${d}" fill="none" stroke="${SCOL.amber}" stroke-width="${(18*(1-b)).toFixed(1)}" opacity="${(.35*(1-b)).toFixed(2)}"/>`;
     bg+=`<rect x="0" y="480" width="1080" height="810" fill="#fff" opacity="${(.12*(1-b)).toFixed(3)}"/>`}
    const a=out(seg(t,hit(k)-.1,hit(k)+.35));if(a<=0)return;const [tx,ty]=sl[k],wp=Object.assign({p:'warning',color:'red'},p),wk=fitK(wp,1.5,230,190);
-   g+=prop2d(wp,tx,ty-(1-a)*120,wk,t,null,k+1);lab(k+1,tx,ty-(PSZ[wp.p]||[0,200])[1]*wk-36)});
+   g+=prop2d(wp,tx,ty-(1-a)*120,wk,t,null,k+1);if(k===2)lab(k+1,tx+(PSZ[wp.p]||[200,0])[0]*wk/2+140,ty-40);else lab(k+1,tx,ty-(PSZ[wp.p]||[0,200])[1]*wk-36)});
   lab(0,540,G+60)}
  else if(lay==='flow'){const st=P.slice(0,Math.max(1,P.length-1)).slice(0,3),mv=P.length>1?P[P.length-1]:{p:'crate',color:'amber'},n=st.length,xs=st.map((_,k)=>n===1?540:220+640*k/(n-1)),portal=n>1&&st.every(p=>p.p==='portal');
   st.forEach((p,k)=>{const kk=fitK(p,1.7,n>2?280:380,400);g+=prop2d(p,xs[k],G,kk,t,T0(k),k);lab(k,xs[k],G-(PSZ[p.p]||[0,220])[1]*kk-40)});
@@ -388,32 +411,49 @@ function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0
   const two=(P[1]||{}).p==='portal';if(two){g+=prop2d(P[1],660,G-20,.85,t,T0(1),1)+prop2d(Object.assign({},P[1],{color:'purple'}),920,G-20,.85,t,T0(1),2)}else g+=prop2d(P[1]||{p:'portal'},790,G-20,.9,t,T0(1),1);
   const q2=((t-s.t0)*.45)%1,fx=600+380*q2;if(!two||fx<660||fx>920)g+=prop2d(mv,fx,G-30,.5,t,null,8);
   lab(0,290,STAGE.top+70);lab(1,790,STAGE.top+70)}
+ else if(lay==='updown'){const n=16,up=P[0]&&P[0].t!=null?P[0].t:s.vs+.3,dn=P[1]&&P[1].t!=null?P[1].t:s.vs+1.6;let cy=1060;   // (many candles march across, climbing on one phrase and tumbling on the next; the owner, round 5)
+  for(let k=0;k<n;k++){const dr=k>=n/2,j=dr?k-n/2:k,at=(dr?dn:up)+j*.11,a=out(seg(t,at,at+.3)),h=dr?44:38,x=110+k*(860/(n-1)),o=cy,c=dr?cy+h:cy-h;cy=c;if(a<=0)continue;
+   const col=dr?SCOL.red:SCOL.green,top=Math.min(o,c)+(1-a)*40;g+=`<g opacity="${cl(a).toFixed(2)}"><line x1="${x}" y1="${(top-16).toFixed(0)}" x2="${x}" y2="${(top+h+16).toFixed(0)}" stroke="${col}" stroke-width="4"/><rect x="${x-18}" y="${top.toFixed(0)}" width="36" height="${h}" rx="4" fill="${col}"/></g>`}}
  else if(lay==='stage'){}   // (the living backdrop and an empty ground: a storyboard's actors alone)
  let cam=0;{const A=s.actors||[],Bt=s.beats||[],h=a=>(PSZ[a.p]||[0,220])[1]*aK(s,a);   // the storyboard: actors over the setting, their labels only while they stand still; the beats' effects
-  A.forEach((a,j)=>{const S=actorState(s,a,t);if(!S.alive)return;const pw=(PSZ[a.p]||[200,220])[0],k=Math.min(aK(s,a)*S.grow,S.x>STAGE.x0&&S.x<STAGE.x1?2*Math.min(S.x-STAGE.x0,STAGE.x1-S.x)/pw:9),en=Bt.find(b=>b.do==='enter'&&b.who===a.id),t0=en&&en.t!=null?en.t:s.t0+.2;
-   g+=`<g transform="translate(${S.sh.toFixed(1)} 0) rotate(${S.rot.toFixed(1)} ${S.x.toFixed(0)} ${S.y.toFixed(0)})">${prop2d(Object.assign({},a,{color:S.col}),S.x,S.y,k,t,t0,j+20)}</g>`;
-   if(a.label&&S.rest&&t>=t0)L.push({text:a.label,x:S.x,y:S.y-h(a)*S.grow-40,color:sc2({color:S.col}),a:cl(seg(t,t0,t0+.3))})});
+  A.forEach((a,j)=>{const S=actorState(s,a,t);if(!S.alive)return;const pw=(PSZ[a.p]||[200,220])[0],sx=aSlot(s,a)[0],k=Math.min(aK(s,a)*S.grow,sx>STAGE.x0&&sx<STAGE.x1?2*Math.min(sx-STAGE.x0,STAGE.x1-sx)/pw:9),en=Bt.find(b=>b.do==='enter'&&b.who===a.id),t0=en&&en.t!=null?en.t:s.t0+.2;
+   const kk=k*(1+TOK.breath*Math.sin(t*1.9+j*1.3)),Hc=(PSZ[a.p]||[200,220])[1]*kk,cy=S.y-Hc/2;FILL=Bt.filter(b=>b.do==='emit'&&b.with===a.id&&b.t!=null).reduce((m,b)=>Math.max(m,seg(t,b.t,b.t+2.4)),-1);
+   const body=prop2d(Object.assign({},a,{color:S.col}),S.x,S.y,kk,t,t0,j+20),tr=`translate(${S.sh.toFixed(1)} 0) rotate(${S.rot.toFixed(1)} ${S.x.toFixed(0)} ${cy.toFixed(0)})`;
+   if(S.crack>0){const cut=S.y-Hc*.55,zz=Array.from({length:13},(_,q)=>`${(S.x-400+q*66.7).toFixed(0)},${(cut+(q%2?14:-14)).toFixed(0)}`).join(' '),id=`ck${si}_${j}`,u=S.crack;   // cracked open: the top flies off, tumbling (the owner, round 2)
+    g+=`<defs><clipPath id="${id}b"><polygon points="${zz} ${S.x+400},${S.y+60} ${S.x-400},${S.y+60}"/></clipPath><clipPath id="${id}t"><polygon points="${zz} ${S.x+400},${S.y-900} ${S.x-400},${S.y-900}"/></clipPath></defs>`;
+    g+=`<g transform="${tr}"><g clip-path="url(#${id}b)">${body}</g></g><g opacity="${(1-u).toFixed(2)}" transform="translate(${(420*u).toFixed(0)} ${(-520*u+640*u*u).toFixed(0)}) rotate(${(160*u).toFixed(0)} ${S.x.toFixed(0)} ${cut.toFixed(0)})"><g clip-path="url(#${id}t)">${body}</g></g>`}
+   else g+=`<g transform="${tr}" opacity="${S.fade.toFixed(2)}">${body}</g>`;FILL=-1;
+   const lt=a.lt!=null?a.lt:t0;   // a label shows from its words (narrate.py lt) while its prop is in frame, follows it and never blinks off;
+   if(a.label&&t>=lt&&S.x>40&&S.x<1040){const w=a.label.length*23+40,te=s.t1-.01,E=actorState(s,a,te),side=(P2,Q)=>{   // above it, or beside it when another prop is there (decided on the scene's end, so it never hops)
+     const hw=Math.min((PSZ[a.p]||[200,220])[0]*aK(s,a)*P2.grow,600)/2,H=h(a)*P2.grow;const X=x=>Math.max(70+w/2,Math.min(1010-w/2,x));return [[X(P2.x),P2.y-H-40],[X(P2.x+hw+w/2+24),P2.y-H*.5+26],[X(P2.x-hw-w/2-24),P2.y-H*.5+26]]},
+     bx=A.filter(o=>o!==a).map(o=>{const O=actorState(s,o,te),ow=Math.min((PSZ[o.p]||[200,220])[0]*aK(s,o)*O.grow,600)/2;return O.alive?[O.x-ow,O.y-h(o)*O.grow,O.x+ow,O.y]:null}).filter(Boolean),
+     free=([x,y])=>!bx.some(b=>x+w/2>b[0]&&x-w/2<b[2]&&y>b[1]&&y-52<b[3]),q=Math.max(0,side(E).findIndex(free)),[lx,ly]=side(S)[q];
+    L.push({text:a.label,x:lx,y:ly,color:sc2({color:S.col}),a:cl(seg(t,lt,lt+.3))})}});
   Bt.forEach(b=>{if(b.t==null||t<b.t)return;const Dn=BEAT[b.do]||.5,ti=b.t+Dn,a=A.find(q=>q.id===b.who);if(!a)return;const S=actorState(s,a,Math.min(t,ti)),c=sc2({color:S.col}),H=h(a),k=aK(s,a);
    if(b.do==='hit'&&t>=ti){const r=seg(t,ti,ti+.6),o=A.find(q=>q.id===b.with),O=o?actorState(s,o,ti):S,cx=(S.x+O.x)/2,cy=S.y-H*.4,oc=sc2({color:(o||a).color});if(r<1){
      g+=`<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${(30+110*out(r)).toFixed(0)}" fill="none" stroke="${SCOL.amber}" stroke-width="${(7*(1-r)).toFixed(1)}" opacity="${(1-r).toFixed(2)}"/>`;
      for(let q=0;q<10;q++){const an=Math.PI*(.15+.7*q/9),rr=60+240*r;g+=`<circle cx="${(cx+Math.cos(an)*rr).toFixed(0)}" cy="${(cy-Math.sin(an)*rr+260*r*r).toFixed(0)}" r="${(7*(1-r)+2).toFixed(1)}" fill="${q%2?c:oc}" opacity="${(1-r).toFixed(2)}"/>`}
      bg+=`<rect x="0" y="480" width="1080" height="810" fill="#fff" opacity="${(.15*(1-seg(t,ti,ti+.25))).toFixed(3)}"/>`;const d=t-ti;cam=5*Math.sin(d*45)*Math.max(0,1-d/.35)}}
-   else if(b.do==='fall'&&b.to!=='off'&&t>=ti){const r=seg(t,ti,ti+.4);if(r<1)for(let q=0;q<4;q++)g+=`<ellipse cx="${(S.x+(q-1.5)*70*(1+r)).toFixed(0)}" cy="${(STAGE.ground-10-30*r).toFixed(0)}" rx="${(22+30*r).toFixed(0)}" ry="${(9+6*r).toFixed(0)}" fill="#9aa3ad" opacity="${(.4*(1-r)).toFixed(2)}"/>`}
-   else if(b.do==='launch'&&t<ti){for(let q=1;q<=5;q++){const P=actorState(s,a,t-.06*q);g+=`<circle cx="${P.x.toFixed(0)}" cy="${(P.y-H*.5).toFixed(0)}" r="${(9-q*1.4).toFixed(1)}" fill="${SCOL.amber}" opacity="${(.6-q*.1).toFixed(2)}"/>`}}
+   else if(b.do==='fall'&&b.to!=='off'&&t>=ti){const r=seg(t,ti,ti+.55),high=actorState(s,a,b.t).y<STAGE.ground-120;if(r<1){for(let q=0;q<7;q++)g+=`<ellipse cx="${(S.x+(q-3)*60*(1+1.4*r)).toFixed(0)}" cy="${(STAGE.ground-10-40*r).toFixed(0)}" rx="${(26+40*r).toFixed(0)}" ry="${(10+8*r).toFixed(0)}" fill="#9aa3ad" opacity="${(.45*(1-r)).toFixed(2)}"/>`;   /* (a hard landing: dust, and from height a ring, debris and a jolt; the owner: crashes more dramatic) */
+     if(high){g+=`<ellipse cx="${S.x.toFixed(0)}" cy="${(STAGE.ground-6).toFixed(0)}" rx="${(40+220*out(r)).toFixed(0)}" ry="${(12+40*out(r)).toFixed(0)}" fill="none" stroke="${SCOL.amber}" stroke-width="${(7*(1-r)).toFixed(1)}" opacity="${(1-r).toFixed(2)}"/>`;for(let q=0;q<10;q++){const an=Math.PI*(.1+.8*q/9),rr=40+260*r;g+=`<circle cx="${(S.x+Math.cos(an)*rr).toFixed(0)}" cy="${(STAGE.ground-20-Math.sin(an)*rr*.8+280*r*r).toFixed(0)}" r="${(7*(1-r)+2).toFixed(1)}" fill="${c}" opacity="${(1-r).toFixed(2)}"/>`}
+      bg+=`<rect x="0" y="480" width="1080" height="810" fill="#fff" opacity="${(.12*(1-seg(t,ti,ti+.25))).toFixed(3)}"/>`;const d=t-ti;cam=6*Math.sin(d*45)*Math.max(0,1-d/.4)}}}
+   else if(b.do==='emit'&&t<ti+.9&&(b.with||W0(b)==='hearts')){const u=t-b.t,W=W0(b),top=S.y-H,o=A.find(q=>q.id===b.with),O=o?actorState(s,o,t):null,ot=O?O.y-h(o)*O.grow*.6:0;   // a stream into its target, or hearts drifting up (the owner, 2026-11-08: no spray)
+     for(let q=0;q<9;q++){const f=W==='rain'?((u*1.1+q*.137)%1)*(u<1.2?1:0):(u-q*.11)/.8;if(f<=0||f>=1)continue;const sp=W==='rain'?((q*37)%9-4)*22:0,px=O?S.x+sp+(O.x-S.x)*f:S.x+(q-4)*26+22*Math.sin(u*3+q),py=O?(W==='rain'?S.y-H*.45:top)+(ot-(W==='rain'?S.y-H*.45:top))*f-(W==='rain'?0:170)*Math.sin(Math.PI*f):top-20-f*240,o2=(f<.15?f/.15:1-Math.max(0,f-.8)/.2).toFixed(2);
+      g+=W==='coins'?`<g transform="translate(${px.toFixed(0)} ${py.toFixed(0)}) scale(.32)" opacity="${o2}">${PROP2D.coin(SCOL.amber,t+q)}</g>`:W==='rain'?`<path transform="translate(${px.toFixed(0)} ${py.toFixed(0)})" d="M0 -16 Q10 0 0 8 Q-10 0 0 -16 Z" fill="#8fb8e8" opacity="${o2}"/>`:W==='fire'?`<circle cx="${px.toFixed(0)}" cy="${py.toFixed(0)}" r="${(14-8*f).toFixed(1)}" fill="${SCOL.amber}" opacity="${o2}"/>`:`<path transform="translate(${px.toFixed(0)} ${py.toFixed(0)}) scale(${(1.6-.4*f).toFixed(2)})" d="M0 8 C-14 -4 -14 -18 -4 -18 C2 -18 0 -12 0 -10 C0 -12 -2 -18 4 -18 C14 -18 14 -4 0 8 Z" fill="#ff7eb6" opacity="${o2}"/>`}}
    else if(b.do==='emit'&&t<ti){const u=t-b.t,W=b.what||'sparks',top=S.y-H;
      if(W==='fire')g+=`<g transform="translate(${S.x.toFixed(0)} ${S.y.toFixed(0)}) scale(${k.toFixed(3)})">${breath(u+2.6)}</g>`;
      else for(let q=0;q<8;q++){const f=((u*1.1+q/8)%1),an=-Math.PI/2+(q/8-.5)*1.6,r=f*200,px=W==='rain'?S.x+(q-3.5)*60:S.x+Math.cos(an)*r,py=W==='rain'?top-200+f*(H+200):top-Math.abs(Math.sin(an))*r*1.1+(W==='coins'?f*f*220:0),o=(1-f).toFixed(2);
       g+=W==='coins'?`<g transform="translate(${px.toFixed(0)} ${py.toFixed(0)}) scale(.3)" opacity="${o}">${PROP2D.coin(SCOL.amber,t+q)}</g>`:W==='smoke'?`<circle cx="${px.toFixed(0)}" cy="${py.toFixed(0)}" r="${(10+30*f).toFixed(0)}" fill="#8b96a3" opacity="${(.35*(1-f)).toFixed(2)}"/>`:W==='rain'?`<line x1="${px.toFixed(0)}" y1="${py.toFixed(0)}" x2="${(px-6).toFixed(0)}" y2="${(py+26).toFixed(0)}" stroke="#8fa3c8" stroke-width="3" opacity=".6"/>`:W==='hearts'?`<path transform="translate(${px.toFixed(0)} ${py.toFixed(0)})" d="M0 8 C-14 -4 -14 -18 -4 -18 C2 -18 0 -12 0 -10 C0 -12 -2 -18 4 -18 C14 -18 14 -4 0 8 Z" fill="#ff7eb6" opacity="${o}"/>`:`<line x1="${S.x.toFixed(0)}" y1="${top.toFixed(0)}" x2="${px.toFixed(0)}" y2="${py.toFixed(0)}" stroke="${SCOL.amber}" stroke-width="3" opacity="${(.7*(1-f)).toFixed(2)}"/>`}}
    else if(b.do==='burst'){const ex=seg(t,b.t,ti);if(ex<1)g+=boomFx(S.x,S.y-H*.5,ex,KSZ[a.size||'m'][0]*1.2,c)}
-   else if(b.do==='count'&&b.text){const n=parseInt((String(b.text).match(/\d+/)||['0'])[0]),u=out(seg(t,b.t,ti));L.push({text:String(b.text).replace(/\d+/,String(Math.round(n*u))),x:S.x,y:S.y-H-(a.label?110:40),color:c,a:cl(seg(t,b.t,b.t+.3))})}})}
+   else if(b.do==='count'&&b.text){const n=parseInt((String(b.text).match(/\d+/)||['0'])[0]),u=out(seg(t,b.t,ti));L.push({text:String(b.text).replace(/\d+/,String(Math.round(n*u))),x:S.x,y:S.y-H*S.grow-(a.label?110:40),color:c,a:cl(seg(t,b.t,b.t+.3))})}})}
  const labs=L.filter(l=>l.a>0).sort((a,b)=>a.y-b.y),placed=[];
- const zl=1+.04*io(seg(t,s.t0,s.t1)),html=labs.map(l=>{const w=l.text.length*23+40,lx=540+(l.x-540)*zl,ly=G-200+(l.y-G+200)*zl;let x=Math.max(70+w/2,Math.min(1010-w/2,lx)),y=Math.max(STAGE.top,Math.min(1240,ly));   // (tags ride the push-in with their props)
+ const zl=1+TOK.push*io(seg(t,s.t0,s.t1)),html=labs.map(l=>{const w=l.text.length*23+40,lx=540+(l.x-540)*zl,ly=G-200+(l.y-G+200)*zl;let x=Math.max(70+w/2,Math.min(1010-w/2,lx)),y=Math.max(STAGE.top,Math.min(1240,ly));   // (tags ride the push-in with their props)
   while(placed.some(q=>Math.abs(q[0]-x)<(q[2]+w)/2+20&&Math.abs(q[1]-y)<66))y+=68;placed.push([x,y,w]);   // (a clear gap between tags, never touching)
   return `<div class="slab qa" style="left:${x}px;top:${y}px;color:${l.color};border-color:${l.color};opacity:${l.a}">${esc(l.text)}</div>`}).join('');
  const pv=SC[si-1],e=io(seg(t,s.t0,s.t0+.5)),slide=pv&&pv.layout&&si>0&&e<1;   // (one illustrated scene into the next: a whip pan, the old world slides out as the new one slides in)
  const fade=slide?1:out(seg(t,s.t0,s.t0+.35));
- const zm=1+.04*io(seg(t,s.t0,s.t1));   // (a slow, eased push-in across the scene: alive, never jerky)
- const me=`<svg style="position:absolute;left:0;top:0;opacity:${fade};transform-origin:540px ${G-200}px;transform:translate(${cam.toFixed(1)}px,0) scale(${zm.toFixed(4)})" width="1080" height="1920"><defs><linearGradient id="sky${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tint}" stop-opacity="0"/><stop offset="1" stop-color="${tint}" stop-opacity="${(.2-.12*dark).toFixed(2)}"/></linearGradient><clipPath id="sclip${si}"><rect x="0" y="480" width="1080" height="810"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip${si})">${bg}<g filter="url(#sglow)">${g}</g></g></svg>`+html;
+ const zm=1+TOK.push*io(seg(t,s.t0,s.t1));   // (a slow, eased push-in across the scene: alive, never jerky)
+ const me=`<svg style="position:absolute;left:0;top:0;opacity:${fade};transform-origin:540px ${G-200}px;transform:translate(${cam.toFixed(1)}px,0) scale(${zm.toFixed(4)})" width="1080" height="1920"><defs><linearGradient id="sky${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tint}" stop-opacity="0"/><stop offset="1" stop-color="${tint}" stop-opacity="${(.2-.12*dark).toFixed(2)}"/></linearGradient><clipPath id="sclip${si}"><rect x="0" y="480" width="1080" height="810"/></clipPath><filter id="sglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="${TOK.glow}" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g clip-path="url(#sclip${si})">${bg}<g filter="url(#sglow)">${g}</g></g></svg>`+html;
  if(!slide)return me;
  const box=(x,inner)=>`<div style="position:absolute;left:0;top:0;width:1080px;height:1920px;transform:translateX(${x.toFixed(0)}px)">${inner}</div>`,st=Math.sin(Math.PI*e);
  let streak='';for(let k=0;k<7;k++)streak+=`<div style="position:absolute;left:${(k*157)%900}px;top:${560+k*100}px;width:${260+(k*90)%240}px;height:3px;border-radius:2px;background:${tint};opacity:${(.5*st).toFixed(2)}"></div>`;
@@ -436,8 +476,8 @@ function render(T){
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
  const hookTxt=s.kind==='hook'&&(s.chart!=null||s.layout)&&s.text;   // the on-screen hook sits in the title zone, in amber
- hd.innerHTML=hookTxt?(()=>{const ws=s.text.split(' '),key=ws.map(w=>/\d/.test(w)).some(x=>x)?ws.map(w=>/\d/.test(w)):ws.map((_,k)=>k===ws.length-1);return '<span>'+ws.map((w,k)=>`<span style="color:${key[k]?AM:'#fff'}">${esc(w)}</span>`).join(' ')+'</span>'})():s.head?(s.badge?`<span><b>${esc(s.badge)}</b>${esc(s.head)}</span>`:esc(s.head)):'';const hb=back(seg(t,s.t0,s.t0+.4));hd.style.padding=s.kind==='question'?'0 150px':'0';hd.style.boxSizing='border-box';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px) scale(${.85+.15*hb})`;fit(hd,180,hookTxt?84:62);
- if(s.kind==='outro'){let k=i;while(k>0&&SC[k].chart==null)k--;drawChart(SC[k].chart!=null?k:i,SC[k].chart!=null?SC[k].t1-.01:t)}else drawChart(i,t);   // (v2: the sign-off sits over the last chart, dimmed: no separate end card)
+ hd.innerHTML=hookTxt?(()=>{const ws=s.text.split(' '),key=ws.map(w=>/\d/.test(w)).some(x=>x)?ws.map(w=>/\d/.test(w)):ws.map((_,k)=>k===ws.length-1);return '<span>'+ws.map((w,k)=>`<span style="color:${key[k]?AM:'#fff'}">${esc(w)}</span>`).join(' ')+'</span>'})():s.head?(s.badge?`<span class="hb"><b>${esc(s.badge)}</b><span>${esc(s.head)}</span></span>`:esc(s.head)):'';const hb=back(seg(t,s.t0,s.t0+.4));hd.style.padding=s.kind==='question'?'0 150px':'0';hd.style.boxSizing='border-box';hd.style.opacity=s.kind==='big'?0:hu;hd.style.transform=`translateY(${(1-hu)*24}px) scale(${.85+.15*hb})`;fit(hd,180,hookTxt?84:62);
+ if(s.kind==='outro'){let k=i;while(k>0&&SC[k].chart==null)k--;drawChart(SC[k].chart!=null?k:i,SC[k].chart!=null?SC[k].t1-.01:t)}else{const hold=s.kind==='big'&&i>0&&SC[i-1].chart!=null&&s.text_t&&t<s.text_t[0];hold?drawChart(i-1,SC[i-1].t1-.01):drawChart(i,t)}   // (v2: the sign-off sits over the last chart, dimmed: no separate end card)
  // cards, big text
  const stageOf=(s,t)=>{let st='';
  if(s.kind==='cards'){(s.items||[]).forEach((it,k)=>{const c=(s.cues||[]).find(c=>c.do==='item'&&c.i===k),at=c?c.t:s.vs+k*.6,a=back(seg(t,at-.05,at+.4)),N=(s.items||[]).length,gap=Math.min(230,720/Math.max(1,N)),y=560+(720-N*gap)/2+k*gap;   // (the stack fills the stage down to the captions)
@@ -449,9 +489,9 @@ function render(T){
  if(s.kind==='outro'&&i>0&&SC[i-1].chart==null){let k=i-1;while(k>0&&!SC[k].layout)k--;if(SC[k].layout)st=stageOf(SC[k],SC[k].t1-.01).replace(/ qa/g,'').replace(/<div class="slab[^>]*>[^<]*<\/div>/g,'')}   // (v2: with no chart, the sign-off sits over the last illustrated scene, dimmed, without its tags)
  // the quiz countdown: a ring that empties, with the seconds
  if(s.kind==='question'&&s.think_t&&t>=s.think_t[0]-.1){const u=seg(t,s.think_t[0],s.think_t[1]),left=Math.max(0,s.think_t[1]-t),a=out(seg(t,s.think_t[0]-.1,s.think_t[0]+.2))*(1-seg(t,s.think_t[1],s.think_t[1]+.2));
-  st+=`<svg style="position:absolute;left:460px;top:1290px;opacity:${a};transform:scale(${1+.1*Math.pow(1-((t-s.think_t[0])%.4)/.4,3)})" width="160" height="160"><circle cx="80" cy="80" r="64" fill="#2a2110" stroke="#4a3a1c" stroke-width="12"/><circle cx="80" cy="80" r="64" fill="none" stroke="${AM}" stroke-width="12" stroke-dasharray="${402*(1-u)} 500" transform="rotate(-90 80 80)" stroke-linecap="round"/><text x="80" y="99" text-anchor="middle" font-size="54" font-weight="800" fill="${AM}">${Math.ceil(left)}</text></svg>`}   // (big and amber: a timer, not dead air)
+  st+=`<svg style="position:absolute;left:470px;top:1370px;opacity:${a};transform:scale(${1+.1*Math.pow(1-((t-s.think_t[0])%.4)/.4,3)})" width="160" height="160"><circle cx="80" cy="80" r="64" fill="#2a2110" stroke="#4a3a1c" stroke-width="12"/><circle cx="80" cy="80" r="64" fill="none" stroke="${AM}" stroke-width="12" stroke-dasharray="${402*(1-u)} 500" transform="rotate(-90 80 80)" stroke-linecap="round"/><text x="80" y="99" text-anchor="middle" font-size="54" font-weight="800" fill="${AM}">${Math.ceil(left)}</text></svg>`}   // (big and amber: a timer, not dead air)
  document.getElementById('stage').innerHTML=st;
- const punch=back(seg(t,s.t0,s.t0+.45)),ps=.94+.06*punch;   // every scene lands with the same springy pop
+ const punch=keep(i)?1:back(seg(t,s.t0,s.t0+.45)),ps=.94+.06*punch;   // every scene lands with the same springy pop
  ['chart','stage'].forEach(id=>{const e=document.getElementById(id);e.style.transformOrigin='540px 850px';e.style.transform=`scale(${ps})`});
  // the options: in during the question, the right one lights up at the answer
  const nx=SC[i+1]||{},early=s.kind==='hook'&&nx.kind==='question'&&nx.chart===s.chart;   // (v2: a quiz's options are up from frame 1, under its hook)
@@ -489,14 +529,14 @@ window.cover=async date=>{   // the reel's cover, the November template: brand h
  let k=SC.findIndex(q=>q.chart!=null&&q.kind!=='hook');if(k<0)k=SC.findIndex(q=>q.kind==='story'||q.kind==='stick');if(k<0)k=0;const s=SC[k];
  await render(Math.min(s.t1-.05,(s.ve||s.t1)));
  for(const id of ['caps','opts'])document.getElementById(id).innerHTML='';document.querySelector('.prog').style.display='none';
- {const H=document.querySelector('.hdr');H.style.top='250px';H.style.height='96px';H.style.opacity=1;H.querySelector('img').style.cssText='width:96px;height:96px;border-radius:20px';H.querySelector('.l').style.gap='22px';H.querySelector('.l').style.fontSize='50px';document.getElementById('tag').style.cssText='padding:16px 28px;font-size:30px'}   // (the cover's brand row is as big as the Daily's)
+ {const H=document.querySelector('.hdr');H.style.top='300px';H.style.left='70px';H.style.right='70px';H.style.height='96px';H.style.opacity=1;H.querySelector('img').style.cssText='width:96px;height:96px;border-radius:20px';H.querySelector('.l').style.gap='22px';H.querySelector('.l').style.fontSize='50px';document.getElementById('tag').style.cssText='padding:16px 28px;font-size:30px'}   // (the cover's brand row is as big as the Daily's and sits where the Daily's does: top 300, sides 70)
  document.getElementById('head').style.opacity=0;document.getElementById('wlabs')&&(document.getElementById('wlabs').innerHTML='');
- for(const id of ['chart','stage'])document.getElementById(id).style.transform='translateY(-120px)';   // (the picture moves up into the panel)
- document.getElementById('stage').style.clipPath='inset(492px 30px 628px 30px round 28px)';   // (an edge-to-edge story scene stays inside the cover's panel: 372-1172 once moved up)
+ for(const id of ['chart','stage'])document.getElementById(id).style.transform='translateY(-72px)';   // (the picture moves up into the panel)
+ document.getElementById('stage').style.clipPath='inset(492px 30px 628px 30px round 28px)';   // (an edge-to-edge story scene stays inside the cover's panel: 420-1220, local 492-1292 once moved up)
  const add=(css,html)=>{const d=document.createElement('div');d.style.cssText='position:absolute;'+css;d.innerHTML=html;document.body.insertBefore(d,document.getElementById('chart'));return d};
- add('left:30px;right:30px;top:372px;height:800px;border-radius:28px;background:#0b0f13;border:3px solid #23272d','');
- const t=add('left:60px;right:60px;top:1210px;height:230px;display:flex;align-items:center;justify-content:center;text-align:center;text-wrap:balance;font:700 76px/1.12 \'Cascadia Mono\',monospace;color:#e6e9ec',esc(R.title||''));
- t.style.zIndex=5;add('left:0;right:0;top:1470px;text-align:center;font:600 30px/1 \'Cascadia Mono\',monospace;color:#8b96a3;z-index:5','memestreet.net');
+ add('left:30px;right:30px;top:420px;height:800px;border-radius:28px;background:#0b0f13;border:3px solid #23272d','');
+ const t=add('left:60px;right:60px;top:1258px;height:230px;display:flex;align-items:center;justify-content:center;text-align:center;text-wrap:balance;font:700 76px/1.12 \'Cascadia Mono\',monospace;color:#e6e9ec',esc(R.title||''));
+ t.style.zIndex=5;add('left:0;right:0;top:1518px;text-align:center;font:600 30px/1 \'Cascadia Mono\',monospace;color:#8b96a3;z-index:5','memestreet.net');
  document.body.style.opacity=1;
  return new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))};
 </script></body></html>

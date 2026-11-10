@@ -14,8 +14,8 @@ from voice import MODEL, NUM, trim, dur, words, norm_words
 from pronounce import say_as, digits
 
 BEAT = {"enter": (0, "pop"), "move": (0, None), "hit": (.6, "boom"), "fall": (.5, "thud"), "launch": (0, "whoosh"), "emit": (0, None),
-        "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None)}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
-EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow")
+        "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None), "fling": (0, "whoosh"), "crack": (0, "pop")}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
+EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow", "fling", "crack")
 
 
 def beats(sc, vs, at, vo, sfx):
@@ -23,13 +23,17 @@ def beats(sc, vs, at, vo, sfx):
     fall sounds at the impact, the rest as they start; coins chime; a count ticks. Returns the impact times."""
     out = []
     for b in sc.get("beats", []):
-        b["t"] = round(vs + at(b["say"]) if b.get("say") else vs + 0.3, 3)
+        b["t"] = round((vs + at(b["say"]) if b.get("say") else vs + 0.3) + float(b.get("after", 0)), 3)   # (a shot staggers its moves: "after")
         d, s = BEAT.get(b.get("do"), (0, None)); b["ti"] = round(b["t"] + d, 3)
         if b.get("do") == "emit": s = "chime" if b.get("what") == "coins" else "pop"
         if b.get("do") == "count":
             for k in range(min(6, int((re.findall(r"\d+", str(b.get("text", ""))) or ["0"])[0]) or 1)): vo.append([sfx("tick"), round(b["t"] + .15 * k, 3)])
         elif s: vo.append([sfx(s), b["ti"] if b["do"] in ("hit", "fall") else b["t"]])
         if b.get("do") in EVENTS: out.append(b["ti"])
+    for a in sc.get("actors") or []:                       # (a label shows when its words are said, else on its prop's first beat: never before; the owner, 2026-11-08)
+        if a.get("label"):
+            own = [b["t"] for b in sc.get("beats", []) if b.get("who") == a.get("id") and b.get("t") is not None]
+            a["lt"] = round(vs + at(a["label"]), 3) if a["label"].lower().strip() in sc["vo"].lower() else min(own, default=round(vs + 0.2, 3))
     P = sc.get("props") or []                             # (a layout's own events are impacts too: the storm's strikes, the candles' burst)
     if sc.get("layout") == "storm": out += [p["t"] for p in P[1:] if p.get("t") is not None]
     return out
@@ -66,7 +70,7 @@ def pace(a, tw, sr=SR):
     to INSIDE. Word timings are not used: Whisper writes 'sixty-nine' as '69,' and shifts them, which put a comma pause
     one word early ('near | sixty-nine') and left the real one in (a double pause)."""
     f = int(0.01 * sr); n = len(a) // f
-    rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 1e-4)
+    rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 0.01)   # (0.01 = -40 dBFS, the critic's own measure of silence: a breathy 0.2 s gap it would call a pause is cut to INSIDE too, 2026-11-09)
     runs, s = [], None                                   # interior silences, in 10 ms frames
     for j in range(n + 1):
         if j < n and quiet[j]:
@@ -74,9 +78,18 @@ def pace(a, tw, sr=SR):
         elif s is not None:
             if s > 0 and j < n: runs.append((s, j))
             s = None
-    marks = [PAUSE[m] for w in tw[:-1] if (m := w.rstrip("\"')")[-1:]) in PAUSE]
-    stops = sorted(sorted((r for r in runs if r[1] - r[0] >= 3), key=lambda r: r[0] - r[1])[:len(marks)])   # (30 ms+: the voice dips at a mark even when it barely stops)
-    want = dict(zip(stops, marks if len(stops) == len(marks) else [PAUSE[","]] * len(stops)))
+    # each mark takes the silence near where it falls in the line (by letters), the longer the better: the N longest
+    # silences anywhere put a comma's pause inside a phrase when the voice ran through the comma (the owner, round 7:
+    # "a weird pause before '36'", "before 'bounce'")
+    L = [len(w) + 1 for w in tw]; tot = max(1, sum(L)); dur = n * 0.01; tol = max(.6, .12 * dur)
+    cand, want, last, cum = [r for r in runs if r[1] - r[0] >= 3], {}, -1, 0   # (30 ms+: the voice dips at a mark even when it barely stops)
+    for w, l in zip(tw[:-1], L):
+        cum += l
+        if (m := w.rstrip("\"')")[-1:]) not in PAUSE: continue
+        te = cum / tot * dur
+        near = [r for r in cand if r[0] > last and abs((r[0] + r[1]) * .005 - te) <= tol]
+        if near:
+            r = min(near, key=lambda r: abs((r[0] + r[1]) * .005 - te) / tol - (r[1] - r[0]) / 20); want[r] = PAUSE[m]; last = r[0]
     out, pos = [], 0
     for r in runs:
         z = want.get(r, min((r[1] - r[0]) * 0.01, INSIDE))
@@ -231,7 +244,7 @@ def main(work):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
         speed = float(os.environ.get("VOICE_SPEED", "1.0"))
         el = el_all
-        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS] + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
+        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS, "one-speed", "placed-pauses", "quiet-40db"] + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
         a = None
         if os.path.exists(h + ".json"):                        # (a line the last cut already voiced: a remake redoes only what changed)
             shutil.copy(h + ".wav", clip); W = [tuple(w) for w in json.load(open(h + ".json"))]
@@ -250,12 +263,11 @@ def main(work):
                     print(f"scene {i}: ElevenLabs retake failed ({str(e)[:120]}); the first take stays", flush=True)
             os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
         elif not os.path.exists(h + ".json"):
-            for _ in range(3):                                 # one take per line (natural flow), at the human talking speed
-                a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
-                sf.write(clip, pace(a, tw), SR)   # the pauses a person makes, at the commas and full stops
-                W = words(clip); r = talk_rate(W)              # (measured as heard, pauses in: what the critic and a viewer hear)
-                if not r or abs(r / WPS - 1) < 0.05: break
-                speed = min(1.35, max(0.8, speed * WPS / r))
+            # one take per line at ONE speed for every line of every reel (the owner, 2026-11-08: re-voicing each line at its own
+            # speed made the voice slow down and speed up; Kokoro at 1.0 averages 3.9 words a second, the human pace, measured)
+            a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
+            sf.write(clip, pace(a, tw), SR)   # the pauses a person makes, at the commas and full stops
+            W = words(clip)
             os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
         d = dur(clip)
         if not heard_ok(sc["vo"], W):
@@ -269,13 +281,15 @@ def main(work):
             return wt[min(len(sc["vo"][:ch].split()), len(wt) - 1)][0]
 
         sc["t0"] = round(t, 3); vs = t + (0.12 if i else 0.05)
-        if i: vo.append([whoosh, round(max(0, t - 0.24), 3)])   # every scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald')
+        pv = S["scenes"][i - 1] if i else {}
+        same = i and ((sc.get("chart") is not None and pv.get("chart") == sc["chart"]) or (sc["kind"] == "free" == pv.get("kind") and sc.get("chart") is None is pv.get("chart")))   # (the screen stays: the same chart, or one free world after another; reel.html keep())
+        if i and not same: vo.append([whoosh, round(max(0, t - 0.24), 3)])   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
         cap = digits(tw)                                       # the captions: the written words, numbers in digits ('two oh three' 203),
         sc["text_words"] = [c for c, _, _ in cap]              # each from when it starts being said
         sc["wt"] = [[round(vs + wt[a][0], 3), round(vs + wt[b][1], 3)] for _, a, b in cap]
-        if sc.get("text") and (sc["kind"] == "big" or sc.get("chart") is None):   # big words appear as they are said
+        if sc.get("text") and (sc["kind"] in ("big", "free") or sc.get("chart") is None):   # big words (and a free scene's punch) appear as they are said
             sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
         if sc.get("options"):                                  # each option appears as it is read out
             sc["opt_t"] = [round(vs + x, 3) for x in follow([o.split()[0] for o in sc["options"]], tw, wt, d)]
@@ -283,7 +297,7 @@ def main(work):
             p["t"] = round(vs + at(p["say"]) if p.get("say") else vs + 0.2, 3); vo.append([pop, p["t"]])
         for c in sc.get("cues", []):
             c["t"] = round(vs + at(c.get("say", "")), 3)
-            if c.get("do") in ("mark", "bubble", "item", "line"): vo.append([pop, c["t"]])
+            if c.get("do") in ("mark", "bubble", "item", "line", "arrow"): vo.append([pop, c["t"]])
         for x in sc.get("opt_t", []): vo.append([pop, x])
         impacts += beats(sc, vs, at, vo, lambda x: os.path.join(A, f"sfx_{x}.wav"))   # (storyboard beats: timed, sounded, their impacts kept for the critic)
         t = vs + d

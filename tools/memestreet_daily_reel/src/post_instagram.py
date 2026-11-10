@@ -89,8 +89,8 @@ def main(folder, dry=False):
     refresh_token(); tok = token(); uid = ig_id(tok)
     base = {"media_type": "REELS", "caption": caption, "share_to_feed": "true", "access_token": tok}
     trial = json.load(open(os.path.join(folder, "trial.json"))) if os.path.exists(os.path.join(folder, "trial.json")) else None
-    if trial:                                              # a Trial Reel: non-followers only, off the grid; Instagram shares it with
-        base["trial_params"] = json.dumps({"graduation_strategy": "SS_PERFORMANCE"}); base.pop("share_to_feed")   # followers if it performs
+    if trial:                                              # a Trial Reel: non-followers only, off the grid; never shared on its own (MANUAL):
+        base["trial_params"] = json.dumps({"graduation_strategy": "MANUAL"}); base.pop("share_to_feed")   # lab/winners.py posts the winner to the grid
     pub_dir, pub_url = os.environ.get("PUBLIC_VIDEO_DIR"), os.environ.get("PUBLIC_VIDEO_URL")
     if MODE == "instagram" or (pub_dir and pub_url):
         if not (pub_dir and pub_url): raise SystemExit("set PUBLIC_VIDEO_DIR and PUBLIC_VIDEO_URL in config.env (see README)")

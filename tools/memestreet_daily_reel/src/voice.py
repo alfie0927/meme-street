@@ -34,7 +34,9 @@ def words(path):
     try:
         if _ASR is None:
             from faster_whisper import WhisperModel
-            _ASR = WhisperModel(os.environ.get("ASR_MODEL", "base.en"), device="cpu", compute_type="int8")
+            m = os.environ.get("ASR_MODEL", "base.en")      # (the copy on disk: loading it online hung for 1h45 on 2026-11-08)
+            try: _ASR = WhisperModel(m, device="cpu", compute_type="int8", local_files_only=True)
+            except Exception: _ASR = WhisperModel(m, device="cpu", compute_type="int8")   # (not downloaded yet: once, online)
         a = np.frombuffer(subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", "16000", "-f", "f32le", "-"],
                                          capture_output=True).stdout, np.float32)
         segs, _ = _ASR.transcribe(a, word_timestamps=True, language="en", beam_size=5)

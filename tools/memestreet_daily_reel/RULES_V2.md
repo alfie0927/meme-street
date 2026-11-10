@@ -16,11 +16,13 @@ within 3 seconds.
   replay in the first second; captions are bigger.
 - A two-way quiz call is two big green and red buttons; a quiz's options are up from the first frame.
 - The sign-off sits over the last chart, dimmed; there is no separate end card.
+- Fixed by the owner for every version (2026-11-08): the cover's brand row (logo, name, format tag) is the Daily cover's size and sits where the Daily's does; the hook is an acted story scene (actors and an event on its words, the stock-story style), and the chart comes in from scene 1, at its most dramatic part.
+Also fixed by the owner (2026-11-08): the scene library (src/shots.py's shots and the story layouts) is drawn once and rated by the owner; a version may choose shots, casts and words, never change how a shot looks.
 
 ## The first three seconds decide
 - Frame 1 is the hook. At 0.0 s the screen already shows the on-screen hook (2 to 7 words: the reel's question, dare
-  or stake, in other words than the voice) and the most dramatic part of the chart (the crash, the spike, the
-  decision point). Never open on a title card, an empty chart, a logo or a slow reveal.
+  or stake, in other words than the voice) and its acted scene already moving (the event lands in the first 2 s); the
+  chart follows at its most dramatic part (the crash, the spike, the decision point). Never open on a title card, an empty chart, a logo or a slow reveal.
 - The voice starts on the first frame and says the stake in under 2 seconds: a number with stakes ("This stock fell
   34% in one hour"), a dare ("Only 1 in 5 get this right"), or a question with two or three answers.
 - Legible to a stranger: the first line names the real-world idea in plain words ("stop-loss", "support", "breakout"

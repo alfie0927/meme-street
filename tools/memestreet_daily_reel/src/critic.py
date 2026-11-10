@@ -37,17 +37,20 @@ def heard(mp4):
     return [(w.word.strip(), w.start, w.end) for s in segs for w in s.words]
 
 
-def references(rd, imgs, stills=True):
-    """The owner's reference reels (exemplar/: stills ref1.jpg... and their measures), copied into the pack: the bar to judge by."""
+def references(rd, imgs, stills=True, fmt=""):
+    """The owner's standard (exemplar/): frames they rated good in their rating session, for this format first
+    (exemplar/<format>/ref*.jpg), then the general ones; at most 4, copied into the pack every round (the owner,
+    2026-11-08: the bar to judge polish by), plus the measures of their reference reels."""
     ex = os.path.join(ROOT, "exemplar"); names = []
-    for f in sorted(glob.glob(os.path.join(ex, "ref*.jpg"))) if stills else []:   # (the stills in round 1 only: they cost tokens)
-        shutil.copy(f, rd); names.append(os.path.basename(f)); imgs.append(os.path.basename(f))
+    own = sorted(glob.glob(os.path.join(ex, re.sub(r"[^a-z0-9]+", "-", fmt.lower()).strip("-") or "-", "ref*.jpg")))
+    for f in ((own + sorted(glob.glob(os.path.join(ex, "ref*.jpg"))))[:4] if stills else []):
+        n = "ref_" + os.path.basename(os.path.dirname(f)) + "_" + os.path.basename(f)
+        shutil.copy(f, os.path.join(rd, n)); names.append(n); imgs.append(n)
     m = json.load(open(os.path.join(ex, "measures.json"))) if os.path.exists(os.path.join(ex, "measures.json")) else {}
     keep = ("secs", "words_per_sec_talking", "pauses_over_0.15s", "cuts_per_min", "median_motion")
     return {"images": names, "measured": [{k: v[k] for k in keep if k in v} for v in m.values()],
-            "note": "Reels the owner loves (three frames each). What they share: the picture is one big, clean, full-width chart "
-                    "(or one stick-figure metaphor) that evolves instead of cutting to new layouts; almost no interface; small "
-                    "low captions with the key word coloured; one idea per beat; one ask at the end. Compare this reel to them."}
+            "note": "Frames the owner rated good: the standard. Compare this reel's frames to them for polish (clean, uncluttered, "
+                    "even sizes, calm glow, nothing cramped or touching). A frame clearly below them is a blocker."}
 
 
 def motion(mp4, cuts, fps=30, impacts=()):
@@ -55,9 +58,9 @@ def motion(mp4, cuts, fps=30, impacts=()):
     something snapping in or jerking) and drift (seconds where the whole frame keeps changing: a background that swims)."""
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", mp4, "-vf", f"fps={fps},scale=135:240,format=gray", "-f", "rawvideo", "-"],
                          capture_output=True).stdout
-    F = np.frombuffer(raw, np.uint8).reshape(-1, 240, 135).astype(np.float32)
+    F = np.frombuffer(raw, np.uint8).reshape(-1, 240, 135)
     if len(F) < 3: return {"jumps": [], "drift_secs": []}
-    d = np.abs(np.diff(F, axis=0)).mean(axis=(1, 2)); med = float(np.median(d))
+    d = np.array([np.abs(F[k + 1].astype(np.int16) - F[k]).mean() for k in range(len(F) - 1)], np.float32); med = float(np.median(d))   # (frame by frame: a 90 s reel as float32 was 350 MB on the 2 GB unit)
     near = lambda i: any(-3 <= i + 1 - c * fps <= 16 for c in cuts) or any(-2 <= i + 1 - c * fps <= 12 for c in impacts)   # (a scene may slide in over half a second; a storyboard's crash is meant)
     jumps = [round((i + 1) / fps, 2) for i in range(len(d)) if d[i] > max(6, 5 * med) and not near(i)]
     drift = [k for k in range(len(d) // fps) if float(np.median(d[k * fps:(k + 1) * fps])) > .3]   # (a calm reel: 0.04; the swimming 3D one: 0.73)
@@ -134,7 +137,7 @@ def pack(work, out, rd, only=None, refs=True):
         for a0, b0, n in m.get_matching_blocks():
             for q in range(n):
                 sync.append(round(s["wt"][a0 + q][0] - hw[b0 + q][1], 2))
-        on_screen = {k: s[k] for k in ("head", "text", "badge", "options", "options_full", "shot", "layout") if s.get(k)}
+        on_screen = {k: s[k] for k in ("head", "text", "hot", "badge", "options", "options_full", "shot", "layout") if s.get(k)}
         if s.get("props"): on_screen["story_props"] = [f"{p.get('p')} ({p.get('color', 'teal')}) '{p.get('label', '')}' on '{p.get('say', '')}' @ {p.get('t')}s" for p in s["props"]]
         for c in s.get("cues", []):
             if c.get("text") or c.get("label"): on_screen.setdefault("cue_texts", []).append(f"{c['do']}: {c.get('text') or c.get('label')} @ {c.get('t')}s")
@@ -148,13 +151,13 @@ def pack(work, out, rd, only=None, refs=True):
                        "cues": [f"{c.get('do')} on '{c.get('say', '')}' @ {c.get('t')}s" for c in s.get("cues", [])]})
     gaps = [q1 - q0 for q0, q1 in Q]
     wr = [(len(x["script"].split()), x["words_per_sec_talking"]) for x in scenes if x["words_per_sec_talking"]]
-    report = {"title": R.get("title"), "format": R.get("type"), "length_secs": T,
+    report = {"title": R.get("title"), "format": R.get("type"), "length_secs": T, "device": R.get("device"),
               "caption_post_text": open(os.path.join(work, "caption.txt"), encoding="utf-8").read() if os.path.exists(os.path.join(work, "caption.txt")) else "",
               "human_narrator_reference": {"words_per_sec_talking": WPS, "pause_after_comma": HUMAN["comma"], "pause_after_sentence": HUMAN["sentence"],
                                            "source": "measured on 16 top finance Shorts narrated by people"},
               "whole_reel": {"words_per_sec_talking": round(sum(n for n, _ in wr) / max(1e-9, sum(n / r for n, r in wr)), 2),
                              "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps)},
-              "references": references(rd, imgs, refs),
+              "references": references(rd, imgs, True, R.get("type") or ""),
               "script_vs_heard_differences": misheard,
               "motion": dict(motion(mp4, [x["t0"] for x in R["scenes"][1:]], impacts=R.get("impacts", [])), note="jumps: times a frame changes far more than its neighbours away from a scene cut or a storyboard impact (a snap or jerk); drift_secs: seconds where most of the frame keeps changing (a swimming picture). Both are visual faults; check the frames at those times."),
               "transcript_notes": "The script is shown as the voice is told to say it. Whisper writes 'Meem Street dot net' as "
@@ -172,11 +175,30 @@ feedback after reels post. Your job is narrow: stop a reel that would embarrass 
 1. A fact that is wrong: a number, price, move or claim that contradicts the chart on screen or the facts.
 2. Voice and screen disagree: the voice says something the screen contradicts, or the story depends on something the
    screen never shows (e.g. "price fell to 58" while the tag reads 64; a quiz question the chart cannot answer; a storyboard
-   beat the report lists that the frames never show).
-3. A broken frame: text on text, text cut off, an empty stage for over 2 seconds, a garbled or unreadable scene.
+   beat the report lists that the frames never show; an acted story scene whose actors are not
+   the things the voice names, so a viewer with the sound off could not say what it shows, e.g. blank bars for "three charts";
+   the voice naming a line the chart never draws, e.g. "the orange line" with no orange line; the voice describing the
+   price moving, "each step lower than the one before", while those candles are already all on screen) (the owner, round 7).
+3. A broken frame: text on text, text cut off, an empty stage for over 2 seconds, a garbled or unreadable scene; a tag on
+   top of another prop, a cloud or another tag; story props drawn over a chart; a tilted or flying candle, chart card or
+   question card; a tag shown before its words are said, or one that vanishes and comes back (the owner, 2026-11-08).
+   A frame clearly less polished than the owner's reference frames (cluttered, cramped, props touching, uneven sizes,
+   harsh glow) is a broken frame too.
 4. A word the listener hears wrongly (the transcript of the final mix against the script; a number written as digits,
-   or a homophone, is not a mispronunciation), or a garbled stretch of voice.
-5. A clear break of an owner's rule (the rulebook below), visible in this cut.
+   or a homophone, is not a mispronunciation; nor is Whisper's phonetic spelling of a rare trading term that the voice
+   lexicon covers, e.g. 'Marubazu' for marubozu or 'dojee' for doji: a one-letter spelling drift with the same sounds), or a garbled stretch of voice, or a pause inside a phrase where the script
+   has no comma or full stop (the owner, round 7: "a weird pause before 'bounce'"). The voice is Kokoro at ONE fixed speed for
+   every line by construction (the owner, 2026-11-08), so words-per-second differing between lines (a short big line reads
+   denser than a long one) is NOT a speed change and never a blocker; only a garbled stretch or a pause inside a phrase is.
+5. A clear break of an owner's rule (the rulebook below), visible in this cut. Among them (the owner, round 7): a reel that
+   teaches a signal but never shows it working (the price after it going the way it says, then why), or that doubts the
+   signal more than once ("only a clue", "never a promise"); a quiz answer with a line for every option where one arrow
+   would do; "a hair below" for "slightly below".
+A director reel (report.json has a "device": one visual metaphor, a HUD, a palette and mood of its own, drawn by the
+writer's own scene function) is meant to look unlike the house template and unlike other reels: its own colours, bold
+fast motion, a world that changes every few seconds, 3 to 5 word punch captions with one word in colour (the owner,
+2026-11-09). None of that is a fault. Its blockers are the five above, plus: a device that stops making sense (the
+metaphor contradicts the lesson), text the viewer cannot read, the HUD not changing when the voice says it does.
 Anything else, however much you would change it, is a "note" (logged for the owner, never blocking). Do not invent
 problems; judge only what this round's images and report.json show; numbers come only from report.json.
 
@@ -188,7 +210,8 @@ Every issue carries evidence or it is thrown away: the image file(s) where it sh
 "images", and/or a "report" quote copied character for character from report.json. Say where (scene, time; scenes count
 from 0), what is wrong, the concrete fix, and the owner of the fix: "script" (the writer controls each scene's kind,
 spoken line, head and on-screen text, cues, chart reveals, marks, shades, zooms and lines, cards, figures, bubbles,
-story layouts, props, storyboard actors and beats) or "renderer" (how the house template draws things).
+story layouts, props, storyboard actors and beats, and in a director reel the whole scene function, its palette and its
+punch captions) or "renderer" (how the house template draws things).
 
 In round 2 you get the blockers from round 1 as a checklist: answer each "fixed" or "still_wrong" with evidence from this
 cut, and raise a new blocker only if this cut shows one.
@@ -201,7 +224,8 @@ Reply with JSON only:
              "lesson": "a rule for every future reel", "evidence": [{"image": "scene03_chart_12.1s-15.0s.jpg"}, {"report": "\\"secs\\": 0.62"}]}]}"""
 
 
-PAGE = os.environ.get("REEL_PAGE", "reel.html")          # (reel_v2.html: the version-2 test track)
+CHAMPION = os.path.join(ROOT, "CHAMPION.md")             # (the promoted Trial Reels winner: its rules, on its template reel_v2.html)
+PAGE = os.environ.get("REEL_PAGE") or ("reel_v2.html" if os.path.exists(CHAMPION) else "reel.html")   # (reel_v2.html: the version-2 test track)
 
 
 def rulebook():
@@ -209,6 +233,8 @@ def rulebook():
     s = "\n\nTHE OWNER'S RULEBOOK:\n" + open(p, encoding="utf-8").read() if os.path.exists(p) else ""
     if os.environ.get("REEL_V2") == "1":                 # (a version-2 test reel follows these where they differ: not a rulebook break)
         s += "\n\nRULES UNDER TEST (version 2, approved by the owner for Trial Reels; they win where they differ):\n" + open(os.path.join(ROOT, "RULES_V2.md"), encoding="utf-8").read()
+    elif os.path.exists(CHAMPION):                       # (the promoted winner's rules: every regular reel follows them)
+        s += "\n\nRULES THAT WON THE TRIAL REELS TEST (promoted; they win where they differ):\n" + open(CHAMPION, encoding="utf-8").read()
     return s
 
 
@@ -312,13 +338,23 @@ def unstick(rev, slot):
     return rev
 
 
+STEP = int(os.environ.get("STEP_TIMEOUT", "900"))           # (a voice or render step takes under 4 min; the owner, 2026-11-08: a freeze must not block the queue)
+
+
 def run(cmd, **env):
     """Run a step; its output is shown, and on failure its last lines are the reason (SystemExit with them)."""
-    r = subprocess.run(cmd, cwd=ROOT, env=dict(os.environ, **{k: str(v) for k, v in env.items()}),
-                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    print(r.stdout, end="", flush=True)
-    if r.returncode:
-        raise SystemExit([l for l in r.stdout.strip().splitlines() if l.strip() and not l.startswith((" ", "Traceback"))][-1:] or [" ".join(cmd) + " failed"])
+    for n in (1, 2):                                       # (a step that freezes is stopped at STEP seconds and tried once more)
+        p = subprocess.Popen(cmd, cwd=ROOT, env=dict(os.environ, **{k: str(v) for k, v in env.items()}), start_new_session=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        try: o = p.communicate(timeout=STEP)[0]; break
+        except subprocess.TimeoutExpired:
+            os.killpg(p.pid, 9); o = p.communicate()[0]         # (the whole step: chromium and ffmpeg too)
+            print(o, end=""); print(f"{' '.join(cmd[:2])} froze for {STEP // 60} min: stopped" + (", trying again" if n == 1 else ""), flush=True)
+    else:
+        raise SystemExit([f"{' '.join(cmd[:2])} froze twice ({STEP // 60} min each)"])
+    print(o, end="", flush=True)
+    if p.returncode:
+        raise SystemExit([l for l in o.strip().splitlines() if l.strip() and not l.startswith((" ", "Traceback"))][-1:] or [" ".join(cmd) + " failed"])
 
 
 def loop(work, out):
@@ -396,11 +432,13 @@ def loop(work, out):
                              "fix": "find why it cannot pass", "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
             raise SystemExit(f"held after {rnd} rounds: not good enough to post ({(rev.get('verdict') or '')[:200]}); nothing is posted")
         prev = [x for x in rev["issues"] if x.get("owner", "script") != "renderer" and x.get("where") != "automatic check"]
-        while True:
+        for n in (1, 2):                                   # (two goes at the rewrite, then the reel is held: never an endless loop on the plan, 2026-11-09)
             try:
                 run(["python3", "src/make_spec.py", "revise", work, os.path.join(work, f"review-{rnd}.json")]); break
-            except SystemExit as e:   # (the rewrite did not pass its checks in five tries: it tries again)
-                print(f"rewrite after round {rnd} did not pass its checks ({e.code}); trying again in a minute", flush=True)
+            except SystemExit as e:   # (the rewrite did not pass its checks in five tries: it tries once more)
+                print(f"rewrite after round {rnd} did not pass its checks ({e.code}); " + ("trying again in a minute" if n == 1 else "held"), flush=True)
+                if n == 2:
+                    raise SystemExit(f"held after round {rnd}: the rewrite could not pass its checks twice; nothing is posted")
                 time.sleep(60)
 
 

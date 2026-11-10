@@ -8,10 +8,11 @@ idea. Claude writes the narration, the on-screen words, the hook and the caption
 voice.md, and the result is checked (hook score, length, words per line, no emoji, the disclaimer) and sent back to
 Claude to fix at most twice. Output: <work>/spec.json and <work>/caption.txt.
 """
-import json, os, random, re, subprocess, sys, time, urllib.error, urllib.request
+import difflib, glob, json, os, random, re, shutil, subprocess, sys, time, urllib.error, urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(HERE, "ig"))
 import detect
+import shots
 from pronounce import LEX
 
 SITE = os.environ.get("MS_BASE_LOCAL", "http://127.0.0.1:8000")
@@ -38,8 +39,9 @@ CATEGORIES = {
                        "scene titled '1. ...', '2. ...', '3. ...' on the same chart with marks, lines, shades and zooms (the "
                        "trend, the level, the tell); (4) the one lesson to take away; (5) the outro. One chart the whole way, "
                        "no story scenes.",
-    "Technical lesson": "Teach one chart idea (an indicator, a level, a pattern) on a real chart that shows it: what it is, "
-                        "how to read it, the trap, and the one rule to remember.",
+    "Technical lesson": "Teach one chart idea (an indicator, a level, a pattern) on a real chart that shows it working: what it "
+                        "is, how to spot it (point at it), what the price did next, why it worked, then one short line that it "
+                        "does not work every time, and the one rule to remember.",
     "Trading mistake": "One common beginner mistake, shown on a real chart: what people do, what it costs, what to do instead.",
     "Guess the move": "A viral, interactive reel: a real chart stops at a big moment, the viewer guesses what came next "
                       "(a short countdown), then the reveal and why. One or two charts.",
@@ -133,15 +135,28 @@ V2_SAY = [("the reel's title, 2 to 5 words: its theme (e.g. 'Spot The Doji'), no
            "A hook over a chart puts the reel's question, dare or stake in its text (other words than the voice);")]
 
 
-def v2_system(system):
-    """Version 2's instructions: its rules first (RULES_V2.md), and the title rules that clash with them restated."""
-    head = "RULES UNDER TEST (version 2). Where they differ from anything below, the owner's rulebook included, these win:\n"
-    if system.startswith(head): return system
+CHAMPION = os.path.join(ROOT, "CHAMPION.md")   # (a version 2 that won its Trial Reels round, promoted by lab/evolve.py: every regular reel follows it)
+END_RULES = "\n\n(end of the rules above)\n\n"
+
+
+def rules_file(category=None):
+    """The rules this reel is made under: version 2's on the test track, else the promoted winner's (never the Daily recap's)."""
+    if V2: return os.path.join(ROOT, "RULES_V2.md")
+    if os.path.exists(CHAMPION) and category != "Daily recap": return CHAMPION
+
+
+def v2_system(system, path=None):
+    """Version 2's instructions (or the promoted winner's): its rules first, and the title rules that clash with them restated."""
+    path = path or os.path.join(ROOT, "RULES_V2.md")
+    head = ("RULES UNDER TEST (version 2)" if path.endswith("RULES_V2.md") else "RULES THAT WON THE TRIAL REELS TEST") + \
+           ". Where they differ from anything below, the owner's rulebook included, these win:\n"
+    if END_RULES in system: system = system.split(END_RULES, 1)[1]   # (one set of rules at a time: v2's replace the winner's)
+    elif system.startswith("RULES UNDER TEST"): return system      # (a brief saved before 2026-11-08)
     for a, b in V2_SAY: system = system.replace(a, b)
-    return head + open(os.path.join(ROOT, "RULES_V2.md"), encoding="utf-8").read() + "\n\n" + system
+    return head + open(path, encoding="utf-8").read() + END_RULES + system
 
 
-def v2_brief(B):
+def v2_brief(B, path=None):
     """The same facts in version 2's shape (a quiz keeps only its first chart) and with its instructions."""
     import copy
     B = copy.deepcopy(B)
@@ -149,16 +164,17 @@ def v2_brief(B):
         B["ask"]["what_this_reel_is"] = V2_FORMAT[B["category"]]
         if B["category"] == "Chart quiz":
             B["ask"]["facts"]["charts"] = B["ask"]["facts"]["charts"][:1]; B["charts"] = B["charts"][:1]
-    B["system"] = v2_system(B["system"]); B["v2"] = True
+    B["system"] = v2_system(B["system"], path); B["v2"] = True
     return B
 
 
 def pair(slot, w1, w2, category=None):
     """One brief, two reels: the current rules (w1) and version 2 (w2), on the same facts and chart (the Trial Reels test)."""
     B = brief(slot, category)
-    save(write(B), B, w1)
+    B1 = v2_brief(B, CHAMPION) if rules_file(B["category"]) else B   # (v1 is the promoted winner, once there is one)
+    save(write(B1, work=w1), B1, w1)
     B2 = v2_brief(B)
-    save(write(B2), B2, w2)
+    save(write(B2, work=w2), B2, w2)
 
 
 def get(path, body=None):
@@ -203,12 +219,44 @@ def chart_from_drill(d):
         back = next((k for k in range(up + 1, end + 1) if (C[k][3] > lv) != side), None)
         if back is not None: end = min(end, max(up + 6, back + 3))
     return {"candles": C, "label": f"{d['where']['name']} · {d['where']['tf']}", "upto": up, "end": end,
-            "win": [max(0, up - 70), end], "drill": d}
+            "win": [max(0, up - 70), end], "drill": d, "overlay": d.get("overlay") or []}
+
+
+# formats that teach a signal show it working (the owner, round 7: "show the signal playing out in favour of the trader...
+# then say it doesn't happen every time"): their example is one where the price did what the signal says
+TEACH = ("Technical lesson", "Speed cheat sheet", "Explained like you're 5", "One trick")
+UP = r"golden|bullish|hammer|morning star|uptrend|oversold|piercing|three white"
+DOWN = r"death|bearish|shooting star|hanging man|downtrend|overbought|evening star|dark cloud|three black"
+
+
+def played_out(d, need=2.0, strict=False):
+    """True when the price after the question moved the way the right answer says (by `need` % or more), or when the
+    answer says no direction (a doji, a Fibonacci level). A breakout or level: the side of the line it closed on, turned
+    round for a fake or a break."""
+    C, up = d["candles"], d["upto"]
+    pct = (C[min(len(C) - 1, up + 25)][3] / C[up][3] - 1) * 100
+    a = d["options"][d["answer"]].lower()
+    if d.get("kind") in ("breakout", "level") and d.get("lines"):
+        s = 1 if C[up][3] > d["lines"][0]["price"] else -1
+        if re.search(r"fake|breaks?\b|fail", a): s = -s
+    elif re.search(UP, a): s = 1
+    elif re.search(DOWN, a): s = -1
+    else: return not strict                           # (strict: a lesson's example needs a signal with a direction, never "no cross")
+    return s * pct >= need
+
+
+def teach_drill(kind, tries=8):
+    """A drill whose signal played out (TEACH), or the last one tried."""
+    for _ in range(tries):
+        d = drill(kind)
+        if played_out(d, strict=kind not in ("candle", "fib")): return d
+    return d
 
 
 def chart_summary(i, ch):
     d, C = ch.get("drill"), ch["candles"]
     s = {"chart": i, "candles": len(C), "label": ch["label"], "first_shown": ch["win"][0], "last": ch["end"],
+         **({"overlay": ch["overlay"]} if ch.get("overlay") else {}),
          "swings": swings(C, ch["win"][0], ch["end"] + 1), "close_first": round(C[ch["win"][0]][3], 2),
          "close_last": round(C[ch["end"]][3], 2)}
     if d:
@@ -277,7 +325,7 @@ def gather(category, rng, history, company=None):
     else:
         kinds = KINDS[category][:]; rng.shuffle(kinds)
         for k in kinds[:CHART_COUNT.get(category, 1)]:
-            charts.append(chart_from_drill(drill(k)))
+            charts.append(chart_from_drill(teach_drill(k) if category in TEACH else drill(k)))
     facts["charts"] = [chart_summary(i, c) for i, c in enumerate(charts)]
     return facts, charts
 
@@ -292,8 +340,10 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
  {"kind":"chart","chart":N,"head":"title, max 5 words: names the idea (e.g. 'The Setup'), not the line","vo":"...","show":candle index shown at the start (optional),
    "cues":[{"say":"exact phrase from vo","do":"reveal","to":index} | {"say":"..","do":"mark","i":index,"label":"max 12 characters","side":"high"|"low"|"vol" (vol: rings that candle's volume bar against the 20-candle average),"tone":"amber|green|red|teal"}
           | {"say":"..","do":"line","price":number,"label":"max 3 words","tone":"amber|green|red|teal"} | {"say":"..","do":"shade","from":index,"to":index,"tone":"green|red|amber"}
-          | {"say":"..","do":"zoom","from":index,"to":index}]}
- {"kind":"question","chart":N,"badge":"Q1","head":"max 5 words","vo":"asks it and reads the options"}   (options and answer are added from the facts)
+          | {"say":"..","do":"zoom","from":index,"to":index} | {"say":"..","do":"arrow","price":number,"i":index,"label":"max 2 words","tone":"red|green|amber|teal"} (a bold arrow pointing at that price at candle i: where a stop or entry goes)]}
+   (a chart whose facts list "overlay" draws those moving averages by itself, all the way: sma20 an orange line, sma50 a blue one.
+    Say "the orange line" and "the blue line" only on such a chart; never draw them with "line" cues)
+ {"kind":"question","chart":N,"badge":"Q1","head":"max 5 words","vo":"asks it and reads the options","labels":["max 4 words", ...]}   (options and answer are added from the facts; "labels" are the short words shown on the option cards, one per option in order, needed whenever an option is over 4 words: "Held support", "Far below")
  {"kind":"answer","chart":N,"vo":"says the answer first, then why, max 26 words","cues":[...]}
  {"kind":"cards","head":"max 5 words","vo":"...","items":[{"text":"max 4 words","sub":"max 7 words","icon":"up|down|warn|check|cross|coin|clock|bolt|chart|shield|people|idea"}],
    "cues":[{"say":"exact phrase","do":"item","i":0}, ...one per item]}
@@ -319,43 +369,130 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
     hero = props[0] is the company, big in the middle (a flier circles above its plinth), the rest stand around it;
     grow = up to 5 columns rise one by one on their words (good news, growth); risk = props[0] is the company, the rest
     are warnings or shields that fly in and hit it (bad news); compare = props[0] the old way (shown grey), props[1] the new
-    way, props[2] the thing they move; stage = the living backdrop and an empty ground, for actors alone. Props: %s)
-   Any story scene (and a hook with a layout) adds a storyboard, so something happens: "actors":[{"id":"truck","p":"<prop>","color":"teal",
-    "at":"left|mid|right|sky-left|sky-mid|sky-right|off-left|off-right","size":"s|m|l","label":"max 3 words, or empty"}] (up to 5) and
-    "beats":[{"say":"exact phrase from vo","do":"enter|move|hit|fall|launch|emit|grow|tint|count|burst","who":"<actor id>",
-    "to":"<slot> (move, launch; s|m|l for grow; 'off' for a fall off the screen)","with":"<actor id> (hit)","what":"fire|coins|smoke|sparks|rain|hearts (emit)",
-    "color":"<colour> (tint)","text":"e.g. '3 jobs' (count)"}] (up to 8, in time order). A beat happens on its word: enter slides in; move
-    walks to a slot; hit drives into the other actor (both shake, a boom); fall drops to the ground, or off the screen, with a thud; launch
-    flies to a slot with a whoosh; emit pours out of the actor for a second (coins chime); grow swells to a size; tint changes colour;
-    count counts its number up over the actor; burst blows the actor up with a boom. Actors stand on the layout's picture.
+    way, props[2] the thing they move; stage = the backdrop for a shot. Props: %s)
+   An acted scene (every hook, and a story scene on layout stage) is a SHOT from the library, never free actors or beats (the owner,
+    2026-11-08: free arrangements looked ugly): {"layout":"stage","act":"<shot name>","cast":{"<role>":{"p":"<prop>","color":"teal","label":
+    "max 3 words, or empty"}},"on":{"<moment>":"exact phrase from vo"}} plus the shot's options. Each moment happens on its phrase, with
+    its own motion and sound; positions and sizes are fixed. Shots (name: what it acts out. roles; moments; options):
+<<SHOTS>>
+ {"kind":"free","vo":"...","text":"the punch caption: 2 to 5 words of the line, in order","hot":"the one word of the text shown in the hot colour","chart":N or null,"show":candle index shown at the start (optional),
+   "cues":[chart cues as above (with a chart they draw themselves under your scene), and {"say":"exact phrase from vo","do":"fx","name":"<a name your scene function reads>", ...any fields you need}]}
+   (a director reel's own scene: your scene function draws its world, HUD and effects, and a punch headline over the transcript captions; no "head": the HUD takes the title's place)
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
+Top level, next to "scenes": "device": {"metaphor": "what the picture is, one line", "opening": "the first second", "palette": "the two or three colours", "hud": "what the HUD shows and how it changes"},
+ and "tok": {"css": "body{background:#0b0906!important}"} for the reel's own background (optional).
+After the JSON, ONE fenced block with the scene function (see DIRECTOR REELS):
+```js
+({t, T, s, i, R, api}) => { ... return html }
+```
 """
+
+DIRECTOR = """DIRECTOR REELS (the owner, 2026-11-09: "REALLY over-the-top, cool animations with more expressive explanations; each reel
+unique, easy to understand and visually awesome"). Every reel is a short film: ONE visual device of your own invention carries
+the whole lesson from the first second to the payoff; a HUD changes under the story; the reel has its own palette and mood;
+captions are punches; then the sign-off. Read "exemplar_notes" in the request for the level. Never reuse a device from
+"recent_devices" or copy one from the notes: thousands of such reels exist, invent the one that IS this lesson.
+You write two things: the JSON script (scenes mostly of kind "free"; "question" and "answer" for a quiz; "chart" when the
+chart alone is the picture; "big" and "outro" as before), then, after the JSON, ONE fenced ```js block holding the scene function:
+  ({t, T, s, i, R, api}) => { ... return html }
+It runs for every frame (30 a second): t is the time in seconds, T the reel's length, s the current scene, i its index, R the
+whole timeline (R.scenes, R.charts[n].candles as [open, high, low, close, volume], R.device) and api the helpers. It returns an
+HTML string drawn over the chart and under the end card: one <svg width="1080" height="1920" style="position:absolute;left:0;top:0">
+with everything you draw, plus api.punch(s, t). It is pure: the same t always draws the same frame (no Math.random, no Date,
+no document or window, no state kept between calls), and it never throws (guard every lookup: a chart may be null).
+Timing comes from the scene: s.t0/s.t1 (the scene on screen), s.vs/s.ve (its voice line), api.at(s, "exact words") (the second
+a phrase of s.vo starts), s.text_t[k] (when punch word k lands), each cue's c.t (from its "say"; a cue {"do":"fx","name":...} is
+yours to read; the chart cues draw themselves). R.scenes[k] gives any scene's times, so a counter can keep running across
+scenes and the device can persist. Ease everything: api.seg(t,a,b) is 0..1 between a and b; api.io, api.out, api.back are
+easings (back overshoots: a pop); api.lerp(a,b,u); api.cl(x,lo,hi) clamps.
+Drawing helpers: api.PROP2D[name](colour, u) is the svg of a prop standing on (0,0), about 200 px tall, u seconds alive
+(names: %s); api.prop2d({p, color}, x, y, scale, t, t0, j) places one, popping in at t0; api.fig({pose, color, label, x, y,
+sc}, t) draws a stick figure standing at x on ground y, sc its size (poses: %s; color any #hex); api.boomFx(cx, cy, u, R, colour)
+a burst at u 0..1; api.icon(name) an 84 px icon (up, down, warn, check, cross, coin, clock, bolt, chart, shield, people, idea);
+api.esc(text) for every string you print; api.ln(colour, width) and api.bd(colour, width) are stroke-only and filled attribute
+strings for paths; api.G, api.RD, api.AM, api.TE the house green, red, amber and teal (your own colours are welcome).
+api.chart() is the drawn chart's transform when the scene has a chart, else null: {X(k): candle k's x, Y(price): a price's y,
+bw: a candle's width, r: candles revealed so far, n, C: the candles, lo, hi, PL: the plot box {x,y,w,h}}: glow a candle, point at a
+price, draw your own marks in real pixels. Setting api.cam = {k, ox, oy} inside your function pushes the camera on the chart
+(k 1..1.3 around ox, oy; ease it in and out); the HUD stays put.
+Geometry (1080 x 1920; Instagram covers y < 230, y > 1440 and the right 230 px of the lower half): brand header y 250-310;
+your HUD y 380-500 (a free scene has no head); the world y 520-1290 (when the scene has a chart it fills that band, so draw on
+the chart's own pixels or in its margins, never below y 1260); the punch headline at y 1270-1325 (api.punch draws it: keep that band
+clear); the transcript captions at y 1332-1440 (the template draws every spoken word there, in every scene); nothing below 1440. Every text you draw is 26 px or more (34+ for anything that matters); the renderer rejects smaller.
+Palette: the reel's own two or three colours on a dark background: "tok": {"css": "body{background:#...!important}"} once,
+then your colours in the svg. The brand header stays readable.
+Motion: the first five seconds move the most: the device arrives, builds or acts while the hook is spoken (never a finished
+picture waiting for the voice; the dry run fails a still opening more than anything else). Then something changes every 2 to
+3 seconds (a counter ticks, a thing moves, a tag lands); impacts have weight (a wind-up,
+the hit, a 4 px shake for 0.3 s, dust or a ring); things arrive by rising or scaling in with api.back, never by blinking in;
+nothing jitters; a repeated action changes something each time (the HUD, a tag, a colour). Big: the device fills the middle of
+the frame; figures a third of the frame tall. Sound-off test: the device, the HUD and the punches tell the story alone.
+Scene kinds and your function: in "free" scenes you draw everything (world, HUD, effects; with a "chart" the chart draws
+itself under you). In "big" and "outro" scenes return '' (the big line and the end card stand alone). In "question" and
+"answer" scenes the template draws the chart, the title with its Q badge, the option cards and the countdown (s.options,
+s.answer, s.think_t, s.opt_t): draw only your HUD, and only in the strip y 335-372 with no text in it (the title row is
+taken), or nothing. A "chart" scene is a free scene without a punch. Keep the device alive across scenes: a counter that
+persists, a world that stays and changes.
+Performance: under 300 svg elements a frame, no blur filters over big areas, no loops over thousands of points.
+Before it is voiced the whole reel is run through your function: a JavaScript error, text on text, text under 26 px, three
+seconds with no visible change, or slow frames come back to you as errors to fix; fix the function, keep the device.
+EXAMPLES, each a complete reel the renderer has run (copy the craft, never the device):
+%s
+"""
+
+
+def examples():
+    """The seed reels in src/scenes/: each scene function with its fixture's scenes, for the writer to learn the craft from."""
+    out = []
+    for f in sorted(glob.glob(os.path.join(HERE, "scenes", "*.js"))):
+        name = os.path.basename(f)[:-3]; fx = os.path.join(HERE, "scenes", "fixtures", name, "spec.json"); sp = {}
+        if os.path.exists(fx):
+            sp = json.load(open(fx, encoding="utf-8")); sp = {k: v for k, v in sp.items() if k in ("device", "tok", "scenes")}
+        out.append(f"=== {name}: the JSON (scenes)\n{json.dumps(sp)}\n=== {name}: the scene function\n```js\n{open(f, encoding='utf-8').read().strip()}\n```")
+    return "\n".join(out)
+
 
 _R = open(os.path.join(HERE, "reel.html"), encoding="utf-8").read()
 WORLD_PROPS = re.findall(r"^ (\w+)\(c(?:,u)?\)\{", _R[_R.index("const PROP2D={"):_R.index("function prop2d(")], re.M)   # (the 2D story kit in reel.html)
+SCHEMA = SCHEMA.replace("<<SHOTS>>", shots.schema())                        # (the scene library: src/shots.py)
 WORLD_LAYOUTS = re.findall(r"lay==='(\w+)'", _R)
+POSES = re.findall(r"^ ?(\w+):\{la:", _R[_R.index("const POSE={"):_R.index("const MOOD=")], re.M)   # (the stick figure's poses)
 WORLD_VERBS = re.findall(r"(\w+):[\d.]+", _R[_R.index("BEAT={"):_R.index("}", _R.index("BEAT={"))])        # (the storyboard verbs reel.html acts)
 WORLD_SLOTS = re.findall(r"'?([\w-]+)'?:\[", _R[_R.index("const SLOT={"):_R.index("}", _R.index("const SLOT={"))])
-EVENT_VERBS = ("hit", "fall", "launch", "burst", "emit", "grow"); LAYOUT_EVENT = {"earns": "emit", "storm": "hit", "candles": "burst"}   # (a layout with its own event)
+EVENT_VERBS = ("hit", "fall", "launch", "burst", "emit", "grow", "fling", "crack"); LAYOUT_EVENT = {"earns": "emit", "storm": "hit", "candles": "burst", "pens": "pens", "line": "line", "compare": "compare", "flow": "flow", "grow": "rise", "network": "network", "hero": "hero", "risk": "risk", "updown": "updown"}   # (a layout with its own event)
 EMITS = ("fire", "coins", "smoke", "sparks", "rain", "hearts")
-LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3, "pens": 2, "line": 2, "candles": 1, "earns": 4, "storm": 4, "stage": 2}   # (what each layout in reel.html draws; more are never seen)
+LAYOUT_PROPS = {"flow": 4, "network": 8, "hero": 5, "grow": 5, "risk": 5, "compare": 3, "pens": 2, "line": 2, "candles": 1, "earns": 4, "storm": 4, "stage": 2, "updown": 2}   # (what each layout in reel.html draws; more are never seen)
 FLIERS = ("dragon", "bird", "plane", "drone", "fish", "rocket")   # (a flying hero leaves 3 side slots, not 4)
+UNACTED_HOOK = ("Daily recap", "Trader levels", "Explained like you're 5", "Stick skit", "Truth list")   # (recap.html, and stick figures already act every scene)
 WORLD_COLOURS = ["teal", "green", "amber", "red", "purple", "white", "grey"]
 
-RULES = """Rules:
-- Something happens in every story scene (the owner, 2026-11-07): one physical event, literal to the line, acted by beats (hit, fall,
-  launch, emit, grow or burst; a layout's own event counts: earns pays out, storm strikes, candles burst). "One escaped dragon shut a
-  motorway" is a dragon falling onto the road and a truck driving into it with a boom, not a dragon and a truck standing there. Two
-  scenes in a row never open with the same event, and a stock story uses at least 3 different ones. Never a figure of speech (no box
-  hitting a box for 'the market crashed'): the thing the line names does the thing the line says. Examples:
-  hook "One escaped dragon shut a motorway for a day": layout stage, actors dragon (sky-mid, l), truck (off-left), warning (right, label
-  'Motorway closed'); beats fall dragon to mid on 'escaped dragon', hit truck with dragon on 'shut a motorway', count '1 day' on 'for a day'.
-  "Demand is high, so there's a long waiting list": actors queue (right, s, 'Waiting list'), dragon (left); beats grow queue to l on
-  'long waiting list', emit hearts from dragon on 'Demand is high'. "It went up like crazy, then crashed": actors rocket (mid); beats
-  launch rocket to sky-mid on 'went up', fall rocket off on 'then crashed', burst rocket on 'crashed'. Invent your own for each line.
-- Any reel may use a story scene for its hook and one more for its payoff (the moment the lesson lands, acted out); a quiz for its hook
-  only, its reveal stays on the chart. Charts stay charts.
-- One label per idea in a story scene: a waiting list is a "queue" prop labelled "Waiting list", not a person plus separate
+RULES_ALL = """Rules:
+- Something happens in every story scene (the owner, 2026-11-07): one physical event, literal to the line. An acted scene is a shot
+  from the library (the owner, 2026-11-08): pick the shot whose action IS the line, cast it with the things the line names, and tie
+  its moments to the words; a layout scene (pens, earns, storm, line, compare, flow, grow, network, hero, risk, candles) acts by
+  itself. Never a figure of speech (no box hitting a box for 'the market crashed'): the thing the line names does what the line
+  says. Two scenes in a row never open with the same event, and a stock story uses at least 3 different ones. Examples:
+  "One escaped dragon shut a motorway for a day": shot crash_landing, cast a truck, b dragon, on land 'shut a motorway'.
+  "It went up like crazy, then crashed": shot rise_fall, cast hero rocket, on up 'went up', down 'then crashed'.
+  "Every rental pays it": shot pour, cast source dragon, pile goldbar, what coins, on pour 'pays it'.
+  "Support held 24 times": shot count, cast hero shield (label 'Support'), number '24 times', on count '24 times'.
+  Invent your own casting for each line; the shots stay as they are.
+- Cast literally (the owner's ratings, 2026-11-08): people are people (sellers, buyers, customers: person props, sellers red),
+  a company is shown as what it does (dragons for a dragon ranch, never a generic factory or building), a brand is its
+  product, a reservoir is a lake, a record hatch is an egg hatching a baby dragon (reveal), an escape is a dragon breaking
+  out of its cage (reveal). Tags name the real thing ('Trucks', 'Customers'), never an idea ('Old way', 'Waiting list').
+  If no shot and prop can show a line literally (a sickness, a recall in stores worldwide), act out another line of the
+  scene, or use a story layout; never a stand-in. Every prop in a scene is one the line names: nothing extra in a corner.
+- Every reel's hook is acted, like a stock story's (the owner, 2026-11-08: "all reels should be the same as the stock
+  stories"): a shot (or a story layout) on the hook's words; the chart comes in from scene 1. A chart reel's hook acts out what
+  the chart is about to do ("It looked like a small dip": rise_fall with a rocket; "Fear picks a tight stop": shield, guard a
+  shield, threat a cloud). A quiz's hook shows the quiz: "Three charts, three questions: how many can you get?" is three_up, cast
+  item1 to item3 chart, topper question, on items 'Three charts', topper 'three questions' (never blank bars standing in for
+  charts). For trading things use the trading props: chart (a mini chart card), candle (green up, red down), question (a
+  question card); they stay upright, so cast them in roles that do not fly or fall. Any reel may add one more story scene for
+  its payoff (the moment the lesson lands, acted out); a quiz's reveal stays on the chart. Charts stay charts.
+  Every reel opens with its own shot (the owner, round 7): never one in the facts' hook_shots_used_lately.
+- One label per idea in a story scene: people queuing are a "queue" prop labelled with who they are ("Customers"), not a person plus separate
   labels. Animated "story" scenes (2D neon line art) show real things: a stock story has 2 or 3 (what the company does, its good news, its bad
   news), and any reel may use one when a real object acts out the line (a company, its product, money moving). A dragon-
   rental firm is a dragon circling its ranch, teleport freight is crates through portals, a recall is warnings hitting
@@ -365,6 +502,16 @@ RULES = """Rules:
   and bad news as 2 or 3 film scenes; every other reel puts one "shot" on its hook (the first thing anyone sees, so make
   it striking). A shot shows the line's subject doing something specific and physical, fictional (no real brands,
   places or people), no text or screens in frame. Charts stay charts.
+- Teach a signal by showing it work (the owner, round 7): name the signal, point at it, then reveal what the price did next
+  (it went the way the signal says: the facts' example was picked for that), then say why it worked in two or three plain
+  reasons (who was buying, what the level meant, what the volume showed). Only then, once and briefly near the end, say it
+  does not work every time. Never call a signal "only a clue", "never a promise" or "not a verdict" more than once in a
+  reel, and never lead with the doubt: the doubt is a footnote, the signal working is the lesson.
+- When the voice describes the price moving ("each step lower than the one before", "it climbs", "then it dropped"),
+  the candles draw as it is said: put a reveal cue on that phrase, with the candles before it hidden ("show" earlier).
+- One look per idea: a stop or entry is one arrow (cue "arrow"), never a line for each option; in a quiz answer the arrow
+  at the right stop is drawn for you.
+- Plain words: "slightly below", never "a hair below"; "just above", never "a tad above".
 - Say a price the way it is shown on screen: under 10 it keeps its point ('4.91' is 'four point nine one', never 'four ninety-one', which the captions would show as 491); from 10 up, 'two oh three' for 203 is fine.
 - Total spoken words 60 to 110 (about 25 to 35 seconds): concise, one idea, every line earning its place, unless the
   reel's description says otherwise. No greeting, no "in this video". Start at the hook.
@@ -403,9 +550,16 @@ RULES = """Rules:
 - The last line echoes a word from the hook, so the replay loops cleanly, and the outro always ends with:
   "Join free at memestreet.net." Only a reel about the Daily Chart (the Daily recap) mentions the Daily Chart.
 """
+# (the owner, 2026-11-09: every reel is a director reel, so the shot-library, acted-hook, cut-count, video and 60-110 word
+#  rules go; the rest stand)
+_GONE = ("- Something happens in every story scene", "- Cast literally", "- Every reel's hook is acted", "- Video (only when",
+         "- Few cuts, like the owner's reference reels", "- Total spoken words 60 to 110", "- The first scene is a hook")
+RULES = "Rules:\n" + "".join(b for b in re.split(r"(?m)(?=^- )", RULES_ALL.split("Rules:\n", 1)[1]) if not b.startswith(_GONE)) + \
+    "- Length: 40 to 120 seconds (60 to 300 spoken words), as long as the story earns and no longer; every line earns its place.\n" \
+    "  No greeting, no \"in this video\". The first scene opens on the device; the last is the outro.\n"
 
 
-def claude(messages, system):
+def claude(messages, system, model=None):
     key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
         raise SystemExit("ANTHROPIC_API_KEY is not set (run set_claude_key.ps1)")
@@ -426,13 +580,14 @@ def board_check(k, s, A, B):
     if len(A) > 5: errs.append(f"scene {k}: at most 5 actors")
     if len(B) > 8: errs.append(f"scene {k}: at most 8 beats")
     if not all(ids) or len(set(ids)) != len(ids): errs.append(f"scene {k}: every actor needs its own id")
-    ats = [a.get("at") for a in A if a.get("at")]
-    if len(set(ats)) != len(ats): errs.append(f"scene {k}: two actors share a slot; give each its own")
+    ats = [a.get("at") for a in A if a.get("at")]; sky = {a.get('id'): a.get('at') for a in A}
+    if len(set(ats)) != len(ats) and not s.get("act"): errs.append(f"scene {k}: two actors share a slot; give each its own")
     for a in A:
         if a.get("p") not in WORLD_PROPS: errs.append(f"scene {k}: no prop called {a.get('p')!r} for actor {a.get('id')}; use one of {', '.join(WORLD_PROPS)}")
         if a.get("color", "teal") not in WORLD_COLOURS: errs.append(f"scene {k}: actor {a.get('id')} colour {a.get('color')!r} is not one of {', '.join(WORLD_COLOURS)}")
         if a.get("at") and a["at"] not in WORLD_SLOTS: errs.append(f"scene {k}: actor {a.get('id')} slot {a['at']!r} is not one of {', '.join(WORLD_SLOTS)}")
         if a.get("size", "m") not in ("s", "m", "l"): errs.append(f"scene {k}: actor {a.get('id')} size is s, m or l")
+        if a.get("size") == "l" and str(a.get("at", "")).startswith("sky"): errs.append(f"scene {k}: actor {a.get('id')} in the sky is s or m (an l covers the title)")
         if len(str(a.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {a.get('label')!r} is over 3 words")
     for b in B:
         if b.get("do") not in WORLD_VERBS: errs.append(f"scene {k}: no beat called {b.get('do')!r}; use one of {', '.join(WORLD_VERBS)}"); continue
@@ -440,6 +595,9 @@ def board_check(k, s, A, B):
         if b["do"] == "hit" and (b.get("with") not in ids or b.get("with") == b.get("who")): errs.append(f"scene {k}: a hit names the other actor in 'with'")
         if b["do"] in ("move", "launch") and b.get("to") not in WORLD_SLOTS: errs.append(f"scene {k}: {b['do']} needs 'to', one of {', '.join(WORLD_SLOTS)}")
         if b["do"] == "grow" and b.get("to", "l") not in ("s", "m", "l"): errs.append(f"scene {k}: grow 'to' is s, m or l")
+        if b["do"] == "grow" and b.get("to", "l") == "l" and str(sky.get(b.get("who"), "")).startswith("sky"): errs.append(f"scene {k}: a sky actor grows to m at most (an l in the sky covers the title)")
+        if b["do"] in ("launch", "fall", "hit", "fling") and str(A[ids.index(b.get("who"))].get("p") if b.get("who") in ids else "") in ("candle", "chart", "question"):
+            errs.append(f"scene {k}: a {A[ids.index(b['who'])]['p']} never flies, falls or crashes (the owner, 2026-11-08); it grows, tints, bursts or counts where it stands")
         if b["do"] == "fall" and b.get("to") not in (None, "off"): errs.append(f"scene {k}: fall 'to' is left out (the ground) or 'off'")
         if b["do"] == "emit" and b.get("what") not in EMITS: errs.append(f"scene {k}: emit 'what' is one of {', '.join(EMITS)}")
         if b["do"] == "tint" and b.get("color") not in WORLD_COLOURS: errs.append(f"scene {k}: tint needs a colour")
@@ -452,17 +610,40 @@ def check(spec, facts, charts, category=None):
     """What is wrong with the script, in words Claude can fix."""
     errs = []
     sc = spec.get("scenes") or []
-    if not sc or sc[0].get("kind") != "hook": errs.append("the first scene must be a hook")
+    free = bool(spec.get("scene_js"))                     # a director reel (every reel since 2026-11-09)
+    nk = lambda w: re.sub(r"[^a-z0-9%$.]", "", str(w).lower())
+    dev = spec.get("device") if isinstance(spec.get("device"), dict) else {}
+    if not free or not dev.get("metaphor"):
+        errs.append('a director reel (the owner, 2026-11-09): send "device" {metaphor, opening, palette, hud} in the JSON and ONE ```js block after '
+                    'it holding the scene function ({t, T, s, i, R, api}) => html (see DIRECTOR REELS)')
+    js = spec.get("scene_js") or ""
+    body = re.sub(r"^\s*(//[^\n]*\n\s*)*", "", js)          # (a comment may open the block, as the seeds do)
+    if js and not (body.startswith("(") and "=>" in js): errs.append("the scene function is one arrow function expression: ({t, T, s, i, R, api}) => { ... }")
+    if re.search(r"Math\.random|new Date|\bdocument\.|\bwindow\.", js): errs.append("the scene function is pure: no Math.random, Date, document or window")
+    for k, s_ in enumerate(sc):
+        if s_.get("kind") == "free":
+            tx = str(s_.get("text") or "").split()
+            if not 2 <= len(tx) <= 5: errs.append(f"scene {k}: the punch text is 2 to 5 words of the line")
+            if s_.get("hot") and nk(s_["hot"]) not in [nk(w) for w in tx]: errs.append(f"scene {k}: hot {s_['hot']!r} must be one of the words of its text")
+            if s_.get("head"): errs.append(f"scene {k}: a free scene has no head (the HUD takes the title's place)")
+    for d in facts.get("recent_devices") or []:
+        for key in ("metaphor", "opening"):
+            a, b = str(dev.get(key, "")).lower(), str(d.get(key, "")).lower()
+            if a and b and difflib.SequenceMatcher(None, a, b).ratio() > .8: errs.append(f"the device's {key} ({a!r}) is too close to a recent reel's ({b!r}); invent another")
+    if not sc or sc[0].get("kind") not in ("hook", "free"): errs.append("the first scene must be a hook (or a free scene that opens on the device)")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (60, 110, True))
+    if free and (category or spec.get("type")) not in LENGTH: hi_w = 300   # (40 to 120 s: the owner, 2026-11-09)
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
     body = [s for s in sc if s.get("kind") != "outro"]
     cuts = sum(1 for a, b in zip(body, body[1:]) if look(a) != look(b))
-    if cuts > (6 if category == "Stock story" else 3):         # (what fills the screen changes this often: choppy next to the references)
+    if cuts > (6 if category == "Stock story" else 3) and not free:   # (what fills the screen changes this often: choppy next to the references)
         errs.append(f"the screen changes {cuts} times before the outro; keep one chart on screen and let it evolve (at most "
                     f"{6 if category == 'Stock story' else 3} switches)")
     worlds = [s for s in sc if s.get("layout")]; events = []
     for k, s in enumerate(sc):
+        busy = [c for c in s.get("cues") or [] if c.get("do") in ("mark", "line", "shade") and c.get("from") != "template"]
+        if len(busy) > 3: errs.append(f"scene {k}: at most 3 marks, lines or shades on a chart at once (the owner, 2026-11-08: too much on the screen); keep the ones the line says")
         if s.get("kind") == "story" or s.get("layout"):
             P = s.get("props") or []
             if s.get("layout") not in WORLD_LAYOUTS: errs.append(f"scene {k}: layout must be one of {', '.join(WORLD_LAYOUTS)}")
@@ -473,6 +654,8 @@ def check(spec, facts, charts, category=None):
             errs += board_check(k, s, A, Bt)
             ev = LAYOUT_EVENT.get(s.get("layout")) or next((b.get("do") for b in Bt if b.get("do") in EVENT_VERBS), None)
             if not ev: errs.append(f"scene {k}: nothing happens; add one beat (hit, fall, launch, emit, grow or burst) that acts out the line")
+            if s.get("kind") == "story" and not LAYOUT_EVENT.get(s.get("layout")) and sum(b.get("do") in EVENT_VERBS for b in Bt) < 2:
+                errs.append(f"scene {k}: a story scene is alive, never stiff (the owner, 2026-11-08): give it at least 2 event beats on its words")
             if ev and events and events[-1] == ev: errs.append(f"scene {k}: the scene before also opens with a {ev}; make something different happen")
             events.append(ev)
             for q in P:
@@ -481,7 +664,7 @@ def check(spec, facts, charts, category=None):
                 if len(str(q.get("label") or "").split()) > 3: errs.append(f"scene {k}: label {q.get('label')!r} is over 3 words")
                 if q.get("label") and q["label"].strip().lower().rstrip("s") == str(q.get("p", "")).lower(): errs.append(f"scene {k}: a {q.get('p')} needs no label saying so; label only what the picture cannot say")
                 if q.get("say") and q["say"].lower() not in s.get("vo", "").lower(): errs.append(f"scene {k}: prop says {q['say']!r}, which is not in its line")
-    if category == "Stock story":
+    if category == "Stock story" and not free:
         if not 5 <= len(worlds) <= 7:
             errs.append(f"a stock story tells the company in 5 to 7 story scenes (kind \"story\" with a layout and props): the hook, "
                         f"what it is, how it earns, why it matters, what's unique, what can hurt it; this script has {len(worlds)}")
@@ -493,8 +676,11 @@ def check(spec, facts, charts, category=None):
             errs.append("a stock story's hook is illustrated: give scene 0 a story layout and props that show the odd fact (its text is the title)")
         for lay, what in (("earns", "how it makes money (layout earns: its 3 jobs)"), ("storm", "what can hurt it (layout storm: 2 or 3 risks)")):
             if not any(s.get("layout") == lay for s in sc): errs.append(f"a stock story has a story scene on {what}, not cards")
-    if category == "Chart breakdown" and any(s.get("kind") == "story" or (s.get("kind") not in ("outro",) and s.get("chart") is None) for s in sc):
-        errs.append("a chart breakdown keeps its one chart on screen in every scene but the outro (no story scenes)")
+    if (category or spec.get("type")) not in UNACTED_HOOK and sc and not sc[0].get("layout") and not free:
+        errs.append("the hook is acted out like a stock story's (the owner, 2026-11-08): give scene 0 a shot from the library (or a story layout) "
+                    "acting out its words; the chart comes in from scene 1")
+    if category == "Chart breakdown" and not free and any(s.get("kind") == "story" or (s.get("kind") not in ("outro",) and s.get("chart") is None) for s in sc[1:]):
+        errs.append("a chart breakdown keeps its one chart on screen in every scene after the hook but the outro (no more story scenes)")
     video = facts.get("video", {}).get("available") if isinstance(facts.get("video"), dict) else False
     films = [s for s in sc if s.get("kind") == "film"]
     for k, s in enumerate(sc):
@@ -517,19 +703,35 @@ def check(spec, facts, charts, category=None):
                     errs.append(f"scene {k}: candle {c[f]} is outside chart {ch}")
     errs += shown_check(sc, charts) + speech_check(sc)
     # (no hook-score gate since 2026-11-07: on 48 finance Shorts it did not separate winners (41) from losers (43); the owner retired it)
-    for k, s in enumerate(sc):                             # version 2: a quiz option's short label, one per option, at most 4 words
+    for k, s in enumerate(sc):                             # a quiz option's short label, one per option, at most 4 words (every reel since 2026-11-08: long options were cramped)
+        dq = (charts[s["chart"]].get("drill") or {}) if s.get("kind") == "question" and isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {}
+        if s.get("labels") is None and any(len(str(o).split()) > 4 for o in dq.get("options") or []):
+            errs.append(f"scene {k}: its options are long; give \"labels\": one short label (max 4 words) per option, in order: {dq['options']}")
         if s.get("labels") is not None:
             d = (charts[s["chart"]].get("drill") or {}) if isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {}
             if s.get("kind") != "question" or not isinstance(s["labels"], list) or len(s["labels"]) != len(d.get("options") or []):
                 errs.append(f"scene {k}: labels are for a question scene: one per option of its chart ({len(d.get('options') or [])}), in the same order")
             elif any(len(str(x).split()) > 4 for x in s["labels"]):
                 errs.append(f"scene {k}: every label is at most 4 words")
-    if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and not sc[0].get("layout") and sc[0].get("text"):
+    if sc and sc[0].get("kind") == "hook" and sc[0].get("chart") is None and not sc[0].get("layout") and sc[0].get("text") and not free:
         k = lambda x: [re.sub(r"[^a-z0-9']", "", w.lower()) for w in x.split()]
         tx, vx = k(sc[0]["text"]), k(sc[0].get("vo", ""))
         if tx != vx[:len(tx)]: errs.append("the hook's on-screen text must be the first words of the spoken hook, word for word, so it appears as it is said from the first frame")
     spoken = " ".join(x.get("vo", "") for x in sc)
-    acr = sorted({a for a in re.findall(r"[A-Z][A-Z0-9&]{1,5}", spoken) if a not in LEX and a not in ("I", "OK", "UK", "US")})
+    if re.search(r"\ba (hair|tad)\b", spoken, re.I): errs.append("say 'slightly below' or 'just above', never 'a hair' or 'a tad' (the owner, round 7)")
+    doubt = re.findall(r"\b(?:only|just) a clue\b|\bnever a (?:promise|verdict|guarantee)\b|\bnot a (?:promise|verdict|guarantee)\b|\bnot every time\b|"
+                       r"\bdoesn't always\b|\bwon't always\b|\bnever certain\b|\bnothing is certain\b|\ba clue\b", spoken, re.I)
+    if len(doubt) > 1: errs.append(f"the reel doubts its own signal {len(doubt)} times ({', '.join(doubt)}); say it once, briefly, near the end, "
+                                   "and spend the reel showing the signal work (the owner, round 7)")
+    if sc and sc[0].get("act") and sc[0]["act"] in (facts.get("hook_shots_used_lately") or []):
+        errs.append(f"the hook's shot {sc[0]['act']!r} opened a recent reel; every reel opens with its own (the owner, round 7): pick one of "
+                    + ", ".join(x for x in shots.SHOTS if x not in facts["hook_shots_used_lately"]))
+    for k, s in enumerate(sc):                             # (a stop answer shows one arrow, drawn for it: never a line per option)
+        d = (charts[s["chart"]].get("drill") or {}) if s.get("kind") == "answer" and isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {}
+        stops = [x["price"] for x in d.get("lines") or [] if x.get("after") and x.get("tone") == "stop"]
+        if len(stops) > 1 and any(c.get("do") == "line" and any(abs(c.get("price", 0) - p) <= abs(p) * .002 for p in stops) for c in s.get("cues") or []):
+            errs.append(f"scene {k}: no lines for the stop options; the arrow at the right stop is drawn for you")
+    acr =sorted({a for a in re.findall(r"[A-Z][A-Z0-9&]{1,5}", spoken) if a not in LEX and a not in ("I", "OK", "UK", "US")})
     if acr: errs.append("write these out or as people say them (the voice reads capitals as letters): " + ", ".join(acr))
     if re.search(r"[0-9]+[.][0-9]{2}", spoken): errs.append("say prices the way people say them, no decimals in a spoken line ('about two ten')")
     # (numbers are written out for the voice, but the detector counts only digits as concrete: score them as digits)
@@ -587,7 +789,7 @@ def shown_check(sc, charts):
         for t in ([s.get("head")] if kind != "answer" else []) + ([s.get("text")] if kind == "hook" and (ch is not None or s.get("layout")) else []):
             if t and len(kw(t)) >= 3 and any(kw(vo)[j:j + len(kw(t))] == kw(t) for j in range(len(kw(vo)))):
                 errs.append(f"scene {k}'s title {t!r} repeats its line: a title names the idea or the theme, not what is said")
-        if s.get("text") and kind in ("big", "outro"):
+        if s.get("text") and kind in ("big", "outro", "free"):
             t, v = kw(s["text"]), kw(vo)
             if not any(v[j:j + len(t)] == t for j in range(len(v) - len(t) + 1)):
                 errs.append(f"scene {k}'s on-screen text {s['text']!r} must be words of its line, word for word, in order")
@@ -621,8 +823,16 @@ def shown_check(sc, charts):
     return errs
 
 
+def stop_key(t):
+    """Which of a stop drill's three stops a label or option means: tight (a hair below the entry), below (the support), wide."""
+    return "tight" if re.search(r"hair|tight|entry", t, re.I) else "wide" if re.search(r"\bfar\b|wide|never", t, re.I) else "below"
+
+
 def finish(spec, charts, category):
     """Add what comes from the facts, not from Claude: the options and answers, the drawn lines, the windows."""
+    for sc_ in spec.get("scenes", []):                    # (a percentage tag sits above its candle, never under it: the owner, 2026-11-08)
+        for c in sc_.get("cues") or []:
+            if c.get("do") == "mark" and "%" in str(c.get("label", "")) and c.get("side") == "low": c["side"] = "high"
     named = [(s.get("chart"), c["price"], c["label"]) for s in spec["scenes"] for c in s.get("cues", [])
              if c.get("do") == "line" and c.get("label") and isinstance(c.get("price"), (int, float))]
     def said(vo, lab):                                    # a template line appears when the line names it ('a stop'), else at the start
@@ -655,16 +865,28 @@ def finish(spec, charts, category):
             q = next((x for x in reversed(spec["scenes"][:spec["scenes"].index(s)]) if x.get("kind") == "question"), {})
             s["head"], s["badge"] = "The answer", q.get("badge", "")      # (one title for every answer: the highlight shows which)
             s.setdefault("cues", [])
-            s["cues"] += [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
-                           "tone": tone(x), "from": "template"} for x in d["lines"] if not drawn(s["chart"], x) and x.get("after")][:3]
+            after = [x for x in d["lines"] if not drawn(s["chart"], x) and x.get("after")]
+            st_ = [x for x in d["lines"] if x.get("after") and x.get("tone") == "stop"]
+            if len(st_) > 1:                              # (one arrow at the right stop, never a line per option: the owner, round 7)
+                right = next((x for x in st_ if stop_key(x["label"]) == stop_key(d["options"][d["answer"]])), st_[0])
+                s["cues"].append({"say": said(s.get("vo", ""), "stop"), "do": "arrow", "price": right["price"], "i": right.get("from"),
+                                  "label": "Stop", "tone": "stop", "from": "template"})
+                after = [x for x in after if x.get("tone") != "stop"]
+            busy = lambda cs: sum(1 for c in cs if c.get("do") in ("mark", "line", "shade"))
+            room = max(0, 3 - busy(s["cues"]) - busy(q.get("cues", [])))   # (at most 3 marks, lines or shades at once, the question's carried ones counted: the owner, 2026-11-08; the critic held a fib quiz for a pile of seven, 2026-11-09)
+            ans = set(re.findall(r"[a-z0-9.%]+", str(d["options"][d["answer"]]).lower()))
+            after.sort(key=lambda x: -len(ans & set(re.findall(r"[a-z0-9.%]+", str(name(s["chart"], x)).lower()))))   # (the level the answer names first)
+            add = [{"say": said(s.get("vo", ""), name(s["chart"], x)), "do": "line", "price": x["price"], "label": name(s["chart"], x),
+                    "tone": tone(x), "from": "template"} for x in after][:room]
+            s["cues"] += add
             mine = {c.get("i") for q in spec["scenes"] if q.get("chart") == s["chart"] for c in q.get("cues", [])
                     if c.get("do") == "mark" and c.get("from") != "template"}      # (a candle the writer marked keeps only its mark)
             s["cues"] += [{"say": "", "do": "mark", "i": m["i"], "label": m.get("label", "")[:14], "side": "high", "from": "template"}
-                          for m in d["marks"] if m.get("label") and m["i"] not in mine][:3]
+                          for m in d["marks"] if m.get("label") and m["i"] not in mine][:max(0, room - len(add))]
         elif s["kind"] in ("hook", "chart") and s.get("show") is None and d:
             s["show"] = ch["upto"]
     spec["type"] = category
-    spec["charts"] = [{"candles": c["candles"], "label": c["label"]} for c in charts]
+    spec["charts"] = [dict({"candles": c["candles"], "label": c["label"]}, **({"overlay": c["overlay"]} if c.get("overlay") else {})) for c in charts]
     return capitals(spec)
 
 
@@ -704,8 +926,10 @@ def system_prompt(category):
             open(rb, encoding="utf-8").read() + "\n\n") if os.path.exists(rb) else ""
     s = book + ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
             "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
-            "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS)))
-    return v2_system(s) if V2 else s
+            "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS))
+         + "\n" + DIRECTOR % (", ".join(WORLD_PROPS), ", ".join(POSES), examples()))
+    r = rules_file(category)
+    return v2_system(s, r) if r else s
 
 
 def brief(slot, category=None, remake=None):
@@ -722,18 +946,16 @@ def brief(slot, category=None, remake=None):
         if not (remake and category == "Stock story"): raise
         category = "Explained like you're 5"               # (gold, oil, an ETF: not a game company, so an explainer on the topic)
         facts, charts = gather(category, rng, history)
+    facts["hook_shots_used_lately"] = [x for x in history.get("acts", []) if x][-5:]   # (every reel opens with its own shot: the owner, round 7)
     system = system_prompt(category)
     import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
     need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
     facts["video"] = {"available": os.environ.get("HF_VIDEO") == "1" and bool(footage.cred()) and footage.remaining() >= need}   # (off: the neon 3D is the style)
-    exm = os.path.join(ROOT, "exemplar", "measures.json")   # (the owner's reference reels: plain words, short beats)
-    refs = [v["transcript"] for v in json.load(open(exm)).values() if v.get("words", 0) > 40] if os.path.exists(exm) else []
+    facts["recent_devices"] = [d for d in history.get("devices", []) if isinstance(d, dict)][-30:]   # (every reel invents its own device: the owner, 2026-11-09)
+    notes = os.path.join(ROOT, "exemplar", "NOTES.md")
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
-           "recent_titles_to_avoid": history.get("titles", [])[-20:]}
-    if refs:
-        ask["owner_reference_reels"] = {"note": "Narration from reels the owner loves. Match their plainness and rhythm: short "
-                                      "beats, one idea each, a term then what it means ('the gap that flips'). Never copy their words.",
-                                      "transcripts": refs[:3]}
+           "recent_titles_to_avoid": history.get("titles", [])[-20:],
+           "exemplar_notes": open(notes, encoding="utf-8").read() if os.path.exists(notes) else ""}
     if CATEGORIES[category].startswith("VIRAL"):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research 2026-11-04). Use the SHAPE, never the words: write an original line "
@@ -747,7 +969,7 @@ def brief(slot, category=None, remake=None):
         ask["remake_of"] = {"note": "Make this reel again on the same topic, with the same teaching points and similar "
                                     "explanations, but tighter: no long pauses, every line earns its place. Use the new "
                                     "charts in the facts instead of the old ones. If the topic is something the chart cannot "
-                                    "draw (MACD, Bollinger Bands, VWAP, ATR, moving averages, position sizing, an ETF, a "
+                                    "draw (MACD, Bollinger Bands, VWAP, ATR, moving averages on a chart with no overlay, position sizing, an ETF, a "
                                     "commodity), explain it with cards, big text and Rookie and Pro, and use the chart only "
                                     "for what it really shows; never claim the chart shows the indicator.",
                             "title": remake.get("title"), "old_narration": remake.get("narration"), "old_caption": remake.get("caption")}
@@ -758,14 +980,23 @@ def brief(slot, category=None, remake=None):
 
 def parse(raw, B, base=None):
     """The script in Claude's reply (a patch of `base` when one is given), and what is wrong with it."""
+    js = next((m for m in re.finditer(r"```[\w-]*[ \t]*\n(.*?)```", raw, re.S) if "=>" in m.group(1) and not m.group(1).lstrip().startswith("{")), None)   # the scene function, in whatever fence (its braces would break the JSON match; a ```json fence holds the script)
+    if js: raw = raw[:js.start()] + raw[js.end():]
     m = re.search(r"\{.*\}", raw, re.S)
     try:
         spec = json.loads(m.group(0)) if m else {}
     except ValueError as e:
-        return {}, [f"not valid JSON: {e}"]
+        try:                                              # (a remark after the JSON, or a second object: the first complete object is the script)
+            spec = json.JSONDecoder().raw_decode(raw, raw.index("{"))[0]
+        except ValueError:
+            return {}, [f"not valid JSON: {e}"]
     if base is not None:
         spec = merge(base, spec)
-    return spec, check(spec, B["ask"]["facts"], B["charts"], B["category"])
+        for k in ("scene_js", "device", "tok"):
+            if k not in spec and base.get(k) is not None: spec[k] = base[k]
+    if js: spec["scene_js"] = js.group(1).strip()
+    pre = shots.expand_all(spec, WORLD_PROPS)            # (a shot becomes its polished storyboard; a free one is refused)
+    return spec, pre + check(spec, B["ask"]["facts"], B["charts"], B["category"])
 
 
 def merge(base, patch):
@@ -782,18 +1013,18 @@ def merge(base, patch):
     return s
 
 
-def claude_cli(messages, system):
+def claude_cli(messages, system, model=None):
     """The writer through Claude Code on this server, logged in to the owner's plan (CLAUDE_CODE_OAUTH_TOKEN from
     `claude setup-token`): the plan's usage, no API bill. No tools: it only writes."""
     convo = "\n\n".join(("REQUEST:\n" if m["role"] == "user" else "YOUR EARLIER REPLY:\n") + m["content"] for m in messages)
-    r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", os.environ.get("REEL_CLI_MODEL", "sonnet"),
+    r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", model or os.environ.get("REEL_CLI_MODEL", "opus"),
                         "--append-system-prompt", system,
                         "--disallowedTools", "Bash,Edit,Write,Read,WebFetch,WebSearch,Glob,Grep,Task,NotebookEdit"],
-                       input=convo, capture_output=True, text=True, timeout=600, cwd="/tmp",
+                       input=convo, capture_output=True, text=True, timeout=900, cwd="/tmp",
                        env={k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"})   # (an API key would be billed instead)
     if r.returncode and re.search(r"hit your|usage limit|rate limit", (r.stderr or "") + r.stdout, re.I):
         print("the writer's plan limit is reached: waiting 15 minutes, then trying again", flush=True)   # (credits come back: carry on then)
-        time.sleep(900); return claude_cli(messages, system)
+        time.sleep(900); return claude_cli(messages, system, model)
     if r.returncode:
         raise SystemExit("claude -p failed: " + (r.stderr or r.stdout)[-400:])
     return r.stdout
@@ -836,20 +1067,39 @@ def fix_check(raw, notes, base, spec):
     return errs
 
 
-def write(B, msgs=None, base=None, notes=None):
+def dry_run(spec, B, work):
+    """The scene function through the whole reel before any voice is made (render.py DRY: a JavaScript error, text on text,
+    small text, three still seconds, slow frames): its faults, in words the writer can fix."""
+    if not spec.get("scene_js"): return []
+    d = os.path.join(work or os.path.join(ROOT, "work", "dry"), "dry"); shutil.rmtree(d, ignore_errors=True); os.makedirs(d, exist_ok=True)
+    json.dump(finish(json.loads(json.dumps(spec)), B["charts"], B["category"]), open(os.path.join(d, "spec.json"), "w"))
+    env = dict(os.environ, DRY="1", PAGE="reel.html")
+    for cmd in ([sys.executable, os.path.join(ROOT, "lab", "silent.py"), d], [sys.executable, os.path.join(HERE, "render.py"), d, "-"]):
+        r = subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=ROOT, timeout=1200)
+        if r.returncode:
+            o = (r.stderr or "") + (r.stdout or ""); m = re.search(r"DRY: (.*)", o, re.S)
+            return ["the scene function failed the dry run: " + (m.group(1) if m else o[-600:]).strip()]
+    return []
+
+
+def write(B, msgs=None, base=None, notes=None, work=None):
     """Have Claude write the script (or, with `base`, a patch of it that answers `notes`), checked and sent back at
-    most four times."""
+    most four times. The first draft is the big model's (REEL_CLI_MODEL), the fixes the small one's (REEL_FIX_MODEL)."""
     ask = claude_cli if os.environ.get("REEL_WRITER", "cli") == "cli" else claude
     msgs = msgs or [{"role": "user", "content": json.dumps(B["ask"], indent=1)}]
     B = dict(B, system=B["system"] + lessons())
     for attempt in range(5):
-        raw = ask(msgs, B["system"])
+        raw = ask(msgs, B["system"], model=os.environ.get("REEL_CLI_MODEL", "opus") if attempt == 0 else os.environ.get("REEL_FIX_MODEL", "sonnet"))   # (the big model writes and makes the critic's fix; the small one repairs check failures: a small-model rewrite duplicated scenes, 2026-11-09)
         spec, errs = parse(raw, B, base)
         if base is not None and spec:
             errs += fix_check(raw, notes or [], base, spec)
         if not errs:
+            errs = dry_run(spec, B, work)
+        if not errs:
             return spec
-        print(f"attempt {attempt + 1}: " + "; ".join(errs[:8]))
+        print(f"attempt {attempt + 1}: " + "; ".join(errs[:8]), flush=True)
+        if work:                                          # (the reply as it came, for debugging a check that keeps failing)
+            os.makedirs(work, exist_ok=True); open(os.path.join(work, f"attempt-{attempt + 1}.txt"), "w", encoding="utf-8").write(raw)
         msgs += [{"role": "assistant", "content": raw}, {"role": "user", "content": ("Fix these and reply with only the scenes you change, in the same form: " if base else "Fix these and reply with the whole JSON again: ") + "; ".join(errs)}]
     raise SystemExit("the script did not pass its checks: " + "; ".join(errs))
 
@@ -857,11 +1107,13 @@ def write(B, msgs=None, base=None, notes=None):
 def revise(work, review):
     """The critic sent the finished reel back: the writer gets its own script and his checked script notes, and rewrites
     only the scenes they name (a patch; the rest is approved and stays as it is, so it is not voiced or reviewed again)."""
+    if os.path.exists(os.path.join(work, "STOP")):        # (an operator's stop: the cut stands as it is, the critic's next round holds it)
+        print("STOP file in the work dir: no rewrite, the cut stands", flush=True); return
     B = json.load(open(os.path.join(work, "brief.json"), encoding="utf-8"))
     B["system"] = system_prompt(B["category"])          # (today's rules, not the ones saved with the brief)
     draft = open(os.path.join(work, "draft.json"), encoding="utf-8").read()
     sn = lambda x: int((re.findall(r"scene (\d+)", x.get("where", "")) or [999])[0])
-    todo = sorted((x for x in review.get("issues", []) if x.get("owner", "script") != "renderer"), key=sn)
+    todo = sorted((x for x in review.get("issues", []) if x.get("owner", "script") != "renderer" and x.get("severity", "blocker") == "blocker"), key=sn)   # (blockers only: the notes are for the owner's log, not a rewrite; the owner, 2026-11-07)
     ev = lambda x: "".join(f" [measured: {e['report']}]" for e in x.get("evidence") or [] if isinstance(e, dict) and e.get("report"))
     notes = "\n".join(f"{n}. [{x.get('severity', '')}] {x.get('where', '')}: {x.get('what', '')}{ev(x)} FIX: {x.get('fix', '')}"
                       + (f" (OPEN {x['rounds_open']} ROUNDS: your earlier fixes did not change this on screen; read the scene as rendered below)"
@@ -875,7 +1127,9 @@ def revise(work, review):
                                            "tweaking will not fix them. Give each a different approach (another scene kind, another "
                                            "moment of the chart, another prop) or drop it (a quiz may drop that question), within the "
                                            "length rules.\n" if review.get("stuck_scenes") else "") +
-                                        "Fix every note. Everything he did not mention is approved: leave it exactly as it is. "
+                                        "Fix every note. Everything he did not mention is approved: leave it exactly as it is. The scene "
+                                        "function is yours: when a note concerns the picture, send a new complete ```js block after the JSON "
+                                        "(it replaces the old one); keep the device. "
                                         "Lines and marks marked \"template\" are added from the game's facts: to rename one, add your "
                                         "own line cue at the same price with the name you want; its \"say\" sets when it appears. "
                                         "Where a tag sits, its size and its font belong to the template, not to you.\n"
@@ -883,7 +1137,7 @@ def revise(work, review):
                                         'new scene>, ...}, "fixes": [{"n": <note number>, "how": "scene k: what you changed"}, '
                                         '...one per note]}, plus "title" or "caption" only if a note is about them. To add, '
                                         "remove or reorder scenes, reply with the whole JSON (with \"fixes\") instead."}]
-    save(write(B, msgs, json.loads(draft), todo), B, work, again=True)
+    save(write(B, msgs, json.loads(draft), todo, work), B, work, again=True)
 
 
 def rendered(work, notes):
@@ -912,7 +1166,8 @@ def save(spec, B, work, again=False):
     json.dump(spec, open(os.path.join(work, "spec.json"), "w"))
     open(os.path.join(work, "caption.txt"), "w", encoding="utf-8").write(spec["caption"].strip() + "\n")
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
-    if not again: history.setdefault("titles", []).append(spec["title"])
+    if not again: history.setdefault("titles", []).append(spec["title"]); history.setdefault("acts", []).append((spec["scenes"] or [{}])[0].get("act")); history.setdefault("devices", []).append(spec.get("device"))
+    if spec.get("scene_js"): open(os.path.join(work, "scene.js"), "w", encoding="utf-8").write(spec["scene_js"])   # (for humans: the reel's own picture)
     os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
     json.dump(history, open(HISTORY, "w"))
     print(f"{B['category']}: {spec['title']} ({sum(len(s['vo'].split()) for s in spec['scenes'])} words, {len(spec['scenes'])} scenes)")
@@ -936,6 +1191,30 @@ if __name__ == "__main__":
         assert fc({"scenes": {"2": {"vo": "C"}}, "caption": "d", "fixes": [{"n": 1, "how": "scene 2 carries it"}, {"n": 2}]}) == []
         assert any("post caption" in e for e in fc({"scenes": {"1": {"vo": "B"}}, "fixes": [{"n": 1}, {"n": 2}]}))
         assert "fixes" not in merge(base, {"scenes": {"1": {"vo": "B"}}, "fixes": []})
+        cs = lambda a, b: [[1, 1, 1, a]] * 10 + [[1, 1, 1, b]] * 30          # (close a at the question, b after)
+        dr = lambda ans, a, b, **k: dict({"candles": cs(a, b), "upto": 9, "options": [ans], "answer": 0}, **k)
+        assert played_out(dr("A golden cross", 100, 105)) and not played_out(dr("A golden cross", 100, 95))
+        assert played_out(dr("A death cross", 100, 95)) and played_out(dr("A doji", 100, 100)) and not played_out(dr("Neither", 100, 104), strict=True)
+        lv = [{"price": 99}]
+        assert played_out(dr("Real: it keeps going", 100, 104, kind="breakout", lines=lv)) and not played_out(dr("Fake: back inside", 100, 104, kind="breakout", lines=lv))
+        assert [stop_key(x) for x in ("Tight", "Below support", "Wide", "A hair below the entry", "Far below, so it is never hit", "Just below the support")] == \
+               ["tight", "below", "wide", "tight", "wide", "below"]
+        raw = 'here {"title": "T", "scenes": []} and\n```js\n// DEVICE: a kettle\n({t, api}) => { return `<svg>${t}</svg>` }\n```\n'
+        js = next((m for m in re.finditer(r"```[\w-]*[ \t]*\n(.*?)```", raw, re.S) if "=>" in m.group(1) and not m.group(1).lstrip().startswith("{")), None); assert js and "({t" in js.group(1)
+        raw2 = '```json\n{"title": "T", "x": "a => b"}\n```\nnotes\n```javascript\n({t}) => 1\n```'
+        js2 = next((m for m in re.finditer(r"```[\w-]*[ \t]*\n(.*?)```", raw2, re.S) if "=>" in m.group(1) and not m.group(1).lstrip().startswith("{")), None); assert js2 and js2.group(1).strip() == "({t}) => 1", js2
+        assert not any("arrow function" in e for e in check({"scene_js": js.group(1).strip(), "device": {"metaphor": "k"}, "scenes": [], "caption": ""}, {}, [], "One trick"))
+        assert json.loads(re.search(r"\{.*\}", raw[:js.start()] + raw[js.end():], re.S).group(0))["title"] == "T"
+        fr = {"title": "T", "caption": f"x {DISCLAIMER} #MemeStreet", "device": {"metaphor": "a lift with three cables", "opening": "the car hangs"},
+              "scene_js": "({t, api}) => ''", "scenes": [{"kind": "free", "vo": "Six words here are too many yes.", "text": "Six words here are too many", "hot": "zzz"},
+                                                         {"kind": "outro", "vo": "Join free at memestreet.net.", "text": "Join free"}]}
+        es = check(fr, {"recent_devices": [{"metaphor": "a lift with three cables cut", "opening": "x"}]}, [], "One trick")
+        assert any("2 to 5 words" in e for e in es) and any("hot 'zzz'" in e for e in es) and any("too close to a recent" in e for e in es), es
+        fr["scenes"][0].update(text="too many yes", hot="many"); fr["device"]["metaphor"] = "a kettle that boils over"
+        es = check(fr, {"recent_devices": []}, [], "One trick")
+        assert not any("2 to 5 words" in e or "hot" in e or "too close" in e or "must be a hook" in e for e in es), es
+        assert not check(dict(fr, scene_js=None), {}, [], "One trick") == [] and any("director reel" in e for e in check(dict(fr, scene_js=None), {}, [], "One trick"))
+        assert "- Total spoken words" not in RULES and "- Length: 40 to 120" in RULES and "- Plain words" in RULES
         print("ok")
     elif a[0] == "revise":                               # <work> <review.json>: rewrite after the film critic's notes
         revise(a[1], json.load(open(a[2], encoding="utf-8")))
@@ -953,5 +1232,5 @@ if __name__ == "__main__":
         pair(a[1], a[2], a[3], cat)
     else:                                                # <slot> <work>: brief, write, save
         B = brief(a[0], cat, rem)
-        if V2: B = v2_brief(B)
-        save(write(B), B, a[1])
+        if rules_file(B["category"]): B = v2_brief(B, rules_file(B["category"]))
+        save(write(B, work=a[1]), B, a[1])

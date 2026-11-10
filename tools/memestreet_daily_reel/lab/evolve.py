@@ -11,6 +11,9 @@ import json, os, re, shutil, subprocess, sys, time
 
 LAB = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(LAB); RULES = os.path.join(ROOT, "RULES_V2.md")
 MIN_PAIRS = 3
+CHANGES = 3                                                      # (the owner, 2026-11-08: a few changes, so the two versions look different)
+CHAMPION = os.path.join(ROOT, "CHAMPION.md")                     # (the promoted winner: every regular reel's rules)
+HISTORY = os.path.join(LAB, "data", "rules", "history.md")       # (every round's verdict, so a dropped change is not tried again)
 
 
 def version(text):
@@ -37,14 +40,30 @@ def main():
     text = open(RULES, encoding="utf-8").read(); n = version(text); S = summary(rows)
     if S.get(n, {}).get("pairs", 0) < MIN_PAIRS:
         return print(f"version {n} has {S.get(n, {}).get('pairs', 0)} scored pairs; it needs {MIN_PAIRS} before the next version")
+    # the round's verdict (the owner, 2026-11-08): a version 2 that won most of its pairs becomes v1, the rules of every regular
+    # reel (CHAMPION.md); one that lost is dropped. Either way the next version 2 is v1 plus one new change.
+    x = S[n]; won = 2 * x["v2_wins"] > x["pairs"]
+    if won: shutil.copy(RULES, CHAMPION)
+    first = os.path.join(LAB, "data", "rules", "v1.md")
+    text = text if won else open(CHAMPION, encoding="utf-8").read() if os.path.exists(CHAMPION) else \
+        open(first, encoding="utf-8").read() if os.path.exists(first) else text
+    os.makedirs(os.path.join(LAB, "data", "rules"), exist_ok=True)
+    with open(HISTORY, "a", encoding="utf-8") as f:
+        f.write(f"- version {n}: v2 won {x['v2_wins']} of {x['pairs']} pairs ({'promoted to v1' if won else 'dropped'}); "
+                f"skip {x['skip_v1']}% -> {x['skip_v2']}%, watch {x['watch_v1']}s -> {x['watch_v2']}s\n")
+    print(f"version {n}: v2 won {x['v2_wins']} of {x['pairs']}: " + ("promoted, it is now v1" if won else "dropped; v1 stays"))
+    tried = open(HISTORY, encoding="utf-8").read()
     ask = ("You improve the rules for Meme Street's version-2 Instagram Reels by A/B testing. Each pair is the same facts made as "
            "the current reel (v1) and as version 2 (v2), both posted as Trial Reels to non-followers. Lower skip rate (% leaving in "
            "the first 3 s) and longer average watch are better.\n\nScoreboard by version of the rules (skip %, watch seconds):\n"
-           + json.dumps(S, indent=1) + f"\n\nThe current rules (version {n}):\n" + text +
-           "\n\nChange exactly ONE thing in the rules, the one most likely to cut skips and lengthen watching given these results "
-           "(if a past version did better, you may bring back what it had). Do not touch the '## The template' section, and keep "
-           "every rule the owner decided. Reply with JSON only: {\"change\": \"one sentence\", \"why\": \"one sentence, from the "
-           "numbers\", \"rules\": \"the whole new rules file\"}")
+           + json.dumps(S, indent=1) + "\n\nEach round's verdict (a version that lost was dropped; do not try its change again):\n" + tried +
+           f"\n\nThe rules to change (v1, the current winner):\n" + text +
+           f"\n\nMake the next version 2: change {CHANGES} things in the rules, a package most likely to cut skips and lengthen "
+           "watching given these results (if a past version did better, you may bring back what it had). At least 2 of them must be "
+           "VISIBLE, so a viewer can tell the two reels apart with the sound off: what the hook's acted scene does, how many story "
+           "scenes and how fast the screen changes, how the chart is framed and marked, the on-screen text, the order of the reveal. "
+           "Do not touch the '## The template' section, and keep every rule the owner decided. Reply with JSON only: "
+           "{\"changes\": [\"one sentence each\"], \"why\": \"one sentence, from the numbers\", \"rules\": \"the whole new rules file\"}")
     r = subprocess.run(["claude", "-p", "--output-format", "text", "--model", "sonnet", "--disallowedTools",
                         "Bash,Edit,Write,Read,WebFetch,WebSearch,Glob,Grep,Task,NotebookEdit"],
                        input=ask, capture_output=True, text=True, timeout=900, cwd="/tmp",
@@ -53,13 +72,18 @@ def main():
     new = res["rules"]
     if "## The template" not in new or len(new) < 0.6 * len(text):
         return print("the proposed rules dropped too much; version", n, "stays")
+    fixed = lambda t: t.split("## The template", 1)[1].split("\n## ", 1)[0].strip()   # (the owner's fixed rules: the cover, the acted hook)
+    if fixed(new) != fixed(text):
+        return print("the proposed rules changed the fixed template section; version", n, "stays")
     new = re.sub(r"^Version: \d+", f"Version: {n + 1}", new, count=1, flags=re.M)
     if f"Version: {n + 1}" not in new: new = new.replace("\n", f"\n\nVersion: {n + 1}\n", 1)
-    new = new.rstrip("\n") + f"\n- {n + 1} ({time.strftime('%F')}): {res['change']} ({res['why']})\n"
+    ch = "; ".join(res.get("changes") or [res.get("change", "")])
+    new = new.rstrip("\n") + f"\n- {n + 1} ({time.strftime('%F')}): {ch} ({res['why']})\n"
+    with open(HISTORY, "a", encoding="utf-8") as f: f.write(f"- version {n + 1} tries: {ch}\n")
     os.makedirs(os.path.join(LAB, "data", "rules"), exist_ok=True)
     shutil.copy(RULES, os.path.join(LAB, "data", "rules", f"v{n}.md"))
     open(RULES, "w", encoding="utf-8").write(new)
-    print(f"version {n + 1}: {res['change']}")
+    print(f"version {n + 1}: {ch}")
 
 
 def demo():
