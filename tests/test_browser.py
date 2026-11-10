@@ -344,6 +344,11 @@ class BrowserPages(unittest.TestCase):
             await d.check("portfolio is the only visible card",
                           "[...document.querySelectorAll('section>.card')].filter(c=>getComputedStyle(c).display!=='none').map(c=>c.id).join()",
                           "portfolio-card")
+            await d.check("the Portfolio tab has its sub-tabs, with Overview lit",
+                          "document.querySelector('#sub-pf a.on').dataset.page+'|'+document.querySelector('#nav>a.on').dataset.page", "portfolio|portfolio")
+            await pg.goto(base + "/holdings", 3)
+            await d.check("Holdings lights its own chip only, under the Portfolio tab",
+                          "[...document.querySelectorAll('#sub-pf a.on')].map(a=>a.dataset.page).join()+'|'+document.querySelector('#nav>a.on').dataset.page", "holdings|portfolio")
             # history
             await pg.goto(base + "/history", 3)
             await d.check("history lists the trades", "document.getElementById('hist-rows').innerText",
@@ -376,6 +381,7 @@ class BrowserPages(unittest.TestCase):
             await d.check("my row is highlighted on both", "document.querySelectorAll('.lb-table tr.me').length", 2)
             # profile
             await pg.goto(base + "/profile", 3)
+            await d.check("Profile shows the Profile and Bots strip", "document.querySelector('#sub-me a.on').dataset.page", "profile")
             await d.check("badge grid is full", "document.querySelectorAll('#achs .ach').length", lambda n: n >= 19)
             await d.check("first steps is unlocked", "document.querySelectorAll('#achs .ach:not(.locked)').length", lambda n: n >= 1)
             await pg.js("(()=>{const c=document.getElementById('pub-toggle');c.checked=true;c.dispatchEvent(new Event('change',{bubbles:true}))})()")
@@ -650,7 +656,7 @@ class BrowserPhone(unittest.TestCase):
     its price, change and Buy button on screen, the header stays small and pinned, the chart's labels are readable, and
     the laptop layout is untouched."""
 
-    PAGES = ["/", "/holdings", "/portfolio", "/history", "/leaders", "/social", "/profile", "/stock/NVXA", "/stock/MSI"]
+    PAGES = ["/", "/holdings", "/portfolio", "/history", "/leaders", "/social", "/profile", "/calendar", "/bots", "/shop", "/stock/NVXA", "/stock/MSI"]
 
     def test_phone_layout(self):
         with IsolatedServer() as srv:
@@ -667,7 +673,8 @@ class BrowserPhone(unittest.TestCase):
                           "(()=>{window.scrollTo(0,1500);const r=document.querySelector('.topbar').getBoundingClientRect();return [Math.round(r.top),Math.round(r.height)]})()",
                           lambda v: v[0] == 0 and v[1] < 110)
             await pg.js("window.scrollTo(0,0)")
-            await d.check("the menu is one scrollable row, not two", "document.getElementById('nav').getBoundingClientRect().height", lambda h: h < 50)
+            await d.check("the menu is a bar fixed to the bottom of the screen",
+                          "(()=>{const n=document.getElementById('nav'),r=n.getBoundingClientRect();return getComputedStyle(n).position==='fixed'&&Math.abs(r.bottom-innerHeight)<2&&r.height<60})()")
             await d.check("every field is big enough that the phone does not zoom in on it",
                           "['q','msort'].every(i=>getComputedStyle(document.getElementById(i)).fontSize==='16px')")
             await d.check("a stock is one card: ticker, price, change and the Buy button are all on screen",
@@ -682,6 +689,10 @@ class BrowserPhone(unittest.TestCase):
                           "(()=>{const c=[...document.querySelectorAll('aside .card')];return c.length===3&&c.every(x=>x.classList.contains('shut'))&&c[0].getBoundingClientRect().top<document.getElementById('market-card').getBoundingClientRect().top})()")
             await pg.js("document.querySelectorAll('aside .card h3')[1].click()")
             await d.check("tapping a heading opens a panel", "!document.querySelectorAll('aside .card')[1].classList.contains('shut')")
+            await pg.js("document.querySelector('#nav-more summary').click()")
+            await d.check("More opens a sheet with the other six pages",
+                          "document.getElementById('nav-more').open&&[...document.querySelectorAll('#nav-more a')].filter(a=>a.checkVisibility()).length", 6)
+            await pg.js("document.querySelector('#nav-more summary').click()")
             await pg.js("(()=>{const i=document.querySelector('.amt-input');i.value='120';i.dispatchEvent(new Event('input',{bubbles:true}));document.querySelector('#rows tr[data-k=NVXA] button[data-act=buy]').click()})()")
             await asyncio.sleep(2)
             for path in self.PAGES:
@@ -756,7 +767,8 @@ class BrowserGuest(unittest.TestCase):
             await d.check("the live table is full", "document.querySelectorAll('#rows tr').length", lambda n: n > 100, wait=8)
             await d.check("a welcome card says what this is", shown("#guest-hero"))
             await d.check("there are no buy/sell controls to tap", "[...document.querySelectorAll('.ticket,#rows .hold-act')].every(e=>getComputedStyle(e).display==='none')")
-            await d.check("the menu offers the market, the lessons, the Daily and the shop", "[...document.querySelectorAll('#nav a')].filter(a=>getComputedStyle(a).display!=='none').length", 4)
+            await d.check("the menu offers the market, the lessons and the Daily", "[...document.querySelectorAll('#nav a')].filter(a=>a.checkVisibility()).length", 3)
+            await d.check("and the shop is a button in the header", shown("#shop-btn"))
             await d.check("their own money is not shown", "getComputedStyle(document.getElementById('cash').closest('.stat')).display", "none")
             await d.check("prices are moving (live)", "(()=>{const a=document.querySelector('#rows tr[data-k=NVXA] .px').textContent;return new Promise(r=>setTimeout(()=>r(a),6000)).then(a=>a.length>0)})()")
             await pg.js("document.querySelector('#rows tr[data-k=NVXA] .tick-cell').click()")

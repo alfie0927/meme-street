@@ -370,7 +370,7 @@ function drawIndPop(){
  let rows=IND.filter(x=>inTab(x)&&match(x,false));if(!rows.length&&words.length)rows=IND.filter(x=>inTab(x)&&match(x,true));
  const groups={};rows.forEach(x=>(groups[x[2]]=groups[x[2]]||[]).push(x));
  $('ind-tabs').querySelectorAll('[data-ind-filter]').forEach(b=>b.classList.toggle('on',b.dataset.indFilter===indFilter));
- setHtml($('ind-list'),rows.length?Object.entries(groups).map(([g,xs])=>`<div class="ind-group">${esc(g)}</div>`+xs.map(x=>`<button class="ind-row ${ind.has(x[0])?'on':''}" data-ind="${x[0]}" title="${esc(x[6])}${IND_LESSON[x[2]]?' Lesson: '+esc(IND_LESSON[x[2]][1]):''}"><span class="ind-dot" style="background:${x[5]}"></span><span class="ind-name">${esc(x[1])}${ind.has(x[0])?' <span class="up">✓</span>':''}</span><span class="ind-tag ${x[4]?'pro':'free'}">${x[4]?'PRO':'FREE'}</span><small title="${esc(x[6])}">${esc(x[6])}${x[4]&&!pro?' Pro members only.':''}</small></button>`).join('')).join('')
+ setHtml($('ind-list'),rows.length?Object.entries(groups).map(([g,xs])=>`<div class="ind-group">${esc(g)}</div>`+xs.map(x=>`<button class="ind-row ${ind.has(x[0])?'on':''}" data-ind="${x[0]}" title="${esc(x[6])}${IND_LESSON[x[2]]?' Lesson: '+esc(IND_LESSON[x[2]][1]):''}"><span class="ind-dot" style="background:${x[5]}"></span><span class="ind-name">${esc(x[1])}${ind.has(x[0])?' <span class="up">✓</span>':''}</span><span class="ind-tag ${x[4]?'pro':'free'}">${x[4]?'PRO':'FREE'}</span></button>`).join('')).join('')
   :'<p class="hint" style="margin:8px">Nothing matches. Try “average”, “RSI”, “volume”, “trend” or “fib”.</p>')}
 function openIndPop(open){const pop=$('ind-pop');if(!pop)return;pop.hidden=!open;if(open){$('ind-q').value='';drawIndPop();setTimeout(()=>$('ind-q').focus(),0)}}
 document.addEventListener('click',e=>{
@@ -399,7 +399,7 @@ function openIndCfg(k,anchor){
   +(SRC_OK.has(k)?`<label>Source<select data-cfg="src">${Object.entries(SRC_NAMES).map(([v,n])=>`<option value="${v}" ${(P.src||'c')===v?'selected':''}>${esc(n)}</option>`).join('')}</select></label>`:'')
   +`<label>Colour<input type="color" data-cfg="c" value="${indCol(d)}"></label>`
   +`<div class="bar" style="margin:6px 0 0"><button data-cfg-reset>Reset</button><button class="buy" data-cfg-done>Done</button></div>`
-  +(IND_LESSON[d[2]]?`<p class="hint" style="margin:6px 0 0">${esc(d[6])} Lesson: <a href="/learn?l=${IND_LESSON[d[2]][0]}">${esc(IND_LESSON[d[2]][1])}</a></p>`:'');
+  +(IND_LESSON[d[2]]?`<p class="hint" style="margin:6px 0 0">Lesson: <a href="/learn?l=${IND_LESSON[d[2]][0]}">${esc(IND_LESSON[d[2]][1])}</a></p>`:'');
  box.hidden=false;
  if(anchor){const bx=$('chart-box').getBoundingClientRect(),ar=anchor.getBoundingClientRect();box.style.left=Math.max(0,Math.min(bx.width-260,ar.left-bx.left-150))+'px';box.style.top=(ar.bottom-bx.top+6)+'px'}}
 function cfgInput(el){
@@ -648,8 +648,8 @@ function drawRisk(){
  const out=$('r-out');if(!out||!S)return;const st=S.byT[selectedTicker];if(!st)return;
  const entry=parseFloat($('r-entry').value)||st.price,stop=parseFloat($('r-stop').value),pct=parseFloat($('r-pct').value),rr=parseFloat($('r-rr').value);
  if($('r-entry').placeholder!==numText(st.price,Math.abs(st.price)<1?4:2))$('r-entry').placeholder=numText(st.price,Math.abs(st.price)<1?4:2);
- const atr=indOn('atr')?atrOf(chartCandles):null;setText($('r-atr'),atr?`ATR on this chart: ${numText(atr,Math.abs(atr)<1?4:3)} MB a candle (a stop 1.5-2 ATR away is common)`:'');
- if(!(stop>0)||stop===entry){riskPlan=null;$('r-use').disabled=true;setHtml(out,'Type a stop-loss price to see the size.');return}
+ const atr=indOn('atr')?atrOf(chartCandles):null;setText($('r-atr'),atr?`ATR on this chart: ${numText(atr,Math.abs(atr)<1?4:3)} MB a candle`:'');
+ if(!(stop>0)||stop===entry){riskPlan=null;$('r-use').disabled=true;setHtml(out,'Type a stop-loss price to see the size (a stop above the entry means a short).');return}
  const long=stop<entry,perShare=Math.abs(entry-stop),riskMB=S.equity*pct,shares=riskMB/perShare,cost=shares*entry,target=entry+(long?1:-1)*rr*perShare;
  const tooBig=cost>(long?S.cash:S.equity);
  riskPlan={long,shares,cost,stop,target};$('r-use').disabled=false;

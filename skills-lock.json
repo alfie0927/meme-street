@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "skills": {
+    "seo-autopilot": {
+      "source": "Illyism/seo-skills",
+      "sourceType": "github",
+      "skillPath": "seo/seo-autopilot/SKILL.md",
+      "computedHash": "aa08335f85b759b2e445b8a6239acc2a338bf2ab3e00b300461c29c95131ba49",
+      "installMode": "copy"
+    }
+  }
+}

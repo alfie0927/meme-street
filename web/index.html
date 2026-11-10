@@ -12,14 +12,14 @@ header{position:sticky;top:0;z-index:6;background:var(--bg);border-bottom:1px so
 .topbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;padding:10px 18px 6px}
 .brand{font-size:15px;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px}.brand:hover{text-decoration:none}
 .logo{display:inline-block;width:28px;height:28px;border-radius:3px;object-fit:cover;vertical-align:middle}
-nav{display:flex;flex-wrap:wrap;gap:0}nav a{padding:6px 8px;font-size:12.5px;color:var(--mut);position:relative}nav a:hover{color:var(--txt);text-decoration:none}nav a.on{color:var(--txt);box-shadow:inset 0 -2px 0 var(--acc)}
+nav{display:flex;flex-wrap:wrap;gap:0}nav a{padding:6px 8px;font-size:12.5px;color:var(--mut);position:relative}nav a:hover{color:var(--txt);text-decoration:none}nav a.on{color:var(--txt);box-shadow:inset 0 -2px 0 var(--acc)}#nav-more{display:none}
 .spacer{flex:1}
 #chat-dot{display:none;position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--dn)}
 #conn{font-size:11px;color:#d29922}
 #session{display:flex;align-items:center;gap:10px}
 #mkt{font-size:12px;padding:3px 9px;border:1px solid #3ad07a55;color:var(--up);white-space:nowrap}
 a.stat-link{color:inherit;text-decoration:none}a.stat-link:hover small,a.stat-link:hover span{color:var(--acc)}
-#daily-btn{font-size:12px;padding:3px 10px;border:1px solid var(--acc);color:var(--acc);white-space:nowrap;text-decoration:none;font-weight:700}#daily-btn:hover,.page-daily #daily-btn{background:var(--acc);color:#021012}#daily-btn .dl-short{display:none}
+#daily-btn,#shop-btn{font-size:12px;padding:3px 10px;border:1px solid var(--acc);color:var(--acc);white-space:nowrap;text-decoration:none;font-weight:700}#daily-btn:hover,.page-daily #daily-btn,#shop-btn:hover,.page-shop #shop-btn{background:var(--acc);color:#021012}#daily-btn .dl-short{display:none}
 #mkt.pre{color:#ffc65c;border-color:#ffc65c55}#mkt.after{color:#c3a3ff;border-color:#c3a3ff55}
 .stats{display:flex;flex-wrap:wrap;gap:4px 0;padding:2px 18px 8px}
 .stat{padding:0 16px;border-left:1px solid var(--line)}.stat:first-child{padding-left:0;border-left:0}
@@ -199,7 +199,7 @@ button:hover{background:#1f262c}button:disabled{opacity:.4;cursor:not-allowed}
 .chip.on{background:var(--acc);color:#021012;border-color:var(--acc)}
 .amt-input{width:130px;margin:0;padding:5px 9px}.hist-note{max-width:260px;white-space:normal;font-size:12px}
 .lev-sel{width:auto;margin:0;padding:5px 6px}
-.dtabs{display:flex;gap:4px;margin:4px 0 8px}
+.dtabs{display:flex;gap:0;margin:10px 0 8px;border-bottom:1px solid var(--line)}.dtabs .chip{border:0;border-radius:0;background:none;padding:6px 14px;font-size:13px;color:var(--mut)}.dtabs .chip.on{background:none;color:var(--txt);box-shadow:inset 0 -2px 0 var(--acc)}
 #opt-box{display:none}body.opt-tab #opt-box{display:block}body.opt-tab #chart-box,body.opt-tab .chart-resize,body.opt-tab .chart-controls{display:none!important}
 .opt-chain{width:100%;font-variant-numeric:tabular-nums}.opt-chain td,.opt-chain th{text-align:right;padding:4px 6px}.opt-chain th.k,.opt-chain td.k{text-align:center;font-weight:700;background:var(--card2)}
 .opt-chain td.itm{background:#4cc3cc12}.opt-chain tr.pxline td{border-bottom:1px solid var(--acc)}.opt-chain td.mut{font-size:12px}
@@ -239,7 +239,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--acc)}
 #guest-actions,#guest-hero{display:none}
 body.guest #guest-actions{display:flex;gap:8px;align-items:center}
 body.guest.page-market #guest-hero{display:block}
-body.guest #nav a:not([data-page=market]):not([data-page=learn]):not([data-page=daily]):not([data-page=shop]){display:none}
+body.guest #nav a:not([data-page=market]):not([data-page=learn]):not([data-page=daily]),body.guest #nav-more{display:none}
 body.guest .stats .stat:nth-child(n+2):nth-child(-n+6){display:none}
 body.guest .ticket,body.guest .hold-act,body.guest .detail-actions,body.guest .orders,body.guest #d-limits,body.guest #d-pos{display:none!important}
 .guest-cta{display:none;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding:8px 12px;margin:10px 0;border-left:2px solid var(--acc);background:var(--card2)}
@@ -259,7 +259,7 @@ body.guest .guest-cta{display:flex}
 .alloc{display:flex;height:22px;border-radius:3px;overflow:hidden;margin:6px 0}.alloc i{display:block;height:100%}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mut)}.legend b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .curve{width:100%;height:auto;display:block;cursor:crosshair;touch-action:pan-y}
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.subnav{display:none}.subnav a{border:1px solid var(--line);background:#161b20;color:var(--txt)}.subnav a:hover{text-decoration:none;background:#1f262c}.page-holdings #sub-pf,.page-portfolio #sub-pf,.page-history #sub-pf,.page-profile #sub-me,.page-bots #sub-me{display:flex}
 .pbar{height:3px;background:var(--line2);overflow:hidden;margin-top:5px}.pbar i{display:block;height:100%;background:var(--acc)}.pbar.done i{background:var(--up)}
 .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px}
 .ach{border:1px solid var(--line);border-left:2px solid var(--acc);border-radius:2px;padding:8px 11px}.ach.locked{opacity:.5;border-left-color:var(--line)}.ach b{display:block}.ach small{display:block;color:var(--mut)}.ach .when{font-size:11px;margin-top:4px;color:var(--up)}
@@ -273,27 +273,35 @@ body.guest .guest-cta{display:flex}
 @media(max-width:760px){.nm{max-width:130px}}
 /* ---- phones: everything below applies only on narrow screens; the laptop layout above is unchanged ---- */
 @media(max-width:760px){
- body{padding-bottom:env(safe-area-inset-bottom);-webkit-text-size-adjust:100%}
+ body{padding-bottom:calc(52px + env(safe-area-inset-bottom));-webkit-text-size-adjust:100%}
  header{display:contents}
- .topbar{position:sticky;top:0;z-index:6;background:#08090bf2;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:8px 12px 6px;gap:4px 8px}
+ .topbar{position:sticky;top:0;z-index:6;background:#08090bf2;border-bottom:1px solid var(--line);padding:8px 12px 6px;gap:4px 8px}
  .brand{order:1;font-size:17px}.topbar .spacer{order:2}#session{order:3}#conn{order:3}
- nav{order:4;flex:0 0 100%;flex-wrap:nowrap;overflow-x:auto;margin:0 -12px;padding:0 12px 2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
- nav::-webkit-scrollbar{display:none}
- nav a{flex:none;padding:7px 13px}
+ /* the menu is a bar fixed to the bottom of the screen; Leaders, Social and Profile sit in the More sheet with Calendar, Bots and the Shop */
+ nav{position:fixed;left:0;right:0;bottom:0;z-index:7;display:flex;margin:0;padding:0 0 env(safe-area-inset-bottom);background:var(--bg);border-top:1px solid var(--line)}
+ nav>a,#nav-more{flex:1;min-width:0}nav>a,#nav-more summary{padding:9px 0 8px;text-align:center;font-size:11.5px;white-space:nowrap}
+ nav a.on{box-shadow:inset 0 2px 0 var(--acc)}
+ nav>a[data-page=leaders],nav>a[data-page=social],nav>a[data-page=profile]{display:none}
+ #nav-more{display:block}#nav-more summary{list-style:none;color:var(--mut);cursor:pointer}#nav-more summary::-webkit-details-marker{display:none}
+ #nav-more:has(a.on) summary{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
+ #nav-more[open] summary::before{content:"";position:fixed;inset:0;background:#0009}
+ #nav-more>div{position:absolute;left:0;right:0;bottom:100%;display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:12px;background:var(--card);border-top:1px solid var(--line)}
+ #nav-more>div a{display:block;padding:12px;border:1px solid var(--line);border-radius:3px;text-align:center;color:var(--txt)}
  .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 12px}
  .stat{min-width:0;padding:3px 0;border-left:0}.stat small{font-size:9.5px}.stat span{font-size:14px}
  .stat:last-child{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline}
  #session-banner{padding:8px 12px;font-size:12.5px}
- #mkt{font-size:11px;white-space:normal}#daily-btn{font-size:11px;padding:3px 8px}#daily-btn .dl-long{display:none}#daily-btn .dl-short{display:inline}#session{gap:6px}
+ #mkt{font-size:11px;white-space:normal}#daily-btn{display:none}#shop-btn{font-size:11px;padding:3px 8px}#session{gap:6px}
+ #chart-info{display:none}#cal-past td{white-space:normal}
  main,body:not(.page-market) main{padding:8px}
  .card{padding:12px;margin-bottom:10px;border-radius:3px}
  input,select,textarea{font-size:16px}
  button{min-height:34px}.chip{min-height:30px;padding:5px 12px}
  #login>div{width:min(340px,92vw);padding:20px}
- #notes{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));left:10px;right:10px;max-width:none}
+ #notes{top:auto;bottom:calc(124px + env(safe-area-inset-bottom));left:10px;right:10px;max-width:none}
  #guest-actions #g-login{display:none}#guest-actions button{padding:4px 8px;font-size:12px}
  body.guest .stats{grid-template-columns:1fr 1.7fr}body.guest .stat:last-child{grid-column:auto}
- #toast{bottom:calc(14px + env(safe-area-inset-bottom))}
+ #toast{bottom:calc(62px + env(safe-area-inset-bottom))}
  /* news wire, upcoming events and the leaderboard sit above the (very long) table, folded: tap a heading to open it */
  aside{order:-1}
  aside .card.fold{margin-bottom:8px;padding:10px 12px}
@@ -327,18 +335,17 @@ body.guest .guest-cta{display:flex}
  #hold-rows tr,#pf-pos tr{display:grid;grid-template-columns:1fr 1fr;gap:5px 18px;padding:12px 2px;border-bottom:1px solid var(--line2)}
  #hold-rows td,#pf-pos td{display:flex;justify-content:space-between;align-items:center;padding:0;border:0;text-align:right;font-size:13px}
  #hold-rows td::before,#pf-pos td::before{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-right:8px}
- #hold-rows td:nth-child(1),#hold-rows td:nth-child(11),#pf-pos td:nth-child(1){grid-column:1/-1;text-align:left}
+ #hold-rows td:nth-child(1),#hold-rows td:nth-child(10),#pf-pos td:nth-child(1){grid-column:1/-1;text-align:left}
  #hold-rows td:nth-child(2)::before,#pf-pos td:nth-child(2)::before{content:"Side"}
  #hold-rows td:nth-child(3)::before,#pf-pos td:nth-child(3)::before{content:"Shares"}
  #hold-rows td:nth-child(4)::before,#pf-pos td:nth-child(4)::before{content:"Avg entry"}
  #hold-rows td:nth-child(5)::before,#pf-pos td:nth-child(5)::before{content:"Price"}
  #hold-rows td:nth-child(6)::before,#pf-pos td:nth-child(6)::before{content:"Value"}
- #hold-rows td:nth-child(7)::before{content:"Dividends"}
  #pf-pos td:nth-child(7)::before{content:"Unrealised"}
- #hold-rows td:nth-child(8)::before{content:"P/L"}
+ #hold-rows td:nth-child(7)::before{content:"P/L"}
  #pf-pos td:nth-child(8)::before{content:"Realised"}
- #hold-rows td:nth-child(9)::before{content:"Take-profit"}
- #hold-rows td:nth-child(10)::before{content:"Stop-loss"}
+ #hold-rows td:nth-child(8)::before{content:"Take-profit"}
+ #hold-rows td:nth-child(9)::before{content:"Stop-loss"}
  #hold-rows td:has(.exit-edit){grid-column:1/-1;justify-content:flex-start;gap:10px}#hold-rows .exit-edit input{width:110px}
  #hold-rows .hold-act{width:100%}#hold-rows .hold-act button{flex:1;min-height:40px}
  /* the long tables that stay tables (history, orders, closed trades) scroll sideways inside their card */
@@ -412,11 +419,11 @@ body.guest .guest-cta{display:flex}
 <p id="auth-hint" class="hint" style="display:none"></p><button id="login-close" style="display:none;width:100%;margin-top:8px">Keep watching the market</button></div></div>
 <header>
 <div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
-<nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/daily" data-page="daily">Daily</a><a href="/holdings" data-page="holdings">Holdings</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/history" data-page="history">History</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><a href="/bots" data-page="bots">Bots</a><a href="/shop" data-page="shop">Shop</a></nav>
+<nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/daily" data-page="daily">Daily</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><details id="nav-more"><summary>More</summary><div><a href="/leaders" data-page="leaders">Leaders</a><a href="/social" data-page="social">Social</a><a href="/profile" data-page="profile">Profile</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/bots" data-page="bots">Bots</a><a href="/shop" data-page="shop">Shop</a></div></details></nav>
 <div class="spacer"></div>
-<div id="session"><a id="daily-btn" href="/daily" title="Two minutes on a mystery chart, the same for everyone today"><span class="dl-long">Daily Chart</span><span class="dl-short">Daily</span></a><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
+<div id="session"><a id="daily-btn" href="/daily" title="Two minutes on a mystery chart, the same for everyone today"><span class="dl-long">Daily Chart</span><span class="dl-short">Daily</span></a><a id="shop-btn" href="/shop">Shop</a><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
 <div class="stats">
-<a class="stat stat-link" href="/stock/MSI" title="The MSI 50: the 50 biggest companies"><small>MSI 50<small id="indexChg" class="mut">+0.0% 30m</small></small><span id="index">100.000</span></a>
+<a class="stat stat-link" href="/stock/MSI" title="The 50 biggest companies"><small>MSI 50<small id="indexChg" class="mut">+0.0% 30m</small></small><span id="index">100.000</span></a>
 <div class="stat"><small>Cash</small><span id="cash">-</span></div>
 <div class="stat"><small>Equity</small><span id="eq">-</span></div>
 <div class="stat"><small>P&amp;L (all time)</small><span id="pnl">-</span></div>
@@ -426,16 +433,18 @@ body.guest .guest-cta{display:flex}
 </div><div id="tape"><div class="tape-run"></div></div></header>
 <div id="session-banner"></div><div id="low-banner"></div><div id="learn-banner"></div>
 <main><section>
+<div class="tabs subnav" id="sub-pf"><a class="chip" href="/holdings" data-page="holdings">Holdings</a><a class="chip" href="/portfolio" data-page="portfolio">Overview</a><a class="chip" href="/history" data-page="history">History</a></div>
+<div class="tabs subnav" id="sub-me"><a class="chip" href="/profile" data-page="profile">Profile</a><a class="chip" href="/bots" data-page="bots">Bots</a></div>
 <div class="card" id="guest-hero"><h2>Meme Street</h2><p class="about" style="margin:0 0 10px">A made-up stock market that runs around the clock, with 180+ companies, news that moves prices and a daily leaderboard. You're watching it live. Make an account to trade with memebucks (MB), practice money with no cash value.</p><div class="bar"><button class="buy" id="gh-join">Create an account</button><button id="gh-login">Sign in</button><a href="/about">How it works</a></div></div>
 <div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Ticker, name, industry or size" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option><option value="cap:-1">Largest companies first</option><option value="cap:1">Smallest companies first</option></select></div>
-<div class="ticket"><span class="lab">Buy size</span><span id="bchips"></span><span class="lab">Sell size</span><span id="schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="Amount in MB"></div>
 <div id="secs-wrap"><div id="secs"></div><button class="chip" id="secs-toggle" aria-expanded="false"></button></div>
+<div class="ticket"><span class="lab">Buy size</span><span id="bchips"></span><span class="lab">Sell size</span><span id="schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="Amount in MB"></div>
 <table><thead><tr><th class="star-h"></th><th data-sort="ticker">Ticker <span data-sort="name" style="font-weight:500">&middot; Company</span></th><th data-sort="price">Price</th><th class="cap-col" data-sort="cap">Mkt cap</th><th data-sort="chg">30m</th><th class="spk-col">Trend</th><th class="held-col" data-sort="held">Held</th><th></th></tr></thead><tbody id="rows"></tbody></table>
 <p id="no-match" class="mut" style="display:none">Nothing matches that search. Clear it or pick another industry.</p></div>
 <div class="card" id="holdings-card"><h3>Your holdings</h3>
 <div class="finance-grid" id="hold-sum"></div>
 <div class="ticket" style="margin-top:12px"><span class="lab">Buy size</span><span id="h-bchips"></span><span class="lab">Sell size</span><span id="h-schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB" aria-label="Amount in MB"></div>
-<table><thead><tr><th>Ticker &middot; Company</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>Value</th><th>Dividends</th><th>P/L</th><th>Take-profit</th><th>Stop-loss</th><th></th></tr></thead><tbody id="hold-rows"></tbody></table>
+<table><thead><tr><th>Ticker &middot; Company</th><th>Side</th><th>Shares</th><th>Avg entry</th><th>Price</th><th>Value</th><th>P/L</th><th>Take-profit</th><th>Stop-loss</th><th></th></tr></thead><tbody id="hold-rows"></tbody></table>
 <div id="hold-orders"></div><div id="hold-opts"></div>
 <p id="hold-empty" class="mut" style="display:none">You don't hold anything yet. Pick a stock on the <a href="/">market</a> and buy some.</p></div>
 <div class="card" id="stock-detail"><a href="/" style="font-size:13px">Back to market</a><div id="detail-content" class="mut" style="margin-top:12px">Loading…</div></div>
@@ -462,10 +471,6 @@ body.guest .guest-cta{display:flex}
 <div id="tab-follow" style="display:none"><div class="bar"><input id="follow-name" maxlength="16" placeholder="Trader name" aria-label="Trader name"><button class="buy" id="follow-add">Follow</button></div>
 <p class="hint">Follow up to 20 traders. You see their holdings only if they made them public, and always a few minutes late.</p><table id="follow-list"></table></div></div>
 <div class="card" id="profile-card"><div id="prof-head"></div>
-<h3 class="sp">Learning</h3><div id="prof-learn"></div>
-<h3 class="sp">Daily Chart</h3><div id="prof-daily"></div>
-<h3 class="sp">Invite friends</h3><div id="invite"></div>
-<h3 class="sp">Badges <span id="ach-count" class="mut"></span></h3><div class="ach-grid" id="achs"></div>
 <h3 class="sp">Account</h3><div id="acct-note" class="hint"></div>
 <div id="email-box" style="display:none"><div id="email-note" class="hint"></div>
 <div class="bar"><input id="email-in" type="email" maxlength="254" placeholder="Email address" autocomplete="email"><button class="buy" id="email-send">Send code</button></div>
@@ -473,12 +478,15 @@ body.guest .guest-cta{display:flex}
 <div class="bar"><input id="acct-cur" type="password" maxlength="128" placeholder="Current password" autocomplete="current-password" style="display:none"><input id="acct-new" type="password" maxlength="128" placeholder="New password (8+)" autocomplete="new-password"><button class="buy" id="acct-save">Save password</button></div>
 <div class="bar"><button id="acct-others">Log out other devices</button><button id="acct-out">Log out</button></div>
 <h3 class="sp">Privacy</h3><label><input type="checkbox" id="pub-toggle" style="width:auto;margin:0 8px 0 0"> Make my results and (delayed) holdings public</label>
-<p class="hint">If it's public, others see your returns and what you held five minutes ago, in percentages. If not, only your name and badges (and you still show on the leaderboards).</p></div>
+<p class="hint">If it's public, others see your returns and what you held five minutes ago, in percentages. If not, only your name and badges (and you still show on the leaderboards).</p>
+<h3 class="sp">Learning</h3><div id="prof-learn"></div>
+<h3 class="sp">Daily Chart</h3><div id="prof-daily"></div>
+<h3 class="sp">Invite friends</h3><div id="invite"></div>
+<h3 class="sp">Badges <span id="ach-count" class="mut"></span></h3><div class="ach-grid" id="achs"></div></div>
 <div class="card" id="learn-card"><div id="learn-body" class="mut">Loading…</div></div>
 <div class="card" id="bots-card"><h3>Trading bots</h3><div id="bots-body"><p class="mut">Loading…</p></div></div>
 <div class="card" id="daily-card"><div id="daily-body"><p class="mut">Loading…</p></div></div>
-<div class="card" id="calendar-card"><h3>Economic calendar</h3>
-<p class="about" style="margin-top:0">Jobless claims every week, inflation, jobs and retail sales every month, growth every quarter and eight rate decisions a year. Each has a forecast, and prices move on the <b>surprise</b>, how far the figure lands from it.</p>
+<div class="card" id="calendar-card"><h3>Economic calendar<a class="lrn-help" href="/learn?l=data-releases" title="The lesson on jobs, GDP, PMI and retail sales">?</a></h3>
 <div id="cal-rate" class="notice-box"></div>
 <div class="cal-nav"><button id="cal-prev" aria-label="Previous month">&lsaquo; Previous</button><h3 id="cal-title"></h3><button id="cal-next" aria-label="Next month">Next &rsaquo;</button><button id="cal-today">Today</button></div>
 <p class="hint" id="cal-note">A game day lasts 30 real minutes. Each day shows the time it starts; click one for its details.</p>
@@ -508,9 +516,11 @@ if(['/holdings','/portfolio','/history','/leaders','/social','/profile','/shop',
 else if(mt=path.match(/^\/stock\/([^/]+)$/)){page='stock';pageArg=decodeURIComponent(mt[1]).toUpperCase()}
 else if(mt=path.match(/^\/player\/([^/]+)$/)){page='player';pageArg=decodeURIComponent(mt[1])}
 document.body.className='page-'+page;
-document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.page===page||(page==='player'&&a.dataset.page==='leaders')||(page==='stock'&&a.dataset.page==='market')));
+// the seven tabs: a stock or the calendar lights Market, holdings and history Portfolio, a player Leaders, the bots Profile (the shop lights its header button)
+const TOP={stock:'market',calendar:'market',holdings:'portfolio',history:'portfolio',player:'leaders',bots:'profile'},topTab=TOP[page]||page;
+document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.page===topTab||a.dataset.page===page));
+document.querySelectorAll('.subnav a').forEach(a=>a.classList.toggle('on',a.dataset.page===page));
 const PHONE=matchMedia('(max-width:760px)').matches;
-if(PHONE){const cur=document.querySelector('#nav a.on');if(cur)cur.scrollIntoView({inline:'center',block:'nearest'})}
 // the side panels fold; the news wire (the first) is closed until the player opens it, and stays as they left it
 document.querySelectorAll('aside .card').forEach((c,i)=>{c.classList.add('fold');if(i===0?!lsGet('ms_news_open',false):PHONE)c.classList.add('shut');
  c.querySelector('h3').addEventListener('click',()=>{c.classList.toggle('shut');if(i===0)lsSet('ms_news_open',!c.classList.contains('shut'))})});
@@ -534,6 +544,7 @@ function signed(v,d=2){const r=Number(Number(v).toFixed(d));return(r>0?'+':r<0?'
 const tinyD=v=>v&&Math.abs(v)<0.01?4:2;
 const clock=t=>new Date(t*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 const stamp=t=>new Date(t*1000).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+function durS(s){s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+m+'m':m?m+'m '+(s%60)+'s':(s%60)+'s'}
 function dur(s){
  // "4 hrs, 12 minutes, 9 seconds" (never "252m 09s"); units that are zero at the front are left out
  s=Math.max(0,Math.floor(s));const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),sec=s%60;
@@ -759,8 +770,8 @@ function renderHeader(){
   if(low)lb.innerHTML='<span><b>You are nearly out of MB.</b> It happens to every trader while learning. Close your positions, then take the free restart, or top up in the shop.</span><span class="bar" style="margin:0"><button data-shop="closeall">Close all positions</button><button class="buy" data-shop="restart">Free restart</button><a href="/shop">Shop</a><a href="/learn">Lessons on risk</a><button data-shop="lowhide" aria-label="Hide this message">&times;</button></span>'}
  const mk=S.market||{phase:'open',changes_in:null},ph=mk.phase||'open';
  const left=mk.changes_in===null||mk.changes_in===undefined?null:Math.max(0,Math.round(mk.changes_in-(Date.now()-S.market_at)/1000));
- const tail=left===null?'':ph==='pre'?' · opens in '+dur(left):ph==='open'?' · after-hours in '+dur(left):' · pre-market in '+dur(left);
- setText($('mkt'),PHASE_NAME[ph]+tail,ph==='open'?'':ph);
+ const fmt=PHONE?durS:dur,tail=left===null?'':ph==='pre'?' · opens in '+fmt(left):ph==='open'?' · after-hours in '+fmt(left):' · pre-market in '+fmt(left);
+ setText($('mkt'),(PHONE&&ph==='open'?'Open':PHASE_NAME[ph])+tail,ph==='open'?'':ph);
  const bn=$('session-banner');
  if(ph==='open'||(page!=='market'&&page!=='stock')){if(bn.style.display!=='none')bn.style.display='none'}   // the chip in the header says it on every other page
  else{bn.className=ph;bn.style.display='block';
@@ -880,10 +891,10 @@ function renderHoldings(){
   seen.add(h.ticker);let tr=holdEls[h.ticker];
   if(!tr){tr=holdEls[h.ticker]=document.createElement('tr');tr.dataset.k=h.ticker;
    const st=m.byT[h.ticker];
-   tr.innerHTML=`<td><div class="tick-cell"><span class="tick-main"><span class="tk">${esc(h.ticker)}</span><span class="nm">${esc(st?.name||'')}</span></span></div></td><td class="c-side"></td><td class="c-sh"></td><td class="c-avg"></td><td class="c-px"></td><td class="c-val"></td><td class="c-div"></td><td class="c-pnl"></td><td class="c-tp"></td><td class="c-sl"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;body.appendChild(tr)}
+   tr.innerHTML=`<td><div class="tick-cell"><span class="tick-main"><span class="tk">${esc(h.ticker)}</span><span class="nm">${esc(st?.name||'')}</span></span></div></td><td class="c-side"></td><td class="c-sh"></td><td class="c-avg"></td><td class="c-px"></td><td class="c-val"></td><td class="c-pnl"></td><td class="c-tp"></td><td class="c-sl"></td><td><div class="hold-act"><button class="buy" data-act="buy">Buy</button><button class="sell" data-act="sell">Sell</button></div></td>`;body.appendChild(tr)}
   const c=cls(Number(h.pnl.toFixed(2)));
   setText(tr.querySelector('.c-side'),(h.side==='short'?'SHORT':'Long')+(h.lev?' '+h.lev+'x':''),'c-side '+(h.side==='short'?'dn':''));setText(tr.querySelector('.c-sh'),numText(h.shares,4));setText(tr.querySelector('.c-avg'),priceText(h.avg));
-  setText(tr.querySelector('.c-px'),priceText(h.price));setText(tr.querySelector('.c-val'),numText(h.value)+' MB');setText(tr.querySelector('.c-div'),h.div?signed(h.div)+' MB':'-');
+  setText(tr.querySelector('.c-px'),priceText(h.price));setText(tr.querySelector('.c-val'),numText(h.value)+' MB');
   setText(tr.querySelector('.c-pnl'),signed(h.pnl)+' MB ('+pc(h.pct)+')','c-pnl '+c);
   setText(tr.querySelector('.hold-act .buy'),h.side==='short'?'Cover':'Buy');setText(tr.querySelector('.hold-act .sell'),h.side==='long'?'Sell':'Short');
   drawExits(tr,h)}
@@ -926,7 +937,7 @@ function drawOptions(){
  if(box._k!==key){box._k=key;
   const ck=K=>numText(K,Math.abs(K)<1?4:2),side=(kind,p,K)=>[`<td class="mut ${p}-st" data-opt-pick="${kind}" data-k="${K}"></td>`,`<td class="${p}-bid" data-opt-pick="${kind}" data-k="${K}"></td>`,`<td class="${p}-ask" data-opt-pick="${kind}" data-k="${K}"><button data-opt-pick="${kind}" data-k="${K}"></button></td>`];
   const a0=$('opt-n');if(a0)optKeep={v:a0.value,f:document.activeElement===a0};     // (a rebuild keeps what is being typed)
-  setHtml(box,`<p class="hint" style="margin-top:0">A <b>call</b> pays what the price ends above the strike at expiry, a <b>put</b> what it ends below. <b>One contract is on 100 shares</b> and prices are per share, so a contract costs 100 times its price; the most you can lose is what you pay. You buy whole contracts at the ask and can sell them back at the bid until expiry; at expiry they settle in cash by themselves (European style). Prices move with the stock every second (green up, red down). <b>Click a call or a put</b> to see all its Greeks.</p>
+  setHtml(box,`<p class="hint" style="margin-top:0">A contract is 100 shares: you buy at the ask, sell back at the bid, and the most you can lose is what you pay. Click a call or a put for its Greeks.<a class="lrn-help" href="/learn?l=options-basics" title="The lesson on calls, puts, strike and expiry">?</a></p>
   <div class="bar" id="opt-exps">${c.expiries.map(e=>`<button class="chip" data-opt-exp="${e}"><span class="o-l"></span> <span class="mut o-iv"></span></button>`).join('')}</div><div class="hint" id="opt-info"></div>
   <div class="bar"><span class="mut">Show</span>${Object.entries(OPT_COLS).map(([k,v])=>`<button class="chip ${k===optCol?'on':''}" data-opt-col="${k}">${v}</button>`).join('')}</div>
   <div style="overflow-x:auto"><table class="opt-chain"><thead><tr><th colspan="3">Calls</th><th class="k">Strike</th><th colspan="3">Puts</th></tr><tr><th>${OPT_COLS[optCol]}</th><th>Bid</th><th>Ask (buy)</th><th class="k"></th><th>Bid</th><th>Ask (buy)</th><th>${OPT_COLS[optCol]}</th></tr></thead><tbody>`
@@ -938,8 +949,8 @@ function drawOptions(){
   bt.querySelector('.o-l').textContent=optLeft(e);bt.querySelector('.o-iv').textContent='IV '+(c.term[i]*100).toFixed(0)+'%'});
  const T=Math.max(0,c.exp-c.now)/(365*1800),move=c.forward*c.iv*Math.sqrt(T);
  setHtml($('opt-info'),`Price <b>${pxText(c.price)}</b> · expected at expiry <b>${pxText(c.forward)}</b> · implied volatility <b>${(c.iv*100).toFixed(1)}%</b> a game year · the options expect a move of about <b>±${pxText(move)}</b> (±${(move/c.price*100).toFixed(1)}%) by expiry`
-  +(c.earnings?` · <span class="up">earnings are due before this expiry</span>: the prices include a bigger move, which goes once the report is out`:'')
-  +(c.div?` · a dividend of ${numText(c.div,4)} MB goes ex before expiry (the price drops by it), so calls are cheaper and puts dearer`:''));
+  +(c.earnings?` · <span class="up">earnings are due before this expiry</span>`:'')
+  +(c.div?` · a dividend of ${numText(c.div,4)} MB goes ex before expiry`:''));
  const px=c.price,rows=c.rows;let below=null;for(const r of rows)if(r.K<=px)below=r.K;
  document.querySelectorAll('#opt-box .opt-chain tbody tr').forEach(tr=>{const K=Number(tr.dataset.k),r=rows.find(x=>x.K===K);if(!r)return;
   for(const[kind,p]of[['call','c'],['put','p']]){const q=r[kind],itm=kind==='call'?K<px:K>px,on=!!optSel&&optSel.kind===kind&&Math.abs(optSel.K-K)<1e-9;
@@ -984,11 +995,11 @@ document.addEventListener('pointermove',e=>{const sv=e.target.closest&&e.target.
  const r=sv.getBoundingClientRect(),vb=sv.viewBox.baseVal,x=(e.clientX-r.left)/r.width*vb.width,L=Number(sv.dataset.l),pw=Number(sv.dataset.pw);
  const f=(x-L)/pw;const nf=f<0||f>1?null:f;if(nf!==payPtr){payPtr=nf;drawTicket()}});
 const OPT_GREEKS=[
- ['delta','Delta',q=>q.delta.toFixed(3),q=>`moves like ${signed(q.delta*OPT_X,1)} shares`,'How much the option moves for a 1 MB move in the stock: a call between 0 and 1, a put between 0 and −1. Also roughly the chance of finishing in the money.'],
- ['gamma','Gamma',q=>q.gamma.toFixed(4),q=>`delta ${signed(q.gamma*OPT_X,2)} shares per 1 MB`,'How much delta changes for a 1 MB move. Highest at the money and near expiry, where an option swings from worthless to worth something fastest.'],
- ['theta','Theta',q=>signed(q.theta,3),q=>`${signed(q.theta*OPT_X)} MB a game day`,'What the option loses in a game day (30 minutes) if nothing else changes: time decay. It speeds up as expiry gets close.'],
- ['vega','Vega',q=>q.vega.toFixed(3),q=>`${signed(q.vega*OPT_X)} MB per IV point`,'What it gains if implied volatility rises one point. Bigger for longer expiries; after earnings volatility falls back, and so do the prices (the volatility crush).'],
- ['rho','Rho',q=>signed(q.rho,3),q=>`${signed(q.rho*OPT_X)} MB per point`,'What it gains if the stock\'s expected growth rate rises one point. Calls gain, puts lose; small except for long expiries.']];
+ ['delta','Delta',q=>q.delta.toFixed(3),q=>`moves like ${signed(q.delta*OPT_X,1)} shares`],
+ ['gamma','Gamma',q=>q.gamma.toFixed(4),q=>`delta ${signed(q.gamma*OPT_X,2)} shares per 1 MB`],
+ ['theta','Theta',q=>signed(q.theta,3),q=>`${signed(q.theta*OPT_X)} MB a game day`],
+ ['vega','Vega',q=>q.vega.toFixed(3),q=>`${signed(q.vega*OPT_X)} MB per IV point`],
+ ['rho','Rho',q=>signed(q.rho,3),q=>`${signed(q.rho*OPT_X)} MB per point`]];
 function drawTicket(){const el=$('opt-ticket'),c=optChain;if(!el||!c||c.error)return;
  const r=optSel&&c.rows.find(x=>Math.abs(x.K-optSel.K)<1e-9);
  if(!r){if(el._on){setHtml(el,'');el._on=false}return}
@@ -997,8 +1008,8 @@ function drawTicket(){const el=$('opt-ticket'),c=optChain;if(!el||!c||c.error)re
   const F=(l,id)=>`<div><small>${l}</small><strong id="${id}"></strong></div>`;
   setHtml(el,`<div class="opt-buy"><div class="bar" style="justify-content:space-between;margin:0"><b id="ot-name"></b><button data-opt-close aria-label="Close the contract details">&times;</button></div>
   <div class="opt-figs">${F('Bid','ot-bid')+F('Ask','ot-ask')+F('Value','ot-mid')+F('A contract','ot-each')+F('IV','ot-iv')+F('Chance ITM','ot-itm')+F('Breakeven','ot-be')+F('Open interest','ot-oi')}</div>
-  <h3 class="sp" style="margin:10px 0 4px">The Greeks</h3><div style="overflow-x:auto"><table class="opt-greeks"><thead><tr><th>Greek</th><th>A share</th><th>One contract</th><th>What it means</th></tr></thead><tbody>
-  ${OPT_GREEKS.map(g=>`<tr><td><b>${g[1]}</b></td><td class="og-v" data-g="${g[0]}"></td><td class="og-c" data-g="${g[0]}"></td><td class="hint">${g[4]}</td></tr>`).join('')}</tbody></table></div>
+  <h3 class="sp" style="margin:10px 0 4px">The Greeks<a class="lrn-help" href="/learn?l=greeks" title="The lesson on the Greeks">?</a></h3><div style="overflow-x:auto"><table class="opt-greeks"><thead><tr><th>Greek</th><th>A share</th><th>One contract</th></tr></thead><tbody>
+  ${OPT_GREEKS.map(g=>`<tr><td><b>${g[1]}</b></td><td class="og-v" data-g="${g[0]}"></td><td class="og-c" data-g="${g[0]}"></td></tr>`).join('')}</tbody></table></div>
   <div id="ot-pay"></div>
   <div class="bar" style="margin:0"><input id="opt-n" class="amt-input" type="number" min="1" step="1" placeholder="Contracts" aria-label="Number of contracts to buy (100 shares each)"><button class="buy" id="opt-go">Buy</button><span class="mut" id="ot-cost"></span></div></div>`);
   const a1=$('opt-n');if(optKeep){a1.value=optKeep.v;if(optKeep.f)a1.focus();optKeep=null}}
@@ -1006,19 +1017,19 @@ function drawTicket(){const el=$('opt-ticket'),c=optChain;if(!el||!c||c.error)re
  flashSet($('ot-bid'),q.bid,opx(q.bid));flashSet($('ot-ask'),q.ask,opx(q.ask));flashSet($('ot-mid'),q.mid,opx(q.mid));flashSet($('ot-each'),each,numText(each)+' MB');
  $('ot-iv').textContent=(q.iv*100).toFixed(1)+'%';$('ot-itm').textContent=(q.itm*100).toFixed(0)+'%';$('ot-be').textContent=pxText(be);$('ot-oi').textContent=optN(q.oi)+(q.oi===1?' contract':' contracts');
  for(const g of OPT_GREEKS){el.querySelector(`.og-v[data-g="${g[0]}"]`).textContent=g[2](q);el.querySelector(`.og-c[data-g="${g[0]}"]`).textContent=g[3](q)}
- setHtml($('ot-pay'),payoffSvg(kind,r.K,q.ask,c.price,move)+`<p class="hint" style="margin:0">Profit or loss at expiry for one contract: it pays 100 times what the price ends ${kind==='call'?'above':'below'} ${pxText(r.K)}, and makes money past <b>${pxText(be)}</b> (the strike ${kind==='call'?'plus':'less'} what you pay a share).</p>`);
+ setHtml($('ot-pay'),payoffSvg(kind,r.K,q.ask,c.price,move));
  const n=Number(($('opt-n')||{}).value),fee=0.001;
  setHtml($('ot-cost'),n>=1&&Number.isInteger(n)?`${numText(n,0)} × 100 × ${opx(q.ask)} = <b>${numText(n*each)} MB</b> (+${numText(n*each*fee)} fee)`:'')}
 const OPT_HEAD='<th>Contract</th><th>Contracts</th><th>Cost</th><th>Worth now (bid)</th><th>P/L</th><th>Delta</th><th>Theta a day</th><th></th>';
 function drawOptTable(el,list,title,note){if(!el)return;
  const key=list.map(o=>o.id+(o.contracts>1+1e-9?'+':'')).join(',');
- if(el._k!==key){el._k=key;setHtml(el,list.length?`${title}<div style="overflow-x:auto"><table class="opt-pos"><thead><tr>${OPT_HEAD}</tr></thead><tbody>${list.map(o=>`<tr data-oid="${o.id}"><td><b>${esc(o.tk)}</b> <span class="o-n"></span></td><td class="o-q"></td><td class="o-c"></td><td class="o-v"></td><td class="o-p"></td><td class="o-d" title="Moves like this many shares"></td><td class="o-t" title="What time takes from it in a game day"></td><td class="hold-act">${o.contracts>1+1e-9?`<button class="sell" data-opt-sell="${o.id}" data-c="1">Sell 1</button> <button class="sell" data-opt-sell="${o.id}" data-f="1">Sell all</button>`:`<button class="sell" data-opt-sell="${o.id}" data-f="1">Sell</button>`}</td></tr>`).join('')}</tbody></table></div>${note}`:'')}
+ if(el._k!==key){el._k=key;setHtml(el,list.length?`${title}<div style="overflow-x:auto"><table class="opt-pos"><thead><tr>${OPT_HEAD}</tr></thead><tbody>${list.map(o=>`<tr data-oid="${o.id}"><td><b>${esc(o.tk)}</b> <span class="o-n"></span></td><td class="o-q"></td><td class="o-c"></td><td class="o-v"></td><td class="o-p"></td><td class="o-d"></td><td class="o-t"></td><td class="hold-act">${o.contracts>1+1e-9?`<button class="sell" data-opt-sell="${o.id}" data-c="1">Sell 1</button> <button class="sell" data-opt-sell="${o.id}" data-f="1">Sell all</button>`:`<button class="sell" data-opt-sell="${o.id}" data-f="1">Sell</button>`}</td></tr>`).join('')}</tbody></table></div>${note}`:'')}
  for(const o of list){const tr=el.querySelector(`tr[data-oid="${o.id}"]`);if(!tr)continue;
   const set=(c,t,k)=>{const x=tr.querySelector(c);if(x.textContent!==t)x.textContent=t;if(k!==undefined)x.className=c.slice(1)+' '+k};
   set('.o-n',optName(o.kind,o.K,o.exp));set('.o-q',optN(o.contracts!==undefined?o.contracts:o.qty/OPT_X));set('.o-c',numText(o.cost)+' MB');flashSet(tr.querySelector('.o-v'),o.value,numText(o.value)+' MB');
   set('.o-p',signed(o.pnl)+' MB',cls(o.pnl));set('.o-d',signed(o.pos_delta||0,1));set('.o-t',signed(o.pos_theta||0)+' MB',cls(o.pos_theta||0))}}
 function drawMyOpts(){drawOptTable($('opt-mine'),(S.opts||[]).filter(o=>o.tk===selectedTicker),`<h3 class="sp">Your options on ${esc(selectedTicker)}</h3>`,'')}
-function drawHoldOpts(){drawOptTable($('hold-opts'),S.opts||[],'<h3 class="sp">Options</h3>','<p class="hint">A contract is on 100 shares. Delta is how many shares each position moves like; theta what time takes from it in a game day. They settle in cash at expiry by themselves.</p>')}
+function drawHoldOpts(){drawOptTable($('hold-opts'),S.opts||[],'<h3 class="sp">Options</h3>','<p class="hint">Contracts settle in cash at expiry by themselves.<a class="lrn-help" href="/learn?l=greeks" title="The lesson on the Greeks">?</a></p>')}
 document.addEventListener('click',async e=>{
  const pick=e.target.closest('[data-opt-pick]'),ex=e.target.closest('[data-opt-exp]'),col=e.target.closest('[data-opt-col]'),sell=e.target.closest('[data-opt-sell]');
  if(ex){optExp=Number(ex.dataset.optExp);optSel=null;loadChain(true);return}
@@ -1066,25 +1077,25 @@ function buildDetail(){
  $('detail-content').className='';repAll=false;logN=12;
  $('detail-content').innerHTML=`<div class="detail-head"><div><h2><span id="d-name"></span> <span id="d-star" class="star" style="display:inline-block;vertical-align:middle"></span><span id="d-badges"></span></h2><div class="detail-sub" id="d-sub"></div><div class="detail-price"><span id="d-price"></span><span class="detail-move" id="d-move"></span></div></div><div class="periods">${PERIODS.map(p=>`<button class="chip ${p[0]===chartPeriod?'active':''}" data-p="${p[0]}">${p[1]}</button>`).join('')}</div></div>
 <div class="guest-cta" id="d-cta"><span>You are watching live. Create an account to trade this stock.</span><span><button class="buy" id="d-signup">Create an account</button> <button id="d-signin">Sign in</button></span></div>
-<div class="detail-actions"><span class="chipset"><span class="mut">Buy %</span><span id="detail-bchips"></span></span><span class="chipset"><span class="mut">Sell %</span><span id="detail-schips"></span></span><span class="chipset"><span class="mut">or</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB amount" aria-label="Amount in MB"><input class="amt-input" id="d-shares" type="number" min="0" step="any" placeholder="shares" aria-label="Number of shares"></span><a id="d-lev-lock" class="chip" href="/shop" hidden title="Leverage up to 10x is a Pro tool: your MB buy or short several times as much, and losses grow exactly as much as gains.">1x · Pro unlocks leverage</a><select id="d-lev" class="lev-sel" aria-label="Leverage" title="Leverage (Pro): your MB buy or short this many times as much. Losses grow exactly as much as gains, interest is charged on what is borrowed, and the position closes by itself if it loses half its margin."><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select><button class="buy" id="d-buy">Buy</button><button class="sell" id="d-sell">Sell</button></div>
+<div class="detail-actions"><span class="chipset"><span class="mut">Buy %</span><span id="detail-bchips"></span></span><span class="chipset"><span class="mut">Sell %</span><span id="detail-schips"></span></span><span class="chipset"><span class="mut">or</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB amount" aria-label="Amount in MB"><input class="amt-input" id="d-shares" type="number" min="0" step="any" placeholder="shares" aria-label="Number of shares"></span><a id="d-lev-lock" class="chip" href="/shop" hidden title="Leverage up to 10x: a Pro tool">1x · Pro unlocks leverage</a><select id="d-lev" class="lev-sel" aria-label="Leverage" title="Leverage (Pro): interest is charged on what is borrowed, and the position closes by itself if it loses half its margin."><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="5">5x</option><option value="10">10x</option></select><button class="buy" id="d-buy">Buy</button><button class="sell" id="d-sell">Sell</button></div>
 <div class="limits mut" id="d-limits"></div>
 <div class="position" id="d-pos" style="display:none"></div>
-<div class="dtabs" id="d-tabs"><button class="chip on" data-dtab="chart">Chart</button><button class="chip" data-dtab="options" title="Calls and puts: the Derivatives unit of the course explains them">Options</button></div>
+<div class="dtabs" id="d-tabs"><button class="chip on" data-dtab="chart">Chart</button><button class="chip" data-dtab="options">Options</button></div>
 <div id="opt-box"></div>
 <div id="chart-box"><div class="ind-bar" id="ind-bar"></div>
 <div class="ind-cfg" id="ind-cfg" hidden></div><div class="ind-pop" id="ind-pop" hidden><input id="ind-q" type="search" placeholder="Search indicators: RSI, moving average, Fibonacci, volume…" aria-label="Search indicators" autocomplete="off"><div class="ind-tabs" id="ind-tabs"><button class="chip" data-ind-filter="all">All</button><button class="chip" data-ind-filter="free">Free</button><button class="chip" data-ind-filter="pro">Pro</button><button class="chip" data-ind-filter="on">On</button></div><div id="ind-list"></div></div>
 <div class="xread" id="xread" aria-live="off"></div><div class="chart-wrap" id="chart-wrap"><div class="svgslot"></div><div class="xh" id="xh" hidden><i class="xh-v"></i><i class="xh-h"></i><b class="xh-p"></b><b class="xh-t"></b></div><div class="draw-tools" id="draw-tools"></div></div>
 <div class="chart-resize" id="chart-resize" title="Drag to make the chart taller or shorter"><span></span></div>
 <div class="chart-controls"><select id="c-type" aria-label="Chart type"></select><button class="chip" id="c-log" title="Logarithmic price scale: equal percentage moves look the same size">Log</button><button class="chip" id="c-trades" title="Your buys and sells on this stock, as arrows on the chart">My trades</button><button id="z-in">+ Zoom in</button><button id="z-out">− Zoom out</button><button id="z-reset">Reset view</button><button id="z-fit" hidden title="Fit the price scale to the candles again (or double-click the chart)">Fit prices</button><button id="z-full">⤢ Full screen</button><span class="mut" id="chart-info"></span></div></div>
-<details class="orders" id="d-orders"><summary>Orders: buy or sell for you when the price gets there<a class="lrn-help" href="/learn?l=order-types" title="The lesson on market, limit, stop and stop-limit orders" onclick="event.stopPropagation()">?</a></summary>
+<details class="orders" id="d-orders"><summary>Orders<a class="lrn-help" href="/learn?l=order-types" title="The lesson on market, limit, stop and stop-limit orders" onclick="event.stopPropagation()">?</a></summary>
 <div class="ticket"><select id="o-kind" aria-label="Order type"><option value="limit_buy">Limit buy: when it falls to</option><option value="limit_sell">Limit sell: when it rises to</option><option value="stop_loss">Stop-loss: cut a loss at</option><option value="take_profit">Take-profit: sell at</option><option value="trailing_stop">Trailing stop: this % behind the price</option></select><input class="o-in" id="o-trigger" type="number" step="any" min="0" placeholder="trigger price" aria-label="Trigger price"><span class="lab">size</span><select id="o-pct" aria-label="Order size"><option value="0.25">25%</option><option value="0.5">50%</option><option value="1" selected>100%</option></select><span class="lab">or</span><input class="o-in" id="o-amount" type="number" step="any" min="0" placeholder="MB" aria-label="Order amount in MB"><button class="buy" id="o-place">Place order</button></div>
 <div class="ticket"><span class="lab">Bracket for your position<a class="lrn-help" href="/learn?l=brackets" title="The lesson on brackets: a stop-loss and a take-profit together" onclick="event.stopPropagation()">?</a></span><input class="o-in" id="b-tp" type="number" step="any" min="0" placeholder="take-profit at" aria-label="Take-profit price"><input class="o-in" id="b-sl" type="number" step="any" min="0" placeholder="stop-loss at" aria-label="Stop-loss price"><button id="b-place">Set bracket</button></div>
-<p class="hint">The server carries the order out for you, at the market price at that moment (a fast move can fill you beyond your trigger). Orders cost the same 0.1% fee as any trade and never move a price. A stop-loss or take-profit only closes your position; it never opens a new one. A bracket is a take-profit and a stop-loss that cancel each other.</p>
+<p class="hint">Fills at the market price when the trigger is reached (a fast move can fill past it) and costs the same 0.1% fee as any trade. A stop-loss or take-profit only closes a position.</p>
 <div id="o-list"></div></details>
-<details class="orders" id="d-risk"><summary>Position size and risk: how much to buy for the risk you choose<a class="lrn-help" href="/learn?l=position-sizing" title="The lesson on the 1% rule and sizing by risk" onclick="event.stopPropagation()">?</a></summary>
+<details class="orders" id="d-risk"><summary>Position size<a class="lrn-help" href="/learn?l=position-sizing" title="The lesson on the 1% rule and sizing by risk" onclick="event.stopPropagation()">?</a></summary>
 <div class="ticket"><span class="lab">Entry</span><input class="o-in" id="r-entry" type="number" step="any" min="0" placeholder="price now" aria-label="Entry price"><span class="lab">Stop-loss<a class="lrn-help" href="/learn?l=stop-placement" title="The lesson on where stops go" onclick="event.stopPropagation()">?</a></span><input class="o-in" id="r-stop" type="number" step="any" min="0" placeholder="stop price" aria-label="Stop-loss price"><span class="lab">Risk<a class="lrn-help" href="/learn?l=r-multiples" title="The lesson on R-multiples and reward to risk" onclick="event.stopPropagation()">?</a></span><select id="r-pct" aria-label="Risk per trade"><option value="0.005">0.5%</option><option value="0.01" selected>1%</option><option value="0.02">2%</option></select><span class="lab">of your equity · target</span><select id="r-rr" aria-label="Reward to risk"><option value="1.5">1.5R</option><option value="2" selected>2R</option><option value="3">3R</option></select></div>
 <div id="r-out" class="hint"></div><div class="bar"><button id="r-use" disabled>Fill in the trade and the bracket</button><span class="hint" id="r-atr"></span></div>
-<p class="hint">Professional traders size every position so that being wrong costs a small, fixed share of the account: put the stop where the idea is proved wrong (just past a support or resistance level), then buy only as much as that risk allows. A stop above the entry means a short.</p></details>
+</details>
 <h3 class="sp" id="d-about-h">About the company</h3><p id="d-desc" class="about"></p><div class="persona" id="d-persona"></div><small class="mut" id="d-note"></small>
 <div class="finance-grid" id="d-facts"></div>
 <div id="d-reports"></div><div id="d-log"></div>`;
@@ -1125,7 +1136,7 @@ function drawDelisted(){
  setText($('d-name'),`${D.name} \u00B7 ${selectedTicker}`);
  setHtml($('d-badges'),'<span class="badge b-new" style="color:var(--dn);border-color:var(--dn)">DELISTED</span>');
  setText($('d-sub'),(D.reason==='bankruptcy'?'Filed for bankruptcy':D.reason==='takeover'?'Taken over':'Withdrawn from the market')+' \u00B7 '+stamp(D.delisted_at));
- setText($('d-price'),priceText(D.final_price)+' MB');setText($('d-move'),'last price');
+ setText($('d-price'),priceText(D.final_price));setText($('d-move'),'last price');
  setText($('d-desc'),D.desc||'');
  const fin=D.financials||{},F=(l,v)=>`<div><small>${l}</small><strong>${v}</strong></div>`;
  setHtml($('d-facts'),F('Last price',priceText(D.final_price)+' MB')+(fin.shares_outstanding?F('Shares out.',sharesText(fin.shares_outstanding)):'')
@@ -1175,8 +1186,8 @@ function drawDetail(){
  setText($('d-name'),`${stock.name} \u00B7 ${stock.ticker}`);document.title=`${stock.ticker} \u00B7 ${stock.name} \u2014 Meme Street`;
  const on=watch.has(stock.ticker);setText($('d-star'),on?'★':'☆','star'+(on?' on':''));
  setHtml($('d-badges'),badgesHtml(stock));
- setText($('d-sub'),`${type} · ${stock.asset_type==='index'?'Index & ETF':(sector?.name||stock.sector)} · ${volWord(stock.vol)}: about ${(stock.vol*100).toFixed(0)}% a year, ${f(stock.beta,2)}x the market${stock.asset_type==='equity'?` · rated ${stock.rating} by the banks`:''}`);
- $('d-sub').title=`Volatility ${(stock.vol*100).toFixed(1)}% a year: how far it tends to move. Beta ${f(stock.beta,2)}: how much it moves with the market (1 = the same). A bank rating is the fictional banks' view of its balance sheet (see the Ratings lesson).`;
+ setHtml($('d-sub'),esc(`${type} · ${stock.asset_type==='index'?'Index & ETF':(sector?.name||stock.sector)} · ${volWord(stock.vol)}: about ${(stock.vol*100).toFixed(0)}% a year, ${f(stock.beta,2)}x the market${stock.asset_type==='equity'?` · rated ${stock.rating} by the banks`:''}`)+'<a class="lrn-help" href="/learn?l=volatility" title="The lesson on volatility">?</a>');
+ $('d-sub').title=`Volatility ${(stock.vol*100).toFixed(1)}% a year · beta ${f(stock.beta,2)}${stock.asset_type==='equity'?` · rated ${stock.rating}`:''}`;
  const lvs=$('d-lev'),lk=$('d-lev-lock');if(lvs&&lk){lvs.hidden=!S.pro;lk.hidden=!!S.pro}
  setText($('d-price'),priceText(stock.price));setText($('d-move'),pc(stock.chg)+' 30m','detail-move '+(stock.chg>=0?'up':'dn'));
  setText($('d-desc'),stock.desc+(stock.tracks?'  Tracks: '+stock.tracks+'.':''));
@@ -1202,7 +1213,7 @@ function drawHoldings(){
  const H=company.holdings,lev=H.length===1&&Math.abs(H[0].weight-1)>1e-9,top=Math.max(...H.map(h=>Math.abs(h.weight)),1e-9);
  const rows=H.map((h,i)=>{const x=S&&S.byT[h.ticker];return `<tr data-go="${esc(h.ticker)}"><td class="mut">${i+1}</td><td><a href="/stock/${encodeURIComponent(h.ticker)}"><b>${esc(h.ticker)}</b> <span class="mut">${esc(h.name)}</span></a></td>`
   +`<td class="w"><span class="wbar"><i style="width:${(Math.abs(h.weight)/top*100).toFixed(1)}%"></i></span>${(h.weight*100).toFixed(Math.abs(h.weight)<0.1?2:1)}%</td><td>${x?priceText(x.price):'-'}</td><td class="${x?clsP(x.chg):''}">${x?pc(x.chg):'-'}</td></tr>`}).join('');
- setHtml($('d-log'),`<h3 class="sp">Holdings <span class="mut">(${H.length})</span></h3>`+(lev?`<p class="hint" style="margin-top:0">A leveraged product holds no shares itself: each day it moves ${numText(H[0].weight,0)} times what it tracks.</p>`:'')
+ setHtml($('d-log'),`<h3 class="sp">Holdings <span class="mut">(${H.length})</span></h3>`+(lev?`<p class="hint" style="margin-top:0">Moves ${numText(H[0].weight,0)} times what it tracks, each day.<a class="lrn-help" href="/learn?l=other-products" title="The lesson on leveraged funds">?</a></p>`:'')
   +`<div style="overflow-x:auto"><table class="holdings-tbl"><thead><tr><th>#</th><th>Ticker &middot; Company</th><th>Weight</th><th>Price</th><th>30m</th></tr></thead><tbody>${rows}</tbody></table></div>`)}
 document.addEventListener('click',e=>{const tr=e.target.closest('.holdings-tbl tr[data-go]');if(tr&&!e.target.closest('a'))location.href='/stock/'+encodeURIComponent(tr.dataset.go)});
 function drawCompany(){
@@ -1489,7 +1500,6 @@ function drawShop(){
  const buyBtn=x=>d.guest?'<button class="buy" data-shop-join>Create an account</button>':`<button class="buy" data-sku="${esc(x.sku)}" ${d.selling?'':'disabled'}>Buy</button>`;
  const left=dealList(),mbd=left.filter(x=>x.kind==='package'),pd=left.filter(x=>x.kind!=='package');
  setHtml($('shop-deal'),dealOn()?`<div class="deal-strip"><span><span class="deal-tag">NEW LAUNCH DEAL</span> ${[mbd.length?mbd.map(x=>`<b>${numText(x.mb,0)} MB</b> for <b>${esc(x.price)}</b>`).join(' or '):'',pd.length?`<b>half price</b> on your first month of ${pd.map(x=>x.kind==='pro'?'Pro':'Expert').join(' or ')}`:''].filter(Boolean).join(', and ')}, in your first ${shopData.deal_days} days (${dealLeft()}).</span><button class="buy" data-deal-open>See the deal</button></div>`:'');
- if(dealOn()&&!sessGet('ms_deal_seen')){sessSet('ms_deal_seen',1);dealPop()}
  setHtml($('shop-pkgs'),c.packages.map(x=>`<div class="pkg"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${esc(x.per_1000)} per 1,000 MB</small>${buyBtn(x)}</div>`).join(''));
  const passes=list=>`<div class="pkg-grid">${list.map(x=>`<div class="pkg"><b>${x.renews?'Monthly':x.days===365?'Yearly':x.days+' days'}</b><span class="price">${esc(x.price)}<small class="per"> / ${passLen(x)}</small></span><small>${x.renews?'Renews monthly until you cancel.':`One payment for ${x.days===365?'12 months':x.days+' days'}.`}</small>${buyBtn(x)}</div>`).join('')}</div>`;
  const status=(kind,until,extra)=>{const sb=(d.subs||{})[kind],T=kind==='pro'?'Pro':'Expert';
@@ -1501,8 +1511,8 @@ function drawShop(){
  setHtml($('shop-expert'),`<p class="hint" style="margin-top:0">For traders who want to automate and test their ideas. Expert includes everything in Pro.</p><ul class="hint">${c.expert_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
   +status('expert',d.expert_until,d.expert?' Your bots are on the <a href="/bots">Bots</a> page.':'')+passes(c.expert));
  setHtml($('shop-orders'),d.orders.length?'<tr><th>When</th><th>What</th><th>Price</th><th>Status</th></tr>'+d.orders.map(o=>`<tr><td>${stamp(o.at)}</td><td>${o.kind==='package'?numText(o.mb,0)+' MB':(o.kind==='pro'?'Pro':'Expert')+', '+(o.days===365?'1 year':o.days+' days')}</td><td>${esc(o.price)}</td><td>${esc(ORDER_STATUS[o.status]||o.status)}</td></tr>`).join(''):'<tr><td class="mut" style="text-align:left">No purchases.</td></tr>')}
-// the New Launch Deal (economy.LAUNCH_DEALS): for an account's first `launch_deal_days` (7) days, once; shown as a strip in the shop and as a
-// pop-up the first time the shop opens in a visit. Each deal says how much less per MB it is than the regular pack of
+// the New Launch Deal (economy.LAUNCH_DEALS): for an account's first `launch_deal_days` (7) days, once; shown as a strip in the shop whose
+// *See the deal* opens the pop-up (it no longer opens by itself over the shop, 2026-11-08). Each deal says how much less per MB it is than the regular pack of
 // about the same size.
 const sessGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},sessSet=(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}};
 const dealOn=()=>!!(shopData&&shopData.deal_until&&shopData.selling&&dealList().length&&shopData.deal_until>engineNow());
