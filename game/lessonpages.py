@@ -41,7 +41,7 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every acc
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
-        'Position size calculator</a> · <a href="/about">About Meme Street</a>'
+        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
 
@@ -86,6 +86,47 @@ o.innerHTML=h}
 document.getElementById("f").addEventListener("input",go);go()})();
 </script>"""
 
+RR_PATH = "/tools/risk-reward-calculator"
+RR_TITLE = "Risk reward ratio calculator: reward to risk and the win rate you need | Meme Street"
+RR_DESC = ("Free risk reward ratio calculator. Enter your entry, stop and target and it gives the reward to risk ratio, "
+           "the break-even win rate, and the profit or loss in R. Works for long and short trades.")
+RR_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> › Tools</p><h1>Risk reward ratio calculator</h1>
+<p class="lead">Reward to risk = |target &minus; entry| &divide; |entry &minus; stop|. A long at 100 with a stop at 95 and a
+target at 110 risks 5 to make 10, which is 2 to 1. Enter your three prices and the calculator gives the ratio and the win
+rate you need to break even before costs.</p>
+<form id="f" class="try" onsubmit="return false">
+<p><label>Entry price <input id="entry" type="number" min="0" step="any" value="100"></label>
+<label>Stop price <input id="stop" type="number" min="0" step="any" value="95"></label>
+<label>Target price <input id="target" type="number" min="0" step="any" value="110"></label></p>
+</form>
+<div id="out" class="box tip" aria-live="polite">Enter your prices above.</div>
+<noscript><p>This calculator needs JavaScript. The sum is: reward to risk = |target &minus; entry| &divide; |entry &minus; stop|,
+and the break-even win rate = 1 &divide; (1 + reward to risk).</p></noscript>
+<h2>How it works</h2>
+<p>Risk is the distance from entry to stop; reward is the distance from entry to target. Their ratio is the reward to risk.
+Measured in R (one R is the amount you risk), a stop-out is &minus;1R and a target hit at 2 to 1 is +2R.</p>
+<p>The win rate you need is 1 &divide; (1 + reward to risk), before costs. At 1 to 1 you must win half the time, at 2 to 1
+one trade in three, at 3 to 1 one in four. A higher ratio lets you be wrong more often, but a far target is also hit less
+often, so the ratio alone does not make a trade good.</p>
+<div class="box warn"><b>Watch out:</b> fees and gaps are not in the sum, so the real break-even win rate is a little higher.
+On Meme Street the fee is 0.1% on each side of a trade.</div>
+<p>Learn the idea in <a href="/lessons/r-multiples">R-multiples and reward to risk</a>, then work out how many shares to
+buy with the <a href="/tools/position-size-calculator">position size calculator</a>.</p>
+<script>
+(function(){var $=function(i){return document.getElementById(i)},o=$("out");
+function fmt(x){return x.toLocaleString("en-US",{maximumFractionDigits:2})}
+function go(){var e=+$("entry").value,s=+$("stop").value,t=+$("target").value;
+if(!(e>0&&s>0&&t>0)||e===s){o.textContent="Enter an entry, a stop and a target. The stop must differ from the entry.";return}
+var short=s>e;if(short?!(t<e):!(t>e)){o.textContent="For a "+(short?"short the target must be below":"long the target must be above")+" the entry.";return}
+var risk=Math.abs(e-s),rew=Math.abs(t-e),rr=rew/risk,be=100/(1+rr);
+o.innerHTML="<b>"+(short?"Short":"Long")+": "+fmt(rr)+" to 1 reward to risk.</b><br>Risk "+fmt(risk)+" per share ("+fmt(risk/e*100)
++"% of entry), reward "+fmt(rew)+" per share ("+fmt(rew/e*100)+"%).<br>Hit the target: +"+fmt(rr)+"R. Hit the stop: &minus;1R."
++"<br>Break-even win rate before costs: "+fmt(be)+"%."}
+document.getElementById("f").addEventListener("input",go);go()})();
+</script>"""
+
+RR_LINK = ('<div class="try">Try it: the <a href="/tools/risk-reward-calculator">free risk reward ratio calculator</a> '
+           "does this sum for you.</div>")
 CALC_LINK = ('<div class="try">Try it: the <a href="/tools/position-size-calculator">free position size calculator</a> '
              "does this sum for you.</div>")
 
@@ -179,7 +220,7 @@ class Lessons:
                             url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
                 f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
-                + body_html(x) + (CALC_LINK if lid == "position-sizing" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
 
     def calculator(self):
         """The free position size calculator (works without an account; the sum runs in the page)."""
@@ -195,6 +236,21 @@ class Lessons:
             "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
         return (HEAD.format(t=html.escape(CALC_TITLE), d=html.escape(CALC_DESC), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=css) + CALC_BODY + CTA + FOOT)
+
+    def risk_reward(self):
+        """The free risk reward ratio calculator (works without an account; the sum runs in the page)."""
+        url = self.site + RR_PATH
+        ld = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Risk reward ratio calculator",
+               "url": url, "description": RR_DESC, "applicationCategory": "FinanceApplication",
+               "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": "Risk reward ratio calculator", "item": url}]}]
+        css = CSS + "label{display:inline-block;margin:6px 14px 6px 0}input{display:block;margin-top:4px;width:11em;max-width:100%;" \
+            "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
+        return (HEAD.format(t=html.escape(RR_TITLE), d=html.escape(RR_DESC), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=css) + RR_BODY + CTA + FOOT)
 
     def hub(self):
         url = self.site + "/lessons"
@@ -214,7 +270,7 @@ class Lessons:
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade, free</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
-                + CTA + '<p class="try">Free tool: <a href="/tools/position-size-calculator">position size calculator</a></p>'
+                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a></p>'
                 + "".join(parts) + FOOT)
 
 
@@ -227,6 +283,8 @@ if __name__ == "__main__":
         assert "**" not in s and "<script>" not in s.split("</script>", 1)[1], x["id"]
     c = L.calculator()
     assert c.count("<h1>") == 1 and f'href="https://memestreet.net{CALC_PATH}"' in c and c.count("<script>") == 1
+    r = L.risk_reward()
+    assert r.count("<h1>") == 1 and f'href="https://memestreet.net{RR_PATH}"' in r and r.count("<script>") == 1
     assert 'href="/tools/position-size-calculator"' in L.page("position-sizing")
     assert L.page("nope") is None and L.hub().count("/lessons/") >= len(L.lessons)
     assert inline("**a** [b](/x) <i>") == '<b>a</b> <a href="/x">b</a> &lt;i&gt;'
