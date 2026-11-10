@@ -152,6 +152,17 @@ class ServerTests(unittest.TestCase):
         self.assertIn('rel="canonical" href="https://memestreet.net/tools/position-size-calculator"', body)
         self.assertIn('id="stop"', body)
 
+    def test_the_risk_reward_calculator_is_a_plain_page(self):
+        status, body, _ = http(self.srv, "/tools/risk-reward-calculator")
+        self.assertEqual(status, 200)
+        self.assertIn("<h1>Risk reward ratio calculator</h1>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/tools/risk-reward-calculator"', body)
+        self.assertIn('id="target"', body)
+        status, body, _ = http(self.srv, "/sitemap.xml")
+        self.assertIn("/tools/risk-reward-calculator</loc>", body)
+        status, body, _ = http(self.srv, "/lessons/r-multiples")
+        self.assertIn('href="/tools/risk-reward-calculator"', body)
+
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")
         self.assertEqual(status, 200)
