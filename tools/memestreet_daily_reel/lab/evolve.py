@@ -57,7 +57,7 @@ def main():
            "the current reel (v1) and as version 2 (v2), both posted as Trial Reels to non-followers. Lower skip rate (% leaving in "
            "the first 3 s) and longer average watch are better.\n\nScoreboard by version of the rules (skip %, watch seconds):\n"
            + json.dumps(S, indent=1) + "\n\nEach round's verdict (a version that lost was dropped; do not try its change again):\n" + tried +
-           f"\n\nThe rules to change (v1, the current winner):\n" + text +
+           "\n\nThe rules to change (v1, the current winner):\n" + text +
            f"\n\nMake the next version 2: change {CHANGES} things in the rules, a package most likely to cut skips and lengthen "
            "watching given these results (if a past version did better, you may bring back what it had). At least 2 of them must be "
            "VISIBLE, so a viewer can tell the two reels apart with the sound off: what the hook's acted scene does, how many story "
