@@ -194,7 +194,6 @@ button{font:inherit;background:#161b20;color:var(--txt);border:1px solid var(--l
 button:hover{background:#1f262c}button:disabled{opacity:.4;cursor:not-allowed}
 .buy{background:none;border-color:#3ad07a55;color:var(--up)}.buy:hover{background:var(--up);border-color:var(--up);color:#04140a}
 #gh-daily{background:var(--up);border-color:var(--up);color:#04140a;font-weight:700}
-.bot-tag{display:inline-block;margin-left:5px;padding:0 4px;border:1px solid var(--line);border-radius:3px;font-size:10px;line-height:14px;color:var(--mut);vertical-align:1px}
 .sell{background:none;border-color:#f25c5455;color:var(--dn)}.sell:hover{background:var(--dn);border-color:var(--dn);color:#1a0504}
 .detail-actions .buy{background:var(--up);border-color:var(--up);color:#04140a;font-weight:700}.detail-actions .sell{background:var(--dn);border-color:var(--dn);color:#1a0504;font-weight:700}
 .chip{border-radius:2px;padding:3px 10px;font-size:12px}
@@ -1344,8 +1343,7 @@ $('hist-csv').onclick=async()=>{
 let boardsData=null;const boardTab=Object.assign({ret:'day',pnl:'day'},lsGet('ms_board_tabs',{}));
 const boardKey=by=>boardTab[by]==='day'?(by==='ret'?'season':'day_pnl'):by;
 function nameHtml(name){return `<span class="pname">${esc(name)}</span>`}
-const BOT_TAG='<span class="bot-tag" title="A house bot: a computer trader that plays around the clock">bot</span>';   // (house bots tagged, 2026-11-10)
-const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${nameHtml(r.name,r.style)}</a>${r.bot?BOT_TAG:''}`;
+const nameLink=r=>`<a href="/player/${encodeURIComponent(r.name)}">${nameHtml(r.name,r.style)}</a>`;
 function drawBoards(){
  const b=boardsData;if(!b)return;const mine=b.mine||{};
  document.querySelectorAll('#leaders-card .lb').forEach(el=>{
@@ -1470,7 +1468,7 @@ function drawPlayer(){
  const res=d.public||d.me;
  const holdings=d.holdings;
  setHtml(box,`<h2 style="margin:0 0 6px">${esc(d.name)}</h2>
- <div><span class="pill">${d.public?'Public profile':'Private profile'}</span><span class="pill">${d.followers} follower${d.followers===1?'':'s'}</span>${d.me?'<span class="pill">This is you</span>':''}${d.bot?'<span class="pill" title="A computer trader that plays around the clock">House bot</span>':''}</div>
+ <div><span class="pill">${d.public?'Public profile':'Private profile'}</span><span class="pill">${d.followers} follower${d.followers===1?'':'s'}</span>${d.me?'<span class="pill">This is you</span>':''}</div>
  ${!d.me&&!guest?`<div class="bar" style="margin-top:10px"><button class="${d.following_them?'sell':'buy'}" id="pl-follow">${d.following_them?'Unfollow':'Follow'}</button></div>`:''}
  ${res&&d.season_ret!==undefined?`<div class="finance-grid"><div><small>Today</small><strong class="${clsP(d.season_ret)}">${pc(d.season_ret)}</strong></div><div><small>Return since joining</small><strong class="${clsP(d.alltime_ret)}">${pc(d.alltime_ret)}</strong></div><div><small>Rank today</small><strong>#${d.rank??'-'}</strong></div><div><small>Trades today</small><strong>${d.trades}</strong></div></div>`:'<p class="hint">This trader keeps their results private. You can see their badges.</p>'}
  ${res&&d.season_ret!==undefined?`<h3 class="sp">What they held</h3>${holdings?`<p class="hint">As of ${stamp(holdings.as_of)}, deliberately delayed by ${Math.round(d.holdings_delay/60)} minutes. Shown as a share of their account, never in MB.</p>`+`<table>${tbl(['Ticker','Side','Share of account'],holdings.positions.map(p=>`<tr><td><a href="/stock/${encodeURIComponent(p.ticker)}">${esc(p.ticker)}</a></td><td class="${p.side==='short'?'dn':''}">${p.side==='short'?'SHORT':'Long'}</td><td>${(p.weight*100).toFixed(1)}%</td></tr>`),'Nothing (all cash) at that time.')}</table>`:'<p class="hint">Not available yet: holdings only appear after the delay.</p>'}`:''}
