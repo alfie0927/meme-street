@@ -96,7 +96,7 @@ def add_pages(app):
     lessons = lessonpages.Lessons(site)
     # (pages with their own content; not /learn or /leaders, which are the game's page and empty without JavaScript,
     # nor /terms and /privacy, which are noindex)
-    public = ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH] + lessons.paths()
+    public = ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH, lessonpages.SL_PATH] + lessons.paths()
 
     @app.get("/robots.txt")
     async def robots():
@@ -151,6 +151,11 @@ def add_pages(app):
     async def risk_reward_calculator():
         """A free risk reward ratio calculator (lessonpages.py), for searches such as "risk reward ratio calculator"."""
         return HTMLResponse(lessons.risk_reward(), headers={"Cache-Control": "public, max-age=300"})
+
+    @app.get(lessonpages.SL_PATH)
+    async def stop_loss_calculator():
+        """A free stop loss calculator (lessonpages.py), for searches such as "stop loss calculator"."""
+        return HTMLResponse(lessons.stop_loss(), headers={"Cache-Control": "public, max-age=300"})
 
     @app.get("/lessons/{lesson_id}")
     async def lesson_page(lesson_id: str):
