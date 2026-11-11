@@ -136,7 +136,7 @@ CATEGORIES["Loop"] = ("SHORT LOOP (a test, the owner 2026-11-11): 7 to 12 second
                       "why' runs into the hook), and your device ends in the pose it began in. The address is never spoken: the caption "
                       "carries memestreet.net. A chart is optional.")
 KINDS["Loop"] = KINDS["Hard truth"]; LENGTH["Loop"] = (16, 30, False); ROTATION["1300"] += ["Loop", "Loop"]; ROTATION["1200"] += ["Hard truth"]
-SECONDS = {"Loop": (6, 12.5)}   # a format's length in seconds at the voice's pace, checked by the dry run (every other format: at most 120)
+SECONDS = {"Loop": (6, 12.5)}   # a format's length in seconds at the voice's pace, checked by the dry run (every other format: at most 60, the owner 2026-11-11)
 VIRAL_EVIDENCE = [
     ["37x", "It still looked bearish... but the candles told a different story."],
     ["6x", "It looked bullish, until the second test changed everything."],
@@ -651,7 +651,7 @@ RULES_ALL = """Rules:
 _GONE = ("- Something happens in every story scene", "- Cast literally", "- Every reel's hook is acted", "- Video (only when",
          "- Few cuts, like the owner's reference reels", "- Total spoken words 60 to 110", "- The first scene is a hook")
 RULES = "Rules:\n" + "".join(b for b in re.split(r"(?m)(?=^- )", RULES_ALL.split("Rules:\n", 1)[1]) if not b.startswith(_GONE)) + \
-    "- Length: 40 to 120 seconds (60 to 300 spoken words), as long as the story earns and no longer; every line earns its place.\n" \
+    "- Length: 35 to 60 seconds (50 to 150 spoken words), as long as the story earns and no longer; every line earns its place.\n" \
     "  No greeting, no \"in this video\". The first scene opens on the device; the last is the outro.\n"
 
 
@@ -760,7 +760,7 @@ def check(spec, facts, charts, category=None):
         nxt = re.split(r"(?<=[.?!])\s+", str(sc[1].get("vo", "")).strip())[0] if len(sc) > 1 else ""
         if BACKGROUND.search(nxt): errs.append(f"scene 1 opens on background ({nxt!r}): it is a second hook that raises the stake; what the company is or what a term means rides inside the action later")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (60, 110, True))
-    if free and (category or spec.get("type")) not in LENGTH: hi_w = 300   # (40 to 120 s: the owner, 2026-11-09)
+    if free and (category or spec.get("type")) not in LENGTH: hi_w = 150   # (35 to 60 s: the owner, 2026-11-11; was 40 to 120)
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
     body = [s for s in sc if s.get("kind") != "outro"]
@@ -1221,7 +1221,7 @@ def dry_run(spec, B, work):
         if r.returncode:
             o = (r.stderr or "") + (r.stdout or ""); m = re.search(r"DRY: (.*)", o, re.S)
             return ["the scene function failed the dry run: " + (m.group(1) if m else o[-600:]).strip()]
-    lo, hi = SECONDS.get(B["category"], (0, 120)); T = json.load(open(os.path.join(d, "timeline.json"), encoding="utf-8")).get("T", 0)   # (docs/REACH_PLAN.md A3: the length in seconds as well as in words)
+    lo, hi = SECONDS.get(B["category"], (0, 60)); T = json.load(open(os.path.join(d, "timeline.json"), encoding="utf-8")).get("T", 0)   # (docs/REACH_PLAN.md A3: the length in seconds as well as in words)
     return [] if lo <= T <= hi else [f"at the voice's pace this reel runs {T:.0f} seconds; a {B['category']} runs {lo:g} to {hi:g}: " + ("cut lines" if T > hi else "add a beat")]
 
 
@@ -1362,7 +1362,7 @@ if __name__ == "__main__":
         es = check(fr, {"recent_devices": []}, [], "One trick")
         assert not any("2 to 5 words" in e or "hot" in e or "too close" in e or "must be a hook" in e for e in es), es
         assert not check(dict(fr, scene_js=None), {}, [], "One trick") == [] and any("director reel" in e for e in check(dict(fr, scene_js=None), {}, [], "One trick"))
-        assert "- Total spoken words" not in RULES and "- Length: 40 to 120" in RULES and "- Plain words" in RULES
+        assert "- Total spoken words" not in RULES and "- Length: 35 to 60" in RULES and "- Plain words" in RULES
         # the first 3 seconds, the ending and the caption (docs/REACH_PLAN.md A2, A5, A9)
         floor = lambda x: bool(BAD_OPENER.search(x) or hookscore.run(x)[3])
         bad = ["Three chart reads in thirty seconds.", "Three charts, five seconds each.", "Here are three candles every trader should know.",

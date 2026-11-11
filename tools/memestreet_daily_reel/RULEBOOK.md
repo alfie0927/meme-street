@@ -35,8 +35,8 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   for no reason), natural short pauses at commas and full stops, every word pronounced right.
 
 ## Content
-- Concise: one idea, every line earning its place. A director reel runs 40 to 120 seconds (about 60 to 300 spoken
-  words) when the story earns it; the short formats are shorter on purpose (Hard truth 25 to 60 words).
+- Concise: one idea, every line earning its place. A director reel runs 35 to 60 seconds (about 50 to 150 spoken
+  words; the owner, 2026-11-11: viewers give about 7 seconds); 60 is a ceiling, not a target; the short formats are shorter on purpose (Hard truth 25 to 60 words).
 - Accurate: every number and claim comes from the facts; what the voice says, the screen shows.
 - Sign-off: "Join free at memestreet.net." Only a reel about the Daily Chart mentions the Daily Chart.
 
@@ -98,7 +98,7 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   the cover, the Kokoro voice at one speed, the sign-off.
 - Punch headline: 3 to 5 words of the line in capitals at y 1270, one in the hot colour; the transcript captions run
   under it for every spoken word (the owner, 2026-11-09: subtitles for all of the audio).
-- 40 to 120 seconds; something changes on screen every 2 to 3 seconds; motion is big and has weight; impacts shake.
+- 35 to 60 seconds (the owner, 2026-11-11); something changes on screen every 2 to 3 seconds; motion is big and has weight; impacts shake.
 - Easy to understand with the sound off: the device, the HUD and the punches tell the story on their own.
 - Reels post without the owner's approval (the owner, 2026-11-09). The owner's feedback on posted reels goes under
   "By format" as before.
