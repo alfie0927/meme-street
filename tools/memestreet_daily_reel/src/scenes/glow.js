@@ -1,4 +1,4 @@
-// DEVICE: pure chart. The chart scenes draw the candles, the line and the shade; this function adds the one glowing candle,
+// DEVICE: pure chart (the hook stands alone before it: one huge candle and the seller it fooled). The chart scenes draw the candles, the line and the shade; this function adds the one glowing candle,
 // the buyers' stops sitting under support (and popping when the sweep hits them), a sellers/buyers tug bar as the HUD,
 // and a camera push onto the candle that matters. Palette: the house teal/red on near-black (tok.css left empty).
 ({t, T, s, i, R, api}) => {
@@ -24,6 +24,18 @@
       if (p > 0) g += boomFx(x, y, p, 60, RD);
       g += `<g transform="translate(${x.toFixed(1)} ${y}) scale(${(a * (1 - p)).toFixed(3)})" opacity="${(1 - p).toFixed(2)}"><rect x="-26" y="-18" width="52" height="36" rx="10" fill="${RD}"/><text y="9" text-anchor="middle" font-size="26" font-weight="800" fill="#07121a">SL</text></g>`;
     }
+  }
+  // the hook (scene 0, before any chart): the candle that lied, alone and huge. It dumps while the seller points at it,
+  // the seller panics and sells on "sold", and on "Watch" the same candle climbs back over its open and closes green
+  if (i === 0) {
+    const tS = at(s, "sold"), tW = at(s, "Watch"), d = out(seg(t, s.t0, s.t0 + 1.5)), up = out(seg(t, tW, tW + .7)), pul = .6 + .4 * Math.sin(t * 6);
+    const x = 680, yo = 720, yc = yo + 300 * d - 440 * up, lo = yo + 300 * d + 60, hi = Math.min(yo - 50, yc - 30), col = yc > yo ? RD : G;   // open, close, low, high (the close falls, then climbs)
+    g += `<path d="M120 1210H960" stroke="#2a2f35" stroke-width="4" stroke-linecap="round"/>`;
+    g += `<rect x="${x - 110}" y="${(hi - 26).toFixed(1)}" width="220" height="${(lo - hi + 52).toFixed(1)}" rx="18" fill="${AM}" opacity="${(.16 * pul).toFixed(3)}"/><rect x="${x - 110}" y="${(hi - 26).toFixed(1)}" width="220" height="${(lo - hi + 52).toFixed(1)}" rx="18" fill="none" stroke="${AM}" stroke-width="4" opacity="${pul.toFixed(3)}"/>`;
+    g += `<path d="M${x} ${hi.toFixed(1)}V${lo.toFixed(1)}" stroke="${col}" stroke-width="12" stroke-linecap="round"/><rect x="${x - 75}" y="${Math.min(yo, yc).toFixed(1)}" width="150" height="${Math.max(8, Math.abs(yc - yo)).toFixed(1)}" rx="8" fill="${col}"/>`;
+    g += api.fig({pose: t < tS ? "point" : t < tW + .4 ? "panic" : "sad", x: 300, y: 1210, sc: 2}, t);
+    const a = back(seg(t, tS, tS + .35)) * (1 - seg(t, tW + .2, tW + .5));
+    if (a > 0) g += `<g transform="translate(300 640) scale(${a.toFixed(3)})"><rect x="-92" y="-40" width="184" height="80" rx="16" fill="${RD}"/><text y="16" text-anchor="middle" font-size="46" font-weight="800" fill="#07121a">SOLD</text></g>`;
   }
   // the glowing candle and the camera push, on the scene's 'glow' cue (cue {do:"fx", name:"glow", i: candle})
   const cue = (s.cues || []).find(c => c.do === 'fx' && c.name === 'glow');

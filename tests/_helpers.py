@@ -131,7 +131,8 @@ def copy_project(dest, settings=None):
     """Copy the game into `dest` with the same folders (game/, web/, content/, tools/, the logo in brand/), so that it
     runs there exactly as it does here but with its own empty data/. `settings` are written as one more content pack
     (content/zz_test_settings.json) that overrides the shipped settings."""
-    skip = shutil.ignore_patterns("__pycache__", "*.pyc", "cloudflared*")
+    # (the two reel folders are 220 MB the game never reads; the live server gets tools/*.py only, deploy/upload.ps1)
+    skip = shutil.ignore_patterns("__pycache__", "*.pyc", "cloudflared*", "memestreet_daily_reel", "november_reels")
     for folder in PROJECT_FOLDERS:
         shutil.copytree(os.path.join(ROOT, folder), os.path.join(dest, folder), ignore=skip, dirs_exist_ok=True)
     os.makedirs(os.path.join(dest, "brand"), exist_ok=True)

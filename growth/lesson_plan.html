@@ -1,0 +1,68 @@
+<!doctype html>
+<!-- The one-page lesson plan for teachers (docs/REACH_PLAN.md, B2 "Schools and students"). The owner sends the PDF.
+     Rebuild growth/lesson_plan.pdf after an edit (from the project folder):
+     .venv\Scripts\python.exe -c "from playwright.sync_api import sync_playwright as P; import pathlib; p=P().start(); b=p.chromium.launch(); g=b.new_page(); g.goto(pathlib.Path('growth/lesson_plan.html').resolve().as_uri()); g.pdf(path='growth/lesson_plan.pdf', format='A4', print_background=True); b.close(); p.stop()"
+     It must stay one page. -->
+<html lang="en"><head><meta charset="utf-8"><title>Two minutes on a chart: a lesson on risk and reward | Meme Street</title>
+<style>
+@page{size:A4;margin:9mm 11mm}
+*{box-sizing:border-box}
+body{margin:0;font:9.1pt/1.32 "Segoe UI",Arial,Helvetica,sans-serif;color:#14181d}
+header{display:flex;align-items:center;gap:10px;border-bottom:2.5px solid #1aa7b5;padding-bottom:6px}
+header img{width:34px;height:34px;border-radius:6px}
+h1{font-size:17.5pt;margin:0;line-height:1.1}
+.sub{color:#465260;font-size:9.4pt;margin-top:2px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.facts div{background:#eef7f8;border-radius:5px;padding:5px 8px}
+.facts b{display:block;font-size:7.6pt;letter-spacing:.05em;text-transform:uppercase;color:#12717b}
+h2{font-size:10.2pt;margin:7px 0 2px;color:#0e5f68}
+ul{margin:0;padding-left:15px}li{margin:1px 0}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+table{border-collapse:collapse;width:100%;margin-top:2px}
+td,th{border:1px solid #c9d3da;padding:4px 6px;vertical-align:top;text-align:left}
+th{background:#eef7f8;font-size:8.6pt}
+td:first-child{white-space:nowrap;font-weight:600;width:1%}
+.note{background:#fff8e6;border:1px solid #ecd9a0;border-radius:5px;padding:6px 9px;margin-top:8px}
+.note h2{margin-top:0;color:#6b5200}
+footer{margin-top:7px;padding-top:5px;border-top:1px solid #c9d3da;font-size:8.2pt;color:#465260}
+code{font:600 9.6pt Consolas,monospace;color:#0e5f68}
+</style></head><body>
+<header><img src="../brand/memestreet_logo_peaks.png" alt=""><div><h1>Two minutes on a chart</h1>
+<div class="sub">A lesson on risk, reward and why nobody knows the next price</div></div></header>
+
+<div class="facts"><div><b>Ages</b>14 to 18</div><div><b>Time</b>45 to 50 minutes</div>
+<div><b>Fits</b>Personal finance, economics, business</div><div><b>You need</b>One computer, a projector, internet</div></div>
+
+<div class="cols"><div><h2>Students will be able to</h2><ul>
+<li>read a candle chart: what one candle shows and what its colour means</li>
+<li>explain buying, selling and short selling in plain words</li>
+<li>explain why a pattern in past prices does not tell you the next move</li>
+<li>name one way feelings change a money decision</li></ul></div>
+<div><h2>Key words</h2><ul>
+<li><b>Share:</b> a small part of a company that can be bought and sold</li>
+<li><b>Candle:</b> one bar of a price chart: where the price opened, closed, and its high and low</li>
+<li><b>Short:</b> a trade that gains when the price falls</li>
+<li><b>Return:</b> the gain or loss as a percentage of the money you started with</li></ul></div></div>
+
+<h2>The lesson</h2>
+<table><tr><th>Time</th><th>What happens</th></tr>
+<tr><td>5 min<br>Starter</td><td>Draw five candles on the board, each one higher than the last. Ask: “Will the sixth be up or down?” Hands up for each. Write the two counts on the board and do not say who is right.</td></tr>
+<tr><td>8 min<br>Explain</td><td>A candle is one slice of time. Green: the price closed higher than it opened. Red: lower. The thin lines show the highest and lowest price in that slice. <b>Buy</b> if you think the price will rise, <b>sell</b> to take your gain or loss. <b>Short</b> if you think it will fall (in the game, pressing Sell with no shares opens a short). Everyone starts with 1,000 MB of practice money. This game charges no fee; real trading does.</td></tr>
+<tr><td>10 min<br>Play as a class</td><td>Open <code>memestreet.net/daily?ref=lesson</code> on the projector and choose one student as the trader at the keyboard. Press Play: the chart appears and a new candle prints every second for two minutes. About every 20 seconds, call a vote: buy, sell, short or wait. The trader does what most hands say. When the time is up, read out the class’s return and where it ranks among everyone who played the same chart today.</td></tr>
+<tr><td>12 min<br>Discuss</td><td>Go back to the counts on the board. In the game, did a run of rising candles always keep going? Then ask: Why did we buy when we did? Did we follow the chart, or each other? When the price fell after we bought, what did the room want to do, and why? How would a fee on every trade have changed our result? If we played the same way tomorrow, on a new chart, would we get the same result?</td></tr>
+<tr><td>8 min<br>Write</td><td>Each student answers three questions on paper: (1) What does a red candle show? (2) How does a short trade gain? (3) “The price went up five times in a row, so it will go up again.” Explain what is wrong with this.</td></tr>
+<tr><td>At home</td><td>A new chart starts every day at midnight UTC. Play it for five days and keep a decision diary: for every trade, one sentence on why. After five days, read the diary and underline every reason that was a feeling, not a fact. The reading lessons at <code>memestreet.net/lessons</code> cover candles, risk and short selling.</td></tr></table>
+
+<h2>Answers to the three written questions</h2><ul>
+<li><b>(1)</b> In that slice of time the price closed lower than it opened.</li>
+<li><b>(2)</b> A short sells first, at today’s price, and buys back later. If the price has fallen, the difference is the gain. If it has risen, the difference is the loss.</li>
+<li><b>(3)</b> Five rises do not cause a sixth. A run can end on any candle, and the chart cannot say which. In real trading, acting on every run also costs a fee each time.</li></ul>
+
+<div class="note"><h2>Before you teach it</h2><ul>
+<li><b>Practice money only.</b> MB have no cash value. Nothing can be won, lost or paid out. Every company and chart is invented, so nobody can look up the answer.</li>
+<li><b>No accounts are needed</b> for the class game on one screen, and no student gives a name or any other detail. On separate devices each student would need an account (age 13 or over; a name and a password, no email), because only a few visitors a day can play from one internet address and a school usually shares one. Check your school’s rules first.</li>
+<li><b>The site has a shop</b> that sells extra practice money and memberships. Nothing in this lesson uses it.</li>
+<li><b>This is not investment advice.</b> The aim is to see how hard prices are to predict, not to teach a way to beat the market.</li></ul></div>
+
+<footer>Made by Meme Street, memestreet.net. You may copy and share this page for teaching. Questions: memestreet.game@gmail.com</footer>
+</body></html>

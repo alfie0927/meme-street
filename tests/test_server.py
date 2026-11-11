@@ -133,6 +133,25 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(http(self.srv, "/brand/state.json")[0], 404)
         self.assertEqual(http(self.srv, "/brand/..%2Fserver.py")[0], 404)
 
+    def test_the_site_installs_as_an_app_and_tells_ai_search_and_bing_about_itself(self):
+        """REACH_PLAN P3 and P4: the web app manifest, /llms.txt and the IndexNow key."""
+        status, body, headers = http(self.srv, "/manifest.json")
+        m = json.loads(body)
+        self.assertEqual((status, m["display"], m["start_url"]), (200, "standalone", "/?ref=app"))
+        self.assertIn("manifest+json", headers.get("content-type", headers.get("Content-Type", "")))
+        for icon in m["icons"]:
+            self.assertEqual(http(self.srv, icon["src"])[0], 200, icon)
+        self.assertEqual({i["sizes"] for i in m["icons"]}, {"192x192", "512x512"})
+        self.assertIn('<link rel="manifest" href="/manifest.json">', http(self.srv, "/daily")[1])
+        status, body, _ = http(self.srv, "/llms.txt")
+        self.assertEqual(status, 200)
+        self.assertTrue(body.startswith("# Meme Street\n\n> "))
+        self.assertIn("/lessons/position-sizing): ", body)
+        self.assertIn("no cash value", body)
+        import pages
+        self.assertEqual(http(self.srv, f"/{pages.INDEXNOW_KEY}.txt")[:2], (200, pages.INDEXNOW_KEY))
+        self.assertEqual(http(self.srv, "/" + "0" * 32 + ".txt")[0], 404)
+
     def test_search_engines_get_robots_and_a_sitemap(self):
         status, body, _ = http(self.srv, "/robots.txt")
         self.assertEqual(status, 200)
@@ -151,6 +170,22 @@ class ServerTests(unittest.TestCase):
         self.assertIn("<h1>Position size calculator</h1>", body)
         self.assertIn('rel="canonical" href="https://memestreet.net/tools/position-size-calculator"', body)
         self.assertIn('id="stop"', body)
+
+    def test_the_comparison_pages_are_plain_pages(self):
+        import vspages                                   # (game/ is on the path: _helpers puts it there)
+        _, sitemap, _ = http(self.srv, "/sitemap.xml")
+        for path in vspages.paths():
+            status, body, _ = http(self.srv, path)
+            self.assertEqual(status, 200, path)
+            self.assertEqual(body.count("<h1>"), 1, path)
+            self.assertIn(f'rel="canonical" href="https://memestreet.net{path}"', body)
+            self.assertIn(f"{path}</loc>", sitemap)
+            self.assertNotIn("free to play", body.lower())
+            if path != "/vs":
+                self.assertIn(vspages.ASOF, body)        # every claim about another site is dated
+        self.assertEqual(http(self.srv, "/vs/no-such-site")[0], 404)
+        self.assertIn("/vs/wordle", http(self.srv, "/llms.txt")[1])
+        self.assertIn('href="/vs"', http(self.srv, "/lessons")[1])
 
     def test_the_risk_reward_calculator_is_a_plain_page(self):
         status, body, _ = http(self.srv, "/tools/risk-reward-calculator")
@@ -180,6 +215,25 @@ class ServerTests(unittest.TestCase):
         self.assertIn("<h1>Meme Street: a stock market game with play money</h1>", body)
         self.assertIn('href="/lessons"', body)
 
+    def test_a_challenge_link_has_its_own_preview_title(self):
+        """/daily?vs=name~return~number (web/daily.js): the result is in og:title, and only for a well-formed link."""
+        plain = http(self.srv, "/daily")[1]
+        status, body, _ = http(self.srv, "/daily?ref=daily_share&vs=Sam%20B~310~9")
+        self.assertEqual(status, 200)
+        self.assertIn('<meta property="og:title" content="Sam B got +3.1% on Daily Chart #9. Can you beat it?">', body)
+        self.assertEqual(body.count('property="og:title"'), 1)
+        self.assertIn('<meta property="og:url" content="https://memestreet.net/daily?vs=Sam%20B~310~9">', body)
+        self.assertEqual(body.count('property="og:url"'), 1)
+        self.assertIn("<title>Daily Chart: the daily stock market game | Meme Street</title>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/daily"', body)
+        self.assertIn('content="Can you beat -38.0% on Daily Chart #12?"', http(self.srv, "/daily?vs=~-3800~012")[1])
+        self.assertIn("Zoë got +0.3% on", http(self.srv, "/daily?vs=Zo%C3%AB~25~9")[1])      # (a tie rounds up, as pc() does)
+        self.assertIn(" got 0.0% on", http(self.srv, "/daily?vs=Sam~-4~9")[1])
+        for bad in ("%3Cb%3E~310~9", "Sam%22~310~9", "Sam~310", "Sam~3.1~9", "Sam~310~9~1", "a" * 17 + "~310~9",
+                    "Sam~310~9%0A", "Sam~%D9%A3~9", "evil.xyz~310~9", "sh1t~310~9"):
+            self.assertEqual(http(self.srv, "/daily?vs=" + bad)[1], plain, bad)
+        self.assertEqual(http(self.srv, "/daily")[1], plain)             # (a challenge link leaves the cached page alone)
+
     def test_play_forwards_to_todays_chart_tagged_as_a_reel(self):
         """The short address the reels say (growth plan, 2026-11-10)."""
         class Stay(urllib.request.HTTPRedirectHandler):
@@ -189,6 +243,15 @@ class ServerTests(unittest.TestCase):
             urllib.request.build_opener(Stay).open(self.srv.url + "/play", timeout=10)
         self.assertEqual((got.exception.code, got.exception.headers["Location"]), (307, "/daily?ref=reel"))
         self.assertNotIn("/play", http(self.srv, "/sitemap.xml")[1])
+
+    def test_the_framed_daily_is_the_daily_page(self):
+        """/embed/daily (REACH_PLAN P2) is the Daily page under a second address: one page to search engines, and the
+        script's frame mode in it. The header that lets a named site frame it is Caddy's (deploy/Caddyfile)."""
+        status, body, _ = http(self.srv, "/embed/daily?ref=itch")
+        self.assertEqual((status, body), (200, http(self.srv, "/daily")[1]))
+        self.assertIn('rel="canonical" href="https://memestreet.net/daily"', body)
+        self.assertIn("==='/embed/daily'", body)
+        self.assertNotIn("/embed", http(self.srv, "/sitemap.xml")[1])
 
     def test_bad_token_is_rejected(self):
         with connect(f"ws://127.0.0.1:{self.srv.port}/ws?token=nope") as ws:

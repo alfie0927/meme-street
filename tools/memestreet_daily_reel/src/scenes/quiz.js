@@ -7,8 +7,8 @@
   if (s.kind === 'big' || s.kind === 'outro') return '';
   const S = R.scenes, qs = S.map((q, k) => k).filter(k => S[k].kind === 'question');   // the question scenes, in order
   let g = '';
-  // the lamps strip (y 352, between the progress line and the title): one per question
-  qs.forEach((k, n) => {
+  // the lamps strip (y 352, between the progress line and the title): one per question (not in scene 0: the hook has the top of the frame)
+  if (i > 0) qs.forEach((k, n) => {
     const Q = S[k], A = S[k + 1] && S[k + 1].kind === 'answer' ? S[k + 1] : null, x = 540 + (n - (qs.length - 1) / 2) * 70;
     const live = i === k, done = A && t >= A.t0 + .1, lit = done ? G : live ? AM : '#2a2f35';
     const pul = live && Q.think_t && t >= Q.think_t[0] ? .75 + .25 * Math.sin((t - Q.think_t[0]) * 10) : 1;

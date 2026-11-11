@@ -41,8 +41,13 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - Sign-off: "Join free at memestreet.net." Only a reel about the Daily Chart mentions the Daily Chart.
 
 ## Daily recap
-- Its own format: the day's chart walked through in order at an easy pace, then the scorecard; the cover is
-  "Daily Chart #N" over the chart with "Can you beat it?" and the date.
+- Superseded 2026-11-10 (the owner: "make the daily in the same creative style"): the Daily is a director reel like every
+  other, its own device and palette, with the day's real chart, trades and scores as the facts (make_reel.sh).
+- The Daily's chart shades the lead-in (the candles every player saw before the clock started) with a dotted line where
+  the game began; the renderer draws it (the owner, 2026-11-10). No hot-air balloon device (the owner disliked it on #8), and nothing drawn over the
+  candles (no line tracing the price): "I want to see the candles".
+- ~~Its own format: the day's chart walked through in order at an easy pace, then the scorecard; the cover is
+  "Daily Chart #N" over the chart with "Can you beat it?" and the date.~~
 
 ## Thumbnails
 - The November template: brand header, the reel's main chart (or story scene) in a framed panel, the big title below,

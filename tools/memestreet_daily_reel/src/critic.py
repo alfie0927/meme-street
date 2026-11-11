@@ -199,6 +199,10 @@ writer's own scene function) is meant to look unlike the house template and unli
 fast motion, a world that changes every few seconds, 3 to 5 word punch captions with one word in colour (the owner,
 2026-11-09). None of that is a fault. Its blockers are the five above, plus: a device that stops making sense (the
 metaphor contradicts the lesson), text the viewer cannot read, the HUD not changing when the voice says it does.
+Its first seconds are built this way on purpose (the reach plan, 2026-11-11): the hook stands whole and large at the top
+from the first frame, and the brand row, the format label and the progress bar stay hidden until scene 1. That is not a
+fault. One more blocker for a director reel: an opening that is only a chart, a list or a title card, with no character
+or object acting in it (the Daily recap may open on its chart).
 Anything else, however much you would change it, is a "note" (logged for the owner, never blocking). Do not invent
 problems; judge only what this round's images and report.json show; numbers come only from report.json.
 

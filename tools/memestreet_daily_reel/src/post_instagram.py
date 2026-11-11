@@ -20,6 +20,7 @@ MODE = os.environ.get("IG_LOGIN", "unified").strip().lower()
 V = os.environ.get("GRAPH_VERSION", "v26.0")
 HOST = "https://graph.instagram.com" if MODE == "instagram" else "https://graph.facebook.com"
 STATE = os.path.join(ROOT, "state"); TOKFILE = os.path.join(STATE, "ig_token.json")
+AI_LABEL = {"is_ai_generated": "true"}     # Meta's self-disclosure of AI use (the voice is synthetic): the "AI info" label, on every reel (the owner, 2026-11-11)
 
 def http(method, url, params=None, data=None, headers=None):
     if params: url += ("&" if "?" in url else "?") + urllib.parse.urlencode(params)
@@ -85,9 +86,9 @@ def main(folder, dry=False):
     if not os.path.exists(mp4): raise SystemExit(f"no reel at {mp4} (did the 23:30 job run?)")
     caption = open(cap).read() if os.path.exists(cap) else ""
     if dry:
-        print(f"[dry run] {MODE} login - would post {mp4} ({os.path.getsize(mp4)//1024} KB) with caption:\n{caption}"); return
+        print(f"[dry run] {MODE} login - would post {mp4} ({os.path.getsize(mp4)//1024} KB) with {AI_LABEL} and caption:\n{caption}"); return
     refresh_token(); tok = token(); uid = ig_id(tok)
-    base = {"media_type": "REELS", "caption": caption, "share_to_feed": "true", "access_token": tok}
+    base = {"media_type": "REELS", "caption": caption, "share_to_feed": "true", **AI_LABEL, "access_token": tok}
     trial = json.load(open(os.path.join(folder, "trial.json"))) if os.path.exists(os.path.join(folder, "trial.json")) else None
     if trial:                                              # a Trial Reel: non-followers only, off the grid; never shared on its own (MANUAL):
         base["trial_params"] = json.dumps({"graduation_strategy": "MANUAL"}); base.pop("share_to_feed")   # lab/winners.py posts the winner to the grid

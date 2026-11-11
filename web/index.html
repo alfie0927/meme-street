@@ -28,6 +28,7 @@ a.stat-link{color:inherit;text-decoration:none}a.stat-link:hover small,a.stat-li
 .site-foot{display:flex;flex-wrap:wrap;gap:6px 16px;padding:14px 18px 22px;border-top:1px solid var(--line2);font-size:11.5px;color:var(--mut)}.site-foot a{color:var(--mut)}.site-foot a:hover{color:var(--txt)}
 body:not(.page-market) .site-foot{max-width:1240px;margin:0 auto}
 #tape{overflow:hidden;white-space:nowrap;border-top:1px solid var(--line2);font-size:12px;line-height:24px;padding-left:18px}
+.embed .stats,.embed #tape,.embed #daily-btn,.embed #session-banner,.embed #low-banner,.embed #learn-banner{display:none!important}   /* /embed/daily: a frame is small, so the header keeps only the name, the tabs and the sign-in */
 #tape .tape-run{display:inline-block;animation:tape 150s linear infinite}#tape:hover .tape-run{animation-play-state:paused}
 #tape a{color:var(--txt);margin-right:28px}#tape a:hover{text-decoration:none;color:var(--acc)}#tape .tp{color:var(--mut)}
 @keyframes tape{to{transform:translateX(-50%)}}
@@ -395,7 +396,7 @@ body.guest .guest-cta{display:flex}
 .cal-chip.flat{background:#ffffff10;color:var(--mut)}
 .cal-more{font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cal-ev{opacity:.8}.cal-h{margin:12px 0 4px;font-size:12.5px;color:var(--mut)}.cal-day table td:first-child{width:70px}.cal-day td{white-space:normal}
 @media (max-width:760px){.cal-grid{gap:2px}.cal-cell{min-height:62px;padding:3px}.cal-chip{font-size:9px;padding:0 3px}.cal-top small,.cal-more{display:none}.cal-nav button{padding:4px 8px}}
-</style><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="192x192" href="/brand/icon-192.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+</style><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="192x192" href="/brand/icon-192.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.json">
 </head><body class="page-market">
 <div id="login"><div><h2 style="margin:0">Meme Street</h2><p class="mut">Trade with memebucks (MB). Read the news, trade fast, beat the other players.</p><p id="login-why" class="hint" style="display:none;color:var(--acc)"></p>
 <p id="auth-tabs" style="display:none;margin:0 0 8px"><button class="chip on" data-mode="login">Log in</button> <button class="chip" data-mode="register">Create account</button></p>
@@ -511,7 +512,9 @@ const $=id=>document.getElementById(id),f=(x,d=2)=>Number(x).toFixed(d),pc=x=>{c
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-const path=location.pathname.replace(/\/+$/,'')||'/';
+// the Daily inside another site's frame (/embed/daily, REACH_PLAN P2): no other page may be framed, so every link opens the full site in a new tab
+const EMBED=location.pathname.replace(/\/+$/,'')==='/embed/daily';if(EMBED){document.head.appendChild(Object.assign(document.createElement('base'),{target:'_blank'}));document.documentElement.classList.add('embed')}
+const path=EMBED?'/daily':location.pathname.replace(/\/+$/,'')||'/';
 let page='market',pageArg=null,mt;
 if(['/holdings','/portfolio','/history','/leaders','/social','/profile','/shop','/calendar','/learn','/bots','/daily'].includes(path))page=path.slice(1);
 else if(mt=path.match(/^\/stock\/([^/]+)$/)){page='stock';pageArg=decodeURIComponent(mt[1]).toUpperCase()}
@@ -567,7 +570,8 @@ function notify(msgs){
 function setText(el,v,c){if(el._v!==v){el._v=v;el.textContent=v}if(c!==undefined&&el._c!==c){el._c=c;el.className=c}}
 function setHtml(el,v){if(el._v!==v){el._v=v;el.innerHTML=v}}
 // a logged-out browser's own id: it plays the Daily Chart under it, and brings that game to the account it signs up for
-function visitorId(){let v=lsGet('ms_vid','');if(!/^[A-Za-z0-9_-]{16,40}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');lsSet('ms_vid',v)}return v}
+let vidMem='';   // (kept here too: a framed page with its storage blocked would otherwise be a new visitor on every call)
+function visitorId(){let v=vidMem||lsGet('ms_vid','');if(!/^[A-Za-z0-9_-]{16,40}$/.test(v)){v=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');lsSet('ms_vid',v)}return vidMem=v}
 async function api(p,opt){
  opt=opt||{};const headers={'X-Token':token||''};if(!token)headers['X-Visitor']=visitorId();if(opt.body)headers['Content-Type']='application/json';
  let r;try{r=await fetch(p,{method:opt.method||'GET',headers,body:opt.body?JSON.stringify(opt.body):undefined})}catch(e){return null}
@@ -585,7 +589,7 @@ function openSignin(mode,why){
  if(mode)authMode=mode;drawAuth();
  const w=$('login-why');w.textContent=why||'';w.style.display=why?'block':'none';
  $('login-close').style.display=guest?'block':'none';$('login').style.display='flex'}
-async function logoutHere(){try{await api('/api/logout',{method:'POST',body:{}})}catch(e){}logout();location.href='/'}
+async function logoutHere(){try{await api('/api/logout',{method:'POST',body:{}})}catch(e){}logout();location.href=EMBED?'/embed/daily':'/'}
 
 // ---------- connection and the update protocol ----------
 // The server sends one `init` (everything) and then a small `tick` every second: prices, your own numbers, new
@@ -651,7 +655,7 @@ $('rec-go').onclick=async()=>{
  if(j.token){token=j.token;try{localStorage.ms_token=token}catch(e){}lsSet('ms_seen_login',true);$('rec-pw').value=$('rec-code').value='';authMode='login';drawAuth();connect()}
  else $('rec-msg').textContent=j.error||'Error'};
 $('g-login').onclick=$('gh-login').onclick=()=>openSignin('login');$('g-join').onclick=$('gh-join').onclick=()=>openSignin('register');
-$('gh-daily').onclick=()=>{location.href='/daily'};   // (the front door: a game first, the account after, growth plan 2026-11-10)
+$('gh-daily').onclick=()=>{location.href=EMBED?'/embed/daily':'/daily'};   // (the front door: a game first, the account after, growth plan 2026-11-10)
 $('login-close').onclick=()=>{$('login').style.display='none'};
 if(!token&&location.hash==='#join')setTimeout(()=>openSignin('register'),60);   // (the /about page's button)
 $('joinbtn').onclick=()=>join();$('nm').onkeydown=e=>{if(e.key==='Enter')join()};$('pw').onkeydown=$('pw2').onkeydown=e=>{if(e.key==='Enter')join()};

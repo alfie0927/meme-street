@@ -1,24 +1,32 @@
 #!/usr/bin/env bash
-# 23:00 UTC: fetch today's Daily Chart and make its recap reel in the house style (the same writer, voice, music and
-# renderer as every other reel). Output: out/<UTC date>/reel.mp4 + caption.txt + cover.jpg.
-# The film critic (src/critic.py) reviews it and it is rewritten until he approves; post_reel.sh posts only an approved reel.
+# The Daily Chart reel, a director reel like every other (the owner, 2026-11-10): today's chart and its analysis (fetch.py,
+# analyze.py) go to the writer as facts (make_spec.py --category "Daily recap"), the film critic reviews it, then it posts.
+# Safe to run again: the timer runs it at 23:00 and retries through the night (23:40, 01:00, 03:00, 05:00, 08:00 UTC);
+# each run carries on from where the last stopped (data fetched -> reel approved -> posted) and does nothing once posted.
+#   ./make_reel.sh [YYYY-MM-DD]     (default: today from 22:00 UTC, else yesterday)
 set -euo pipefail
 cd "$(dirname "$0")"; set -a; . ./config.env; set +a
 export PATH="$HOME/.local/bin:$PATH"
-DATE="${1:-$(date -u +%F)}"
-mkdir -p data work out logs queue
-exec 8>queue/.auto.lock; flock 8                   # (one reel job at a time, the auto reels included: two at once ran a 4 GB server out of memory)
+H=$(date -u +%-H); DATE="${1:-$( [ "$H" -ge 22 ] && date -u +%F || date -u -d yesterday +%F )}"
+W="work/$DATE"; O="out/$DATE"; mkdir -p data work out logs queue
+[ -f "$O/posted.json" ] && { echo "Daily $DATE already posted"; exit 0; }
+[ -f "data/$DATE.json" ] || [ "$DATE" = "$(date -u +%F)" ] || { echo "no data for $DATE and its chart is gone (the site serves only today's): skipped"; exit 0; }
+touch queue/.daily-pending; trap 'rm -f queue/.daily-pending' EXIT   # (auto_reel.sh waits while the Daily is due)
+exec 8>queue/.auto.lock; flock -w 5400 8 || { echo "Daily $DATE: the reel lock stayed busy 90 min; the next timer run retries" | tee -a "logs/$DATE.log"; exit 1; }
 {
-  echo "=== make_reel $DATE  $(date -u '+%F %T UTC')"
+  echo "=== daily $DATE  $(date -u '+%F %T UTC')"
   [ -f "data/$DATE.json" ] || python3 src/fetch.py "data/$DATE.json"
-  W="work/$DATE"; rm -rf "$W"
-  rm -rf "out/$DATE"
-  # the Daily Chart recap in its own format (the owner's pick, 2026-11-07): the day's chart walked through in order at an easy
-  # pace, a scorecard, and the "Daily Chart #N - Can you beat it?" cover (recap.html); the narration is built from the
-  # game's own analysis (analyze.py), so there is no writer and no critic loop
-  python3 src/analyze.py "data/$DATE.json" "$W"
-  python3 src/voice.py "$W"
-  python3 src/render.py "$W" "out/$DATE"
-  echo "{\"round\": 0, \"verdict\": \"the Daily recap format (data-driven, no critic)\", \"at\": \"$(date -u -Is)\"}" > "out/$DATE/approved.json"
-  echo "=== done $(date -u '+%T UTC')"
+  if [ ! -f "$O/approved.json" ]; then
+    n=$(( $(cat "out/.tries-$DATE" 2>/dev/null || echo 0) + 1 )); echo $n > "out/.tries-$DATE"
+    [ "$n" -le 3 ] || { echo "Daily $DATE held three times: not posted"; exit 0; }   # (each try is a new script on the plan)
+    export DAILY_DATA="data/$DATE.json"
+    if [ ! -f "$W/spec.json" ]; then
+      rm -rf "$W" "$O"; ok=; for t in 1 2 3; do python3 src/make_spec.py "${DATE}T2300" "$W" --category "Daily recap" && { ok=1; break; }; done; [ -n "$ok" ]
+    fi
+    python3 src/critic.py loop "$W" "$O" || { rm -rf "$W"; exit 1; }   # (held: the next run writes a fresh script)
+  fi
+  python3 src/post_instagram.py "$O"                   # (an Instagram error fails the run; the next timer run posts it)
+  python3 src/post_elsewhere.py "$O" >> logs/elsewhere.log 2>&1 || true   # (the Daily on the other platforms that have keys: docs/REACH_PLAN.md A11)
+  echo "=== daily done $(date -u '+%T UTC')"
 } 2>&1 | tee -a "logs/$DATE.log"
+exit "${PIPESTATUS[0]}"

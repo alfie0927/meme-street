@@ -283,6 +283,7 @@ def main(work):
         sc["t0"] = round(t, 3); vs = t + (0.12 if i else 0.05)
         pv = S["scenes"][i - 1] if i else {}
         same = i and ((sc.get("chart") is not None and pv.get("chart") == sc["chart"]) or (sc["kind"] == "free" == pv.get("kind") and sc.get("chart") is None is pv.get("chart")))   # (the screen stays: the same chart, or one free world after another; reel.html keep())
+        if not i: vo.append([pop, 0.0])                        # a sound on the very first frame (docs/REACH_PLAN.md A2): the pop is over by 0.09 s and the voice starts at 0.15
         if i and not same: vo.append([whoosh, round(max(0, t - 0.24), 3)])   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
@@ -297,7 +298,7 @@ def main(work):
             p["t"] = round(vs + at(p["say"]) if p.get("say") else vs + 0.2, 3); vo.append([pop, p["t"]])
         for c in sc.get("cues", []):
             c["t"] = round(vs + at(c.get("say", "")), 3)
-            if c.get("do") in ("mark", "bubble", "item", "line", "arrow"): vo.append([pop, c["t"]])
+            if c.get("do") in ("mark", "bubble", "item", "line", "arrow", "fx"): vo.append([pop, c["t"]])   # (fx: a director scene's own effect is heard too)
         for x in sc.get("opt_t", []): vo.append([pop, x])
         impacts += beats(sc, vs, at, vo, lambda x: os.path.join(A, f"sfx_{x}.wav"))   # (storyboard beats: timed, sounded, their impacts kept for the critic)
         t = vs + d
@@ -307,7 +308,7 @@ def main(work):
                 vo.append([tick, round(t + 0.15 + k * 0.4, 3)])
             t += 0.15 + think
             vo.append([chime, round(t, 3)])
-        t += GAP if i < len(S["scenes"]) - 1 else TAIL
+        t += GAP if i < len(S["scenes"]) - 1 or sc["kind"] != "outro" else TAIL   # (the hold is the sign-off's: a reel with no outro, a loop, replays at once)
         sc["t1"] = round(t, 3)
         if sc.get("layout") == "candles": impacts.append(round(sc["t1"] - .55, 3))   # (the candles' burst is an impact too)
     for sc in S["scenes"]:                                     # realistic video shots (footage.py), fitted to their scenes

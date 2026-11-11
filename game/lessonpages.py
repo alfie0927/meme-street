@@ -42,7 +42,7 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every acc
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
         'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/about">About Meme Street</a>'
-        ' · <a href="/bots/guide">Trading bots</a><br>Everything on Meme Street is fictional and nothing is investment '
+        ' · <a href="/bots/guide">Trading bots</a> · <a href="/vs">Compare</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
 
 CALC_PATH = "/tools/position-size-calculator"

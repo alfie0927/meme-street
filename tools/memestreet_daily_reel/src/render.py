@@ -57,6 +57,8 @@ async def dry(R, fdir, fps=2):
                 bad.setdefault(tuple(pair), t)
             m = await pg.evaluate("minFont()")
             if m is not None and m < 26: small.setdefault(round(m), t)
+            if i == 0 and R.get("scene_js") and await pg.evaluate("hook0()") < 72:   # (the first frame is the hook: whole, large, readable with the sound off)
+                faults.append("frame 0 has no large hook: scene 0 is a free scene whose punch 'text' is 2 to 5 short words (the template draws it whole at the top, 72 px or more, in two lines at most)")
         await b.close()
     for (a, c), t in list(bad.items())[:4]: faults.append(f"text on text at {t:.1f}s: {a} / {c}")
     for m, t in list(small.items())[:3]: faults.append(f"text {m} px at {t:.1f}s: nothing the scene draws may be under 26 px (unreadable on a phone)")

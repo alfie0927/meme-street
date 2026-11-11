@@ -112,7 +112,7 @@ def analyse(d, own_name=""):
     board = [b for b in d.get("board", []) if b.get("name") != own_name]
     best_player = max([b["ret"] for b in board], default=None)
     return dict(C=C, H=H, n=n, hold=float(hold), events=events, trades=trades, total=float(total),
-                best_player=best_player, players=len(board), number=d.get("number"), levels=g.get("levels", []))
+                best_player=best_player, players=d.get("players", len(board)), number=d.get("number"), levels=g.get("levels", []))
 
 # ==================================================================== narration
 def event_cues(e, n):

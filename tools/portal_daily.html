@@ -1,0 +1,116 @@
+<!doctype html>
+<!-- The Daily Chart as one self-contained file for game portals (docs/REACH_PLAN.md, "Game portals"): no server, no
+     sign-in, no outside address, and it plays at once. tools/portal_build.py bakes charts from the game's own chart
+     maker (game/daily.py make_chart) into CHARTS and zips the result. The rules in the script are daily.py's
+     (daily_trade, _daily_finish, _daily_grid), ported line for line; the build's check plays games against the Python. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Daily Chart: the two-minute trading game</title>
+<style>
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:#0a0d11;color:#e8edf2;font:15px/1.4 Consolas,"SF Mono",Menlo,monospace;display:flex;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none}
+#app{width:100%;max-width:860px;height:100%;display:flex;flex-direction:column;padding:10px 12px}
+.hd{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h1{font-size:19px;margin:0}h1 b{color:#4ec3cf}.by{color:#7c8894;font-size:12px}
+.s-intro #top,.s-intro #cw,.s-intro #ctl,.s-intro #end,.s-game #intro,.s-game #end,.s-end #intro,.s-end #top,.s-end #ctl{display:none}
+#intro{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:12px}
+#end{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:10px 0 4px}
+.tag{font-size:28px;font-weight:700;line-height:1.2;margin:0}.how{color:#9aa6b2;max-width:460px;margin:0;font-size:14px}
+button{font-family:inherit;font-weight:700;line-height:1.2}
+.go{background:#4ec3cf;color:#04161a;border:0;border-radius:12px;font-size:20px;padding:14px 46px;cursor:pointer}
+#top{display:flex;justify-content:space-between;align-items:flex-end;margin:6px 0 4px}
+#clock{font-size:38px;font-weight:700;color:#4ec3cf;line-height:1}#ret{font-size:30px;font-weight:700;line-height:1;text-align:right}
+#eq{color:#7c8894;font-size:12px;text-align:right}.up{color:#2fd07a}.dn{color:#f55d57}.fl{color:#9aa6b2}
+#cw{flex:1;min-height:150px;position:relative;border:1px solid #1d252e;border-radius:8px;background:#0f1419;overflow:hidden;margin-top:6px}
+#cv{position:absolute;inset:0;width:100%;height:100%}
+#pos{text-align:center;color:#9aa6b2;font-size:13px;margin:6px 0;min-height:18px}#pos.err{color:#f55d57}
+.chips,.btns{display:flex;gap:6px}
+.chips button{flex:1;background:#131a21;color:#e8edf2;border:1px solid #1d252e;border-radius:20px;padding:8px 0;font-size:13px;cursor:pointer}
+.chips button.on{background:#4ec3cf;color:#04161a;border-color:#4ec3cf}
+.btns{margin-top:6px}.btns button{flex:1;border:0;border-radius:10px;padding:15px 0;font-size:19px;cursor:pointer;color:#04161a}
+#buy{background:#2fd07a}#sell{background:#f55d57}.btns small{font-size:11px;opacity:.6;margin-left:8px}
+#grid{display:flex;gap:5px}#grid i{width:26px;height:26px;border-radius:5px;background:#3a444f}#grid i.up{background:#2fd07a}#grid i.dn{background:#f55d57}
+.big{font-size:48px;font-weight:700;line-height:1;margin:0}.small{color:#7c8894;font-size:12px;margin:0}
+@media(hover:none){.btns small{display:none}}
+</style></head><body><div id="app" class="s-intro">
+<div class="hd"><h1>Daily Chart <b id="num"></b></h1><span class="by">by Meme Street</span></div>
+<div id="intro"><p class="tag">Two minutes.<br>One chart.</p>
+<p class="how">A made-up stock and 1,000 MB of practice money. A new candle prints every second. Buy if you think it will rise, short if you think it will fall. After two minutes, see how you did against the stock.</p>
+<button class="go" id="play">Play</button><p class="small">Practice money only. MB have no cash value.</p></div>
+<div id="top"><div id="clock">2:00</div><div><div id="ret" class="fl">0.0%</div><div id="eq"></div></div></div>
+<div id="cw"><canvas id="cv" aria-label="Price chart"></canvas></div>
+<div id="ctl"><div id="pos" role="status"></div>
+<div class="chips" id="chips"><button data-s="0.25">25%</button><button data-s="0.5">50%</button><button data-s="0.75">75%</button><button data-s="1" class="on">100%</button></div>
+<div class="btns"><button id="buy"><span id="buy-l">Buy</span><small>B</small></button><button id="sell"><span id="sell-l">Short</span><small>S</small></button></div></div>
+<div id="end"><p class="small">Your return</p><p class="big" id="e-ret"></p><div id="grid"></div>
+<p class="how" id="e-vs"></p><button class="go" id="again">Play another chart</button>
+<!-- SITE: the one line that names the site. A portal that allows no address in a game: delete this line. -->
+<p class="small">Practice money only. A new chart for everyone each day, and the full market, at memestreet.net</p></div>
+</div>
+<script>
+const CHARTS=/*CHARTS*/[];      // baked by tools/portal_build.py: per chart, 180 of [open,high,low,close]
+const HISTORY=60,LIVE=120,START=1000,SQUARES=8,$=id=>document.getElementById(id);
+// ---- the rules, as game/daily.py has them (no fees; a short is at most the account's worth) ----
+function newGame(ci){return{ci,cs:CHARTS[ci],cash:START,shares:0,trades:[]}}
+function trade(g,side,pct,n){                    // n: candles shown so far; the price is the last one's close
+  const price=g.cs[n-1][3],held=g.shares;let sh,kind;
+  if(side==='buy'&&held<-1e-12){sh=-held*pct;g.shares+=sh;g.cash-=sh*price;kind='cover'}
+  else if(side==='buy'){const spend=g.cash*pct;if(spend<0.01)return'No cash left to buy with';sh=spend/price;g.cash-=spend;g.shares+=sh;kind='buy'}
+  else if(held>1e-12){sh=held*pct;g.shares-=sh;g.cash+=sh*price;kind='sell'}
+  else{const room=Math.max(0,g.cash+held*price-(-held)*price);if(room*pct<0.01)return'You are already short as much as your account allows';
+    sh=room*pct/price;g.shares-=sh;g.cash+=sh*price;kind='short'}
+  g.trades.push([n-1,kind,price,sh]);
+  if(Math.abs(g.shares)*price<1e-9)g.shares=0}
+function worth(g,n){return Math.max(0,g.cash+g.shares*g.cs[n-1][3])}
+function finish(g){g.ret=worth(g,HISTORY+LIVE)/START-1}
+function grid(g){                                // one square per 15 seconds: did the account's worth rise, fall or stay
+  let cash=START,shares=0,j=0;const w=[],step=LIVE/SQUARES;
+  for(let k=0;k<=SQUARES;k++){const i=HISTORY-1+k*step;
+    while(j<g.trades.length&&g.trades[j][0]<=i){let[,kind,price,sh]=g.trades[j];if(kind!=='buy'&&kind!=='cover')sh=-sh;shares+=sh;cash-=sh*price;j++}
+    w.push(Math.max(0,cash+shares*g.cs[i][3]))}
+  return w.slice(1).map((b,k)=>Math.abs(b-w[k])<=0.0005*Math.max(w[k],1)?0:b>w[k]?1:-1)}
+window.replay=(ci,script)=>{const g=newGame(ci),errs=[];for(const[sec,side,pct]of script)errs.push(trade(g,side,pct,HISTORY+sec)||'');finish(g);
+  return{cash:g.cash,shares:g.shares,ret:g.ret,grid:grid(g),trades:g.trades,errs}};      // (the build's check plays this against the Python rules)
+// ---- the page ----
+let g=null,t0=0,size=1,timer=0,err='',errAt=0,ci=Math.floor(Date.now()/864e5)%CHARTS.length;   // the day picks the first chart: the same one for everyone
+const pc=r=>(r>0?'+':'')+(r*100).toFixed(1)+'%',cls=r=>r>0.0005?'up':r<-0.0005?'dn':'fl',mb=v=>v.toLocaleString('en',{minimumFractionDigits:2,maximumFractionDigits:2});
+const state=s=>{$('app').className='s-'+s};
+function shown(){return HISTORY+Math.max(0,Math.min(LIVE,Math.floor((performance.now()-t0)/1000)))}
+function start(){g=newGame(ci);t0=performance.now();err='';$('num').textContent='#'+(ci+1);state('game');clearInterval(timer);timer=setInterval(tick,100);tick()}
+function tick(){
+  const n=shown(),left=LIVE-(n-HISTORY);
+  if(left<=0){clearInterval(timer);finish(g);return end()}
+  const w=worth(g,n),r=w/START-1,price=g.cs[n-1][3],h=g.shares;
+  $('clock').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
+  $('ret').textContent=pc(r);$('ret').className=cls(r);$('eq').textContent=mb(w)+' MB';
+  const bl=h<-1e-12?'Cover':'Buy',sl=h>1e-12?'Sell':'Short';
+  if($('buy-l').textContent!==bl)$('buy-l').textContent=bl;if($('sell-l').textContent!==sl)$('sell-l').textContent=sl;
+  const showErr=err&&performance.now()-errAt<2500;$('pos').className=showErr?'err':'';
+  $('pos').textContent=showErr?err:h>1e-12?'Long: shares worth '+mb(h*price)+' MB':h<-1e-12?'Short: '+mb(-h*price)+' MB of shares owed':'Flat: all '+mb(g.cash)+' MB in cash';
+  draw(n)}
+function act(side){if(!g||$('app').className!=='s-game')return;err=trade(g,side,size,shown())||'';errAt=performance.now();tick()}
+function end(){
+  const r=g.ret,stock=g.cs[HISTORY+LIVE-1][3]/g.cs[HISTORY-1][3]-1;
+  $('e-ret').textContent=pc(r);$('e-ret').className='big '+cls(r);
+  $('grid').innerHTML=grid(g).map(v=>'<i class="'+(v>0?'up':v<0?'dn':'')+'"></i>').join('');
+  $('e-vs').textContent='The stock itself moved '+pc(stock)+' in those two minutes. '+(!g.trades.length?'You made no trade.':r>stock+1e-9?'You beat it.':r<stock-1e-9?'Buying at the start and holding would have done better.':'You matched it.');
+  ci=(ci+1)%CHARTS.length;state('end');draw(HISTORY+LIVE)}
+function draw(n){
+  const cv=$('cv'),d=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;if(!W||!H)return;
+  if(cv.width!==Math.round(W*d)||cv.height!==Math.round(H*d)){cv.width=Math.round(W*d);cv.height=Math.round(H*d)}
+  const x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,W,H);
+  let lo=Infinity,hi=-Infinity;for(let i=0;i<n;i++){lo=Math.min(lo,g.cs[i][2]);hi=Math.max(hi,g.cs[i][1])}
+  const pad=(hi-lo)*0.1||1;lo-=pad;hi+=pad;const cw=W/(HISTORY+LIVE),y=p=>H-(p-lo)/(hi-lo)*H;
+  x.strokeStyle='#27313c';x.beginPath();x.moveTo(HISTORY*cw,0);x.lineTo(HISTORY*cw,H);x.stroke();       // where the game began
+  for(let i=0;i<n;i++){const c=g.cs[i],cx=(i+.5)*cw,a=y(Math.max(c[0],c[3])),b=y(Math.min(c[0],c[3]));
+    x.fillStyle=x.strokeStyle=c[3]>=c[0]?'#2fd07a':'#f55d57';x.beginPath();x.moveTo(cx,y(c[1]));x.lineTo(cx,y(c[2]));x.stroke();
+    x.fillRect(cx-cw*.35,a,Math.max(1,cw*.7),Math.max(1,b-a))}
+  const last=g.cs[n-1][3];x.strokeStyle='#4ec3cf';x.setLineDash([4,4]);x.beginPath();x.moveTo(0,y(last));x.lineTo(W,y(last));x.stroke();x.setLineDash([]);
+  x.fillStyle='#4ec3cf';x.font='12px Consolas,monospace';x.textAlign='right';x.fillText(last.toFixed(2),W-4,y(last)<16?y(last)+14:y(last)-4);
+  for(const[i,kind,price]of g.trades){const up=kind==='buy'||kind==='cover',cx=(i+.5)*cw,py=y(price),s=up?1:-1;      // a trade: green under the price, red over it
+    x.fillStyle=up?'#2fd07a':'#f55d57';x.strokeStyle='#0a0d11';x.beginPath();x.moveTo(cx,py+5*s);x.lineTo(cx-6,py+16*s);x.lineTo(cx+6,py+16*s);x.closePath();x.fill();x.stroke()}}
+$('play').onclick=$('again').onclick=start;$('buy').onclick=()=>act('buy');$('sell').onclick=()=>act('sell');
+$('chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;size=+b.dataset.s;for(const c of $('chips').children)c.classList.toggle('on',c===b)};
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='b')act('buy');else if(k==='s')act('sell');else if('1234'.includes(k)&&k)$('chips').children[k-1].click();
+  else if((k==='enter'||k===' ')&&$('app').className!=='s-game'&&document.activeElement.tagName!=='BUTTON')start()});
+addEventListener('resize',()=>{if(g)draw($('app').className==='s-end'?HISTORY+LIVE:shown())});
+</script></body></html>

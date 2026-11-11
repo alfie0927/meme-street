@@ -80,6 +80,7 @@ jobs:
             brand/icon-192.png brand/icon-512.png brand/apple-touch-icon.png 2>/dev/null | sort -u > files.txt
           tar -czf code.tgz -T files.txt
           scp -i ~/.ssh/deploy code.tgz root@memestreet.net:/tmp/memestreet-code.tgz
+          curl -sf https://memestreet.net/sitemap.xml -o before.xml || true   # (the sitemap before this deploy: the last step tells Bing only what is new)
           touch started   # (from here a failure means the server may be half-updated: the next step rolls back)
           # as upload.ps1 -Restart: keep the code it replaces (for rollback.sh), unpack, update and restart
           $S 'mkdir -p /opt/memestreet-releases && tar -czf /opt/memestreet-releases/$(date -u +%Y%m%d-%H%M%S).tgz -C /opt/memestreet --ignore-failed-read game web content tools deploy brand requirements.txt 2>/dev/null || true; ls -1t /opt/memestreet-releases/*.tgz 2>/dev/null | tail -n +6 | xargs -r rm -f --; tar -xzf /tmp/memestreet-code.tgz -C /opt/memestreet && rm /tmp/memestreet-code.tgz && sed -i "s/\r$//" /opt/memestreet/deploy/* && bash /opt/memestreet/deploy/update_server.sh restart'
@@ -95,3 +96,10 @@ jobs:
           [ -f started ] || { echo "the deploy never reached the server; nothing to roll back"; exit 1; }
           ssh -i ~/.ssh/deploy root@memestreet.net 'bash /opt/memestreet/deploy/rollback.sh'
           exit 1
+      - name: Tell Bing and the other IndexNow search engines what is new
+        if: steps.deploy.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          # (docs/REACH_PLAN.md P4: only the addresses the sitemap did not have before this deploy; no older copy, nothing sent)
+          if [ -s before.xml ]; then python tools/indexnow.py before.xml; else echo "no copy of the sitemap from before: nothing sent"; fi

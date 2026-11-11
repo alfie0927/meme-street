@@ -1,11 +1,11 @@
 [Unit]
-Description=Meme Street: make the Daily Chart recap reel
+Description=Meme Street: make and post the Daily Chart reel (a director reel)
 After=network-online.target
 [Service]
 Type=oneshot
 User=__USER__
 ExecStart=__DIR__/make_reel.sh
-TimeoutStartSec=9000
+TimeoutStartSec=14400
 # the game runs on this server too: rendering gets one core, low priority, and is stopped before it can starve it
 Nice=19
 IOSchedulingClass=idle

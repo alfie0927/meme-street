@@ -20,9 +20,14 @@ YOURDOMAIN {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
-		X-Frame-Options "DENY"
 		-Server
 	}
+	# No page may be shown inside another site's frame, except the Daily at /embed/daily (REACH_PLAN P2), and that one
+	# only by the hosts named here. To let another site frame it (a school, a blog), add its https:// address to the list.
+	@noframe not path /embed/daily
+	header @noframe X-Frame-Options "DENY"
+	@embed path /embed/daily
+	header @embed Content-Security-Policy "frame-ancestors 'self' https://itch.io https://*.itch.io https://*.itch.zone"
 
 	# The visit log (growth plan 2026-11-10): which links and pages bring people, read by tools/visits.py, kept 30 days.
 	# No login token reaches it: the token travels in the X-Token header and in the WebSocket address (/ws?token=...),

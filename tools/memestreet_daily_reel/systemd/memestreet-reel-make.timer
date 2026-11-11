@@ -1,7 +1,9 @@
 [Unit]
-Description=Make the Daily Chart reel at 23:00 UTC (an hour before the daily resets)
+Description=Make and post the Daily Chart reel at 23:00 UTC, retried through the night until it posts (make_reel.sh does nothing once posted)
 [Timer]
 OnCalendar=*-*-* 23:00:00 UTC
+OnCalendar=*-*-* 23:40:00 UTC
+OnCalendar=*-*-* 01,03,05,08:00:00 UTC
 Persistent=false
 [Install]
 WantedBy=timers.target
