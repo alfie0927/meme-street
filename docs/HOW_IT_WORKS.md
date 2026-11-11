@@ -221,6 +221,7 @@ Every `.json` file here is a content pack: the engine reads them all in name ord
 | `load_check.py` | Many logged-out visitors opening the Daily at once, against a staging or local copy only; prints failures and the slowest 95% (2026-11-11). |
 | `portal_build.py`, `portal_daily.html` | The Daily as one self-contained page for game portals, built into `growth/portals/`; `--check` plays thirty scripted games against `game/daily.py` (2026-11-11). |
 | `move_to_d.ps1` | Moves one folder off C: and leaves a link at the old path (used for the caches now in `D:\caches`). |
+| `fetch_reels.ps1` | Copies the reels that went out on Instagram, with their captions, from the reel server (`out/<date>` for the Daily, `queue/<slot>` for the rest) to `D:\memestreet_reels`, for posting by hand elsewhere (`growth/social.md`). Read-only on the server; skips a reel it already has and every Trial Reel. |
 | `pricing_model.py` | What a cohort of sign-ups might bring in from MB packages and Pro, with every behaviour an assumption and the sensitivity to each (ROADMAP M7). |
 
 ### What the game writes (`data/`, never in git)
@@ -1413,6 +1414,8 @@ What follows is the game itself, as before.
 *Comparison pages.* `game/vspages.py` serves `/vs` and one page for each entry of `VS` (five trading simulators and Wordle), built on the lesson pages' shell (`HEAD`, `CTA`, `FOOT` of `lessonpages.py`), in the sitemap and `/llms.txt`, with a *Compare* link in every lesson page's footer. A page says what the other site is, sets the two side by side, says what Meme Street cannot do, and says when the other one is the better pick. Every statement about another site sits in `VS` with where it came from in `src` (never printed) and carries the date `ASOF`; nothing says what another site lacks. `python game/vspages.py` is the self-check (run from `game/`). The file is not on the SEO routine's list, so that routine cannot change it.
 
 *Texts for the owner to send (`growth/`).* `launch.md` (Show HN with answers to the likely questions, Product Hunt, the launch lists), `writeup.md` (how the game is built), `lesson_plan.html` and `.pdf` with `schools.md` (one class on the Daily Chart and where to list it), `cross_posting.md` (the keys each platform needs), `directories.md`, and `portals/`.
+
+*The framed Daily went live* on 2026-11-11: the live Caddy file got only the frame lines (its admin password block kept; the file before is `/etc/caddy/Caddyfile.before-embed`), checked in a browser against the live site.
 
 *This computer.* The C: drive was full, so the caches moved to `D:\caches` (`huggingface`, `ms-playwright`, `uv`, `pip`, `npm-cache`), each behind a link at its old path made by `tools/move_to_d.ps1` (copy, compare, then swap in a junction; nothing is removed before the copy matched). `D:\caches\ffmpeg\ffmpeg.exe` is the ffmpeg for a reel's dry render on this computer: its folder goes on `PATH` for the run.
 

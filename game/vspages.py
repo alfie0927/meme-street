@@ -40,14 +40,14 @@ VS = {
         "You buy and sell real US-listed shares with virtual cash, and you can join games against other players or start "
         "one for your own group.",
         "$100,000 of virtual cash in the standard game", "you want to practise on the real companies you read about, at their real prices",
-        "web search 2026-11-11: third-party write-ups only, investopedia.com itself was not read. Check before relying on it."),
+        "web search 2026-11-11: several 2026 reviews agree ($100,000 default game, games with others, real US shares); investopedia.com blocks our reader."),
     "marketwatch-virtual-stock-exchange": _sim(
         "MarketWatch Virtual Stock Exchange", "MarketWatch's Virtual Stock Exchange", "https://www.marketwatch.com/games",
         "MarketWatch's Virtual Stock Exchange is a stock market game from the news site MarketWatch. You join a public game "
         "or create your own, public or private, and trade real shares with a virtual portfolio. Whoever creates a game "
         "sets its starting cash and its rules.",
         "Set by whoever creates the game", "you want a private game on real shares for a class or a group of friends, with rules you set",
-        "web search 2026-11-11: archived marketwatch.com/game page and the VSE instructor guide, both 2021 copies."),
+        "web search 2026-11-11: a current MarketWatch games FAQ (the host sets the starting budget, margin and short selling), the 2021 game page and VSE instructor guide."),
     "howthemarketworks": _sim(
         "HowTheMarketWorks", "HowTheMarketWorks", "https://www.howthemarketworks.com/",
         "HowTheMarketWorks is a stock market game from Stock-Trak, built around classrooms. Teachers create contests with "
@@ -61,7 +61,7 @@ VS = {
         "Wall Street Survivor pairs a stock market game with courses, articles and videos about investing. You start with "
         "$100,000 of virtual money, buy shares in real companies, and can join leagues and contests against other players.",
         "$100,000 of virtual money", "you want courses about investing in real companies next to a game that trades them",
-        "web search 2026-11-11: finder.com's stock trading games page and other third-party write-ups; their site was not read."),
+        "web search 2026-11-11, checked against wallstreetsurvivor.com's own home, courses and stock-market-game pages ($100,000, courses, contests and private leagues)."),
     "tradingview-paper-trading": _sim(
         "TradingView paper trading", "TradingView paper trading", "https://www.tradingview.com/support/solutions/43000516466-paper-trading-main-functionality/",
         "Paper trading is a practice account inside TradingView, the charting platform. You place practice orders straight "
