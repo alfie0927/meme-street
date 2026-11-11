@@ -20,5 +20,5 @@ Ordered by expected signups per hour of work. Each item: query → page → chan
 10. **Glossary as its own page per term** (`/lessons/glossary` holds every term): later, if glossary queries show impressions.
 11. ~~**Home page `/` has the bare title "Meme Street", no canonical, and a description that does not say "play money / learn".**
     Serve it through `page_as("/", ...)` in `game/pages.py` (title like "Meme Street: a free stock market game with play money"). Needs a check that tests/test_guest.py and the home tests still pass. Next daily run.~~ done 2026-11-09.
-12. **More tools near the calculator:** ~~risk/reward ratio calculator~~ done 2026-11-10 (`/tools/risk-reward-calculator`); next: stop-loss calculator (same page pattern in `lessonpages.py`).
+12. **More tools near the calculator:** ~~risk/reward ratio calculator~~ done 2026-11-10 (`/tools/risk-reward-calculator`); ~~stop-loss calculator~~ done 2026-11-11 (`/tools/stop-loss-calculator`); next: a compound-interest or drawdown-recovery calculator only if it fits the lessons (check `content/learn-*.md` for a sourced formula first).
 13. **`/about` is out of date on the course size**: it says "96 free lessons in 17 tracks"; `learning.load_content()` now gives 114 lessons in 20 tracks (the `/lessons` hub counts them live). Change the line in `web/about.html` or drop the numbers. Found 2026-11-11.

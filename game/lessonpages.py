@@ -41,7 +41,7 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every acc
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
-        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/about">About Meme Street</a>'
+        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a> · <a href="/vs">Compare</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
 
@@ -125,6 +125,55 @@ o.innerHTML="<b>"+(short?"Short":"Long")+": "+fmt(rr)+" to 1 reward to risk.</b>
 document.getElementById("f").addEventListener("input",go);go()})();
 </script>"""
 
+SL_PATH = "/tools/stop-loss-calculator"
+SL_TITLE = "Stop loss calculator: where to put your stop and what it costs | Meme Street"
+SL_DESC = ("Free stop loss calculator. Enter your entry and a stop distance in % or in ATR and it gives the stop price, "
+           "the loss per share and the loss on your position. Works for long and short trades.")
+SL_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> › Tools</p><h1>Stop loss calculator</h1>
+<p class="lead">Stop price = entry &minus; entry &times; stop % for a long, and entry + entry &times; stop % for a short. A long
+bought at 100 with a 5% stop has its stop at 95, so each share risks 5. Enter your entry and how far away the stop goes, and
+the calculator gives the stop price and what you lose if it is hit.</p>
+<form id="f" class="try" onsubmit="return false">
+<p><label>Direction <select id="side"><option value="long">Long (buy)</option><option value="short">Short (sell)</option></select></label>
+<label>Entry price <input id="entry" type="number" min="0" step="any" value="100"></label>
+<label>Shares <input id="shares" type="number" min="0" step="any" value="10"></label></p>
+<p><label>Stop distance, % of entry <input id="pct" type="number" min="0" step="any" value="5"></label>
+<label>ATR (optional) <input id="atr" type="number" min="0" step="any" value=""></label>
+<label>Stop distance, in ATRs <input id="k" type="number" min="0" step="any" value="1.5"></label></p>
+</form>
+<div id="out" class="box tip" aria-live="polite">Enter your numbers above.</div>
+<noscript><p>This calculator needs JavaScript. The sum is: long stop = entry &minus; entry &times; stop %; short stop = entry +
+entry &times; stop %; loss at the stop = shares &times; |entry &minus; stop|.</p></noscript>
+<h2>How it works</h2>
+<p>A percentage stop is the simplest: take the entry, move it down (long) or up (short) by the percentage, and that is the stop.
+The loss if it is hit is the shares times the distance. 10 shares at a 5 stop distance lose 50 before fees.</p>
+<p>The ATR is the average distance a candle moves. A stop closer than about one ATR from the entry sits inside normal noise
+and gets hit by chance even when the trade idea was right, so the ATR boxes give a second stop to compare: the entry moved
+by your number of ATRs. Read the ATR off the stock's chart and type it in.</p>
+<p>A stop is best put where the trade idea is wrong, then outside the noise; the percentage is a way to check what that costs,
+not a place to put it. To turn the loss you accept into a number of shares, use the
+<a href="/tools/position-size-calculator">position size calculator</a>.</p>
+<div class="box warn"><b>Watch out:</b> a stop is not a guaranteed price. If the price gaps past it, the order fills at the next
+price, so the real loss can be bigger than the number shown. On Meme Street the fee is 0.1% on each side of a trade, and the
+result counts both sides.</div>
+<p>Learn more in <a href="/lessons/stop-placement">Where stops go</a>, <a href="/lessons/costs">slippage, gaps through stops
+and fees</a> and <a href="/lessons/first-trade">your first trade, with a stop</a>.</p>
+<script>
+(function(){var $=function(i){return document.getElementById(i)},o=$("out");
+function fmt(x){return x.toLocaleString("en-US",{maximumFractionDigits:2})}
+function go(){var e=+$("entry").value,n=+$("shares").value,p=+$("pct").value,a=+$("atr").value,k=+$("k").value,short=$("side").value==="short";
+if(!(e>0&&p>0)){o.textContent="Enter an entry price and a stop distance above zero.";return}
+var d=e*p/100,st=short?e+d:e-d;
+var h="<b>"+(short?"Short":"Long")+": stop at "+fmt(st)+"</b> ("+fmt(p)+"% from the entry of "+fmt(e)+", "+fmt(d)+" per share).";
+if(n>0){var fee=0.001*n*(e+st);h+="<br>Hit the stop: lose "+fmt(n*d)+" before fees, about "+fmt(n*d+fee)+" with the 0.1% fee on both sides, on a position of "+fmt(n*e)+"."}
+if(a>0&&k>0){var da=a*k,sa=short?e+da:e-da;h+="<br>At "+fmt(k)+" ATR the stop would be "+fmt(sa)+" ("+fmt(da/e*100)+"% from entry)"+(p/100*e<a?"; your percentage stop is closer than one ATR, so ordinary movement may hit it.":".");
+if(!short&&sa<=0)h+=" (That is below zero.)"}
+o.innerHTML=h}
+document.getElementById("f").addEventListener("input",go);go()})();
+</script>"""
+
+SL_LINK = ('<div class="try">Try it: the <a href="/tools/stop-loss-calculator">free stop loss calculator</a> '
+           "gives the stop price and the loss if it is hit.</div>")
 RR_LINK = ('<div class="try">Try it: the <a href="/tools/risk-reward-calculator">free risk reward ratio calculator</a> '
            "does this sum for you.</div>")
 CALC_LINK = ('<div class="try">Try it: the <a href="/tools/position-size-calculator">free position size calculator</a> '
@@ -220,7 +269,7 @@ class Lessons:
                             url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
                 f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
-                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
 
     def calculator(self):
         """The free position size calculator (works without an account; the sum runs in the page)."""
@@ -252,6 +301,21 @@ class Lessons:
         return (HEAD.format(t=html.escape(RR_TITLE), d=html.escape(RR_DESC), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=css) + RR_BODY + CTA + FOOT)
 
+    def stop_loss(self):
+        """The free stop loss calculator (works without an account; the sum runs in the page)."""
+        url = self.site + SL_PATH
+        ld = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Stop loss calculator",
+               "url": url, "description": SL_DESC, "applicationCategory": "FinanceApplication",
+               "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": "Stop loss calculator", "item": url}]}]
+        css = CSS + "label{display:inline-block;margin:6px 14px 6px 0}input,select{display:block;margin-top:4px;width:11em;max-width:100%;" \
+            "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
+        return (HEAD.format(t=html.escape(SL_TITLE), d=html.escape(SL_DESC), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=css) + SL_BODY + CTA + FOOT)
+
     def hub(self):
         url = self.site + "/lessons"
         d = self.hub_text
@@ -270,7 +334,7 @@ class Lessons:
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade, free</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
-                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a></p>'
+                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a></p>'
                 + "".join(parts) + FOOT)
 
 
@@ -285,6 +349,9 @@ if __name__ == "__main__":
     assert c.count("<h1>") == 1 and f'href="https://memestreet.net{CALC_PATH}"' in c and c.count("<script>") == 1
     r = L.risk_reward()
     assert r.count("<h1>") == 1 and f'href="https://memestreet.net{RR_PATH}"' in r and r.count("<script>") == 1
+    sl = L.stop_loss()
+    assert sl.count("<h1>") == 1 and f'href="https://memestreet.net{SL_PATH}"' in sl and sl.count("<script>") == 1
+    assert 'href="/tools/stop-loss-calculator"' in L.page("stop-placement")
     assert 'href="/tools/position-size-calculator"' in L.page("position-sizing")
     assert L.page("nope") is None and L.hub().count("/lessons/") >= len(L.lessons)
     assert inline("**a** [b](/x) <i>") == '<b>a</b> <a href="/x">b</a> &lt;i&gt;'

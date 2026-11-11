@@ -198,6 +198,17 @@ class ServerTests(unittest.TestCase):
         status, body, _ = http(self.srv, "/lessons/r-multiples")
         self.assertIn('href="/tools/risk-reward-calculator"', body)
 
+    def test_the_stop_loss_calculator_is_a_plain_page(self):
+        status, body, _ = http(self.srv, "/tools/stop-loss-calculator")
+        self.assertEqual(status, 200)
+        self.assertIn("<h1>Stop loss calculator</h1>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/tools/stop-loss-calculator"', body)
+        self.assertIn('id="pct"', body)
+        status, body, _ = http(self.srv, "/sitemap.xml")
+        self.assertIn("/tools/stop-loss-calculator</loc>", body)
+        status, body, _ = http(self.srv, "/lessons/stop-placement")
+        self.assertIn('href="/tools/stop-loss-calculator"', body)
+
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")
         self.assertEqual(status, 200)
