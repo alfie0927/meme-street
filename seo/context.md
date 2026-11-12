@@ -11,7 +11,7 @@ A fictional stock market that runs around the clock, for learning to trade witho
 - Fee 0.1% per side, no hidden spread: `game/engine.py` `FEE = 0.001`.
 - Players' trades never move prices: docs/ROADMAP.md §1 rule 3.
 - No simple rule beats holding the index by a wide margin (checked by `tools/realism.py`): ROADMAP §1 rule 2.
-- 96 lessons in 17 tracks: `content/learn-*.md`, live `/api/learn` (checked 2026-11-07).
+- 114 lessons in 20 tracks: `content/learn-*.md`, `learning.load_content()` (checked 2026-11-12; /about says "100+").
 - Chart tests on real game charts, 11 kinds: ROADMAP §2.
 - The Daily Chart: one mystery chart a day, two minutes, one go, streaks and a shareable result: ROADMAP §2, `game/pages.py` `DAILY_TEXT`.
 - Charts: five chart types, log scale, 49 indicators (only part of them free), 16 drawing tools, 2,000 candles per timeframe: ROADMAP §2 and §270.
