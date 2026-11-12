@@ -101,5 +101,5 @@ jobs:
         continue-on-error: true
         shell: bash
         run: |
-          # (docs/REACH_PLAN.md P4: only the addresses the sitemap did not have before this deploy; no older copy, nothing sent)
+          # (docs/ROADMAP.md B12: only the addresses the sitemap did not have before this deploy; no older copy, nothing sent)
           if [ -s before.xml ]; then python tools/indexnow.py before.xml; else echo "no copy of the sitemap from before: nothing sent"; fi

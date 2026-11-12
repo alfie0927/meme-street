@@ -41,7 +41,7 @@ HOME_BODY = ("<main><h1>Meme Street: a stock market game with play money</h1>"
 SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart; the Learn page)
 VS = re.compile(r"([\w. -]{0,16})~(-?[0-9]{1,7})~([0-9]{1,6})")   # a challenge link's name~return~number, as web/daily.js reads it
 INDEXNOW_KEY = "9174e4823a4a87abdea3109b5df145c4"   # (not a secret: Bing reads it back from /<key>.txt to see that tools/indexnow.py speaks for this site)
-MANIFEST = json.dumps({   # (an installable web app: roadmap U1, REACH_PLAN P3; ?ref=app shows an installed copy's visits in the visit log)
+MANIFEST = json.dumps({   # (an installable web app: roadmap U1; ?ref=app shows an installed copy's visits in the visit log)
     "name": "Meme Street", "short_name": "Meme Street", "description": HOME_TEXT, "start_url": "/?ref=app", "scope": "/",
     "display": "standalone", "background_color": "#08090b", "theme_color": "#08090b", "categories": ["games", "education", "finance"],
     "icons": [{"src": f"/brand/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png"} for n in (192, 512)]})
@@ -160,7 +160,7 @@ def add_pages(app):
 
     @app.get("/llms.txt")
     async def llms_txt():
-        """The site in plain words for AI search engines (llmstxt.org; REACH_PLAN P4)."""
+        """The site in plain words for AI search engines (llmstxt.org; roadmap B12)."""
         return PlainTextResponse(llms, headers={"Cache-Control": "public, max-age=3600"})
 
     @app.get(f"/{INDEXNOW_KEY}.txt")
@@ -198,7 +198,7 @@ def add_pages(app):
 
     @app.get("/embed/daily")
     async def embed_daily():
-        """The Daily Chart inside another site's frame (itch.io, a blog, a class page; REACH_PLAN P2). The same page as
+        """The Daily Chart inside another site's frame (itch.io, a blog, a class page; roadmap B11). The same page as
         /daily, so search engines still see one address (the canonical link). The page's script reads the address and
         opens every link in a new tab; deploy/Caddyfile lets this one address be framed, and only by the hosts it names."""
         return daily_page()

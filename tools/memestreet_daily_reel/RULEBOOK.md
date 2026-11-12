@@ -29,6 +29,8 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - Captions: every spoken word is captioned, in every scene (the owner, 2026-11-09: "subtitles for ALL of the audio"). In a
   director reel a 3 to 5 word punch headline with one word in the reel's hot colour lands above them as the words are said.
   Elsewhere: one-line phrases word by word as said. Numbers are digits ("203", "12%").
+  The captions sit at y 1384, 59 px under the punch headline's line (the owner, 2026-11-12: "still too close to the
+  text"; 1332 at first, 1356 on 2026-11-10). 1384 is as low as one line goes inside Instagram's safe zone (1440).
 
 ## Voice
 - Sarah (ElevenLabs), at a human pace (about 3.9 words a second while talking), steady (no speeding up or slowing down
@@ -36,11 +38,15 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 
 ## Content
 - Concise: one idea, every line earning its place. A director reel runs 35 to 60 seconds (about 50 to 150 spoken
-  words; the owner, 2026-11-11: viewers give about 7 seconds); 60 is a ceiling, not a target; the short formats are shorter on purpose (Hard truth 25 to 60 words).
+  words; the owner, 2026-11-11: viewers give about 7 seconds); 60 is a ceiling, not a target; the short formats are shorter on purpose (Hard truth 25 to 60 words). The in-depth formats (Technical lesson, Strategy test)
+  may run 60 to 100 seconds (the owner, 2026-11-12: "some reels can be very in depth, like quant level explanations").
 - Accurate: every number and claim comes from the facts; what the voice says, the screen shows.
 - Sign-off: "Join free at memestreet.net." Only a reel about the Daily Chart mentions the Daily Chart.
 
 ## Daily recap
+- The Daily opens on the decision the viewer would have faced at the day's hardest candle, never on how many played
+  or the chart's number (2026-11-12: the two Daily reels that opened on the player count lost 70% of viewers in 3
+  seconds; the one that opened on the chart's own event lost 41%).
 - Superseded 2026-11-10 (the owner: "make the daily in the same creative style"): the Daily is a director reel like every
   other, its own device and palette, with the day's real chart, trades and scores as the facts (make_reel.sh).
 - The Daily's chart shades the lead-in (the candles every player saw before the clock started) with a dotted line where
@@ -98,10 +104,32 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   the cover, the Kokoro voice at one speed, the sign-off.
 - Punch headline: 3 to 5 words of the line in capitals at y 1270, one in the hot colour; the transcript captions run
   under it for every spoken word (the owner, 2026-11-09: subtitles for all of the audio).
-- 35 to 60 seconds (the owner, 2026-11-11); something changes on screen every 2 to 3 seconds; motion is big and has weight; impacts shake.
+- 35 to 60 seconds (the owner, 2026-11-11; the in-depth formats up to 100, 2026-11-12); something changes on screen every 2 to 3 seconds; motion is big and has weight; impacts shake.
 - Easy to understand with the sound off: the device, the HUD and the punches tell the story on their own.
 - Reels post without the owner's approval (the owner, 2026-11-09). The owner's feedback on posted reels goes under
   "By format" as before.
+
+- One reel of each format a day (the owner, 2026-11-12); the formats take turns, the one out longest ago first.
+- Seven new formats on trial since 2026-11-12 (the owner: "create more types of reels, still creative, with a really good
+  hook"): Two traders, Rewind, Trade diary, Candles talk, Instant replay, Expectation vs reality, Breaking news. Each opens
+  on a character or an odd object with the stake in view, never a bare chart or a list.
+- Instagram's numbers decide which formats stay (the owner, 2026-11-12: "make more of those / get rid of ones with high skip
+  rates"): `src/format_scores.py`, twice a day. A format with 3 or more scored reels whose median skip rate is 8 points above
+  the median of all reels is cut; 8 points below, it is made every day (the best two); at least 9 formats always stay.
+- The first 3 seconds, every reel: frame 0 already moving and recognisable at a glance, something extraordinary before 3
+  seconds, the punch between 1 and 2 seconds, the first spoken word the subject or "you", readable with the sound off
+  (the checklist of the virality skill, in our terms: `FIRST3` in make_spec.py). No "comment a keyword for a DM": nothing here sends DMs.
+- Depth and variety (the owner, 2026-11-12: "some of the reels are largely the same. they always talk about
+  resistance/support so much. there needs to be more depth in the actual content"): a reel follows ONE idea all the way
+  down (the mechanism, the number, the case where it fails) and never skims three. The subject changes from reel to reel:
+  every kind of chart test takes its turn (levels and breakouts are two of eleven), and the writer sees what the last
+  reels were about. Support or resistance is a reel's subject only when its own chart facts are about a level.
+- Technical lessons are back (the owner, 2026-11-12: "what happened to all the technical lessons?"), in depth: one
+  lesson of the site's own curriculum per reel, from candlesticks to Kelly sizing and the order book, and only what the
+  lesson says.
+- Strategy test, "we tested it" (the owner, 2026-11-12: "we tested [X] strategy, here's why it worked/didn't work"): one
+  rule run by `src/backtest.py` on every listed stock. Every number in the reel is the test's own, a rule that lost is
+  said to have lost, the sample's size is said once, and no reel promises the next trade.
 
 ## By format (the owner's feedback on each type as it posts; a reel of that type follows its lines)
 <!-- "### Format name" then "- YYYY-MM-DD: rule", newest last -->

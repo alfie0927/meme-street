@@ -120,7 +120,8 @@ def key(w):
 
 def follow(words, tw, wt, d):
     """The time each of `words` (on-screen text) is said: matched in order to the spoken line, the rest spread between."""
-    keys, out, j = [key(w) for w in tw], [], 0
+    keys, out, kw = [key(w) for w in tw], [], [key(w) for w in words]
+    j = next((q for q in range(len(keys) - len(kw) + 1) if keys[q:q + len(kw)] == kw), 0)   # (said as one phrase, the words land there: "can hit the stock" is the line's last "can", not its first; the critic, 2026-11-12)
     for w in words:
         k = next((q for q in range(j, len(keys)) if keys[q] == key(w) and key(w)), None)
         out.append(wt[k][0] if k is not None else None)
@@ -283,7 +284,7 @@ def main(work):
         sc["t0"] = round(t, 3); vs = t + (0.12 if i else 0.05)
         pv = S["scenes"][i - 1] if i else {}
         same = i and ((sc.get("chart") is not None and pv.get("chart") == sc["chart"]) or (sc["kind"] == "free" == pv.get("kind") and sc.get("chart") is None is pv.get("chart")))   # (the screen stays: the same chart, or one free world after another; reel.html keep())
-        if not i: vo.append([pop, 0.0])                        # a sound on the very first frame (docs/REACH_PLAN.md A2): the pop is over by 0.09 s and the voice starts at 0.15
+        if not i: vo.append([pop, 0.0])                        # a sound on the very first frame (docs/ROADMAP.md A2): the pop is over by 0.09 s and the voice starts at 0.15
         if i and not same: vo.append([whoosh, round(max(0, t - 0.24), 3)])   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])

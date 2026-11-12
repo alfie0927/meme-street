@@ -26,7 +26,7 @@ exec 8>queue/.auto.lock; flock -w 5400 8 || { echo "Daily $DATE: the reel lock s
     python3 src/critic.py loop "$W" "$O" || { rm -rf "$W"; exit 1; }   # (held: the next run writes a fresh script)
   fi
   python3 src/post_instagram.py "$O"                   # (an Instagram error fails the run; the next timer run posts it)
-  python3 src/post_elsewhere.py "$O" >> logs/elsewhere.log 2>&1 || true   # (the Daily on the other platforms that have keys: docs/REACH_PLAN.md A11)
+  python3 src/post_elsewhere.py "$O" >> logs/elsewhere.log 2>&1 || true   # (the Daily on the other platforms that have keys: docs/ROADMAP.md A11)
   echo "=== daily done $(date -u '+%T UTC')"
 } 2>&1 | tee -a "logs/$DATE.log"
 exit "${PIPESTATUS[0]}"

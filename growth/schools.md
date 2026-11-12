@@ -1,6 +1,6 @@
 # Schools and students: the lesson plan and where to send it
 
-For the reach plan (`docs/REACH_PLAN.md`, B2, weeks 3 to 6). You send these from your own accounts. I have not
+For the roadmap's reach track (`docs/ROADMAP.md`, RC7). You send these from your own accounts. I have not
 seen each site's upload form, so check the fields and the rules on the day.
 
 **The file:** `growth/lesson_plan.pdf`, one A4 page, made from `growth/lesson_plan.html` (the command to rebuild

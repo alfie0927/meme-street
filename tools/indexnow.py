@@ -1,4 +1,4 @@
-"""Tell Bing, Yandex and the other IndexNow search engines which pages to fetch (docs/REACH_PLAN.md P4, roadmap B12).
+"""Tell Bing, Yandex and the other IndexNow search engines which pages to fetch (roadmap B12).
 
   python tools/indexnow.py               every address in the live sitemap (once, after the key route went live)
   python tools/indexnow.py before.xml    only the addresses that are not in that older copy of the sitemap

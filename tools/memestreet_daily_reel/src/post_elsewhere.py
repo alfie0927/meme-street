@@ -1,4 +1,4 @@
-"""The same reel on other platforms, and one text post a day with a link (docs/REACH_PLAN.md A11 and B2; the owner, 2026-11-11).
+"""The same reel on other platforms, and one text post a day with a link (docs/ROADMAP.md A11 and the RC track; the owner, 2026-11-11).
 
   python3 src/post_elsewhere.py <folder>    the reel in <folder>, once Instagram took it (queue_post.sh, make_reel.sh)
   python3 src/post_elsewhere.py --daily     the day's text post, once a day from TEXT_HOUR (queue_post.sh)

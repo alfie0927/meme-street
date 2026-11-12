@@ -50,7 +50,7 @@ CATEGORIES = {
                     "the most surprising one. Cards and big text, one real chart to prove the last point.",
     "Daily recap": "Tonight's Daily Chart recap, the same chart every player had today: what the stock did, the realistic "
                    "trades a careful reader could have taken (only those in the facts, at their candles), today's best "
-                   "player's return, and the invitation to play tomorrow's chart. Its own device like every director reel "
+                   "player's return, and the invitation to play tomorrow's chart. Open on the decision the viewer would have faced at the day's hardest candle (would you have held here?), never on how many people played or on the chart's number. Its own device like every director reel "
                    "(the day's chart may be the star): the day revealed in order, the trades marked at their candles, a HUD "
                    "scoring the plan against holding. The outro ends: \"Tomorrow's "
                    "Daily Chart drops at midnight. Beat it at memestreet.net.\" When the facts say plan_beat_holding is false, "
@@ -127,7 +127,127 @@ KINDS = {"Chart quiz": ["candle", "breakout", "level", "trend", "stop", "rr", "f
          "Stick skit": ["breakout", "level", "next"], "Truth list": ["trend", "breakout", "level"],
          "Hard truth": ["stop", "next", "breakout", "level"]}
 LENGTH = {"Truth list": (8, 30, False), "Hard truth": (25, 60, True)}     # spoken words min, max, and whether it ends on the outro
-# (docs/REACH_PLAN.md A4, decision 4, the owner 2026-11-11: viewers give a reel about 7 seconds, so one format fits inside them and
+# New formats on trial since 2026-11-12 (the owner: "create more types of reels... creative... a really good hook"). src/format_scores.py
+# judges every format on Instagram's skip rate, and brief() drops the worst and makes the best every day.
+NEW_HOOK = (" THE HOOK: frame 0 already shows a character or an odd object with the stake in view (never a bare chart, a title card or "
+            "a list of 'three things'), and the first spoken sentence is 12 words at most and carries the stake: a number or a loss "
+            "from the facts, or a dare the viewer can answer.")
+CATEGORIES.update({
+    "Two traders": "NEW, STICK FIGURES, head to head: Rookie and Pro take the SAME trade on the same real chart at the same candle and "
+                   "differ in ONE choice (where the stop goes, chasing the break or waiting, cutting or hoping). Their two account bars "
+                   "start level in the HUD; the chart plays on and the bars split; the last beat names the one choice. Hook formula: "
+                   "Head To Head with the loss in it ('Same chart. Same candle. One of them is about to lose.'). What each choice did "
+                   "comes from the facts only (what_happened, after_the_question)." + NEW_HOOK,
+    "Rewind": "NEW, the ending first: open ON the aftermath of the chart's real move (the drop or the jump already there, a character or "
+              "an object wearing the damage), in the Mid-Sentence Start formula ('...and that is how 9% went in six candles'). Then "
+              "REWIND: a reveal cue with a lower index runs the candles backwards like a tape, to the one clue that showed it early; then "
+              "it plays forward again with the clue lit. Do not name the clue before the rewind stops: the viewer waits for it. One "
+              "chart, one clue." + NEW_HOOK,
+    "Trade diary": "NEW, STICK FIGURES, the feelings of one trade: one real trade told as a diary, an entry every few candles ('Candle 3: "
+                   "I am a genius.' 'Candle 9: I hate this.' 'Candle 14: please, just get back to my entry.'), each entry acted by the "
+                   "figure beside the real price at that candle (closes_after gives the path). A mood meter in the HUD swings with the "
+                   "price. The last entry is the lesson: the plan was made before candle 1 and the feelings changed nothing. Hook "
+                   "formula: The Receipt ('I held this trade for 25 candles. Here is every feeling I had.'). Funny, true, kind." + NEW_HOOK,
+    "Candles talk": "NEW, the candles are the characters: two or three candles of the real chart get faces and speak in short bubbles, "
+                    "saying what the buyers and sellers did inside them (a long wick: 'They pushed me up there and left me.'; a doji: 'We "
+                    "tied. Nobody won.'). The viewer learns to read a candle by hearing it complain; then the next candles show who was "
+                    "right. Hook formula: Cold Open Demo, a candle already mid-rant on frame 0 ('If this candle could talk, it would be "
+                    "screaming at you.'). The voice tells the story; the bubbles are the candles' own few words." + NEW_HOOK,
+    "Instant replay": "NEW, sports commentary: one real move on the chart called like a goal by a commentator at a desk ('He is through "
+                      "the level! Oh, he has given it straight back!'), then the replay: the same candles again, slowed, with the one "
+                      "moment that decided it frozen and circled (the close, not the wick). A scoreboard in the HUD: Buyers against "
+                      "Sellers. It ends on the referee's ruling, the rule in one line. Hook formula: Cold Open Demo, mid-action from the "
+                      "first word. Excited but exact: every call is something the facts show." + NEW_HOOK,
+    "Expectation vs reality": "NEW, two lanes: on top what a beginner pictures a trade to be (your own drawing: a clean line straight "
+                              "up), underneath the real candles after the entry: the dips it took before it got anywhere, or the loss "
+                              "it turned into. A figure rides each lane: one relaxed, one sweating. The point: the real one needs a "
+                              "stop and patience to get through the middle. Hook formula: Before And After, On Screen ('What you think a "
+                              "trade looks like. What it looks like.'). The top lane is labelled a drawing, never passed off as a chart." + NEW_HOOK,
+    "Breaking news": "NEW, the game's own world: a newsroom for one fictional company. A headline from the facts breaks "
+                     "(good_news_examples or bad_news_examples), the viewer gets a beat to call it, up or down, then the ticker answers; a "
+                     "second headline goes the other way; then the twist when the facts give one: the same news moves other sectors too "
+                     "(news_also_moves). Say only the direction, never a percentage the facts do not give. The lesson: on Meme Street the "
+                     "news moves prices, so read the wire before you trade. Hook formula: The Reveal with a dare ('This headline just "
+                     "hit. Up or down?'). The company, its product and the headline are the comedy: play them straight." + NEW_HOOK,
+})
+KINDS.update({"Two traders": ["stop", "breakout", "level"], "Rewind": ["breakout", "level", "next"],
+              "Trade diary": ["next", "breakout", "level", "stop"], "Candles talk": ["candle", "trend"],
+              "Instant replay": ["breakout", "level"], "Expectation vs reality": ["next", "breakout", "level"]})
+ROTATION["0600"] += ["Expectation vs reality", "Trade diary"]; ROTATION["1300"] += ["Two traders", "Candles talk"]   # (each new format in two turns)
+ROTATION["1800"] += ["Breaking news", "Instant replay"]; ROTATION["2100"] += ["Rewind", "Two traders", "Trade diary", "Instant replay"]
+ROTATION["0300"] += ["Rewind", "Candles talk", "Expectation vs reality", "Breaking news"]
+# In depth (the owner, 2026-11-12: "there needs to be more depth in the actual content", "what happened to all the technical lessons?",
+# "we tested [X] strategy, here's why it worked/didn't work"). Technical lesson is back as one lesson of the site's own curriculum per
+# reel (69 lessons in 11 technical tracks, the one out longest ago, the tracks in turn); Strategy test is new: src/backtest.py runs the
+# rule on every listed stock and the reel says only its numbers. Both may run long.
+DEEP = ("Technical lesson", "Strategy test")
+DEEP_LENGTH = (" LENGTH AND DEPTH: this format goes deep. It may run 60 to 100 seconds (150 to 260 spoken words) whatever the general "
+               "length line says, and it uses the proper terms, each one said once in plain words and then used. Depth is ONE idea "
+               "followed all the way down: the mechanism, the number, the case where it fails. Never three ideas skimmed.")
+CATEGORIES.update({
+    "Technical lesson": "NEW, IN DEPTH: one lesson from Meme Street's own curriculum (facts.lesson: its title, its track, its level and "
+                        "its whole text). Teach ONE idea of it properly, at the level of its track (an expert track gets the real "
+                        "maths: the formula said in words, then worked once with the lesson's own numbers on screen). The device IS "
+                        "the mechanism (an order book is a queue you can see, Kelly is a bet-size dial with a cliff, a walk-forward "
+                        "test is a window sliding along a tape); the HUD carries the number as it changes. What the idea is, how it "
+                        "works step by step, the case where it breaks, then the one rule. Use only what the lesson text says, in your "
+                        "own words: no number, formula or claim that is not in it. When the facts hold a chart, it is a real one "
+                        "that shows the idea: point at its candles. The last line before the sign-off names the lesson: it is free "
+                        "on memestreet.net." + NEW_HOOK + DEEP_LENGTH,
+    "Strategy test": "NEW, IN DEPTH, 'we tested it': one trading rule, run by our own code on every listed Meme Street stock (facts: "
+                     "the claim people repeat, the exact rules, the sample, the result after fees, buying and holding the same "
+                     "candles, where it worked and where it failed, each timeframe, the verdict). Open on the claim as a dare with "
+                     "the count in it ('Buy when the RSI drops under 30. Everyone says it. We ran it 83 times.'). The device is a "
+                     "test rig that runs the trades: a counter racing through them, wins and losses dropping into two piles or an "
+                     "account line drawn trade by trade, the holding line beside it. Then the verdict as facts.verdict words it, "
+                     "then WHY from the facts (the win rate against the break-even win rate, the size of wins against losses, "
+                     "charts that rose against charts that fell, choppy against trending, the fee, the noise band: say what a "
+                     "noise band is in one plain sentence). With facts.compared_with, it is a duel: both rules on the rig, one "
+                     "result each. One honest line on the sample, from facts.limits. When the facts hold example trades, show one "
+                     "win and one loss on chart 0 at their candles. Every number comes from the facts and is said as it is "
+                     "written; a rule that lost is said to have lost, and nothing here promises the next trade. The viewer leaves "
+                     "knowing HOW to test a rule, more than what this one did." + NEW_HOOK + DEEP_LENGTH,
+})
+ROTATION["1200"] += ["Technical lesson"]; ROTATION["0900"] += ["Strategy test"]      # (each in two turns, like every new format)
+ROTATION["2100"] += ["Technical lesson"]; ROTATION["1800"] += ["Strategy test"]
+# More than levels and breakouts (the owner, 2026-11-12: "they always talk about resistance/support so much"): until today nearly every
+# format drew its chart test from "breakout" and "level". Each format now has every kind that suits it, and gather() takes the kind
+# that went out longest ago (lru()).
+for _c, _more in {"Chart quiz": ["rsi", "ma", "pattern"], "Trading mistake": ["rsi", "ma", "trend"], "Guess the move": ["rsi", "ma", "pattern", "candle", "fib"],
+                  "Chart twist": ["rsi", "ma", "pattern", "fib"], "Trader levels": ["rr", "rsi", "ma", "trend"], "Stick skit": ["stop", "rr", "rsi"],
+                  "Hard truth": ["rr", "rsi", "ma", "trend"], "Two traders": ["rr", "next", "rsi", "ma"], "Rewind": ["rsi", "ma", "pattern", "stop"],
+                  "Trade diary": ["rr", "rsi", "ma"], "Candles talk": ["pattern"], "Expectation vs reality": ["rsi", "ma", "pattern", "fib"]}.items():
+    KINDS[_c] = KINDS[_c] + [k for k in _more if k not in KINDS[_c]]
+SUBJECT = {"level": "support and resistance levels", "breakout": "breakouts, real or fake", "candle": "candle shapes", "trend": "trends",
+           "pattern": "chart patterns", "rsi": "the RSI", "ma": "moving averages", "fib": "Fibonacci levels", "rr": "reward against risk",
+           "stop": "where the stop goes", "next": "what the next candles did"}
+LESSON_TRACKS = ("charts", "indicators", "orders", "risk", "shorting", "derivatives", "strategies", "testing", "microstructure",
+                 "vol-trading", "sizing-uncertainty")
+LESSON_KIND = {"candlesticks": "candle", "trends": "trend", "support-resistance": "level", "ranges-breakouts": "breakout",   # a real chart of
+               "reversal-patterns": "pattern", "continuation-patterns": "pattern", "moving-averages": "ma", "momentum": "rsi",   # the kind, for
+               "fibonacci": "fib", "r-multiples": "rr", "stop-placement": "stop", "breakout-trading": "breakout",                 # the lessons
+               "trend-following": "ma", "mean-reversion": "rsi"}                                                                # that have one
+# The first 3 seconds, for every format (the owner, 2026-11-12: "use these for reel ideas/hooks/animations/generation"): the hook
+# checklist of github.com/ootto-ai/claude-virality-skill (commit 542ed54, MIT; its study of 262 reels, winners against flops frame by
+# frame), put in our terms, with our own numbers. Its "comment a keyword for a DM" rule is left out: nothing here sends DMs.
+FIRST3 = """
+THE FIRST 3 SECONDS (the owner, 2026-11-12). Most viewers decide in the first 3 seconds; ours give a reel about 7. Our reels that open on a
+character or an odd object keep 52 to 76% of viewers past 3 seconds; the ones that open on a chart or a list keep 25 to 30%. Scene 0 passes
+every line below, or you rewrite it before writing anything else:
+1. Frame 0 is already moving: the device is on screen and mid-action at t = 0. No fade-in, no empty stage, no title card that holds.
+2. Frame 0 shows something a stranger recognises at a glance (a person in trouble, a phone, money, a shop, a familiar object), never
+   abstract shapes and never a bare chart.
+3. The biggest thing on screen fills most of the world band and moves from the first frame.
+4. Something extraordinary happens before 3 seconds: it breaks, falls, bursts, snaps shut, builds itself, or a number races and locks.
+5. The punch lands between 1 and 2 seconds, word by word as the voice says it, and carries the stake.
+6. The first spoken word is the subject or "you", never a warm-up ("so", "today", "let's", "here's", "in this video").
+7. The first sentence is about the viewer wherever the format allows: "you" or "your" in it, or a dare they can answer.
+8. With the sound off, the first 3 seconds still say what is at stake.
+After the hook, every spoken line has its own change on screen: every line is shown, never only said.
+Rotate the angle from reel to reel: the result first; a contrarian claim; the pain first; something breaks on screen; a dare.
+"recent_devices" in the request shows the last openings: take a different angle from the last two.
+"""
+# (docs/ROADMAP.md A4, the owner 2026-11-11: viewers give a reel about 7 seconds, so one format fits inside them and
 #  replays. A test: half of the 13:00 reels, about ten in three weeks. 12:00 gets a Hard truth turn: more reels at that length.)
 CATEGORIES["Loop"] = ("SHORT LOOP (a test, the owner 2026-11-11): 7 to 12 seconds made to be watched twice. ONE full animated scene of "
                       "your device, moving from the first frame to the last, that SHOWS one trading truth: the picture carries the whole "
@@ -137,6 +257,7 @@ CATEGORIES["Loop"] = ("SHORT LOOP (a test, the owner 2026-11-11): 7 to 12 second
                       "carries memestreet.net. A chart is optional.")
 KINDS["Loop"] = KINDS["Hard truth"]; LENGTH["Loop"] = (16, 30, False); ROTATION["1300"] += ["Loop", "Loop"]; ROTATION["1200"] += ["Hard truth"]
 SECONDS = {"Loop": (6, 12.5)}   # a format's length in seconds at the voice's pace, checked by the dry run (every other format: at most 60, the owner 2026-11-11)
+SECONDS.update({c: (0, 105) for c in DEEP})   # (the in-depth formats may run to 100 seconds: the owner, 2026-11-12)
 VIRAL_EVIDENCE = [
     ["37x", "It still looked bearish... but the candles told a different story."],
     ["6x", "It looked bullish, until the second test changed everything."],
@@ -339,6 +460,36 @@ DAILY_FACTS = [   # (game/daily.py, 2026-11-10: keep in step with it)
 ]
 
 
+RSI_NOTE = ("The reel's chart draws candles and moving averages only: there is no RSI panel. Show the RSI yourself (a gauge or a needle "
+            "with the reading the chart's facts give) and never say 'the panel under the chart'.")
+
+
+def lru(options, history, key, n=1):
+    """The `n` options that went out longest ago (never used first, in the order given), noted in history[key]."""
+    used = history.setdefault(key, [])
+    pick = sorted(options, key=lambda o: max((i for i, u in enumerate(used) if u == o), default=-1))[:n]
+    used.extend(pick); del used[:-300]
+    return pick
+
+
+def lesson(rng, history):
+    """One lesson of the site's curriculum as the facts: the one out longest ago, from the track out longest ago. With a real
+    chart that shows it when a chart test of its kind exists (LESSON_KIND)."""
+    ids = [(t, x) for t in get("/api/learn")["tracks"] if t["id"] in LESSON_TRACKS for x in t["lessons"]]; rng.shuffle(ids)
+    used = history.setdefault("lessons", [])
+    ago = lambda hit: max((i for i, u in enumerate(used) if hit(u)), default=-1)
+    t, x = min(ids, key=lambda tx: (ago(lambda u: u == tx[0]["id"] + "/" + tx[1]["id"]), ago(lambda u: u.startswith(tx[0]["id"] + "/"))))
+    used.append(t["id"] + "/" + x["id"]); del used[:-300]
+    d = get("/api/learn/lesson/" + x["id"])
+    text = [("## " + b["h"]) if b.get("h") else b.get("p") or "; ".join(b["list"]) for b in d["body"] if b.get("h") or b.get("p") or b.get("list")]
+    facts = {"lesson": {"title": d["title"], "track": d["track_title"], "level": t.get("tier"), "summary": d["summary"], "text": text},
+             "about_the_lesson": "The lesson's whole text. Teach one idea of it in depth and say nothing it does not say.",
+             "_subjects": [d["title"]]}
+    k = LESSON_KIND.get(x["id"])
+    if k == "rsi": facts["about_the_rsi"] = RSI_NOTE
+    return facts, [chart_from_drill((drill if k in ("rr", "stop") else teach_drill)(k))] if k else []   # (a stop or a reward-to-risk test has no direction to play out)
+
+
 def gather(category, rng, history, company=None):
     """The facts for this reel, and the charts the renderer draws. `company`: a remake's company, by name."""
     facts, charts = {}, []
@@ -367,7 +518,19 @@ def gather(category, rng, history, company=None):
                  "live_candles": len(C) - H, "stock_change_pct": round((C[-1][3] / C[H - 1][3] - 1) * 100, 2)}}
         facts["charts"] = [chart_summary(0, charts[0])]
         return facts, charts
-    if category in ("Stock story", "Chart breakdown"):
+    if category in DEEP:
+        if category == "Strategy test":                    # (src/backtest.py: the next rule in turn that made enough trades to judge)
+            import backtest
+            tickers = [c["ticker"] for c in json.load(open(PACK, encoding="utf-8"))["companies"]]
+            for _ in backtest.TESTS:
+                facts, charts = backtest.test(lru(list(backtest.TESTS), history, "tests")[0], get, tickers)
+                if facts["sample"]["trades"] >= backtest.ENOUGH: break
+            facts["_subjects"] = [facts["strategy"]]
+        else:
+            facts, charts = lesson(rng, history)
+        facts["charts"] = [chart_summary(i, c) for i, c in enumerate(charts)]
+        return facts, charts
+    if category in ("Stock story", "Chart breakdown", "Breaking news"):
         pack = json.load(open(PACK, encoding="utf-8")) if os.path.exists(PACK) else {"companies": [], "templates": []}
         if company:                                      # (the same company as the reel it remakes, or no remake)
             want = company.lower()
@@ -378,7 +541,7 @@ def gather(category, rng, history, company=None):
             done = set(history.get("tickers", [])[-30:])
             cos = [c for c in pack["companies"] if c["ticker"] not in done] or pack["companies"]
         rng.shuffle(cos)
-        for co in cos[:8]:                               # (the content pack has companies the live game may not list)
+        for co in (cos if company else cos + [c for c in pack["companies"] if c not in cos]):   # (the content pack has companies the live game does not list: every unused one is tried, then the ones used lately; trying only 8 left a Stock story unmade whenever the draw was 8 unlisted ones, 2026-11-12)
             try:
                 st = get(f"/api/reel/stock/{co['ticker']}?tf=1h"); break
             except urllib.error.HTTPError as e:
@@ -388,7 +551,13 @@ def gather(category, rng, history, company=None):
         news = [t for t in pack["templates"] if t.get("sector") == co["sector"]][:2]
         facts = {"company": st["name"], "ticker": st["ticker"], "what_it_does": st["desc"], "sector": co["sector"],
                  "price_now": round(st["price"], 2), "good_news_examples": sum((t["up"] for t in news), [])[:3],
-                 "bad_news_examples": sum((t["down"] for t in news), [])[:3]}
+                 "bad_news_examples": sum((t["down"] for t in news), [])[:3],
+                 "about_the_news_examples": "These headlines are about the company's whole sector, other companies in it included. Use one only "
+                                            "when it plainly fits what THIS company does (what_it_does); never give this company a tower, a mine or "
+                                            "a product from a headline that is about another business (the critic held a reel for it, 2026-11-12)."}
+        if category == "Breaking news" and news:         # (the pack's cross effects: good news here lifts or sinks these sectors, bad news the reverse)
+            facts["news_also_moves"] = {"when": f"good news for {co['sector']} (bad news does the reverse)",
+                                        "sectors": {k: "up" if v > 0 else "down" for k, v in (news[0].get("betas") or {}).items() if k != "self" and v}}
         C = st["candles"]
         if category == "Chart breakdown":                # (a stock story is just the company: no chart in its facts)
             charts.append({"candles": C, "label": f"{st['name']} ({st['ticker']}) · {st['tf']}", "upto": len(C) - 1,
@@ -397,6 +566,9 @@ def gather(category, rng, history, company=None):
         history.setdefault("tickers", []).append(co["ticker"])
     else:
         kinds = KINDS[category][:]; rng.shuffle(kinds)
+        kinds = lru(kinds, history, "kinds", CHART_COUNT.get(category, 1))   # (the kind out longest ago, over all formats)
+        facts["_subjects"] = [SUBJECT.get(k, k) for k in kinds]
+        if "rsi" in kinds: facts["about_the_rsi"] = RSI_NOTE
         for k in kinds[:CHART_COUNT.get(category, 1)]:
             charts.append(chart_from_drill(teach_drill(k) if category in TEACH else drill(k)))
     facts["charts"] = [chart_summary(i, c) for i, c in enumerate(charts)]
@@ -492,7 +664,7 @@ Geometry (1080 x 1920; Instagram covers y < 230, y > 1440 and the right 230 px o
 (hidden until scene 1: in scene 0 the template draws your hook at y 236-382, so draw nothing above y 384 in scene 0);
 your HUD y 380-500 (a free scene has no head); the world y 520-1290 (when the scene has a chart it fills that band, so draw on
 the chart's own pixels or in its margins, never below y 1260); the punch headline at y 1270-1325 (api.punch draws it: keep that band
-clear); the transcript captions at y 1356-1440 (the template draws every spoken word there, in every scene); nothing below 1440. Every text you draw is 26 px or more (34+ for anything that matters); the renderer rejects smaller.
+clear); the transcript captions at y 1384-1440 (the template draws every spoken word there, in every scene); nothing below 1440. Every text you draw is 26 px or more (34+ for anything that matters); the renderer rejects smaller.
 Palette: the reel's own two or three colours on a dark background: "tok": {"css": "body{background:#...!important}"} once,
 then your colours in the svg. The brand header stays readable.
 The first 3 seconds decide the reel. Scene 0 is a free scene whose punch "text" (2 to 5 short words, from its first
@@ -702,7 +874,7 @@ def board_check(k, s, A, B):
     return errs
 
 
-# The first spoken sentence may not be a label, a format promise or a definition (docs/REACH_PLAN.md A2). A floor, not a
+# The first spoken sentence may not be a label, a format promise or a definition (docs/ROADMAP.md A2). A floor, not a
 # judge: it catches the openers that waste the first second and cannot rank good ones (the selftest holds its examples).
 BAD_OPENER = re.compile(r"""(?ix)^\W*(?:
     (?:here\s+(?:are|is)|here\x27s|today(?:\x27s|\s+(?:we|i|let))|in\s+this\s+(?:reel|video|lesson|one|short)|this\s+(?:reel|video|lesson)|let\x27?s|welcome)\b   # a preamble
@@ -714,7 +886,7 @@ BAD_OPENER = re.compile(r"""(?ix)^\W*(?:
   | (?!(?:this|that|these|those|your?|my|it|he|she|they|we|i|the\s+market)\b)[\w\x27 -]{2,40}?\s(?:is|are)\s+(?:an?|the)\s+[\w\x27 -]{2,40}?\s(?:that|where|which|when|used)\b   # a definition: "A stop loss is an order that ..."
   | [\w\x27 -]{2,40}?\s(?:is\s+when|means\s+that|refers\s+to|is\s+defined)\b
 )""")
-BACKGROUND = re.compile(r"""(?ix)^\W*(?:      # scene 1 is a second hook, not background (docs/REACH_PLAN.md A3); a floor, as above
+BACKGROUND = re.compile(r"""(?ix)^\W*(?:      # scene 1 is a second hook, not background (docs/ROADMAP.md A3); a floor, as above
     (?:the\s+)?(?:company|firm|business)\s+(?:is|was|makes|sells|builds|runs|started|began)\b                   # "The company makes ..."
   | [\w\x27&. -]{2,40}?\s(?:is|are|was)\s+(?:an?|the)\s+(?:[\w\x27-]+\s+){0,4}?(?:company|firm|business|maker|builder|seller|startup|brand)\b   # "Deepwater Homes is a builder ..."
   | (?:it\s+was\s+)?(?:founded|headquartered|established)\b | (?:based|listed|set\s+up)\s+in\b
@@ -750,17 +922,17 @@ def check(spec, facts, charts, category=None):
             if a and b and difflib.SequenceMatcher(None, a, b).ratio() > .8: errs.append(f"the device's {key} ({a!r}) is too close to a recent reel's ({b!r}); invent another")
     if not sc or sc[0].get("kind") not in ("hook", "free"): errs.append("the first scene must be a hook (or a free scene that opens on the device)")
     strict = free and category != "Daily recap"              # (the Daily recap is exempt: its chart may open it and its sign-off is fixed)
-    if strict and sc:                                        # the first 3 seconds (docs/REACH_PLAN.md A2)
+    if strict and sc:                                        # the first 3 seconds (docs/ROADMAP.md A2)
         s0 = sc[0]; first = re.split(r"(?<=[.?!])\s+", str(s0.get("vo", "")).strip())[0]
         if s0.get("kind") != "free" or not s0.get("text"): errs.append("scene 0 is a free scene with its punch in the text field (2 to 5 short words): the template shows it whole and large on the very first frame")
         if s0.get("chart") is not None: errs.append("scene 0 opens on your device, a character or an odd object already moving, never on a chart: the chart arrives in scene 1 or later")
         if BAD_OPENER.search(first): errs.append(f"the first spoken sentence ({first!r}) is a label, a format promise or a definition: open on the stake or on a question to the viewer")
         errs += [f"the first spoken sentence ({first!r}): {m}" for m in hookscore.run(first)[3]]   # (src/ig/hookscore.py, its dealbreakers only: a greeting, a video preamble, "stop scrolling"; not the score gate retired on 2026-11-07)
-        if len(str(s0.get("vo", "")).split()) > 16: errs.append("scene 0 is the hook alone, 16 spoken words at most: by second 5 the reel is in scene 1, the second hook")   # (docs/REACH_PLAN.md A3)
+        if len(str(s0.get("vo", "")).split()) > 16: errs.append("scene 0 is the hook alone, 16 spoken words at most: by second 5 the reel is in scene 1, the second hook")   # (docs/ROADMAP.md A3)
         nxt = re.split(r"(?<=[.?!])\s+", str(sc[1].get("vo", "")).strip())[0] if len(sc) > 1 else ""
         if BACKGROUND.search(nxt): errs.append(f"scene 1 opens on background ({nxt!r}): it is a second hook that raises the stake; what the company is or what a term means rides inside the action later")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (60, 110, True))
-    if free and (category or spec.get("type")) not in LENGTH: hi_w = 150   # (35 to 60 s: the owner, 2026-11-11; was 40 to 120)
+    if free and (category or spec.get("type")) not in LENGTH: hi_w = 260 if (category or spec.get("type")) in DEEP else 150   # (in depth: up to 260 words, the owner 2026-11-12)   # (35 to 60 s: the owner, 2026-11-11; was 40 to 120)
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
     body = [s for s in sc if s.get("kind") != "outro"]
@@ -874,9 +1046,9 @@ def check(spec, facts, charts, category=None):
             errs.append("the outro must end: \"Join free at memestreet.net.\"")
         if "daily chart" in ov and category not in ("Daily recap", "Daily Chart explained"):
             errs.append("only a reel about the Daily Chart mentions it: end with \"Join free at memestreet.net.\"")
-        if strict and category != "Daily Chart explained" and (len(ov.split()) > 10 or "?" in ov):   # (docs/REACH_PLAN.md A5: the ending takes 2 seconds, not 6)
+        if strict and category != "Daily Chart explained" and (len(ov.split()) > 10 or "?" in ov):   # (docs/ROADMAP.md A5: the ending takes 2 seconds, not 6)
             errs.append("the outro is the sign-off, 10 words at most: one short echo of the hook if you like, then Join free at memestreet.net. (no promo sentence; the question to the viewer is asked in the hook or the middle)")
-    if category == "Loop":                                   # (docs/REACH_PLAN.md A4: a loop has no sign-off, so its caption carries the address)
+    if category == "Loop":                                   # (docs/ROADMAP.md A4: a loop has no sign-off, so its caption carries the address)
         if any(x.get("kind") == "outro" for x in sc): errs.append("a loop has no outro scene: it ends where it began, so the replay is seamless")
         if "memestreet.net" not in str(spec.get("caption", "")).lower(): errs.append("a loop never says the address: put memestreet.net in its caption")
     elif sc and "memestreet.net" not in sc[-1].get("vo", "").lower():
@@ -891,7 +1063,7 @@ def check(spec, facts, charts, category=None):
     if EMOJI.search(cap + json.dumps(sc)): errs.append("no emoji anywhere")
     if "#MemeStreet" not in cap: errs.append("the caption needs #MemeStreet")
     errs += ["the caption: " + c["detail"] for c in igcap.analyse(cap)["checks"] if c["status"] == "FAIL"]   # (src/ig/caption.py: over 5 hashtags, a tag or a blank as the first line, over 2,200 characters)
-    if strict:                                               # (docs/REACH_PLAN.md A9: the question first, the words people search for)
+    if strict:                                               # (docs/ROADMAP.md A9: the question first, the words people search for)
         c1 = (cap.strip().splitlines() or [""])[0]
         if "?" not in c1 or len(c1) > 125: errs.append("the first line of the caption is the question the reel asks the viewer, whole before the ... more cut: one line with a question mark, under 125 characters")
         if not any(w in re.sub(r"#\w+", "", cap.replace(DISCLAIMER, "")).lower() for w in SEARCHED):
@@ -1066,9 +1238,50 @@ def system_prompt(category):
     s = book + ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
             "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
             "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS))
-         + "\n" + DIRECTOR % (", ".join(WORLD_PROPS), ", ".join(POSES), examples()))
+         + "\n" + DIRECTOR % (", ".join(WORLD_PROPS), ", ".join(POSES), examples()) + FIRST3)
     r = rules_file(category)
     return v2_system(s, r) if r else s
+
+
+def verdicts():
+    """format -> "cut" | "boost" | "keep" | "new" from Instagram's numbers (src/format_scores.py); {} before its first run."""
+    try: return {f: x["verdict"] for f, x in json.load(open(os.path.join(ROOT, "state", "format_scores.json"), encoding="utf-8"))["formats"].items()}
+    except (OSError, ValueError, KeyError, TypeError): return {}
+
+
+def choose(home, every, used, last, v, rng, nth=0):
+    """The format for a slot. `home`: the slot's turn; `every`: all rotation formats; `used`: out already that day; `last`: the
+    formats of the last reels, oldest first; `v`: verdicts(); `nth`: 0, or 1 for a held slot's second try (the next proven one).
+    Never a cut format, never one already out that day; a boosted format joins every turn of two or more and goes first;
+    then the one out longest ago."""
+    ok = lambda cs: [c for c in dict.fromkeys(cs) if c not in used and v.get(c) != "cut"]
+    pool = ok(list(home) + ([c for c in every if v.get(c) == "boost"] if len(set(home)) > 1 else [])) or \
+           [c for c in ok(every) if c != "Loop"] or list(dict.fromkeys(home))
+    pool.sort(key=lambda c: (v.get(c) != "boost", max((k for k, x in enumerate(last) if x == c), default=-1), rng.random()))
+    if nth: pool = [c for c in pool[1:] if c in last] or pool[1:] or pool   # (a second try: the next format that has passed the critic before, so the slot is not left empty)
+    return pool[0]
+
+
+def recent_formats(n=40):
+    """The formats of the last `n` reels that passed the critic (posted or waiting to post), oldest first."""
+    q, out = os.path.join(ROOT, "queue"), []
+    for x in sorted(os.listdir(q))[-80:] if os.path.isdir(q) else []:
+        sp = os.path.join(ROOT, "work", "auto-" + x, "spec.json")
+        if os.path.exists(os.path.join(q, x, "approved.json")) and os.path.exists(sp):
+            try: out.append(json.load(open(sp, encoding="utf-8")).get("type"))
+            except ValueError: pass
+    return out[-n:]
+
+
+def formats_on(day, but=None):
+    """The formats of the reels already made for UTC day `day` (YYYY-MM-DD) that passed the critic, slot `but` aside."""
+    q, out = os.path.join(ROOT, "queue"), set()
+    for x in os.listdir(q) if os.path.isdir(q) else []:
+        sp = os.path.join(ROOT, "work", "auto-" + x, "spec.json")
+        if x.startswith(day) and x != but and os.path.exists(os.path.join(q, x, "approved.json")) and os.path.exists(sp):
+            try: out.add(json.load(open(sp, encoding="utf-8")).get("type"))
+            except ValueError: pass
+    return out
 
 
 def brief(slot, category=None, remake=None):
@@ -1076,10 +1289,14 @@ def brief(slot, category=None, remake=None):
     rng = random.Random(slot + os.environ.get("REEL_TRY", ""))   # (a held slot's second try gets another format)
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
     if not category and explainer(slot): category, remake = explainer(slot), None   # (an explainer day: it takes the slot's remake too)
-    if remake:
-        category = {"Chart quiz": "Chart quiz", "Stock story": "Stock story", "Technicals": "Technical lesson",
-                    "New-trader challenge": "Trading mistake"}.get(remake.get("type"), "Technical lesson")
-    category = category or rng.choice(ROTATION.get(slot[-4:], ["Hard truth"]))
+    if not category:                                     # (the format of this slot's turn that went out longest ago, so every
+        last = recent_formats()                          #  format keeps coming round: the owner, 2026-11-12, "only quiz reels")
+        used = formats_on(slot[:10], slot)               # (one reel of each format a day: the owner, 2026-11-12)
+        category = choose(ROTATION.get(slot[-4:], ["Hard truth"]), [c for cs in ROTATION.values() for c in cs], used, last, verdicts(),
+                          rng, int(os.environ.get("REEL_TRY") or 0))   # (Instagram's numbers steer it: the owner, 2026-11-12)
+    if remake and {"Chart quiz": "Chart quiz", "Stock story": "Stock story", "Technicals": "Technical lesson",
+                   "New-trader challenge": "Trading mistake"}.get(remake.get("type"), "Technical lesson") != category or category in DEEP:
+        remake = None                                    # (an old November topic no longer chooses the format; it is kept only when it fits)
     try:
         facts, charts = gather(category, rng, history, remake.get("title") if remake and category == "Stock story" else None)
     except SystemExit:
@@ -1091,12 +1308,17 @@ def brief(slot, category=None, remake=None):
     import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
     need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
     facts["video"] = {"available": os.environ.get("HF_VIDEO") == "1" and bool(footage.cred()) and footage.remaining() >= need}   # (off: the neon 3D is the style)
+    facts["subjects_of_recent_reels"] = {"note": "What the last reels were about, oldest first. This reel is about its own facts: do not "
+                                                 "drift back to these. Support, resistance or 'a level' is the subject only when this "
+                                                 "reel's own chart facts are about a level (the owner, 2026-11-12: too many reels "
+                                                 "talked about them).", "last": history.get("subjects", [])[-12:]}
+    history.setdefault("subjects", []).extend(facts.pop("_subjects", [])); del history["subjects"][:-100]
     facts["recent_devices"] = [d for d in history.get("devices", []) if isinstance(d, dict)][-30:]   # (every reel invents its own device: the owner, 2026-11-09)
     notes = os.path.join(ROOT, "exemplar", "NOTES.md")
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
            "recent_titles_to_avoid": history.get("titles", [])[-20:],
            "exemplar_notes": open(notes, encoding="utf-8").read() if os.path.exists(notes) else ""}
-    if CATEGORIES[category].startswith("VIRAL"):
+    if CATEGORIES[category].startswith(("VIRAL", "NEW")):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research 2026-11-04). Use the SHAPE, never the words: write an original line "
                                          "about this reel's own chart.",
@@ -1105,7 +1327,7 @@ def brief(slot, category=None, remake=None):
         ev = os.path.join(ROOT, "state", "evidence.json")      # this week's outliers (src/research.py), shapes only
         if os.path.exists(ev):
             ask["what_works_now"]["this_week"] = json.load(open(ev, encoding="utf-8")).get("examples", [])[:8]
-    try: ask["our_own_reels"] = json.load(open(os.path.join(ROOT, "state", "own_reels.json"), encoding="utf-8"))   # (our own best and worst openings, measured: src/own_reels.py, docs/REACH_PLAN.md A10)
+    try: ask["our_own_reels"] = json.load(open(os.path.join(ROOT, "state", "own_reels.json"), encoding="utf-8"))   # (our own best and worst openings, measured: src/own_reels.py, docs/ROADMAP.md A10)
     except (OSError, ValueError): pass                   # (not pulled yet, or unreadable: the reel is written without it)
     if remake:
         ask["remake_of"] = {"note": "Make this reel again on the same topic, with the same teaching points and similar "
@@ -1221,7 +1443,7 @@ def dry_run(spec, B, work):
         if r.returncode:
             o = (r.stderr or "") + (r.stdout or ""); m = re.search(r"DRY: (.*)", o, re.S)
             return ["the scene function failed the dry run: " + (m.group(1) if m else o[-600:]).strip()]
-    lo, hi = SECONDS.get(B["category"], (0, 60)); T = json.load(open(os.path.join(d, "timeline.json"), encoding="utf-8")).get("T", 0)   # (docs/REACH_PLAN.md A3: the length in seconds as well as in words)
+    lo, hi = SECONDS.get(B["category"], (0, 60)); T = json.load(open(os.path.join(d, "timeline.json"), encoding="utf-8")).get("T", 0)   # (docs/ROADMAP.md A3: the length in seconds as well as in words)
     return [] if lo <= T <= hi else [f"at the voice's pace this reel runs {T:.0f} seconds; a {B['category']} runs {lo:g} to {hi:g}: " + ("cut lines" if T > hi else "add a beat")]
 
 
@@ -1324,6 +1546,19 @@ if __name__ == "__main__":
     rem = json.load(open(a[a.index("--remake") + 1], encoding="utf-8")) if "--remake" in a else None
     cat = a[a.index("--category") + 1] if "--category" in a else None
     if a[0] == "selftest":
+        new = ("Two traders", "Rewind", "Trade diary", "Candles talk", "Instant replay", "Expectation vs reality", "Breaking news")
+        assert all(c in CATEGORIES and sum(c in cs for cs in ROTATION.values()) == 2 and (c in KINDS or c == "Breaking news") for c in new)
+        assert "THE FIRST 3 SECONDS" in system_prompt("Rewind") and all(c in CATEGORIES for cs in ROTATION.values() for c in cs)
+        assert all(sum(c in cs for cs in ROTATION.values()) == 2 and "LENGTH AND DEPTH" in CATEGORIES[c] for c in DEEP)
+        H = {"k": ["a", "b", "a"]}
+        assert lru(["a", "b", "c"], H, "k") == ["c"] and lru(["a", "b"], H, "k") == ["b"] and lru(["a", "b", "c"], H, "k", 2) == ["a", "c"] and H["k"][-2:] == ["a", "c"]
+        assert all(k in KINDS["Chart twist"] for k in ("rsi", "ma", "fib")) and KINDS["Big players"] == ["breakout", "level"] and all(k in SUBJECT for ks in KINDS.values() for k in ks)
+        R0 = random.Random(1); ch = lambda home, used=(), last=(), v={}, nth=0: choose(home, ["A", "B", "C", "D"], set(used), list(last), v, R0, nth)
+        assert ch(["A", "B"], last="AB") == "A" and ch(["A", "B"], last="BA") == "B"            # (the one out longest ago)
+        assert ch(["A", "B"], used="A") == "B" and ch(["A", "B"], last="AB", v={"A": "cut"}) == "B"   # (once a day; never a cut format)
+        assert ch(["A", "B"], last="ABD", v={"D": "boost"}) == "D" and ch(["A"], last="AD", v={"D": "boost"}) == "A"   # (the best goes first, but not into a one-format turn)
+        assert ch(["A", "B"], last="AB", nth=1) == "B" and ch(["A"], used="A", v={"B": "cut"}) in ("C", "D")   # (a second try: the next in line; a used-up turn: another format)
+        assert ch(["A"], used="ABCD") == "A" and ch(["A", "B", "C"], last="B", nth=1) == "B"   # (a second try takes a format that has passed before)
         assert [explainer(f"2026-11-{d:02d}T1800") for d in (10, 13, 16, 19, 22)] == [None, "Meme Street explained", "Daily Chart explained", "Meme Street explained", "Daily Chart explained"]
         assert explainer("2026-11-13T2100") is None and explainer("2026-11-14T1800") is None
         for x, y in [("level cost you 11%", "Level cost you 11%"), ("it fell. then i sold!", "It fell. Then I sold!"),
@@ -1363,7 +1598,7 @@ if __name__ == "__main__":
         assert not any("2 to 5 words" in e or "hot" in e or "too close" in e or "must be a hook" in e for e in es), es
         assert not check(dict(fr, scene_js=None), {}, [], "One trick") == [] and any("director reel" in e for e in check(dict(fr, scene_js=None), {}, [], "One trick"))
         assert "- Total spoken words" not in RULES and "- Length: 35 to 60" in RULES and "- Plain words" in RULES
-        # the first 3 seconds, the ending and the caption (docs/REACH_PLAN.md A2, A5, A9)
+        # the first 3 seconds, the ending and the caption (docs/ROADMAP.md A2, A5, A9)
         floor = lambda x: bool(BAD_OPENER.search(x) or hookscore.run(x)[3])
         bad = ["Three chart reads in thirty seconds.", "Three charts, five seconds each.", "Here are three candles every trader should know.",
                "Stock story: Ember Dragon Ranches.", "Support and resistance explained.", "Today we look at stop losses.", "In this reel I will show you how stops work.",
@@ -1389,7 +1624,7 @@ if __name__ == "__main__":
         es = check(no, {}, [], "One trick")
         for m in ("never on a chart", "format promise", "the outro is the sign-off", "cap of 5", "question the reel asks", "people search for"): assert any(m in e for e in es), (m, es)
         assert not any(m in e for e in check(no, {}, [], "Daily recap") for m in mine + ("question the reel asks", "people search for"))
-        # seconds 3 to 15, and the loop (docs/REACH_PLAN.md A3, A4)
+        # seconds 3 to 15, and the loop (docs/ROADMAP.md A3, A4)
         bg = ["Deepwater Homes is a builder that sells flats under the sea.", "The company makes umbrellas for dragons.", "It was founded in 2019.",
               "A stop loss is an order that sells for you.", "Founded in a garage, it grew fast.", "It is a company with one product.", "Support means that buyers wait there."]
         fine = ["And that was the good day.", "Twenty trades a day felt busy and smart, but every single one cost a spread and a fee.", "Question one.",

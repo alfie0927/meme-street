@@ -89,6 +89,13 @@ def main(folder, dry=False):
         print(f"[dry run] {MODE} login - would post {mp4} ({os.path.getsize(mp4)//1024} KB) with {AI_LABEL} and caption:\n{caption}"); return
     refresh_token(); tok = token(); uid = ig_id(tok)
     base = {"media_type": "REELS", "caption": caption, "share_to_feed": "true", **AI_LABEL, "access_token": tok}
+    def container(extra):                                  # (the label first went live on 2026-11-12: a container refused with it is asked for once more without it, so a reel never misses its slot over the label)
+        try: return http("POST", f"{HOST}/{V}/{uid}/media", {**base, **extra})
+        except SystemExit as e:
+            if not any(k in base for k in AI_LABEL): raise
+            print("the container was refused with the AI label; once more without it:", str(e).replace(tok, "XXX")[:300])
+            for k in AI_LABEL: base.pop(k, None)
+            return http("POST", f"{HOST}/{V}/{uid}/media", {**base, **extra})
     trial = json.load(open(os.path.join(folder, "trial.json"))) if os.path.exists(os.path.join(folder, "trial.json")) else None
     if trial:                                              # a Trial Reel: non-followers only, off the grid; never shared on its own (MANUAL):
         base["trial_params"] = json.dumps({"graduation_strategy": "MANUAL"}); base.pop("share_to_feed")   # lab/winners.py posts the winner to the grid
@@ -104,9 +111,9 @@ def main(folder, dry=False):
         if os.path.exists(cover):
             shutil.copy(cover, os.path.join(pub_dir, name[:-4] + ".jpg")); os.chmod(os.path.join(pub_dir, name[:-4] + ".jpg"), 0o644)
             base["cover_url"] = pub_url.rstrip("/") + "/" + name[:-4] + ".jpg"
-        c = http("POST", f"{HOST}/{V}/{uid}/media", {**base, "video_url": pub_url.rstrip("/") + "/" + name})
+        c = container({"video_url": pub_url.rstrip("/") + "/" + name})
     else:
-        c = http("POST", f"{HOST}/{V}/{uid}/media", {**base, "upload_type": "resumable"})
+        c = container({"upload_type": "resumable"})
         up = http("POST", c.get("uri") or f"https://rupload.facebook.com/ig-api-upload/{V}/{c['id']}", data=open(mp4, "rb").read(),
                   headers={"Authorization": f"OAuth {tok}", "offset": "0", "file_size": str(os.path.getsize(mp4))})
         if not up.get("success", True): raise SystemExit(f"upload failed: {up}")

@@ -1,6 +1,6 @@
 # Game portals: the files to upload and what to write
 
-The portal build from `docs/REACH_PLAN.md`. You submit each one yourself; I never log in as you.
+The portal build of the roadmap (`docs/ROADMAP.md`, RC8). You submit each one yourself; I never log in as you.
 
 ## The files
 

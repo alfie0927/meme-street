@@ -1,4 +1,4 @@
-"""Our own best and worst openings, measured by Instagram, for the writer (docs/REACH_PLAN.md A10; the owner, 2026-11-11).
+"""Our own best and worst openings, measured by Instagram, for the writer (docs/ROADMAP.md A10; the owner, 2026-11-11).
 
   python3 src/own_reels.py         -> state/own_reels.json   (auto_reel.sh runs it when that file is over a day old)
   python3 src/own_reels.py demo    the self-check, no network

@@ -47,7 +47,8 @@ def times(tw):
 
 def follow(words, tw, wt, d):
     """When each on-screen word is said: matched in order to the line (unmatched ones spread between)."""
-    keys, out, j = [key(w) for w in tw], [], 0
+    keys, out, kw = [key(w) for w in tw], [], [key(w) for w in words]
+    j = next((q for q in range(len(keys) - len(kw) + 1) if keys[q:q + len(kw)] == kw), 0)   # (said as one phrase, the words land there: "can hit the stock" is the line's last "can", not its first; the critic, 2026-11-12)
     for w in words:
         k = next((q for q in range(j, len(keys)) if keys[q] == key(w) and key(w)), None)
         out.append(wt[k][0] if k is not None else None)
@@ -90,6 +91,8 @@ def demo():
     wt, d = times("Buy or sell? You have five seconds.".split())
     assert len(wt) == 7 and wt[3][0] > wt[2][1] + 0.3 and abs(d - (wt[-1][1] + STOP)) < 1e-6, (wt, d)
     assert follow(["Buy", "sell"], "Buy or sell?".split(), wt[:3], 1.0) == [wt[0][0], wt[2][0]]
+    assert follow(["sell", "You"], "Buy or sell? You have five seconds.".split(), wt, d) == [wt[2][0], wt[3][0]]
+    w2, d2 = times("It can stop and it can hit you.".split()); assert follow(["can", "hit"], "It can stop and it can hit you.".split(), w2, d2) == [w2[5][0], w2[6][0]]
     print("ok")
 
 

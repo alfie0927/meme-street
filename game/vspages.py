@@ -1,5 +1,5 @@
 """Comparison pages (/vs and /vs/<slug>): Meme Street beside the practice-trading sites people search for, and the
-Daily Chart beside Wordle (docs/REACH_PLAN.md, "Search"). Plain HTML through lessonpages' page shell.
+Daily Chart beside Wordle (docs/ROADMAP.md, RC11). Plain HTML through lessonpages' page shell.
 
 Every statement about another site is in VS below, with where it came from in `src` (never printed). The page prints
 the date (ASOF) and sends the reader to that site for the current details. Before changing a claim, check it on their

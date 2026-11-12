@@ -12,6 +12,6 @@ for d in queue/*/; do
   [[ "$t" > "$now" || -f "$d/posted.json" || -f "$d/failed.txt" || ! -f "$d/approved.json" ]] && continue
   echo "=== queue $t  $(date -u '+%F %T UTC')" >> logs/queue.log
   python3 src/post_instagram.py "$d" >> logs/queue.log 2>&1 || { date -u > "$d/failed.txt"; echo "FAILED $t" >> logs/queue.log; }
-  [ -f "$d/posted.json" ] && python3 src/post_elsewhere.py "$d" >> logs/elsewhere.log 2>&1 || true   # (the same reel on the other platforms that have keys: docs/REACH_PLAN.md A11; its failure never touches the queue)
+  [ -f "$d/posted.json" ] && python3 src/post_elsewhere.py "$d" >> logs/elsewhere.log 2>&1 || true   # (the same reel on the other platforms that have keys: docs/ROADMAP.md A11; its failure never touches the queue)
 done
 python3 src/post_elsewhere.py --daily >> logs/elsewhere.log 2>&1 || true   # (the day's text post with a link, once a day; silent while no platform has keys)

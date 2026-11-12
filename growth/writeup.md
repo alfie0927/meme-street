@@ -1,6 +1,6 @@
 # The technical write-up: "How I built a stock market that never closes"
 
-For the reach plan (`docs/REACH_PLAN.md`, B2, weeks 3 to 6). You post it, under your own name. Everything below
+For the roadmap's reach track (`docs/ROADMAP.md`, RC6). You post it, under your own name. Everything below
 the line is the article; everything above it is for you.
 
 **Before you post**

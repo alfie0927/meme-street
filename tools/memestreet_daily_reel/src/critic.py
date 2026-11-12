@@ -196,7 +196,9 @@ feedback after reels post. Your job is narrow: stop a reel that would embarrass 
    would do; "a hair below" for "slightly below".
 A director reel (report.json has a "device": one visual metaphor, a HUD, a palette and mood of its own, drawn by the
 writer's own scene function) is meant to look unlike the house template and unlike other reels: its own colours, bold
-fast motion, a world that changes every few seconds, 3 to 5 word punch captions with one word in colour (the owner,
+fast motion, a world that changes every few seconds, 3 to 5 word punch headlines with one word in colour over the
+word-by-word captions of everything said (a scene's punch is left out on purpose when the caption line under it says
+the same words, so a scene with captions and no punch is not a fault) (the owner,
 2026-11-09). None of that is a fault. Its blockers are the five above, plus: a device that stops making sense (the
 metaphor contradicts the lesson), text the viewer cannot read, the HUD not changing when the voice says it does.
 Its first seconds are built this way on purpose (the reach plan, 2026-11-11): the hook stands whole and large at the top

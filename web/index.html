@@ -512,7 +512,7 @@ const $=id=>document.getElementById(id),f=(x,d=2)=>Number(x).toFixed(d),pc=x=>{c
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const lsGet=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
-// the Daily inside another site's frame (/embed/daily, REACH_PLAN P2): no other page may be framed, so every link opens the full site in a new tab
+// the Daily inside another site's frame (/embed/daily, roadmap B11): no other page may be framed, so every link opens the full site in a new tab
 const EMBED=location.pathname.replace(/\/+$/,'')==='/embed/daily';if(EMBED){document.head.appendChild(Object.assign(document.createElement('base'),{target:'_blank'}));document.documentElement.classList.add('embed')}
 const path=EMBED?'/daily':location.pathname.replace(/\/+$/,'')||'/';
 let page='market',pageArg=null,mt;

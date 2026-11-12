@@ -1,4 +1,4 @@
-"""Builds the game-portal uploads (docs/REACH_PLAN.md, "Game portals") into growth/portals/:
+"""Builds the game-portal uploads (docs/ROADMAP.md, RC8) into growth/portals/:
 
   daily_standalone.html   tools/portal_daily.html with charts baked in: one file, no server, no outside address.
   daily_standalone.zip    The same file as index.html (CrazyGames, Coolmath Games, Playgama, Y8).

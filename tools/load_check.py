@@ -1,4 +1,4 @@
-"""A load check before a launch day: many visitors opening the Daily Chart at once (docs/REACH_PLAN.md P5, roadmap B13).
+"""A load check before a launch day: many visitors opening the Daily Chart at once (roadmap B13).
 
   python tools/load_check.py                                   200 visitors over 20 s at http://127.0.0.1:8100
   python tools/load_check.py --visitors 500 --ramp 30 --watch 30

@@ -134,7 +134,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(http(self.srv, "/brand/..%2Fserver.py")[0], 404)
 
     def test_the_site_installs_as_an_app_and_tells_ai_search_and_bing_about_itself(self):
-        """REACH_PLAN P3 and P4: the web app manifest, /llms.txt and the IndexNow key."""
+        """roadmap U1 and B12: the web app manifest, /llms.txt and the IndexNow key."""
         status, body, headers = http(self.srv, "/manifest.json")
         m = json.loads(body)
         self.assertEqual((status, m["display"], m["start_url"]), (200, "standalone", "/?ref=app"))
@@ -256,7 +256,7 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn("/play", http(self.srv, "/sitemap.xml")[1])
 
     def test_the_framed_daily_is_the_daily_page(self):
-        """/embed/daily (REACH_PLAN P2) is the Daily page under a second address: one page to search engines, and the
+        """/embed/daily (roadmap B11) is the Daily page under a second address: one page to search engines, and the
         script's frame mode in it. The header that lets a named site frame it is Caddy's (deploy/Caddyfile)."""
         status, body, _ = http(self.srv, "/embed/daily?ref=itch")
         self.assertEqual((status, body), (200, http(self.srv, "/daily")[1]))

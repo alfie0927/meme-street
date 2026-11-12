@@ -1,6 +1,6 @@
 # Launch posts: Show HN and the launch lists
 
-For the reach plan (`docs/REACH_PLAN.md`, B2). You post all of these yourself, from your own accounts; nothing
+For the roadmap's reach track (`docs/ROADMAP.md`, RC4 and RC5). You post all of these yourself, from your own accounts; nothing
 here is sent by a script. Each link carries its own `ref` tag, so its visits and sign-ups show per source in
 `tools/visits.py` and on the admin page. Before posting anywhere, read that site's rules on the day: they change.
 

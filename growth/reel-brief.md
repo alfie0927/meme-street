@@ -1,7 +1,7 @@
 # Reel brief: more people watching, more people reaching the site
 
 For the reels chat (the session that owns `tools/memestreet_daily_reel/`), from the growth plan
-([docs/GROWTH_PLAN.md](../docs/GROWTH_PLAN.md), Part 3). Evidence: [instagram.md](instagram.md), pulled 10 Nov 2026.
+([docs/ROADMAP.md](../docs/ROADMAP.md), the RL and A track). Evidence: [instagram.md](instagram.md), pulled 10 Nov 2026.
 The owner took the plan's defaults on 10 Nov, except one: **the posting schedule stays as it is.**
 
 ## What the numbers say (38 reels, 30 Oct to 9 Nov)

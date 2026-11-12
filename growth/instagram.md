@@ -1,7 +1,7 @@
 # Instagram: audit, profile and daily routine (@memestreetgame)
 
 Pulled 10 Nov 2026 through the Graph API (`lab/insights.py` plus account insights), read-only. Part of
-[docs/GROWTH_PLAN.md](../docs/GROWTH_PLAN.md), Parts 1 and 3. Built with the `ig-audit` and `ig-profile` skills.
+[docs/ROADMAP.md](../docs/ROADMAP.md), section 4. Built with the `ig-audit` and `ig-profile` skills.
 
 ## 1. Audit
 

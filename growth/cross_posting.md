@@ -1,6 +1,6 @@
 # The same reels on other platforms: what you set up
 
-For the reach plan, A11 and the daily text post (`docs/REACH_PLAN.md`). The script is
+For A11 and the daily text post (`docs/ROADMAP.md`, the RL and A track). The script is
 `tools/memestreet_daily_reel/src/post_elsewhere.py`. It does nothing for a platform until that platform's keys are in
 `config.env` on the reel server, so **putting a platform's keys in is your yes for that platform**: the next reel
 Instagram takes goes there too. Everything below is free. Sign-up pages change; where a step no longer matches,
