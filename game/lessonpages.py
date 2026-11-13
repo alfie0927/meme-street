@@ -41,7 +41,7 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every acc
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
-        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/about">About Meme Street</a>'
+        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a> · <a href="/vs">Compare</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
 
@@ -172,10 +172,53 @@ o.innerHTML=h}
 document.getElementById("f").addEventListener("input",go);go()})();
 </script>"""
 
+DD_PATH = "/tools/drawdown-recovery-calculator"
+DD_TITLE = "Drawdown recovery calculator: the gain you need to get back to even | Meme Street"
+DD_DESC = ("Free drawdown recovery calculator. Enter your peak balance and your balance now and it gives the drawdown "
+           "and the gain you need to get back to the peak. A 50% loss needs a 100% gain.")
+DD_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> &rsaquo; Tools</p><h1>Drawdown recovery calculator</h1>
+<p class="lead">Gain needed to recover = loss &divide; (1 &minus; loss). An account that falls 50% needs a 100% gain to get back
+to its peak, because the gain is earned on a smaller balance. Enter your peak and your balance now and the calculator gives the
+drawdown and the gain you need.</p>
+<form id="f" class="try" onsubmit="return false">
+<p><label>Peak balance <input id="peak" type="number" min="0" step="any" value="1000"></label>
+<label>Balance now <input id="now" type="number" min="0" step="any" value="500"></label></p>
+</form>
+<div id="out" class="box tip" aria-live="polite">Enter your balances above.</div>
+<noscript><p>This calculator needs JavaScript. The sum is: drawdown = (peak &minus; now) &divide; peak; gain needed =
+(peak &minus; now) &divide; now.</p></noscript>
+<h2>The table</h2>
+<table><tr><th>Loss from the peak</th><th>Gain needed to recover</th></tr>
+<tr><td>10%</td><td>11%</td></tr><tr><td>20%</td><td>25%</td></tr><tr><td>30%</td><td>43%</td></tr>
+<tr><td>50%</td><td>100%</td></tr><tr><td>75%</td><td>300%</td></tr><tr><td>90%</td><td>900%</td></tr></table>
+<h2>How it works</h2>
+<p>A drawdown is the fall from an account's peak to a low. After a loss of L (as a fraction of the peak) you hold 1 &minus; L of
+it, and to get back to 1 you must multiply that by 1 &divide; (1 &minus; L). The gain needed is therefore L &divide; (1 &minus; L),
+which grows much faster than the loss does. That is why professionals keep losses small: a 10% hole needs an 11% gain, a 50% hole
+needs a doubling.</p>
+<div class="box warn"><b>Watch out:</b> the sum is for the balance only. It ignores fees (0.1% on each side of a trade on Meme
+Street) and any money you add or take out, and a deposit is not a gain.</div>
+<p>Learn the idea in <a href="/lessons/drawdown">Drawdown maths</a>, keep each loss small by sizing trades with the
+<a href="/tools/position-size-calculator">position size calculator</a>, and place the exit with the
+<a href="/tools/stop-loss-calculator">stop loss calculator</a>.</p>
+<script>
+(function(){var $=function(i){return document.getElementById(i)},o=$("out");
+function fmt(x){return x.toLocaleString("en-US",{maximumFractionDigits:2})}
+function go(){var p=+$("peak").value,n=+$("now").value;
+if(!(p>0&&n>=0)){o.textContent="Enter a peak above zero and a balance of zero or more.";return}
+if(n>=p){o.innerHTML="<b>No drawdown:</b> your balance is at or above the peak, so there is nothing to recover.";return}
+if(n===0){o.innerHTML="<b>Drawdown 100%.</b> With nothing left, no gain can recover the account.";return}
+var dd=(p-n)/p*100,g=(p-n)/n*100;
+o.innerHTML="<b>Drawdown "+fmt(dd)+"%. You need a gain of "+fmt(g)+"% to get back to "+fmt(p)+".</b><br>That is "+fmt(p-n)+" earned on a balance of "+fmt(n)+"."}
+document.getElementById("f").addEventListener("input",go);go()})();
+</script>"""
+
 SL_LINK = ('<div class="try">Try it: the <a href="/tools/stop-loss-calculator">free stop loss calculator</a> '
            "gives the stop price and the loss if it is hit.</div>")
 RR_LINK = ('<div class="try">Try it: the <a href="/tools/risk-reward-calculator">free risk reward ratio calculator</a> '
            "does this sum for you.</div>")
+DD_LINK = ('<div class="try">Try it: the <a href="/tools/drawdown-recovery-calculator">free drawdown recovery calculator</a> '
+           "gives the gain you need for any loss.</div>")
 CALC_LINK = ('<div class="try">Try it: the <a href="/tools/position-size-calculator">free position size calculator</a> '
              "does this sum for you.</div>")
 
@@ -269,7 +312,7 @@ class Lessons:
                             url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
                 f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
-                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else DD_LINK if lid == "drawdown" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
 
     def calculator(self):
         """The free position size calculator (works without an account; the sum runs in the page)."""
@@ -316,6 +359,21 @@ class Lessons:
         return (HEAD.format(t=html.escape(SL_TITLE), d=html.escape(SL_DESC), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=css) + SL_BODY + CTA + FOOT)
 
+    def drawdown(self):
+        """The free drawdown recovery calculator (works without an account; the sum runs in the page)."""
+        url = self.site + DD_PATH
+        ld = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Drawdown recovery calculator",
+               "url": url, "description": DD_DESC, "applicationCategory": "FinanceApplication",
+               "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": "Drawdown recovery calculator", "item": url}]}]
+        css = CSS + "label{display:inline-block;margin:6px 14px 6px 0}input{display:block;margin-top:4px;width:11em;max-width:100%;" \
+            "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
+        return (HEAD.format(t=html.escape(DD_TITLE), d=html.escape(DD_DESC), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=css) + DD_BODY + CTA + FOOT)
+
     def hub(self):
         url = self.site + "/lessons"
         d = self.hub_text
@@ -334,7 +392,7 @@ class Lessons:
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade, free</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
-                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a></p>'
+                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a></p>'
                 + "".join(parts) + FOOT)
 
 
@@ -351,6 +409,9 @@ if __name__ == "__main__":
     assert r.count("<h1>") == 1 and f'href="https://memestreet.net{RR_PATH}"' in r and r.count("<script>") == 1
     sl = L.stop_loss()
     assert sl.count("<h1>") == 1 and f'href="https://memestreet.net{SL_PATH}"' in sl and sl.count("<script>") == 1
+    dd = L.drawdown()
+    assert dd.count("<h1>") == 1 and f'href="https://memestreet.net{DD_PATH}"' in dd and dd.count("<script>") == 1
+    assert 'href="/tools/drawdown-recovery-calculator"' in L.page("drawdown")
     assert 'href="/tools/stop-loss-calculator"' in L.page("stop-placement")
     assert 'href="/tools/position-size-calculator"' in L.page("position-sizing")
     assert L.page("nope") is None and L.hub().count("/lessons/") >= len(L.lessons)

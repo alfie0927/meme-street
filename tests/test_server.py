@@ -209,6 +209,17 @@ class ServerTests(unittest.TestCase):
         status, body, _ = http(self.srv, "/lessons/stop-placement")
         self.assertIn('href="/tools/stop-loss-calculator"', body)
 
+    def test_the_drawdown_recovery_calculator_is_a_plain_page(self):
+        status, body, _ = http(self.srv, "/tools/drawdown-recovery-calculator")
+        self.assertEqual(status, 200)
+        self.assertIn("<h1>Drawdown recovery calculator</h1>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/tools/drawdown-recovery-calculator"', body)
+        self.assertIn('id="peak"', body)
+        status, body, _ = http(self.srv, "/sitemap.xml")
+        self.assertIn("/tools/drawdown-recovery-calculator</loc>", body)
+        status, body, _ = http(self.srv, "/lessons/drawdown")
+        self.assertIn('href="/tools/drawdown-recovery-calculator"', body)
+
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")
         self.assertEqual(status, 200)
