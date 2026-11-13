@@ -57,6 +57,37 @@ ends with the short address to type: "Play today's chart free: memestreet.net/yt
 `/yt` forwards to `/daily?ref=yt`; the admin page counts every visit through it (and through a YouTube page's link) under
 "Clicks from Instagram and YouTube".
 
+### The Mastodon profile (2026-11-13)
+
+Preferences, Public profile. Display name `Meme Street`, picture `brand/icon-512.png`. Bio (491 of 500 characters,
+paste as it is; the hashtags are clickable on Mastodon and help people who follow them find the account):
+
+```
+Learn to trade on a made-up stock market.
+
+Meme Street is a free trading game: 180+ invented companies, news that moves their prices, and 1,000 MB of practice money with no cash value. Make your mistakes here, not with real savings.
+
+Every day, a new Daily Chart: the same mystery chart for everyone, two minutes to call it.
+
+Play today's: https://memestreet.net/daily?ref=masto
+
+Everything here is fictional. Not investment advice.
+
+#trading #StockMarket #FinancialLiteracy #PersonalFinance
+```
+
+Extra fields (same page, up to four; label, then content):
+
+| Label | Content |
+|---|---|
+| Daily Chart | `https://memestreet.net/daily?ref=masto` |
+| Lessons | `https://memestreet.net/lessons?ref=masto` |
+| Website | `https://memestreet.net` |
+| Instagram | `https://www.instagram.com/memestreetgame` |
+
+`?ref=masto` is the tag the daily text post's own link carries (`REF` in `src/post_elsewhere.py`), so visits and sign-ups
+from Mastodon show under `masto` on the admin page's tracking-link table.
+
 ## 3. Each platform
 
 | Platform | What to post | How often | Notes |
