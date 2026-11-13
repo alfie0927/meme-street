@@ -83,6 +83,7 @@ details summary{cursor:pointer}
  <div class="panel"><h2>Online now <span class="mut" id="on-n"></span></h2><div id="online"></div></div>
  <div class="grid2"><div class="panel"><h2>Who is on (last 2 hours)</h2><div id="ch3"></div></div>
   <div class="panel"><h2>Trades per hour <span class="mut">last 24 hours, your time</span></h2><div id="hours"></div></div></div>
+ <div class="panel"><h2>Clicks from Instagram and YouTube <span class="mut">last 7 days, UTC · people who opened the site, and what they did</span></h2><div id="clicks"><p class="note">loading</p></div></div>
  <div class="panel"><h2>The last 7 days <span class="mut">UTC</span></h2><div id="days"></div></div>
  <div class="grid2"><div class="panel"><h2>Total MB and fees</h2><div id="ch1"></div></div>
   <div class="panel"><h2>Players' combined P&amp;L</h2><div id="ch2"></div></div></div>
@@ -188,6 +189,7 @@ function render(o){
   +kpi('On now',(o.online_players||[]).length,(o.guests||0)+' visitors watching')
   +(visitsData&&visitsData.on&&visitsData.days.length?kpi('Visitors from Instagram',visitsData.days[0].instagram,`${visitsData.days[1]?visitsData.days[1].instagram:0} yesterday · ${visitsData.days.reduce((a,d)=>a+d.instagram,0)} in 7 days · ${visitsData.days[0].visitors} visitors today in all`)
    :kpi('Visitors from Instagram','-',visitsData?'the visit log is off (deploy/Caddyfile)':'loading'))
+  +(visitsData&&visitsData.on&&visitsData.days.length?kpi('Visitors from YouTube',visitsData.days[0].youtube??0,`${visitsData.days[1]?visitsData.days[1].youtube??0:0} yesterday · ${visitsData.days.reduce((a,d)=>a+(d.youtube??0),0)} in 7 days · memestreet.net/yt`):'')
   +(o.bots&&o.bots.total?kpi('Bots',o.bots.total,`${o.bots.active} active · ${o.bots.daily_today} played the Daily today · ${mb(o.bots.equity)} MB`):'')
   +kpi('Trades',mb(o.trades_total),f(o.trades_per_min,1)+' a minute right now')
   +kpi('Total MB',mb(s.total_mb),'started '+mb(src.grant||0)+' · bought '+mb(src.purchase||0))
@@ -415,10 +417,19 @@ const TAB_DATA={players:[['/api/admin/players',gotPlayers],['/api/admin/accounts
 async function fetchAll(jobs){const res=await Promise.all(jobs.map(([u])=>api(u)));res.forEach((d,i)=>jobs[i][1](d))}
 async function loadTab(name){try{await fetchAll(TAB_DATA[name]||[])}catch(e){if(e.message==='forbidden')lock('That key was not accepted.')}}
 const refreshPlayers=()=>loadTab('players');
+function renderClicks(){   // (the visit log: visitlog.dashboard(); Instagram is its browser, its addresses or our ig_/reel links, YouTube is memestreet.net/yt or a YouTube Referer)
+ const v=visitsData;if(!v||!v.on){$('clicks').innerHTML='<p class="note">The visit log is off (deploy/Caddyfile).</p>';return}
+ const day=d=>new Date(d.day+'T00:00:00Z').toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'});
+ const did=(d,k)=>(d.did&&d.did[k])||{starts:0,signups:0},sum=(k,x)=>v.days.reduce((a,d)=>a+(x?did(d,k)[x]:d[k]??0),0);
+ const row=(l,ig,igs,igu,yt,yts,ytu,all)=>`<tr><td>${l}</td><td>${ig}</td><td>${igs}</td><td>${igu}</td><td>${yt}</td><td>${yts}</td><td>${ytu}</td><td>${all}</td></tr>`;
+ $('clicks').innerHTML=`<table><thead><tr><th>Day</th><th>From Instagram</th><th>Played the Daily</th><th>Signed up</th><th>From YouTube</th><th>Played the Daily</th><th>Signed up</th><th>All visitors</th></tr></thead><tbody>`
+  +v.days.map(d=>row(day(d),d.instagram,did(d,'instagram').starts,did(d,'instagram').signups,d.youtube??0,did(d,'youtube').starts,did(d,'youtube').signups,d.visitors)).join('')
+  +row('<b>7 days</b>',sum('instagram'),sum('instagram','starts'),sum('instagram','signups'),sum('youtube'),sum('youtube','starts'),sum('youtube','signups'),sum('visitors'))+'</tbody></table>'
+  +'<p class="note">A visitor is one address that opened the site that day. "Played the Daily" counts Daily Chart starts, "Signed up" sign-up attempts.</p>'}
 let busy=false;
 async function tick(){if(busy)return;busy=true;
  const tab=(document.querySelector('#tabs button.on')||{dataset:{}}).dataset.tab,deep=tickN++%4===0;
- const jobs=[...(deep?[['/api/admin/visits',d=>{visitsData=d}]]:[]),['/api/admin/overview',render],   // (visits first: the overview's card uses them)['/api/admin/chat',renderChat],...(deep?[['/api/admin/insights',renderInsights]]:[]),
+ const jobs=[...(deep?[['/api/admin/visits',d=>{visitsData=d;renderClicks()}]]:[]),['/api/admin/overview',render],['/api/admin/chat',renderChat],...(deep?[['/api/admin/insights',renderInsights]]:[]),   // (visits first: the overview's card uses them)
   ...(TAB_DATA[tab]||[]),...(deep&&tab!=='players'?[['/api/admin/players',gotPlayers]]:[])];   // (the names for Find a player)
  try{await fetchAll(jobs)}
  catch(e){if(e.message==='forbidden')lock('That key was not accepted.');else $('stamp').textContent='error: '+e.message}

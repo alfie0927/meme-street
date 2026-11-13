@@ -209,6 +209,12 @@ def add_pages(app):
         Not in the sitemap: it only forwards."""
         return RedirectResponse("/daily?ref=reel", status_code=307)
 
+    @app.get("/yt")
+    async def from_youtube():
+        """The address in the YouTube channel and under each Short (2026-11-13): today's Daily Chart, tagged as
+        coming from YouTube, so the admin page counts the clicks. Not in the sitemap: it only forwards."""
+        return RedirectResponse("/daily?ref=yt", status_code=307)
+
     @app.get("/lessons")
     async def lessons_hub():
         """Every Learn lesson, listed by track (lessonpages.py)."""

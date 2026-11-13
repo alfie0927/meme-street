@@ -13,6 +13,7 @@ import urllib.parse
 
 LOG = "/var/log/caddy/memestreet-access.log"
 NOT_PAGES = ("/api/", "/js/", "/brand/", "/ws", "/reels/", "/favicon")
+SHORT = {"/play": "reel", "/yt": "yt"}   # (the short addresses forward to /daily?ref=...: the visit is tagged on its first page)
 
 
 def lines_of(paths):
@@ -49,7 +50,7 @@ def count(lines):
             v["ig"] = True
         method = r.get("method")
         if v["src"] is None and method == "GET" and not path.startswith(NOT_PAGES):
-            ref = (urllib.parse.parse_qs(query).get("ref") or [""])[0].strip().lower()[:40]
+            ref = SHORT.get(path) or (urllib.parse.parse_qs(query).get("ref") or [""])[0].strip().lower()[:40]
             host = urllib.parse.urlparse((heads.get("Referer") or [""])[0]).hostname or ""
             v["src"] = ref or (host if host and not host.endswith("memestreet.net") else "direct")
         if path == "/api/auth_mode":
@@ -65,6 +66,12 @@ def from_instagram(v):
     """Came through Instagram: its own browser, an Instagram address, or one of our Instagram links (ig_..., reel)."""
     src = v["src"] or ""
     return v["ig"] or "instagram" in src or src.startswith("ig_") or src == "reel"
+
+
+def from_youtube(v):
+    """Came through YouTube: our YouTube links (memestreet.net/yt, ?ref=yt...) or a YouTube address as the Referer."""
+    src = v["src"] or ""
+    return src == "yt" or src.startswith("yt_") or "youtube" in src or src == "youtu.be"
 
 
 def summary(days):
@@ -90,6 +97,10 @@ def dashboard(days, today, n=7):
     for k in range(n):
         day = (t - datetime.timedelta(days=k)).isoformat()
         seen = [v for v in days.get(day, {}).values() if v["seen"]]
-        rows.append({"day": day, "visitors": len(seen), "instagram": sum(1 for v in seen if from_instagram(v)),
-                     "starts": sum(v["starts"] for v in seen), "signups": sum(v["signups"] for v in seen)})
+        ig = [v for v in seen if from_instagram(v)]
+        yt = [v for v in seen if from_youtube(v) and not from_instagram(v)]
+        rows.append({"day": day, "visitors": len(seen), "instagram": len(ig), "youtube": len(yt),
+                     "starts": sum(v["starts"] for v in seen), "signups": sum(v["signups"] for v in seen),
+                     "did": {k: {"starts": sum(v["starts"] for v in g), "signups": sum(v["signups"] for v in g)}
+                             for k, g in (("instagram", ig), ("youtube", yt))}})
     return rows

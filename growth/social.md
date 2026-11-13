@@ -33,6 +33,30 @@ Learn to trade on a made-up market. Practice money, no cash value. Play daily:
 
 Link: `https://memestreet.net/daily`
 
+### The YouTube channel (2026-11-13)
+
+YouTube Studio, Customisation, Profile. Description (paste as it is):
+
+```
+Learn to trade on a made-up stock market.
+
+Meme Street is a free trading game with 180+ invented companies and news that moves their prices. You start with 1,000 MB of practice money (no cash value, never paid out), so you can make every beginner mistake here instead of with real savings.
+
+Every day there is a new Daily Chart: two minutes on the same mystery chart as everyone else. Can you call where it goes?
+
+These Shorts teach one idea at a time: chart patterns, indicators, risk, the mistakes new traders make, and strategies tested on the game's charts.
+
+Play today's chart free: memestreet.net/yt
+
+Every company, person and headline here is fictional. Nothing on this channel is investment advice.
+```
+
+Links (same page, "Add link"): title `Play today's chart`, address `https://memestreet.net/yt`. This one is clickable on the
+channel page; links in a Short's own description are not (YouTube turned them off in 2023), so each Short's description
+ends with the short address to type: "Play today's chart free: memestreet.net/yt" (`src/post_elsewhere.py`).
+`/yt` forwards to `/daily?ref=yt`; the admin page counts every visit through it (and through a YouTube page's link) under
+"Clicks from Instagram and YouTube".
+
 ## 3. Each platform
 
 | Platform | What to post | How often | Notes |

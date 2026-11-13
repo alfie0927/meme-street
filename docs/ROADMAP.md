@@ -48,12 +48,15 @@ their open items, rules, findings and targets are folded in here, and both files
 8. **No spending without your yes.** The free route first: no ads or boosted posts, free listings only, each app's own
    scheduler, the mail service's free plan (the reminder email stops at 70 a day so sign-up codes always get through),
    the local voice and the Claude plan for reels. `TOGETHER_API_KEY` and `OPENAI_API_KEY` are never set.
-9. **The posting schedule stays.** Eight reels a day (03:00, 06:00, 09:00, 12:00, 13:00, 18:00, 21:00 UTC and the
-   Daily after 23:00). The content changes, never the slots or the count. One reel of each format a day.
+9. **The posting schedule.** Since 12 November (your call that evening): five reels a day (03:00, 09:00, 13:00,
+   18:00, 21:00 UTC), the Daily after 23:00, and a news reel on top when a really big headline breaks (one a day at
+   most). The five take turns through every format in one cycle, one reel of each format a day. The slots and the
+   count change only when you say so.
 10. **Reels:** only director reels reach the grid (each its own device and palette), no 3D and no AI video, Trial
     Reels off, the local Kokoro voice, captions for every spoken word, posted without approval. The craft rules and
     every piece of your feedback live in `tools/memestreet_daily_reel/RULEBOOK.md`.
-11. **Honest copy.** No profit promises; always "practice money, no cash value"; no real tickers; "free account" and
+11. **Honest copy.** No profit promises; always "practice money, no cash value"; no real tickers (a news reel may name a real company and its boss, with no ticker
+    symbol and no advice on the share: your call, 12 November); "free account" and
     "play free", never "everything is free"; never ask for votes; say what is sold. No visible "bot" tag (the flag
     stays in the data), and bots are not counted as players.
 12. **Nothing fake.** No bought followers or likes, no pods, no follow-for-a-prize giveaways. Creators get an Expert
@@ -116,10 +119,31 @@ reel is made after 23:00 from the day's real chart and retried through the night
 - **Two copies of the code, becoming one (RL1, 12 November).** The server ran the 12 November work; the repo held
   that and the reach plan's reel changes (A2 to A5, A8 to A10, the Loop format), which were **not** on the server. A
   file-by-file comparison found nothing on the server that the repo lacks, so the repo's reel folder is committed and
-  queued to replace the server's files between two reels (`/root/rl1/deploy.sh` under the pipeline lock; the old
-  files are kept in `/root/rl1/before.tgz` and come back by themselves if a self-check fails; `logs/rl1.log` says
-  when it ran). Until that log says "deployed", a writer change is still patched into both copies by script.
-- Timers on: auto, make, queue, research. Off: evolve (the lab), trial, post.
+  sent to the server with `./deploy.sh` (one bundle of the folder's code; the swap waits for the pipeline lock so it
+  lands between two reels, keeps the old files in `/root/reel-deploy/<time>/before.tgz`, runs the self-checks and
+  puts the old files back if one fails; `logs/deploy.log` on the server has the result). From now on every reel
+  change is made in the repo and sent with that script; code is never edited on the server.
+- Timers on: auto, make, queue, research. Off: evolve (the lab), trial, post. Waiting for your one command: news
+  (section 4).
+- **Five a day, one cycle (12 November, evening).** `auto_reel.sh` makes the 03:00, 09:00, 13:00, 18:00 and 21:00
+  slots only, and `brief()` in `make_spec.py` picks each reel's format from every format, the one out longest ago
+  first (boosted formats first, cut ones never), whatever the hour. **What went wrong that night:** RL1's deploy was
+  already waiting on the server with a bundle built at 18:02, before these changes; it ran at 20:04 and put the
+  older files back, so the server made seven reels again and lost the "meembucks" line until `./deploy.sh` sent
+  the repo again at 10:34 UTC on 13 November. Reels made for the dropped slots were moved to free slots (15T0300,
+  15T0900, 16T0300); 13 and 14 November have five each. A deploy bundle is a snapshot: after any reel change, run
+  `./deploy.sh` and read `logs/deploy.log`.
+- **News reels (12 November, evening).** `src/news_reel.py`, run by `news_watch.sh` every 20 minutes: it reads 15
+  free news feeds; only when one story is in four or more outlets is Claude asked whether it is really big; then a
+  researcher with web search builds a fact pack (each claim with its status and outlet), the writer makes a director
+  reel of the format `Market news`, a fact check reads the script against the pack before the voice and again after
+  the critic's rewrite, and an approved reel is queued to post at once. Never deaths, disasters, violence, war,
+  crime against a person, health, children or elections; nobody named but the public figures at the centre; an
+  unproven allegation is left out altogether; one a day at most; `touch state/news_off` stops it. A full dry run on
+  the Huang story (12 November) ran every step and was held by the critic after two rounds (a tilted paper over a
+  name tag), so nothing posted: a held story now gets one more fresh draft. The first news reel (Jensen Huang leaving Nvidia) was made by hand
+  and posted at 18:06 UTC on 12 November. The same day "memebucks" got its spoken form ("meembucks") in
+  `src/pronounce.json`.
 
 ### The numbers
 
@@ -167,16 +191,17 @@ then depth.
 | # | Item | What | Size | Who |
 |---|---|---|---|---|
 | 1 | RL1 | **The parked reel changes go live** (your yes, 12 Nov: no test render, the scoreboard judges them). A2 to A5 and A8 to A10 are merged into the server's writer beside the 12 November work, the reel folder is committed, and from then on the server is deployed from the repo. **Started 12 Nov:** committed, and the swap on the server is queued between two reels. Next: watch the first reels the merged writer makes (its rules are stricter: a 16-word hook, a 10-word sign-off, a question first in the caption, 60 seconds). | M | Me |
-| 2 | RL2 | **All eight slots post.** A slot the critic holds twice stays empty (four of eight posted on 11 Nov): a third try with a format that has passed before, and the three leftover `remake.json` slots of 14 November cleared. | S | Me |
+| 2 | RL2 | **All eight slots post.** A slot the critic held twice stayed empty (four of eight posted on 11 Nov). **12 Nov:** a held slot gets a third try with a format that has passed before, and the check before rendering now catches what the critic held 7 of the last 12 reels for: text over other text, and a figure's head over a label or a speech bubble over a face. Still open: figures standing on a chart's candles, the HUD running ahead of the voice (the writer is told; nothing checks it), and the voice pausing inside a phrase (3 of 12). The old reels waiting in the slots of 14 and 15 November are replaced as their slots come up. | S | Me |
 | 3 | RL4 | **The first in-depth reels**: the Strategy test (RSI under 30, 83 trades) passed the critic on 12 Nov at 9, 8, 9, 9 and posts on 13 Nov at 03:00; the Technical lesson (09:00) is being made. Fix what holds the next ones. | S | Me |
-| 4 | W1 | **The facts sweep.** 114 lessons in 20 units wherever 96 and 17 are still written (`SITE_FACTS` in the reel writer, HOW_IT_WORKS; `/about` and `seo/context.md` were corrected by the SEO run of 12 Nov); the README's "lessons award MB" and its test time; Kokoro, not Sarah, in the RULEBOOK; "Free to play" out of `seo/directories.md`. | S | Me |
-| 5 | RL8 | **One sign-off line** on every reel and in the bio (decision, section 6), and the "N players took on this chart" line out of `src/analyze.py`: a small number is no advertisement. | S | Me, after your word |
+| 4 | W1 | **The facts sweep.** **Done 12 Nov:** 114 lessons in 20 units in the reel writer's `SITE_FACTS` and in HOW_IT_WORKS (`/about` and `seo/context.md` by the SEO run of the same day); the README no longer says lessons award MB; the RULEBOOK names the Kokoro voice; "Free to play" is out of `growth/directories.md`. | S | Me |
+| 5 | RL8 | **One sign-off line** on every reel and in the bio (decision, section 6). Done 12 Nov: how many played is out of the Daily reel's facts and its caption (a small number is no advertisement, and it counted the house bots). | S | Me, after your word |
 | 6 | M13 | **Count the funnel**: shop views, buy-box opens, checkout starts, Dailies finished to accounts made; and `growth/weekly.md` filled every Monday (it has one row). | S | Me; you read me the admin page |
 | 7 | Section 4 | **Instagram, 15 minutes a day**: remove fake followers, the profile edit, a daily Story, comments. | | You |
 | 8 | RC2, RC3 | **The first sends**: your own result to 10 to 20 people; the directories; one challenge link pasted into a chat app to see its preview. | An afternoon | You |
 | 9 | RC4, RC6 | **Show HN and the write-up**, after your three answers (section 4). | | You post; the drafts are ready |
-| 10 | A11 | **A YouTube channel and its keys**: the same reels on Shorts automatically, and the retention curve Instagram never gives (the control for A1). | S | You, then me |
-| 11 | RL3 | **Reel reviews on 19 and 26 November**: the scoreboard's first verdicts; A2 to A5 judged on medians of ten or more reels at 24 and 72 hours. | | Me |
+| 10 | A11 | **A YouTube channel and its keys**: the same reels on Shorts automatically, and the retention curve Instagram never gives (the control for A1). **13 Nov:** posting is on (6 a day, one of them always the Daily; public); the channel description and its link `memestreet.net/yt` are in `growth/social.md` (yours to paste); the admin page counts clicks from YouTube beside Instagram's. | S | You, then me |
+| 11 | RL3 | **Reel reviews on 19 and 26 November**: the scoreboard's first verdicts; A2 to A5 judged on medians of ten or more reels at 24 and 72 hours; `python3 src/learn.py show` on the reel server is the table to read (RL12). | | Me |
+| 12 | RL12 | **The learning loop** (the owner, 13 Nov: "figure out why [the best did better and the worst did badly]... collate that knowledge into better reels"). **Done 13 Nov:** `src/learn.py` keeps a ledger of every posted reel (what it was beside what Instagram measured), and once a day, when three new reels are scored, Claude explains the five best and five worst against the medians and rewrites `state/learned.md`, the rules every writer prompt now ends with. First run: 45 reels, 7 rules (odd picturable openers for company stories, a feeling plus one dial for Hard truths, 9+ scenes, no jargon or bare-label openers). Watch: do the rules move the median hold (34) by the 26 Nov review? | M | Me |
 
 ### Next, to the end of December
 
@@ -216,6 +241,8 @@ then depth.
 
 | # | What | Time | Why | The text is in |
 |---|---|---|---|---|
+| | **The news watch, once** | | | |
+| 0 | Switch the news timer on with one command (my safety check does not let me install a timer on the server): `ssh root@65.109.233.145 "cd /opt/memestreet-daily-reel && for x in service timer; do sed 's#__DIR__#/opt/memestreet-daily-reel#g; s#__USER__#root#g' systemd/memestreet-reel-news.\$x > /etc/systemd/system/memestreet-reel-news.\$x; done && systemctl daemon-reload && systemctl enable --now memestreet-reel-news.timer"` | 1 min | Until then nothing scans the news. | `tools/memestreet_daily_reel/news_watch.sh` |
 | | **Instagram, every day** | | | |
 | 1 | Remove the fake followers by hand, a few a day (439 left). Never in bulk and never through a tool that logs in. | 3 min a day | They are who Instagram thinks the reels are for. | |
 | 2 | The profile: name "Meme Street: Stock Market Game", the new bio, the link `memestreet.net/daily?ref=ig_bio`, three reels pinned, four highlights (Play, How it works, Daily Chart, Lessons). | 15 min, once | 51 profile visits gave 2 link taps. | `growth/instagram.md` |
@@ -268,16 +295,17 @@ then depth.
 | A9 | Captions checked by the writer: the question first, under 125 characters, one searched word, at most five hashtags. | In the repo, not on the server (RL1) | |
 | A10 | The writer is shown our own five best and five worst openings every day (`src/own_reels.py`). | In the repo; on the server the file is only a library for the scoreboard (RL1) | |
 | A11 | The same reels elsewhere (`src/post_elsewhere.py`): YouTube Shorts, a Facebook Page, Threads and Telegram; one text post a day with the Daily's link to Threads, Telegram, Bluesky and Mastodon. | In the repo. Off until a platform's keys exist; never yet run against a real platform; the first YouTube upload is unlisted. Bluesky takes text only; it posts the day's first three reels | S a platform |
-| RL2 | All eight slots post (a third try for a held slot; the leftover remakes). | Open | S |
+| RL2 | All eight slots post. | 12 Nov: a third try for a held slot; the dry run (`qa(t, 1)` in `src/reel.html`) rejects text over text and a figure's head over any text. Open: figures on candles, the HUD ahead of the voice, pauses inside a phrase | S |
 | RL3 | The scoreboard decides which formats stay; reviews on 19 and 26 Nov. | Running; no format has three scored reels yet | |
 | RL4 | The in-depth formats. Next for the tests: more candles a stock (the game's `/api/reel/stock` gives 120; a length parameter would give every rule more trades) and short-selling rules. | Live 12 Nov; the first two reels are being made | S |
 | RL5 | Market lesson: the other 45 lessons. | Open | S |
 | RL6 | Reasons to send or comment beyond A5. | Open; the DM part is a decision | M |
-| RL7 | The reel's facts stay true: `SITE_FACTS` and `DAILY_FACTS` change when the site does (part of W1 today). | Open | S |
-| RL8 | One sign-off line; the players line out of the Daily's facts. | Decision | S |
+| RL7 | The reel's facts stay true: `SITE_FACTS` and `DAILY_FACTS` change when the site does. | Corrected 12 Nov (W1); a standing duty | S |
+| RL8 | One sign-off line. (The players count left the Daily's facts on 12 Nov.) | Decision | S |
 | RL9 | Dead weight out of the reel folder: `src/recap.html` (still the renderer's default page), `src/voice.py`, `src/queue_reels.py`, `test_three.sh`, `post_reel.sh`; and the lab (`lab/evolve.py`, `lab/winners.py`, `trial_pair.sh`, `src/reel_v2.html`) if the evolve timer is retired. | Decision | S |
 | RL10 | The Instagram token expires on 1 January 2027: renew it in December. | Open | S |
-| RL11 | The audience panel's weights are uncalibrated (`lab/audience.py`): calibrate on real insights or drop it from the dry run. | Open | S |
+| RL11 | The audience panel's weights are uncalibrated (`lab/audience.py`): calibrate on real insights or drop it from the dry run. | Open; `state/reel_ledger.json` (RL12) is now the data to calibrate on | S |
+| RL12 | The learning loop: Instagram's numbers explain each reel; the lessons go to the writer (`src/learn.py`, `state/learned.md`). | Running since 13 Nov. Later: read Instagram once a day for all three (`own_reels`, `format_scores`, `learn`); YouTube numbers in the ledger once its key can read | M |
 
 Done: director reels and posting without approval (9 Nov); the Daily as a director reel with retries, captions on
 every scene, covers, the explainer every third day (10 Nov); the format mix, reels at 35 to 60 seconds (11 Nov); one
@@ -547,7 +575,7 @@ Done or decided: R1 to R3, R6, X1, X3 to X6, X8.
 | 12 | **Few MB sinks.** | Until M12, MB only buy capital. | M12 |
 | 13 | **The reach ceiling may be the account, not the reels.** | Three weeks of changes with a clean status and no reel past 300 views makes the account the suspect. | A1, section 8 |
 | 14 | **One Instagram account, one token.** | The token expires on 1 January 2027; a flag on the account stops everything. | RL10, A11 |
-| 15 | **Two copies of the reel code.** | A whole-file copy in either direction silently undoes the other side's work. | RL1 |
+| 15 | **Code edited on the reel server by hand.** | It brings back two copies, and the next `./deploy.sh` silently undoes the edit. | RL1 |
 | 16 | **The reel budget is the Claude plan.** | Each reel is a long writer call and up to two critic rounds; a held reel costs the same as a posted one. | RL2 |
 | 17 | **Long reels against a 7-second audience.** | The in-depth formats run to 100 seconds; the scoreboard cuts them if viewers leave. | RL3, RL4 |
 | 18 | **A reel that states a wrong number.** | A strategy test's verdict is worded by code and the writer may say only the facts; the critic checks them. | RL4 |
@@ -601,10 +629,12 @@ script is checked in a real browser, not only with `node --check`.
 
 **A reel change**
 
-1. `python src/make_spec.py selftest`, `python src/backtest.py demo`, `python src/format_scores.py demo`.
+1. `python src/make_spec.py selftest`, `python src/backtest.py demo`, `python src/format_scores.py demo`,
+   `python src/learn.py demo`.
 2. A dry run (`lab/silent.py`, then `DRY=1 PAGE=reel.html src/render.py`) and a look at frame 0 and the frame at 1 s.
-3. Until RL1: the same patch script on the server's copy and the repo's copy; never a whole-file copy of
-   `src/make_spec.py`. The server's old file is kept in `/root` first.
+3. Send it with `./deploy.sh` from the reel folder (whole files, between two reels, automatic roll-back); never
+   edit code on the server. A local dry run of a seed fixture deletes its tracked `dry/` frames: use a copy, or
+   `DRY_KEEP=1`, or `git checkout` them back.
 4. Queued reels are re-rendered with `./rerender.sh <slot>` when the template changes.
 5. Your feedback goes into `RULEBOOK.md` (the writer and the critic both read it), then `HOW_IT_WORKS.md`.
 

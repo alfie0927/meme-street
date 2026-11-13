@@ -265,6 +265,9 @@ class ServerTests(unittest.TestCase):
             urllib.request.build_opener(Stay).open(self.srv.url + "/play", timeout=10)
         self.assertEqual((got.exception.code, got.exception.headers["Location"]), (307, "/daily?ref=reel"))
         self.assertNotIn("/play", http(self.srv, "/sitemap.xml")[1])
+        with self.assertRaises(urllib.error.HTTPError) as got:                   # (the YouTube link, 2026-11-13)
+            urllib.request.build_opener(Stay).open(self.srv.url + "/yt", timeout=10)
+        self.assertEqual((got.exception.code, got.exception.headers["Location"]), (307, "/daily?ref=yt"))
 
     def test_the_framed_daily_is_the_daily_page(self):
         """/embed/daily (roadmap B11) is the Daily page under a second address: one page to search engines, and the

@@ -20,7 +20,7 @@ One mystery stock chart a day, the same for everyone. Buy, sell or short for two
 
 **Long description:**
 ```
-Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how everyone else did, with a streak to keep and a result to share. The chart comes from a made-up stock, so nobody can look it up. A new one starts at midnight UTC. Free to play, no sign-up needed, and practice money only: MB have no cash value.
+Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how everyone else did, with a streak to keep and a result to share. The chart comes from a made-up stock, so nobody can look it up. A new one starts at midnight UTC. The Daily is free and needs no sign-up, and it is practice money only: MB have no cash value.
 ```
 
 **Tags:** daily game, trading, stock market, charts, finance, puzzle, education, wordle-like

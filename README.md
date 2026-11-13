@@ -1,7 +1,7 @@
 # Meme Street
 
 A stock-market game for learning to trade, or just trading for fun, with play money (memebucks, MB). Everyone starts
-with 1,000 MB; more can be bought in packages and is never cashed out, and lessons and challenges award it for free.
+with 1,000 MB; more can be bought in packages and is never cashed out; lessons pay XP, not MB.
 The market is simulated: prices drift, trend, range and break out, react to an economic calendar and to earnings, and
 move with the statistics of real charts, so technical analysis on it is worth learning. Live at
 [memestreet.net](https://memestreet.net).
