@@ -262,7 +262,7 @@ then depth.
 | 15 | The same reels by hand on TikTok, X and Reddit; communities by hand, nine helpful posts for each mention. | 30 min a day | X's API costs about $0.20 a post, TikTok's refuses upload tools. | `growth/social.md`; `tools/fetch_reels.ps1` fills `D:\memestreet_reels` |
 | 16 | A personal welcome to each of the first 100 new players: two lines and one question ("what nearly stopped you?"). | 2 min each | Their words are the best copy we will get. | |
 | | **Accounts and keys** (you put each key into the server's `config.env` yourself) | | | |
-| 17 | YouTube first (set the OAuth app to "In production"), then a Facebook Page, Threads, a Telegram channel, Bluesky, Mastodon; a TikTok Business account. | 20 min each | Each one switches on automatic cross-posting (A11). | `growth/cross_posting.md` |
+| 17 | ~~YouTube~~, ~~Bluesky~~, ~~Mastodon~~ (all on 13 Nov); still open: a Facebook Page, Threads, a Telegram channel; a TikTok Business account. | 20 min each | Each one switches on automatic cross-posting (A11). | `growth/cross_posting.md` |
 | 18 | Bing Webmaster Tools: import the site from Search Console. | 5 min | | |
 | 19 | Allow `memestreet.net` in the SEO routine's network settings. | 2 min | Its runs cannot fetch the live site. | |
 | 20 | Look at Search Console's Performance page about 1 December and tell me what it shows. | 5 min | The routine has no ranking data to aim with. | |
@@ -294,7 +294,7 @@ then depth.
 | A8 | The "AI info" label on every post (Meta asks for it for synthetic voices). | In the repo, not on the server (RL1) | |
 | A9 | Captions checked by the writer: the question first, under 125 characters, one searched word, at most five hashtags. | In the repo, not on the server (RL1) | |
 | A10 | The writer is shown our own five best and five worst openings every day (`src/own_reels.py`). | In the repo; on the server the file is only a library for the scoreboard (RL1) | |
-| A11 | The same reels elsewhere (`src/post_elsewhere.py`): YouTube Shorts, a Facebook Page, Threads and Telegram; one text post a day with the Daily's link to Threads, Telegram, Bluesky and Mastodon. | In the repo. Off until a platform's keys exist; never yet run against a real platform; the first YouTube upload is unlisted. Bluesky takes text only; it posts the day's first three reels | S a platform |
+| A11 | The same reels elsewhere (`src/post_elsewhere.py`): YouTube Shorts, a Facebook Page, Threads and Telegram; one text post a day with the Daily's link to Threads, Telegram, Bluesky and Mastodon. | On since 13 Nov for YouTube (6 a day, one always the Daily; public) and for the daily text post on Bluesky and Mastodon (first post 13 Nov 14:56 UTC, links tagged `bsky` and `masto`). Facebook, Threads and Telegram wait for their keys | S a platform |
 | RL2 | All eight slots post. | 12 Nov: a third try for a held slot; the dry run (`qa(t, 1)` in `src/reel.html`) rejects text over text and a figure's head over any text. Open: figures on candles, the HUD ahead of the voice, pauses inside a phrase | S |
 | RL3 | The scoreboard decides which formats stay; reviews on 19 and 26 Nov. | Running; no format has three scored reels yet | |
 | RL4 | The in-depth formats. Next for the tests: more candles a stock (the game's `/api/reel/stock` gives 120; a length parameter would give every rule more trades) and short-selling rules. | Live 12 Nov; the first two reels are being made | S |
