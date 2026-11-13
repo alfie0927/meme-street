@@ -184,7 +184,7 @@ function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.P
  const mouth=mood==='smile'?`M${ex-9*sc} ${ey+8*sc}Q${ex} ${ey+16*sc} ${ex+9*sc} ${ey+8*sc}`:mood==='frown'?`M${ex-9*sc} ${ey+13*sc}Q${ex} ${ey+5*sc} ${ex+9*sc} ${ey+13*sc}`:mood==='o'?'':`M${ex-8*sc} ${ey+11*sc}H${ex+8*sc}`;
  let g=`<g opacity="${fa}" transform="translate(0 ${(1-fa)*30})"><g stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" fill="none">
   <path d="M${hip[0]} ${hip[1]}L${neck[0]} ${neck[1]}"/><path d="${legs(P.ll)}"/><path d="${legs(P.rl)}"/>
-  <circle cx="${ex}" cy="${ey}" r="${28*sc}" fill="#080a0b" transform="rotate(${tl} ${ex} ${ey+28*sc})"/><path d="${seg2(sho,P.la)}"/><path d="${seg2(sho,P.ra)}"/></g>
+  <circle class="fighead" cx="${ex}" cy="${ey}" r="${28*sc}" fill="#080a0b" transform="rotate(${tl} ${ex} ${ey+28*sc})"/><path d="${seg2(sho,P.la)}"/><path d="${seg2(sho,P.ra)}"/></g>
   <g transform="rotate(${tl} ${ex} ${ey+28*sc})"><circle cx="${ex-9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/><circle cx="${ex+9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/>
   ${mood==='o'?`<ellipse cx="${ex}" cy="${ey+11*sc}" rx="${5*sc}" ry="${7*sc}" fill="${col}"/>`:`<path d="${mouth}" stroke="${col}" stroke-width="${4*sc}" fill="none" stroke-linecap="round"/>`}</g>`;
  if(who.startsWith('rookie'))g+=`<g transform="rotate(${tl} ${ex} ${ey+28*sc})" fill="${AM}"><path d="M${ex-26*sc} ${ey-14*sc}Q${ex} ${ey-48*sc} ${ex+26*sc} ${ey-14*sc}Z"/><rect x="${ex-46*sc}" y="${ey-18*sc}" width="${22*sc}" height="${7*sc}" rx="${3*sc}"/></g>`;   // Rookie: a backwards cap
@@ -536,13 +536,23 @@ window.render=render;
 window.hook0=()=>{const e=document.getElementById('hook0');return !e.textContent.trim()||e.scrollHeight>147||e.scrollWidth>e.clientWidth+1?0:parseFloat(getComputedStyle(e).fontSize)};
 // the overlap check (render.py runs it through the reel): every visible piece of text, measured as drawn; any two that
 // touch are reported, and a reel with any is not posted
-window.qa=async T=>{await render(T);const els=[document.getElementById('head'),document.getElementById('caps'),...document.querySelectorAll('.opt,.qa')];
- const vis=e=>{if(!e||!e.textContent.trim())return null;let o=1;for(let x=e;x&&x!==document.body;x=x.parentElement)o*=parseFloat(getComputedStyle(x).opacity);if(e.getAttribute&&e.getAttribute('opacity'))o*=parseFloat(e.getAttribute('opacity'));
-  if(o<.3)return null;let r;if(e.id==='head'||e.id==='caps'){const sp=e.querySelector('span')?[...e.querySelectorAll('span')]:[e];const rs=sp.map(x=>x.getBoundingClientRect());r={left:Math.min(...rs.map(x=>x.left)),right:Math.max(...rs.map(x=>x.right)),top:Math.min(...rs.map(x=>x.top)),bottom:Math.max(...rs.map(x=>x.bottom))}}else r=e.getBoundingClientRect();
+window.qa=async(T,deep)=>{await render(T);const els=[document.getElementById('head'),document.getElementById('caps'),...document.querySelectorAll('.opt,.qa')];
+ const vis=(e,any,min=.3)=>{if(!e||!(any||e.textContent.trim()))return null;let o=1;for(let x=e;x&&x!==document.body;x=x.parentElement)o*=parseFloat(getComputedStyle(x).opacity);if(e.getAttribute&&e.getAttribute('opacity'))o*=parseFloat(e.getAttribute('opacity'));
+  if(o<min)return null;let r;if(e.id==='head'||e.id==='caps'){const sp=e.querySelector('span')?[...e.querySelectorAll('span')]:[e];const rs=sp.map(x=>x.getBoundingClientRect());r={left:Math.min(...rs.map(x=>x.left)),right:Math.max(...rs.map(x=>x.right)),top:Math.min(...rs.map(x=>x.top)),bottom:Math.max(...rs.map(x=>x.bottom))}}else r=e.getBoundingClientRect();
   return r.width===0&&r.right-r.left===0?null:r};
  const B=els.map(e=>[e,vis(e)]).filter(x=>x[1]),bad=[];
  for(let a=0;a<B.length;a++)for(let b=a+1;b<B.length;b++){const p=B[a][1],q=B[b][1];if(B[a][0].contains(B[b][0])||B[b][0].contains(B[a][0]))continue;
   if(p.left<q.right-2&&q.left<p.right-2&&p.top<q.bottom-2&&q.top<p.bottom-2)bad.push([(B[a][0].id||B[a][0].className.baseVal||B[a][0].className)+':'+B[a][0].textContent.trim().slice(0,30),(B[b][0].id||B[b][0].className.baseVal||B[b][0].className)+':'+B[b][0].textContent.trim().slice(0,30)])}
+ if(deep){   // (the dry run only: what the scene function draws. Text over other text, and a stick figure's head over any text. A crossfade never has both sides above .55, and the same words drawn twice are a glow, not a fault)
+  const fr=document.getElementById('free'),X='http://www.w3.org/1999/xhtml',box=(e,any)=>[e,vis(e,any,.55)],on=x=>x[1],
+   L=[...fr.querySelectorAll('*')].filter(x=>(x.tagName==='text'||(x.namespaceURI===X&&[...x.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())))&&!els.some(e=>e&&e.contains(x))).map(x=>box(x)).filter(on),
+   O=[...B,...[...document.querySelectorAll('#chart text')].map(x=>box(x)).filter(on)],H=[...fr.querySelectorAll('.fighead')].map(x=>box(x,1)).filter(on),
+   nm=e=>e.classList&&e.classList.contains('fighead')?"a stick figure's head":'"'+e.textContent.trim().slice(0,30)+'"',
+   hit=(p,q)=>{const w=Math.min(p.right,q.right)-Math.max(p.left,q.left),h=Math.min(p.bottom,q.bottom)-Math.max(p.top,q.top);return w>4&&h>4&&w*h>=.15*Math.min((p.right-p.left)*(p.bottom-p.top),(q.right-q.left)*(q.bottom-q.top))};
+  for(let a=0;a<L.length;a++){
+   for(let b=a+1;b<L.length;b++)if(L[a][0].textContent.trim()!==L[b][0].textContent.trim()&&!L[a][0].contains(L[b][0])&&!L[b][0].contains(L[a][0])&&hit(L[a][1],L[b][1]))bad.push([nm(L[a][0]),nm(L[b][0])]);
+   for(const o of O)if(hit(L[a][1],o[1]))bad.push([nm(L[a][0]),nm(o[0])])}
+  for(const h of H)for(const o of [...L,...O])if(hit(h[1],o[1]))bad.push([nm(h[0]),nm(o[0])])}
  return bad};
 // the reel's cover: its first chart (or its first scene) under the title
 window.cover=async date=>{   // the reel's cover, the November template: brand header, the main picture in a framed panel, the title, the site

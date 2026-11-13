@@ -438,7 +438,7 @@ SITE_FACTS = [   # (web/about.html, 2026-11-10: keep in step with it)
     "Prices follow the stories, never the players: nobody's trade moves a price.",
     "Trade stocks, the MSI 50 index of the 50 biggest companies, sector funds, 2x and 3x products and tiny 'moonshots'; go long or short; limit, stop-loss and take-profit orders; calls and puts.",
     "Fair by design: simple tricks like buying every dip don't beat holding the market (checked by simulating many markets with dozens of strategies), so skill shows.",
-    "96 free lessons in 17 tracks (charts, indicators, orders, risk, shorting, options, the economy), each a few minutes, plus chart tests on real game charts.",
+    "114 lessons in 20 units (charts, indicators, orders, risk, shorting, options, the economy, strategy testing, and three Expert units on the order book, volatility and position sizing), each a few minutes, plus chart tests on real game charts. A free account passes two lessons a day; Pro lifts that limit and Expert adds the Expert units.",
     "A new leaderboard every day; ranks count returns, so buying MB can't buy a better rank.",
     "The Daily Chart: two minutes on the same mystery chart as everyone else, a new one each day, with streaks and a result to share.",
     "Every trade costs 0.1% of its size, like a broker's fee, so you learn to count costs; no hidden spread.",
@@ -502,8 +502,7 @@ def gather(category, rng, history, company=None):
                  "trades": [{"dir": t["dir"], "entry_candle": t["entry"], "exit_candle": t["exit"], "return_pct": round(t["r"] * 100, 2),
                              "why": f"{t['ev']['outcome']} at {t['ev']['price']}"} for t in A["trades"]],
                  "plan_total_pct": round(A["total"] * 100, 2), "plan_beat_holding": bool(A["total"] >= A["hold"]),
-                 "best_player_pct": None if A["best_player"] is None else round(A["best_player"] * 100, 2),
-                 "players": A["players"]}
+                 "best_player_pct": None if A["best_player"] is None else round(A["best_player"] * 100, 2)}   # (how many played is left out: a small number is no advertisement, and it counted the house bots; roadmap RL8, 2026-11-12)
         charts.append({"candles": C, "label": f"Daily Chart #{A['number']}", "upto": len(C) - 1, "end": len(C) - 1, "win": [0, len(C) - 1], "live_from": H})   # (reel.html shades the lead-in and draws a dotted line where the game began)
         facts["charts"] = [chart_summary(0, charts[0])]
         return facts, charts
@@ -665,6 +664,10 @@ Geometry (1080 x 1920; Instagram covers y < 230, y > 1440 and the right 230 px o
 your HUD y 380-500 (a free scene has no head); the world y 520-1290 (when the scene has a chart it fills that band, so draw on
 the chart's own pixels or in its margins, never below y 1260); the punch headline at y 1270-1325 (api.punch draws it: keep that band
 clear); the transcript captions at y 1384-1440 (the template draws every spoken word there, in every scene); nothing below 1440. Every text you draw is 26 px or more (34+ for anything that matters); the renderer rejects smaller.
+Nothing you draw may cover words: the dry run rejects text over other text and a stick figure's head over any text (a speech
+bubble goes beside or above the head, never on the face; keep figures, rings and arrows clear of every tag, the chart's own
+label and price tag included). A number, a result or a verdict in your HUD appears on the word that says it, never before:
+gate it with api.at(s, "the words") or the cue's time. A screen that runs ahead of its voice is the critic's most common reason to hold a reel.
 Palette: the reel's own two or three colours on a dark background: "tok": {"css": "body{background:#...!important}"} once,
 then your colours in the svg. The brand header stays readable.
 The first 3 seconds decide the reel. Scene 0 is a free scene whose punch "text" (2 to 5 short words, from its first
@@ -1251,14 +1254,14 @@ def verdicts():
 
 def choose(home, every, used, last, v, rng, nth=0):
     """The format for a slot. `home`: the slot's turn; `every`: all rotation formats; `used`: out already that day; `last`: the
-    formats of the last reels, oldest first; `v`: verdicts(); `nth`: 0, or 1 for a held slot's second try (the next proven one).
+    formats of the last reels, oldest first; `v`: verdicts(); `nth`: 0, or 1 and 2 for a held slot's second and third try (the next proven ones).
     Never a cut format, never one already out that day; a boosted format joins every turn of two or more and goes first;
     then the one out longest ago."""
     ok = lambda cs: [c for c in dict.fromkeys(cs) if c not in used and v.get(c) != "cut"]
     pool = ok(list(home) + ([c for c in every if v.get(c) == "boost"] if len(set(home)) > 1 else [])) or \
            [c for c in ok(every) if c != "Loop"] or list(dict.fromkeys(home))
     pool.sort(key=lambda c: (v.get(c) != "boost", max((k for k, x in enumerate(last) if x == c), default=-1), rng.random()))
-    if nth: pool = [c for c in pool[1:] if c in last] or pool[1:] or pool   # (a second try: the next format that has passed the critic before, so the slot is not left empty)
+    if nth: pool = [c for c in pool[nth:] if c in last] or pool[nth:] or pool   # (a second or third try: the next format that has passed the critic before, so the slot is not left empty)
     return pool[0]
 
 
@@ -1292,7 +1295,8 @@ def brief(slot, category=None, remake=None):
     if not category:                                     # (the format of this slot's turn that went out longest ago, so every
         last = recent_formats()                          #  format keeps coming round: the owner, 2026-11-12, "only quiz reels")
         used = formats_on(slot[:10], slot)               # (one reel of each format a day: the owner, 2026-11-12)
-        category = choose(ROTATION.get(slot[-4:], ["Hard truth"]), [c for cs in ROTATION.values() for c in cs], used, last, verdicts(),
+        every = [c for cs in ROTATION.values() for c in cs]   # (one cycle through every format, whatever the hour: the owner, 2026-11-12 evening,
+        category = choose(every, every, used, last, verdicts(),   #  five reels a day; ROTATION now only lists the formats)
                           rng, int(os.environ.get("REEL_TRY") or 0))   # (Instagram's numbers steer it: the owner, 2026-11-12)
     if remake and {"Chart quiz": "Chart quiz", "Stock story": "Stock story", "Technicals": "Technical lesson",
                    "New-trader challenge": "Trading mistake"}.get(remake.get("type"), "Technical lesson") != category or category in DEEP:
@@ -1377,7 +1381,7 @@ def merge(base, patch):
     return s
 
 
-def claude_cli(messages, system, model=None):
+def claude_cli(messages, system, model=None, wait=True):
     """The writer through Claude Code on this server, logged in to the owner's plan (CLAUDE_CODE_OAUTH_TOKEN from
     `claude setup-token`): the plan's usage, no API bill. No tools: it only writes."""
     convo = "\n\n".join(("REQUEST:\n" if m["role"] == "user" else "YOUR EARLIER REPLY:\n") + m["content"] for m in messages)
@@ -1386,7 +1390,7 @@ def claude_cli(messages, system, model=None):
                         "--disallowedTools", "Bash,Edit,Write,Read,WebFetch,WebSearch,Glob,Grep,Task,NotebookEdit"],
                        input=convo, capture_output=True, text=True, timeout=900, cwd="/tmp",
                        env={k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"})   # (an API key would be billed instead)
-    if r.returncode and re.search(r"hit your|usage limit|rate limit", (r.stderr or "") + r.stdout, re.I):
+    if wait and r.returncode and re.search(r"hit your|usage limit|rate limit", (r.stderr or "") + r.stdout, re.I):   # (wait=False: src/learn.py skips the day instead)
         print("the writer's plan limit is reached: waiting 15 minutes, then trying again", flush=True)   # (credits come back: carry on then)
         time.sleep(900); return claude_cli(messages, system, model)
     if r.returncode:
@@ -1403,6 +1407,16 @@ def lessons():
                key=lambda x: (x.get("count", 1), x.get("last", "")), reverse=True)[:30]
     return ("\n\nThe film critic who reviews every finished reel sent earlier reels back for these. Never repeat them:\n" +
             "\n".join(f"- {x['lesson']}" for x in L)) if L else ""
+
+
+def learned(path=None):
+    """What Instagram's numbers taught us about our own reels (state/learned.md, written once a day by src/learn.py from
+    the best and worst reels against the medians): the writer reads it before every reel. "" before its first run."""
+    f = path or os.path.join(ROOT, "state", "learned.md")
+    try: body = open(f, encoding="utf-8").read().strip()
+    except OSError: return ""
+    return ("\n\nWHAT INSTAGRAM'S NUMBERS TAUGHT US ABOUT OUR OWN REELS (measured on our account, with the evidence in brackets). "
+            "Follow them unless the owner's rulebook says otherwise; a rule that says 'try' is a lead, not a law:\n" + body) if body else ""
 
 
 def fix_check(raw, notes, base, spec):
@@ -1452,7 +1466,7 @@ def write(B, msgs=None, base=None, notes=None, work=None):
     most four times. The first draft is the big model's (REEL_CLI_MODEL), the fixes the small one's (REEL_FIX_MODEL)."""
     ask = claude_cli if os.environ.get("REEL_WRITER", "cli") == "cli" else claude
     msgs = msgs or [{"role": "user", "content": json.dumps(B["ask"], indent=1)}]
-    B = dict(B, system=B["system"] + lessons())
+    B = dict(B, system=B["system"] + lessons() + learned())   # (the critic's lessons, then Instagram's: src/learn.py)
     for attempt in range(5):
         raw = ask(msgs, B["system"], model=os.environ.get("REEL_CLI_MODEL", "opus") if attempt == 0 else os.environ.get("REEL_FIX_MODEL", "sonnet"))   # (the big model writes and makes the critic's fix; the small one repairs check failures: a small-model rewrite duplicated scenes, 2026-11-09)
         spec, errs = parse(raw, B, base)
@@ -1549,6 +1563,9 @@ if __name__ == "__main__":
         new = ("Two traders", "Rewind", "Trade diary", "Candles talk", "Instant replay", "Expectation vs reality", "Breaking news")
         assert all(c in CATEGORIES and sum(c in cs for cs in ROTATION.values()) == 2 and (c in KINDS or c == "Breaking news") for c in new)
         assert "THE FIRST 3 SECONDS" in system_prompt("Rewind") and all(c in CATEGORIES for cs in ROTATION.values() for c in cs)
+        import tempfile; lf = os.path.join(tempfile.mkdtemp(), "learned.md")
+        assert learned(lf) == ""; open(lf, "w", encoding="utf-8").write("# x\n- Open on the stake (8 reels)\n")
+        assert "TAUGHT US" in learned(lf) and "- Open on the stake (8 reels)" in learned(lf)
         assert all(sum(c in cs for cs in ROTATION.values()) == 2 and "LENGTH AND DEPTH" in CATEGORIES[c] for c in DEEP)
         H = {"k": ["a", "b", "a"]}
         assert lru(["a", "b", "c"], H, "k") == ["c"] and lru(["a", "b"], H, "k") == ["b"] and lru(["a", "b", "c"], H, "k", 2) == ["a", "c"] and H["k"][-2:] == ["a", "c"]
@@ -1559,6 +1576,7 @@ if __name__ == "__main__":
         assert ch(["A", "B"], last="ABD", v={"D": "boost"}) == "D" and ch(["A"], last="AD", v={"D": "boost"}) == "A"   # (the best goes first, but not into a one-format turn)
         assert ch(["A", "B"], last="AB", nth=1) == "B" and ch(["A"], used="A", v={"B": "cut"}) in ("C", "D")   # (a second try: the next in line; a used-up turn: another format)
         assert ch(["A"], used="ABCD") == "A" and ch(["A", "B", "C"], last="B", nth=1) == "B"   # (a second try takes a format that has passed before)
+        assert ch(["A", "B", "C"], last="ABC", nth=2) == "C" and ch(["A", "B"], last="AB", nth=2) in ("A", "B")   # (a third try: the one after that; a short turn starts over)
         assert [explainer(f"2026-11-{d:02d}T1800") for d in (10, 13, 16, 19, 22)] == [None, "Meme Street explained", "Daily Chart explained", "Meme Street explained", "Daily Chart explained"]
         assert explainer("2026-11-13T2100") is None and explainer("2026-11-14T1800") is None
         for x, y in [("level cost you 11%", "Level cost you 11%"), ("it fell. then i sold!", "It fell. Then I sold!"),

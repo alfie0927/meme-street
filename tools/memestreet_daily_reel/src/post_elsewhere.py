@@ -7,13 +7,15 @@
   python3 src/post_elsewhere.py demo        the self-check, no network
 
 A platform is on only when all its keys are in config.env (KEYS below); with none set this script does nothing.
-Reels go to YouTube Shorts, a Facebook Page, Threads and a Telegram channel, at most ELSEWHERE_PER_DAY (3) a day each;
+Reels go to YouTube Shorts (at most YT_PER_DAY, 6: the API's free upload quota), a Facebook Page, Threads and a Telegram
+channel (at most ELSEWHERE_PER_DAY, 3, each), counted over YouTube's quota day (midnight to midnight Pacific time). One
+of each day's uploads is always kept for the Daily (the owner, 2026-11-13): other reels stop one short of the cap;
 the text post goes to Threads, Telegram, Bluesky and Mastodon. <folder>/posted_elsewhere.json says what went where, and
 a platform named in it is never tried again for that reel (an entry is written before the upload starts, so a crash
 cannot post twice; delete an entry to retry it). YouTube uploads are unlisted until YT_PRIVACY=public is set.
 urllib only, like post_instagram.py. Every error text has the keys taken out before it is printed or saved.
 """
-import glob, json, hashlib, os, re, secrets, sys, textwrap, time, urllib.parse, urllib.request, urllib.error
+import datetime, glob, json, hashlib, os, re, secrets, sys, textwrap, time, urllib.parse, urllib.request, urllib.error
 from post_instagram import http, V, ROOT, STATE
 
 KEYS = {"youtube": ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"), "facebook": ("FB_PAGE_ID", "FB_PAGE_TOKEN"),
@@ -44,8 +46,22 @@ def attempt(fn):
 def state():
     try: st = json.load(open(SF))
     except (OSError, ValueError): st = {}
-    if st.get("day") != stamp()[:10]: st.update(day=stamp()[:10], n={})
+    if st.get("day") != stamp()[:10]: st.update(day=stamp()[:10])          # (the text post's day: UTC)
+    if st.get("qday") != quota_day(): st.update(qday=quota_day(), n={})   # (the reels' count: YouTube's quota day)
     return st
+
+
+def quota_day():
+    """The day YouTube's upload quota counts in: midnight to midnight Pacific time."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.datetime.now(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d")
+    except Exception:
+        return time.strftime("%Y-%m-%d", time.gmtime(time.time() - 8 * 3600))
+
+
+def per_day(p):
+    return int(E("YT_PER_DAY", "6") if p == "youtube" else E("ELSEWHERE_PER_DAY", "3"))
 
 
 def save(st):
@@ -75,7 +91,7 @@ def youtube(mp4, cap):
     tok = http("POST", "https://oauth2.googleapis.com/token", data=form({"client_id": E("YT_CLIENT_ID"), "client_secret": E("YT_CLIENT_SECRET"),
                "refresh_token": E("YT_REFRESH_TOKEN"), "grant_type": "refresh_token"}))["access_token"]
     title = textwrap.shorten(re.sub(r"[<>]", "", cap.split("\n")[0]), 100, placeholder="...") or "Meme Street"
-    meta = {"snippet": {"title": title, "description": cap + "\n\nToday's Daily Chart: " + LINK + REF["youtube"], "categoryId": "27"},   # (27: Education)
+    meta = {"snippet": {"title": title, "description": cap + "\n\nPlay today's chart free: memestreet.net/yt", "categoryId": "27"},   # (27: Education)
             "status": {"privacyStatus": E("YT_PRIVACY", "unlisted"), "selfDeclaredMadeForKids": False}}
     A = {"Authorization": "Bearer " + tok}
     up = head("POST", "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status", json.dumps(meta).encode(),
@@ -172,8 +188,9 @@ def main(folder):
     cap = open(capf, encoding="utf-8").read().strip() if os.path.exists(capf) else ""; line = cap.split("\n")[0]
     send = {"youtube": lambda: youtube(mp4, cap), "facebook": lambda: facebook(must(url), cap + "\n\n" + LINK + REF["facebook"]),
             "threads": lambda: threads(line + "\n" + LINK + REF["threads"], must(url)), "telegram": lambda: telegram(line + "\n" + LINK + REF["telegram"], must(url))}
+    daily = os.path.basename(os.path.dirname(n)) == "out" and re.fullmatch(r"\d{4}-\d{2}-\d{2}", os.path.basename(n))   # (make_reel.sh posts the Daily from out/<date>)
     for p, fn in send.items():
-        if not on(p) or p in done or state()["n"].get(p, 0) >= int(E("ELSEWHERE_PER_DAY", "3")): continue   # ponytail: the day's first three; pick slots by hour if the time of day turns out to matter
+        if not on(p) or p in done or state()["n"].get(p, 0) >= per_day(p) - (0 if daily else 1): continue   # (one upload a day stays free for the Daily)
         done[p] = {"started": stamp()}; json.dump(done, open(flag, "w"))   # (marked first: a crash mid-upload never posts twice)
         done[p] = attempt(fn); json.dump(done, open(flag, "w"))
         if "id" in done[p]: st = state(); st["n"][p] = st["n"].get(p, 0) + 1; save(st)   # (read again: the Daily's run may have written meanwhile)
@@ -182,7 +199,7 @@ def main(folder):
 
 def check():
     for p in KEYS: print(f"{p:9} {'on' if on(p) else 'off: needs ' + ', '.join(k for k in KEYS[p] if not E(k, '').strip())}")
-    print(f"reels a day per platform: {E('ELSEWHERE_PER_DAY', '3')}; YouTube privacy: {E('YT_PRIVACY', 'unlisted')}; text post from {E('TEXT_HOUR', '12')}:00 UTC")
+    print(f"reels a day: YouTube {per_day('youtube')}, the others {per_day('facebook')} (one kept for the Daily); sent today {state()['n']}; YouTube privacy: {E('YT_PRIVACY', 'unlisted')}; text post from {E('TEXT_HOUR', '12')}:00 UTC")
 
 
 def yt_login():
@@ -204,7 +221,11 @@ def yt_login():
     while not ({"code", "error"} & set(got)): srv.handle_request()
     if got.get("state") != st or "code" not in got: raise SystemExit(f"Google did not give a code: {got.get('error', 'the state value did not match')}")
     r = http("POST", "https://oauth2.googleapis.com/token", data=form({"code": got["code"], "client_id": cid, "client_secret": sec, "redirect_uri": back, "grant_type": "authorization_code"}))
-    print(f"\nAdd these three lines to config.env on the server:\nYT_CLIENT_ID={cid}\nYT_CLIENT_SECRET={sec}\nYT_REFRESH_TOKEN={r['refresh_token']}")
+    lines = f"YT_CLIENT_ID={cid}\nYT_CLIENT_SECRET={sec}\nYT_REFRESH_TOKEN={r['refresh_token']}\n"
+    keep = os.path.join(os.path.expanduser("~"), "yt_keys.env")      # (outside the repo; appended to the server's config.env, then deleted)
+    with open(keep, "w", encoding="utf-8", newline="\n") as f: f.write(lines)
+    print(f"\nAdd these three lines to config.env on the server:\n{lines}\nThey are also saved in {keep}. To add them in one go (PowerShell):\n"
+          f'  Get-Content "{keep}" | ssh root@65.109.233.145 "tr -d \'\\r\' >> /opt/memestreet-daily-reel/config.env"\nthen delete that file.')
 
 
 def demo():
@@ -214,10 +235,10 @@ def demo():
     G.update(http=lambda m, url, params=None, data=None, headers=None: (calls.append(url.split("?")[0]), ans)[1],
              head=lambda *a: {"Location": "https://upload.example/1"}, STATE=T, SF=os.path.join(T, "elsewhere.json"), ROOT=T)
     for k in sum(KEYS.values(), ()): os.environ.pop(k, None)
-    pub = os.path.join(T, "pub"); os.makedirs(pub); os.environ.update(PUBLIC_VIDEO_DIR=pub, PUBLIC_VIDEO_URL="https://x.test/v/", TEXT_HOUR="0", ELSEWHERE_PER_DAY="1")
+    pub = os.path.join(T, "pub"); os.makedirs(pub); os.environ.update(PUBLIC_VIDEO_DIR=pub, PUBLIC_VIDEO_URL="https://x.test/v/", TEXT_HOUR="0", ELSEWHERE_PER_DAY="2", YT_PER_DAY="2")
 
-    def reel(name, **extra):
-        d = os.path.join(T, "queue", name); os.makedirs(d)
+    def reel(name, where="queue", **extra):
+        d = os.path.join(T, where, name); os.makedirs(d)
         for f, body in {"reel.mp4": "mp4", "caption.txt": "A stop is a plan.\n\n#trading", "posted.json": "{}", **extra}.items(): open(os.path.join(d, f), "w").write(body)
         for t in (1, 2): open(os.path.join(pub, f"daily-{name}-{t}.mp4"), "w").write("x")
         return d
@@ -228,8 +249,10 @@ def demo():
     main(a); done = json.load(open(flag)); n = len(calls)
     assert set(done) == {"youtube", "facebook", "threads", "telegram"} and all("id" in v for v in done.values()), done
     main(a); assert len(calls) == n                                                       # a second run sends nothing
-    b = reel("2026-11-11T0600"); main(b); assert len(calls) == n and not os.path.exists(os.path.join(b, "posted_elsewhere.json"))   # the day's cap
-    os.environ["ELSEWHERE_PER_DAY"] = "3"
+    b = reel("2026-11-11T0600"); main(b); assert len(calls) == n and not os.path.exists(os.path.join(b, "posted_elsewhere.json"))   # the day's cap, less the Daily's
+    dd = reel("2026-11-11", where="out"); main(dd); assert set(json.load(open(os.path.join(dd, "posted_elsewhere.json")))) == set(done)   # the Daily takes the kept one
+    assert state()["n"] == {p: 2 for p in done} and per_day("youtube") == 2; os.environ.pop("YT_PER_DAY"); assert per_day("youtube") == 6 and per_day("threads") == 2
+    os.environ["ELSEWHERE_PER_DAY"] = "5"; os.environ["YT_PER_DAY"] = "5"; n = len(calls)
     for bad in (reel("t", **{"trial.json": "{}"}), os.path.join(T, "none")): main(bad)
     assert len(calls) == n                                                                # a Trial Reel, or a reel Instagram did not take
     def boom(*a, **k): raise SystemExit("POST https://api.telegram.org/botsecret-TG_BOT_TOKEN/sendVideo -> HTTP 400")

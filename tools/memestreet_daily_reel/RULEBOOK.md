@@ -33,8 +33,9 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   text"; 1332 at first, 1356 on 2026-11-10). 1384 is as low as one line goes inside Instagram's safe zone (1440).
 
 ## Voice
-- Sarah (ElevenLabs), at a human pace (about 3.9 words a second while talking), steady (no speeding up or slowing down
+- The local Kokoro voice (free; no paid voice, the owner 2026-11-10), at a human pace (about 3.9 words a second while talking), steady (no speeding up or slowing down
   for no reason), natural short pauses at commas and full stops, every word pronounced right.
+- "memebucks" is said "meembucks" (the owner, 2026-11-12): `src/pronounce.json` reads it as "Meem Bucks".
 
 ## Content
 - Concise: one idea, every line earning its place. A director reel runs 35 to 60 seconds (about 50 to 150 spoken
@@ -54,6 +55,21 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   candles (no line tracing the price): "I want to see the candles".
 - ~~Its own format: the day's chart walked through in order at an easy pace, then the scorecard; the cover is
   "Daily Chart #N" over the chart with "Can you beat it?" and the date.~~
+
+## Real news (the format "Market news")
+- The owner, 2026-11-12: when a REALLY big real headline breaks, a reel on it, linked to Meme Street, posted as soon as it is made
+  (`src/news_reel.py`). It is the one kind of reel that names a real company and a real person, and it comes on top of the day's
+  reels. The first, on Jensen Huang leaving Nvidia, was made by hand that day.
+- Only what the fact pack holds is said, shown or put in the caption, and every claim keeps its status: "admitted" only when the
+  person admitted it; a report is said with its outlet ("the Times reported"); an unproven allegation is left out altogether. Nobody is named
+  but the public figures at the centre. No ticker symbol, no advice on the real share, no prediction, no view on guilt.
+- The person is a simple cartoon with one or two trademark features (a jacket, the hair, glasses), never a realistic face, and
+  nothing cruel happens to the figure beyond the story's own event.
+- Never a death, a disaster, violence, war, a crime against a person, someone's health, a child or an election.
+- Shape: the story's extraordinary event inside the first second, the number or the name as the first spoken word; what happened,
+  in order; the market's move as the device changing size; a question to the viewer (sell or hold?); then Meme Street: made-up
+  companies with bosses too, news moves their prices the same way, 1,000 memebucks of practice money with no cash value; the sign-off.
+- The caption names its sources and says "Not investment advice."
 
 ## Thumbnails
 - The November template: brand header, the reel's main chart (or story scene) in a framed panel, the big title below,

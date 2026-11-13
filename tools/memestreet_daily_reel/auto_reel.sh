@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Make the auto reel for the next posting slot and put it in the queue (queue_post.sh posts it on time).
-#   ./auto_reel.sh                    the next slot (03:00, 06:00, 09:00, 12:00, 13:00, 18:00, 21:00 UTC) starting within 3 hours
+#   ./auto_reel.sh                    the next slot (03:00, 09:00, 13:00, 18:00, 21:00 UTC) without its reel
 #   ./auto_reel.sh 2026-11-05T1200    that slot
 # (03:00, 09:00, 13:00 and 21:00 are the viral slots.)
 # A slot that already holds a November reel gets a remake of it (queue/<slot>/remake.json); the original is kept in
@@ -13,16 +13,17 @@ mkdir -p logs queue queue-originals
 [ -f queue/.daily-pending ] && { echo "the Daily is due: this run waits for the next timer"; exit 0; }   # (make_reel.sh, the owner 2026-11-10)
 exec 8>queue/.auto.lock; flock 8                   # (one reel at a time: the critic has no round limit, so the next run waits)
 [ -n "$(find state/format_scores.json -mmin -720 2>/dev/null)" ] || python3 src/format_scores.py >> logs/formats.log 2>&1 || true   # (twice a day: Instagram's numbers per format; make_spec.py drops the worst and repeats the best; its failure never stops a reel)
+[ -n "$(find state/reel_ledger.json -mmin -1440 2>/dev/null)" ] || python3 src/learn.py >> logs/learn.log 2>&1 || true   # (once a day: why the best and worst reels did as they did, into state/learned.md for the writer; its failure never stops a reel)
 [ -n "$(find state/own_reels.json -mmin -1440 2>/dev/null)" ] || python3 src/own_reels.py >> logs/own_reels.log 2>&1 || true   # (once a day: our own best and worst openings for the writer; its failure never stops a reel)
 : # off 2026-11-10, the owner: old-template trial winners must not reach the grid (director reels only) # python3 lab/winners.py >> logs/winners.log 2>&1 || echo "winners step failed (logs/winners.log)"   # (Trial Reels winners take the next slot of their format: the owner, 2026-11-08)
 SLOT="${1:-}"
 if [ -z "$SLOT" ]; then                              # (made ahead: the earliest slot in the next 36 hours that has no approved reel
   for d in "$(date -u +%F)" "$(date -u -d tomorrow +%F)" "$(date -u -d '2 days' +%F)"; do   #  yet, so posts go out on time)
-    for h in 0300 0600 0900 1200 1300 1800 2100; do
+    for h in 0300 0900 1300 1800 2100; do       # (five a day since 2026-11-12, the owner; 06:00 and 12:00 are gone. The Daily and a news reel come on top)
       s="${d}T$h"; ds=$(( $(date -u -d "${d} ${h:0:2}:${h:2:2}" +%s) - $(date -u +%s) ))
       [ "$ds" -gt 600 ] && [ "$ds" -le 129600 ] || continue
       [ -f "queue/$s/.auto" ] || [ -f "queue/$s/posted.json" ] && continue
-      [ "$(cat "queue/$s/.tries" 2>/dev/null || echo 0)" -ge 2 ] && continue   # (held twice: that slot stays empty)
+      [ "$(cat "queue/$s/.tries" 2>/dev/null || echo 0)" -ge 3 ] && continue   # (held three times: that slot stays empty; the third try since 2026-11-12, when four of eight slots had gone empty)
       SLOT=$s; break 2
     done
   done

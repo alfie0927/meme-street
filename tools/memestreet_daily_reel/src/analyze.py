@@ -348,8 +348,6 @@ def day_notes(A):
     if A["events"]:
         k = describe(max(A["events"], key=lambda e: e["vr"]))[1].removeprefix("Then ")
         out.append("Key moment: " + k[0].upper() + k[1:])
-    if A["players"]:
-        out.append(f"{A['players']} {'player' if A['players'] == 1 else 'players'} took on this chart.")
     return out
 
 def caption(A):

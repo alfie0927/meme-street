@@ -1,0 +1,13 @@
+[Unit]
+Description=Meme Street: look for a really big headline, make its reel and post it at once
+After=network-online.target
+[Service]
+Type=oneshot
+User=__USER__
+ExecStart=__DIR__/news_watch.sh
+TimeoutStartSec=14400
+# the game runs on this server too: one core, low priority, stopped before it can starve it
+Nice=19
+IOSchedulingClass=idle
+CPUQuota=100%
+MemoryMax=2G
