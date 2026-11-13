@@ -132,7 +132,7 @@ def add_pages(app):
     lessons = lessonpages.Lessons(site)
     # (pages with their own content; not /learn or /leaders, which are the game's page and empty without JavaScript,
     # nor /terms and /privacy, which are noindex)
-    public = ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH, lessonpages.SL_PATH] + lessons.paths() + vspages.paths()
+    public = ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH, lessonpages.SL_PATH, lessonpages.DD_PATH] + lessons.paths() + vspages.paths()
 
     @app.get("/robots.txt")
     async def robots():
@@ -228,6 +228,11 @@ def add_pages(app):
     async def stop_loss_calculator():
         """A free stop loss calculator (lessonpages.py), for searches such as "stop loss calculator"."""
         return HTMLResponse(lessons.stop_loss(), headers={"Cache-Control": "public, max-age=300"})
+
+    @app.get(lessonpages.DD_PATH)
+    async def drawdown_recovery_calculator():
+        """A free drawdown recovery calculator (lessonpages.py), for searches such as "drawdown recovery calculator"."""
+        return HTMLResponse(lessons.drawdown(), headers={"Cache-Control": "public, max-age=300"})
 
     @app.get("/vs")
     async def compare_hub():
