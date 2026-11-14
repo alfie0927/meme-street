@@ -42,7 +42,7 @@ def folders():
     out = {}
     for flag in glob.glob(os.path.join(ROOT, "queue", "*", "posted.json")) + glob.glob(os.path.join(ROOT, "out", "*", "posted.json")):
         d = os.path.dirname(flag); n = os.path.basename(d)
-        ws = [n] if os.path.basename(os.path.dirname(d)) == "out" else ["auto-" + n, "trial-" + n]   # (the Daily and the news reels post from out/<name>)
+        ws = [n] if os.path.basename(os.path.dirname(d)) == "out" else ["auto-" + n, "trial-" + n, "story-" + n]   # (the Daily and the news reels post from out/<name>; a story part from work/story-<its queue time>)
         w = next((os.path.join(ROOT, "work", x) for x in ws if os.path.isdir(os.path.join(ROOT, "work", x))), os.path.join(ROOT, "work", ws[0]))
         try: out[str(load(flag)["media_id"])] = (d, w)
         except (OSError, ValueError, KeyError): pass

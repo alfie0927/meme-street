@@ -23,8 +23,12 @@ HISTORY = os.path.join(ROOT, "state", "auto_history.json")
 PACK = os.environ.get("CONTENT_PACK", "/opt/memestreet/content/pack_fiction.json")
 
 CATEGORIES = {
-    "Chart quiz": "Three questions on three real game charts. Each: a question scene (options shown, a short countdown), "
-                  "then an answer scene (the rest of the chart plays out, the right option lights up, one or two lines on why).",
+    "Chart quiz": "Three questions, each on another idea: one on a real game chart (facts.charts) and two from the site's "
+                  "lessons (facts.questions: any subject, options, macro, futures, psychology, sizing; some are hard, so dare "
+                  "the viewer). Each: a question scene (options shown, a short countdown), then an answer scene (the right "
+                  "option lights up, one or two lines on why; on the chart the rest of it plays out). A lesson question has no "
+                  "chart: your device acts it out. Its answer and its why are the lesson's own: say the right option, never "
+                  "another, and explain it only as the lesson's why does.",
     "Stock story": "Just the company, never its chart (the owner, 2026-11-07; the four November stock stories that did best "
                    "had no chart). Seven beats, in this order: (1) the hook, one odd and specific fact about what it does "
                    "('This company sells rain.'), over a story scene; (2) what it is: its name and what it does, a story "
@@ -274,7 +278,7 @@ SHORT_EVIDENCE = [
     ["261x", "15 trading truths you need to hear. (6-second loop, the list in the caption)"],
     ["68x", "'More trades = more money' and other beliefs that cost traders. (6-second loop)"],
     ["10x", "The harsh reality of trading."], ["2x on a small account", "One loss. That's all it takes for emotion to grab the wheel."]]
-CHART_COUNT = {"Chart quiz": 3, "Guess the move": 2, "Speed cheat sheet": 3}
+CHART_COUNT = {"Chart quiz": 1, "Guess the move": 2, "Speed cheat sheet": 3}
 V2 = os.environ.get("REEL_V2") == "1"   # (the version-2 test track, posted as Trial Reels against the current reels: the owner's go, 2026-11-07)
 V2_FORMAT = {
     "Chart quiz": "One question on one real game chart: a question scene (the game's options, each with a short label of at most 4 "
@@ -490,6 +494,42 @@ def lesson(rng, history):
     return facts, [chart_from_drill((drill if k in ("rr", "stop") else teach_drill)(k))] if k else []   # (a stop or a reward-to-risk test has no direction to play out)
 
 
+LEARN = os.environ.get("LEARN_FILES", os.path.join(os.path.dirname(PACK), "learn-*.md"))   # (the site's lessons, answers included: content/learn-*.md)
+FIGURE = re.compile(r"\b(above|shown|this chart|the chart|the table|the picture)\b", re.I)   # (a question about a picture in its lesson)
+
+
+def lesson_questions(rng, history, n=2, files=None):
+    """`n` multiple-choice questions word for word from the site's lessons, each from another track: the track out longest
+    ago, then its question out longest ago (the owner, 2026-11-14: "change up the questions... use anything from the
+    lessons... options, macro, literally anything"). The answer and its why are the lesson's own, never written here."""
+    qs = []
+    for path in sorted(glob.glob(files or LEARN)):
+        track = tier = lesson = ""; q = None
+        for line in open(path, encoding="utf-8").read().splitlines():
+            if line.startswith("# "): track = re.sub(r"\s*\{.*", "", line[2:])
+            elif line.startswith("TIER: "): tier = line[6:].strip()
+            elif line.startswith("## "): lesson = re.sub(r"\s*\{.*", "", line[3:])
+            elif line.startswith("Q: "): q = {"track": track, "tier": tier, "lesson": lesson, "q": line[3:], "options": [], "answer": None}
+            elif q and line[:2] in ("+ ", "- "):
+                if line[0] == "+": q["answer"] = len(q["options"])
+                q["options"].append(line[2:])
+            elif q and line.startswith("WHY: "):
+                q["why"] = line[5:]
+                if q["answer"] is not None and 2 <= len(q["options"]) <= 4 and len(q["q"]) <= 160 and not FIGURE.search(q["q"]): qs.append(q)
+                q = None                                   # (a number question has no options: left out)
+    rng.shuffle(qs)
+    used = history.setdefault("quiz_questions", [])
+    ago = lambda hit: max((i for i, u in enumerate(used) if hit(u)), default=-1)
+    out = []
+    for _ in range(n):
+        left = [q for q in qs if q["track"] not in {o["track"] for o in out}]
+        if not left: break
+        q = min(left, key=lambda q: (ago(lambda u: u.split(" | ")[0] == q["track"]), ago(lambda u: u == q["track"] + " | " + q["q"])))
+        out.append(q); used.append(q["track"] + " | " + q["q"])
+    del used[:-300]
+    return [dict(q, n=k, right_answer=q["options"][q["answer"]]) for k, q in enumerate(out)]
+
+
 def gather(category, rng, history, company=None):
     """The facts for this reel, and the charts the renderer draws. `company`: a remake's company, by name."""
     facts, charts = {}, []
@@ -565,8 +605,14 @@ def gather(category, rng, history, company=None):
         history.setdefault("tickers", []).append(co["ticker"])
     else:
         kinds = KINDS[category][:]; rng.shuffle(kinds)
-        kinds = lru(kinds, history, "kinds", CHART_COUNT.get(category, 1))   # (the kind out longest ago, over all formats)
+        kinds = lru(kinds, history, "quiz_kinds" if category == "Chart quiz" else "kinds", CHART_COUNT.get(category, 1))   # (the kind out longest ago, over all formats; a quiz's over quizzes: the same three came back, 2026-11-14)
         facts["_subjects"] = [SUBJECT.get(k, k) for k in kinds]
+        if category == "Chart quiz":
+            facts["questions"] = lesson_questions(rng, history)
+            facts["about_the_questions"] = ("Lesson questions, word for word with the lesson's answer (right_answer) and its why. Ask "
+                                            "each in a question scene with \"q\": its n and \"chart\": null, and answer it in the next scene, "
+                                            "an answer scene with the same \"q\". Read the options as they are, or give short labels.")
+            facts["_subjects"] += [q["lesson"] for q in facts["questions"]]
         if "rsi" in kinds: facts["about_the_rsi"] = RSI_NOTE
         for k in kinds[:CHART_COUNT.get(category, 1)]:
             charts.append(chart_from_drill(teach_drill(k) if category in TEACH else drill(k)))
@@ -589,6 +635,8 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
     Say "the orange line" and "the blue line" only on such a chart; never draw them with "line" cues)
  {"kind":"question","chart":N,"badge":"Q1","head":"max 5 words","vo":"asks it and reads the options","labels":["max 4 words", ...]}   (options and answer are added from the facts; "labels" are the short words shown on the option cards, one per option in order, needed whenever an option is over 4 words: "Held support", "Far below")
  {"kind":"answer","chart":N,"vo":"says the answer first, then why, max 26 words","cues":[...]}
+ (a lesson question from facts.questions: {"kind":"question","q":N,"chart":null,"badge":"Q2","head":"max 5 words","vo":"...","labels":[...]},
+  then {"kind":"answer","q":N,"chart":null,"vo":"..."}; its options and answer are added from the facts too)
  {"kind":"cards","head":"max 5 words","vo":"...","items":[{"text":"max 4 words","sub":"max 7 words","icon":"up|down|warn|check|cross|coin|clock|bolt|chart|shield|people|idea"}],
    "cues":[{"say":"exact phrase","do":"item","i":0}, ...one per item]}
  {"kind":"big","text":"max 7 words, shown huge","vo":"..."}
@@ -754,9 +802,9 @@ RULES_ALL = """Rules:
 - Every reel's hook is acted, like a stock story's (the owner, 2026-11-08: "all reels should be the same as the stock
   stories"): a shot (or a story layout) on the hook's words; the chart comes in from scene 1. A chart reel's hook acts out what
   the chart is about to do ("It looked like a small dip": rise_fall with a rocket; "Fear picks a tight stop": shield, guard a
-  shield, threat a cloud). A quiz's hook shows the quiz: "Three charts, three questions: how many can you get?" is three_up, cast
-  item1 to item3 chart, topper question, on items 'Three charts', topper 'three questions' (never blank bars standing in for
-  charts). For trading things use the trading props: chart (a mini chart card), candle (green up, red down), question (a
+  shield, threat a cloud). A quiz's hook shows the quiz: "Three questions, one chart: how many can you get?" is three_up, cast
+  item1 to item3 question, topper question, on items 'Three questions', topper 'how many?' (never blank bars standing in for
+  questions). For trading things use the trading props: chart (a mini chart card), candle (green up, red down), question (a
   question card); they stay upright, so cast them in roles that do not fly or fall. Any reel may add one more story scene for
   its payoff (the moment the lesson lands, acted out); a quiz's reveal stays on the chart. Charts stay charts.
   Every reel opens with its own shot (the owner, round 7): never one in the facts' hook_shots_used_lately.
@@ -1006,12 +1054,16 @@ def check(spec, facts, charts, category=None):
                     errs.append(f"scene {k}: candle {c[f]} is outside chart {ch}")
     errs += shown_check(sc, charts) + speech_check(sc)
     # (no hook-score gate since 2026-11-07: on 48 finance Shorts it did not separate winners (41) from losers (43); the owner retired it)
+    LQ = facts.get("questions") or []
     for k, s in enumerate(sc):                             # a quiz option's short label, one per option, at most 4 words (every reel since 2026-11-08: long options were cramped)
-        dq = (charts[s["chart"]].get("drill") or {}) if s.get("kind") == "question" and isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {}
+        if "q" in s and (s.get("kind") not in ("question", "answer") or not isinstance(s["q"], int) or not 0 <= s["q"] < len(LQ)):
+            errs.append(f"scene {k}: \"q\" is for a question or answer scene and names a lesson question in facts.questions (0 to {len(LQ) - 1})"); continue
+        if "q" in s and s.get("chart") is not None: errs.append(f"scene {k}: a lesson question has no chart: \"chart\": null")
+        dq = LQ[s["q"]] if "q" in s else (charts[s["chart"]].get("drill") or {}) if s.get("kind") == "question" and isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {}
         if s.get("labels") is None and any(len(str(o).split()) > 4 for o in dq.get("options") or []):
             errs.append(f"scene {k}: its options are long; give \"labels\": one short label (max 4 words) per option, in order: {dq['options']}")
         if s.get("labels") is not None:
-            d = (charts[s["chart"]].get("drill") or {}) if isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {}
+            d = dq or ((charts[s["chart"]].get("drill") or {}) if isinstance(s.get("chart"), int) and 0 <= s["chart"] < len(charts) else {})
             if s.get("kind") != "question" or not isinstance(s["labels"], list) or len(s["labels"]) != len(d.get("options") or []):
                 errs.append(f"scene {k}: labels are for a question scene: one per option of its chart ({len(d.get('options') or [])}), in the same order")
             elif any(len(str(x).split()) > 4 for x in s["labels"]):
@@ -1142,8 +1194,19 @@ def stop_key(t):
     return "tight" if re.search(r"hair|tight|entry", t, re.I) else "wide" if re.search(r"\bfar\b|wide|never", t, re.I) else "below"
 
 
-def finish(spec, charts, category):
+def finish(spec, charts, category, questions=()):
     """Add what comes from the facts, not from Claude: the options and answers, the drawn lines, the windows."""
+    for s in spec.get("scenes", []):                      # (a lesson question: no chart, its options and answer from the lesson)
+        q = questions[s["q"]] if isinstance(s.get("q"), int) and 0 <= s["q"] < len(questions) else None
+        if not q or s.get("kind") not in ("question", "answer"): continue
+        s["chart"] = None
+        if s["kind"] == "question":
+            s["options"], s["answer"] = q["options"], q["answer"]
+            if isinstance(s.get("labels"), list) and len(s["labels"]) == len(q["options"]): s["options_full"], s["options"] = q["options"], s["labels"]
+            s.setdefault("cues", []).append({"say": "", "do": "options", "from": "template"})
+        else:
+            p = next((x for x in reversed(spec["scenes"][:spec["scenes"].index(s)]) if x.get("kind") == "question"), {})
+            s["head"], s["badge"] = "The answer", p.get("badge", "")
     for sc_ in spec.get("scenes", []):                    # (a percentage tag sits above its candle, never under it: the owner, 2026-11-08)
         for c in sc_.get("cues") or []:
             if c.get("do") == "mark" and "%" in str(c.get("label", "")) and c.get("side") == "low": c["side"] = "high"
@@ -1450,7 +1513,7 @@ def dry_run(spec, B, work):
     small text, three still seconds, slow frames): its faults, in words the writer can fix."""
     if not spec.get("scene_js"): return []
     d = os.path.join(work or os.path.join(ROOT, "work", "dry"), "dry"); shutil.rmtree(d, ignore_errors=True); os.makedirs(d, exist_ok=True)
-    json.dump(finish(json.loads(json.dumps(spec)), B["charts"], B["category"]), open(os.path.join(d, "spec.json"), "w"))
+    json.dump(finish(json.loads(json.dumps(spec)), B["charts"], B["category"], B["ask"]["facts"].get("questions") or []), open(os.path.join(d, "spec.json"), "w"))
     env = dict(os.environ, DRY="1", PAGE="reel.html")
     for cmd in ([sys.executable, os.path.join(ROOT, "lab", "silent.py"), d], [sys.executable, os.path.join(HERE, "render.py"), d, "-"]):
         r = subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=ROOT, timeout=1200)
@@ -1541,7 +1604,7 @@ def save(spec, B, work, again=False):
     os.makedirs(work, exist_ok=True)
     json.dump(B, open(os.path.join(work, "brief.json"), "w"))          # (for a rewrite after the critic: revise())
     json.dump(spec, open(os.path.join(work, "draft.json"), "w"))
-    spec = finish(spec, B["charts"], B["category"])
+    spec = finish(spec, B["charts"], B["category"], B["ask"]["facts"].get("questions") or [])
     json.dump(spec, open(os.path.join(work, "spec.json"), "w"))
     open(os.path.join(work, "caption.txt"), "w", encoding="utf-8").write(spec["caption"].strip() + "\n")
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
@@ -1658,6 +1721,22 @@ if __name__ == "__main__":
         es = check(dict(lp, caption=f"x {DISCLAIMER} #MemeStreet", scenes=lp["scenes"] + [fr["scenes"][1]]), {}, [], "Loop")
         assert any("no outro scene" in e for e in es) and any("put memestreet.net in its caption" in e for e in es), es
         assert ROTATION["1300"].count("Loop") == 2 and "Hard truth" in ROTATION["1200"] and LENGTH["Loop"][2] is False and "Loop" in CATEGORIES and "Loop" in KINDS
+        import tempfile                                   # the quiz's lesson questions (2026-11-14)
+        with tempfile.TemporaryDirectory() as td:
+            for k, tr in enumerate(("Macro", "Derivatives")):
+                open(os.path.join(td, f"learn-{k}.md"), "w", encoding="utf-8").write(
+                    f"# {tr} {{t{k}}}\nTIER: pro\n\n## Lesson {k} {{l{k}}} [5]\n\nQ: What is {k}?\n- No\n+ Yes\n- Maybe\nWHY: Because.\n\n"
+                    "Q: How much?\n= 4\nWHY: Four.\n\nQ: What does the chart above show?\n+ A\n- B\nWHY: x.\n")
+            h = {}; qs = lesson_questions(random.Random(1), h, files=os.path.join(td, "learn-*.md"))
+            assert len(qs) == 2 and {q["track"] for q in qs} == {"Macro", "Derivatives"} and all(q["answer"] == 1 and q["right_answer"] == "Yes" for q in qs), qs
+            assert qs[0]["lesson"].startswith("Lesson") and len(h["quiz_questions"]) == 2
+            assert len(lesson_questions(random.Random(1), h, n=3, files=os.path.join(td, "learn-*.md"))) == 2   # (one per track, figure and number questions left out)
+        LQ = [{"q": "What is 0?", "options": ["No", "Yes", "Maybe"], "answer": 1}]
+        sp = {"scenes": [{"kind": "question", "q": 0, "chart": None, "badge": "Q2", "vo": "x", "labels": ["N", "Y", "M"]}, {"kind": "answer", "q": 0, "chart": None, "vo": "Yes."}], "caption": ""}
+        f = finish(json.loads(json.dumps(sp)), [], "Chart quiz", LQ)["scenes"]
+        assert f[0]["options"] == ["N", "Y", "M"] and f[0]["options_full"] == LQ[0]["options"] and f[0]["answer"] == 1 and f[1]["badge"] == "Q2" and f[1]["head"] == "The answer"
+        es = check(dict(sp, scenes=[dict(sp["scenes"][0], q=3)]), {"questions": LQ}, [], "Chart quiz"); assert any("names a lesson question" in e for e in es), es
+        es = check(dict(sp, scenes=[dict(sp["scenes"][0], labels=["a b c d e", "Y", "M"])]), {"questions": LQ}, [], "Chart quiz"); assert any("at most 4 words" in e for e in es), es
         print("ok")
     elif a[0] == "revise":                               # <work> <review.json>: rewrite after the film critic's notes
         revise(a[1], json.load(open(a[2], encoding="utf-8")))

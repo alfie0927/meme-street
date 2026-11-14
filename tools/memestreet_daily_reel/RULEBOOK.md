@@ -159,6 +159,7 @@ without review. A complaint puts it back to watched. Status: every format watche
 - 2026-11-08: The hook acts out its words with real things: "Three charts, three questions" is three chart cards and a question card, never blank bars or shapes standing in.
 - 2026-11-08: The Q1, Q2 badge has no shadow and sits on the same line as the headline text.
 - 2026-11-09 (round 7): a stop answer shows one arrow at the right stop, never a line for every option ("Wide" on the chart was hard to read). No pause before a word mid-sentence.
+- 2026-11-14: the questions were the same three every time (candle name, trend, reward to risk). Change them up: they can be hard and on any concept from the lessons (options, macro, anything). Since then a quiz has one chart question (its kind rotates over quizzes) and two questions from two different lesson tracks, word for word with the lesson's answer; the hook shows question cards, not three charts.
 ### One trick
 - 2026-11-08: The opening was ugly: a candle flying up and falling at an angle over the chart, with tags on top of a clock. Keep the opening clean: one simple acted scene, upright props, no chart behind it.
 - 2026-11-09 (round 7): ugly. Same chart in the next scene: keep it, just change the tag. Its opening was the same animation as other reels; each reel needs its own.
@@ -189,3 +190,7 @@ without review. A complaint puts it back to watched. Status: every format watche
 - 2026-11-09 (round 7): ugly. The candles draw while the voice says "each step is lower than the one before".
 ### Trader levels
 - 2026-11-09 (round 7): good.
+### Blocky story
+- 2026-11-14: "in the exemplar folder called '10-42-35' is what the roblox reel should be like": the whole frame is a scene in a blocky game town, a new shot about every 2 seconds, the money on a label on every chest, and one big white outlined word at a time as the caption (no brand header, no top hook, no punch lines).
+- 2026-11-14: the one-word caption sits at y 1310 to 1440, on the ground in front of the actors. Over a character's legs it is the format and no fault; over a face or a chest number it is.
+- 2026-11-14: "create the story yourself part 2, 3, 4, etc... post them one a day": the serial is `src/stories.json`, one part a day, each part ending on a cliffhanger and teaching one trading idea. Same cast, colours and town in every part. No part shows women as prizes for money (the critic refused "they get every girl" in part 1) or plays being poor for laughs.

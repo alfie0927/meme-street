@@ -13,11 +13,15 @@ then collate that knowledge into better reels").
    again for a week, then frozen; one shown fewer than 20 times is left out (the scoreboard's rules, src/format_scores.py).
 2. The splits, in code: each feature's groups with their median hold, watched and sends. A group under 4 reels is only a
    hint: one reel's skip rate is good to about 5 points at our size, so a reason must hold across several reels.
-3. Claude (one call, at most once a day, when 3 or more reels were scored since the last time or a week has passed) gets
+3. Claude (one call a day, when a reel was scored since the last time: the owner, 2026-11-14, "check the instagram analytics
+   every day and see what has done well, what has stalled, and why") gets
    the ledger, the splits, the rules it wrote last time and the owner's rulebook headings, and answers: why each of the five
    best and five worst did as it did, and the rules for the next reels (each with its evidence, at most 15). The rules go to
    state/learned.md (make_spec.py learned() hands them to the writer), the reasons onto the ledger rows (own_reels.py shows
    them beside the best and worst openings), and what changed to state/learn_history.md for the owner.
+4. Every day, too: the best reels of the last week and the STALLED ones (a reel under the median that gained under 3% views
+   in a day: Instagram stopped showing it), each with Claude's why, in state/daily_report.md (`learn.py show` prints it).
+   Each row keeps its views at every daily read (`trail`, [hours old, views]) for this.
 It never touches the RULEBOOK (the owner's) or which formats are made (src/format_scores.py does that).
 """
 import datetime, json, os, re, statistics, sys, time
@@ -25,9 +29,9 @@ from own_reels import insights, folders, age, load
 from post_instagram import http, token, ig_id, HOST, V, ROOT
 
 STATE = os.path.join(ROOT, "state")
-LEDGER, LEARNED, HISTORY = (os.path.join(STATE, f) for f in ("reel_ledger.json", "learned.md", "learn_history.md"))
+LEDGER, LEARNED, HISTORY, REPORT = (os.path.join(STATE, f) for f in ("reel_ledger.json", "learned.md", "learn_history.md", "daily_report.md"))
 M = ["views", "reach", "shares", "saved", "likes", "comments", "total_interactions", "ig_reels_avg_watch_time", "reels_skip_rate"]
-DAY, SHOWN, HINT, MAX_RULES, EACH, NEW, MIN_ROWS = 86400, 20, 4, 15, 5, 3, 6
+DAY, SHOWN, HINT, MAX_RULES, EACH, NEW, MIN_ROWS = 86400, 20, 4, 15, 5, 1, 6
 PATTERNS = ("What the virality research found on other accounts (a lead to test on ours, not a fact about ours): winners move on "
             "frame 0, show something the viewer recognises at once, make one big element do something extraordinary before 3 "
             "seconds, land the claim word by word at about 1.2 to 1.6 s, speak the subject within 0.5 s, work on mute and are "
@@ -84,18 +88,35 @@ def splits(rows):
     return out
 
 
+def stalled(rows):
+    """Reels that stopped gaining views (under 3%, or 5 views, between two daily reads) while under the median views."""
+    mv = med([r["views"] for r in rows if r.get("views")]) or 0
+    return [r for r in rows if len(r.get("trail") or []) >= 2 and r["trail"][-1][0] - r["trail"][-2][0] >= 20
+            and r["trail"][-1][1] - r["trail"][-2][1] <= max(5, .03 * r["trail"][-2][1]) and r["trail"][-1][1] < mv]
+
+
+def recent(rows, now, days=7):
+    """The scored reels posted in the last `days`, best first."""
+    cut = time.strftime("%Y-%m-%dT%H:%M", time.gmtime(now - days * DAY))
+    return ranked(r for r in rows if (r.get("posted") or "") >= cut)
+
+
 def ranked(rows):
     """Scored rows, best first: hold, then the share of the reel watched."""
     return sorted((r for r in rows if r.get("hold") is not None), key=lambda r: (-r["hold"], -(r.get("watched_pct") or 0)))
 
 
-def prompt(L, rulebook):
+def prompt(L, rulebook, now=None):
     """Everything the analyst gets, in one message."""
     rows = sorted(L["rows"].items(), key=lambda kv: kv[1].get("posted") or "")[-60:]
     keep = ("format", "posted", "title", "opening", "on_screen", "opening_q", "first_kind", "device", "T", "scenes", "caption_first",
             "caption_q", "critic", "hold", "watched_pct", "watch_s", "views", "sends_per_100", "saved", "likes", "comments")
     R = [{"id": m, **{k: r[k] for k in keep if r.get(k) is not None}} for m, r in rows if r.get("hold") is not None]
     rk = ranked([dict(r, id=m) for m, r in rows]); k = min(EACH, len(rk) // 2)
+    idr = [dict(r, id=m) for m, r in L["rows"].items()]
+    wk = [r["id"] for r in recent(idr, now or time.time())][:EACH]; st = [r["id"] for r in stalled(idr)]
+    # (the views trail: [hours old, views] at each daily read)
+    R = [dict(x, trail=L["rows"][x["id"]]["trail"]) if L["rows"][x["id"]].get("trail") else x for x in R]
     heads = [h for h in re.findall(r"^#{2,3} (.+)$", rulebook, re.M)]
     return ("You study the Instagram Reels of Meme Street (memestreet.net), a free stock market game with fictional companies, "
             "to find out why some reels kept their viewers and others lost them, and to turn that into rules for the writer of "
@@ -106,7 +127,9 @@ def prompt(L, rulebook):
             "the first seconds (opening, on_screen, first_kind, device), the length, the subject, the caption.\n\n"
             f"Median hold {med([r['hold'] for r in R])}, median watched {med([r['watched_pct'] for r in R if r.get('watched_pct') is not None])}% over {len(R)} reels.\n\n"
             f"THE REELS, oldest first:\n{json.dumps(R, ensure_ascii=False)}\n\n"
-            f"THE {k} BEST: {[r['id'] for r in rk[:k]]}\nTHE {k} WORST: {[r['id'] for r in rk[::-1][:k]]}\n\n"
+            f"THE {k} BEST: {[r['id'] for r in rk[:k]]}\nTHE {k} WORST: {[r['id'] for r in rk[::-1][:k]]}\n"
+            f"THE BEST OF THE LAST 7 DAYS: {wk}\nSTALLED (under the median views and gained under 3% in the last day: Instagram "
+            f"stopped showing them; trail = [hours old, views]): {st or 'none'}\n\n"
             f"THE SPLITS:\n{json.dumps(splits([r for _, r in rows]), ensure_ascii=False)}\n\n" + PATTERNS + "\n\n"
             "THE RULES YOU WROTE LAST TIME (keep those the numbers still back, change or retire the rest):\n" +
             (L.get("rules_text") or "(none yet)") + "\n\n"
@@ -114,9 +137,11 @@ def prompt(L, rulebook):
             "the format choice (a scoreboard does that) or the posting schedule: " + "; ".join(heads) + "\n\n"
             "Reply with JSON only:\n{\"best\": [{\"id\": \"...\", \"why\": \"one sentence: what in this reel kept people\"}], "
             "\"worst\": [{\"id\": \"...\", \"why\": \"one sentence: what lost them\"}], "
+            "\"week\": [{\"id\": \"one of the best of the last 7 days\", \"why\": \"one sentence: why it did well\"}], "
+            "\"stalled\": [{\"id\": \"one of the stalled\", \"why\": \"one sentence: why viewers stopped and Instagram stopped showing it\"}], "
             f"\"rules\": [{{\"rule\": \"one sentence the writer can act on in the next script\", \"evidence\": \"n reels, hold X against Y\", "
             "\"strength\": \"strong or weak\"}], \"retired\": [\"a rule from last time the numbers no longer back\"], "
-            "\"note\": \"three sentences for the owner: what wins, what loses, what the next reels change\"}\n"
+            "\"note\": \"three sentences for the owner: what did well this week, what stalled, what the next reels change\"}\n"
             f"At most {MAX_RULES} rules. strong = 4 or more reels on each side and 5 points or more apart; weak = fewer reels but "
             "still 5 points or more apart, and it starts with 'Try'. A gap under 5 points is noise: write no rule from it. The "
             "caption is read after the first seconds, so judge a caption choice on comments and sends, never on hold. Rules "
@@ -128,14 +153,24 @@ def apply(ans, L, today):
     rules = [r for r in ans["rules"] if isinstance(r, dict) and str(r.get("rule", "")).strip()]
     if not rules: raise ValueError("no rules in the answer")
     rules = sorted(rules, key=lambda r: r.get("strength") != "strong")[:MAX_RULES]
-    for x in (ans.get("best") or []) + (ans.get("worst") or []):
+    for x in (ans.get("best") or []) + (ans.get("worst") or []) + (ans.get("week") or []) + (ans.get("stalled") or []):
         if isinstance(x, dict) and str(x.get("id")) in L["rows"] and x.get("why"): L["rows"][str(x["id"])]["why"] = str(x["why"])[:300]
     n = sum(r.get("hold") is not None for r in L["rows"].values())
     body = "\n".join(f"- {r['rule'].strip()} ({r.get('evidence', '').strip() or 'no evidence given'})" for r in rules)
     md = f"# What Instagram's numbers taught us ({today}, {n} reels)\n{body}\n"
-    hist = (f"\n## {today} ({n} reels)\n{ans.get('note', '').strip()}\n\nRules now:\n{body}\n" +
+    def lines(xs):
+        out = []
+        for x in xs or []:
+            r = L["rows"].get(str(x.get("id"))) if isinstance(x, dict) else None
+            if r: out.append(f"- {r.get('title') or r.get('opening', '')[:50]} ({r.get('format') or '?'}, {(r.get('posted') or '')[:10]}): "
+                             f"hold {r.get('hold')}, {r.get('views')} views. {x.get('why', '')}")
+        return "\n".join(out) or "- none"
+    report = (f"# Instagram, {today}\n{ans.get('note', '').strip()}\n\n## Did well this week\n{lines(ans.get('week'))}\n\n"
+              f"## Stalled\n{lines(ans.get('stalled'))}\n")
+    hist = (f"\n## {today} ({n} reels)\n{ans.get('note', '').strip()}\n\nDid well this week:\n{lines(ans.get('week'))}\n"
+            f"Stalled:\n{lines(ans.get('stalled'))}\n\nRules now:\n{body}\n" +
             ("Retired:\n" + "\n".join(f"- {x}" for x in ans.get("retired") or []) + "\n" if ans.get("retired") else ""))
-    return md, hist
+    return md, hist, report
 
 
 def due(L, now):
@@ -168,7 +203,8 @@ def pull(L, now):
             if not r.get("opening"): r["opening"] = first((p.get("caption") or "").split("\n")[0])
         i = insights(mid, tok, M); time.sleep(0.3)
         if i.get("reels_skip_rate") is None or (i.get("views") or 0) < SHOWN: L["rows"][mid] = r; continue
-        L["rows"][mid] = {**r, **numbers(i, r.get("T")), "pulled": time.strftime("%F %T", time.gmtime())}; got += 1
+        nr = numbers(i, r.get("T"))
+        L["rows"][mid] = {**r, **nr, "pulled": time.strftime("%F %T", time.gmtime()), "trail": ((r.get("trail") or []) + [[round(a / 3600), nr["views"]]])[-10:]}; got += 1
     return got
 
 
@@ -177,23 +213,25 @@ def main():
     got = pull(L, now); save(L)
     n = sum(r.get("hold") is not None for r in L["rows"].values())
     print(time.strftime("%F %T UTC", time.gmtime()), f"{got} reels read, {n} scored in the ledger")
-    if not due(L, now): return print("no analysis today (it needs", NEW, "new scored reels or a week)")
+    if not due(L, now): return print("no analysis today (no reel was scored since the last one)")
     from make_spec import claude_cli
     rb = os.path.join(ROOT, "RULEBOOK.md"); rulebook = open(rb, encoding="utf-8").read() if os.path.exists(rb) else ""
     try:
-        raw = claude_cli([{"role": "user", "content": prompt(L, rulebook)}], "You answer with JSON only.",
+        raw = claude_cli([{"role": "user", "content": prompt(L, rulebook, now)}], "You answer with JSON only.",
                          os.environ.get("REEL_LEARN_MODEL", "sonnet"), wait=False)
-        md, hist = apply(json.loads(re.search(r"\{.*\}", raw, re.S).group(0)), L, time.strftime("%F"))
+        md, hist, report = apply(json.loads(re.search(r"\{.*\}", raw, re.S).group(0)), L, time.strftime("%F"))
     except (SystemExit, ValueError, AttributeError, KeyError, TypeError) as e:
         return print("analysis skipped today, learned.md unchanged:", str(e)[:300])   # (a plan limit or a bad answer: tomorrow again)
     open(LEARNED + ".tmp", "w", encoding="utf-8").write(md); os.replace(LEARNED + ".tmp", LEARNED)
     with open(HISTORY, "a", encoding="utf-8") as f: f.write(hist)
+    open(REPORT + ".tmp", "w", encoding="utf-8").write(report); os.replace(REPORT + ".tmp", REPORT)
     L.update(rules_text=md, analysed_at=now, analysed_n=n); save(L)
     print(md)
 
 
 def show():
     L = load(LEDGER) if os.path.exists(LEDGER) else {"rows": {}}
+    print(open(REPORT, encoding="utf-8").read() if os.path.exists(REPORT) else "(no daily report yet)")
     print(open(LEARNED, encoding="utf-8").read() if os.path.exists(LEARNED) else "(no rules yet)")
     rk = ranked(L["rows"].values())
     for title, rs in (("best", rk[:EACH]), ("worst", rk[::-1][:EACH])):
@@ -219,11 +257,19 @@ def demo():
     assert S["format"]["B"].get("hint") and S["opens with a question"]["True"]["n"] == 4 and "weekday" not in S   # (one weekday: no split)
     L = {"rows": rows}; p = prompt(L, "# Rules\n## Style\nx\n### Chart quiz\ny")
     assert "Style; Chart quiz" in p and "is noise" in p and "THE 4 BEST: ['0', '3', '1', '2']" in p and "(none yet)" in p, p[-900:]
-    assert due(L, 0) and not due(dict(L, analysed_n=8, analysed_at=0), 6 * DAY) and due(dict(L, analysed_n=8, analysed_at=0), 7 * DAY)
+    assert due(L, 0) and not due(dict(L, analysed_n=8, analysed_at=0), 6 * DAY) and due(dict(L, analysed_n=7, analysed_at=0), DAY)
+    st = [{"views": 100, "trail": [[30, 90], [54, 92]]}, {"views": 400, "trail": [[30, 300], [54, 400]]}, {"views": 50, "trail": [[30, 50]]},
+          {"views": 300, "trail": [[30, 299], [54, 300]]}]
+    assert stalled(st) == [st[0]], stalled(st)                # (gained 2 under the median; growing; one read; stalled above the median)
+    assert [r["opening"] for r in recent(rows.values(), time.mktime((2026, 11, 14, 0, 0, 0, 0, 0, 0)))][:2] == ["A70", "A68"]
+    assert "STALLED" in p and "BEST OF THE LAST 7 DAYS" in p
     ans = {"best": [{"id": "0", "why": "a question on frame 0"}], "worst": [{"id": "9", "why": "not ours"}],
+           "week": [{"id": "3", "why": "it moved on frame 0"}], "stalled": [{"id": "5", "why": "a still chart"}],
            "rules": [{"rule": "Try a shorter cut", "evidence": "3 reels", "strength": "weak"}, {"rule": "Open with a question", "evidence": "4 v 4, hold 67 v 40", "strength": "strong"}] +
                     [{"rule": f"r{k}", "strength": "weak"} for k in range(20)], "retired": ["Open on the logo"], "note": "Questions win."}
-    md, hist = apply(ans, L, "2026-11-13")
+    md, hist, report = apply(ans, L, "2026-11-13")
+    assert "## Did well this week\n- A68 (A, 2026-11-12): hold 68, None views. it moved on frame 0" in report and "a still chart" in report, report
+    assert rows["5"]["why"] == "a still chart" and "Stalled:\n- B42" in hist, hist
     lines = md.splitlines()
     assert lines[0] == "# What Instagram's numbers taught us (2026-11-13, 8 reels)" and lines[1] == "- Open with a question (4 v 4, hold 67 v 40)" and len(lines) == 1 + MAX_RULES, md
     assert rows["0"]["why"] == "a question on frame 0" and "9" not in rows and "Retired:\n- Open on the logo" in hist and "Questions win." in hist
