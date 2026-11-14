@@ -153,6 +153,8 @@ def add_pages(app):
          f"- [Trading bots: the guide]({site}/bots/guide): setting up a rule-based bot, the rules it follows, and backtests.",
          "\n## Tools\n", f"- [Position size calculator]({site}{lessonpages.CALC_PATH}): {lessonpages.CALC_DESC}",
          f"- [Risk reward ratio calculator]({site}{lessonpages.RR_PATH}): {lessonpages.RR_DESC}",
+         f"- [Stop loss calculator]({site}{lessonpages.SL_PATH}): {lessonpages.SL_DESC}",
+         f"- [Drawdown recovery calculator]({site}{lessonpages.DD_PATH}): {lessonpages.DD_DESC}",
          f"\n## Lessons\n\n{lessons.hub_text} [All lessons]({site}/lessons)\n"]
         + [f"- [{x['title']}]({site}/lessons/{x['id']}): {x['summary']}" for x in lessons.lessons]
         + [f"\n## Compare\n\n{vspages.HUB_DESC} [All comparisons]({site}/vs)\n"]

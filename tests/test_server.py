@@ -148,6 +148,8 @@ class ServerTests(unittest.TestCase):
         self.assertTrue(body.startswith("# Meme Street\n\n> "))
         self.assertIn("/lessons/position-sizing): ", body)
         self.assertIn("no cash value", body)
+        for tool in ("position-size", "risk-reward", "stop-loss", "drawdown-recovery"):
+            self.assertIn(f"/tools/{tool}-calculator): ", body)
         import pages
         self.assertEqual(http(self.srv, f"/{pages.INDEXNOW_KEY}.txt")[:2], (200, pages.INDEXNOW_KEY))
         self.assertEqual(http(self.srv, "/" + "0" * 32 + ".txt")[0], 404)
