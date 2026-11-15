@@ -64,11 +64,12 @@ def talk_rate(W):
     t = sum(e - s for _, s, e in W) + sum(g for g in (b[1] - a[2] for a, b in zip(W, W[1:])) if 0 < g < 0.25)
     return len(W) / t if t > 0 else None
 
-def pace(a, tw, sr=SR):
+def pace(a, tw, sr=SR, k=1.0):
     """Put human pauses into a line. The voice already stops at its punctuation, so the line's N longest silences are its
     N commas and full stops (in order): each becomes the pause its mark asks for (PAUSE), and every other silence is cut
     to INSIDE. Word timings are not used: Whisper writes 'sixty-nine' as '69,' and shifts them, which put a comma pause
-    one word early ('near | sixty-nine') and left the real one in (a double pause)."""
+    one word early ('near | sixty-nine') and left the real one in (a double pause). k shortens every mark's pause (the story
+    serial's quick narrator: spec "voice_pauses")."""
     f = int(0.01 * sr); n = len(a) // f
     rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 0.01)   # (0.01 = -40 dBFS, the critic's own measure of silence: a breathy 0.2 s gap it would call a pause is cut to INSIDE too, 2026-11-09)
     runs, s = [], None                                   # interior silences, in 10 ms frames
@@ -89,7 +90,7 @@ def pace(a, tw, sr=SR):
         te = cum / tot * dur
         near = [r for r in cand if r[0] > last and abs((r[0] + r[1]) * .005 - te) <= tol]
         if near:
-            r = min(near, key=lambda r: abs((r[0] + r[1]) * .005 - te) / tol - (r[1] - r[0]) / 20); want[r] = PAUSE[m]; last = r[0]
+            r = min(near, key=lambda r: abs((r[0] + r[1]) * .005 - te) / tol - (r[1] - r[0]) / 20); want[r] = PAUSE[m] * k; last = r[0]
     out, pos = [], 0
     for r in runs:
         z = want.get(r, min((r[1] - r[0]) * 0.01, INSIDE))
@@ -243,9 +244,10 @@ def main(work):
     t, vo, impacts = LEAD, [], []
     for i, sc in enumerate(S["scenes"]):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
-        speed = float(os.environ.get("VOICE_SPEED", "1.0"))
-        el = el_all
-        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS, "one-speed", "placed-pauses", "quiet-40db"] + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
+        voice, pitch = S.get("voice") or "af_heart", float(S.get("voice_pitch") or 1)   # (a reel may bring its own Kokoro voice: the story serial, story_reel.py)
+        speed = float(S.get("voice_speed") or os.environ.get("VOICE_SPEED", "1.0"))
+        el = el_all and not S.get("voice")
+        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS, "one-speed", "placed-pauses", "quiet-40db"] + ([voice, pitch, S.get("voice_pauses")] if S.get("voice") else []) + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
         a = None
         if os.path.exists(h + ".json"):                        # (a line the last cut already voiced: a remake redoes only what changed)
             shutil.copy(h + ".wav", clip); W = [tuple(w) for w in json.load(open(h + ".json"))]
@@ -266,8 +268,10 @@ def main(work):
         elif not os.path.exists(h + ".json"):
             # one take per line at ONE speed for every line of every reel (the owner, 2026-11-08: re-voicing each line at its own
             # speed made the voice slow down and speed up; Kokoro at 1.0 averages 3.9 words a second, the human pace, measured)
-            a = trim(K.create(say_as(sc["vo"].strip()), voice="af_heart", speed=speed, lang="en-us")[0], SR)
-            sf.write(clip, pace(a, tw), SR)   # the pauses a person makes, at the commas and full stops
+            a = trim(K.create(say_as(sc["vo"].strip()), voice=voice, speed=speed / pitch, lang="en-us")[0], SR)
+            if pitch != 1:                                 # (a younger voice: read slower, played faster, so the pace is still `speed`)
+                a = np.interp(np.arange(0, len(a) - 1, pitch), np.arange(len(a)), a).astype(np.float32)
+            sf.write(clip, pace(a, tw, k=float(S.get("voice_pauses") or 1)), SR)   # the pauses a person makes, at the commas and full stops
             W = words(clip)
             os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
         d = dur(clip)
@@ -291,6 +295,7 @@ def main(work):
         cap = digits(tw)                                       # the captions: the written words, numbers in digits ('two oh three' 203),
         sc["text_words"] = [c for c, _, _ in cap]              # each from when it starts being said
         sc["wt"] = [[round(vs + wt[a][0], 3), round(vs + wt[b][1], 3)] for _, a, b in cap]
+        sc["vt"] = [round(vs + x[0], 3) for x in wt]          # (when each written word starts: the 3D story's shots are timed on them, number words too; world3d.js)
         if sc.get("text") and (sc["kind"] in ("big", "free") or sc.get("chart") is None):   # big words (and a free scene's punch) appear as they are said
             sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
         if sc.get("options"):                                  # each option appears as it is read out

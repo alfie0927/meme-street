@@ -90,7 +90,8 @@ def youtube(mp4, cap):
     """A vertical video of 3 minutes or less is a Short. A refresh token of an OAuth app still in "Testing" dies after 7 days."""
     tok = http("POST", "https://oauth2.googleapis.com/token", data=form({"client_id": E("YT_CLIENT_ID"), "client_secret": E("YT_CLIENT_SECRET"),
                "refresh_token": E("YT_REFRESH_TOKEN"), "grant_type": "refresh_token"}))["access_token"]
-    title = textwrap.shorten(re.sub(r"[<>]", "", cap.split("\n")[0]), 100, placeholder="...") or "Meme Street"
+    L = cap.split("\n"); part = re.match(r"Part \d+", L[1]) if len(L) > 1 else None   # (a story part: its number leads the title; a Short's thumbnail cannot be set with an upload key)
+    title = textwrap.shorten(re.sub(r"[<>]", "", (part.group(0) + ": " if part else "") + L[0]), 100, placeholder="...") or "Meme Street"
     meta = {"snippet": {"title": title, "description": cap + "\n\nPlay today's chart free: memestreet.net/yt", "categoryId": "27"},   # (27: Education)
             "status": {"privacyStatus": E("YT_PRIVACY", "unlisted"), "selfDeclaredMadeForKids": False}}
     A = {"Authorization": "Bearer " + tok}

@@ -70,9 +70,52 @@ def thud(length=0.22):
     return (w / np.abs(w).max() * 0.4).astype(np.float32)
 
 
+NOTE = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+hz = lambda n: 440 * 2 ** ((NOTE[n[0]] + 12 * (int(n[1:]) - 4) - 9) / 12)   # 'E5' -> its pitch
+
+
+def pluck(f, length=0.32, bright=1.0):
+    """A mallet note, like a marimba: the pitch and two quick overtones."""
+    t = np.arange(int(length * SR)) / SR
+    return (np.sin(2 * np.pi * f * t) * np.exp(-t / 0.11) + 0.45 * bright * np.sin(2 * np.pi * 2 * f * t) * np.exp(-t / 0.05)
+            + 0.2 * bright * np.sin(2 * np.pi * 4 * f * t) * np.exp(-t / 0.025)) * np.minimum(1, t / 0.004)
+
+
+def story_music(bpm=126):
+    """The story serial's own tune (the owner, 2026-11-14: music like the blocky-game story videos): a bouncy original in C,
+    sixteen bars that loop: an oom-pah bass, off-beat mallet chords, a skipping mallet melody, kick, clap and hats.
+    Written here note by note: no sample and no existing song is used."""
+    beat = 60 / bpm; e = beat / 2; bars = 16; n = int(bars * 4 * beat * SR); out = np.zeros(n + SR); rng = np.random.default_rng(7)
+
+    def put(w, at, vol):
+        s = int(at * SR); out[s:s + len(w)] += vol * w
+    chords = {"C": ("C3", "G3", ["C4", "E4", "G4"]), "Am": ("A2", "E3", ["A3", "C4", "E4"]), "F": ("F2", "C3", ["F3", "A3", "C4"]), "G": ("G2", "D3", ["G3", "B3", "D4"])}
+    tune = ["E5 G5 C6 G5 E5 G5 A5 G5", "E5 A5 C6 A5 E5 A5 G5 E5", "F5 A5 C6 A5 F5 A5 G5 F5", "D5 G5 B5 G5 D5 G5 A5 B5",
+            "C6 - G5 E5 G5 - C6 -", "A5 - E5 C5 E5 - A5 -", "A5 - F5 C5 F5 A5 C6 A5", "B5 - G5 D5 G5 B5 D6 -"]
+    k16 = int(.16 * SR); kick = np.sin(2 * np.pi * np.cumsum(120 - 70 * np.arange(k16) / k16) / SR) * env(k16, .002, .06)
+    for b in range(bars):
+        t0 = b * 4 * beat; root, fifth, tri = chords[["C", "Am", "F", "G"][b % 4]]
+        for k in range(4):
+            put(pluck(hz(root if k % 2 == 0 else fifth), 0.3, 0.5), t0 + k * beat, 0.55)             # oom-pah
+            for nn in tri: put(pluck(hz(nn), 0.16), t0 + k * beat + e, 0.16)                          # the chord on the off-beat
+            if k % 2 == 0: put(kick, t0 + k * beat, 0.6)
+            else: put(np.convolve(rng.standard_normal(int(.09 * SR)), np.ones(6) / 6, "same") * env(int(.09 * SR), .001, .03), t0 + k * beat, 0.3)   # clap
+            for j in range(2): put(rng.standard_normal(int(.03 * SR)) * env(int(.03 * SR), .001, .008), t0 + k * beat + j * e, 0.045 if j else 0.03)   # hats
+        for k, nn in enumerate(tune[b % 8].split()):
+            if nn != "-": put(pluck(hz(nn), 0.3), t0 + k * e, 0.34)
+    out[:SR] += out[n:n + SR]; out = out[:n]              # (the last bar rings into the first: a clean loop)
+    return (out / np.abs(out).max() * 0.7).astype(np.float32)
+
+
+def extra(name):
+    """A reel's own music, made the first time it is asked for (render.py: timeline "music")."""
+    os.makedirs(ASSETS, exist_ok=True); sf.write(os.path.join(ASSETS, f"music_{name}.wav"), {"story": story_music}[name](), SR)
+
+
 def main():
     os.makedirs(ASSETS, exist_ok=True)
     sf.write(os.path.join(ASSETS, "music.wav"), music(), SR)
+    extra("story")
     sf.write(os.path.join(ASSETS, "sfx_whoosh.wav"), whoosh(), SR)
     sf.write(os.path.join(ASSETS, "sfx_pop.wav"), pop(), SR)
     sf.write(os.path.join(ASSETS, "sfx_boom.wav"), boom(), SR)

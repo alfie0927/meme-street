@@ -1,0 +1,781 @@
+{
+ "title": "Money On Your Chest",
+ "type": "Blocky story",
+ "hooks": [
+  "In this town, your money is printed on your chest by your trades.",
+  "In this town, everyone can see your money, because it's printed right on your chest.",
+  "In this town, one bad trade and the whole street watches the number on your chest drop."
+ ],
+ "caption": "In this town, your money is printed on your chest. What would yours say?\nPart 1 of 8\nTimmy lost everything on one stock, and the rich fly round the world.\nI'm just an average trader, no better than holding the S&P 500.\nSo I practise on Meme Street: made-up companies, news that moves prices, and 1,000 memebucks of practice money with no cash value.\nFollow for part 2.\nPractise at memestreet.net\nFictional market. Not investment advice.\n#MemeStreet #StockMarket #LearnToTrade #TradingForBeginners",
+ "device": {
+  "metaphor": "a 3D toy-block town where everyone's trading balance is printed on a white label on the chest",
+  "opening": "the richest man's chest label races to 1,000,000 as coins rain",
+  "palette": "sky blue, grass green, gold for the rich, red for a crash",
+  "hud": "none: the chest labels are the only numbers"
+ },
+ "scene_js": "({t, api}) => api.world(t)",
+ "one_word": true,
+ "part": 1,
+ "series": "Money On Your Chest",
+ "charts": [],
+ "scenes": [
+  {
+   "kind": "free",
+   "text": "Printed on your chest",
+   "hot": "chest",
+   "vo": "In this town, your money is printed on your chest by your trades.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "close:Mr Gold",
+     "actors": [
+      {
+       "who": "Mr Gold",
+       "at": [
+        0,
+        0
+       ],
+       "do": "cheer",
+       "face": "grin",
+       "chest": [
+        0,
+        1000000
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "coins"
+      }
+     ]
+    },
+    {
+     "say": "printed",
+     "place": "street",
+     "cam": "wide",
+     "move": "in",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        -2.6,
+        0.6
+       ],
+       "to": [
+        1.4,
+        0.6
+       ],
+       "chest": 12480
+      },
+      {
+       "who": "Maya",
+       "at": [
+        2.8,
+        -0.6
+       ],
+       "to": [
+        -1.2,
+        -0.6
+       ],
+       "chest": 8750
+      },
+      {
+       "who": "old neighbour",
+       "at": [
+        0.2,
+        1.6
+       ],
+       "do": "wave",
+       "chest": 12480
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Everyone watches it drop",
+   "hot": "drop",
+   "vo": "It climbs when you win, but when you lose, everyone watches it drop.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "close:Maya",
+     "actors": [
+      {
+       "who": "Maya",
+       "at": [
+        0,
+        0
+       ],
+       "do": "cheer",
+       "face": "grin",
+       "chest": [
+        3100,
+        8750
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "confetti"
+      }
+     ]
+    },
+    {
+     "say": "but when you lose",
+     "place": "street",
+     "cam": "mid:Maya",
+     "actors": [
+      {
+       "who": "Maya",
+       "at": [
+        0,
+        0.4
+       ],
+       "chest": 8750,
+       "face": "smile",
+       "say": "drop",
+       "then": {
+        "chest": 1300,
+        "do": "shock",
+        "face": "shock",
+        "emote": "!"
+       }
+      }
+     ],
+     "crowd": {
+      "n": 5,
+      "form": "cluster",
+      "at": [
+       0,
+       0.4
+      ],
+      "do": "idle",
+      "face": "flat",
+      "say": "drop",
+      "then": {
+       "do": "shock",
+       "face": "shock"
+      }
+     },
+     "fx": [
+      {
+       "do": "redflash",
+       "say": "drop"
+      },
+      {
+       "do": "shake",
+       "say": "drop"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "One stock",
+   "hot": "stock",
+   "vo": "Timmy lost everything on one stock, so now he's broke.",
+   "shots": [
+    {
+     "place": "square",
+     "cam": "screen",
+     "screen": {
+      "title": "ONE STOCK",
+      "chart": "crash",
+      "pct": "-100%"
+     },
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        -1.2,
+        -1.5
+       ],
+       "look": "screen",
+       "do": "shock",
+       "chest": 9400
+      }
+     ],
+     "crowd": {
+      "n": 4,
+      "form": "row",
+      "at": [
+       1.6,
+       -3
+      ],
+      "look": "screen",
+      "do": "idle"
+     }
+    },
+    {
+     "say": "so now",
+     "place": "square",
+     "cam": "close:Timmy",
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        -1.2,
+        -1.5
+       ],
+       "chest": [
+        9400,
+        0
+       ],
+       "do": "cry",
+       "face": "cry"
+      }
+     ],
+     "fx": [
+      {
+       "do": "redflash"
+      },
+      {
+       "do": "shake"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Begging strangers for money",
+   "hot": "Begging",
+   "vo": "Now he holds out his hands, begging strangers for money.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "mid:Timmy",
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        0,
+        0
+       ],
+       "do": "beg",
+       "face": "sad",
+       "chest": 0
+      },
+      {
+       "who": "townie a",
+       "at": [
+        -4.5,
+        1.3
+       ],
+       "to": [
+        4.5,
+        1.3
+       ],
+       "chest": 6200
+      },
+      {
+       "who": "townie b",
+       "at": [
+        4.5,
+        -1.1
+       ],
+       "to": [
+        -4.5,
+        -1.1
+       ],
+       "chest": 31400
+      }
+     ]
+    },
+    {
+     "say": "strangers",
+     "place": "street",
+     "cam": "two:Timmy,old neighbour",
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        -0.8,
+        0
+       ],
+       "do": "beg",
+       "face": "sad",
+       "chest": 0,
+       "look": "old neighbour",
+       "say": "money",
+       "then": {
+        "face": "smile"
+       }
+      },
+      {
+       "who": "old neighbour",
+       "at": [
+        3.2,
+        0.2
+       ],
+       "to": [
+        0.9,
+        0
+       ],
+       "look": "Timmy",
+       "hold": "coin",
+       "chest": 12480,
+       "face": "smile"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Fly round the world",
+   "hot": "world",
+   "vo": "Some made fortunes, so they buy sports cars and fly round the world.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "mid:Mr Gold",
+     "car": {
+      "color": "gold",
+      "from": [
+       -10,
+       -3
+      ],
+      "to": [
+       7,
+       -3
+      ],
+      "who": "Mr Gold"
+     },
+     "actors": [
+      {
+       "who": "Mr Gold",
+       "do": "wave",
+       "face": "grin",
+       "chest": 2450000
+      }
+     ]
+    },
+    {
+     "say": "fly",
+     "place": "airport",
+     "cam": "wide:plane",
+     "plane": {
+      "mode": "takeoff"
+     },
+     "crowd": {
+      "n": 4,
+      "form": "row",
+      "at": [
+       -3,
+       2
+      ],
+      "do": "wave",
+      "look": [
+       4,
+       -8
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Just an average trader",
+   "hot": "average",
+   "vo": "I'm just an average trader, no better than holding the S and P 500.",
+   "shots": [
+    {
+     "place": "park",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        -0.95
+       ],
+       "do": "sit",
+       "face": "flat",
+       "chest": 12480,
+       "say": "average",
+       "then": {
+        "do": "shrug",
+        "face": "smile"
+       }
+      }
+     ]
+    },
+    {
+     "say": "no better",
+     "place": "park",
+     "cam": "two:narrator,old neighbour",
+     "screen": {
+      "title": "S&P 500",
+      "chart": "up"
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        -0.9,
+        0
+       ],
+       "do": "shrug",
+       "face": "flat",
+       "chest": 12480,
+       "look": "old neighbour"
+      },
+      {
+       "who": "old neighbour",
+       "at": [
+        0.9,
+        0
+       ],
+       "do": "show",
+       "hold": "chart",
+       "face": "smile",
+       "chest": 12480
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "I practise on Meme Street",
+   "hot": "practise",
+   "vo": "So I practise on Meme Street, where news moves made-up companies.",
+   "shots": [
+    {
+     "place": "room",
+     "cam": "screen",
+     "screen": {
+      "title": "MEME STREET",
+      "chart": "candles",
+      "news": "NEWS MOVES THE PRICE"
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -2.2
+       ],
+       "do": "present",
+       "face": "smile",
+       "chest": 12480
+      }
+     ]
+    },
+    {
+     "say": "where news",
+     "place": "room",
+     "cam": "close:narrator",
+     "screen": {
+      "title": "MEME STREET",
+      "chart": "candles",
+      "news": "NEWS MOVES THE PRICE"
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.3,
+        -1.6
+       ],
+       "do": "talk",
+       "face": "grin",
+       "chest": 12480
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Every trade with a plan",
+   "hot": "plan",
+   "vo": "I do the lessons and take every trade with a plan.",
+   "shots": [
+    {
+     "place": "room",
+     "cam": "screen",
+     "screen": {
+      "title": "MY PLAN",
+      "lines": [
+       "Do the lessons",
+       "Plan every trade",
+       "Stick to the plan"
+      ]
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -2.2
+       ],
+       "do": "present",
+       "face": "smile",
+       "chest": 12480
+      }
+     ]
+    },
+    {
+     "say": "every trade",
+     "place": "room",
+     "cam": "mid:narrator",
+     "screen": {
+      "title": "MY PLAN",
+      "lines": [
+       "Do the lessons",
+       "Plan every trade",
+       "Stick to the plan"
+      ]
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        1.2,
+        -0.6
+       ],
+       "do": "nod",
+       "face": "smile",
+       "chest": 12480,
+       "hold": "notebook"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Crashed to zero",
+   "hot": "zero",
+   "vo": "Then this morning, every number in town crashed to zero.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "wide",
+     "sky": "gold",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        1.6
+       ],
+       "chest": 12480,
+       "face": "smile",
+       "do": "wave"
+      }
+     ],
+     "crowd": {
+      "n": 7,
+      "form": "row",
+      "at": [
+       0,
+       -0.4
+      ],
+      "gap": 1.25,
+      "do": "idle"
+     }
+    },
+    {
+     "say": "every number",
+     "place": "street",
+     "cam": "mid:narrator",
+     "sky": "red",
+     "sky_say": "crashed",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        1.6
+       ],
+       "chest": 12480,
+       "face": "flat",
+       "say": "crashed",
+       "then": {
+        "chest": 0,
+        "do": "shock",
+        "face": "shock",
+        "emote": "!"
+       }
+      }
+     ],
+     "crowd": {
+      "n": 7,
+      "form": "row",
+      "at": [
+       0,
+       -0.4
+      ],
+      "gap": 1.25,
+      "do": "idle",
+      "say": "crashed",
+      "then": {
+       "chest": "zero",
+       "do": "shock",
+       "face": "shock"
+      }
+     },
+     "fx": [
+      {
+       "do": "redflash",
+       "say": "crashed"
+      },
+      {
+       "do": "shake",
+       "say": "crashed"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Said number one",
+   "hot": "one",
+   "vo": "Every one except Timmy's, because his didn't crash and said number one.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "mid:Timmy",
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        0,
+        1.2
+       ],
+       "chest": 212,
+       "face": "smile",
+       "do": "idle"
+      }
+     ],
+     "crowd": {
+      "n": 6,
+      "form": "cluster",
+      "at": [
+       0,
+       1.2
+      ],
+      "chest": "zero",
+      "do": "sad",
+      "face": "sad"
+     }
+    },
+    {
+     "say": "his didn't crash",
+     "place": "street",
+     "cam": "close:Timmy",
+     "move": "still",
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        0,
+        1.2
+       ],
+       "chest": 212,
+       "face": "smile",
+       "do": "idle",
+       "say": "number one",
+       "then": {
+        "chest": "#1",
+        "face": "smug",
+        "do": "show"
+       }
+      }
+     ],
+     "crowd": {
+      "n": 6,
+      "form": "cluster",
+      "at": [
+       0,
+       1.2
+      ],
+      "chest": "zero",
+      "do": "sad",
+      "face": "sad"
+     },
+     "fx": [
+      {
+       "do": "zoom",
+       "say": "number one"
+      },
+      {
+       "do": "flash",
+       "say": "number one"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "At my door",
+   "hot": "door",
+   "vo": "And he was standing at my door, smiling, holding something I'd never...",
+   "shots": [
+    {
+     "place": "doorway",
+     "cam": "wide",
+     "door": "burst",
+     "door_say": "standing",
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        0,
+        -1.7
+       ],
+       "chest": 212,
+       "face": "smile",
+       "hold": "parcel",
+       "emote": "#1"
+      }
+     ],
+     "fx": [
+      {
+       "do": "shake",
+       "say": "standing"
+      }
+     ]
+    },
+    {
+     "say": "holding",
+     "place": "doorway",
+     "cam": "mid:Timmy",
+     "door": "open",
+     "actors": [
+      {
+       "who": "Timmy",
+       "at": [
+        0,
+        -1.7
+       ],
+       "chest": 212,
+       "face": "grin",
+       "do": "show",
+       "hold": "parcel"
+      }
+     ],
+     "fx": [
+      {
+       "do": "zoom",
+       "say": "never"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "outro",
+   "text": "Part 2 drops soon",
+   "vo": "Part 2 drops soon. Join free at memestreet.net."
+  }
+ ]
+}

@@ -69,6 +69,7 @@ def main(work):
         cap = digits(tw)
         sc["text_words"] = [c for c, _, _ in cap]
         sc["wt"] = [[round(vs + wt[a][0], 3), round(vs + wt[b][1], 3)] for _, a, b in cap]
+        sc["vt"] = [round(vs + x[0], 3) for x in wt]          # (when each written word starts: the 3D story's shots are timed on them, number words too; world3d.js)
         if sc.get("text") and (sc["kind"] in ("big", "free") or sc.get("chart") is None):
             sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
         if sc.get("options"):

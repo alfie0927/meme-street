@@ -90,13 +90,16 @@ def main(work, out):
     T = R["T"]; ins = []; flt = []
     for i, (f, a) in enumerate(R["vo"]):
         ins += ["-i", f]; flt.append(f"[{i}:a]adelay={int(a*1000)}[v{i}]")
-    music = os.path.join(os.path.dirname(HERE), "assets", "music.wav")
+    own = R.get("music")                                # (a reel with its own music: "story", the serial's bouncy tune, louder and ducked less)
+    music = os.path.join(os.path.dirname(HERE), "assets", f"music_{own}.wav" if own else "music.wav")
+    if own and not os.path.exists(music):
+        import sounds; sounds.extra(own)
     if os.environ.get("PAGE", "").startswith("reel") and os.path.exists(music):
         # the house music under everything, ducked while the voice speaks (sounds.py makes it)
         m = len(R["vo"]); ins += ["-stream_loop", "-1", "-i", music]
         flt.append("".join(f"[v{i}]" for i in range(m)) + f"amix=inputs={m}:normalize=0,apad=whole_dur={T},asplit=2[mx][sc]")
-        flt.append(f"[{m}:a]atrim=0:{T},volume=0.22,afade=t=out:st={max(0, T - 1.2)}:d=1.2[mu]")
-        flt.append("[mu][sc]sidechaincompress=threshold=0.02:ratio=5:attack=15:release=350[du]")
+        flt.append(f"[{m}:a]atrim=0:{T},volume={0.5 if own else 0.22},afade=t=out:st={max(0, T - 1.2)}:d=1.2[mu]")
+        flt.append(f"[mu][sc]sidechaincompress=threshold=0.02:ratio={2 if own else 5}:attack=15:release=350[du]")
         flt.append("[mx][du]amix=inputs=2:normalize=0,loudnorm=I=-15:TP=-1.5[o]")
     else:
         flt.append("".join(f"[v{i}]" for i in range(len(R["vo"]))) + f"amix=inputs={len(R['vo'])}:normalize=0,apad=whole_dur={T},loudnorm=I=-16:TP=-1.5[o]")
