@@ -1227,6 +1227,16 @@ async def send_receipt(oid):
         send_mail(*r)
 
 
+async def cancel_duplicate(oid):
+    """A second monthly pass of one kind (economy.complete_order marks it): cancel it at Stripe, so the player is not
+    billed every month for a subscription the shop cannot see or cancel."""
+    o = engine.shop_orders.get(oid) or {}
+    sub = o.get("duplicate_sub")
+    if isinstance(sub, str) and sub:
+        ok = await asyncio.get_running_loop().run_in_executor(pool, payments.cancel_subscription, sub)
+        logger.warning("order %s was a second monthly pass: cancelled at Stripe: %s", oid, ok)
+
+
 async def check_payments(days=3):
     """The daily payment check (ROADMAP O7): ask Stripe for every checkout paid in the last few days and complete any
     order whose webhook never arrived. Returns the report (also kept for the admin page)."""
@@ -1243,6 +1253,7 @@ async def check_payments(days=3):
         await run(engine.save, False)
         for f in report["fixed"]:
             await send_receipt(f["order"])
+            await cancel_duplicate(f["order"])
     if report["problems"]:
         logger.warning("payment check: %d paid checkout(s) could not be completed: %s", len(report["problems"]), report["problems"])
     return report
@@ -1323,6 +1334,7 @@ async def stripe_webhook(request: Request):
         if ok and msg != "Already completed":
             await run(engine.save, False)
             await send_receipt(oid)
+            await cancel_duplicate(oid)
     renewed = payments.renewal(event)
     if renewed:                                        # a later month of a monthly pass
         sub, inv, amount = renewed
@@ -1719,7 +1731,7 @@ async def daily_start(request: Request, x_token: str = Header(""), x_visitor: st
     if not x_token:                                    # visitors: a few games a day from one address, so a new browser id is no free retry
         ip, now = client_ip(request), time.time()
         if limits.count(("daily-visit", ip), 86400, now) >= int(engine.settings.get("daily_visits_per_ip", 3)):
-            return {"error": "Create a free account to play today's chart"}
+            return {"error": "Create a free account to play today's chart", "need_account": True}   # (daily.js explains why)
         limits.add(("daily-visit", ip), now)
     return await daily_player(x_token, x_visitor, "daily_start", engine.daily_start, interval=1.0)
 

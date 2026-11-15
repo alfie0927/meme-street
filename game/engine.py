@@ -259,6 +259,8 @@ class Player:
         self.cash = 0.0
         self.deposited = 0.0     # net tokens credited to this account (signup, deposits - withdrawals)
         self.season_base = 0.0   # equity at season start plus deposits during the season
+        self.units = 0.0         # the account as a fund: money put in buys units at the account's price, so the return
+        self.season_units = 0.0  # (equity / units - 1) is the same before and after a purchase (audit 2026-11-15)
         self.divs = {}           # dividends received (paid, for shorts) per ticker
         self.borrow = {}         # borrow fees paid per shorted ticker
         self.log = deque(maxlen=100)   # this player's last trades (for the admin page)
@@ -842,9 +844,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if amount <= 0:
             return False, "Amount must be positive"
         ratio = self._ratio(p)
+        self._money_in(p, amount)
         p.cash += amount
-        p.deposited += amount
-        p.season_base += amount
         self.minted += amount
         self._rebase_peak(p, ratio)     # paying in is not performance: keep the drawdown tracker honest
         p.mb_by_source[source] = p.mb_by_source.get(source, 0.0) + amount
@@ -859,9 +860,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         if amount > self.free_cash(p) + 1e-9:
             return False, "Not enough free cash; close positions first"
         ratio = self._ratio(p)
+        self._money_in(p, -amount)
         p.cash -= amount
-        p.deposited -= amount
-        p.season_base = max(0.0, p.season_base - amount)
         self.minted -= amount
         self._rebase_peak(p, ratio)
         self._emit("debit", p, cash=-amount, notional=amount)
@@ -2911,7 +2911,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             p.orders = [o for o in p.orders if o.get("oco") != group]
             p.orders_dirty = True
             return False, m2
-        self._learn_task(p, "bracket")
+        self._learn_bracket(p, ticker, take_profit, stop_loss)
         return True, f"Bracket placed on {ticker}: take profit at {take_profit:.4g}, stop-loss at {stop_loss:.4g}"
 
     def cancel_order(self, p, order_id):
@@ -3030,7 +3030,24 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
     # Seasons are leaderboard periods only. Balances are real and are never reset.
     def season_return(self, p, equity=None):
         e = self.equity(p) if equity is None else equity
-        return e / p.season_base - 1 if p.season_base > 1e-9 else 0.0
+        return e / p.season_units - 1 if p.season_units > 1e-9 else 0.0
+
+    def alltime_return(self, p, equity=None):
+        e = self.equity(p) if equity is None else equity
+        return e / p.units - 1 if p.units > 1e-9 else 0.0
+
+    def _money_in(self, p, amount):
+        """MB put in (or, negative, taken out) before the cash moves. The bases of profit (`deposited`, `season_base`)
+        move by the amount; the units move at the account's price, so the return boards never move on a purchase, a
+        reward or a restart: a losing account that buys MB keeps its loss (rule 4; audit 2026-11-15). The price has a
+        floor of 0.01 so an emptied account cannot buy an endless number of units."""
+        e = self.equity(p)
+        for attr in ("units", "season_units"):
+            u = getattr(p, attr)
+            price = max(e / u, 0.01) if u > 1e-9 else 1.0
+            setattr(p, attr, max(0.0, u + amount / price))
+        p.deposited += amount
+        p.season_base = max(0.0, p.season_base + amount)
 
     @staticmethod
     def traded_today(p):
@@ -3139,7 +3156,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             delta = target - p.cash
             p.cash = target
             self.minted += delta
-            p.deposited = p.season_base = target
+            p.deposited = p.season_base = p.units = p.season_units = target
             p.realized, p.divs, p.borrow = {}, {}, {}
             p.fees_paid, p.trades, p.margin_calls = 0.0, 0, 0
             p.log.clear()
@@ -3233,7 +3250,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self.history.append({"season": self.season_no, "top": top})
         self.history = self.history[-10:]
         for p in self.players.values():
-            p.season_base = self.equity(p)
+            p.season_base = p.season_units = self.equity(p)
             p.trades = 0
         self._end_season_social()
         winner = top[0] if top else ("nobody", 0)
@@ -3782,14 +3799,14 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             if p is not None:
                 pnl = self.equity(p) - p.deposited
                 on.append({"name": p.name, "tabs": n, "tier": "expert" if self.is_expert(p) else "pro" if self.is_pro(p) else "",
-                           "equity": round(pnl + p.deposited, 2), "ret": round(pnl / p.deposited, 6) if p.deposited > 0 else 0.0,
+                           "equity": round(pnl + p.deposited, 2), "ret": round(self.alltime_return(p, pnl + p.deposited), 6),
                            "trades": p.trades, "positions": len(p.hold)})
         on.sort(key=lambda r: r["name"].lower())
         rows = []
         for p in humans:
             eq = self.equity(p)
             pnl = eq - p.deposited
-            rows.append({"name": p.name, "equity": eq, "pnl": pnl, "ret": pnl / p.deposited if p.deposited > 0 else 0.0,
+            rows.append({"name": p.name, "equity": eq, "pnl": pnl, "ret": self.alltime_return(p, eq),
                          "trades": p.trades, "positions": len(p.hold), "margin_calls": p.margin_calls})
         rows.sort(key=lambda r: -r["pnl"])
         edges = [(-1e9, -0.5, "< -50%"), (-0.5, -0.25, "-50..-25"), (-0.25, -0.1, "-25..-10"), (-0.1, 0.0, "-10..0"),
@@ -3853,7 +3870,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         realized = sum(p.realized.values())
         curve = [list(point) for point in p.curve] + [[self.now, eq, p.cash]]
         return {"equity": eq, "cash": p.cash, "deposited": p.deposited, "pnl": eq - p.deposited,
-                "ret": (eq - p.deposited) / p.deposited if p.deposited > 0 else 0.0,
+                "ret": self.alltime_return(p, eq),
                 "unrealized": unrealized, "realized": realized, "fees": p.fees_paid,
                 "dividends": sum(p.divs.values()), "borrow": sum(p.borrow.values()),
                 "trades": p.trades, "positions": positions, "allocation": allocation, "curve": curve,
@@ -3936,7 +3953,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             rows.append({"name": p.name, "created": p.created or None, "seen": seen.get(p.token) or None,
                          "email": p.email, "verified": bool(p.email_verified),
                          "tier": "expert" if self.is_expert(p) else "pro" if self.is_pro(p) else "",
-                         "equity": round(eq, 2), "pnl": round(pnl, 2), "ret": round(pnl / p.deposited, 6) if p.deposited > 0 else 0.0,
+                         "equity": round(eq, 2), "pnl": round(pnl, 2), "ret": round(self.alltime_return(p, pnl + p.deposited), 6),
                          "trades": p.trades, "positions": len(p.hold), "ref": p.ref, "invite": self.invite_code(p),
                          "invited": invited.get(p.token, 0), "invited_by": names.get(p.invited_by)})
         rows.sort(key=lambda r: -(r["created"] or 0))
@@ -4073,7 +4090,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                             "distress_checked": s.distress_checked}
                         for t, s in self.stocks.items()},
              "players": [{"name": p.name, "token": p.token, "cash": p.cash, "hold": p.hold,
-                          "deposited": p.deposited, "season_base": p.season_base, "cost": p.cost, "divs": p.divs, "borrow": p.borrow,
+                          "deposited": p.deposited, "season_base": p.season_base, "units": p.units,
+                          "season_units": p.season_units, "cost": p.cost, "divs": p.divs, "borrow": p.borrow,
                           "orders": p.orders, "pw": p.pw, "ips": p.ips, "created": p.created,
                           "email": p.email, "email_verified": p.email_verified, "email_pending": p.email_pending,
                           "remind": p.remind, "remind_day": p.remind_day, "unsub": p.unsub,
@@ -4142,9 +4160,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             return
         cash, house, fee = ev["cash_delta"], ev["house_delta"], ev["fee"]
         if kind in ("credit", "debit"):
+            self._money_in(p, cash)
             p.cash += cash
-            p.deposited += cash
-            p.season_base = max(0.0, p.season_base + cash)
             self.minted += cash
             if kind == "credit":
                 src = extra.get("source", "grant")
@@ -4509,6 +4526,8 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
                     p.cost.setdefault(tk, shares * self.stocks[tk].price)
                 p.deposited = float(x.get("deposited", START_CASH))
                 p.season_base = float(x.get("season_base", self.equity(p)))
+                p.units = float(x.get("units", p.deposited))                 # (a save from before units: the old measure)
+                p.season_units = float(x.get("season_units", p.season_base))
                 social.load_player(p, x.get("social", {}))
                 economy.load_player(p, x.get("economy", {}))
                 learning.load_player(p, x.get("learning", {}))

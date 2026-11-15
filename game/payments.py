@@ -68,6 +68,7 @@ class Payments:
             "success_url": f"{self.site}/shop?paid={order['id']}",
             "cancel_url": f"{self.site}/shop?cancelled={order['id']}",
             "client_reference_id": order["id"],
+            "expires_at": str(int(time.time()) + 3600),   # economy.CHECKOUT_OPEN: an old payment page cannot be paid later
             "metadata[order]": order["id"],
             "line_items[0][quantity]": "1",
             "line_items[0][price_data][currency]": order["currency"],

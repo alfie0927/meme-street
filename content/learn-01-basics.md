@@ -12,7 +12,7 @@ Growing costs money. A company can borrow it (and pay interest whatever happens)
 Q: Why does a company hold an IPO?
 + To raise money by selling part of itself to the public
 - To pay its staff and suppliers in shares instead of cash
-- Because the law requires one every year
+- To borrow from the public and pay it back with interest
 WHY: An initial public offering raises money and lets the shares trade on an exchange afterwards.
 
 ### Why shares are worth anything
@@ -21,7 +21,7 @@ A share is a claim on the company's future: the profits it will make, paid out a
 Q: What is the most a shareholder can lose?
 - Their whole net worth, if the company goes bust owing money
 + What they paid for the shares
-- Twice what they paid
+- What they paid, plus a share of that year's losses
 WHY: Limited liability: shareholders are never responsible for the company's debts.
 
 ### What owning a share gives you
@@ -131,7 +131,7 @@ On a real exchange every stock has two prices at any moment:
 Q: On Meme Street, what does a round trip in a share cost?
 + About 0.2%
 - The spread plus the fee
-- Nothing
+- About 0.1%, the fee on the buy only
 WHY: Shares trade at one price here, so the fee is the only cost. Options do have a spread.
 
 Q: You want to buy a stock quoted bid 50.00, ask 50.10. Where does a market buy order fill?
@@ -147,8 +147,8 @@ The spread is a cost on every round trip, on top of commission. A strategy that 
 
 Q: Who usually earns the spread?
 + Market makers and whoever is on the other side of your trade
-- The government, as a tax on each trade
-- The company whose shares are being traded, as a small dividend
+- The exchange, as its charge for each trade
+- The company whose shares are traded, since they are its shares
 WHY: Market makers quote both sides and earn the difference, in exchange for always being there to trade.
 
 HERE: Shares here have **no spread**: you buy and sell at the same displayed price, and the only cost is the 0.1% fee each way.
@@ -169,7 +169,7 @@ A price moves when buyers are more eager than sellers, or the other way round. I
 
 Q: What makes a price rise?
 + Buyers being more eager than sellers at the current price
-- The company asking the exchange for it to rise before the open
+- Good news on its own, even if nobody trades on it
 - High volume, always, whichever way it leans
 WHY: More demand than supply at a price pushes it up until enough sellers appear.
 
@@ -178,7 +178,7 @@ Markets look ahead. If everyone expects a great quarter, the price already refle
 
 Q: A company reports record profits and its shares fall. What is the most likely reason?
 + The profits were below what the market expected
-- The report was faked by the company
+- Higher profits mean a bigger tax bill, so investors sell
 - Shares always fall on an earnings day, whatever the numbers
 WHY: Prices already contain expectations. A result below them disappoints, even if it is a record.
 
@@ -188,7 +188,7 @@ Much of any minute's or hour's movement is noise: orders arriving at random. Rea
 Q: A stock drifts 0.4% in a quiet hour with no news at all. The most likely cause?
 - A hidden earnings leak
 + Ordinary noise
-- A trading halt
+- The start of a new trend
 WHY: Most small moves are noise. Prices wander without a reason, which is why one candle rarely means anything on its own.
 
 HERE: Every headline is on the news wire as it breaks, and a company's page keeps its news log. Company stories move the price when they break, and the next earnings report then confirms them in the numbers. Economic releases come with a published forecast, and the market reacts to the surprise against it.
@@ -269,7 +269,7 @@ WHY: It buys time; it does not stop the fall from continuing after the pause.
 Q: Your stock is halted while you hold it. What can you do?
 + Nothing until trading resumes
 - Sell at the last traded price
-- Cancel the trade and get your money back
+- Sell it on another exchange at the last price
 WHY: A halt stops all trading. Orders wait, and fill at whatever price trading resumes at.
 
 Q: Meme Street has no trading halts. What does that mean for your stop-loss in a crash?

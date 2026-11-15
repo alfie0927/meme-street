@@ -17,26 +17,31 @@ from social import clean_chat
 
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
                "icon-512.png", "apple-touch-icon.png"}   # (the small icons: browser tabs, phones and search results)
-DAILY_TEXT = ("A free daily stock market game: one new chart a day, the same for everyone. Two minutes to buy, sell and "
+DAILY_TEXT = ("A daily stock market game, no account needed: one new chart a day, the same for everyone. Two minutes to buy, sell and "
               "short as the candles print, then see how your return ranks against every other player. Like Wordle, "
               "for trading.")
-DAILY_BODY = ("<main style=\"max-width:620px;margin:0 auto;padding:24px 16px;font:16px/1.55 system-ui,sans-serif\">"
-              "<h1>The Daily Chart: a daily stock market game</h1>"
-              "<p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice "
-              "money and have two minutes: the candles print one a second, and you buy, sell or short as they come. "
-              "When the time is up you see your return, your place, and how every other player did.</p>"
-              "<p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The "
-              "chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p>"
-              "<p>Turn on JavaScript to play. New to charts? Start with the <a href=\"/lessons\">free lessons</a> or read "
-              "<a href=\"/about\">about Meme Street</a>.</p></main>")
+# The Daily as it first shows, in the page itself (audit 2026-11-15): the script draws the game over it, so the page no
+# longer jumps from "Loading..." to the game on a slow phone, and a crawler that runs scripts reads this, not "Loading...".
+DAILY_SHOWN = ('<div class="dly-wrap"><div class="dly-hero"><h1 class="dly-tag">The Daily Chart<br>Two minutes. One chart. '
+               'The same one for everyone.</h1><p class="dly-how">The candles print one a second. Tap <b>Buy</b> if you '
+               'think the price will rise, <b>Sell</b> if it will fall, and try to beat the stock.</p>'
+               '<p class="dly-small">No account needed · one go a day · 1,000 MB of practice money</p>'
+               '<noscript><p>Turn on JavaScript to play.</p></noscript></div><div class="dly-about">'
+               '<h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. '
+               'You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you '
+               'buy, sell or short as they come. When the time is up you see your return, your place, and how every '
+               'other player did.</p><p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a '
+               'result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts '
+               'at midnight UTC. New to charts? Start with the <a href="/lessons">lessons</a> or read '
+               '<a href="/about">about Meme Street</a>.</p></div></div>')
 HOME_TEXT = ("Meme Street is a made-up stock market that runs around the clock. Learn to trade with 1,000 MB of practice "
-             "money (memebucks, no cash value) and no real cash at risk, with free lessons and a new chart game every day.")
+             "money (memebucks, no cash value) and no real cash at risk, with lessons and a new chart game every day.")
 HOME_BODY = ("<main><h1>Meme Street: a stock market game with play money</h1>"
              "<p>Meme Street is a made-up stock market that never closes, with 180+ companies, indices and funds, news that "
              "moves prices and a daily leaderboard. Everyone starts with 1,000 MB (memebucks), practice money with no cash "
              "value, so you can learn to trade without risking real cash.</p>"
              "<p>Turn on JavaScript to watch the market live and trade. New to trading? Start with the "
-             "<a href=\"/lessons\">free lessons</a>, try the <a href=\"/daily\">Daily Chart</a>, or read "
+             "<a href=\"/lessons\">lessons</a>, try the <a href=\"/daily\">Daily Chart</a>, or read "
              "<a href=\"/about\">how Meme Street works</a>.</p></main>")
 SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scripts in web/ (the chart, TA-F2; the Bots page; the Daily Chart; the Learn page)
 VS = re.compile(r"([\w. -]{0,16})~(-?[0-9]{1,7})~([0-9]{1,6})")   # a challenge link's name~return~number, as web/daily.js reads it
@@ -70,10 +75,11 @@ def add_pages(app):
 
     cache = {}
 
-    def page_as(path, title, description, extra="", body=""):
+    def page_as(path, title, description, extra="", body="", shown=""):
         """index.html with its own title, description, preview and address for a page search engines should list on
         its own (the Daily Chart): the same file, so nothing else changes. `body` is plain text for visitors and crawlers
-        without JavaScript (put in a noscript block, so players never see it twice)."""
+        without JavaScript (put in a noscript block, so players never see it twice); `shown` replaces the Daily card's
+        "Loading..." with what the page first shows."""
         f = os.path.join(web, "index.html")
         key = (path, os.path.getmtime(f))
         if key not in cache:
@@ -86,6 +92,8 @@ def add_pages(app):
             for tag in ('<meta name="description"', '<meta property="og:title"', '<meta property="og:description"'):
                 i = s.index(tag)                               # the home page's own copies go
                 s = s[:i] + s[s.index(">", i) + 1:]
+            if shown:
+                s = s.replace('<div id="daily-body"><p class="mut">Loading…</p></div>', '<div id="daily-body">' + shown + "</div>", 1)
             if body:
                 s = s.replace('<body class="page-market">', '<body class="page-market"><noscript>' + body + "</noscript>", 1)
             for k in [k for k in cache if k[1] != key[1]]:   # (a page of an older index.html)
@@ -102,7 +110,7 @@ def add_pages(app):
                 "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
         title = "Daily Chart: the daily stock market game | Meme Street"
         r = page_as("/daily", title, DAILY_TEXT,
-                    '<script type="application/ld+json">' + json.dumps(data) + "</script>", DAILY_BODY)
+                    '<script type="application/ld+json">' + json.dumps(data) + "</script>", shown=DAILY_SHOWN)
         t = vs_title(vs)
         if not t:
             return r

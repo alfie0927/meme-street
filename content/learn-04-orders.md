@@ -166,9 +166,9 @@ WHY: A stop is not a guaranteed price: a gap fills it at whatever price comes ne
 A strategy that makes 0.1% a trade before costs and pays 0.2% in costs loses money. The more often you trade, the more costs matter: they are the one part of the result that is certain.
 
 Q: You scalp for a 0.3% gain and pay 0.1% a side. How much of each winning trade do fees take?
-- A tenth
+- A third: the 0.1% fee out of 0.3%
 + Two thirds
-- Nothing: fees only apply to losers
+- A tenth, since the fee is 0.1%
 WHY: 0.2% for the round trip out of a 0.3% gain is two thirds of it. Tiny targets make costs the main opponent.
 
 ### Adding it up
@@ -177,7 +177,7 @@ A trader making 500 round trips a year at 0.2% each pays 100% of the money trade
 Q: You trade 20 times a day, each round trip costing 0.2%. Roughly what do you pay in a day, as a share of the money traded each time?
 + About 4%
 - 0.2%, the cost of one round trip
-- Nothing, fees are only on losses
+- 2%: the fee is 0.1% and you trade 20 times
 WHY: 20 × 0.2% = 4%. Frequent trading needs a real edge just to cover costs.
 
 HERE: Every trade costs **0.1%** each way; shares have no spread and no slippage (you get the price on the screen), but orders fill at the market price when they trigger, so a jump at the open or on earnings can carry the price past your stop. Shorts pay a borrow fee and leveraged positions pay interest. The Portfolio page shows the fees you have paid.

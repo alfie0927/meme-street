@@ -55,7 +55,7 @@ HERE: One contract is on 100 shares; you buy whole contracts at the ask and sell
 
 [try /stock/NVXA] Open Novaxis's Options tab, click a call near the price, and read its breakeven and its profit-or-loss chart.
 
-[task option] Buy one call or put on any company from its Options tab, and watch its delta and theta.
+[task option] Buy one call or put from a company's Options tab, sized like any trade. One contract is 100 shares, so near the price it can cost 250 MB or more: a quarter of a 1,000 MB account, far too much to risk on one bet in a real account. Pick a far out-of-the-money strike on the nearest expiry, or a low-priced company, so the contract costs about 10 MB (1% of the account). The whole premium is what you risk. Then watch its delta and theta.
 
 ## How options are priced: intrinsic and time value {options-pricing} [7]
 SUMMARY: What an option's price is made of, and moneyness.
@@ -394,6 +394,12 @@ Q: The index goes +5% then -5%. Roughly what does a 3x daily fund do over the tw
 WHY: 1.15 × 0.85 = 0.9775; the index itself is down only 0.25%.
 
 The index is back to 100; the 2x fund is down 1.8%. Repeat that over months of ups and downs and the fund drifts lower, while a few lucky smooth trends make it soar. Inverse funds decay the same way. They are tools for short-term bets, not for holding.
+
+Q: An index falls 20% one day and rises 25% the next, back to where it started. Where is a 3x fund that resets every day?
++ About 30% down: 0.4 × 1.75 = 0.7
+- Back where it started, like the index
+- Closed out at the low, like a 3x position on a loan
+WHY: Day one takes the fund to 0.4 (3 × -20%), day two multiplies that by 1.75 (3 × +25%). A fixed 3x loan would have been closed at the -20% low instead (Shorting and leverage unit); the fund carries on, but the swings eat into it.
 
 HERE: **2LMSI** and **3LMSI** move two and three times the MSI 50, **2SMSI** and **3SMSI** two and three times the opposite, with the multiple reset **every second**. Their expected price stays level, but in a jittery market the typical path drifts down while a few soar: exactly the decay above. You cannot add leverage on top of them.
 

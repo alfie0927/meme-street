@@ -24,8 +24,8 @@ WHY: Risk is the loss at the stop, not the size of the position.
 
 Q: The stop moves twice as far away. What happens to the position size at the same risk?
 + It halves
-- It doubles
-- It stays the same
+- It doubles, to give the wider stop more room
+- It stays the same: the stop does not change the size
 WHY: Size = risk ÷ distance; double the distance, half the size.
 
 [calc sizing]
@@ -59,6 +59,8 @@ HERE: The **Position size and risk** tool under every stock's chart does this su
 
 [try /stock/CLDR] Open CloudRail, pick a stop from the chart and let the risk tool size a 1% trade.
 
+[task sized_stop] Size a trade from its stop: open a position and put a stop-loss on it that loses 0.5% to 2% of your account if it is hit (5 to 20 MB on 1,000 MB). The risk tool under the chart does the sum. A 10 MB position with a 5% stop risks only 0.5 MB, so it does not count.
+
 ## R-multiples and reward to risk {r-multiples} [6]
 SUMMARY: Measuring every trade in units of its own risk, and what a reward-to-risk ratio buys you.
 **R** is the amount you risk on a trade: the distance from entry to stop, in MB. Measuring results in R makes trades of different sizes comparable.
@@ -73,8 +75,8 @@ The distance to the target divided by the distance to the stop. A long at 100 wi
 
 Q: You risked 15 MB and made 45 MB. What is the result in R?
 + +3R
-- +45R
-- +1R
+- +2R: the gain less the risk, over the risk
+- +0.33R: the risk over the gain
 WHY: 45 ÷ 15 = 3.
 
 Q: Long at 40, stop at 38, take-profit at 46. What is the reward to risk?
@@ -113,6 +115,8 @@ A far target is hit less often. A 3 to 1 trade with a target the price is unlike
 
 [test rr]
 
+[task two_r] Place a bracket whose take-profit is at least twice as far from your entry as its stop (2R or more), with the target at a level the chart says the price can reach.
+
 ## Win rate, payoff and expectancy {expectancy} [7]
 SUMMARY: Why a high win rate can lose money and a low one can win, and what to expect from a streak.
 [mine]
@@ -150,7 +154,7 @@ Trend followers often win only 35 to 40% of their trades, with a few big winners
 
 Q: A trend follower wins only 38% of the time and still makes money over a year. How?
 + A few big winners pay for many small losses
-- The losses are not counted until the strategy is reviewed
+- It takes its profits quickly and gives losing trades time to recover
 - The win rate is wrong: no strategy below 50% can profit
 WHY: Expectancy is win rate times payoff; a low win rate with big winners is positive.
 
@@ -208,7 +212,7 @@ After a drawdown, cut the size, not the discipline. Trading bigger to "win it ba
 Q: After a big drawdown, what is the sensible response?
 - Trade bigger to win it back quickly
 + Trade smaller and stick to the plan
-- Stop using stops
+- Switch to a new strategy straight away
 WHY: Bigger size after losses turns a drawdown into a blow-up.
 
 [calc drawdown]
@@ -236,8 +240,8 @@ In calm markets, stocks drift on their own news. In a sell-off, almost everythin
 
 Q: What tends to happen to correlations in a market sell-off?
 + They rise
-- They fall to zero
-- Nothing changes
+- They fall, as money spreads out into safer stocks
+- They stay where they were in calm markets
 WHY: In panics, investors sell everything at once; diversification across stocks helps least when needed most.
 
 ### Beta
@@ -245,7 +249,7 @@ WHY: In panics, investors sell everything at once; diversification across stocks
 
 Q: A stock has a beta of 2. The market falls 3%. What might the stock do, from beta alone?
 + Fall about 6%
-- Rise 6%, the opposite of the market
+- Fall 3%, the same as the market
 - Fall 1.5%, half the market's drop
 WHY: Beta 2 means roughly twice the market's move: 2 × -3% = -6%.
 
@@ -292,8 +296,8 @@ WHY: 1% eight times is about an 8% drawdown. 10% compounded eight times leaves a
 
 Q: Same strategy, same edge. What changes the risk of ruin the most?
 + The share of the account risked on each trade
-- The colour scheme of the chart you trade from
-- The number of indicators used on the chart
+- The win rate, more than the size of each bet
+- How many different stocks it trades
 WHY: Bet size is the main lever: small bets make ruin very unlikely for a strategy with an edge.
 
 ### All-in is the extreme
@@ -335,7 +339,7 @@ Stops cluster just beyond obvious levels and round numbers. Prices often poke th
 Q: Where do stops cluster, and what often happens there?
 + Just beyond obvious levels; the price pokes through and comes back
 - At random prices across the chart, which is why stop runs are a myth traders repeat
-- Exactly on round numbers, where the price never trades at all
+- Exactly on round numbers, where they almost always hold
 WHY: Everyone sees the same levels, so the stops sit just past them, and a stop run collects them.
 
 ### Arbitrary stops
@@ -343,7 +347,7 @@ WHY: Everyone sees the same levels, so the stops sit just past them, and a stop 
 
 Q: Why is a fixed 5% stop on every stock a mistake?
 + Noise differs: 5% is far on a calm stock and inside a candle on a wild one
-- Because brokers charge more for percentage-based stops than for stops set at a price
+- Because a stop should be set in MB of loss, never as a share of the price
 - Because 5% is always too tight for any stock, whatever its volatility
 WHY: The stop belongs where the idea is wrong, which the chart decides, not a fixed percentage.
 
@@ -353,7 +357,7 @@ Moving a stop away from the price as it approaches is turning a planned loss int
 Q: The price is falling towards your stop. What do you do?
 - Move the stop further down to give it room
 + Leave it: it is where the idea is wrong
-- Remove it
+- Remove it, so a dip to the low cannot shake you out
 WHY: Widening a stop under pressure turns a planned small loss into a bigger one.
 
 [test stop]

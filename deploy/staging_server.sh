@@ -30,6 +30,7 @@ if [ "${1:-}" = fresh ] || [ ! -f "$APP/data/state.json" ]; then
         for f in state.json state.charts.json ledger.db; do
             if [ -f "$NEWEST$f" ]; then cp "$NEWEST$f" "$APP/data/"; fi
         done
+        if [ -f "${NEWEST}ledger.db.gz" ]; then gunzip -c "${NEWEST}ledger.db.gz" > "$APP/data/ledger.db"; fi   # (compressed since 2026-11-14)
         if [ -f "${NEWEST}history.db.gz" ]; then gunzip -c "${NEWEST}history.db.gz" > "$APP/data/history.db"; fi
         echo "The staging copy starts from the live backup $(basename "$NEWEST")."
     else

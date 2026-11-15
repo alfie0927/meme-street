@@ -34,10 +34,10 @@ HEAD = ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
         'content="article"><meta property="og:image" content="https://memestreet.net/brand/memestreet_header_peaks.png">'
         '<link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">'
         '<script type="application/ld+json">{ld}</script><style>{css}</style></head><body><div class="wrap">'
-        '<header><a class="brand" href="/"><img src="/brand/memestreet_logo_peaks.png" alt="" width="26" height="26">'
+        '<header><a class="brand" href="/"><img src="/brand/icon-192.png" alt="" width="26" height="26">'
         'Meme Street</a><span class="sp"></span><a href="/lessons" class="btn">Lessons</a><a href="/#join" class="btn go">'
         'Sign up</a></header>')
-CTA = ('<div class="cta"><p><b>Practise it on a live market, free.</b> Every account starts with 1,000 MB of practice '
+CTA = ('<div class="cta"><p><b>Practise it on a live market.</b> Every account starts with 1,000 MB of practice '
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
@@ -276,7 +276,7 @@ class Lessons:
         self.tracks, self.lessons = learning.load_content()
         self.by_id = {x["id"]: x for x in self.lessons}
         self.track = {t["id"]: t for t in self.tracks}
-        self.hub_text = (f"{len(self.lessons)} free trading lessons in {len(self.tracks)} tracks: charts, candlesticks, "
+        self.hub_text = (f"{len(self.lessons)} trading lessons in {len(self.tracks)} units: charts, candlesticks, "
                          "indicators, orders, risk management, shorting, options and trading psychology, each a few "
                          "minutes long, with practice on a live market.")
 
@@ -388,9 +388,9 @@ class Lessons:
             items = "".join(f'<li><a href="/lessons/{x["id"]}">{html.escape(x["title"])}</a> <small>{x["minutes"]} min · '
                             f'{inline(x["summary"])}</small></li>' for x in self.lessons if x["track"] == t["id"])
             parts.append(f'<h2 id="{t["id"]}">{html.escape(t["title"])}</h2><p>{inline(t["blurb"])}</p><ol class="toc">{items}</ol>')
-        return (HEAD.format(t="Learn to trade: free stock trading lessons | Meme Street", d=html.escape(d), url=url,
+        return (HEAD.format(t="Learn to trade: stock trading lessons | Meme Street", d=html.escape(d), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
-                + f'<p class="crumb">Lessons</p><h1>Learn to trade, free</h1><p class="lead">{html.escape(d)} Read them '
+                + f'<p class="crumb">Lessons</p><h1>Learn to trade</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
                 + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a></p>'
                 + "".join(parts) + FOOT)

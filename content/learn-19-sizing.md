@@ -118,6 +118,8 @@ WHY: Drawdowns scale with risk per trade. The edge sets the direction; the size 
 
 HERE: The Leaders page shows each player's worst drawdown. Compare yours with the risk you take per trade: the ratio is the guide this lesson is about.
 
+[task sized_stop] Put the sum into a trade: place a stop that loses at most 2% of your account if it is hit (and at least 0.5%, so the trade is big enough to count).
+
 ## Risk of ruin, with a number {ruin-probability} [6]
 SUMMARY: Put a number on the chance of losing an unacceptable share of the account before the edge has time to work, and see how size and edge move it.
 

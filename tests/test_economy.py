@@ -15,6 +15,7 @@ import urllib.parse
 from _cdp import find_browser, open_page
 from _helpers import IsolatedServer, _raw_read, drift, engine, join, make_engine
 from payments import Payments
+import economy
 from test_browser import Driver
 from test_gateway import join as http_join
 from test_server import http
@@ -95,6 +96,59 @@ class ShopTests(unittest.TestCase):
         self.assertEqual(p.mb_by_source["purchase"], 5000.0)
         self.assertEqual(e.shop_orders[order["id"]]["status"], "paid")
         self.assertLess(abs(drift(e)), 1e-6)
+
+    def test_buying_mb_never_lifts_a_losing_account_up_the_return_boards(self):
+        """Rule 4 (audit 2026-11-15): return was gain / money put in, so a player at -90% who bought 100,000 MB showed
+        about -0.9%. Returns are now measured in units bought at the account's price."""
+        e, p = self.e, self.p
+        p.cash = 100.0                                               # a 90% loss (no holdings: equity is the cash)
+        self.assertAlmostEqual(e.alltime_return(p), -0.9)
+        self.assertAlmostEqual(e.season_return(p), -0.9)
+        e.settings["spend_cap_month_cents"] = 10 ** 7
+        order, err = e.create_order(p, "mb100000", "test", consent=True)
+        self.assertIsNotNone(order, err)
+        self.assertTrue(e.complete_order(order["id"], "ref", 9999)[0])
+        self.assertEqual(p.cash, 100100.0)
+        self.assertAlmostEqual(e.alltime_return(p), -0.9)            # more capital, the same loss
+        self.assertAlmostEqual(e.season_return(p), -0.9)
+        self.assertEqual(p.deposited, 101000.0)                      # profit is still measured on the money put in
+        p.cash *= 1.1                                                # then a 10% gain on the whole account
+        self.assertAlmostEqual(e.alltime_return(p), (1 - 0.9) * 1.1 - 1)
+        e.credit(p, 500.0, "challenge")                              # a reward does not move it either
+        self.assertAlmostEqual(e.alltime_return(p), (1 - 0.9) * 1.1 - 1)
+        e.tick(now=e.now + 1)
+        row = next((r for r in e.boards["ret"] if r["token"] == p.token), None)
+        if row is not None:
+            self.assertAlmostEqual(row["ret"], e.alltime_return(p), places=6)
+        q = join(e, "fresh")
+        self.assertAlmostEqual(e.alltime_return(q), 0.0)
+        self.assertAlmostEqual(e.season_return(q), 0.0)
+
+    def test_open_checkouts_count_against_the_cap_the_daily_limit_and_a_second_monthly_pass(self):
+        """Audit 2026-11-15: the limits counted only paid orders, so checkouts opened together and paid later went past
+        them, and a second monthly pass overwrote the first, which then billed every month and could not be cancelled."""
+        e, p = self.e, self.p
+        e.settings["spend_cap_month_cents"] = 15000
+        a, _ = e.create_order(p, "mb100000", "test", consent=True)
+        self.assertIsNotNone(a)
+        self.assertEqual(e.spent_cents(p), 9999)                                     # open, so counted
+        b, err = e.create_order(p, "mb100000", "test", consent=True)
+        self.assertIsNone(b)
+        self.assertIn("spending cap", err)
+        e.now += economy.CHECKOUT_OPEN + 1                                           # its payment page has closed
+        self.assertEqual(e.spent_cents(p), 0)
+        m1, _ = e.create_order(p, "pro_month", "test", True, renew_ok=True)
+        self.assertIsNotNone(m1)
+        m2, err = e.create_order(p, "pro_month", "test", True, renew_ok=True)
+        self.assertIsNone(m2)
+        self.assertIn("checkout for a monthly Pro open", err)
+        e.now += economy.CHECKOUT_OPEN + 1
+        m2, _ = e.create_order(p, "pro_month", "test", True, renew_ok=True)
+        self.assertTrue(e.complete_order(m1["id"], "r1", None, "sub_1")[0])
+        self.assertTrue(e.complete_order(m2["id"], "r2", None, "sub_2")[0])          # paid late anyway: its month counts
+        self.assertEqual(p.subs["pro"]["sub"], "sub_1")                              # the first stays the one the shop manages
+        self.assertEqual(e.shop_orders[m2["id"]]["duplicate_sub"], "sub_2")          # the server cancels this one at Stripe
+        self.assertGreater(p.pro_until, e.now + 50 * 86400)
 
     def test_a_wrong_amount_does_not_complete_an_order(self):
         order, _ = self.e.create_order(self.p, "mb10000", "stripe", consent=True)
@@ -492,7 +546,9 @@ class LaunchDealTests(unittest.TestCase):
         self.assertIsNotNone(e.economy_view(p)["deal_until"])
         o, err = e.create_order(p, "launch9000", "test", consent=True)
         self.assertIsNotNone(o, err)
-        self.assertIsNotNone(e.create_order(p, "launch99000", "test", consent=True)[0])  # (not paid yet: still offered)
+        twin, err2 = e.create_order(p, "launch99000", "test", consent=True)          # its checkout is open: no second deal
+        self.assertIsNone(twin)                                                      # (audit 2026-11-15: three open checkouts
+        self.assertIn("New Launch Deal", err2)                                       #  paid together gave the deal three times)
         e.complete_order(o["id"])
         self.assertEqual(p.cash, 10000.0)
         self.assertEqual(p.mb_by_source["purchase"], 9000.0)

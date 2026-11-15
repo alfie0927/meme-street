@@ -27,9 +27,9 @@ Q: What does a long upper wick tell you?
 WHY: The wick shows the high was reached but not held.
 
 Q: A candle opens at 50, rises to 55, falls to 48 and closes at 49. What colour is its body?
-- Green
+- Green, because it rose to 55 before it fell
 + Red
-- No body
+- It depends on how the candle before it closed
 WHY: It closed (49) below where it opened (50): a red body, with a long upper wick to 55.
 
 | Candle | Shape | What it suggests |
@@ -46,7 +46,7 @@ A single candle is weak evidence. It means most **at a level that matters** (a h
 Q: Where does a hammer mean the most?
 + On a support level after a fall
 - In the middle of a range
-- Anywhere, it always means a rise
+- Anywhere, as long as the lower wick is long
 WHY: Candle signals need context: a rejection of lower prices matters at a level the market already respects.
 
 [chart candle]
@@ -110,8 +110,8 @@ Mark the last few swing highs and lows. Two higher highs and two higher lows mak
 
 Q: A chart makes highs of 50, 54, 58 and lows of 46, 49, 53. What is it?
 + An uptrend
-- A downtrend
-- A range
+- A range between 46 and 58
+- A downtrend, since each high is followed by a lower low
 WHY: Every high and every low is above the one before.
 
 ### Trading with it
@@ -120,7 +120,7 @@ WHY: Every high and every low is above the one before.
 Q: Where does a stop naturally go on a long trade in an uptrend?
 - Just below the entry, whatever the chart
 + Below the last higher low
-- There is no need for one in a trend
+- Below the first low of the whole trend, well away from the price
 WHY: If the price falls below the last higher low, the uptrend's structure is broken and the idea is wrong.
 
 ### How trends end
@@ -147,8 +147,8 @@ SUMMARY: Where prices tend to turn, why, and how to judge how strong a level is.
 
 Q: Why does a level where many traders bought, and then watched the price fall, tend to act as resistance later?
 + They sell when the price gets back to their entry
-- The exchange marks the level and rejects orders above it
-- Buyers always return to the same price out of habit
+- The level is where the company's fair value lies
+- Market makers keep their quotes at old levels
 WHY: Trapped buyers want their money back; their selling caps the price at that level.
 
 - **The previous day's high, low and close**, and long moving averages, are watched by everyone.
@@ -199,7 +199,7 @@ Late in a range the candles often shrink and volume dries up: the market goes qu
 Q: What often comes just before a breakout?
 + A quiet spell
 - A huge spike in volume inside the range
-- A gap
+- A run of wide, jumpy candles inside the range
 WHY: Volatility comes in waves: the squeeze, then the move.
 
 ### Trading the breakout
@@ -211,7 +211,7 @@ WHY: Volatility comes in waves: the squeeze, then the move.
 Q: A range is 100 to 110 and the price breaks out above 110. What is a first target from the range's height?
 - 111
 + 120
-- 200
+- 115, half the range's height
 WHY: The height (10) added to the breakout point (110) gives 120.
 
 ### Fake breakouts
@@ -248,12 +248,12 @@ WHY: Impulses on volume and pullbacks on thin volume are the shape of a healthy 
 Q: In a healthy uptrend, how does volume usually behave?
 + Higher on the rises, lower on the pullbacks
 - Highest on the pullbacks, low on the rises
-- Exactly the same on every candle of the trend
+- Highest at the start of the trend, then steady
 WHY: Buyers are keen on the way up and sellers half-hearted on the way down.
 
 Q: A stock makes a new high, but on half the volume of the previous high. What might that mean?
 + Fewer buyers are joining in; the trend may be tiring
-- The trend is certain to continue to a new high on the next candle
+- Buyers are more eager than ever, so the rise is speeding up
 - Nothing: volume does not matter at a high
 WHY: A rise on shrinking volume shows less participation: a warning, not a certainty.
 
@@ -296,9 +296,9 @@ WHY: Height 20 (120 - 100), taken from the neckline: 100 - 20 = 80.
 A **rising wedge**: the price makes higher highs and higher lows, but the lows rise faster than the highs, so the range narrows as it climbs. The push is weakening, and it usually breaks downwards. A **falling wedge** is the mirror image, usually breaking upwards.
 
 Q: Which way does a rising wedge usually break?
-- Upwards
+- Upwards, the way it slopes
 + Downwards
-- Sideways for ever
+- Either way equally: the slope means nothing
 WHY: The narrowing climb shows the buying is weakening; it usually breaks down.
 
 ### Trading a pattern
@@ -343,7 +343,7 @@ Volume usually shrinks as the triangle narrows, then expands on the break.
 Q: Which triangle usually breaks upwards?
 + Ascending: flat highs, rising lows
 - Descending: flat lows, falling highs
-- All of them, always
+- Symmetrical: converging highs and lows
 WHY: Rising lows show buyers stepping in higher each time against the same sellers.
 
 ### Channels
@@ -383,7 +383,7 @@ WHY: Out of a range, on news and volume: the breakaway gap, the one least likely
 Q: A stock gaps up 8% at the open on earnings, then spends the day falling back towards where it closed yesterday. What is this called?
 + Filling the gap
 - A breakaway gap
-- A squeeze
+- A runaway gap, carrying the move on
 WHY: When the price trades back through the empty space, the gap is filled; many are, which is why traders watch them.
 
 Q: What does it mean for a gap to fill?
@@ -393,9 +393,9 @@ Q: What does it mean for a gap to fill?
 WHY: Filling a gap means trading back through the empty stretch to the old close.
 
 Q: A stock gaps up out of a long range on big news and volume and keeps going. What kind of gap is it?
-- Common gap
+- A common gap, which fills within days
 + Breakaway gap
-- Exhaustion gap
+- An exhaustion gap at the end of the move
 WHY: A gap that starts a new move out of a range is a breakaway gap; they often stay open.
 
 "Gaps always fill" is a myth: many do, many do not, and a gap that fills may take months.
@@ -448,7 +448,7 @@ If the hourly is falling and the 5-minute is rising, the 5-minute rally is a pul
 
 Q: The hourly chart is in a downtrend; the 5-minute shows a rally. What is the rally most likely to be?
 + A pullback inside the bigger downtrend
-- The start of a new uptrend, certainly
+- The start of a new uptrend on the hourly chart
 - Nothing to do with the hourly chart at all
 WHY: The higher timeframe sets the context; a lower-timeframe rally against it is usually a pullback.
 

@@ -71,6 +71,8 @@ LAUNCH_DEALS = [
 INVITE_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"   # (no 0, 1, i, l or o: easy to read out)
 TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
+CHECKOUT_OPEN = 3600        # a payment page stays payable for an hour (Stripe's expires_at), and while it is open the
+                            # order counts against the cap, the daily limit and the once-only deal (audit 2026-11-15)
 TERMS_VERSION = "2026-10-24"  # the date of web/terms.html; an account records the version it signed up under
 PLAYER_FIELDS = ("birth_year", "birth_date", "ref", "pro_until", "expert_until", "last_restart", "mb_by_source",
                  "challenge_mb", "terms", "subs", "invite", "invited_by")
@@ -176,7 +178,7 @@ class EconomyMixin:
         deals = self.shop_catalog()["deals"]
         skus = {x["sku"] for x in deals}
         had = {self._deal_group(o["sku"]) for o in self.shop_orders.values()
-               if o["token"] == p.token and o["sku"] in skus and o["status"] in ("paid", "refunded")}
+               if o["token"] == p.token and o["sku"] in skus and (o["status"] in ("paid", "refunded") or self._checkout_open(o))}
         had |= {k for k, v in (p.subs or {}).items() if v.get("status") == "active"}     # (a monthly pass already running)
         return [x["sku"] for x in deals if self._deal_group(x["sku"]) not in had]
 
@@ -259,15 +261,19 @@ class EconomyMixin:
         return None
 
     # ------------------------------------------------------------------ spending
+    def _checkout_open(self, o):
+        """A checkout started under an hour ago and not paid yet: it can still be paid, so it counts as spent."""
+        return o["status"] == "pending" and self.now - o["created"] < CHECKOUT_OPEN
+
+    def _counted(self, p, since):
+        return [o for o in self.shop_orders.values() if o["token"] == p.token
+                and ((o["status"] == "paid" and o.get("paid_at", 0) >= since) or self._checkout_open(o))]
+
     def spent_cents(self, p, seconds=30 * 86400):
-        since = self.now - seconds
-        return sum(o["price_cents"] for o in self.shop_orders.values()
-                   if o["token"] == p.token and o["status"] == "paid" and o.get("paid_at", 0) >= since)
+        return sum(o["price_cents"] for o in self._counted(p, self.now - seconds))
 
     def _purchases_since(self, p, seconds):
-        since = self.now - seconds
-        return sum(1 for o in self.shop_orders.values()
-                   if o["token"] == p.token and o["status"] == "paid" and o.get("paid_at", 0) >= since)
+        return len(self._counted(p, self.now - seconds))
 
     def spend_cap(self, p):
         """The most anyone may spend in a rolling 30 days, in cents (`spend_cap_month_cents`)."""
@@ -282,6 +288,10 @@ class EconomyMixin:
         if item.get("kind") in TIERS and (p.subs.get(item["kind"]) or {}).get("status") == "active":
             return (f"You have a monthly {item['kind'].title()} that renews by itself: cancel it first (it stays on to the end "
                     "of the month you paid for)")
+        if item.get("renews") and any(o["token"] == p.token and o.get("renews") and o["kind"] == item.get("kind") and self._checkout_open(o)
+                                      for o in self.shop_orders.values()):
+            return (f"You have a checkout for a monthly {item['kind'].title()} open: finish it, or start again in an hour "
+                    "(nothing is charged until you pay)")
         if item.get("deal") and item["sku"] not in self.deals_left(p):
             return f"The New Launch Deal is for an account's first {self.deal_days():g} days, once each"
         if not consent:
@@ -328,7 +338,11 @@ class EconomyMixin:
             return False, "The account no longer exists"
         o["status"], o["paid_at"], o["provider_ref"] = "paid", self.now, provider_ref
         self._apply_purchase(p, o)
-        if o.get("renews"):
+        had = (p.subs.get(o["kind"]) or {}) if o.get("renews") else {}
+        if o.get("renews") and had.get("status") == "active" and had.get("order") != oid:
+            o["duplicate_sub"] = sub_id or True        # a second monthly pass of one kind: its month counts, and the server
+            #                                            cancels it at the provider so it never renews (audit 2026-11-15)
+        elif o.get("renews"):
             p.subs[o["kind"]] = {"order": oid, "sub": sub_id, "provider": o["provider"], "status": "active",
                                  "price_cents": int(o.get("renew_cents") or o["price_cents"]), "sku": o["sku"],
                                  "since": self.now, "renewals": 0}          # (a deal's first month renews at the full price)
@@ -345,9 +359,8 @@ class EconomyMixin:
     def _apply_purchase(self, p, o, at=None):
         if o["mb"] > 0:
             ratio = self._ratio(p)
+            self._money_in(p, o["mb"])
             p.cash += o["mb"]
-            p.deposited += o["mb"]
-            p.season_base += o["mb"]
             self.minted += o["mb"]
             self._rebase_peak(p, ratio)
             p.mb_by_source["purchase"] = p.mb_by_source.get("purchase", 0.0) + o["mb"]

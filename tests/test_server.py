@@ -228,14 +228,23 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(body.count('property="og:title"'), 1)
         self.assertIn('rel="canonical" href="https://memestreet.net/daily"', body)
         self.assertIn('"WebApplication"', body)
-        self.assertIn("<noscript><main", body)
-        self.assertIn("<h1>The Daily Chart: a daily stock market game</h1>", body)
+        self.assertIn('<div id="daily-body"><div class="dly-wrap">', body)   # shown in the page, not "Loading..." (audit 2026-11-15)
+        self.assertIn('<h1 class="dly-tag">The Daily Chart', body)
+        self.assertNotRegex(body.lower(), r"free (daily|stock market game|lessons|trading lessons)")
         status, body, _ = http(self.srv, "/")
         self.assertIn("<title>Meme Street: a stock market game with play money</title>", body)
         self.assertEqual(body.count('name="description"'), 1)
         self.assertIn('rel="canonical" href="https://memestreet.net/"', body)
         self.assertIn("<h1>Meme Street: a stock market game with play money</h1>", body)
         self.assertIn('href="/lessons"', body)
+
+    def test_the_copy_never_calls_the_product_or_the_lessons_free(self):
+        """Rule 11 (audit 2026-11-15): "free account", "play free" and the free calculators are true; "free lessons" is
+        not (most of the path needs Pro), nor "a free stock market game"."""
+        for path in ("/daily", "/", "/lessons", "/about", "/lessons/stocks-shares", "/llms.txt"):
+            status, body, _ = http(self.srv, path)
+            self.assertEqual(status, 200, path)
+            self.assertNotRegex(body.lower(), r"free (daily|stock market game|lessons|trading lessons|stock trading)|, free", path)
 
     def test_a_challenge_link_has_its_own_preview_title(self):
         """/daily?vs=name~return~number (web/daily.js): the result is in og:title, and only for a well-formed link."""

@@ -7,7 +7,7 @@ const dlyHdr=()=>token?{'X-Token':token}:{'X-Visitor':visitorId()};   // (a logg
 const DLY_ABOUT=`<div class="dly-about"><h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how every other player did.</p>
   <p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p></div>`;
 // a visitor's result first, then this under it, naming the result (growth plan, 2026-11-10)
-const dlySave=g=>`<div class="dly-save"><b>Save your ${g?pc(g.ret):'result'} and start your streak</b><p>Make a free account (under a minute) and today's result goes on the leaderboard. Without one it is not kept.</p><button class="dly-go" data-dly-join>Save my result</button></div>`;
+const dlySave=g=>`<div class="dly-save"><b>Save your ${g?pc(g.ret):'result'} and start your streak</b><p>Make a free account (under a minute) and today's result goes on the leaderboard. Without one it is not kept.</p><button class="dly-go" data-dly-join data-why="Save your ${g?pc(g.ret):'result'} and start a streak: today's result goes on the board.">Save my result</button></div>`;
 // "beat my score": a shared result carries the sharer's name, return in hundredths of a percent and the chart's number
 // (?vs=name~bp~number), shown to the friend before they play and beside their own result after (2026-11-10). The regex
 // is built in a try: an old browser without \p{} must not lose the whole page
@@ -122,17 +122,19 @@ function dlyStatsPop(){const d=dly;if(!d)return;dlyPop(`<h3 class="dly-mt">Your 
 // the countdown to the next chart, on the page and in a box, once a second while either shows it
 function dlyCountdown(){if(dlyCd)return;dlyCd=setInterval(()=>{const els=document.querySelectorAll('.dly-cd');const pop=$('dly-pop');if(!dly||!els.length||(page!=='daily'&&!(pop&&pop.style.display==='flex'))){clearInterval(dlyCd);dlyCd=null;return}
  const left=dly.next-engineNow();els.forEach(e=>e.textContent=dlyHMS(left));if(left<=0){clearInterval(dlyCd);dlyCd=null;loadDaily()}},1000)}
+function dlyNeedAccount(){const h=document.querySelector('#daily-body .dly-hero');if(!h)return;
+ setHtml(h,`<p class="dly-tag">Today's visitor games are used up here</p><p class="mut" style="margin:6px 0 12px">Visitors share three games a day per internet address, and phones on one mobile network or a school's wifi share one address. A free account takes under a minute and plays today's chart now.</p><button class="dly-go" data-dly-join data-why="Make an account to play today's chart: the visitor games on this network are used up.">Create an account to play</button><p class="dly-small">One go a day · 1,000 MB of practice money</p>`)}
 function drawDailyGuest(){
  const el=$('daily-body');if(!el)return;el._st='guest';
  setHtml(el,`<div class="dly-wrap"><div class="dly-head"><div><div class="dly-title">Daily Chart</div><div class="dly-sub">A new chart every day</div></div><div class="dly-icons"><button class="dly-ic" data-dly-help aria-label="How to play">?</button></div></div>
-  <div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p><button class="dly-go" data-dly-join>Create an account to play</button><p class="dly-small">Free · one go a day · practice money</p></div>${DLY_ABOUT}</div>`)}
+  <div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p><button class="dly-go" data-dly-join>Create an account to play</button><p class="dly-small">A free account, under a minute · one go a day · practice money</p></div>${DLY_ABOUT}</div>`)}
 function drawDaily(){
  const el=$('daily-body'),d=dly;if(!el||!d)return;
  const st=d.status==='running'&&dlyG&&dlyG.done?'done':d.status;
  if(el._st!==st+d.visitor){el._st=st+d.visitor;
   if(st==='new')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p>
-   ${d.stats.streak?`<p class="dly-streak">Streak <b>${d.stats.streak}</b> day${d.stats.streak===1?'':'s'}: keep it going</p>`:''}${(v=>v?`<p class="dly-chal"><b>${dlyVsName(v)}</b> got <b class="${clsP(v.ret)}">${pc(v.ret)}</b> on this chart. Beat it.</p>`:'')(dlyVsFor(d))}<button class="dly-go" id="dly-start">Play</button>
-   <p class="dly-small">${d.visitor?'Free, no sign-up · ':''}One go a day · 1,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div>${d.visitor?DLY_ABOUT:''}</div>`);
+   ${d.stats.streak?`<p class="dly-streak">Streak <b>${d.stats.streak}</b> day${d.stats.streak===1?'':'s'}: keep it going</p>`:''}${(v=>v?`<p class="dly-chal"><b>${dlyVsName(v)}</b> got <b class="${clsP(v.ret)}">${pc(v.ret)}</b> on this chart. Beat it.</p>`:'')(dlyVsFor(d))}${d.visitor?'<p class="dly-how">The candles print one a second. Tap <b>Buy</b> if you think the price will rise, <b>Sell</b> if it will fall, and try to beat the stock.</p>':''}<button class="dly-go" id="dly-start">Play</button>
+   <p class="dly-small">${d.visitor?'No account needed · ':''}One go a day · 1,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div>${d.visitor?DLY_ABOUT:''}</div>`);
   else if(st==='running')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-top"><div class="dly-timer" id="dly-timer"></div><div class="dly-pnl"><div class="dly-ret" id="dly-ret"></div><div class="dly-eq" id="dly-eq"></div></div></div>
    <div id="dly-chart" class="dly-chart"></div><div class="dly-pos" id="dly-pos"></div>
    <div class="dly-sizes" role="group" aria-label="Size">${[0.25,0.5,0.75,1].map((p,i)=>`<button data-dly-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
@@ -208,9 +210,10 @@ document.addEventListener('click',async e=>{
  const rm=t.closest('[data-dly-remind]');if(rm&&dly){rm.disabled=true;const r=await postJson('/api/daily/remind',{on:!dly.remind},dlyHdr());rm.disabled=false;
   if(r.ok){dly.remind=r.remind;document.querySelectorAll('[data-dly-remind]').forEach(b=>b.textContent=dlyRemindLabel(r.remind))}
   toast(r.msg||r.error||'Error',!!r.ok,4500);return}
- if(t.closest('[data-dly-join]')){const b=$('dly-pop');if(b)b.style.display='none';openSignin('register');return}
+ const jn=t.closest('[data-dly-join]');if(jn){const b=$('dly-pop');if(b)b.style.display='none';openSignin('register',jn.dataset.why||'Make an account to play the Daily Chart every day and keep your streak.');return}
  const sz=t.closest('[data-dly-size]');if(sz){dlySize=Number(sz.dataset.dlySize);lsSet('ms_daily_size',dlySize);drawDaily();return}
  if(t.id==='dly-start'){t.disabled=true;const r=await postJson('/api/daily/start',{},dlyHdr());t.disabled=false;
+  if(r.need_account){dlyNeedAccount();return}   // (the visitor games from this network are used up: say why, audit 2026-11-15)
   if(r.error){toast(r.error,false,4000);loadDaily();return}dly.status='running';dlyG=r;dlyWasRunning=true;dlyRun();drawDaily();return}
  const b=t.closest('[data-dly]');if(b)dlyTrade(b.dataset.dly)});
 document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('dly-lvd')){dlyLvOpen=e.target.open;drawDaily()}},true);

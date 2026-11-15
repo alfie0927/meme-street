@@ -170,20 +170,34 @@ Q: At 3x, the stock rises 4%. What happens to your money in the position, before
 WHY: 3 × 4% = 12%.
 
 Q: Does leverage improve a trade's chance of winning?
-- Yes
+- Yes, because each win is bigger
 + No: it only makes wins and losses bigger
 - Only in uptrends
 WHY: Leverage changes the size of the outcome, not its probability.
 
-### Volatility drag
+### A round trip on a fixed loan
 
-Swings hurt leveraged accounts more than their size suggests. A stock that falls 10% and rises 10% ends 1% down. At 5x, -50% then +50% ends 25% down. The deeper the swings, the faster a leveraged position decays, even if the price ends where it started.
+On Meme Street, as at a broker, leverage is a fixed loan on one position. At 2x, 100 MB of yours and 100 MB borrowed buy 200 MB of stock. A 20% fall leaves 160 MB, of which 60 MB is yours. A 25% rise takes it back to 200 MB, and your part is 100 MB again.
 
-Q: A stock falls 20% then rises 25% (back to the start). What happened to a 3x leveraged position over those two moves, ignoring costs and margin calls?
-- It is back to the start
-+ It is down
-- It is up
-WHY: 0.4 × 1.75 = 0.7: leverage turns the same round trip into a 30% loss.
+Q: A stock falls 20%, then rises 25%, back to where it started. You held it at 2x on a fixed loan, as on Meme Street. Where is your money, before interest and fees?
++ Back where it started
+- Down 10%: 0.6 × 1.5 = 0.9, the leverage decay
+- Up 10%, because the rise was bigger than the fall
+WHY: The loan stays 100 MB: 200 → 160 → 200 MB of stock, so your part is 100 MB again. Only a fund that resets its leverage every day loses on a round trip (the last lesson of the Derivatives unit).
+
+What breaks the round trip is the **close-out price**: the position is sold when its own equity falls to half the margin it started with. At 3x, 100 MB of yours and 200 MB borrowed buy 300 MB of stock. After a 20% fall it is worth 240 MB and your part is 40 MB, a sixth of it: the line. It is sold there.
+
+| Leverage | Closed out after a fall of about |
+| 2x | 33% |
+| 3x | 20% |
+| 5x | 11% |
+| 10x | 5% |
+
+Q: The same moves, -20% and then +25%, but at 3x on Meme Street. What happens, before interest and fees?
++ Closed at about the -20% low: you keep about 40 MB of 100
+- It is back where it started, like the 2x position
+- It ends 30% down, because 0.4 × 1.75 = 0.7 on a round trip
+WHY: At 3x a 20% fall reaches the close-out price, so the position is sold at the low and the rebound happens without you. Interest and the fee move that price a little closer.
 
 ### Drawdowns arrive faster
 

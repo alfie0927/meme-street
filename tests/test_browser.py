@@ -748,9 +748,11 @@ class BrowserGuest(unittest.TestCase):
             await pg.js("document.querySelector('[data-dly=buy]').click()")
             await d.check("a trade goes through", "document.getElementById('toast').textContent", lambda t: "Bought" in t, wait=6)
             await pg.js("dlyG.done=true;dly.status='done';dlyG.dist=[0];dlyG.grid=[];dlyG.hold=0;dlyG.ret=0;dlySummary()")
-            await d.check("the result asks them to make an account to save it", "document.querySelector('#dly-pop .dly-save b').textContent", "Save your result", wait=4)
+            await d.check("the result asks them to make an account to save it", "document.querySelector('#dly-pop .dly-save b').textContent", lambda t: (t or "").startswith("Save your"), wait=4)
             await pg.js("document.querySelector('#dly-pop [data-dly-join]').click()")
             await d.check("which opens the sign-up box", "getComputedStyle(document.getElementById('login')).display", "flex", wait=4)
+            await d.check("and says why: to save the result (audit 2026-11-15)", "document.getElementById('login-why').textContent",
+                          lambda t: (t or "").startswith("Save your"))
         finally:
             errors = list(pg.errors)
             proc.terminate()
@@ -783,7 +785,8 @@ class BrowserGuest(unittest.TestCase):
             await pg.js("document.getElementById('login-close').click()")
             await d.check("'keep watching' closes it", f"!{shown('#login')}")
             await pg.goto(base + "/holdings", 2)
-            await d.check("a page that needs an account shows a sign-in box that cannot be dismissed", f"{shown('#login')}&&!{shown('#login-close')}")
+            await d.check("a page that needs an account shows a sign-in box that closes to the Daily, never to an empty page (audit 2026-11-15)",
+                          f"{shown('#login')}&&{shown('#login-close')}&&$('login-close').textContent.includes(\"today's chart\")")
             await pg.goto(base + "/#join", 3)
             await d.check("the /about page's button opens the sign-up box", f"{shown('#login')}")
             await pg.js("document.getElementById('nm').value='visitor'+Math.floor(Math.random()*9999)")

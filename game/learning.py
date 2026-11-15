@@ -45,6 +45,8 @@ CHALLENGES = [          # this week's habits (LP11, 2026-11-07): the old challen
 ]
 PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen", "drills", "passed", "ex", "xp", "xp_days", "goal", "tasks", "placed", "attempts", "xp_weeks", "stop_px", "r_log", "day_passes")
 FREE_LESSONS_A_DAY = 2       # a free player finishes this many lessons a day; Pro lifts it, Expert adds the Expert units (rubric v2 A8)
+GATE_TEXT = {"limited": "Two lessons done today: back tomorrow, or Pro for the whole path", "expert": "This unit needs Expert",
+             "account": "Make a free account to keep going: two lessons a day, or the whole path with Pro"}
 OPEN_TRACKS = {"start"}      # the first unit never uses up the free day, so a new player's first minutes are not cut short (growth plan, 2026-11-10)
 COIN_KINDS = {"next"}        # chart tests built to score 50%: never a weak spot (LP9)
 LEVELS = [(0, "Trainee"), (200, "Apprentice"), (600, "Trader"), (1500, "Analyst"), (3000, "Strategist"), (6000, "Master")]   # XP levels (LP14)
@@ -61,7 +63,9 @@ PLACEMENT_UNITS = 99         # the placement test asks one question from each un
 TASK_KINDS = {"trade": "Make a trade", "stop": "Put a stop-loss on a position", "target": "Put a take-profit on a position",
               "bracket": "Place a bracket", "planned": "Close a position that had a stop", "short": "Open a short",
               "limit": "Place a limit order", "trail": "Place a trailing stop", "option": "Buy an option",
-              "note": "Write a note on a trade", "short_stop": "Put a stop-loss above a short"}
+              "note": "Write a note on a trade", "short_stop": "Put a stop-loss above a short",
+              "sized_stop": "Place a stop that risks 0.5% to 2% of your account",          # skill tasks (audit 2026-11-15): how well, not only how
+              "two_r": "Place a bracket whose target is at least 2R"}
 XP_RIGHT, XP_WRONG, XP_PASS, XP_TASK, GOAL = 10, 0, 20, 30, 50       # XP per exercise right or wrong (nothing: it comes back, rubric v2 A5), per lesson passed, per task; the daily goal
 TEST_TIMEFRAMES = {"1m": "1-minute", "5m": "5-minute", "15m": "15-minute", "1h": "1-hour"}
 TEST_PENDING = 3000          # chart tests waiting for an answer, at most (the oldest go first)
@@ -557,9 +561,9 @@ class LearningMixin:
             picked = perm[choice] if isinstance(choice, int) and not isinstance(choice, bool) and 0 <= choice < len(perm) else None
             right = picked == b["answer"]
             out = {"right": right, "answer": perm.index(b["answer"]), "why": b["why"]}      # (the answer as a shown slot)
-        if p is not None and not review and self._lesson_gate(p, x):
-            return {"error": "Two lessons done today: back tomorrow, or Pro for the whole path" if self._lesson_gate(p, x) == "limited"
-                    else "This unit needs Expert", "gate": self._lesson_gate(p, x)}
+        gate = None if review else self._lesson_gate(p, x)
+        if gate:
+            return {"error": GATE_TEXT[gate], "gate": gate}
         key = f"{lesson_id}:{i}"
         paid = p is not None and review and (self._paid_today(p, key) or key not in self._review_served.get(p.token, ()))
         self._attempt(p, x["track"], right, key)
@@ -659,10 +663,13 @@ class LearningMixin:
 
     def _lesson_gate(self, p, x):
         """Why a player may not work on lesson `x` now: "limited" (the free day is used up and the lesson is not started),
-        "expert" (the unit needs Expert), or None. The placement, the review and chart practice are never gated."""
-        if p is None or x["id"] in p.passed:
-            return None
+        "expert" (the unit needs Expert), "account" (a visitor past the first unit: an account brings the free day), or
+        None. The placement, the review and chart practice are never gated."""
         track = next((t for t in self.tracks if t["id"] == x["track"]), {})
+        if p is None:                       # (audit 2026-11-15: a visitor had every lesson, an account only two a day)
+            return "expert" if track.get("tier") == "expert" else None if x["track"] in OPEN_TRACKS else "account"
+        if x["id"] in p.passed:
+            return None
         tier = self.tier_of(p)
         if track.get("tier") == "expert" and tier != "expert":
             return "expert"
@@ -821,10 +828,10 @@ class LearningMixin:
             ids = [y["id"] for y in self.lessons]
             if x["id"] not in p.passed and exercises(x) and nid in ids and ids.index(x["id"]) > ids.index(nid):
                 out["locked"] = {"id": nid, "title": self._lesson_by_id[nid]["title"]}      # the lesson to finish first (rubric v2 A3)
-            gate = self._lesson_gate(p, x)
-            if gate:
-                out["gate"] = gate                                                       # "limited" (the free day) or "expert" (rubric v2 A8)
-                out["allowance"] = self.allowance(p)
+        gate = self._lesson_gate(p, x)
+        if gate:
+            out["gate"] = gate                                                           # "limited" (the free day), "expert" (rubric v2 A8) or "account"
+            out["allowance"] = self.allowance(p)
         return out
 
     # ------------------------------------------------------------------ chart tests (drills.py)
@@ -962,6 +969,10 @@ class LearningMixin:
         if kind == "take_profit":
             self._bump(p, "targets")
             self._learn_task(p, "target")
+        if kind == "stop_loss" and trigger:                    # any stop, not only the first: sized from the stop (unit 5)
+            eq = self.equity(p)
+            if eq > 0 and 0.005 * eq <= self._stop_risk(p, ticker, trigger) <= 0.02 * eq:
+                self._learn_task(p, "sized_stop")
         if kind != "stop_loss" or ticker in p.stop_seen:
             return
         p.stop_seen.append(ticker)
@@ -978,6 +989,22 @@ class LearningMixin:
             self._learn_task(p, "short_stop")
         self._bump(p, "stops")
         self._learn_task(p, "stop")
+
+    def _stop_risk(self, p, ticker, price):
+        """MB the position in `ticker` loses from its entry if it is closed at `price` (negative: a gain)."""
+        held = p.hold.get(ticker, 0.0)
+        if abs(held) < 1e-9:
+            return 0.0
+        entry = abs(p.cost.get(ticker, 0.0)) / abs(held)
+        return (entry - float(price)) * held
+
+    def _learn_bracket(self, p, ticker, take_profit, stop_loss):
+        """A bracket was placed (engine.place_bracket): a task, and a second one when the target is at least twice as far
+        from the entry as the stop (2R or more)."""
+        self._learn_task(p, "bracket")
+        risk = self._stop_risk(p, ticker, stop_loss)
+        if risk > 1e-9 and -self._stop_risk(p, ticker, take_profit) >= 2 * risk:
+            self._learn_task(p, "two_r")
 
     def _learn_close(self, p, ticker, pnl, closed):
         """A position was closed (social's trade hook, before `_learn_after_trade`): count it, whether it had a stop,

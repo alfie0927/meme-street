@@ -9,7 +9,8 @@ Copies the newest server backups to this computer, so that losing the server doe
   -Newest   how many of the server's newest backups to look at (default 4: the server makes one every six hours, so four is
             one day). A backup that is already here is skipped, so running it every day only fetches what is new.
 
-Each backup is a folder with the save (state.json), the charts and the money ledger (ledger.db), about 40 MB. A copy is only
+Each backup is a folder with the save (state.json), the charts and the money ledger (ledger.db.gz: the server compresses it
+since 2026-11-14; older copies hold ledger.db), about 180 MB in November 2026. A copy is only
 marked complete (a file called .complete inside it) after the save and the ledger arrived with a size above zero, so a
 download that was cut off is fetched again next time. Nothing on the server is changed or deleted. Here, only the newest
 -Keep complete copies are kept (default 60: about two weeks); older ones are deleted.
@@ -43,6 +44,7 @@ foreach ($raw in $names) {
     if ($LASTEXITCODE -ne 0) { throw "Could not copy $n from the server." }
     foreach ($f in "state.json", "ledger.db") {
         $p = Join-Path $dir $f
+        if ($f -eq "ledger.db" -and -not (Test-Path $p)) { $p = "$p.gz" }      # (compressed on the server since 2026-11-14)
         if (-not (Test-Path $p) -or (Get-Item $p).Length -eq 0) { throw "$n arrived without a usable $f." }
     }
     Set-Content -Path (Join-Path $dir ".complete") -Value (Get-Date -Format "o")

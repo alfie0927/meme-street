@@ -14,8 +14,11 @@ mkdir -p "$DEST/$STAMP"
 # state.json and state.charts.json are replaced as a whole by the game, so a plain copy is always a complete file.
 [ -f "$SRC/state.json" ] && cp "$SRC/state.json" "$DEST/$STAMP/"
 [ -f "$SRC/state.charts.json" ] && cp "$SRC/state.charts.json" "$DEST/$STAMP/"
-# the ledger is a live database: ask SQLite for a consistent copy instead of copying the file
-[ -f "$SRC/ledger.db" ] && sqlite3 "$SRC/ledger.db" ".backup '$DEST/$STAMP/ledger.db'"
+# the ledger is a live database: ask SQLite for a consistent copy instead of copying the file, then compress it. It shrinks
+# about five times: until 2026-11-14 the copies were kept whole, and sixty of them (22 GB) filled the 38 GB disk.
+if [ -f "$SRC/ledger.db" ]; then
+    sqlite3 "$SRC/ledger.db" ".backup '$DEST/$STAMP/ledger.db'" && nice -n 19 gzip -f "$DEST/$STAMP/ledger.db"
+fi
 # the game-day candles (data/history.db) the same way, compressed; the one-minute candles (minutes.db) are not kept
 if [ -f "$SRC/history.db" ]; then
     sqlite3 "$SRC/history.db" ".backup '$DEST/$STAMP/history.db'" && gzip -f "$DEST/$STAMP/history.db"

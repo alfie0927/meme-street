@@ -206,6 +206,7 @@ any server still in the old layout, with the game stopped for the moment of the 
 ## Backups
 
 Every six hours the server copies the save, the charts and the ledger to `/var/backups/memestreet/` and keeps two weeks.
+The ledger copy is compressed (`ledger.db.gz`, since 2026-11-14: whole copies had filled the disk, 22 GB of 38).
 That protects you from mistakes, not from losing the server. Copy them to your computer now and then:
 
 ```powershell
@@ -230,7 +231,7 @@ and switch on the provider's own backups. **Restoring** a backup (the game must 
 systemctl stop memestreet-gateway memestreet
 cp /var/backups/memestreet/2026-10-05-0400/state.json /var/backups/memestreet/2026-10-05-0400/state.charts.json /opt/memestreet/data/
 rm -f /opt/memestreet/data/ledger.db-wal /opt/memestreet/data/ledger.db-shm
-cp /var/backups/memestreet/2026-10-05-0400/ledger.db /opt/memestreet/data/
+gunzip -c /var/backups/memestreet/2026-10-05-0400/ledger.db.gz > /opt/memestreet/data/ledger.db
 # the game-day price history (from October 2026; a backup without it is fine: the days are rebuilt from the charts)
 rm -f /opt/memestreet/data/history.db*
 gunzip -c /var/backups/memestreet/2026-10-05-0400/history.db.gz > /opt/memestreet/data/history.db

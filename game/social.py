@@ -296,7 +296,7 @@ class SocialMixin:
                 continue
             gain = r["equity"] - p.deposited
             pnl.append({"name": r["name"], "token": r["token"], "pnl": gain, "bot": bool(p.hb),
-                        "ret": gain / p.deposited if p.deposited > 0 else 0.0})
+                        "ret": self.alltime_return(p, r["equity"])})
         pnl.sort(key=lambda x: -x["pnl"])
         ret = sorted(pnl, key=lambda x: -x["ret"])
         self.boards = {"pnl": pnl, "ret": ret}
@@ -363,7 +363,7 @@ class SocialMixin:
         if p.public or mine:     # results and holdings are only shown to others when the player opted in
             eq = self.equity(p)
             out.update({"trades": p.trades, "season_ret": self.season_return(p, eq),
-                        "alltime_ret": (eq - p.deposited) / p.deposited if p.deposited > 0 else 0.0,
+                        "alltime_ret": self.alltime_return(p, eq),
                         "rank": self.rank.get(p.token),
                         "holdings": self._delayed_holdings(p),
                         "holdings_delay": float(self.settings.get("public_delay_seconds", 300))})

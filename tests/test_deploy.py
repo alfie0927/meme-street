@@ -127,7 +127,8 @@ class ServiceFileTests(unittest.TestCase):
 
     def test_the_backup_copies_the_save_and_makes_a_consistent_copy_of_the_ledger(self):
         text = read("backup.sh")
-        for needed in ("state.json", "state.charts.json", "sqlite3", ".backup", "-mtime +14", "SRC=/opt/memestreet/data"):
+        for needed in ("state.json", "state.charts.json", "sqlite3", ".backup", "-mtime +14", "SRC=/opt/memestreet/data",
+                       'gzip -f "$DEST/$STAMP/ledger.db"'):               # (a whole copy every six hours filled the disk, 2026-11-14)
             self.assertIn(needed, text)
 
     def test_the_update_script_moves_an_old_game_into_data_and_never_overwrites_a_save(self):

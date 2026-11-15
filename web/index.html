@@ -28,6 +28,7 @@ a.stat-link{color:inherit;text-decoration:none}a.stat-link:hover small,a.stat-li
 .site-foot{display:flex;flex-wrap:wrap;gap:6px 16px;padding:14px 18px 22px;border-top:1px solid var(--line2);font-size:11.5px;color:var(--mut)}.site-foot a{color:var(--mut)}.site-foot a:hover{color:var(--txt)}
 body:not(.page-market) .site-foot{max-width:1240px;margin:0 auto}
 #tape{overflow:hidden;white-space:nowrap;border-top:1px solid var(--line2);font-size:12px;line-height:24px;padding-left:18px}
+body.guest.page-daily .stats,body.guest.page-daily #tape{display:none!important}   /* a visitor on the Daily: the game first, not the market's numbers (audit 2026-11-15) */
 .embed .stats,.embed #tape,.embed #daily-btn,.embed #session-banner,.embed #low-banner,.embed #learn-banner{display:none!important}   /* /embed/daily: a frame is small, so the header keeps only the name, the tabs and the sign-in */
 #tape .tape-run{display:inline-block;animation:tape 150s linear infinite}#tape:hover .tape-run{animation-play-state:paused}
 #tape a{color:var(--txt);margin-right:28px}#tape a:hover{text-decoration:none;color:var(--acc)}#tape .tp{color:var(--mut)}
@@ -122,7 +123,7 @@ body.noscroll{overflow:hidden}
 .page-calendar #calendar-card{display:block}.page-bots #bots-card{display:block}.page-daily #daily-card{display:block}.chipset{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}.holdings-tbl{width:100%}.holdings-tbl tr[data-go]{cursor:pointer}.holdings-tbl tr[data-go]:hover td{background:#ffffff08}.holdings-tbl td:nth-child(2),.holdings-tbl th:nth-child(2){text-align:left}.holdings-tbl a{color:inherit;text-decoration:none}.holdings-tbl td.w{white-space:nowrap}.wbar{display:inline-block;width:70px;height:6px;background:#ffffff10;border-radius:2px;margin-right:8px;vertical-align:middle;overflow:hidden}.wbar i{display:block;height:100%;background:var(--acc)}
 .dly-wrap{max-width:680px;margin:0 auto}.dly-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 0 12px;border-bottom:1px solid var(--line);margin-bottom:16px}
 .dly-title{font-size:20px;font-weight:700;letter-spacing:.02em}.dly-title span{color:var(--acc)}.dly-sub{color:var(--mut);font-size:12px;margin-top:2px}.dly-icons{display:flex;gap:6px}.dly-ic{min-width:34px;height:34px;padding:0 10px;font-weight:700}
-.dly-hero{text-align:center;padding:26px 0 22px}.dly-about{max-width:620px;margin:0 auto;padding:4px 0 8px;color:var(--mut);font-size:14px;line-height:1.55}.dly-about h2{color:var(--txt);font-size:17px;margin:0 0 6px}.dly-save{border:1px solid var(--acc);background:#4cc3cc12;border-radius:var(--r);padding:12px 14px;margin:0 0 14px;text-align:center}.dly-save b{font-size:16px}.dly-save p{margin:4px 0 10px;color:var(--mut);font-size:13px}.dly-tag{font-size:22px;line-height:1.35;font-weight:700;margin:0 0 18px}.dly-streak{color:var(--acc);margin:0 0 14px}.dly-small{color:var(--mut);font-size:12px;margin:14px 0 0}
+#daily-body{min-height:560px}.dly-hero{text-align:center;padding:26px 0 22px}.dly-how{max-width:420px;margin:0 auto 14px;font-size:15px;line-height:1.45;color:var(--txt,#e8e8e8)}.dly-about{max-width:620px;margin:0 auto;padding:4px 0 8px;color:var(--mut);font-size:14px;line-height:1.55}.dly-about h2{color:var(--txt);font-size:17px;margin:0 0 6px}.dly-save{border:1px solid var(--acc);background:#4cc3cc12;border-radius:var(--r);padding:12px 14px;margin:0 0 14px;text-align:center}.dly-save b{font-size:16px}.dly-save p{margin:4px 0 10px;color:var(--mut);font-size:13px}.dly-tag{font-size:22px;line-height:1.35;font-weight:700;margin:0 0 18px}.dly-streak{color:var(--acc);margin:0 0 14px}.dly-small{color:var(--mut);font-size:12px;margin:14px 0 0}
 .dly-go{font-size:17px;font-weight:700;padding:13px 44px;background:var(--acc);border:1px solid var(--acc);color:#021012;border-radius:999px;cursor:pointer}.dly-go:hover{filter:brightness(1.1)}.dly-alt{padding:12px 20px;border-radius:999px}
 .dly-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:8px}.dly-timer{font-size:44px;font-weight:700;color:var(--acc);font-variant-numeric:tabular-nums;line-height:1}.dly-timer.low{color:var(--dn);animation:dlyPulse 1s infinite}@keyframes dlyPulse{50%{opacity:.55}}
 .dly-pnl{text-align:right}.dly-ret{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}.dly-eq{color:var(--mut);font-size:12px}
@@ -420,7 +421,7 @@ body.guest .guest-cta{display:flex}
 <p class="hint" style="display:flex;justify-content:space-between;margin:8px 0 0"><a href="#" id="code-again">Send a new code</a><a href="#" id="code-back">Change the email</a></p></div></div>
 <p id="auth-hint" class="hint" style="display:none"></p><button id="login-close" style="display:none;width:100%;margin-top:8px">Keep watching the market</button></div></div>
 <header>
-<div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/memestreet_logo_peaks.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
+<div class="topbar"><a class="brand" href="/"><img class="logo" src="/brand/icon-192.png" alt="" width="28" height="28">Meme Street</a><span class="pro-badge" id="pro-badge" title="Meme Street Pro">PRO</span>
 <nav id="nav"><a href="/" data-page="market">Market</a><a href="/learn" data-page="learn">Learn</a><a href="/daily" data-page="daily">Daily</a><a href="/portfolio" data-page="portfolio">Portfolio</a><a href="/leaders" data-page="leaders">Leaders</a><a href="/social" data-page="social">Social<span id="chat-dot"></span></a><a href="/profile" data-page="profile">Profile</a><details id="nav-more"><summary>More</summary><div><a href="/leaders" data-page="leaders">Leaders</a><a href="/social" data-page="social">Social</a><a href="/profile" data-page="profile">Profile</a><a href="/calendar" data-page="calendar">Calendar</a><a href="/bots" data-page="bots">Bots</a><a href="/shop" data-page="shop">Shop</a></div></details></nav>
 <div class="spacer"></div>
 <div id="session"><a id="daily-btn" href="/daily" title="Two minutes on a mystery chart, the same for everyone today"><span class="dl-long">Daily Chart</span><span class="dl-short">Daily</span></a><a id="shop-btn" href="/shop">Shop</a><span id="mkt">Market</span></div><span id="conn"></span><span id="guest-actions"><button id="g-login">Sign in</button><button class="buy" id="g-join">Create account</button></span></div>
@@ -656,13 +657,14 @@ $('rec-go').onclick=async()=>{
  else $('rec-msg').textContent=j.error||'Error'};
 $('g-login').onclick=$('gh-login').onclick=()=>openSignin('login');$('g-join').onclick=$('gh-join').onclick=()=>openSignin('register');
 $('gh-daily').onclick=()=>{location.href=EMBED?'/embed/daily':'/daily'};   // (the front door: a game first, the account after, growth plan 2026-11-10)
-$('login-close').onclick=()=>{$('login').style.display='none'};
+$('login-close').onclick=()=>{if(walled){location.href=EMBED?'/embed/daily':'/daily';return}$('login').style.display='none'};
+let walled=false;   // (a page that needs an account: its box closes to the Daily, never to an empty page: audit 2026-11-15)
 if(!token&&location.hash==='#join')setTimeout(()=>openSignin('register'),60);   // (the /about page's button)
 $('joinbtn').onclick=()=>join();$('nm').onkeydown=e=>{if(e.key==='Enter')join()};$('pw').onkeydown=$('pw2').onkeydown=e=>{if(e.key==='Enter')join()};
 function connect(){
  if(!token){
-  if((page==='market'||page==='stock'||page==='learn'||page==='daily'||page==='leaders'||page==='player')&&!noGuest)guest=true;   // (boards and players open to visitors, 2026-11-10)
-  else{guest=false;document.body.classList.remove('guest');$('login-close').style.display='none';$('login').style.display='flex';return}}
+  if((page==='market'||page==='stock'||page==='learn'||page==='daily'||page==='leaders'||page==='player'||page==='shop')&&!noGuest)guest=true;   // (boards and players open to visitors, 2026-11-10; the shop's prices too, audit 2026-11-15)
+  else{guest=false;walled=true;document.body.classList.remove('guest');const c=$('login-close');c.textContent="Play today's chart instead";c.style.display='block';$('login').style.display='flex';return}}
  else guest=false;
  document.body.classList.toggle('guest',guest);
  clearTimeout(reconnectT);
@@ -779,7 +781,7 @@ function renderHeader(){
  const pb=$('pro-badge'),pro=!!S.pro&&!guest,tier=S.expert?'EXPERT':'PRO';if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}if(pb.textContent!==tier){pb.textContent=tier;pb.title='Meme Street '+(S.expert?'Expert':'Pro')}
  const lb=$('low-banner'),low=!!S.low&&!guest&&!lowHidden&&page!=='shop';
  if(lb._on!==low){lb._on=low;lb.style.display=low?'flex':'none';
-  if(low)lb.innerHTML='<span><b>You are nearly out of MB.</b> It happens to every trader while learning. Close your positions, then take the free restart, or top up in the shop.</span><span class="bar" style="margin:0"><button data-shop="closeall">Close all positions</button><button class="buy" data-shop="restart">Free restart</button><a href="/shop">Shop</a><a href="/learn">Lessons on risk</a><button data-shop="lowhide" aria-label="Hide this message">&times;</button></span>'}
+  if(low)lb.innerHTML='<span><b>You are nearly out of MB.</b> It happens to every trader while learning. Close your positions, then take the free restart, and read what went wrong.</span><span class="bar" style="margin:0"><button data-shop="closeall">Close all positions</button><button class="buy" data-shop="restart">Free restart</button><a href="/learn">Lessons on risk</a><button data-shop="lowhide" aria-label="Hide this message">&times;</button></span>'}
  const mk=S.market||{phase:'open',changes_in:null},ph=mk.phase||'open';
  const left=mk.changes_in===null||mk.changes_in===undefined?null:Math.max(0,Math.round(mk.changes_in-(Date.now()-S.market_at)/1000));
  const fmt=PHONE?durS:dur,tail=left===null?'':ph==='pre'?' · opens in '+fmt(left):ph==='open'?' · after-hours in '+fmt(left):' · pre-market in '+fmt(left);
@@ -1626,9 +1628,10 @@ function onFirstData(){
  if(firstData)return;firstData=true;
  if(page==='history'){drawHistFilters();loadHistory(true)}
  if(page==='social'){loadSocial();loadMe()}
- if(refreshers[page]&&page!=='social')refreshers[page]()}
+ if(refreshers[page]&&page!=='social'&&!(page==='daily'&&dly))refreshers[page]()}
 setInterval(refreshPage,page==='history'?15000:5000);
 // (connect once chart.js has run too: a message could otherwise arrive while it is still loading)
-document.addEventListener('DOMContentLoaded',()=>{drawChips();connect()});
+// (the Daily asks for its own small answer at once, not after the market's first message: audit 2026-11-15, 4.0 s to 1.8 s on a slow phone)
+document.addEventListener('DOMContentLoaded',()=>{drawChips();connect();if(page==='daily'&&typeof loadDaily==='function')loadDaily()});
 </script>
 <script src="/js/chart.js"></script><script src="/js/bots.js"></script><script src="/js/daily.js"></script><script src="/js/learn.js"></script></body></html>
