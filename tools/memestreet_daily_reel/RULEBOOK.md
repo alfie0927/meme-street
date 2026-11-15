@@ -8,7 +8,7 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - (superseded 2026-11-09, see "Director reels") One consistent 2D house style across the page: near-black background,
   teal / green / red / amber, Cascadia Mono, the small brand header. What stays shared: 9:16, a dark background, flat 2D,
   the small brand header (logo, "Meme Street", the format tag with no episode number), the November cover.
-- No 3D, no emoji animations, no realistic AI video.
+- No 3D, no emoji animations, no realistic AI video. One exception since 2026-11-14, the owner's order: the story serial (the format "Blocky story") is filmed in its own 3D toy-block town.
 - Charts sit full width on the page: no panel box, no axis numbers; volume bars only when the reel is about volume.
 - (superseded 2026-11-09) Few cuts: keep one chart on screen and let it evolve. Still true for charts: when the next
   scene keeps the same chart, the chart stays put.
@@ -39,7 +39,7 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 
 ## Content
 - Concise: one idea, every line earning its place. A director reel runs 35 to 60 seconds (about 50 to 150 spoken
-  words; the owner, 2026-11-11: viewers give about 7 seconds); 60 is a ceiling, not a target; the short formats are shorter on purpose (Hard truth 25 to 60 words). The in-depth formats (Technical lesson, Strategy test)
+  words; the owner, 2026-11-11: viewers give about 7 seconds); 60 is a ceiling, not a target; the short formats are shorter on purpose (Hard truth 25 to 60 words). The in-depth formats (Technical lesson, Strategy test, Quant lesson, Indicator)
   may run 60 to 100 seconds (the owner, 2026-11-12: "some reels can be very in depth, like quant level explanations").
 - Accurate: every number and claim comes from the facts; what the voice says, the screen shows.
 - Sign-off: "Join free at memestreet.net." Only a reel about the Daily Chart mentions the Daily Chart.
@@ -146,6 +146,17 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - Strategy test, "we tested it" (the owner, 2026-11-12: "we tested [X] strategy, here's why it worked/didn't work"): one
   rule run by `src/backtest.py` on every listed stock. Every number in the reel is the test's own, a rule that lost is
   said to have lost, the sample's size is said once, and no reel promises the next trade.
+- Deeper and less alike (the owner, 2026-11-15: "the animations are great, but the content is a bit too repetitive. it can
+  be on more in depth lessons, e.g. quant stuff... and indicator reels"): two of the day's five reels are in-depth, at
+  09:00 and 21:00 (Technical lesson, Strategy test, Quant lesson, Indicator in turn); the other three take turns through
+  the rest, Market lesson among them. An in-depth reel opens on the viewer's own money or belief in plain words, never on
+  a term, a formula, a setting or a study (reels that opened on a term kept 11 to 15% of viewers); the term arrives as the
+  answer. A study is said by what it tested, where and when ("a 2016 study of 97 published signals"): never a
+  researcher's name, a fund or a company. An indicator is shown as its true line or strip on a real chart, drawn by the
+  template from computed values, with one signal that worked and one that failed, then our own test of it.
+- No reel opens like a recent one (the owner, 2026-11-15, "repetitive"): the first three words differ from those of the
+  last 40 reels and the first six are no near copy ("One red candle, and your...", "This chart looked..." and "Three
+  chart reads..." each went out three times in a week). `check()` in make_spec.py sends a repeat back.
 
 ## By format (the owner's feedback on each type as it posts; a reel of that type follows its lines)
 <!-- "### Format name" then "- YYYY-MM-DD: rule", newest last -->
@@ -180,6 +191,12 @@ without review. A complaint puts it back to watched. Status: every format watche
 - 2026-11-09 (round 7): good. Same chart in the next scene: keep it there. No pause before a number ("36").
 ### Technical lesson
 - 2026-11-09 (round 7): ugly. A new opening animation for each one. The orange and blue average lines the voice names are drawn. Show the signal working (a golden cross, then the rise), then why, then one short "not every time".
+### Quant lesson
+- (new 2026-11-15: no feedback yet.)
+### Indicator
+- (new 2026-11-15: no feedback yet.)
+### Market lesson
+- (new 2026-11-15: no feedback yet.)
 ### Myth or fact
 - 2026-11-09 (round 7): ugly. The "Your call" tag sits at the start of its line so it does not jump as the price moves. Same chart: no transition.
 ### Speed cheat sheet
@@ -194,3 +211,7 @@ without review. A complaint puts it back to watched. Status: every format watche
 - 2026-11-14: "in the exemplar folder called '10-42-35' is what the roblox reel should be like": the whole frame is a scene in a blocky game town, a new shot about every 2 seconds, the money on a label on every chest, and one big white outlined word at a time as the caption (no brand header, no top hook, no punch lines).
 - 2026-11-14: the one-word caption sits at y 1310 to 1440, on the ground in front of the actors. Over a character's legs it is the format and no fault; over a face or a chest number it is.
 - 2026-11-14: "create the story yourself part 2, 3, 4, etc... post them one a day": the serial is `src/stories.json`, one part a day, each part ending on a cliffhanger and teaching one trading idea. Same cast, colours and town in every part. No part shows women as prizes for money (the critic refused "they get every girl" in part 1) or plays being poor for laughs.
+- 2026-11-14 (evening): "add music like the roblox videos in the background and also change the voice so it matches too. then add way better animations, like a proper 3D world, where the people are walking around etc (has to be relevant for the scene)": every part is filmed in a real 3D toy-block town (`src/world3d.js`): the place the line happens in, the people it names walking and acting it out, passers-by and traffic behind them, a camera that cuts between close, mid and wide shots. This is the format, and no breach of "No 3D". The town is our own: no game's name, logo, characters or music.
+- 2026-11-14 (evening): the serial has its own sound: a bouncy tune of its own under the voice, clearly heard, and a quick, bright narrator (measured on the exemplar: about 4.4 words a second, almost no pauses, a higher pitch than the house voice). Both are right for this format and no fault; the house voice and the house music stay on every other reel.
+- 2026-11-14 (evening): "making sure the reels on the days after follow the same animatinos and music and voice": the look, the tune and the voice are fixed in the code (`STYLE` in `src/story_reel.py`, the town in `src/world3d.js`), the same in every part, never chosen per part.
+- 2026-11-14 (evening): "on the thumbnail put 'PART 1'": a part's cover is its opening shot with PART N in big yellow letters and the story's title under it. "post this to youtube too": every part goes to YouTube as well as Instagram.
