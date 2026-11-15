@@ -520,13 +520,13 @@ class LearningMixin:
         answer (seeded), graded within a tolerance."""
         rng = random.Random(f"{p.token if p is not None else 'visitor'}:{lesson_id}:{i}:{self._learn_day()}")
         if kind == "sizing":
-            acct, risk, dist = rng.choice((1000, 2000, 5000, 10000)), rng.choice((0.5, 1, 2)), rng.choice((2, 4, 5, 8, 10))
+            acct, risk, dist = rng.choice((25000, 50000, 100000, 200000)), rng.choice((0.5, 1, 2)), rng.choice((2, 4, 5, 8, 10))
             ans = acct * risk / dist
             return {"q": f"Your account is {acct:,} MB and you risk {risk:g}% a trade. The stop is {dist}% below your entry. How many MB can the position be?",
                     "num": ans, "tol": ans * 0.02, "unit": "MB",
                     "why": f"{risk:g}% of {acct:,} MB is {acct * risk / 100:g} MB of risk; {acct * risk / 100:g} ÷ {dist}% = {ans:,.0f} MB."}
         if kind == "r":
-            risk, mult = rng.choice((10, 15, 20, 25, 40)), rng.choice((0.5, 1.5, 2, 3, -1, -0.5))
+            risk, mult = rng.choice((1000, 1500, 2000, 2500, 4000)), rng.choice((0.5, 1.5, 2, 3, -1, -0.5))
             made = risk * mult
             return {"q": f"You risked {risk} MB on a trade and it closed at {made:+g} MB. What is the result in R?",
                     "num": mult, "tol": 0.05, "unit": "R", "why": f"{made:+g} ÷ {risk} = {mult:+g}R: the result measured in units of the risk taken."}

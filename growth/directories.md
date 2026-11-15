@@ -20,7 +20,7 @@ One mystery stock chart a day, the same for everyone. Buy, sell or short for two
 
 **Long description:**
 ```
-Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how everyone else did, with a streak to keep and a result to share. The chart comes from a made-up stock, so nobody can look it up. A new one starts at midnight UTC. The Daily is free and needs no sign-up, and it is practice money only: MB have no cash value.
+Every day there is one new chart, and everyone gets the same one. You start with 100,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how everyone else did, with a streak to keep and a result to share. The chart comes from a made-up stock, so nobody can look it up. A new one starts at midnight UTC. The Daily is free and needs no sign-up, and it is practice money only: MB have no cash value.
 ```
 
 **Tags:** daily game, trading, stock market, charts, finance, puzzle, education, wordle-like
@@ -73,7 +73,7 @@ I would like to suggest a game for The Daily Game Index.
 Name: Daily Chart by Meme Street
 Link: https://memestreet.net/daily?ref=dir_dgindex
 
-Core rule: everyone gets the same made-up stock chart each day. The candles print one a second for two minutes. You start with 1,000 MB of practice money and buy, sell or short as the candles come. When the time is up you see your return and your place among everyone who played that day.
+Core rule: everyone gets the same made-up stock chart each day. The candles print one a second for two minutes. You start with 100,000 MB of practice money and buy, sell or short as the candles come. When the time is up you see your return and your place among everyone who played that day.
 
 Resets: midnight UTC. One go a day, with a streak to keep and a result to share as green and red squares.
 Cost: free, no account needed, no ads. Practice money only: MB have no cash value.
@@ -87,6 +87,6 @@ Thanks,
 
 **browsergames.top** (form). A description for people who browse games, not daily puzzles:
 ```
-Daily Chart is a two-minute trading game that runs in the browser on a phone or a computer, with nothing to download and no account needed. Each day there is one new made-up stock chart, the same for every player. The candles print one a second and you buy, sell or short with 1,000 MB of practice money. At the end you see your return and your place for the day, and you can send a friend a link to beat your score. Practice money only: MB have no cash value.
+Daily Chart is a two-minute trading game that runs in the browser on a phone or a computer, with nothing to download and no account needed. Each day there is one new made-up stock chart, the same for every player. The candles print one a second and you buy, sell or short with 100,000 MB of practice money. At the end you see your return and your place for the day, and you can send a friend a link to beat your score. Practice money only: MB have no cash value.
 ```
 Genre, if the form has a list: simulation, or puzzle if there is no simulation. Not "casino", "betting" or "crypto".

@@ -37,7 +37,7 @@ HEAD = ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="
         '<header><a class="brand" href="/"><img src="/brand/icon-192.png" alt="" width="26" height="26">'
         'Meme Street</a><span class="sp"></span><a href="/lessons" class="btn">Lessons</a><a href="/#join" class="btn go">'
         'Sign up</a></header>')
-CTA = ('<div class="cta"><p><b>Practise it on a live market.</b> Every account starts with 1,000 MB of practice '
+CTA = ('<div class="cta"><p><b>Practise it on a live market.</b> Every account starts with 100,000 MB of practice '
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
@@ -53,7 +53,7 @@ CALC_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> › Tools</p><h1>
 <p class="lead">Position size = (account &times; risk %) &divide; (entry &minus; stop). Enter the four numbers and the
 calculator gives the number of shares to buy so that, if your stop is hit, you lose only the share of your account you chose.</p>
 <form id="f" class="try" onsubmit="return false">
-<p><label>Account size <input id="acct" type="number" min="0" step="any" value="1000"></label>
+<p><label>Account size <input id="acct" type="number" min="0" step="any" value="100000"></label>
 <label>Risk per trade, % of account <input id="risk" type="number" min="0" step="any" value="1"></label></p>
 <p><label>Entry price <input id="entry" type="number" min="0" step="any" value="50"></label>
 <label>Stop price <input id="stop" type="number" min="0" step="any" value="48"></label>
@@ -63,8 +63,8 @@ calculator gives the number of shares to buy so that, if your stop is hit, you l
 <noscript><p>This calculator needs JavaScript. The sum is: shares = (account &times; risk %) &divide; |entry &minus; stop|.</p></noscript>
 <h2>How it works</h2>
 <p>Your risk is the amount you lose if the stop is hit, not the size of the trade. Take the account times the risk
-percentage (1% of 1,000 is 10). Divide it by the distance from entry to stop (50 to 48 is 2 per share) and you get the shares
-to buy (5). The position is then 5 &times; 50 = 250, which is 25% of the account, yet a stop-out costs only 1%.</p>
+percentage (1% of 100,000 is 1,000). Divide it by the distance from entry to stop (50 to 48 is 2 per share) and you get the shares
+to buy (500). The position is then 500 &times; 50 = 25,000, which is 25% of the account, yet a stop-out costs only 1%.</p>
 <p>The wider the stop, the smaller the position. If the stop is above the entry the trade is a short, and the same formula
 applies.</p>
 <div class="box warn"><b>Watch out:</b> a stop can gap, so the real loss can be bigger than the number shown. The result also
@@ -181,8 +181,8 @@ DD_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> &rsaquo; Tools</p><
 to its peak, because the gain is earned on a smaller balance. Enter your peak and your balance now and the calculator gives the
 drawdown and the gain you need.</p>
 <form id="f" class="try" onsubmit="return false">
-<p><label>Peak balance <input id="peak" type="number" min="0" step="any" value="1000"></label>
-<label>Balance now <input id="now" type="number" min="0" step="any" value="500"></label></p>
+<p><label>Peak balance <input id="peak" type="number" min="0" step="any" value="100000"></label>
+<label>Balance now <input id="now" type="number" min="0" step="any" value="50000"></label></p>
 </form>
 <div id="out" class="box tip" aria-live="polite">Enter your balances above.</div>
 <noscript><p>This calculator needs JavaScript. The sum is: drawdown = (peak &minus; now) &divide; peak; gain needed =
@@ -391,7 +391,7 @@ class Lessons:
         return (HEAD.format(t="Learn to trade: stock trading lessons | Meme Street", d=html.escape(d), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade</h1><p class="lead">{html.escape(d)} Read them '
-                "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
+                "here, then practise each idea with 100,000 MB of practice money on Meme Street's fictional market.</p>"
                 + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a></p>'
                 + "".join(parts) + FOOT)
 

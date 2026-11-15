@@ -19,7 +19,7 @@ from ledger import Ledger
 from social import SocialMixin
 from accounts import AccountsMixin, name_problem
 
-START_CASH = 1000.0          # default signup bonus (test credits)
+START_CASH = 100000.0        # default signup bonus (practice MB)
 FEE = 0.001                  # per side (0.1%; a round trip costs about 0.2%), collected as house revenue
 COOLDOWN = 1.0
 MARKET_DAY_SECONDS = 1800
@@ -3602,7 +3602,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             hold.append(row)
         out = {"cash": round(p.cash, 2), "equity": round(e, 2), "ret": round(self.season_return(p, e), 4),
                "pnl": round(e - p.deposited, 2), "holdings": hold, "rank": self.rank.get(p.token),
-               "pro": self.is_pro(p), "expert": self.is_expert(p), "low": e < float(self.settings.get("restart_below", 50.0)),
+               "pro": self.is_pro(p), "expert": self.is_expert(p), "low": e < float(self.settings.get("restart_below", 5000.0)),
                "lessons": len(p.passed), "traded": self.ever_traded(p)}   # (traded: the first-steps banner, 2026-11-10)
         if p.opts or getattr(p, "opts_dirty", False):   # option positions (options.py), and once more when the last goes
             out["opts"] = self.options_view(p)

@@ -40,7 +40,7 @@ YouTube Studio, Customisation, Profile. Description (paste as it is):
 ```
 Learn to trade on a made-up stock market.
 
-Meme Street is a free trading game with 180+ invented companies and news that moves their prices. You start with 1,000 MB of practice money (no cash value, never paid out), so you can make every beginner mistake here instead of with real savings.
+Meme Street is a free trading game with 180+ invented companies and news that moves their prices. You start with 100,000 MB of practice money (no cash value, never paid out), so you can make every beginner mistake here instead of with real savings.
 
 Every day there is a new Daily Chart: two minutes on the same mystery chart as everyone else. Can you call where it goes?
 
@@ -65,7 +65,7 @@ paste as it is; the hashtags are clickable on Mastodon and help people who follo
 ```
 Learn to trade on a made-up stock market.
 
-Meme Street is a free trading game: 180+ invented companies, news that moves their prices, and 1,000 MB of practice money with no cash value. Make your mistakes here, not with real savings.
+Meme Street is a free trading game: 180+ invented companies, news that moves their prices, and 100,000 MB of practice money with no cash value. Make your mistakes here, not with real savings.
 
 Every day, a new Daily Chart: the same mystery chart for everyone, two minutes to call it.
 

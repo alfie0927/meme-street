@@ -31,9 +31,9 @@ WHY: Size = risk ÷ distance; double the distance, half the size.
 [calc sizing]
 
 | Account | Risk | Entry | Stop | Distance | Position |
-| 1,000 MB | 1% = 10 MB | 50 | 48 | 4% | 250 MB |
-| 1,000 MB | 1% = 10 MB | 50 | 45 | 10% | 100 MB |
-| 1,000 MB | 1% = 10 MB | 50 | 49.5 | 1% | 1,000 MB |
+| 100,000 MB | 1% = 1,000 MB | 50 | 48 | 4% | 25,000 MB |
+| 100,000 MB | 1% = 1,000 MB | 50 | 45 | 10% | 10,000 MB |
+| 100,000 MB | 1% = 1,000 MB | 50 | 49.5 | 1% | 100,000 MB |
 
 The wider the stop, the smaller the position. The risk stays the same.
 
@@ -59,7 +59,7 @@ HERE: The **Position size and risk** tool under every stock's chart does this su
 
 [try /stock/CLDR] Open CloudRail, pick a stop from the chart and let the risk tool size a 1% trade.
 
-[task sized_stop] Size a trade from its stop: open a position and put a stop-loss on it that loses 0.5% to 2% of your account if it is hit (5 to 20 MB on 1,000 MB). The risk tool under the chart does the sum. A 10 MB position with a 5% stop risks only 0.5 MB, so it does not count.
+[task sized_stop] Size a trade from its stop: open a position and put a stop-loss on it that loses 0.5% to 2% of your account if it is hit (500 to 2,000 MB on 100,000 MB). The risk tool under the chart does the sum. A 1,000 MB position with a 5% stop risks only 50 MB, so it does not count.
 
 ## R-multiples and reward to risk {r-multiples} [6]
 SUMMARY: Measuring every trade in units of its own risk, and what a reward-to-risk ratio buys you.
@@ -140,7 +140,7 @@ WHY: Zero before costs; costs make it negative.
 
 Expectancy = (win rate × average win) - (loss rate × average loss)
 
-In R: a strategy that wins 40% of the time, makes 2.5R when it wins and loses 1R when it loses expects 0.4 × 2.5 - 0.6 × 1 = **+0.4R per trade**. Over 100 trades risking 10 MB each, that is about +400 MB, before costs.
+In R: a strategy that wins 40% of the time, makes 2.5R when it wins and loses 1R when it loses expects 0.4 × 2.5 - 0.6 × 1 = **+0.4R per trade**. Over 100 trades risking 1,000 MB each, that is about +40,000 MB, before costs.
 
 Q: A strategy wins 40% of the time, makes 2.5R on a win and loses 1R on a loss. What is its expectancy per trade, in R?
 = 0.4 ±0.02
@@ -177,11 +177,11 @@ SUMMARY: Why losses hurt more than gains help, and why protecting capital comes 
 
 A **drawdown** is the fall from an account's peak to a low. Its cruel maths: the bigger the loss, the much bigger the gain needed to get back.
 
-Q: An account falls from 1,000 to 500 MB. What gain does it need to get back to 1,000?
+Q: An account falls from 100,000 to 50,000 MB. What gain does it need to get back to 100,000?
 - 50%
 + 100%
 - 200%
-WHY: 500 must double to reach 1,000.
+WHY: 50,000 must double to reach 100,000.
 
 | Loss | Gain needed to recover |
 | 10% | 11% |

@@ -30,14 +30,15 @@ def adult(e, name):
 
 
 class SourcesAndStartTests(unittest.TestCase):
-    def test_a_new_player_starts_with_1000_mb_recorded_as_a_grant(self):
+    def test_a_new_player_starts_with_the_signup_bonus_recorded_as_a_grant(self):
         e = make_engine(1)
         p = join(e, "starter")
         self.assertEqual(p.cash, 1000.0)
         self.assertEqual(p.mb_by_source, {"grant": 1000.0})
         shipped = _raw_read(e)[3]                       # the content packs as shipped (the test worlds force 1,000 anyway)
-        self.assertEqual(shipped["signup_bonus"], 1000)
-        self.assertEqual(engine.START_CASH, 1000.0)
+        self.assertEqual(shipped["signup_bonus"], 100000)              # the game itself: 100,000 MB (2026-11-15)
+        self.assertEqual(engine.START_CASH, 100000.0)
+        self.assertEqual(shipped["restart_below"], 5000)
 
     def test_every_credit_carries_its_source_and_counts_as_money_put_in(self):
         e = make_engine(2)

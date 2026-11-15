@@ -28,8 +28,8 @@ ACHIEVEMENTS = [
     ("busy_10", "Getting active", "Make 10 trades."),
     ("busy_100", "Market regular", "Make 100 trades."),
     ("busy_500", "Floor trader", "Make 500 trades."),
-    ("green_100", "In the green", "Book 100 MB of realised profit in total."),
-    ("big_win", "Big win", "Close a single trade for at least 100 MB of profit."),
+    ("green_100", "In the green", "Book 10,000 MB of realised profit in total."),
+    ("big_win", "Big win", "Close a single trade for at least 10,000 MB of profit."),
     ("diamond_hands", "Diamond hands", "Close a position at a profit after holding it for at least an hour."),
     ("caught_reversal", "Caught the reversal",
      "Hold a stock through a REVERSAL headline and close it at a profit within ten minutes."),
@@ -243,13 +243,13 @@ class SocialMixin:
         for need, ach in ((10, "busy_10"), (100, "busy_100"), (500, "busy_500")):
             if c.get("trades", 0) >= need:
                 self._unlock(p, ach)
-        if sum(p.realized.values()) >= 100:
+        if sum(p.realized.values()) >= 10000:
             self._unlock(p, "green_100")
         if close is not None:
             kind, tk, pnl, since = close
             if kind == "cover" and pnl > 0:
                 self._unlock(p, "winning_short")
-            if pnl >= 100:
+            if pnl >= 10000:
                 self._unlock(p, "big_win")
             if pnl > 0 and self.now - since >= 3600:
                 self._unlock(p, "diamond_hands")

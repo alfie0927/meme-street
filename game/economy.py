@@ -542,10 +542,10 @@ class EconomyMixin:
 
     # ------------------------------------------------------------------ the free restart
     def _start_balance(self):
-        return float(self.settings.get("signup_bonus", 1000.0))
+        return float(self.settings.get("signup_bonus", 100000.0))
 
     def restart_status(self, p):
-        below = float(self.settings.get("restart_below", 50.0))
+        below = float(self.settings.get("restart_below", 5000.0))
         days = float(self.settings.get("restart_days", 7.0))
         eq = self.equity(p)
         next_at = (p.last_restart or 0.0) + days * 86400

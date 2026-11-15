@@ -2,7 +2,7 @@
 
 **Goal:** an informational game where people **learn to trade, or just trade for fun**, on a realistic, fictional
 stock market. **Technical analysis is the core** (charts that behave like real charts, and the tools to read them);
-news and the economy are background. Everyone starts with **1,000 MB**; MB are a game currency with no cash value,
+news and the economy are background. Everyone starts with **100,000 MB** (since 2026-11-15; 1,000 before); MB are a game currency with no cash value,
 never paid out. The site earns from **MB packages** and **Pro and Expert passes**. **The Daily Chart** is the front
 door, the daily reason to come back and the thing people share: every link lands on it and it needs no account. The
 course is a **path** (units, exercises, XP, a streak). **Instagram reels are how people find the site**: eight a day,
@@ -92,7 +92,7 @@ a frame for itch.io (`/embed/daily`), the visit log, six comparison pages at `/v
 | Learning | A path of **130 lessons in 21 units** (one free start unit, 17 Pro, 3 Expert; the 21st is *Quant research*, 16 lessons, 15 Nov): placement first, lessons as runs of cards, exercises, XP, levels, a streak, a daily goal, review, leagues; a free tier of two lessons a day; eleven kinds of chart test; public lesson pages | The Learn loop's 7 failing checks, power-ups, the rest of LP15 |
 | Found by people | The daily SEO routine (Search Console verified), public lessons, calculators, comparison pages, `/llms.txt`, IndexNow, tracking links, the visit log | Bing, SEO backlog 4, 8, 9, 10, 12, 13; every send in section 4 |
 | Community | Four leaderboards open to visitors; chat with moderation, follows, public profiles; badges | S1 to S4, TA-D7 |
-| Money | 1,000 MB start, MB by source, five packages, the New Launch Deal, Pro and Expert monthly or yearly, refunds, spending limits, the free restart, invite links | M11, M12, M13, M4, M8, M9, B5, B6 |
+| Money | 100,000 MB start (2026-11-15), MB by source, five packages, the New Launch Deal, Pro and Expert monthly or yearly, refunds, spending limits, the free restart, invite links | M11, M12, M13, M4, M8, M9, B5, B6 |
 | Real markets | Nothing yet: no real tickers, data or broker anywhere in the code | RM1 to RM6 |
 | Rules | Terms and privacy, a date of birth at sign-up, the right-to-cancel waiver | R4, R5, R7 to R10 |
 | Running it | Staging, rollback, backups off the server, uptime check, CI with lint and types, an error tracker, capacity measured (about 1,000 players at once; 200 visitors opening the Daily at once, none failed) | O4, O8, O11, E2, E5, E6, E7, E9, E11, E14 |

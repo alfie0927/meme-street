@@ -8,7 +8,7 @@ board of the day's returns.
   game year, from 40% to 350%): the price usually swings 10% to 20% inside the two minutes, and some days far more.
   It is seeded from the day and a salt kept in the save (so it cannot be worked out in advance), and the chart itself
   is saved too, so a restart or a new version of the code changes nothing on the day.
-* **A game**: 1,000 MB of paper money. Start shows `HISTORY` candles at once (the lead-in, to read the levels from), then
+* **A game**: 100,000 MB of paper money. Start shows `HISTORY` candles at once (the lead-in, to read the levels from), then
   one new candle a second for `LIVE` seconds, at the close of the last candle shown, with no fees:
   - **Buy** 25, 50, 75 or 100% of the cash; while short, Buy **covers** that share of the short.
   - **Sell** 25, 50, 75 or 100% of the shares; with none, Sell opens a **short** of that share of what the account is
@@ -40,7 +40,8 @@ HISTORY = 60                 # lead-in candles shown at the start
 LIVE = 120                   # candles that appear one a second: the game
 MODEL_SECONDS = 30           # model seconds in a candle
 STEP = 5                     # model seconds a step
-START_CASH = 1000.0
+START_CASH = 100000.0
+OLD_START = 1000.0     # what games started before 2026-11-15 had (a game keeps its own `start`)
 CHIPS = (0.25, 0.5, 0.75, 1.0)
 DAY_SECONDS = 86400          # a real day, as the game's days (UTC)
 BOARD = 20
@@ -199,7 +200,7 @@ class DailyMixin:
             return
         last = self.daily_game["chart"]["candles"][-1][3]
         play["equity"] = max(0.0, play["cash"] + play["shares"] * last)     # (a short cannot lose more than everything)
-        play["ret"] = play["equity"] / START_CASH - 1
+        play["ret"] = play["equity"] / play.get("start", OLD_START) - 1
         play["done"] = True
         play["end"] = play["t0"] + LIVE
         self._daily_record(play)
@@ -258,7 +259,7 @@ class DailyMixin:
     def _daily_grid(play, cs):
         """One square per stretch of the two minutes: +1 if the account's worth rose over it, -1 if it fell, 0 if flat."""
         trades = sorted(play["trades"], key=lambda t: t[0])
-        cash, shares, j, worth = START_CASH, 0.0, 0, []
+        cash, shares, j, worth = play.get("start", OLD_START), 0.0, 0, []
         step = LIVE // SQUARES
         for k in range(SQUARES + 1):
             i = HISTORY - 1 + k * step
@@ -434,9 +435,9 @@ class DailyMixin:
         if getattr(p, "visitor", False):
             if len(plays) >= 50000:                                        # (a ceiling on what visitors can make the save hold)
                 return {"error": "Create a free account to play"}
-            plays[p.token] = {"name": "You", "visitor": True, "t0": self.now, "cash": START_CASH, "shares": 0.0, "trades": []}
+            plays[p.token] = {"name": "You", "visitor": True, "t0": self.now, "cash": START_CASH, "start": START_CASH, "shares": 0.0, "trades": []}
         else:
-            plays[p.token] = {"name": p.name, "token": p.token, "t0": self.now, "cash": START_CASH, "shares": 0.0, "trades": []}
+            plays[p.token] = {"name": p.name, "token": p.token, "t0": self.now, "cash": START_CASH, "start": START_CASH, "shares": 0.0, "trades": []}
         return self._daily_state(plays[p.token])
 
     def daily_poll(self, p, since=0):

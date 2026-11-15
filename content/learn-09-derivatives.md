@@ -55,7 +55,7 @@ HERE: One contract is on 100 shares; you buy whole contracts at the ask and sell
 
 [try /stock/NVXA] Open Novaxis's Options tab, click a call near the price, and read its breakeven and its profit-or-loss chart.
 
-[task option] Buy one call or put from a company's Options tab, sized like any trade. One contract is 100 shares, so near the price it can cost 250 MB or more: a quarter of a 1,000 MB account, far too much to risk on one bet in a real account. Pick a far out-of-the-money strike on the nearest expiry, or a low-priced company, so the contract costs about 10 MB (1% of the account). The whole premium is what you risk. Then watch its delta and theta.
+[task option] Buy one call or put from a company's Options tab, sized like any trade. One contract is 100 shares, so near the price it can cost a few hundred to a few thousand MB. Keep the premium to about 1% of your account (1,000 MB on 100,000): pick a strike and expiry whose contract costs no more than that. The whole premium is what you risk. Then watch its delta and theta.
 
 ## How options are priced: intrinsic and time value {options-pricing} [7]
 SUMMARY: What an option's price is made of, and moneyness.

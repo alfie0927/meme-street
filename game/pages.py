@@ -25,20 +25,20 @@ DAILY_TEXT = ("A daily stock market game, no account needed: one new chart a day
 DAILY_SHOWN = ('<div class="dly-wrap"><div class="dly-hero"><h1 class="dly-tag">The Daily Chart<br>Two minutes. One chart. '
                'The same one for everyone.</h1><p class="dly-how">The candles print one a second. Tap <b>Buy</b> if you '
                'think the price will rise, <b>Sell</b> if it will fall, and try to beat the stock.</p>'
-               '<p class="dly-small">No account needed · one go a day · 1,000 MB of practice money</p>'
+               '<p class="dly-small">No account needed · one go a day · 100,000 MB of practice money</p>'
                '<noscript><p>Turn on JavaScript to play.</p></noscript></div><div class="dly-about">'
                '<h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. '
-               'You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you '
+               'You start with 100,000 MB of practice money and have two minutes: the candles print one a second, and you '
                'buy, sell or short as they come. When the time is up you see your return, your place, and how every '
                'other player did.</p><p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a '
                'result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts '
                'at midnight UTC. New to charts? Start with the <a href="/lessons">lessons</a> or read '
                '<a href="/about">about Meme Street</a>.</p></div></div>')
-HOME_TEXT = ("Meme Street is a made-up stock market that runs around the clock. Learn to trade with 1,000 MB of practice "
+HOME_TEXT = ("Meme Street is a made-up stock market that runs around the clock. Learn to trade with 100,000 MB of practice "
              "money (memebucks, no cash value) and no real cash at risk, with lessons and a new chart game every day.")
 HOME_BODY = ("<main><h1>Meme Street: a stock market game with play money</h1>"
              "<p>Meme Street is a made-up stock market that never closes, with 180+ companies, indices and funds, news that "
-             "moves prices and a daily leaderboard. Everyone starts with 1,000 MB (memebucks), practice money with no cash "
+             "moves prices and a daily leaderboard. Everyone starts with 100,000 MB (memebucks), practice money with no cash "
              "value, so you can learn to trade without risking real cash.</p>"
              "<p>Turn on JavaScript to watch the market live and trade. New to trading? Start with the "
              "<a href=\"/lessons\">lessons</a>, try the <a href=\"/daily\">Daily Chart</a>, or read "

@@ -37,7 +37,7 @@ the line is the article; everything above it is for you.
 
 Meme Street is a stock market where every company is invented. It runs around the clock, has 180+ companies,
 indices and funds, news that moves prices, and 72 house bots that trade beside the players. Everyone starts with
-1,000 MB of practice money, which has no cash value and is never paid out. You can watch it, or play its
+100,000 MB of practice money, which has no cash value and is never paid out. You can watch it, or play its
 two-minute Daily Chart without an account, at https://memestreet.net/?ref=devto.
 
 [One or two sentences in your own words: why you built it.]

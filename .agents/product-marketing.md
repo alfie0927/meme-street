@@ -9,7 +9,7 @@ and the Instagram audit in `growth/instagram.md`. When the product changes, the 
 ## Product Overview
 **One-liner:** A made-up stock market that never closes, for learning to trade with practice money.
 **What it does:** 180+ invented stocks, indices and funds whose prices follow made-up news, the economy and how
-traders act around levels, never the players. Everyone starts with 1,000 MB (memebucks), practice money with no cash
+traders act around levels, never the players. Everyone starts with 100,000 MB (memebucks), practice money with no cash
 value. Free lessons teach charts, orders and risk on the same market, and the Daily Chart is a two-minute daily
 game on one mystery chart, the same for everyone.
 **Product category:** stock market game / trading simulator / daily chart game ("like Wordle, for trading").
@@ -125,7 +125,7 @@ markets with dozens of strategies.
 **Value themes:**
 | Theme | Proof |
 |-------|-------|
-| Safe to fail | 1,000 MB of practice money, no cash value |
+| Safe to fail | 100,000 MB of practice money, no cash value |
 | Fair | Nobody's trade moves a price; paying can't buy a rank |
 | Learnable | Lessons on the same market; the no-free-money checks |
 | Quick | The Daily Chart takes two minutes |

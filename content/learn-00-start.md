@@ -4,7 +4,7 @@ How Meme Street works, your first trade with a stop, and where everything is. Re
 
 ## How Meme Street works {welcome} [4]
 SUMMARY: Memebucks, fees, what moves prices, and what is the same as a real market and what is not.
-Meme Street is a practice stock market. The companies are fictional, the prices are live, and you trade with **memebucks (MB)**: practice money with no cash value that is never paid out. Everyone starts with 1,000 MB. Losing them costs you nothing real, which makes this the cheapest place there is to make a trader's mistakes.
+Meme Street is a practice stock market. The companies are fictional, the prices are live, and you trade with **memebucks (MB)**: practice money with no cash value that is never paid out. Everyone starts with 100,000 MB. Losing them costs you nothing real, which makes this the cheapest place there is to make a trader's mistakes.
 
 ### What you can trade
 - **Companies**: about 150 of them in 30 industries, from banks and chip makers to a few imaginary industries (portals, weather control, dreams).
@@ -49,7 +49,7 @@ WHY: Pre-market (5 minutes), the regular session (20) and after-hours (5): a gam
 
 TIP: The leaderboards rank your return on the money you put in, so buying more MB never buys you a better place.
 
-[task trade] Make your first trade: open a company's page and buy about 10 MB of it.
+[task trade] Make your first trade: open a company's page and buy about 1,000 MB of it.
 
 ## Your first trade, with a stop {first-trade} [5]
 SUMMARY: Buying, setting a stop-loss and a take-profit, and sizing the trade from the stop.
@@ -78,11 +78,11 @@ Under the order panel on a stock's page is **Position size and risk**. Type your
 
 It tells you how many MB to buy, what you lose at the stop and what you make at the target, and **Fill in the trade and the bracket** sets it all up for you.
 
-Q: You will risk 1% of a 1,000 MB account. The stop is 5% below your entry. How big can the position be?
-- 10 MB
-+ 200 MB
+Q: You will risk 1% of a 100,000 MB account. The stop is 5% below your entry. How big can the position be?
 - 1,000 MB
-WHY: 1% of 1,000 MB is 10 MB of risk. A 5% fall on 200 MB is 10 MB, so 200 MB is the most you can buy.
++ 20,000 MB
+- 100,000 MB
+WHY: 1% of 100,000 MB is 1,000 MB of risk. A 5% fall on 20,000 MB is 1,000 MB, so 20,000 MB is the most you can buy.
 
 ### 4. Buy, then set the bracket
 Press Buy, then **Set bracket**: a stop-loss and a take-profit placed together. Whichever is hit first closes the position and cancels the other. You can see and move both on the Holdings page, in the *Take profit* and *Stop-loss* columns, and they show on the chart as red and green lines.

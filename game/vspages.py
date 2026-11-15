@@ -11,7 +11,7 @@ from lessonpages import CSS, CTA, FOOT, HEAD
 
 ASOF = "November 2026"
 OURS = {"trade": "180+ made-up companies, with indices and funds", "prices": "Made by the game's price model. Nobody's trade moves a price.",
-        "hours": "All day, every day", "start": "1,000 MB (practice money, no cash value)"}
+        "hours": "All day, every day", "start": "100,000 MB (practice money, no cash value)"}
 CANNOT = ("It has no real companies, no real prices and no real news, so it will not teach you anything about a particular "
           "share. A made-up market is also a model: real markets can behave in ways it does not. It is for learning how "
           "charts, orders and risk work.")
@@ -81,7 +81,7 @@ VS["wordle"] = {
             "chart instead of a word. One chart a day, two minutes on the clock, and a result to share.",
     "what": "Wordle is The New York Times' daily word game. Everyone gets the same five-letter word, six guesses to find "
             "it, and a grid of coloured squares to share when they are done. One puzzle a day, and then you wait for tomorrow's.",
-    "rows": [["What you do", "Guess a five-letter word", "Trade one made-up stock chart with 1,000 MB of practice money"],
+    "rows": [["What you do", "Guess a five-letter word", "Trade one made-up stock chart with 100,000 MB of practice money"],
              ["How often", "One puzzle a day, the same for everyone", "One chart a day, the same for everyone. The next starts at midnight UTC."],
              ["How long", "Six guesses", "Two minutes: a new candle prints every second"],
              ["What you share", "A grid of coloured squares", "A grid of eight squares and your return"],
@@ -108,7 +108,7 @@ def _diff(n_lessons, n_tracks):
             "<b>It never closes.</b> Prices move all day, every day, and a game day lasts 30 real minutes, so a week here holds far more opens, closes and earnings reports than a week of a real market.",
             '<b>A two-minute game each day.</b> The <a href="/daily">Daily Chart</a> gives everyone the same chart, two minutes to trade it, and a board to compare returns.',
             f'<b>Lessons tied to the market.</b> {n_lessons} short <a href="/lessons">lessons</a> in {n_tracks} tracks, each one practised on the live market.',
-            "<b>1,000 MB to start.</b> MB are practice money: no cash value, never paid out.",
+            "<b>100,000 MB to start.</b> MB are practice money: no cash value, never paid out.",
             "<b>What is sold.</b> Opening an account is free. The shop sells extra MB and two memberships: Pro, with leverage and more chart indicators, and Expert, with scripted bots and backtests."]
 
 

@@ -104,6 +104,7 @@ class GameTests(unittest.TestCase):
         self.assertNotIn("candles", json.dumps(e.daily_view(join(e, "spy"))))       # nor does anyone who has not started
 
     def test_trades_at_the_last_close_and_the_end(self):
+        K = daily.START_CASH
         e, p = self.e, self.p
         e.daily_start(p)
         cs = e.daily_game["chart"]["candles"]
@@ -111,14 +112,14 @@ class GameTests(unittest.TestCase):
         price = cs[daily.HISTORY + 4][3]
         st = e.daily_trade(p, "buy", 0.5)
         self.assertNotIn("error", st)
-        self.assertAlmostEqual(st["cash"], 500, places=6)
-        self.assertAlmostEqual(st["shares"], 500 / price, places=9)
+        self.assertAlmostEqual(st["cash"], K / 2, places=6)
+        self.assertAlmostEqual(st["shares"], K / 2 / price, places=9)
         for bad in (("buy", 0.3), ("short", 0.5), ("sell", "x")):
             self.assertIn("error", e.daily_trade(p, *bad))
         e.now += 20
         price2 = cs[daily.HISTORY + 24][3]
         st = e.daily_trade(p, "sell", 1.0)
-        self.assertAlmostEqual(st["cash"], 500 + 500 / price * price2, places=6)
+        self.assertAlmostEqual(st["cash"], K / 2 + K / 2 / price * price2, places=6)
         self.assertEqual(st["shares"], 0)
         st = e.daily_trade(p, "buy", 1.0)
         held = st["shares"]
@@ -128,10 +129,11 @@ class GameTests(unittest.TestCase):
         st = e.daily_poll(p, 0)
         self.assertTrue(st["done"])
         self.assertEqual(len(st["candles"]), len(cs))                                # now the whole chart
-        self.assertAlmostEqual(st["ret"], held * cs[-1][3] / 1000 - 1, places=9)
+        self.assertAlmostEqual(st["ret"], held * cs[-1][3] / K - 1, places=9)
         self.assertEqual(st["rank"], 1)
 
     def test_shorts_and_covering(self):
+        K = daily.START_CASH
         e, p = self.e, self.p
         e.daily_start(p)
         cs = e.daily_game["chart"]["candles"]
@@ -140,16 +142,16 @@ class GameTests(unittest.TestCase):
         st = e.daily_trade(p, "sell", 1.0)                                           # no shares: a short
         self.assertNotIn("error", st)
         self.assertEqual(st["trades"][-1][1], "short")
-        self.assertAlmostEqual(st["shares"], -1000 / price, places=9)
-        self.assertAlmostEqual(st["cash"], 2000, places=6)
-        self.assertAlmostEqual(st["equity"], 1000, places=6)                         # nothing gained or lost yet
+        self.assertAlmostEqual(st["shares"], -K / price, places=9)
+        self.assertAlmostEqual(st["cash"], 2 * K, places=6)
+        self.assertAlmostEqual(st["equity"], K, places=6)                         # nothing gained or lost yet
         self.assertIn("error", e.daily_trade(p, "sell", 0.5))                        # already as short as the account allows
         e.now += 5
         price2 = cs[daily.HISTORY + 7][3]
         st = e.daily_trade(p, "buy", 0.5)                                            # buying covers half of it
         self.assertEqual(st["trades"][-1][1], "cover")
-        self.assertAlmostEqual(st["shares"], -500 / price, places=9)
-        self.assertAlmostEqual(st["equity"], 1000 + 1000 / price * (price - price2), places=6)
+        self.assertAlmostEqual(st["shares"], -K / 2 / price, places=9)
+        self.assertAlmostEqual(st["equity"], K + K / price * (price - price2), places=6)
         st = e.daily_trade(p, "buy", 1.0)
         self.assertEqual(st["shares"], 0)
         st = e.daily_trade(p, "sell", 0.5)                                           # flat again: a new short, half
@@ -157,7 +159,17 @@ class GameTests(unittest.TestCase):
         e.now += daily.LIVE
         st = e.daily_poll(p, 0)
         self.assertTrue(st["done"])
-        self.assertAlmostEqual(st["ret"], st["equity"] / 1000 - 1, places=9)
+        self.assertAlmostEqual(st["ret"], st["equity"] / K - 1, places=9)
+
+    def test_a_game_started_before_the_move_to_100000_keeps_its_own_start(self):
+        e, p = self.e, self.p
+        e.daily_start(p)
+        play = e.daily_game["plays"][p.token]
+        self.assertEqual(play["start"], daily.START_CASH)
+        del play["start"]                                                            # a game saved on 2026-11-14
+        play["cash"] = daily.OLD_START
+        e.now += daily.LIVE
+        self.assertAlmostEqual(e.daily_poll(p, 0)["ret"], 0.0, places=9)             # 1,000 MB held flat: 0%, not -99%
 
     def test_a_short_cannot_lose_more_than_everything(self):
         e, p = self.e, self.p
@@ -460,7 +472,7 @@ class ServerTests(unittest.TestCase):
             st = json.loads(text)
             self.assertEqual(len(st["candles"]), daily.HISTORY)
             status, text, _ = http(srv, "/api/daily/trade", "POST", {"side": "buy", "pct": 0.25}, headers=h)
-            self.assertAlmostEqual(json.loads(text)["cash"], 750, places=6)
+            self.assertAlmostEqual(json.loads(text)["cash"], 0.75 * daily.START_CASH, places=6)
             status, text, _ = http(srv, f"/api/daily/state?since={daily.HISTORY}", headers=h)
             self.assertEqual(status, 200)
             self.assertLessEqual(len(json.loads(text)["candles"]), 5)

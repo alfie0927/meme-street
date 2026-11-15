@@ -34,7 +34,7 @@ button{font-family:inherit;font-weight:700;line-height:1.2}
 </style></head><body><div id="app" class="s-intro">
 <div class="hd"><h1>Daily Chart <b id="num"></b></h1><span class="by">by Meme Street</span></div>
 <div id="intro"><p class="tag">Two minutes.<br>One chart.</p>
-<p class="how">A made-up stock and 1,000 MB of practice money. A new candle prints every second. Buy if you think it will rise, short if you think it will fall. After two minutes, see how you did against the stock.</p>
+<p class="how">A made-up stock and 100,000 MB of practice money. A new candle prints every second. Buy if you think it will rise, short if you think it will fall. After two minutes, see how you did against the stock.</p>
 <button class="go" id="play">Play</button><p class="small">Practice money only. MB have no cash value.</p></div>
 <div id="top"><div id="clock">2:00</div><div><div id="ret" class="fl">0.0%</div><div id="eq"></div></div></div>
 <div id="cw"><canvas id="cv" aria-label="Price chart"></canvas></div>
@@ -48,7 +48,7 @@ button{font-family:inherit;font-weight:700;line-height:1.2}
 </div>
 <script>
 const CHARTS=/*CHARTS*/[];      // baked by tools/portal_build.py: per chart, 180 of [open,high,low,close]
-const HISTORY=60,LIVE=120,START=1000,SQUARES=8,$=id=>document.getElementById(id);
+const HISTORY=60,LIVE=120,START=100000,SQUARES=8,$=id=>document.getElementById(id);
 // ---- the rules, as game/daily.py has them (no fees; a short is at most the account's worth) ----
 function newGame(ci){return{ci,cs:CHARTS[ci],cash:START,shares:0,trades:[]}}
 function trade(g,side,pct,n){                    // n: candles shown so far; the price is the last one's close

@@ -133,7 +133,7 @@ The `ref` tag means anyone who signs up from it shows in the admin panel's sign-
 - The best hold: "A bed maker that lets you pick your dream? Meet SleepNation Beds." (7 Nov, 70% kept)
 
 **5. Highlights**, once the daily Story below has run for a week: **Play** (how the Daily Chart works, three
-Stories), **How it works** (made-up market, 1,000 MB of practice money, no cash value), **Daily Chart** (the daily
+Stories), **How it works** (made-up market, 100,000 MB of practice money, no cash value), **Daily Chart** (the daily
 Stories), **Lessons**.
 
 **6. Category and contact:** in Edit profile, set the category to "Video game" or "Education" and keep a contact

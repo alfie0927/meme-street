@@ -4,8 +4,8 @@ Built 2026-11-07 from the code and the live site. Every fact has its source. If 
 
 ## What it is
 A fictional stock market that runs around the clock, for learning to trade without real money. Everyone starts with
-**1,000 MB** (memebucks), practice money with no cash value that is never paid out.
-- Start balance 1,000 MB: `game/engine.py` `START_CASH = 1000.0`; docs/ROADMAP.md §0.
+**100,000 MB** (memebucks), practice money with no cash value that is never paid out.
+- Start balance 100,000 MB: `game/engine.py` `START_CASH = 100000.0` (since 2026-11-15; it was 1,000); docs/ROADMAP.md §0.
 - 180+ invented stocks, indices and funds: claimed on `web/about.html` and `web/index.html`. Code has 157 companies
   across `content/base.json`, `expansion.json`, `pack_fiction.json`, `pack_growth.json`, plus indices and derived funds. Not re-counted live.
 - Fee 0.1% per side, no hidden spread: `game/engine.py` `FEE = 0.001`.

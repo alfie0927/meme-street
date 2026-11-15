@@ -66,10 +66,10 @@ class AchievementTests(unittest.TestCase):
         e.trade(p, "NVXA", "buy", 1.0)
         self.assertNotIn("winning_short", unlocked(p))
 
-    def test_big_win_needs_100_mb_profit_on_one_trade(self):
+    def test_big_win_needs_10000_mb_profit_on_one_trade(self):
         e, p = self.e, self.p
-        e.credit(p, 9000)
-        e.trade(p, "CLDR", "buy", 0.9, amount=1500)
+        e.credit(p, 99000)
+        e.trade(p, "CLDR", "buy", 0.9, amount=50000)
         step(e)
         e.stocks["CLDR"].fair *= 1.3
         e.trade(p, "CLDR", "sell", 1.0)
@@ -78,7 +78,8 @@ class AchievementTests(unittest.TestCase):
 
     def test_small_win_does_not_earn_big_win(self):
         e, p = self.e, self.p
-        e.trade(p, "CLDR", "buy", 0.2)
+        e.credit(p, 99000)
+        e.trade(p, "CLDR", "buy", 0.9, amount=50000)                  # +5,000 MB: half a big win
         step(e)
         e.stocks["CLDR"].fair *= 1.1
         e.trade(p, "CLDR", "sell", 1.0)

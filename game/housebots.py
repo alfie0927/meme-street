@@ -2,7 +2,7 @@
 people do (since 2026-10-27, on request). They are switched on by the `house_bots` setting or `HOUSE_BOTS=1` in the
 environment (the live server sets it in /etc/memestreet.env); tests and new games have none.
 
-Each bot is an ordinary account (it starts with the usual 1,000 MB and trades through `Engine.trade`, `set_exit` and the
+Each bot is an ordinary account (it starts with the usual 100,000 MB and trades through `Engine.trade`, `set_exit` and the
 Daily Chart's own calls, under the same rules, fees and prices as anyone) with a persona kept in `p.hb`:
 
 * **style**: what it looks for: `trend` (price above rising averages), `dip` (a sharp fall into oversold), `breakout`

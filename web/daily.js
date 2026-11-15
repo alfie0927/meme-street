@@ -4,7 +4,7 @@
 // its globals (S, page, api, postJson, refreshers...).
 let dly=null,dlyG=null,dlyT=null,dlyBusy=false,dlyWasRunning=false,dlySize=Number(lsGet('ms_daily_size',1))||1,dlyCd=null;
 const dlyHdr=()=>token?{'X-Token':token}:{'X-Visitor':visitorId()};   // (a logged-out visitor plays too, off the board)
-const DLY_ABOUT=`<div class="dly-about"><h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. You start with 1,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how every other player did.</p>
+const DLY_ABOUT=`<div class="dly-about"><h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. You start with 100,000 MB of practice money and have two minutes: the candles print one a second, and you buy, sell or short as they come. When the time is up you see your return, your place, and how every other player did.</p>
   <p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts at midnight UTC.</p></div>`;
 // a visitor's result first, then this under it, naming the result (growth plan, 2026-11-10)
 const dlySave=g=>`<div class="dly-save"><b>Save your ${g?pc(g.ret):'result'} and start your streak</b><p>Make a free account (under a minute) and today's result goes on the leaderboard. Without one it is not kept.</p><button class="dly-go" data-dly-join data-why="Save your ${g?pc(g.ret):'result'} and start a streak: today's result goes on the board.">Save my result</button></div>`;
@@ -117,13 +117,13 @@ function dlyHelp(){
   <li><b>Sell with nothing held and you short</b>: you win if it falls. Buy covers the short.</li>
   <li>At the end everything is valued at the last price. Your <b>return</b> is your score.</li>
   <li><b>One go a day.</b> Keep your streak going, beat the stock, and top the board.</li></ul>
-  <p class="mut" style="margin:10px 0 0">Practice money (1,000 MB just for this game), not your account's MB. On a keyboard: <b>B</b> buy, <b>S</b> sell, <b>1</b>-<b>4</b> the size.</p>`,'How to play')}
+  <p class="mut" style="margin:10px 0 0">Practice money (100,000 MB just for this game), not your account's MB. On a keyboard: <b>B</b> buy, <b>S</b> sell, <b>1</b>-<b>4</b> the size.</p>`,'How to play')}
 function dlyStatsPop(){const d=dly;if(!d)return;dlyPop(`<h3 class="dly-mt">Your Daily Chart</h3>${dlyStatRow(d.stats)}<p class="mut" style="margin:8px 0 0">Best return: ${d.stats.best===null?'-':pc(d.stats.best)}. A streak counts days in a row; miss a day and it starts again.</p><div class="dly-next">Next chart in <b class="dly-cd">${dlyHMS(d.next-engineNow())}</b></div>`,'Your stats')}
 // the countdown to the next chart, on the page and in a box, once a second while either shows it
 function dlyCountdown(){if(dlyCd)return;dlyCd=setInterval(()=>{const els=document.querySelectorAll('.dly-cd');const pop=$('dly-pop');if(!dly||!els.length||(page!=='daily'&&!(pop&&pop.style.display==='flex'))){clearInterval(dlyCd);dlyCd=null;return}
  const left=dly.next-engineNow();els.forEach(e=>e.textContent=dlyHMS(left));if(left<=0){clearInterval(dlyCd);dlyCd=null;loadDaily()}},1000)}
 function dlyNeedAccount(){const h=document.querySelector('#daily-body .dly-hero');if(!h)return;
- setHtml(h,`<p class="dly-tag">Today's visitor games are used up here</p><p class="mut" style="margin:6px 0 12px">Visitors share three games a day per internet address, and phones on one mobile network or a school's wifi share one address. A free account takes under a minute and plays today's chart now.</p><button class="dly-go" data-dly-join data-why="Make an account to play today's chart: the visitor games on this network are used up.">Create an account to play</button><p class="dly-small">One go a day · 1,000 MB of practice money</p>`)}
+ setHtml(h,`<p class="dly-tag">Today's visitor games are used up here</p><p class="mut" style="margin:6px 0 12px">Visitors share three games a day per internet address, and phones on one mobile network or a school's wifi share one address. A free account takes under a minute and plays today's chart now.</p><button class="dly-go" data-dly-join data-why="Make an account to play today's chart: the visitor games on this network are used up.">Create an account to play</button><p class="dly-small">One go a day · 100,000 MB of practice money</p>`)}
 function drawDailyGuest(){
  const el=$('daily-body');if(!el)return;el._st='guest';
  setHtml(el,`<div class="dly-wrap"><div class="dly-head"><div><div class="dly-title">Daily Chart</div><div class="dly-sub">A new chart every day</div></div><div class="dly-icons"><button class="dly-ic" data-dly-help aria-label="How to play">?</button></div></div>
@@ -134,7 +134,7 @@ function drawDaily(){
  if(el._st!==st+d.visitor){el._st=st+d.visitor;
   if(st==='new')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-hero"><p class="dly-tag">Two minutes. One chart.<br>The same one for everyone.</p>
    ${d.stats.streak?`<p class="dly-streak">Streak <b>${d.stats.streak}</b> day${d.stats.streak===1?'':'s'}: keep it going</p>`:''}${(v=>v?`<p class="dly-chal"><b>${dlyVsName(v)}</b> got <b class="${clsP(v.ret)}">${pc(v.ret)}</b> on this chart. Beat it.</p>`:'')(dlyVsFor(d))}${d.visitor?'<p class="dly-how">The candles print one a second. Tap <b>Buy</b> if you think the price will rise, <b>Sell</b> if it will fall, and try to beat the stock.</p>':''}<button class="dly-go" id="dly-start">Play</button>
-   <p class="dly-small">${d.visitor?'No account needed · ':''}One go a day · 1,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div>${d.visitor?DLY_ABOUT:''}</div>`);
+   <p class="dly-small">${d.visitor?'No account needed · ':''}One go a day · 100,000 MB of practice money · <a href="#" data-dly-help>how to play</a></p></div><div id="dly-board"></div>${d.visitor?DLY_ABOUT:''}</div>`);
   else if(st==='running')setHtml(el,`<div class="dly-wrap">${dlyHead(d)}<div class="dly-top"><div class="dly-timer" id="dly-timer"></div><div class="dly-pnl"><div class="dly-ret" id="dly-ret"></div><div class="dly-eq" id="dly-eq"></div></div></div>
    <div id="dly-chart" class="dly-chart"></div><div class="dly-pos" id="dly-pos"></div>
    <div class="dly-sizes" role="group" aria-label="Size">${[0.25,0.5,0.75,1].map((p,i)=>`<button data-dly-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
