@@ -148,7 +148,7 @@ class ServerTests(unittest.TestCase):
         self.assertTrue(body.startswith("# Meme Street\n\n> "))
         self.assertIn("/lessons/position-sizing): ", body)
         self.assertIn("no cash value", body)
-        for tool in ("position-size", "risk-reward", "stop-loss", "drawdown-recovery"):
+        for tool in ("position-size", "risk-reward", "stop-loss", "drawdown-recovery", "expectancy"):
             self.assertIn(f"/tools/{tool}-calculator): ", body)
         import pages
         self.assertEqual(http(self.srv, f"/{pages.INDEXNOW_KEY}.txt")[:2], (200, pages.INDEXNOW_KEY))
@@ -221,6 +221,17 @@ class ServerTests(unittest.TestCase):
         self.assertIn("/tools/drawdown-recovery-calculator</loc>", body)
         status, body, _ = http(self.srv, "/lessons/drawdown")
         self.assertIn('href="/tools/drawdown-recovery-calculator"', body)
+
+    def test_the_expectancy_calculator_is_a_plain_page(self):
+        status, body, _ = http(self.srv, "/tools/expectancy-calculator")
+        self.assertEqual(status, 200)
+        self.assertIn("<h1>Expectancy calculator</h1>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/tools/expectancy-calculator"', body)
+        self.assertIn('id="wr"', body)
+        status, body, _ = http(self.srv, "/sitemap.xml")
+        self.assertIn("/tools/expectancy-calculator</loc>", body)
+        status, body, _ = http(self.srv, "/lessons/expectancy")
+        self.assertIn('href="/tools/expectancy-calculator"', body)
 
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")
