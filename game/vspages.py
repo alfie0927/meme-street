@@ -109,7 +109,7 @@ def _diff(n_lessons, n_tracks):
             '<b>A two-minute game each day.</b> The <a href="/daily">Daily Chart</a> gives everyone the same chart, two minutes to trade it, and a board to compare returns.',
             f'<b>Lessons tied to the market.</b> {n_lessons} short <a href="/lessons">lessons</a> in {n_tracks} tracks, each one practised on the live market.',
             "<b>100,000 MB to start.</b> MB are practice money: no cash value, never paid out.",
-            "<b>What is sold.</b> Opening an account is free. The shop sells extra MB and two memberships: Pro, with leverage and more chart indicators, and Expert, with scripted bots and backtests."]
+            "<b>What is sold.</b> Opening an account is free. MB are never sold; the shop sells two memberships: Pro, with leverage and more chart indicators, and Expert, with scripted bots and backtests."]
 
 
 def _shell(site, path, title, desc, crumb, body):

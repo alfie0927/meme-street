@@ -25,13 +25,7 @@
   "signup_bonus": 100000,
   "min_age": 13,
   "shop_currency": "usd",
-  "shop_packages": [
-    {"sku": "mb1000", "mb": 1000, "price_cents": 199},
-    {"sku": "mb5000", "mb": 5000, "price_cents": 799},
-    {"sku": "mb10000", "mb": 10000, "price_cents": 1399},
-    {"sku": "mb50000", "mb": 50000, "price_cents": 5999},
-    {"sku": "mb100000", "mb": 100000, "price_cents": 9999}
-  ],
+  "shop_packages": [],
   "shop_pro": [
     {"sku": "pro_month", "days": 30, "price_cents": 999, "renews": true},
     {"sku": "pro_year", "days": 365, "price_cents": 9999}

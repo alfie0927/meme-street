@@ -497,9 +497,8 @@ body.guest .guest-cta{display:flex}
 <div class="cal-day" id="cal-day"></div>
 <h3 class="sp">Latest releases</h3><table id="cal-past"></table></div>
 <div class="card" id="shop-card"><h3>Shop</h3>
-<p class="about" style="margin-top:0">Everyone starts with 100,000 MB of practice money, and you can buy more here if you run out. MB can't be withdrawn, sold or swapped for anything. The return boards rank what you make on the money you put in, so buying MB never lifts your place on them.</p>
+<p class="about" style="margin-top:0">Everyone starts with 100,000 MB of practice money. MB aren't sold, and can't be withdrawn, sold or swapped for anything. If you run out, the free restart tops you back up. The shop sells two memberships with extra tools.</p>
 <div id="shop-mode"></div><div id="shop-deal"></div>
-<h3 class="sp">MB packages</h3><div class="pkg-grid" id="shop-pkgs"></div>
 <h3 class="sp">Meme Street Pro</h3><div id="shop-pro"></div><h3 class="sp">Meme Street Expert</h3><div id="shop-expert"></div>
 <h3 class="sp">Your purchases</h3><table id="shop-orders"></table></div>
 <div class="card" id="player-card"><div id="player-body" class="mut">Loading…</div></div>
@@ -1493,10 +1492,10 @@ function render(){
   setHtml($('board'),'<tr><th>#</th><th>Trader</th><th>Return</th></tr>'+S.board.map((r,i)=>`<tr><td>${i+1}</td><td>${nameHtml(r.name,r.style)}</td><td class="${clsP(r.ret)}">${pc(r.ret)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="text-align:left">Nobody has made a trade today.</td></tr>')}
  drawChips()}
 
-// ---------- the shop (economy.py): MB packages, the Pro pass, the age rules, the spending limit, the free restart ----------
+// ---------- the shop (economy.py): the Pro and Expert passes, the age rules, the spending limit, the free restart ----------
 let shopData=null,shopWait=0;
 const ORDER_STATUS={paid:'Paid',refunded:'Refunded',expired:'Expired (not paid)',cancelled:'Cancelled',failed:'Failed'};
-document.addEventListener('click',e=>{if(e.target.closest('[data-shop-join]'))openSignin('register','Create an account to buy MB or a pass')});
+document.addEventListener('click',e=>{if(e.target.closest('[data-shop-join]'))openSignin('register','Create an account to buy a pass')});
 async function loadShop(){const d=await api('/api/shop');if(!d||d.slow||d.notfound||d.error)return;shopData=d;drawShop();shopReturn()}
 function shopReturn(){            // back from the payment page: say what happened, then tidy the address bar
  const q=new URLSearchParams(location.search),paid=q.get('paid'),cancelled=q.get('cancelled');
@@ -1512,9 +1511,8 @@ function drawShop(){
  const d=shopData;if(!d)return;const c=d.catalog;
  setHtml($('shop-mode'),d.mode==='test'?'<div class="notice-box">Test mode: purchases go through a pretend checkout and no money is taken.</div>':!d.selling?'<div class="notice-box">The shop is not open yet. The prices below are what it will charge.</div>':'');
  const buyBtn=x=>d.guest?'<button class="buy" data-shop-join>Create an account</button>':`<button class="buy" data-sku="${esc(x.sku)}" ${d.selling?'':'disabled'}>Buy</button>`;
- const left=dealList(),mbd=left.filter(x=>x.kind==='package'),pd=left.filter(x=>x.kind!=='package');
- setHtml($('shop-deal'),dealOn()?`<div class="deal-strip"><span><span class="deal-tag">NEW LAUNCH DEAL</span> ${[mbd.length?mbd.map(x=>`<b>${numText(x.mb,0)} MB</b> for <b>${esc(x.price)}</b>`).join(' or '):'',pd.length?`<b>half price</b> on your first month of ${pd.map(x=>x.kind==='pro'?'Pro':'Expert').join(' or ')}`:''].filter(Boolean).join(', and ')}, in your first ${shopData.deal_days} days (${dealLeft()}).</span><button class="buy" data-deal-open>See the deal</button></div>`:'');
- setHtml($('shop-pkgs'),c.packages.map(x=>`<div class="pkg"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${esc(x.per_1000)} per 1,000 MB</small>${buyBtn(x)}</div>`).join(''));
+ const pd=dealList();
+ setHtml($('shop-deal'),dealOn()?`<div class="deal-strip"><span><span class="deal-tag">NEW LAUNCH DEAL</span> <b>Half price</b> on your first month of ${pd.map(x=>x.kind==='pro'?'Pro':'Expert').join(' or ')}, in your first ${shopData.deal_days} days (${dealLeft()}).</span><button class="buy" data-deal-open>See the deal</button></div>`:'');
  const passes=list=>`<div class="pkg-grid">${list.map(x=>`<div class="pkg"><b>${x.renews?'Monthly':x.days===365?'Yearly':x.days+' days'}</b><span class="price">${esc(x.price)}<small class="per"> / ${passLen(x)}</small></span><small>${x.renews?'Renews monthly until you cancel.':`One payment for ${x.days===365?'12 months':x.days+' days'}.`}</small>${buyBtn(x)}</div>`).join('')}</div>`;
  const status=(kind,until,extra)=>{const sb=(d.subs||{})[kind],T=kind==='pro'?'Pro':'Expert';
   if(sb&&sb.status==='active')return `<p class="up sub-line">Your monthly ${T} renews on ${shopDate(sb.until)} at ${esc(sb.price)}.${extra} <button class="sell" data-cancel-sub="${kind}">Cancel</button></p>`;
@@ -1532,15 +1530,11 @@ const sessGet=k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},se
 const dealOn=()=>!!(shopData&&shopData.deal_until&&shopData.selling&&dealList().length&&shopData.deal_until>engineNow());
 const dealList=()=>shopData&&shopData.catalog.deals?shopData.catalog.deals.filter(x=>(shopData.deals_left||[]).includes(x.sku)):[];
 function dealLeft(){const s=shopData.deal_until-engineNow(),days=Math.floor(s/86400);return days>=1?`${days} day${days===1?'':'s'} left`:`${Math.max(1,Math.floor(s/3600))} hour${s<7200?'':'s'} left`}
-function dealSaving(x){const reg=shopData.catalog.packages.reduce((a,p)=>Math.abs(Math.log(p.mb/x.mb))<Math.abs(Math.log(a.mb/x.mb))?p:a);
- return {pct:Math.round(100*(1-(x.price_cents/x.mb)/(reg.price_cents/reg.mb))),reg}}
 function dealPop(){
  const c=shopData.catalog;let box=$('deal-pop');if(!box){box=document.createElement('div');box.id='deal-pop';document.body.appendChild(box)}
  setHtml(box,`<div class="dly-pop-in" role="dialog" aria-label="New Launch Deal"><div class="bar" style="justify-content:space-between;margin:0"><span class="deal-tag">NEW LAUNCH DEAL</span><button data-deal-close aria-label="Close">&times;</button></div>
-  <h2 class="deal-h">Welcome to Meme Street</h2><p class="hint" style="margin:0">One-time offers for new players, in your first ${shopData.deal_days} days: one MB pack, and half price on the first month of Pro or Expert. ${dealLeft()}.</p>
-  <div class="deal-grid">${dealList().map(x=>{if(x.kind!=='package')return `<div class="deal"><b>${x.kind==='pro'?'Pro':'Expert'}, monthly</b><span class="price">${esc(x.price)}<small class="per" style="color:var(--mut)"> first month</small></span><small>50% off, then ${esc(x.renew_price)} a month until you cancel</small><button class="buy" data-deal-sku="${esc(x.sku)}">Get it</button></div>`;
-   const s=dealSaving(x);return `<div class="deal"><b>${numText(x.mb,0)} MB</b><span class="price">${esc(x.price)}</span><small>${s.pct}% less per MB than the ${numText(s.reg.mb,0)} MB pack</small><button class="buy" data-deal-sku="${esc(x.sku)}">Get it</button></div>`}).join('')}</div>
-  <p class="hint" style="margin:0">MB are practice money with no cash value, and buying them never lifts your return.</p></div>`);
+  <h2 class="deal-h">Welcome to Meme Street</h2><p class="hint" style="margin:0">A one-time offer for new players, in your first ${shopData.deal_days} days: half price on the first month of Pro or Expert. ${dealLeft()}.</p>
+  <div class="deal-grid">${dealList().map(x=>`<div class="deal"><b>${x.kind==='pro'?'Pro':'Expert'}, monthly</b><span class="price">${esc(x.price)}<small class="per" style="color:var(--mut)"> first month</small></span><small>50% off, then ${esc(x.renew_price)} a month until you cancel</small><button class="buy" data-deal-sku="${esc(x.sku)}">Get it</button></div>`).join('')}</div></div>`);
  box.style.display='flex'}
 document.addEventListener('click',e=>{
  if(e.target.closest('[data-deal-close]')||e.target.id==='deal-pop'){const b=$('deal-pop');if(b)b.style.display='none';return}

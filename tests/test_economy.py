@@ -75,7 +75,16 @@ class ShopTests(unittest.TestCase):
         self.e = make_engine(3)
         self.p = adult(self.e, "buyer")
 
-    def test_the_catalogue_has_the_five_packages_and_two_pro_passes_with_prices(self):
+    def test_the_shipped_shop_sells_no_mb_only_the_passes(self):
+        shipped = _raw_read(self.e)[3]
+        self.assertEqual(shipped.get("shop_packages", economy.DEFAULT_PACKAGES), [])           # 2026-11-15: no MB packs
+        self.assertEqual((economy.DEFAULT_PACKAGES, economy.LAUNCH_DEALS), ([], []))
+        self.e.settings.update(shop_packages=[], launch_deals=[])
+        cat = self.e.shop_catalog()
+        self.assertEqual((cat["packages"], [x["kind"] for x in cat["deals"]]), ([], ["pro", "expert"]))
+        self.assertEqual([x["days"] for x in cat["pro"] + cat["expert"]], [30, 365, 30, 365])
+
+    def test_the_old_packages_still_price_right_for_the_orders_made_before(self):
         cat = self.e.shop_catalog()
         self.assertEqual([x["mb"] for x in cat["packages"]], [1000, 5000, 10000, 50000, 100000])
         cap = self.e.settings.get("spend_cap_month_cents", 15000)
@@ -596,7 +605,7 @@ class LaunchDealTests(unittest.TestCase):
 class ShopBrowserTests(unittest.TestCase):
     """The shop page in a real browser: the age question, the confirmation, the test checkout and the way back."""
 
-    def test_buying_a_package_on_the_page(self):
+    def test_buying_a_pass_on_the_page(self):
         with IsolatedServer(env={"PAYMENTS": "test"}) as srv:
             d, errors = asyncio.run(self._shop(srv.url))
         d.verdict(self, errors)
@@ -608,28 +617,27 @@ class ShopBrowserTests(unittest.TestCase):
             await d.join(base, "shop")
             await d.check("the nav has a Shop link", "!!document.querySelector('#nav a[data-page=shop]')")
             await pg.goto(base + "/shop", 3)
-            await d.check("the shop page lists five packages", "document.querySelectorAll('#shop-pkgs .pkg').length", 5, wait=10)
+            await d.check("the shop page lists the passes", "document.querySelectorAll('#shop-pro .pkg').length", 2, wait=10)
+            await d.check("and sells no MB", "document.getElementById('shop-card').innerText",
+                          lambda t: "MB packages" not in t and "per 1,000 MB" not in t and "MB aren't sold" in t)
             await d.check("it says it is in test mode", "document.getElementById('shop-mode').innerText", lambda t: "Test mode" in t)
             await d.check("there is no spending-limit, source or before-you-buy section", "document.getElementById('shop-card').innerText",
                           lambda t: "spending limit" not in t.lower() and "Where your MB" not in t and "Before you buy" not in t and "Free restart" not in t)
-            await pg.js("document.querySelector('#shop-pkgs [data-sku=mb5000]').click()")
+            await pg.js("document.querySelector('#shop-pro [data-sku=pro_year]').click()")
             await d.check("Buy opens a box with the tick and no age or year", "document.getElementById('buy-pop').innerText",
-                          lambda t: "card I pay with" in t and "18" not in t and "year" not in t.lower(), wait=5)
+                          lambda t: "card I pay with" in t and "18" not in t, wait=5)
             await d.check("Continue is off until the box is ticked", "document.getElementById('bp-go').disabled", True)
             await pg.js("document.getElementById('bp-ok').click()")
             await d.check("ticking it turns Continue on", "document.getElementById('bp-go').disabled", False, wait=3)
             await pg.js("document.getElementById('bp-go').click()")
             await d.check("Continue opens the test checkout", "location.pathname", "/shop/pay", wait=8)
-            await d.check("which shows the order", "document.getElementById('what').innerText", lambda t: "5,000 MB" in t, wait=8)
+            await d.check("which shows the order", "document.getElementById('what').innerText", lambda t: "Meme Street Pro, 365 days" in t, wait=8)
             await pg.js("document.getElementById('pay').click()")
             await d.check("paying comes back to the shop", "location.pathname", "/shop", wait=10)
             await d.check("and the purchase is listed as paid", "document.getElementById('shop-orders').innerText",
-                          lambda t: "5,000 MB" in t and "Paid" in t, wait=10)
-            await d.check("the MB arrived", "document.getElementById('cash').innerText", lambda t: t.replace(",", "").startswith("6000"), wait=8)
+                          lambda t: "Pro" in t and "Paid" in t, wait=10)
+            await d.check("Pro is on", "document.getElementById('shop-pro').innerText", lambda t: "Pro is on until" in t, wait=8)
             await d.check("the address bar is tidied", "location.search", "", wait=6)
-            await pg.goto(base + "/history", 3)
-            await d.check("the history shows the purchase", "document.getElementById('hist-rows').innerText",
-                          lambda t: "Purchase" in t, wait=10)
         finally:
             errors = list(pg.errors)
             proc.terminate()

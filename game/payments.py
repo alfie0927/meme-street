@@ -1,4 +1,4 @@
-"""Taking money for MB packages and the Pro and Expert passes (ROADMAP.md M3 and O7). A monthly pass is a Stripe
+"""Taking money for the Pro and Expert passes (and, until 2026-11-15, MB packages) (ROADMAP.md M3 and O7). A monthly pass is a Stripe
 subscription: Stripe takes the first month in its checkout and every later month by itself; each month paid reaches us
 as a signed `invoice.paid` event (the daily check also lists paid invoices, in case one was lost), and cancelling sets the
 subscription to end with the month already paid.

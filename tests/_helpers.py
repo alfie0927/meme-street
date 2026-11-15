@@ -51,6 +51,14 @@ def _real_read(self):
     return sectors, companies, templates, settings, profiles, derived
 
 
+# The game stopped selling MB on 2026-11-15, but orders from before still complete, show and refund through the same
+# code, so the test worlds keep the old packs and launch deals to exercise it (test_economy checks the shipped shop has none).
+OLD_PACKS = [{"sku": "mb1000", "mb": 1000, "price_cents": 199}, {"sku": "mb5000", "mb": 5000, "price_cents": 799},
+             {"sku": "mb10000", "mb": 10000, "price_cents": 1399}, {"sku": "mb50000", "mb": 50000, "price_cents": 5999},
+             {"sku": "mb100000", "mb": 100000, "price_cents": 9999}]
+OLD_DEALS = [{"sku": "launch9000", "mb": 9000, "price_cents": 499}, {"sku": "launch99000", "mb": 99000, "price_cents": 2999}]
+
+
 def _flat_read(self):
     sectors, companies, templates, settings, profiles, derived = _real_read(self)
     quiet_world = {"premarket_seconds": 0, "aftermarket_seconds": 0,           # no sessions...
@@ -61,6 +69,7 @@ def _flat_read(self):
                    "require_password": False,                                  # ...may join with just a name...
                    "signup_bonus": 1000}                                        # ...and start with 1,000 MB (the game itself: 10,000)
     forced = {"signup_bonus": 1000, "restart_below": 50,                     # the tests' money is 1,000 MB a head (the game: 100,000),
+              "shop_packages": OLD_PACKS, "launch_deals": OLD_DEALS,         # the old MB packs (see OLD_PACKS),
               "ipo_per_year": 0,                                             # no new listings (a test of them turns them on),
               "market_model": 1}                                         # on the old zero-drift market (a test of the new
     #                                                                          one sets e.settings["market_model"] = 2)
@@ -159,7 +168,7 @@ class IsolatedServer:
         self.gateways = int(os.environ.get("MS_TEST_GATEWAYS", 0)) if gateways is None else int(gateways)
         self.state_file = state_file                  # a saved game to start from (copied in; the original is not touched)
         self.admin_key = admin_key
-        self.settings = {"premarket_seconds": 0, "aftermarket_seconds": 0, "chat_min_trades": 0, "require_password": False, "signup_bonus": 1000, "restart_below": 50, "signup_email": False, **(settings or {})}   # flat market unless asked
+        self.settings = {"premarket_seconds": 0, "aftermarket_seconds": 0, "chat_min_trades": 0, "require_password": False, "signup_bonus": 1000, "restart_below": 50, "shop_packages": OLD_PACKS, "launch_deals": OLD_DEALS, "signup_email": False, **(settings or {})}   # flat market unless asked
         self.proc = None
         self.extra_env = dict(env or {})               # e.g. {"PAYMENTS": "test"} for the shop tests
 

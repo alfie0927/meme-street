@@ -14,7 +14,7 @@ value. Free lessons teach charts, orders and risk on the same market, and the Da
 game on one mystery chart, the same for everyone.
 **Product category:** stock market game / trading simulator / daily chart game ("like Wordle, for trading").
 **Product type:** browser game (one web app, works on phones), no install.
-**Business model:** free account. Paid extras: MB packs ($1.99 to $99.99), Pro ($9.99 a month or $99.99 a year),
+**Business model:** free account. Paid extras (MB are not sold since 2026-11-15): Pro ($9.99 a month or $99.99 a year),
 Expert ($29.99 a month or $299.99 a year). MB are never cashed out. Paying never buys a leaderboard rank.
 
 ## Target Audience
@@ -70,7 +70,7 @@ nobody can look up the answer.
 |-----------|----------|
 | "It's not real stocks." | That's the point: nobody can look the answer up, and the numbers behave like a market. |
 | "Is it gambling or a crypto thing?" | No money goes in to play and none comes out. MB are practice money with no cash value. |
-| "Do I have to pay?" | No. The account is free; MB packs and Pro are extras. |
+| "Do I have to pay?" | No. The account is free; Pro and Expert are extras. |
 | "I don't have time." | The Daily Chart takes two minutes. |
 | (Teachers) "Will students be sold things?" | Planned: class accounts never see the shop. |
 
@@ -113,8 +113,8 @@ tickers, signals.
 - Sales: practice money, no cash value, every time MB are mentioned.
 - Social: a stake or an odd fact first, never a label or a definition (see Learnings).
 **Terms we own:** Meme Street, memebucks (MB), the Daily Chart, the MSI 50.
-**Never use (and why):** "get rich" and profit promises (it teaches, it doesn't pay); "everything is free" (MB packs
-and Pro cost money); real company names or tickers (everything is fictional).
+**Never use (and why):** "get rich" and profit promises (it teaches, it doesn't pay); "everything is free" (Pro
+and Expert cost money); real company names or tickers (everything is fictional).
 
 ## Proof Points
 **Metrics:** 157 companies (180+ stocks, indices and funds), 96 lessons in 17 tracks, 49 indicators, 16 drawing

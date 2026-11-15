@@ -1,12 +1,13 @@
-"""The MB economy of the learn-to-trade plan (ROADMAP.md, track M): where every MB comes from, the shop (MB packages and
-the Pro pass), the age rules, spending caps and the free restart for an account that has run out.
+"""The MB economy of the learn-to-trade plan (ROADMAP.md, track M): where every MB comes from, the shop (the Pro and
+Expert passes), the age rules, spending caps and the free restart for an account that has run out.
 
 MB are a game currency. They are bought, earned or granted, and never paid out: there is no withdrawal for players.
 
 * **Sources.** Every MB that enters an account is counted by source: `grant` (the starting balance), `purchase` (a
   package), `challenge` (a reward), `restart` (the free restart), `refund` (taken back, negative) and `admin`.
-* **The shop.** Packages of MB, a Pro pass and an Expert pass (30 or 365 days each), at prices set in the
-  `shop_packages`, `shop_pro` and `shop_expert` settings. A purchase is an *order*: created when the player clicks Buy, paid at the payment provider
+* **The shop.** A Pro pass and an Expert pass (monthly or yearly), at prices set in the `shop_pro` and `shop_expert`
+  settings. MB are no longer sold (2026-11-15, with the move to 100,000 MB accounts): `shop_packages` and `LAUNCH_DEALS`
+  are empty, and orders from before still complete, show and refund as they did. A purchase is an *order*: created when the player clicks Buy, paid at the payment provider
   (or the test checkout), and completed exactly once by `complete_order`, which credits the MB or extends Pro and writes
   a `purchase` event to the money ledger (so a crash cannot lose a purchase).
 * **Pro** is the income that does not depend on anyone losing: the advanced chart indicators and trading with leverage
@@ -22,7 +23,7 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
   same `?ref=` as the tracking links). Someone who signs up through it is counted as invited by that player
   (`invited_by`), for the admin page; rewards for inviting may come later.
 * **The New Launch Deal** (2026-10-27): in an account's first `launch_deal_days` (7) days (30 at first, the same day),
-  one of two big packages (`LAUNCH_DEALS`), once, and the first month of a monthly Pro or Expert at half price, once each
+  the first month of a monthly Pro or Expert at half price, once each
   (`pass_deals`): it then renews at the full price.
 """
 import datetime
@@ -30,13 +31,7 @@ import secrets
 import uuid
 
 SOURCES = ("grant", "purchase", "challenge", "restart", "refund", "admin")
-DEFAULT_PACKAGES = [
-    {"sku": "mb1000", "mb": 1000, "price_cents": 199},
-    {"sku": "mb5000", "mb": 5000, "price_cents": 799},
-    {"sku": "mb10000", "mb": 10000, "price_cents": 1399},
-    {"sku": "mb50000", "mb": 50000, "price_cents": 5999},
-    {"sku": "mb100000", "mb": 100000, "price_cents": 9999},
-]
+DEFAULT_PACKAGES = []        # MB packs are no longer sold (2026-11-15); a `shop_packages` setting could bring them back
 # Pro and Expert: a monthly pass that renews every month until it is cancelled ("renews"), or a year paid at once
 DEFAULT_PRO = [
     {"sku": "pro_month", "days": 30, "price_cents": 999, "renews": True},
@@ -63,11 +58,8 @@ EXPERT_FEATURES = [
     "did against just holding the stock",
     "An Expert badge on your profile",
 ]
-# the New Launch Deal: one of these, once, in an account's first `launch_deal_days` days
-LAUNCH_DEALS = [
-    {"sku": "launch9000", "mb": 9000, "price_cents": 499},
-    {"sku": "launch99000", "mb": 99000, "price_cents": 2999},
-]
+# the New Launch Deal's MB packs (none since 2026-11-15; the half-price first month of a pass stays)
+LAUNCH_DEALS = []
 INVITE_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"   # (no 0, 1, i, l or o: easy to read out)
 TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
@@ -133,7 +125,7 @@ class EconomyMixin:
         pro = [dict(x) for x in self.settings.get("shop_pro", DEFAULT_PRO)]
         expert = [dict(x) for x in self.settings.get("shop_expert", DEFAULT_EXPERT)]
         cur = self.shop_currency()
-        deals = [dict(x, deal=True) for x in LAUNCH_DEALS]
+        deals = [dict(x, deal=True) for x in self.settings.get("launch_deals", LAUNCH_DEALS)]
         for x in packages + deals:
             x["kind"] = "package"
             x["price"] = money_text(int(x["price_cents"]), cur)

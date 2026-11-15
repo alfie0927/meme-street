@@ -20,7 +20,7 @@ A fictional stock market that runs around the clock, for learning to trade witho
 - Sign-up needs a date of birth, 13 or older: ROADMAP §2.
 
 ## Prices (`game/economy.py`, USD cents in code)
-- MB packs: 1,000 MB $1.99 · 5,000 $7.99 · 10,000 $13.99 · 50,000 $59.99 · 100,000 $99.99.
+- MB are not sold (since 2026-11-15; the packs were removed). Only the Pro and Expert passes are sold.
 - Pro $9.99/month or $99.99/year. Expert $29.99/month or $299.99/year.
 - New Launch Deal (first 7 days): 9,000 MB $4.99 or 99,000 MB $29.99 once; first month of Pro or Expert half price.
 - Prices are shown in the shopper's currency at checkout (`shop_currency`), so pages should not quote a USD price as universal.
