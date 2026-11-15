@@ -41,7 +41,7 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market.</b> Every account s
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
-        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/about">About Meme Street</a>'
+        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">Expectancy calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a> · <a href="/vs">Compare</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
 
@@ -213,12 +213,55 @@ o.innerHTML="<b>Drawdown "+fmt(dd)+"%. You need a gain of "+fmt(g)+"% to get bac
 document.getElementById("f").addEventListener("input",go);go()})();
 </script>"""
 
+EX_PATH = "/tools/expectancy-calculator"
+EX_TITLE = "Expectancy calculator: what a trading strategy makes per trade | Meme Street"
+EX_DESC = ("Free expectancy calculator. Enter your win rate, your average win and your average loss (in R or in money) and it "
+           "gives the expectancy per trade and the break-even win rate. A 40% win rate at 2.5R expects +0.4R per trade.")
+EX_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> &rsaquo; Tools</p><h1>Expectancy calculator</h1>
+<p class="lead">Expectancy = (win rate &times; average win) &minus; (loss rate &times; average loss). It is what a strategy makes
+per trade on average. A strategy that wins 40% of the time, makes 2.5R on a win and loses 1R on a loss expects
+0.4 &times; 2.5 &minus; 0.6 &times; 1 = +0.4R per trade. Enter your own numbers below.</p>
+<form id="f" class="try" onsubmit="return false">
+<p><label>Win rate (%) <input id="wr" type="number" min="0" max="100" step="any" value="40"></label>
+<label>Average win <input id="aw" type="number" min="0" step="any" value="2.5"></label>
+<label>Average loss <input id="al" type="number" min="0" step="any" value="1"></label>
+<label>Trades <input id="n" type="number" min="1" step="1" value="100"></label></p>
+<p class="sub">Use R for the win and the loss (a loss of 1R is the amount you risked) or use money: the answer comes back in the same unit.</p>
+</form>
+<div id="out" class="box tip" aria-live="polite">Enter your numbers above.</div>
+<noscript><p>This calculator needs JavaScript. The sum is: expectancy = win rate &times; average win &minus; (1 &minus; win rate)
+&times; average loss.</p></noscript>
+<h2>How it works</h2>
+<p>Over many trades the average result per trade settles at the expectancy: the wins you make, weighted by how often they come,
+minus the losses, weighted by how often those come. A low win rate can still be positive when the wins are big, and a high one can
+lose money when the losses are bigger than the wins. If the expectancy is zero before costs, costs make it negative.</p>
+<p>The break-even win rate is the win rate at which the expectancy is exactly zero for your average win and loss:
+loss &divide; (win + loss). At a payoff of 2R to 1R it is 33%.</p>
+<div class="box warn"><b>Watch out:</b> the average win and loss must come from many trades. A few trades say little, and the
+sum ignores costs (0.1% on each side of a trade on Meme Street), so take them off your results before you enter them.</div>
+<p>Learn the idea in <a href="/lessons/expectancy">Win rate, payoff and expectancy</a>, get the payoff from the
+<a href="/tools/risk-reward-calculator">risk reward ratio calculator</a>, and size each trade with the
+<a href="/tools/position-size-calculator">position size calculator</a>.</p>
+<script>
+(function(){var $=function(i){return document.getElementById(i)},o=$("out");
+function fmt(x){return x.toLocaleString("en-US",{maximumFractionDigits:2})}
+function go(){var w=+$("wr").value/100,a=+$("aw").value,l=+$("al").value,n=+$("n").value;
+if(!(w>=0&&w<=1&&a>=0&&l>=0&&a+l>0&&n>=1)){o.textContent="Enter a win rate from 0 to 100, a win and a loss of zero or more, and at least one trade.";return}
+var e=w*a-(1-w)*l,be=l/(a+l)*100,h="<b>Expectancy "+(e>0?"+":"")+fmt(e)+" per trade.</b> Over "+fmt(n)+" trades that is about "+(e>0?"+":"")+fmt(e*n)+".<br>";
+h+="Break-even win rate for this win and loss: "+fmt(be)+"%. ";
+h+=e>0?"Your win rate is above it.":e<0?"Your win rate is below it, so the strategy loses on average.":"Your win rate is exactly at it.";
+o.innerHTML=h}
+document.getElementById("f").addEventListener("input",go);go()})();
+</script>"""
+
 SL_LINK = ('<div class="try">Try it: the <a href="/tools/stop-loss-calculator">free stop loss calculator</a> '
            "gives the stop price and the loss if it is hit.</div>")
 RR_LINK = ('<div class="try">Try it: the <a href="/tools/risk-reward-calculator">free risk reward ratio calculator</a> '
            "does this sum for you.</div>")
 DD_LINK = ('<div class="try">Try it: the <a href="/tools/drawdown-recovery-calculator">free drawdown recovery calculator</a> '
            "gives the gain you need for any loss.</div>")
+EX_LINK = ('<div class="try">Try it: the <a href="/tools/expectancy-calculator">free expectancy calculator</a> '
+           "does this sum for you.</div>")
 CALC_LINK = ('<div class="try">Try it: the <a href="/tools/position-size-calculator">free position size calculator</a> '
              "does this sum for you.</div>")
 
@@ -312,7 +355,7 @@ class Lessons:
                             url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
                 f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
-                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else DD_LINK if lid == "drawdown" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else DD_LINK if lid == "drawdown" else EX_LINK if lid == "expectancy" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
 
     def calculator(self):
         """The free position size calculator (works without an account; the sum runs in the page)."""
@@ -374,6 +417,21 @@ class Lessons:
         return (HEAD.format(t=html.escape(DD_TITLE), d=html.escape(DD_DESC), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=css) + DD_BODY + CTA + FOOT)
 
+    def expectancy(self):
+        """The free expectancy calculator (works without an account; the sum runs in the page)."""
+        url = self.site + EX_PATH
+        ld = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Expectancy calculator",
+               "url": url, "description": EX_DESC, "applicationCategory": "FinanceApplication",
+               "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": "Expectancy calculator", "item": url}]}]
+        css = CSS + "label{display:inline-block;margin:6px 14px 6px 0}input{display:block;margin-top:4px;width:11em;max-width:100%;" \
+            "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
+        return (HEAD.format(t=html.escape(EX_TITLE), d=html.escape(EX_DESC), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=css) + EX_BODY + CTA + FOOT)
+
     def hub(self):
         url = self.site + "/lessons"
         d = self.hub_text
@@ -392,7 +450,7 @@ class Lessons:
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 1,000 MB of practice money on Meme Street's fictional market.</p>"
-                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a></p>'
+                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">expectancy calculator</a></p>'
                 + "".join(parts) + FOOT)
 
 
@@ -411,6 +469,9 @@ if __name__ == "__main__":
     assert sl.count("<h1>") == 1 and f'href="https://memestreet.net{SL_PATH}"' in sl and sl.count("<script>") == 1
     dd = L.drawdown()
     assert dd.count("<h1>") == 1 and f'href="https://memestreet.net{DD_PATH}"' in dd and dd.count("<script>") == 1
+    ex = L.expectancy()
+    assert ex.count("<h1>") == 1 and f'href="https://memestreet.net{EX_PATH}"' in ex and ex.count("<script>") == 1
+    assert 'href="/tools/expectancy-calculator"' in L.page("expectancy")
     assert 'href="/tools/drawdown-recovery-calculator"' in L.page("drawdown")
     assert 'href="/tools/stop-loss-calculator"' in L.page("stop-placement")
     assert 'href="/tools/position-size-calculator"' in L.page("position-sizing")
