@@ -149,10 +149,12 @@ class HouseBotsMixin:
             pick = random.sample(pool[:60], min(8, len(pool[:60]))) if pool else []
             hb["watch"] = [s.ticker for s in pick[:random.randint(3, 8)]]
         eq = self.equity(p)
-        if eq < 60 and not p.hold:                         # broke: the free restart, or a break first
-            ok, _ = self.claim_restart(p)
-            if not ok:
+        if eq < 0.05 * self._start_balance() and not p.hold:   # broke: a break, then the house tops it up (players have no
+            if self.now - (p.last_restart or 0.0) < 7 * DAY:      # free restarts since 2026-11-15; the bots keep the market busy)
                 hb["state"], hb["until"] = "dormant", self.now + random.uniform(2, 6) * DAY
+            else:
+                p.last_restart = self.now
+                self.credit(p, self._start_balance() - p.cash, source="restart")
             return
         for tk in list(p.hold):                            # what it holds
             self._house_manage(p, tk)

@@ -42,8 +42,6 @@
   "max_companies": 200,
   "spend_cap_month_cents": 50000,
   "purchases_per_day": 3,
-  "restart_below": 5000,
-  "restart_days": 7,
   "challenge_week_cap": 500,
   "rewards_need_email": false
  },

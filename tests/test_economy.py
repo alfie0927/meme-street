@@ -38,7 +38,7 @@ class SourcesAndStartTests(unittest.TestCase):
         shipped = _raw_read(e)[3]                       # the content packs as shipped (the test worlds force 1,000 anyway)
         self.assertEqual(shipped["signup_bonus"], 100000)              # the game itself: 100,000 MB (2026-11-15)
         self.assertEqual(engine.START_CASH, 100000.0)
-        self.assertEqual(shipped["restart_below"], 5000)
+        self.assertNotIn("restart_below", shipped)                    # no recurring free restart (2026-11-15)
 
     def test_every_credit_carries_its_source_and_counts_as_money_put_in(self):
         e = make_engine(2)
@@ -272,13 +272,14 @@ class AgeAndLimitTests(unittest.TestCase):
 
 
 class RestartTests(unittest.TestCase):
-    def test_the_free_restart_needs_an_empty_account_and_waits_a_week(self):
+    def test_an_account_from_before_100000_mb_gets_one_restart_and_new_ones_none(self):
         e = make_engine(5)
         p = join(e, "busted")
-        self.assertFalse(e.claim_restart(p)[0])                        # 1,000 MB is not out of money
+        p.created = economy.ONE_RESTART_BEFORE - 86400                 # made the day before 100,000 MB accounts
         lost = p.cash - 30.0                                           # pretend the trading went badly: 30 MB left
         p.cash -= lost
         e.house += lost                                                # (losses go to the house: nothing is created)
+        self.assertTrue(e.me_state(p, notices=False)["restart"])                   # the banner offers it
         self.assertTrue(e.trade(p, "NVXA", "buy", 0.5)[0])
         st = e.restart_status(p)
         self.assertFalse(st["eligible"])
@@ -289,13 +290,23 @@ class RestartTests(unittest.TestCase):
         p.cash, e.house = 10.0, e.house + p.cash - 10.0
         ok, msg = e.claim_restart(p)
         self.assertTrue(ok, msg)
-        self.assertEqual(p.cash, 1000.0)
+        self.assertEqual(p.cash, 1000.0)                               # (the test worlds' starting balance)
         self.assertEqual(p.mb_by_source["restart"], 990.0)
         self.assertLess(abs(drift(e)), 1e-6)
+        self.assertFalse(e.me_state(p, notices=False)["restart"])
         p.cash, e.house = 5.0, e.house + 995.0
-        self.assertFalse(e.claim_restart(p)[0])                        # once a week
-        e.now += 7 * 86400 + 1
-        self.assertTrue(e.claim_restart(p)[0])
+        e.now += 30 * 86400
+        ok, msg = e.claim_restart(p)
+        self.assertFalse(ok)                                           # one only
+        self.assertIn("used", msg)
+        q = join(e, "newcomer")
+        q.created = economy.ONE_RESTART_BEFORE + 1
+        q.cash, e.house = 5.0, e.house + q.cash - 5.0
+        self.assertFalse(e.me_state(q, notices=False)["restart"])
+        self.assertIn("no free restarts", e.claim_restart(q)[1])       # accounts made since: none at all
+        rich = join(e, "rich")
+        rich.created = 0.0                                             # (an old account with no joining time counts as old)
+        self.assertIn("already worth", e.claim_restart(rich)[1])
 
 
 class SaveAndReplayTests(unittest.TestCase):

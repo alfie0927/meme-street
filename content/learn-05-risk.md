@@ -303,7 +303,7 @@ WHY: Bet size is the main lever: small bets make ruin very unlikely for a strate
 ### All-in is the extreme
 Putting everything into one trade risks ruin on a single outcome, however good the idea. No idea is good enough for that.
 
-HERE: There is no limit on position size: you can put your whole account into one stock, and with leverage control several times your account. Nothing stops you except your own rules. If you do run out, the low-funds banner offers a free restart, but on a real account there is none.
+HERE: There is no limit on position size: you can put your whole account into one stock, and with leverage control several times your account. Nothing stops you except your own rules. If you run out, there is no top-up, just as on a real account.
 
 ## Where stops go {stop-placement} [6]
 SUMMARY: Stops at the point where the idea is wrong, outside the noise, and not where everyone else's are.

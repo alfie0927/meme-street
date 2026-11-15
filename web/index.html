@@ -497,7 +497,7 @@ body.guest .guest-cta{display:flex}
 <div class="cal-day" id="cal-day"></div>
 <h3 class="sp">Latest releases</h3><table id="cal-past"></table></div>
 <div class="card" id="shop-card"><h3>Shop</h3>
-<p class="about" style="margin-top:0">Everyone starts with 100,000 MB of practice money. MB aren't sold, and can't be withdrawn, sold or swapped for anything. If you run out, the free restart tops you back up. The shop sells two memberships with extra tools.</p>
+<p class="about" style="margin-top:0">Everyone starts with 100,000 MB of practice money. MB aren't sold, and can't be withdrawn, sold or swapped for anything. There are no top-ups, so size your trades with care. The shop sells two memberships with extra tools.</p>
 <div id="shop-mode"></div><div id="shop-deal"></div>
 <h3 class="sp">Meme Street Pro</h3><div id="shop-pro"></div><h3 class="sp">Meme Street Expert</h3><div id="shop-expert"></div>
 <h3 class="sp">Your purchases</h3><table id="shop-orders"></table></div>
@@ -771,16 +771,16 @@ function renderHeader(){
  setText($('cash'),numText(S.cash)+' MB');setText($('eq'),numText(S.equity)+' MB');setText($('pnl'),signed(S.pnl)+' MB',cls(S.pnl));
  setText($('ret'),pc(S.ret),clsP(S.ret));setText($('rank'),S.rank?'#'+S.rank+' / '+S.players:'unranked');setText($('sn'),S.season);
  setText($('left'),dur(S.season_left));
- const lnb=$('learn-banner'),newbie=!guest&&S.lessons===0&&!lsGet('ms_learn_hide',false)&&page==='market'&&!S.low;
+ const lnb=$('learn-banner'),newbie=!guest&&S.lessons===0&&!lsGet('ms_learn_hide',false)&&page==='market'&&!S.restart;
  const day=newbie&&lsGet('ms_daily_seen',null)===Math.floor(Date.now()/86400000),lkey=newbie?'n'+(day?1:0)+(S.traded?1:0):'';
  if(lnb._on!==lkey){lnb._on=lkey;lnb.style.display=newbie?'flex':'none';
   if(newbie){   // a new player's first three steps, each ticked once done (growth plan 2026-11-10)
    const st=(ok,html)=>`<span>${ok?'<b class="up">&#10003;</b>':'<span class="mut">&#9675;</span>'} ${html}</span>`;
    lnb.innerHTML=`<span class="bar" style="margin:0;gap:6px 14px"><b>Your first steps</b>${st(day,'<a href="/daily">Today\'s chart</a>')}${st(!!S.traded,'A first trade: pick a stock, then Buy')}${st(false,'<a href="/learn?l=welcome">Lesson 1</a> (4 minutes)')}</span><span class="bar" style="margin:0"><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>`}}
  const pb=$('pro-badge'),pro=!!S.pro&&!guest,tier=S.expert?'EXPERT':'PRO';if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}if(pb.textContent!==tier){pb.textContent=tier;pb.title='Meme Street '+(S.expert?'Expert':'Pro')}
- const lb=$('low-banner'),low=!!S.low&&!guest&&!lowHidden&&page!=='shop';
+ const lb=$('low-banner'),low=!!S.restart&&!guest&&!lowHidden&&page!=='shop';
  if(lb._on!==low){lb._on=low;lb.style.display=low?'flex':'none';
-  if(low)lb.innerHTML='<span><b>You are nearly out of MB.</b> It happens to every trader while learning. Close your positions, then take the free restart, and read what went wrong.</span><span class="bar" style="margin:0"><button data-shop="closeall">Close all positions</button><button class="buy" data-shop="restart">Free restart</button><a href="/learn">Lessons on risk</a><button data-shop="lowhide" aria-label="Hide this message">&times;</button></span>'}
+  if(low)lb.innerHTML='<span><b>Accounts now start with 100,000 MB.</b> Yours gets one free restart to 100,000: close your positions, then restart. It is the only one, so use it when you are ready.</span><span class="bar" style="margin:0"><button data-shop="closeall">Close all positions</button><button class="buy" data-shop="restart">Restart on 100,000 MB</button><button data-shop="lowhide" aria-label="Hide this message">&times;</button></span>'}
  const mk=S.market||{phase:'open',changes_in:null},ph=mk.phase||'open';
  const left=mk.changes_in===null||mk.changes_in===undefined?null:Math.max(0,Math.round(mk.changes_in-(Date.now()-S.market_at)/1000));
  const fmt=PHONE?durS:dur,tail=left===null?'':ph==='pre'?' · opens in '+fmt(left):ph==='open'?' · after-hours in '+fmt(left):' · pre-market in '+fmt(left);
@@ -1492,7 +1492,7 @@ function render(){
   setHtml($('board'),'<tr><th>#</th><th>Trader</th><th>Return</th></tr>'+S.board.map((r,i)=>`<tr><td>${i+1}</td><td>${nameHtml(r.name,r.style)}</td><td class="${clsP(r.ret)}">${pc(r.ret)}</td></tr>`).join('')||'<tr><td colspan="3" class="mut" style="text-align:left">Nobody has made a trade today.</td></tr>')}
  drawChips()}
 
-// ---------- the shop (economy.py): the Pro and Expert passes, the age rules, the spending limit, the free restart ----------
+// ---------- the shop (economy.py): the Pro and Expert passes, the age rules, the spending limit, the one free restart ----------
 let shopData=null,shopWait=0;
 const ORDER_STATUS={paid:'Paid',refunded:'Refunded',expired:'Expired (not paid)',cancelled:'Cancelled',failed:'Failed'};
 document.addEventListener('click',e=>{if(e.target.closest('[data-shop-join]'))openSignin('register','Create an account to buy a pass')});

@@ -17,8 +17,10 @@ MB are a game currency. They are bought, earned or granted, and never paid out: 
   on request), only the confirmation that the card may be used and that the purchase is delivered at once.
 * **Spending caps.** A default cap per rolling 30 days (`spend_cap_month_cents`), a lower cap a player can set (lowering
   works at once, raising after 24 hours), and at most `purchases_per_day` purchases a day.
-* **The free restart.** An account whose equity is below `restart_below` MB, with no open positions, can top its cash
-  back up to the starting balance once every `restart_days` days, for nothing.
+* **The one free restart** (2026-11-15, the owner's decision). There are no free restarts any more, except one for each
+  account made before the move to 100,000 MB (`ONE_RESTART_BEFORE`): once, whenever it likes, with no open positions and
+  worth less than the starting balance, it can top its cash up to 100,000 MB. (Until then an account under `restart_below`
+  could restart once every `restart_days`.)
 * **Invites** (2026-10-27): every account has its own invite code, so its link is `memestreet.net/?ref=<code>` (the
   same `?ref=` as the tracking links). Someone who signs up through it is counted as invited by that player
   (`invited_by`), for the admin page; rewards for inviting may come later.
@@ -60,6 +62,7 @@ EXPERT_FEATURES = [
 ]
 # the New Launch Deal's MB packs (none since 2026-11-15; the half-price first month of a pass stays)
 LAUNCH_DEALS = []
+ONE_RESTART_BEFORE = 1794757544    # 2026-11-15 15:45:44 UTC, when 100,000 MB accounts went live: older accounts get one restart
 INVITE_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"   # (no 0, 1, i, l or o: easy to read out)
 TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
@@ -536,21 +539,21 @@ class EconomyMixin:
     def _start_balance(self):
         return float(self.settings.get("signup_bonus", 100000.0))
 
+    def restart_left(self, p):
+        """Whether `p` still has its one free restart: an account made before 100,000 MB accounts, not yet used since."""
+        return (p.created or 0.0) < ONE_RESTART_BEFORE and (p.last_restart or 0.0) < ONE_RESTART_BEFORE
+
     def restart_status(self, p):
-        below = float(self.settings.get("restart_below", 5000.0))
-        days = float(self.settings.get("restart_days", 7.0))
-        eq = self.equity(p)
-        next_at = (p.last_restart or 0.0) + days * 86400
-        status = {"below": below, "days": days, "equity": eq, "next_at": next_at if next_at > self.now else None,
-                  "open_positions": len(p.hold) + len(getattr(p, "opts", [])), "eligible": False, "reason": ""}
-        if days <= 0:
-            status["reason"] = "There is no free restart in this game"
-        elif eq >= below:
-            status["reason"] = f"The free restart is for accounts below {below:,.0f} MB"
+        start, eq = self._start_balance(), self.equity(p)
+        status = {"equity": eq, "open_positions": len(p.hold) + len(getattr(p, "opts", [])), "eligible": False, "reason": ""}
+        if (p.created or 0.0) >= ONE_RESTART_BEFORE:
+            status["reason"] = f"There are no free restarts: accounts start with {start:,.0f} MB"
+        elif not self.restart_left(p):
+            status["reason"] = "You have used your one free restart"
+        elif eq >= start:
+            status["reason"] = f"Your account is already worth {start:,.0f} MB or more"
         elif p.hold or getattr(p, "opts", None):
             status["reason"] = "Close your open positions first"
-        elif next_at > self.now:
-            status["reason"] = "Your next free restart is available later"
         else:
             status["eligible"] = True
         return status
@@ -564,7 +567,7 @@ class EconomyMixin:
             return False, "You already have the starting balance"
         p.last_restart = self.now
         self.credit(p, amount, source="restart")
-        self._notify(p, f"Fresh start: your cash is back to {self._start_balance():,.0f} MB. Have a look at the risk lessons on the Learn page.")
+        self._notify(p, f"Fresh start: your cash is {self._start_balance():,.0f} MB. That was your one free restart, so look after it.")
         return True, f"Your cash is back to {self._start_balance():,.0f} MB"
 
     # ------------------------------------------------------------------ what the pages see
