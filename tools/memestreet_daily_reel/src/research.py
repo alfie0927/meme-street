@@ -14,6 +14,11 @@ CHANNELS = {   # trading education and stick-figure finance accounts found in th
     "Trader Drysdale": "UCxGX_A0NZ-NP06072FcF4sw", "Casual Finance": "UCrNfRFWnLC3tCy1TnyhVQ7g", "Qxir": "UCGHDQtN_vzFYJaq_Fx1eikg",
     "Sticky Academy": "UCrWuA3fVjz1Ej9qe8QhQ0yA", "Stickman Invests": "UC1rRUMyO51O5cLoY1Z0rRkA", "Stick Trader Mind": "UCago6VV8oz_M4vMKrQSIjsw",
     "CMC Aureon": "UCENW0ZwwrW6NG52OJnRxNLg", "DuraMarkets": "@duramarkets", "Data Trader": "UCwIsRM8qBXobpAnzVJ0c4IQ",
+    # indicator, quant and "we tested it" channels that had outliers in the study of 2026-11-15 (swipe.md, Teardowns), for the in-depth formats
+    "Trading Data": "UCV9hkwgSFkAwS4hN_0oxinA", "TradeIQ": "UClZ5L3WaEnQE0eERGMtmhlA", "Traders Monopoly": "UCkfiQ_VKE4b7IHNdfsDBlVw",
+    "TradeSmart": "UCvYDPDGrYpYkR7g9Jbgs0QA", "AlgoTrade Pro": "UC1DSaMtiJf1w7yOEI1ePkuQ", "Rayner Teo": "UCFSn-h8wTnhpKJMteN76Abg",
+    "LuxAlgo": "UC-luaBAGSqZ---25Wifnnhg", "Roman Paolucci": "UCW1svfGxG4ADnbc1HCH6dqA", "Quantified Strategies": "UCBP0QGCn6bKRHJRsEmh7Q5A",
+    "Unger Academy USA": "UCOZ11rO2GVCAdsK-A2e8sHQ",
 }
 
 

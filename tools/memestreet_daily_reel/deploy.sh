@@ -8,9 +8,10 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 HOST=${REEL_HOST:-root@65.109.233.145}; D=/root/reel-deploy/$(date -u +%Y%m%dT%H%M%S); B=$(mktemp -d)
-git ls-files -co --exclude-standard src lab/silent.py auto_reel.sh make_reel.sh queue_post.sh rerender.sh news_watch.sh deploy_apply.sh \
-    systemd README.md swipe.md RULEBOOK.md voice.md exemplar/NOTES.md \
-  | grep -v -E '\.(wav|png|jpg|mp4|mp3|pyc)$|/dry/' | sort -u > "$B/files.txt"
+{ git ls-files -co --exclude-standard src lab/silent.py auto_reel.sh make_reel.sh queue_post.sh rerender.sh news_watch.sh deploy_apply.sh \
+    systemd README.md swipe.md RULEBOOK.md voice.md
+  [ -f exemplar/NOTES.md ] && echo exemplar/NOTES.md; } \
+  | grep -v -E '\.(wav|png|jpg|mp4|mp3|pyc)$|/dry/' | sort -u > "$B/files.txt"   # (the notes are named by hand: .gitignore hides exemplar/, so git never listed them and they never travelled, 2026-11-15)
 tar czf "$B/new.tgz" -T "$B/files.txt"
 ssh -o BatchMode=yes "$HOST" "mkdir -p $D" < /dev/null
 scp -q -o BatchMode=yes "$B/new.tgz" deploy_apply.sh "$HOST:$D/"

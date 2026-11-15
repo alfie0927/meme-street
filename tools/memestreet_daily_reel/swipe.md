@@ -869,3 +869,118 @@ stick scenes in src/reel.html.
 src/research.py (memestreet-reel-research.timer, Mondays 05:00 UTC) re-ranks the newest Shorts of the channels above
 against their own medians and writes the top openings to state/evidence.json for the viral writer (shapes only).
 TikTok and Instagram stay manual research.
+
+## Teardowns (November 2026)
+
+The owner, 2026-11-15: "watch all reels in my niche that do INCREDIBLY well, using their reels as templates... what
+made them so popular? the animation, the hook, etc". Until now this file ranked openings as words. This time the
+pictures were watched.
+
+**What was done.** 2,141 YouTube Shorts from 63 channels (the lists above, and 78 channels found by 22 searches for
+quant, indicator and "we tested it" Shorts; 49 of 112 channels had too few Shorts for a median) were ranked against
+their own channel's median views. 37 beat it tenfold. 42 were watched frame by frame: each downloaded at the lowest
+resolution, cut into one sheet of frames (0, 0.5, 1, 1.5, 2 and 3 s, then one every 2 s), read with its captions, and
+deleted. 29 winners (23 at 10x or more, 6 at 5 to 10x), 6 flops under 0.5x from the winners' own channels, 3 real
+"we tested it" Shorts, and 4 adverts left out of every count. YouTube only: Instagram needs a login and TikTok
+forbids automated collection. No sound was judged.
+
+### What separates winners from flops
+
+| What the video does | Winners (29) | Flops (6) | Weight |
+|---|---|---|---|
+| Frame 0 is one thing known at a glance (a face, one chart, one candle, a named cartoon), never blank, a blur or an unlabelled line | 28 | 1 | solid |
+| The biggest element fills 40% or more of the frame in the first second | 18 | 1 | solid |
+| The promise or the topic's name is on screen as big, high-contrast words by about 1.5 s | 16 | 1 | likely |
+| It gives rules the viewer can apply (an entry and a stop or target, an if/then, an exact setting) | 15 (15 of the 21 chart and indicator winners) | 1 | likely |
+| The first sentence is about the viewer's own money or trading | 19 | 2 | likely |
+| A trade plays out to its result on screen (the box fills, the target or the stop is hit) | 11 (of 21) | 1 | likely |
+| It only explains what a thing is: no rule, no outcome | 2 | 3 | likely, as the mark of a flop |
+| The result is on screen inside 3 s (a finished trade, a profit figure, a win and a loss side by side) | 8 | 1 | a hint |
+| The end runs back into the start (cut mid-sentence, the opening shot or line again) | 7 | 0 | a hint |
+| 5 s or more of outro card, disclaimer or channel page | 1 | 2 | a hint |
+| It asks for nothing at the end | 18 | 2 | a hint |
+
+Weights as in the ig-stats skill: solid (four or more cases on each side and a wide gap), likely, a hint. Six flops
+cannot carry a percentage, and one viewer coded every field knowing each result.
+
+**What did not separate them:** how fast the picture changes (winners 3.5 changes in 10 s, flops 4.5; the fastest-cut
+video was a 0.2x flop, and winners at 56x, 16x and 12x change once every 7 to 10 s: each change shows the thing being
+said); length (55 s against 63 s); frame 0 already moving (18 of 29 against 6 of 6); a number in the hook; the kind
+of hook wording; the text score of `hookscore.py` (winners 39, flops 50: the two best scores are flops, and the 56x,
+47x and 44x openings score 30 or less); a presenter (12 winners open on a chart with no face, 3 on drawings alone).
+
+### The same channel, the same style, opposite results (the strongest evidence)
+
+| Channel | Won | Flopped |
+|---|---|---|
+| Trading Data (a faceless animated chart) | 56x, 33x, 12x: one setup named in a title, its rules stated, one trade played to its target on one chart; two of three show the finished trade on frame 0 | 0.2x: "MACD explained", a slogan over a stock photo, no trade, 10 s of outro |
+| TradeSmart | 27x, 10x: a claim in big words over a full-frame chart, trades resolving | 0.4x: an acronym on an empty black frame, then its definition |
+| TradingLab | 47x, 16x, 13x: a borrowed authority's dare with captions, "let's try it", a chart demo, the trade box fills, back to the clip | 0.2x: a research scatter plot explained under a meme collage, no trade, a hedged ending |
+| Sticky Academy (stick figures) | 100x, 9x: "Wait, [a concrete surprising fact]?", a famous name or a dollar figure by 5 s, its own drawings | 0.2x on the same stage: a vague "secret", stock icons, no name, no number |
+| Casual Finance (doodles) | 14x, 10x: a present-tense paradox or a coming crisis, with a character or a headline that stays | 0.4x: an anecdote about a past official, grey photos, pages of legal text |
+| TradeIQ | 35x, 14x | 0.3x in the same format: the only visible difference is the promise as big words in the first 1.5 s and a win-rate figure |
+
+### The quant, indicator and "we tested it" corner
+
+- Twelve Shorts at 10x or more, all of them **indicator how-tos**. Of the 16 corner winners: a chart on frame 0 in 13,
+  rules to apply in 11, the settings or search clicks shown in 8, a ring or arrow on the spot in 8, a trade resolving
+  in 8, the result inside 3 s in 7, exact numbers to type in 7.
+- **A test is a credential, never the headline.** No Short whose subject was "we tested it" beat its channel fivefold
+  among the 2,141 (the best: 3.5x, 3.4x, 3.1x; a channel that titles everything "Tested 100 Times" has a median of 8
+  views). Where winners show evidence it takes seconds, late: a table at 17 s, an equity curve for the last 4 s.
+- **Statistics as the subject** did not travel either: a research scatter plot was a 0.2x flop on the biggest
+  channel; a quant-maths channel's best Short is a 16 s verdict (9.9x).
+- "Where it lies" is rare and worked: the same signal winning and losing side by side on frame 0 (9.7x), and the
+  textbook trade stopped out twice (10.3x). A hint.
+- The picture for "we ran it N times" that read best: N runs as N tiles that fill (3.1x, a channel of 917 subscribers).
+
+Read together: lead with the result or the rule on a real chart, and let the test be the proof inside it.
+
+### Opening shapes (the shape, never the words), with their multiples
+
+1. A dare against instinct, said by an authority, captions on the face: 47x.
+2. "Wait, isn't X supposed to...?" from a naive figure, flipped inside 3.5 s: 100x; with a famous name: 9x.
+3. The setup's name as a title over its finished winning trade, then the rules with no preamble: 56x, 12x.
+4. "Stop using [the tool everyone uses] on its default", huge words and a stop gesture at 0.5 s: 28x.
+5. A count and "must know" as word-by-word text over a moving chart: 35x (the same shape without the text: 0.3x).
+6. The result first, then "here is how, with one tool": 20x; a trade in profit under one big word: 27x.
+7. A famous name, the size of its loss, "here's why", three numbered reasons: 47x.
+8. "This is what we call X" over one giant labelled object, a label every 2 s: 44x, 9x (probably found by search).
+9. A present-tense paradox about a market or a country: 14x, 10x.
+10. Two trades side by side with money on each, "the tool tells you which": 9.7x.
+
+### The fifteen biggest (adverts left out)
+
+| x median | Channel | Views (median) | s | Style | First 3 s, as said | What is on screen |
+|---|---|---|---|---|---|---|
+| 1250 | Trades By Mo | 1.57M (1.2k) | 10 | screen recording, no speech | (text) "5K Funded Account Challenge" | a live broker app, the profit ticking on frame 0 |
+| 100 | Sticky Academy | 170k (1.7k) | 64 | animated stick figures | "Wait, isn't charity supposed to help people? Not when you own the charity." | a fixed two-figure stage, one icon per sentence, one-word captions |
+| 56 | Trading Data | 47k (820) | 44 | animated chart | "Now, here's a powerful setup. It's called the POC flip." | the title and the finished trade box on frame 0; one chart, five rule sentences |
+| 47 | Unger Academy USA | 20.7k (422) | 57 | talking head | "Today we're talking about Tesla, a company that saw its market capitalization drop" | a logo at 1 s, a "$700 BILLION" card, three numbered reasons |
+| 47 | TradingLab | 13.3M (278k) | 32 | borrowed clip, then animated chart | "Don't buy it, but put an order in" | captions on an authority's face; "let's try it"; the trade box fills at 26 s; a loop |
+| 44 | Rayner Teo | 852k (19.5k) | 57 | one diagram, small face-cam | "This is what we call a hammer candlestick pattern" | one giant candle on white, a label every 2 s |
+| 35 | TradeIQ | 1.02M (28.5k) | 55 | screen recording | "Here are three TradingView indicators every trader must know" | the count as moving words; a search panel, a signal and an arrow, a win-rate table |
+| 33 | Trading Data | 27k (820) | 106 | animated chart | "How to use the volume indicator the right way." | a belief corrected, each rule closed by a trade box |
+| 28 | Traders Monopoly | 28k (998) | 55 | talking head | "Stop using RSI with default settings" | huge words and a stop gesture at 0.5 s; the settings box with 5, 9 and 14 |
+| 27 | TradeSmart | 15.8k (560) | 41 | animated chart | "Level up your trading with this free strategy." | a trade in profit under "FREE" at 1 s; a back-test curve for the last 4 s |
+| 22 | Trades By Mo | 27k (1.2k) | 15 | phone screen | "Want this TDI hack?" | a raw phone chart, cut mid-sentence |
+| 20 | Hyper Trade | 3.1M (150k) | 39 | screen recording | "Here is how I find a highly profitable trade using only one simple indicator" | a profit box growing to +39% in 3 s; every click highlighted |
+| 16 | TradingLab | 4.6M (278k) | 45 | borrowed clip, then animated chart | "The most important part of a chart is the lowest tick of the highest bar" | the 47x build again, with a meme beat |
+| 16 | BlackGirlStocks | 36k (2.3k) | 176 | talking head and slides | "Okay, so you have your level set up. Cool, but here's the thing." | bounce-or-break diagrams; one real chart annotated for 90 s |
+| 14 | Casual Finance | 390k (27k) | 68 | doodle animation | "So this was never a story about the world running out of money." | a headline that stays; one doodle slot swapped per sentence |
+
+### What it changed here (2026-11-15)
+
+- `src/make_spec.py`: the in-depth and lesson formats are shown these shapes (`DEEP_EVIDENCE`) in place of the
+  chart-twist openers; the Indicator reel opens on two real trades of the signal, one that paid and one that failed,
+  and keeps its test short and late; the Strategy test opens on what happened to a trade, the count as its proof; the
+  Quant lesson's finding is on screen from the first picture and its test is one picture that grows; the Market
+  lesson uses a fixed stage and one new picture per sentence. Every lesson reel gives a rule and shows an outcome.
+- `exemplar/NOTES.md`: the eight lines every writer reads.
+- `src/research.py`: the ten channels of this corner that had outliers join the weekly pull.
+
+**Limits.** 29 winners and 6 flops from 19 channels; 12 of the 23 at 10x or more are indicator how-tos, so the profile
+leans that way. Multiples on small channels come from small numbers (11x can be 4,700 views), ages were not matched,
+and views can include paid placements and replays (three of one channel's "winners" were adverts and were dropped).
+Frames were sampled at 144p, so small text was often unreadable. Retention, skips and where the views came from
+cannot be seen from outside. The quant lesson's shape rests on thin evidence: no example at 10x.
