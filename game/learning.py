@@ -47,7 +47,8 @@ PLAYER_FIELDS = ("lessons_passed", "chal", "stop_seen", "drills", "passed", "ex"
 FREE_LESSONS_A_DAY = 2       # a free player finishes this many lessons a day; Pro lifts it, Expert adds the Expert units (rubric v2 A8)
 GATE_TEXT = {"limited": "Two lessons done today: back tomorrow, or Pro for the whole path", "expert": "This unit needs Expert",
              "account": "Make a free account to keep going: two lessons a day, or the whole path with Pro"}
-OPEN_TRACKS = {"start"}      # the first unit never uses up the free day, so a new player's first minutes are not cut short (growth plan, 2026-11-10)
+OPEN_TRACKS = {"basics"}     # the first unit never uses up the free day, so a new player's first minutes are not cut short (growth plan,
+                             # 2026-11-10); "Market basics" since "Start here" was removed (2026-11-15, the owner's decision)
 COIN_KINDS = {"next"}        # chart tests built to score 50%: never a weak spot (LP9)
 LEVELS = [(0, "Trainee"), (200, "Apprentice"), (600, "Trader"), (1500, "Analyst"), (3000, "Strategist"), (6000, "Master")]   # XP levels (LP14)
 GOALS = (20, 50, 100)        # the daily XP goals a player can pick
@@ -59,7 +60,7 @@ def level_of(xp):
     k = max(i for i, (floor, _) in enumerate(LEVELS) if xp >= floor)
     return {"name": LEVELS[k][1], "floor": LEVELS[k][0], "next": LEVELS[k + 1][0] if k + 1 < len(LEVELS) else None, "n": k + 1}
 ATTEMPTS_MAX, WEAK_MIN, WEAK_BELOW, XP_REVIEW, LEAGUE = 300, 3, 0.7, 5, 20   # the review (LP5) and the weekly league (LP7)
-PLACEMENT_UNITS = 99         # the placement test asks one question from each unit after Start here: every unit (rubric v2 A1; LP6 asked 12)
+PLACEMENT_UNITS = 99         # the placement test asks one question from each unit: every unit (rubric v2 A1; LP6 asked 12)
 TASK_KINDS = {"trade": "Make a trade", "stop": "Put a stop-loss on a position", "target": "Put a take-profit on a position",
               "bracket": "Place a bracket", "planned": "Close a position that had a stop", "short": "Open a short",
               "limit": "Place a limit order", "trail": "Place a trailing stop", "option": "Buy an option",
@@ -592,12 +593,12 @@ class LearningMixin:
 
     # ------------------------------------------------------------------ the placement test (LP6)
     def placement_new(self, p=None):
-        """A fresh placement test: one question from each of the first PLACEMENT_UNITS units after Start here, in the
+        """A fresh placement test: one question from each of the first PLACEMENT_UNITS units, in the
         order of the path, without their answers (options in the player's shuffled order). Stateless: the answers come
         back with the lesson and block index."""
         rng = random.Random(secrets.randbits(64))
         out = []
-        for t in self.tracks[1:1 + PLACEMENT_UNITS]:
+        for t in self.tracks[:PLACEMENT_UNITS]:
             qs = [(x["id"], k) for x in self.lessons if x["track"] == t["id"] for k, kind in exercises(x) if kind == "q" and "options" in x["body"][k]]
             if not qs:
                 continue
@@ -628,8 +629,8 @@ class LearningMixin:
                 stop = True
         if not results:
             return {"error": "No answers"}
-        start = next((t for t in self.tracks[1:] if t["id"] not in known), None)      # None: every unit is known
-        unit_ids = set(known) | ({"start"} if known else set())
+        start = next((t for t in self.tracks if t["id"] not in known), None)        # None: every unit is known
+        unit_ids = set(known)
         first = next((x for x in self.lessons if x["track"] not in unit_ids), None)
         out = {"results": results, "known": [t["title"] for t in self.tracks if t["id"] in known],
                "start": {"track": start["title"] if start else None, "lesson": {"id": first["id"], "title": first["title"]} if first else None}}

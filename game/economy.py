@@ -68,7 +68,7 @@ TIERS = ("pro", "expert")
 ORDER_TTL = 86400            # an order that is not paid within a day expires
 CHECKOUT_OPEN = 3600        # a payment page stays payable for an hour (Stripe's expires_at), and while it is open the
                             # order counts against the cap, the daily limit and the once-only deal (audit 2026-11-15)
-TERMS_VERSION = "2026-10-24"  # the date of web/terms.html; an account records the version it signed up under
+TERMS_VERSION = "2026-11-15"  # the date of web/terms.html (MB no longer sold, 2026-11-15); an account records the version it signed up under
 PLAYER_FIELDS = ("birth_year", "birth_date", "ref", "pro_until", "expert_until", "last_restart", "mb_by_source",
                  "challenge_mb", "terms", "subs", "invite", "invited_by")
 

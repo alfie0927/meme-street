@@ -58,7 +58,7 @@ Some details:
 - The Daily Chart's coming candles never leave the server, so the chart cannot be read ahead from the browser.
 - Players can script trading bots in a small rule language and backtest them (a paid feature). The language is parsed, never eval'd.
 
-How it pays for itself: the 130 lessons are open to everyone. MB are never sold; the shop sells two memberships: Pro adds leverage and 32 more chart indicators, Expert adds the scripted bots and backtests. MB can never be cashed out, and the return boards rank percentage return on the money put in, so buying MB cannot lift a place on them.
+How it pays for itself: the 127 lessons are open to everyone. MB are never sold; the shop sells two memberships: Pro adds leverage and 32 more chart indicators, Expert adds the scripted bots and backtests. MB can never be cashed out, and the return boards rank percentage return on the money put in, so buying MB cannot lift a place on them.
 
 I would like to hear where the market feels fake, and whether the Daily is clear in its first ten seconds.
 ```
@@ -94,7 +94,7 @@ A made-up stock market that never closes. Practice money.
 
 **Description** (under 260 characters):
 ```
-Learn to trade on a made-up market that runs around the clock: 180+ invented companies, news that moves prices, 130 lessons and a two-minute Daily Chart, the same for everyone. You start with 100,000 MB of practice money. MB have no cash value.
+Learn to trade on a made-up market that runs around the clock: 180+ invented companies, news that moves prices, 127 lessons and a two-minute Daily Chart, the same for everyone. You start with 100,000 MB of practice money. MB have no cash value.
 ```
 
 **Topics:** Education, Investing, Games (pick from what the form offers; never "Crypto" or "Betting").
@@ -113,7 +113,7 @@ It is a stock market where every company is invented, so it can run at any hour 
 
 The fastest way in is the Daily Chart: one mystery chart a day, the same for everyone, two minutes, no account needed. https://memestreet.net/daily?ref=ph
 
-Everyone starts with 100,000 MB of practice money. MB have no cash value and are never paid out. The 130 lessons are open to all. MB are never sold; the shop sells two memberships with more tools; bought MB cannot lift a place on the return boards, which rank percentage return.
+Everyone starts with 100,000 MB of practice money. MB have no cash value and are never paid out. The 127 lessons are open to all. MB are never sold; the shop sells two memberships with more tools; bought MB cannot lift a place on the return boards, which rank percentage return.
 
 The rule behind the price model is "realism you can learn from, but no free money": the simple tricks, like buying every dip, are checked to earn less than holding the index after costs.
 
@@ -127,7 +127,7 @@ text below where a form has room. Free listings only: never pay for a "featured"
 
 **Longer description** (for forms with room):
 ```
-Meme Street is a made-up stock market that runs around the clock, for learning to trade without risking real cash. There are 180+ invented companies, indices and funds, news that moves prices, a new leaderboard every day and 130 lessons. Everyone starts with 100,000 MB of practice money; MB have no cash value and are never paid out. The Daily Chart is the two-minute way in: one mystery chart a day, the same for everyone, no account needed. Simple tricks such as buying every dip are checked to earn less than holding the index, so what you practise is judgement, not a cheat code.
+Meme Street is a made-up stock market that runs around the clock, for learning to trade without risking real cash. There are 180+ invented companies, indices and funds, news that moves prices, a new leaderboard every day and 127 lessons. Everyone starts with 100,000 MB of practice money; MB have no cash value and are never paid out. The Daily Chart is the two-minute way in: one mystery chart a day, the same for everyone, no account needed. Simple tricks such as buying every dip are checked to earn less than holding the index, so what you practise is judgement, not a cheat code.
 ```
 
 | Where | How (check on the day) | Link to give | Notes |

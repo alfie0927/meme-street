@@ -634,7 +634,7 @@ async function join(code){
    // the account first, the address confirmed later (growth plan 2026-11-10): the code is mailed and goes in on the Profile
    // page any time; a new player lands on a first step, the Daily Chart they signed up from or lesson 1
    if(authMode==='register'&&body.email&&body.email.trim()&&!code){toast(mailReady?'Account made. We emailed you a code: confirm your address on your Profile any time.':'Account made.',true,6000);
-    if(page!=='daily'){location.href='/learn?l=welcome';return}}
+    if(page!=='daily'){location.href='/learn?l=stocks-shares';return}}
    connect()}else err.textContent=j.error||'Error'}
  catch(e){err.textContent='Could not reach the server'}
  b.disabled=false}
@@ -776,7 +776,7 @@ function renderHeader(){
  if(lnb._on!==lkey){lnb._on=lkey;lnb.style.display=newbie?'flex':'none';
   if(newbie){   // a new player's first three steps, each ticked once done (growth plan 2026-11-10)
    const st=(ok,html)=>`<span>${ok?'<b class="up">&#10003;</b>':'<span class="mut">&#9675;</span>'} ${html}</span>`;
-   lnb.innerHTML=`<span class="bar" style="margin:0;gap:6px 14px"><b>Your first steps</b>${st(day,'<a href="/daily">Today\'s chart</a>')}${st(!!S.traded,'A first trade: pick a stock, then Buy')}${st(false,'<a href="/learn?l=welcome">Lesson 1</a> (4 minutes)')}</span><span class="bar" style="margin:0"><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>`}}
+   lnb.innerHTML=`<span class="bar" style="margin:0;gap:6px 14px"><b>Your first steps</b>${st(day,'<a href="/daily">Today\'s chart</a>')}${st(!!S.traded,'A first trade: pick a stock, then Buy')}${st(false,'<a href="/learn?l=stocks-shares">Lesson 1</a> (5 minutes)')}</span><span class="bar" style="margin:0"><a href="/learn">All lessons</a><button id="learn-hide" aria-label="Hide this message">&times;</button></span>`}}
  const pb=$('pro-badge'),pro=!!S.pro&&!guest,tier=S.expert?'EXPERT':'PRO';if(pb._on!==pro){pb._on=pro;pb.style.display=pro?'inline-block':'none'}if(pb.textContent!==tier){pb.textContent=tier;pb.title='Meme Street '+(S.expert?'Expert':'Pro')}
  const lb=$('low-banner'),low=!!S.restart&&!guest&&!lowHidden&&page!=='shop';
  if(lb._on!==low){lb._on=low;lb.style.display=low?'flex':'none';

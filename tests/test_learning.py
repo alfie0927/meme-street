@@ -27,8 +27,8 @@ class CourseTests(unittest.TestCase):
         cls.tracks, cls.lessons = learning.load_content()
 
     def test_the_course_is_complete(self):
-        self.assertEqual(self.tracks[0]["id"], "start")
-        self.assertEqual(self.lessons[0]["id"], "welcome")                    # (the new player's banner links to it)
+        self.assertEqual(self.tracks[0]["id"], "basics")                      # ("Start here" went on 2026-11-15)
+        self.assertEqual(self.lessons[0]["id"], "stocks-shares")              # (the new player's banner links to it)
         self.assertGreaterEqual(len(self.tracks), 17)
         self.assertGreaterEqual(len(self.lessons), 90)
         track_ids = {t["id"] for t in self.tracks}
@@ -82,7 +82,7 @@ class LessonTests(unittest.TestCase):
         self.assertEqual(body[1], {"task": "stop", "text": "Protect it."})
         self.assertEqual(body[2], {"q": "Two?", "options": ["One", "Two", "Three"], "answer": 1, "why": "Because."})
         self.assertEqual(learning.exercises(lessons[0]), [(1, "task"), (2, "q")])
-        les = self.e.lesson("welcome")
+        les = self.e.lesson("stocks-shares")
         qs = [b for b in les["body"] if "q" in b]
         self.assertTrue(qs and all("answer" not in b and "why" not in b and "i" in b for b in qs))
         self.assertEqual(les["total"], len([b for b in les["body"] if "q" in b or "task" in b or "test" in b]))
@@ -96,31 +96,31 @@ class LessonTests(unittest.TestCase):
                 if kind == "q":
                     who_ans = e.learn_answer(who, lid, k, 99)
                     e.learn_answer(who, lid, k, who_ans["answer"])
-        pass_lesson(p, "stocks-shares")
-        pass_lesson(p, "exchanges-indices")
+        pass_lesson(p, "timeframes")                                               # (outside the open first unit)
+        pass_lesson(p, "gaps")
         self.assertEqual(p.day_passes[e._learn_day()], 2)
         a = e.allowance(p)
         self.assertEqual((a["used"], a["limit"], a["tier"], a["limited"]), (2, learning.FREE_LESSONS_A_DAY, "free", True))
         self.assertGreater(a["reset"], e.now)
-        les = e.lesson("cap-volume", p)                                            # a third, unstarted lesson: limited today
+        les = e.lesson("trends", p)                                                # a third, unstarted lesson: limited today
         self.assertEqual(les["gate"], "limited")
-        q = next(k for k, kind in learning.exercises(e._lesson_by_id["cap-volume"]) if kind == "q")
-        self.assertEqual(e.learn_answer(p, "cap-volume", q, 0)["gate"], "limited")
-        self.assertIn("error", e.learn_answer(p, "cap-volume", q, 0))
-        self.assertNotIn("gate", e.lesson("stocks-shares", p))                      # passed lessons stay open as a recap
+        q = next(k for k, kind in learning.exercises(e._lesson_by_id["trends"]) if kind == "q")
+        self.assertEqual(e.learn_answer(p, "trends", q, 0)["gate"], "limited")
+        self.assertIn("error", e.learn_answer(p, "trends", q, 0))
+        self.assertNotIn("gate", e.lesson("timeframes", p))                        # passed lessons stay open as a recap
         first = next(x for x in e.lessons if x["track"] in learning.OPEN_TRACKS and x["id"] not in p.passed)
         self.assertNotIn("gate", e.lesson(first["id"], p))                         # the first unit never uses up the free day (2026-11-10)
         p.day_passes = {"1": 2}                                                     # another day: the allowance is fresh
-        self.assertNotIn("gate", e.lesson("cap-volume", p))
+        self.assertNotIn("gate", e.lesson("trends", p))
         p.day_passes = {e._learn_day(): 2}
         p.pro_until = e.now + 3600                                                  # Pro: no limit
         self.assertEqual(e.tier_of(p), "pro")
-        self.assertNotIn("gate", e.lesson("cap-volume", p))
+        self.assertNotIn("gate", e.lesson("trends", p))
         self.assertFalse(e.lessons_view(p)["allowance"]["limited"])
         self.assertTrue(all(t["tier"] in ("free", "pro", "expert") for t in e.lessons_view(p)["tracks"]))
         self.assertEqual(e.allowance(None)["tier"], "free")
-        self.assertEqual(e.lesson("cap-volume")["gate"], "account")                 # a visitor past the first unit: an account first (audit 2026-11-15)
-        self.assertEqual(e.learn_answer(None, "cap-volume", q, 0)["gate"], "account")
+        self.assertEqual(e.lesson("trends")["gate"], "account")                     # a visitor past the first unit: an account first (audit 2026-11-15)
+        self.assertEqual(e.learn_answer(None, "trends", q, 0)["gate"], "account")
         self.assertNotIn("gate", e.lesson(first["id"]))                             # the first unit stays open to visitors
         expert = next(x for x in e.lessons if next(t for t in e.tracks if t["id"] == x["track"]).get("tier") == "expert")
         self.assertEqual(e.lesson(expert["id"])["gate"], "expert")
@@ -146,18 +146,21 @@ class LessonTests(unittest.TestCase):
         self.assertEqual(e.learn_streak(p), 1)
         view = e.lessons_view(p)
         self.assertEqual((view["passed"], view["xp"], view["streak"], view["today"]), (1, p.xp, 1, p.xp))
-        self.assertEqual(view["next"], "welcome")                                 # the first unpassed lesson
+        self.assertEqual(view["next"], "exchanges-indices")                       # the first unpassed lesson
         steps = [x for t in view["tracks"] for x in t["lessons"] if x["ex_total"]]
-        self.assertEqual([x["id"] for x in steps if not x["locked"]], ["welcome", "stocks-shares"])   # the rest is locked (rubric v2 A3)
-        self.assertEqual(e.lesson("first-trade", p)["locked"], {"id": "welcome", "title": e._lesson_by_id["welcome"]["title"]})
-        self.assertNotIn("locked", e.lesson("first-trade"))                        # a visitor browses freely
-        w = e._lesson_by_id["welcome"]
-        for k, kind in learning.exercises(w):                                     # every question of Welcome answered, its task not done:
-            if kind != "task":                                                    # the next lesson moves on (loop 12)
-                e.learn_answer(p, "welcome", k, e.learn_answer(p, "welcome", k, 99)["answer"])
+        self.assertEqual([x["id"] for x in steps if not x["locked"]], ["stocks-shares", "exchanges-indices"])   # the rest is locked (rubric v2 A3)
+        self.assertEqual(e.lesson("cap-volume", p)["locked"], {"id": "exchanges-indices", "title": e._lesson_by_id["exchanges-indices"]["title"]})
+        self.assertNotIn("locked", e.lesson("cap-volume"))                         # a visitor browses freely
+        ids = [x["id"] for x in e.lessons]
+        for x in e.lessons[:ids.index("order-types")]:                            # up to Orders, whose first lesson has a task
+            p.passed.setdefault(x["id"], e.now)
+        w = e._lesson_by_id["order-types"]
+        for k, kind in learning.exercises(w):                                     # every question answered, its task not done:
+            if kind == "q":                                                       # the next lesson moves on (loop 12)
+                e.learn_answer(p, "order-types", k, e.learn_answer(p, "order-types", k, 99)["answer"])
         v2 = e.lessons_view(p)
-        self.assertNotEqual(v2["next"], "welcome")
-        self.assertTrue(next(x for x in v2["tracks"][0]["lessons"] if x["id"] == "welcome")["task_pending"])
+        self.assertNotEqual(v2["next"], "order-types")
+        self.assertTrue(next(x for t in v2["tracks"] for x in t["lessons"] if x["id"] == "order-types")["task_pending"])
         self.assertIn("error", e.learn_answer(p, "stocks-shares", 0, 0))          # not a question
         self.assertIn("error", e.learn_answer(p, "nope", 0, 0))
         self.assertEqual(p.cash, 1000.0)                                          # nothing here pays MB
@@ -175,36 +178,41 @@ class LessonTests(unittest.TestCase):
 
     def test_a_task_done_on_the_market_passes_the_lessons_that_ask_for_it(self):
         e, p = self.e, self.p
-        les = e.lesson("first-trade", p)
+        lid = "order-types"                                                       # (its task: a limit order)
+        les = e.lesson(lid, p)
         task = next(b for b in les["body"] if "task" in b)
-        self.assertEqual(task["task"], "stop")
-        for b in les["body"]:
-            if "q" in b:
-                e.learn_answer(p, "first-trade", b["i"], e.learn_answer(p, "first-trade", b["i"], 99)["answer"])
-        self.assertNotIn("first-trade", p.passed)                                 # the task is still to do
+        self.assertEqual(task["task"], "limit")
+        for k, kind in learning.exercises(e._lesson_by_id[lid]):
+            if kind == "q":
+                e.learn_answer(p, lid, k, e.learn_answer(p, lid, k, 99)["answer"])
+        self.assertNotIn(lid, p.passed)                                           # the task is still to do
         e.trade(p, "NVXA", "buy", 0.2)
-        self.assertIn("trade", p.tasks)                                           # the first trade is the welcome lesson's task
+        self.assertIn("trade", p.tasks)                                           # (a task kind with no lesson still pays its XP once)
         xp = p.xp
         e.place_order(p, "NVXA", "stop_loss", e.stocks["NVXA"].price * 0.85)  # (3% of the account at risk: not the sized_stop task too)
         self.assertIn("stop", p.tasks)
-        self.assertEqual(p.xp, xp + learning.XP_TASK + learning.XP_PASS)
-        self.assertIn("first-trade", p.passed)
+        self.assertEqual(p.xp, xp + learning.XP_TASK)
         e.place_order(p, "NVXA", "stop_loss", e.stocks["NVXA"].price * 0.8)    # a second stop earns nothing more
-        self.assertEqual(p.xp, xp + learning.XP_TASK + learning.XP_PASS)
+        self.assertEqual(p.xp, xp + learning.XP_TASK)
         e.now += 2
         e.trade(p, "NVXA", "sell", 1.0)
         self.assertIn("planned", p.tasks)
+        self.assertEqual(p.xp, xp + 2 * learning.XP_TASK)
+        self.assertNotIn(lid, p.passed)
+        self.assertTrue(e.place_order(p, "NVXA", "limit_buy", e.stocks["NVXA"].price * 0.9, pct=0.1)[0])
+        self.assertEqual(p.xp, xp + 3 * learning.XP_TASK + learning.XP_PASS)      # the lesson's own task passes it
+        self.assertIn(lid, p.passed)
         e.now += 2
         e.trade(p, "OILX", "sell", 0.2)
         self.assertIn("short", p.tasks)
-        self.assertEqual(e.learning_summary(p)["tasks"], 4)
+        self.assertEqual(e.learning_summary(p)["tasks"], 5)
 
     def test_the_placement_test_marks_the_units_known_in_a_row_and_starts_the_path_after_them(self):
         e, p = self.e, self.p
         t = e.placement_new()
         qs = t["questions"]
-        self.assertEqual(len(qs), len(e.tracks) - 1)                               # every unit after Start (rubric v2 A1)
-        self.assertEqual([q["track"] for q in qs], [tr["id"] for tr in e.tracks[1:]])
+        self.assertEqual(len(qs), len(e.tracks))                                   # every unit (rubric v2 A1)
+        self.assertEqual([q["track"] for q in qs], [tr["id"] for tr in e.tracks])
         self.assertTrue(all("answer" not in q and q["options"] for q in qs))
         def shown(who, q):                                                          # the right answer's slot as `who` sees it
             b = e._lesson_by_id[q["lesson"]]["body"][q["i"]]
@@ -217,18 +225,18 @@ class LessonTests(unittest.TestCase):
                     for n, q in enumerate(qs)]
         v = e.placement_grade(None, vanswers)                                       # a visitor: graded, nothing kept
         self.assertEqual([r["right"] for r in v["results"]][:4], [True, True, True, False])
-        self.assertEqual(v["start"]["track"], e.tracks[4]["title"])
+        self.assertEqual(v["start"]["track"], e.tracks[3]["title"])
         self.assertNotIn("passed", v)
         self.assertIsNone(p.placed)
         r = e.placement_grade(p, answers)
-        known = {"start"} | {tr["id"] for tr in e.tracks[1:4]}
-        self.assertEqual(set(r["known"]), {tr["title"] for tr in e.tracks[1:4]})
+        known = {tr["id"] for tr in e.tracks[:3]}
+        self.assertEqual(set(r["known"]), {tr["title"] for tr in e.tracks[:3]})
         self.assertTrue(all(x["id"] in p.passed for x in e.lessons if x["track"] in known))
         self.assertFalse(any(x["id"] in p.passed for x in e.lessons if x["track"] not in known))
-        self.assertEqual(p.placed, e.tracks[4]["id"])
+        self.assertEqual(p.placed, e.tracks[3]["id"])
         self.assertEqual(p.xp, 0)                                                   # placing earns nothing
         view = e.lessons_view(p)
-        self.assertEqual(view["next"], next(x["id"] for x in e.lessons if x["track"] == e.tracks[4]["id"]))
+        self.assertEqual(view["next"], next(x["id"] for x in e.lessons if x["track"] == e.tracks[3]["id"]))
         self.assertEqual(view["placed"], p.placed)
         self.assertIn("error", e.placement_grade(p, [{"lesson": "nope", "i": 0, "choice": 0}]))
         self.assertIn("error", e.placement_grade(p, []))
@@ -313,18 +321,18 @@ class LessonTests(unittest.TestCase):
     def test_options_are_shuffled_per_player_and_the_coin_flip_test_is_never_a_weak_spot(self):
         e, p = self.e, self.p
         q = join(e, "other")
-        les_p, les_q, les_v = e.lesson("stocks-shares", p), e.lesson("stocks-shares", q), e.lesson("stocks-shares")
+        les_p, les_q, les_v = e.lesson("statements", p), e.lesson("statements", q), e.lesson("statements")
         qp = next(b for b in les_p["body"] if "q" in b)
-        orig = e._lesson_by_id["stocks-shares"]["body"][qp["i"]]
+        orig = e._lesson_by_id["statements"]["body"][qp["i"]]
         self.assertEqual(sorted(qp["options"]), sorted(orig["options"]))
         slots = set()
         self.assertEqual(les_v["gate"], "account")                                  # a visitor past the first unit (audit 2026-11-15)
         for who, les in ((p, les_p), (q, les_q)):
             b = next(x for x in les["body"] if x.get("i") == qp["i"])
             slot = b["options"].index(orig["options"][orig["answer"]])
-            self.assertEqual(e.learn_answer(who, "stocks-shares", qp["i"], slot)["right"], True)
+            self.assertEqual(e.learn_answer(who, "statements", qp["i"], slot)["right"], True)
             slots.add(slot)
-        self.assertEqual(e.lesson("stocks-shares", p)["body"][qp["i"]]["options"], qp["options"])   # stable for one player
+        self.assertEqual(e.lesson("statements", p)["body"][qp["i"]]["options"], qp["options"])      # stable for one player
         all_slots = set()
         for x in e.lessons[:30]:
             for k, kind in learning.exercises(x):
@@ -335,7 +343,7 @@ class LessonTests(unittest.TestCase):
         for _ in range(6):
             e._attempt(p, "next", False)
         self.assertEqual([w["skill"] for w in e.weak_skills(p)], [])
-        les = e.lesson("stocks-shares", p)
+        les = e.lesson("statements", p)
         self.assertIn(str(qp["i"]), les["answers"])                                 # an answered question shows its answer again
         self.assertEqual(les["answers"][str(qp["i"])]["why"], orig["why"])
 
@@ -405,7 +413,7 @@ class LessonTests(unittest.TestCase):
         e.trade(p, "OILX", "sell", 0.2)
         e.place_order(p, "OILX", "stop_loss", e.stocks["OILX"].price * 1.1)
         self.assertIn("short_stop", p.tasks)
-        for kind in ("limit", "trail", "option", "note", "short_stop", "bracket", "trade", "stop", "planned", "sized_stop", "two_r"):   # (target and short: kinds kept for old saves)
+        for kind in ("limit", "trail", "option", "note", "short_stop", "bracket", "planned", "sized_stop", "two_r"):   # (target, short, and since 2026-11-15 trade and stop: no lesson asks for them)
             self.assertTrue(any(b.get("task") == kind for x in e.lessons for b in x["body"]), kind)
 
     def test_the_skill_tasks_judge_the_size_and_the_reward_to_risk(self):
@@ -472,14 +480,12 @@ class LessonTests(unittest.TestCase):
         self.assertEqual(e.learning_summary(p)["level"]["name"], "Apprentice")
         # finishing a unit says so
         for x in e.lessons:
-            if x["track"] == "start":
+            if x["track"] == "basics":
                 for k, kind in learning.exercises(x):
                     if kind == "q":
                         e.learn_answer(p, x["id"], k, e.learn_answer(p, x["id"], k, 99)["answer"])
-        for kind in ("trade", "stop"):
-            e._learn_task(p, kind)
-        self.assertTrue(all(x["id"] in p.passed for x in e.path_lessons if x["track"] == "start"))
-        self.assertTrue(any("Unit finished: Start here" in n for n in p.notices))
+        self.assertTrue(all(x["id"] in p.passed for x in e.path_lessons if x["track"] == "basics"))
+        self.assertTrue(any("Unit finished: Market basics" in n for n in p.notices))
 
     def test_number_questions_and_generated_calculations(self):
         e, p = self.e, self.p
@@ -536,17 +542,17 @@ class LessonTests(unittest.TestCase):
         self.assertTrue(les["body"])
         self.assertNotIn("quiz", les)
         self.assertEqual(les["track_title"], "Reading charts")
-        self.assertIsNone(self.e.lesson("welcome")["prev"])
-        self.assertEqual(self.e.lesson("welcome")["next"]["id"], "first-trade")
+        self.assertIsNone(self.e.lesson("stocks-shares")["prev"])
+        self.assertEqual(self.e.lesson("stocks-shares")["next"]["id"], "exchanges-indices")
         self.assertIsNone(self.e.lesson("nope"))
 
     def test_opening_a_lesson_counts_it_as_read_and_pays_nothing(self):
         e, p = self.e, self.p
-        e.lesson("welcome", p)
-        first = p.lessons_passed["welcome"]
+        e.lesson("stocks-shares", p)
+        first = p.lessons_passed["stocks-shares"]
         e.now += 60
-        e.lesson("welcome", p)
-        self.assertEqual(p.lessons_passed, {"welcome": first})                    # the first read is kept
+        e.lesson("stocks-shares", p)
+        self.assertEqual(p.lessons_passed, {"stocks-shares": first})                    # the first read is kept
         self.assertIsNone(e.lesson("nope", p))
         self.assertEqual(p.cash, 1000.0)
         self.assertEqual(p.mb_by_source.get("challenge", 0.0), 0.0)
@@ -557,7 +563,7 @@ class LessonTests(unittest.TestCase):
 
     def test_a_visitor_reads_and_nothing_is_kept(self):
         e = self.e
-        self.assertTrue(e.lesson("welcome")["body"])
+        self.assertTrue(e.lesson("stocks-shares")["body"])
         view = e.lessons_view(None)
         self.assertEqual(view["read"], 0)
         self.assertNotIn("week", view)
@@ -756,13 +762,13 @@ class LearningServerTests(unittest.TestCase):
             d = json.loads(http(srv, "/api/learn")[1])                              # public: a visitor sees the course
             self.assertGreaterEqual(d["total"], 90)
             self.assertEqual(d["challenges"], [])
-            les = json.loads(http(srv, "/api/learn/lesson/welcome")[1])            # a visitor reads it
+            les = json.loads(http(srv, "/api/learn/lesson/stocks-shares")[1])            # a visitor reads it
             self.assertTrue(les["body"] and les["next"])
             self.assertEqual(http(srv, "/api/learn/lesson/nope")[0], 404)
-            self.assertIn(http(srv, "/api/learn/quiz", "POST", {"lesson": "welcome", "answers": [0]})[0], (404, 405))
+            self.assertIn(http(srv, "/api/learn/quiz", "POST", {"lesson": "stocks-shares", "answers": [0]})[0], (404, 405))
             a = http_join(srv.url, "HttpStudent")
             h = {"X-Token": a["token"]}
-            http(srv, "/api/learn/lesson/welcome", headers=h)                       # a player reads it
+            http(srv, "/api/learn/lesson/stocks-shares", headers=h)                       # a player reads it
             time.sleep(0.3)
             self.assertEqual(json.loads(http(srv, "/api/learn", headers=h)[1])["read"], 1)
             q = json.loads(http(srv, "/api/learn/test?kind=level", headers=h)[1])
@@ -810,7 +816,7 @@ class LearningBrowserTests(unittest.TestCase):
         try:
             await d.join(base, "learner")
             await d.check("a new player is shown their first steps, lesson 1 among them", "document.getElementById('learn-banner').innerHTML",
-                          lambda t: "first steps" in t and "l=welcome" in t, wait=8)
+                          lambda t: "first steps" in t and "l=stocks-shares" in t, wait=8)
             await pg.goto(base + "/learn", 3)
             await d.check("a new account sees the placement test alone", "document.querySelectorAll('.lrn-first').length+'|'+document.querySelectorAll('.lrn-track').length", "1|0", wait=10)
             await pg.js("document.querySelector('[data-place-skip]').click()")
@@ -824,7 +830,7 @@ class LearningBrowserTests(unittest.TestCase):
             await pg.goto(base + "/learn?l=support-resistance", 3)
             await d.check("a lesson further down the path is locked", "document.querySelector('.lrn-goal') && document.querySelector('.lrn-goal').innerText",
                           lambda t: bool(t) and "locked" in t and "Finish" in t, wait=10)
-            await pg.goto(base + "/learn?l=welcome", 3)
+            await pg.goto(base + "/learn?l=stocks-shares", 3)
             await d.check("a lesson opens on its goal screen", "document.querySelector('.lrn-goal') && document.querySelector('.lrn-goal').innerText",
                           lambda t: bool(t) and "Start" in t and "card" in t, wait=10)
             await pg.js("document.querySelector('[data-lrn-start]').click()")

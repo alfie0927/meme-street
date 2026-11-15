@@ -156,8 +156,8 @@ not a place to put it. To turn the loss you accept into a number of shares, use 
 <div class="box warn"><b>Watch out:</b> a stop is not a guaranteed price. If the price gaps past it, the order fills at the next
 price, so the real loss can be bigger than the number shown. On Meme Street the fee is 0.1% on each side of a trade, and the
 result counts both sides.</div>
-<p>Learn more in <a href="/lessons/stop-placement">Where stops go</a>, <a href="/lessons/costs">slippage, gaps through stops
-and fees</a> and <a href="/lessons/first-trade">your first trade, with a stop</a>.</p>
+<p>Learn more in <a href="/lessons/stop-placement">Where stops go</a> and <a href="/lessons/costs">slippage, gaps through stops
+and fees</a>.</p>
 <script>
 (function(){var $=function(i){return document.getElementById(i)},o=$("out");
 function fmt(x){return x.toLocaleString("en-US",{maximumFractionDigits:2})}
