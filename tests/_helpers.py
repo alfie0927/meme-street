@@ -68,7 +68,7 @@ def _flat_read(self):
                    "chat_min_trades": 0,                                       # ...anyone may chat without trading first...
                    "require_password": False,                                  # ...may join with just a name...
                    "signup_bonus": 1000}                                        # ...and start with 1,000 MB (the game itself: 100,000)
-    forced = {"signup_bonus": 1000,                                          # the tests' money is 1,000 MB a head (the game: 100,000),
+    forced = {"signup_bonus": 1000, "house_seed": 50000,                     # the tests' money is 1,000 MB a head and the house 50,000 (the game: 100,000 and 5,000,000),
               "shop_packages": OLD_PACKS, "launch_deals": OLD_DEALS,         # the old MB packs (see OLD_PACKS),
               "ipo_per_year": 0,                                             # no new listings (a test of them turns them on),
               "market_model": 1}                                         # on the old zero-drift market (a test of the new

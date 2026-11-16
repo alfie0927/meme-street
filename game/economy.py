@@ -33,7 +33,7 @@ import secrets
 import uuid
 
 SOURCES = ("grant", "purchase", "challenge", "restart", "refund", "admin")
-DEFAULT_PACKAGES = []        # MB packs are no longer sold (2026-11-15); a `shop_packages` setting could bring them back
+DEFAULT_PACKAGES: list[dict] = []        # MB packs are no longer sold (2026-11-15); a `shop_packages` setting could bring them back
 # Pro and Expert: a monthly pass that renews every month until it is cancelled ("renews"), or a year paid at once
 DEFAULT_PRO = [
     {"sku": "pro_month", "days": 30, "price_cents": 999, "renews": True},
@@ -61,7 +61,7 @@ EXPERT_FEATURES = [
     "An Expert badge on your profile",
 ]
 # the New Launch Deal's MB packs (none since 2026-11-15; the half-price first month of a pass stays)
-LAUNCH_DEALS = []
+LAUNCH_DEALS: list[dict] = []
 ONE_RESTART_BEFORE = 1794757544    # 2026-11-15 15:45:44 UTC, when 100,000 MB accounts went live: older accounts get one restart
 INVITE_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"   # (no 0, 1, i, l or o: easy to read out)
 TIERS = ("pro", "expert")
