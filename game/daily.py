@@ -274,8 +274,7 @@ class DailyMixin:
         for play in d["plays"].values():
             self._daily_finish(play, final)
         done = sorted((x for x in d["plays"].values() if x.get("done")), key=lambda x: (-x["ret"], x["end"]))
-        bots = {b.token for b in self.house_bots()}                        # (tagged on the board, 2026-11-10)
-        return [{"name": x["name"], "ret": round(x["ret"], 6), "trades": len(x["trades"]), "bot": x.get("token") in bots}
+        return [{"name": x["name"], "ret": round(x["ret"], 6), "trades": len(x["trades"])}
                 for x in done]
 
     def _daily_summary(self, d):
