@@ -19,6 +19,8 @@ CHANNELS = {   # trading education and stick-figure finance accounts found in th
     "TradeSmart": "UCvYDPDGrYpYkR7g9Jbgs0QA", "AlgoTrade Pro": "UC1DSaMtiJf1w7yOEI1ePkuQ", "Rayner Teo": "UCFSn-h8wTnhpKJMteN76Abg",
     "LuxAlgo": "UC-luaBAGSqZ---25Wifnnhg", "Roman Paolucci": "UCW1svfGxG4ADnbc1HCH6dqA", "Quantified Strategies": "UCBP0QGCn6bKRHJRsEmh7Q5A",
     "Unger Academy USA": "UCOZ11rO2GVCAdsK-A2e8sHQ",
+    # the study of 2026-11-17 (research/niche_2026-11-17.md): small channels whose outliers travelled
+    "Day Trading Addict": "UCeuG9uHlLCW9zDBu_1hmvRg", "Trading (pattern loops)": "UCuqR_SVvDRydh_2AJ4WJK7w", "Stock Market TV": "UCr5imBwmPNqkrbM1We8xRDA",
 }
 
 

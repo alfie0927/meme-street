@@ -36,7 +36,11 @@ PATTERNS = ("What the virality research found on other accounts (a lead to test 
             "frame 0, show something the viewer recognises at once, make one big element do something extraordinary before 3 "
             "seconds, land the claim word by word at about 1.2 to 1.6 s, speak the subject within 0.5 s, work on mute and are "
             "about the viewer, not about us. Losers open on a still card, an empty or abstract frame, small pale text, or a topic "
-            "about the maker. Comments come when the reel asks one plain question the viewer can answer in a word.")
+            "about the maker. Comments come when the reel asks one plain question the viewer can answer in a word. The niche study of "
+            "2026-11-17 (research/niche_2026-11-17.md: 4,500 videos ranked against their own accounts, 101 watched) found the winners "
+            "share: one subject filling the frame with labels landing as spoken, the claim kept on screen the whole reel, big two-to-"
+            "four-word captions, a first sentence naming one concrete thing, something resolving at the end, content exact enough to "
+            "argue with; pace, cuts, length and title wording did not separate winners from flops there.")
 first = lambda s: re.split(r"(?<=[.?!])\s+", (s or "").strip())[0][:160]
 med = lambda xs: round(statistics.median(xs), 1) if xs else None
 

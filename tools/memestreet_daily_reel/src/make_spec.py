@@ -470,6 +470,12 @@ After the hook, every spoken line has its own change on screen: every line is sh
 Rotate the angle from reel to reel: the result first; a contrarian claim; the pain first; something breaks on screen; a dare.
 "recent_devices" in the request shows the last openings: take a different angle from the last two.
 Never open on "would you buy (sell, hold) here?": that question opened too many reels (the owner, 2026-11-16).
+The niche study of 2026-11-17 (4,500 Shorts and TikToks ranked against their own accounts, 60 watched frame by frame): every
+winner's first sentence names ONE concrete thing (a setting, a sum, a famous name, a named pattern, a day of the week) and is a
+claim, a dare, a command or a naive question ("Wait, isn't charity supposed to help people?", "Stop using RSI on its default",
+"Don't buy it, but put an order in", "Would you quit if this happened to you?"); the subject fills the frame and its labels land
+on it as the words are said; the claim stays on screen (your headline) and the reel ends by proving it (a sum that closes, a
+box that fills, a verdict). Flops opened on mood footage, a definition or a platitude.
 "hook_shape" in the facts is this reel's hook formula (the 26 formulas take turns): shape the first sentence on its template with this
 reel's own facts and your own words, and mind its trap. A format whose rules fix its opening (the Daily recap, a Loop) keeps its own.
 "openings_used" in the facts holds the first words of the last 40 reels: yours shares its first three words with none of them and is no
@@ -502,6 +508,21 @@ SHORT_EVIDENCE = [
     ["261x", "15 trading truths you need to hear. (6-second loop, the list in the caption)"],
     ["68x", "'More trades = more money' and other beliefs that cost traders. (6-second loop)"],
     ["10x", "The harsh reality of trading."], ["2x on a small account", "One loss. That's all it takes for emotion to grab the wheel."]]
+STUDY_EVIDENCE = [   # the niche study of 2026-11-17 (research/niche_2026-11-17.md): 3,556 Shorts and 983 TikToks ranked against their own accounts, 60 watched; shapes, never words
+    ["100x (a channel of 1,700 views)", "Two stick figures talk: 'Wait, isn't charity supposed to help people?' 'Not when you own the charity.' One word on screen per beat; the $50 million worked through to the end."],
+    ["57x (821 views)", "A title fixed at the top ('Volume POC Flip'); the entry, the stop and the target named; the trade box fills at the end."],
+    ["28x (998 views)", "'STOP USING RSI' huge over a stop gesture in the first half second; then the exact settings: 5, 9 or 14."],
+    ["47x (422 views)", "A name everyone knows, the size of its fall ('$700 BILLION' over a money bag, '-50%' over a red chart), three numbered reasons."],
+    ["66x", "'If I only had 60 seconds to reach every unprofitable trader, this is what I'd say': a premise; the words land one at a time."],
+    ["43x", "ONE giant candle fills the frame from frame 0; OPEN, CLOSE, HIGH, LOW land on it as they are said; a reaction sticker now and then."],
+    ["7x, 139 comments on 31k views", "'Would you quit if this happened to you?' then a face reacting over the chart that hit the stop by a hair and ran to target."],
+    ["10x, 622 comments", "'The exact setup I look for every morning after 15 years': face top, chart below, labels landing (ACCEPTANCE, ENTRY, TARGET HIT)."],
+    ["11x", "A silent 5-second loop: one dense reference card (nine candle patterns, each with a BUY or SELL badge) made to be paused and saved."],
+    ["81x (a TikTok account of 1,300 views)", "An exact odd number as the headline ('$3,227,500 THE PERFECT RETIREMENT NUMBER') held 6 s, then the sum written by hand line by line and circled."],
+    ["19x (TikTok)", "A fixed headline; the same person twice under two column labels; a tag stacks under each as it is said; two totals at the end ('After 30 years' / 'After 26 years')."],
+    ["8x, 10 million views, 5,212 comments (TikTok)", "'Buying this game saves you $5,000': the box held up, each number typed on a calculator and shown, the sum closed on the calculator; an arguable claim."],
+    ["0.1x (what flops)", "Cinematic footage of two old men, aphorisms about wealth, 'comment TIME': mood plus platitude plus a bare keyword."],
+    ["0.2x (what flops)", "'X explained' over a stock picture; a definition with no rule, no number, no outcome."]]
 DEEP_EVIDENCE = [   # for the in-depth and lesson formats: swipe.md, "Teardowns (November 2026)": 2,141 Shorts ranked, 42 watched frame by frame; shapes, never words
     ["56x", "The setup's name as a title over its finished winning trade, then the rules with no preamble (a faceless animated chart)."],
     ["28x", "'Stop using [the tool everyone uses] on its default': huge words and a stop sign in the first half second."],
@@ -975,6 +996,7 @@ def gather(category, rng, history, company=None):
 
 SCHEMA = """Reply with JSON only, no prose, in this shape:
 {"title": "cover title, 2 to 5 words", "type": "%s",
+ "headline": "a director reel's claim in 3 to 7 words, drawn by the template at the top from scene 1 to the end (what this reel proves; not the title, not the hook's words)",
  "hooks": ["three different spoken hook lines, best first"],
  "scenes": [ ...in order... ],
  "caption": "the Instagram caption"}
@@ -1064,7 +1086,9 @@ price, draw your own marks in real pixels. Setting api.cam = {k, ox, oy} inside 
 (k 1..1.3 around ox, oy; ease it in and out); the HUD stays put.
 Geometry (1080 x 1920; Instagram covers y < 230, y > 1440 and the right 230 px of the lower half): brand header y 250-310
 (hidden until scene 1: in scene 0 the template draws your hook at y 236-382, so draw nothing above y 384 in scene 0);
-your HUD y 380-500 (a free scene has no head); the world y 520-1290 (when the scene has a chart it fills that band, so draw on
+the headline y 384-444 (the template draws your "headline" there from scene 1 to the end: the claim the reel proves, 3 to 7
+words, the way the niche's winners keep their subject on screen the whole way; draw nothing in that band after scene 0);
+your HUD y 450-520 (a free scene has no head); the world y 520-1290 (when the scene has a chart it fills that band, so draw on
 the chart's own pixels or in its margins, never below y 1260); the punch headline at y 1270-1325 (api.punch draws it: keep that band
 clear); the transcript captions at y 1384-1440 (the template draws every spoken word there, in every scene); nothing below 1440. Every text you draw is 26 px or more (34+ for anything that matters); the renderer rejects smaller.
 Nothing you draw overlaps anything else (the owner, 2026-11-16: creative animation, and no overlaps, ever). The dry run rejects
@@ -1095,8 +1119,11 @@ inside the action, a clause at a time; a Stock story names the company inside th
 introduction. A beat lands at least every 4 seconds of speech (a punch, an fx cue or a chart cue on a word of the line),
 so no line is talked over a waiting picture.
 Sends and comments: the premise itself gives the viewer someone to send it to ("which level are you", one thing against
-another, an absurd made-up company). The reel has one question to the viewer, asked in the hook or the middle, never in
-the outro, and it is the first line of the caption. The outro is the sign-off alone, 10 words at most, so the ending
+another, an absurd made-up company). The reel has one question to the viewer, asked in the hook or the middle, never in the
+outro, and it is the first line of the caption. The questions that drew comments in the niche study: a decision with no right
+answer ("would you quit here?", "sell or hold?"), a setting or number people will dispute ("5, 9 or 14?"), a claim precise
+enough to test ("Friday's high under Thursday's means Monday revisits Friday's low"), and a face reacting to a result the
+viewer can judge. A plain "comment X" with nothing to decide flopped. The outro is the sign-off alone, 10 words at most, so the ending
 takes two seconds.
 Motion: the first five seconds move the most: the device arrives, builds or acts while the hook is spoken (never a finished
 picture waiting for the voice; the dry run fails a still opening more than anything else). Then something changes every 2 to
@@ -1325,6 +1352,10 @@ def check(spec, facts, charts, category=None):
     free = bool(spec.get("scene_js"))                     # a director reel (every reel since 2026-11-09)
     nk = lambda w: re.sub(r"[^a-z0-9%$.]", "", str(w).lower())
     dev = spec.get("device") if isinstance(spec.get("device"), dict) else {}
+    if free and category != "Daily recap":                  # (the claim that stays on screen: the study of 2026-11-17)
+        hl = str(spec.get("headline") or "").strip(); hw = hl.split()
+        if not 3 <= len(hw) <= 7: errs.append('"headline": the claim this reel proves, 3 to 7 words, drawn at the top from scene 1 to the end')
+        elif nk(hl) in (nk(str(spec.get("title") or "")), nk(str((sc[0] if sc else {}).get("text") or ""))): errs.append("the headline is the claim the reel proves, in other words than the title and the hook")
     if category == ONE_OFF:                                # (a one-off states its format, and it is a new one)
         o = spec.get("one_off") if isinstance(spec.get("one_off"), dict) else {}; nm = str(o.get("name") or "").strip()
         taken = {c.lower() for c in facts.get("formats_we_make", [])} | {str(m.get("name") or "").lower() for m in facts.get("one_offs_so_far", [])}
@@ -1793,7 +1824,7 @@ def brief(slot, category=None, remake=None):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research of November 2026: swipe.md). Use the SHAPE, never the words: write an "
                                          "original line about this reel's own facts.",
-                                 "examples": FUN_EVIDENCE if category in FUN or category == ONE_OFF or category in PROMO else DEEP_EVIDENCE if category in DEEP or category in LESSON_FORMATS else   # (the study of 2026-11-15)
+                                 "examples": (FUN_EVIDENCE + STUDY_EVIDENCE) if category in FUN or category == ONE_OFF or category in PROMO else STUDY_EVIDENCE + DEEP_EVIDENCE if category in DEEP or category in LESSON_FORMATS else   # (the study of 2026-11-15)
                                  STICK_EVIDENCE if "STICK" in CATEGORIES[category] else
                                  SHORT_EVIDENCE if category in LENGTH else VIRAL_EVIDENCE}
         ev = os.path.join(ROOT, "state", "evidence.json")      # this week's outliers (src/research.py), shapes only
@@ -2128,6 +2159,9 @@ if __name__ == "__main__":
         assert promote(rows_, 48.0, pf, hh) == ["The Group Chat"] and promoted(pf)["The Group Chat"]["source"] == "bets" and promote(rows_, 48.0, pf, hh) == []
         assert promote([{"format": "One-off: The Group Chat", "skip": 41.0}], 48.0, os.path.join(tempfile.mkdtemp(), "q.json"), hh) == []   # (7 points better is not enough)
         assert len({h["name"] for h in HOOKS}) == 26 and "hook_shape" in FIRST3 and all(h.get("trap") for h in HOOKS)
+        hl = lambda **k: [e for e in check(dict(fr, **k), {}, [], "One trick") if "headline" in e]
+        assert hl() and hl(headline="Two") and hl(headline=fr["title"]) and not hl(headline="Fees eat the account first"), hl(headline="Fees eat the account first")
+        assert len(STUDY_EVIDENCE) >= 10 and all(len(e) == 2 for e in STUDY_EVIDENCE)
         ob = lambda js: [e for e in check(dict(fr, scene_js=js), {}, [], "One trick") if "class=\"obj\"" in e]
         assert ob("({t,s,api}) => '<svg><circle cx=\"1\" cy=\"1\" r=\"9\"/></svg>'") and not ob("({t,s,api}) => '<svg><g class=\"obj\"><circle r=\"9\"/></g></svg>'") and not ob("({t,s,api}) => '<svg>' + api.fig({pose:\"stand\"}, t) + '</svg>'") and not ob("({t,s,api}) => '<svg><text>hi</text></svg>'")
         # the fun formats (the owner, 2026-11-16): no chart, two turns each, real sums, one chart reel a day among the lighter ones

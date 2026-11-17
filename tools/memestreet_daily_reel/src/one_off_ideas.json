@@ -1,29 +1,180 @@
-{"note": "Seeds for the daily one-off reel (the owner, 2026-11-16: 'one off reels that follow a completely different format, but only for one reel... look at ALL reels in my niche'). Shapes, never words. Evidence: swipe.md (3,400 Shorts and TikToks ranked against their own accounts, 4 Nov to 15 Nov 2026), the Volume money tracker (623 posts from 334 accounts, measured 15 Nov 2026: each format worked for 3 or more accounts; x = multiple of the account's own median views), and the wide pull of 16 Nov. 'untested' = an idea of ours with no outside evidence. The writer may take one or invent its own.",
+{
+ "note": "Seeds for the daily one-off reel (the owner, 2026-11-16: 'one off reels that follow a completely different format, but only for one reel... look at ALL reels in my niche'). Shapes, never words. Evidence: swipe.md (3,400 Shorts and TikToks ranked against their own accounts, 4 Nov to 15 Nov 2026), the Volume money tracker (623 posts from 334 accounts, measured 15 Nov 2026: each format worked for 3 or more accounts; x = multiple of the account's own median views), and the wide pull of 16 Nov. 'untested' = an idea of ours with no outside evidence. The writer may take one or invent its own.",
  "ideas": [
-  {"id": "fill-list", "shape": "An empty numbered list, table or tier chart is on screen from frame 0 and each row fills in as the voice says it, no intro.", "evidence": "Volume: 9 accounts, median 16x (best 69x)"},
-  {"id": "scoreboard", "shape": "An on-screen scoreboard fills in as the story goes (points for good habits, against for bad), the final score is the verdict.", "evidence": "Volume: 6 accounts, median 27x"},
-  {"id": "defy-rule", "shape": "Name a famous money saying everyone repeats ('buy the dip', 'cut losses short'), break it on screen, then prove when it holds and when it lies.", "evidence": "Volume: 9 accounts, median 9x; 'forbid the standard advice, then prove it' 5 accounts, 11x"},
-  {"id": "clueless-standin", "shape": "A clueless character asks the obvious question ('Wait, isn't X supposed to...?'), an expert answers, the answer flips it inside 3.5 s.", "evidence": "Volume: 3 accounts, median 53x; swipe.md Sticky Academy 100x"},
-  {"id": "same-money", "shape": "Two people start with the same 100,000 MB, make different choices at each step, and the final totals are compared side by side.", "evidence": "Volume: 7 accounts, median 6x"},
-  {"id": "every-mb", "shape": "One exact amount itemised line by line: every MB of one trade accounted for (fee, spread, slippage, the loss, what was left).", "evidence": "Volume, 'budget one exact salary line by line': 8 accounts, median 12x"},
-  {"id": "countdown", "shape": "A countdown from 5 to 1 that saves the best for last, each entry acted out in two seconds.", "evidence": "Volume: 5 accounts, median 11x"},
-  {"id": "dense-wall", "shape": "A five-second wall of text too dense to read once, made to be paused and replayed; the voice gives only the hook.", "evidence": "Volume: 4 accounts, median 16x; swipe.md 15-truths loop 261x"},
-  {"id": "finished-first", "shape": "Open on the finished result (the account at the end, the winning or ruined trade), then rewind to how it got there.", "evidence": "Volume 'start on the finished spread': 6 accounts, 7x; swipe.md result-first 20x"},
-  {"id": "say-exactly-this", "shape": "A script for a scary moment, word for word: what to say to yourself (or a friend) when the margin call comes, the hot tip lands, the stock halves.", "evidence": "Volume: 4 accounts, median 45x"},
-  {"id": "refused", "shape": "The trades a calm trader said no to this week, each one shown and refused with its reason.", "evidence": "Volume 'show what you refused to buy': 4 accounts, 13x; 'things I don't buy' 14x"},
-  {"id": "exact-viewer", "shape": "The hook names one exact kind of viewer ('If you check your trades on the bus...'), and every line is for them.", "evidence": "Volume: 10 accounts, median 7x (best 170x)"},
-  {"id": "every-x", "shape": "Every one of a kind explained at speed, one acted scene each (every order type, every way a trader blows up).", "evidence": "swipe.md stick figures: 'every financial scam explained' 67x, money-laundering 80x"},
-  {"id": "paradox", "shape": "A present-tense paradox under a headline that stays on screen ('The company made record profits. The shares fell.'), one picture swapped per sentence.", "evidence": "swipe.md Casual Finance 14x, 10x"},
-  {"id": "giant-label", "shape": "'This is what we call X' over one giant labelled object; a new label lands every two seconds.", "evidence": "swipe.md Rayner Teo 44x"},
-  {"id": "fall-of", "shape": "A made-up Meme Street company everyone knows in the game, the size of its fall, 'here's why', three numbered reasons.", "evidence": "swipe.md Unger Academy 47x (a real company there; ours are fictional)"},
-  {"id": "nature-doc", "shape": "A nature-documentary narrator observes traders in the wild, whispering: the herd buying the top, the lone patient one at the waterhole.", "evidence": "untested"},
-  {"id": "group-chat", "shape": "The whole reel is one group chat scrolling: the hype, the hot tip, the silence, the one friend with a plan.", "evidence": "untested (text stories: the faceless-channel guides of 2026 call them mainstream)"},
-  {"id": "courtroom", "shape": "A bad habit on trial: the prosecution shows the evidence, the habit's lame defence, the jury (the viewer) votes, the verdict.", "evidence": "untested"},
-  {"id": "recipe", "shape": "A recipe for disaster, read like a cooking show: the ingredients of a blown account, mixed step by step, served.", "evidence": "untested"},
-  {"id": "dating-show", "shape": "A dating show: three made-up Meme Street companies introduce themselves to the viewer, red and green flags flash, the viewer picks one.", "evidence": "untested"},
-  {"id": "weather", "shape": "A market weather forecast for one made-up company: the news front coming in, the storm warning, what to carry.", "evidence": "untested"},
-  {"id": "game-show", "shape": "A game show: the host, two contestants, buzzers, one money question with a surprising answer and a score at the end.", "evidence": "the 16 Nov pull: a broker's game-show reel 192x (an advert, so weak)"},
-  {"id": "heist", "shape": "A heist film in reverse: the crew plans to steal the viewer's money (fees, FOMO, leverage), the viewer's one rule foils them.", "evidence": "untested"},
-  {"id": "receipt", "shape": "A till receipt prints line by line for one trade or one week of trading; the total at the bottom is the punchline.", "evidence": "untested; close to Volume's 'checkout total proof' (12 accounts, 6x)"},
-  {"id": "sports-commentary", "shape": "Two commentators call a trader's day like a match, with replays and a pundit's verdict at full time.", "evidence": "untested (our Instant replay format calls a chart; this calls a person)"}
- ]}
+  {
+   "id": "fill-list",
+   "shape": "An empty numbered list, table or tier chart is on screen from frame 0 and each row fills in as the voice says it, no intro.",
+   "evidence": "Volume: 9 accounts, median 16x (best 69x)"
+  },
+  {
+   "id": "scoreboard",
+   "shape": "An on-screen scoreboard fills in as the story goes (points for good habits, against for bad), the final score is the verdict.",
+   "evidence": "Volume: 6 accounts, median 27x"
+  },
+  {
+   "id": "defy-rule",
+   "shape": "Name a famous money saying everyone repeats ('buy the dip', 'cut losses short'), break it on screen, then prove when it holds and when it lies.",
+   "evidence": "Volume: 9 accounts, median 9x; the study of 2026-11-17: 'Stop using RSI on its default settings' 28x on a 998-view channel; 'Don't buy it, but put an order in' 47x (13M)"
+  },
+  {
+   "id": "clueless-standin",
+   "shape": "A clueless character asks the obvious question ('Wait, isn't X supposed to...?'), an expert answers, the answer flips it inside 3.5 s.",
+   "evidence": "Volume: 3 accounts, median 53x; swipe.md Sticky Academy 100x; the study of 2026-11-17: the same two-figure dialogue at 100x (170k on a 1,700 median) and 9.4x, one caps word on screen per beat, a real photo cutout of the famous head"
+  },
+  {
+   "id": "same-money",
+   "shape": "Two people start with the same 100,000 MB, make different choices at each step, and the final totals are compared side by side.",
+   "evidence": "Volume: 7 accounts, median 6x; the study of 2026-11-17 (TikTok): the same person twice under two column labels with a fixed headline, tags stacking under each as said, two totals at the end: 18.9x (151k on 8,000) and 20.7x"
+  },
+  {
+   "id": "every-mb",
+   "shape": "One exact amount itemised line by line: every MB of one trade accounted for (fee, spread, slippage, the loss, what was left).",
+   "evidence": "Volume, 'budget one exact salary line by line': 8 accounts, median 12x"
+  },
+  {
+   "id": "countdown",
+   "shape": "A countdown from 5 to 1 that saves the best for last, each entry acted out in two seconds.",
+   "evidence": "Volume: 5 accounts, median 11x"
+  },
+  {
+   "id": "dense-wall",
+   "shape": "A five-second wall of text too dense to read once, made to be paused and replayed; the voice gives only the hook.",
+   "evidence": "Volume: 4 accounts, median 16x; swipe.md 15-truths loop 261x; the study of 2026-11-17: a silent 5-second card of nine candle patterns with BUY/SELL badges, 11x (200k views); a 'three inside up' pattern drawn in three frames, 9.5x"
+  },
+  {
+   "id": "finished-first",
+   "shape": "Open on the finished result (the account at the end, the winning or ruined trade), then rewind to how it got there.",
+   "evidence": "Volume 'start on the finished spread': 6 accounts, 7x; swipe.md result-first 20x"
+  },
+  {
+   "id": "say-exactly-this",
+   "shape": "A script for a scary moment, word for word: what to say to yourself (or a friend) when the margin call comes, the hot tip lands, the stock halves.",
+   "evidence": "Volume: 4 accounts, median 45x"
+  },
+  {
+   "id": "refused",
+   "shape": "The trades a calm trader said no to this week, each one shown and refused with its reason.",
+   "evidence": "Volume 'show what you refused to buy': 4 accounts, 13x; 'things I don't buy' 14x"
+  },
+  {
+   "id": "exact-viewer",
+   "shape": "The hook names one exact kind of viewer ('If you check your trades on the bus...'), and every line is for them.",
+   "evidence": "Volume: 10 accounts, median 7x (best 170x)"
+  },
+  {
+   "id": "every-x",
+   "shape": "Every one of a kind explained at speed, one acted scene each (every order type, every way a trader blows up).",
+   "evidence": "swipe.md stick figures: 'every financial scam explained' 67x, money-laundering 80x"
+  },
+  {
+   "id": "paradox",
+   "shape": "A present-tense paradox under a headline that stays on screen ('The company made record profits. The shares fell.'), one picture swapped per sentence.",
+   "evidence": "swipe.md Casual Finance 14x, 10x"
+  },
+  {
+   "id": "giant-label",
+   "shape": "'This is what we call X' over one giant labelled object; a new label lands every two seconds.",
+   "evidence": "swipe.md Rayner Teo 44x"
+  },
+  {
+   "id": "fall-of",
+   "shape": "A made-up Meme Street company everyone knows in the game, the size of its fall, 'here's why', three numbered reasons.",
+   "evidence": "swipe.md Unger Academy 47x; the study of 2026-11-17: '$700 BILLION' over a money bag, '-50%' over a red chart, three numbered reasons, 47x on a 422-view channel (a real company there; ours are fictional)"
+  },
+  {
+   "id": "nature-doc",
+   "shape": "A nature-documentary narrator observes traders in the wild, whispering: the herd buying the top, the lone patient one at the waterhole.",
+   "evidence": "untested"
+  },
+  {
+   "id": "group-chat",
+   "shape": "The whole reel is one group chat scrolling: the hype, the hot tip, the silence, the one friend with a plan.",
+   "evidence": "untested (text stories: the faceless-channel guides of 2026 call them mainstream)"
+  },
+  {
+   "id": "courtroom",
+   "shape": "A bad habit on trial: the prosecution shows the evidence, the habit's lame defence, the jury (the viewer) votes, the verdict.",
+   "evidence": "untested"
+  },
+  {
+   "id": "recipe",
+   "shape": "A recipe for disaster, read like a cooking show: the ingredients of a blown account, mixed step by step, served.",
+   "evidence": "untested"
+  },
+  {
+   "id": "dating-show",
+   "shape": "A dating show: three made-up Meme Street companies introduce themselves to the viewer, red and green flags flash, the viewer picks one.",
+   "evidence": "untested"
+  },
+  {
+   "id": "weather",
+   "shape": "A market weather forecast for one made-up company: the news front coming in, the storm warning, what to carry.",
+   "evidence": "untested"
+  },
+  {
+   "id": "game-show",
+   "shape": "A game show: the host, two contestants, buzzers, one money question with a surprising answer and a score at the end.",
+   "evidence": "the 16 Nov pull: a broker's game-show reel 192x (an advert, so weak)"
+  },
+  {
+   "id": "heist",
+   "shape": "A heist film in reverse: the crew plans to steal the viewer's money (fees, FOMO, leverage), the viewer's one rule foils them.",
+   "evidence": "untested"
+  },
+  {
+   "id": "receipt",
+   "shape": "A till receipt prints line by line for one trade or one week of trading; the total at the bottom is the punchline.",
+   "evidence": "untested; close to Volume's 'checkout total proof' (12 accounts, 6x)"
+  },
+  {
+   "id": "sports-commentary",
+   "shape": "Two commentators call a trader's day like a match, with replays and a pundit's verdict at full time.",
+   "evidence": "untested (our Instant replay format calls a chart; this calls a person)"
+  },
+  {
+   "id": "reaction-cam",
+   "shape": "A question to the viewer on screen ('Would you quit if this happened to you?'), then a face reacting (a stick trader celebrating, then head in hands) over the chart as the trade hits the stop by a hair and runs to target; the viewer answers in the comments.",
+   "evidence": "the study of 2026-11-17: 7.4x and 139 comments on 31k views, 17 seconds"
+  },
+  {
+   "id": "exact-setting",
+   "shape": "One tool everyone uses on its default; the exact numbers to type instead, one per kind of trader (5, 9, 14), each shown being typed into the settings box; the result on one chart.",
+   "evidence": "the study of 2026-11-17: 28x on a 998-view channel; '84% win rate' with the indicator names 14x (410k)"
+  },
+  {
+   "id": "sixty-seconds",
+   "shape": "A premise that frames the whole reel: 'If I only had 60 seconds to reach every losing trader, this is what I'd say', a visible clock running down, the words landing one at a time, the last word on zero.",
+   "evidence": "the study of 2026-11-17: 66x (280k on a 4,200 median)"
+  },
+  {
+   "id": "before-after",
+   "shape": "Before, the struggle card, after: three acts with a date on each ('Before trading (2023)', 'Then: 3 years', 'Now (2026)'), the same character in each, the middle act the longest; ours shows a habit changing, never money made.",
+   "evidence": "the study of 2026-11-17: silent montages at 7.2x (3.5M, 1,000 comments) and 4x (486k, 562 comments); the shape, not the Lamborghini"
+  },
+  {
+   "id": "exact-setup-ritual",
+   "shape": "'The exact setup I look for every morning': one scene per rule, each label landing on the chart as it is said (the band, acceptance, the first sign, entry, target hit), the trade box filling at the end; a one-word comment keyword.",
+   "evidence": "the study of 2026-11-17: 10x and 622 comments on a 3,100-view channel"
+  },
+  {
+   "id": "entity-with-eyes",
+   "shape": "Countries, companies or the market itself drawn as characters with eyes that talk to each other ('Don't worry, I'll buy it!'), a headline fixed at the top for the whole reel, a present-tense paradox.",
+   "evidence": "the study of 2026-11-17: Casual Finance 14x (390k) and 10x (282k)"
+  },
+  {
+   "id": "finance-bro-parody",
+   "shape": "A straight-faced parody of the niche's own clichés (the finance-bro podcast, the guru with the Lamborghini), fast, with one absurd number per line; the lesson is what they get wrong.",
+   "evidence": "the study of 2026-11-17: 12.7x (184k) with 496 comments"
+  },
+  {
+   "id": "prop-and-calculator",
+   "shape": "A sum made physical: the thing held up on frame 0 (a box, a bill, a coin), each number typed on a calculator and held to camera, the price shown where it is paid, the total back on the calculator at the end; four places in thirty seconds.",
+   "evidence": "the study of 2026-11-17 (TikTok): 'Buying GTA 6 can save you $5,000', 10.3M at 8.2x with 5,212 comments"
+  },
+  {
+   "id": "numbers-over-heads",
+   "shape": "Two characters with their money floating above their heads; a 'three years later' card; the numbers change while the characters stay; the ledger of both paths at the end.",
+   "evidence": "the study of 2026-11-17 (TikTok): the loyalty-pays-less skit, 1.9M at 5.7x"
+  }
+ ]
+}
