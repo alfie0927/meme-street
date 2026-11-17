@@ -68,7 +68,8 @@ How it pays for itself: the Daily Chart, the market and the first unit of lesson
 | "Why would I pay?" | You may never need to: the Daily, the market, 17 indicators, the drawing tools and two lessons a day are open. Pro opens the whole lesson path, leverage and more indicators; Expert adds bots and backtests. |
 | "Are the bots labelled on the boards?" | No name carries a tag, but the Daily's board says how many of its results are players and how many are house traders (computer-run), and nothing counts a house trader as a player. They see only the candles shown so far and pay the same 0.1%. |
 
-**Your three answers, decided before you post** (the readers will ask):
+**Your three answers, decided before you post** (the readers will ask; one directory, The DLES, refuses games with
+AI-generated content, so the first answer matters beyond Hacker News):
 
 1. Was AI used to build it? Say so plainly in the first comment if it was. Being found out later costs more.
 2. How are the house traders shown? The answer above.

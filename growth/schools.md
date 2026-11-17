@@ -104,6 +104,12 @@ and it says so.
 **Before the first one goes out:** the trading name and the address on the domain (`growth/sends.md`, step 1). A
 teacher's first question about an unknown site is who runs it.
 
+**What to expect** (`growth/outreach_contacts.md`): no UK school was found paying for a stock market game, and the
+main UK competition is free, so a paid reply from a UK teacher would be unusual. Write to the university societies
+first (35 contacts, several already run trading games). If the UK emails bring no question about price by
+mid-December, send the last 20 to US high-school personal-finance teachers, where budgets of US$10 to $15 a
+student a year exist (in dollars: US$199 a class).
+
 **To an economics or business teacher, with the offer:**
 ```
 Subject: A free 45-minute lesson on risk and reward, and a class version if it works for you

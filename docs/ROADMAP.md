@@ -251,7 +251,9 @@ replaced by the two tripwires in section 8.
 12. **The buyers with a record of paying are schools and universities** (Stock-Trak: about US$600 a class a year,
     20,000 schools; SIFMA: 600,000 students a year). Even that is doubtful here: teachers' alternatives are free,
     candlestick trading is on no syllabus, schools want a named operator, and every paying example is American.
-    Only a priced offer can settle it (section 3, part 2).
+    A search of 17 November found no UK school paying for one: the main UK competition (the Student Investor
+    Challenge) is free and had 9,800 schools. Only a priced offer can settle it (section 3, part 2), and the
+    societies are written to first (`growth/outreach_contacts.md`).
 
 ---
 
