@@ -1286,12 +1286,52 @@ async def daily_remind_loop():
 
 class Remind(BaseModel):
     on: bool
+    email: str = ""
+    ref: str = ""
 
 
 @app.post("/api/daily/remind")
-async def daily_remind(b: Remind, x_token: str = Header("")):
-    """Opt in to (or out of) the Daily Chart reminder email; a confirmed address only."""
-    return await with_player(x_token, "remind", engine.daily_remind_set, b.on)
+async def daily_remind(b: Remind, request: Request, x_token: str = Header("")):
+    """Opt in to (or out of) the Daily Chart email. An account with a confirmed address is on at once. A visitor, or
+    an account whose address was never confirmed, gets one link first (`daily_subscribe`); a refusal answers 400, so
+    the visit log's 200s are the requests that went through (tools/visits.py)."""
+    if b.on and (b.email or not x_token):
+        ip, now = client_ip(request), time.time()
+        if limits.count(("email-ip", ip), 3600, now) >= 12:
+            return too_many(limits.retry_after(("email-ip", ip), 3600, now))
+        if not mail_allowed(now):
+            return JSONResponse({"ok": False, "error": "Email is busy right now. Try again in an hour."}, status_code=400)
+        limits.add(("email-ip", ip), now)
+    if x_token:
+        r = await with_player(x_token, "remind", engine.daily_remind_set, b.on, b.email[:254])
+    elif b.on:
+        r = await run(engine.daily_subscribe, b.email[:254], None, clean_ref(b.ref))
+    else:
+        r = {"ok": False, "error": "Use the link in the email to stop it."}
+    if not isinstance(r, dict):
+        return r
+    if r.get("confirm"):
+        addr, t = r.pop("confirm")
+        site = os.environ.get("SITE_URL", "https://memestreet.net").rstrip("/")
+        send_mail(addr, "Confirm: tomorrow's Daily Chart by email",
+                  "You (or someone using your address) asked Meme Street to email you when each new Daily Chart is out.\n\n"
+                  f"Confirm with this link: {site}/api/daily/confirm?t={t}\n\n"
+                  "If you do nothing, you get no more email from us. After you confirm: one email a day at most, each "
+                  "with a one-click link to stop.\n"
+                  "Meme Street Game · memestreet.game@gmail.com · practice money only, no cash value\n",
+                  {"From": formataddr((REMIND_FROM, parseaddr(mailer.sender)[1]))})
+    return r if r.get("ok") else JSONResponse(r, status_code=400)
+
+
+@app.get("/api/daily/confirm")
+async def daily_confirm(t: str = ""):
+    """The link in the confirmation mail (`daily_subscribe`): from now on that address gets the Daily Chart email."""
+    ok = await run(engine.daily_confirm, t[:64])
+    msg = ("Done. You will get one email when each new Daily Chart starts. Every email has a one-click link to stop it."
+           if ok else "That link is not valid any more.")
+    return HTMLResponse("<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>Meme Street</title>"
+                        f"<p style='font:16px system-ui;max-width:520px;margin:40px auto;padding:0 16px'>{msg} "
+                        "<a href='/daily?ref=mail_confirm'>Today's chart</a></p>", headers={"Cache-Control": "no-store"})
 
 
 @app.api_route("/api/unsub", methods=["GET", "POST"])

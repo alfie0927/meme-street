@@ -280,6 +280,21 @@ class ServerTests(unittest.TestCase):
         self.assertIn("localStorage.ms_ref", http(self.srv, "/tools/position-size-calculator")[1])
         self.assertIn("/lessons/'+id+'?from=daily", http(self.srv, "/js/daily.js")[1])
 
+    def test_a_visitor_asks_for_the_daily_chart_email_and_confirms_it_by_link(self):
+        """POST /api/daily/remind without an account (2026-11-17): 200 when the link went out, 400 when refused (the
+        visit log counts the 200s); the link's page confirms once."""
+        status, body, _ = http(self.srv, "/api/daily/remind", "POST", {"on": True, "email": "nope"})
+        self.assertEqual(status, 400)
+        status, body, _ = http(self.srv, "/api/daily/remind", "POST", {"on": True, "email": "srv-visitor@example.com", "ref": "hn"})
+        self.assertEqual(status, 200, body)
+        self.assertTrue(json.loads(body)["pending"])
+        self.assertNotIn("confirm", json.loads(body))                                # the secret goes by mail only
+        status, body, _ = http(self.srv, "/api/daily/remind", "POST", {"on": False})
+        self.assertEqual(status, 400)
+        status, body, _ = http(self.srv, "/api/daily/confirm?t=wrong")
+        self.assertEqual(status, 200)
+        self.assertIn("not valid", body)
+
     def test_a_challenge_link_has_its_own_preview_title(self):
         """/daily?vs=name~return~number (web/daily.js): the result is in og:title, and only for a well-formed link."""
         plain = http(self.srv, "/daily")[1]

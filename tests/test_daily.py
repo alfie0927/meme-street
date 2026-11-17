@@ -77,6 +77,58 @@ class GameTests(unittest.TestCase):
         self.assertTrue(e.daily_unsubscribe(sent[0][3].split("t=")[1]))
         self.assertFalse(p.remind)
 
+    def test_a_visitor_gets_the_email_only_after_opening_the_link_and_stops_it_in_one_click(self):
+        """`daily_subscribe` (2026-11-17): an address with no account gets one link; nothing is sent until it is opened;
+        then one email a day inside the same cap as the accounts'; the stop link deletes the address."""
+        e = self.e
+        self.assertFalse(e.daily_subscribe("not an address")["ok"])
+        r = e.daily_subscribe("Visitor@Example.com", None, "reddit-com")
+        self.assertTrue(r["ok"] and r["pending"])
+        addr, t = r["confirm"]
+        self.assertEqual(addr, "visitor@example.com")
+        self.assertIn("v***@example.com", r["msg"])
+        self.assertFalse(e.daily_subscribe("visitor@example.com")["ok"])            # one link in ten minutes
+        self.assertEqual(e.daily_reminders("https://x"), [])                        # not confirmed: nothing is sent
+        self.assertFalse(e.daily_confirm("wrong"))
+        self.assertTrue(e.daily_confirm(t))
+        self.assertEqual(e.daily_game["subs"]["visitor@example.com"]["ref"], "reddit-com")
+        sent = e.daily_reminders("https://x")
+        self.assertEqual([s[0] for s in sent], ["visitor@example.com"])
+        self.assertIn("/daily?ref=mail_daily", sent[0][2])
+        self.assertEqual(e.daily_reminders("https://x"), [])                        # once a day
+        e.now += daily.DAY_SECONDS
+        self.assertEqual(e.daily_reminders("https://x", cap=0), [])                 # the day's cap covers these too
+        self.assertEqual(len(e.daily_reminders("https://x")), 1)
+        self.assertTrue(e.daily_subscribe("visitor@example.com")["ok"])             # asked again: already on, no new link
+        self.assertNotIn("confirm", e.daily_subscribe("visitor@example.com"))
+        self.assertTrue(e.daily_unsubscribe(sent[0][3].split("t=")[1]))
+        self.assertEqual(e.daily_game["subs"], {})
+
+    def test_an_account_with_an_unconfirmed_address_confirms_it_by_the_same_link(self):
+        """Sign-up stopped asking for the code on 2026-11-10, so "confirm your address first" was a dead end: asking for
+        the email now sends the link, and opening it confirms the address on the account and switches the email on."""
+        e, p = self.e, self.p
+        r = e.daily_remind_set(p, True)
+        self.assertTrue(r.get("need_email") and not r["ok"])                        # no address on the account: ask for one
+        r = e.daily_remind_set(p, True, "dasher@example.com")
+        self.assertTrue(r["pending"])
+        self.assertFalse(p.remind)
+        self.assertTrue(e.daily_confirm(r["confirm"][1]))
+        self.assertEqual((p.email, p.email_verified, p.remind), ("dasher@example.com", True, True))
+        self.assertEqual(e.daily_game["subs"], {})
+        self.assertTrue(e.daily_view(p)["mail_ok"])
+        self.assertEqual([s[0] for s in e.daily_reminders("https://x")], ["dasher@example.com"])
+
+    def test_an_unopened_link_is_forgotten_after_a_week_and_new_links_are_capped_a_day(self):
+        e = self.e
+        for i in range(daily.SUB_CONFIRMS_PER_DAY):
+            self.assertTrue(e.daily_subscribe(f"v{i}@example.com")["ok"])
+        self.assertFalse(e.daily_subscribe("late@example.com")["ok"])
+        e.daily_confirm(e.daily_game["subs"]["v0@example.com"]["t"])
+        e.now += 8 * daily.DAY_SECONDS
+        e.daily_view(self.p)
+        self.assertEqual(list(e.daily_game["subs"]), ["v0@example.com"])            # the confirmed one stays
+
     def test_the_chart_is_the_same_for_everyone_and_kept_for_the_day(self):
         e = self.e
         q = join(e, "other")

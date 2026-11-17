@@ -535,21 +535,23 @@ class BrowserPages(unittest.TestCase):
         proc, pg, _ = await open_page(debug_port=9351)
         d = Driver(pg)
         name = "pw" + str(random.randint(1000, 9999))
-        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('by-d','1990-05-17')})()")
+        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('by-d','1990-05-17')})()")
         try:
             await pg.goto(base + "/", 3)
             await d.check("the box offers Log in and Create account", "document.getElementById('auth-tabs').style.display", "block", wait=8)
             await d.check("a first visit opens on Create account",
                           "document.querySelector('#auth-tabs .on').dataset.mode", "register")
-            await pg.js(fill % (name, "correct-horse-battery", "something-else-entirely"))
-            await pg.js("document.getElementById('joinbtn').click()")
-            await d.check("mismatched passwords are caught on the page", "document.getElementById('lerr').textContent",
-                          lambda t: "not the same" in t, wait=5)
-            await pg.js(fill % (name, "short", "short"))
+            await d.check("the box says what it is for", "document.getElementById('login-h').textContent", "Create your account")
+            await d.check("one password box with a switch to show it, no second box (U13, 2026-11-17)",
+                          "!document.getElementById('pw2')&&getComputedStyle(document.getElementById('pw-show')).display!=='none'&&document.getElementById('pw').type", "password")
+            await pg.js("document.getElementById('pw-see').click()")
+            await d.check("the switch shows the password", "document.getElementById('pw').type", "text")
+            await pg.js("document.getElementById('pw-see').click()")
+            await pg.js(fill % (name, "short"))
             await pg.js("document.getElementById('joinbtn').click()")
             await d.check("a weak password is refused by the server", "document.getElementById('lerr').textContent",
                           lambda t: "at least 8" in t, wait=8)
-            await pg.js(fill % (name, "correct-horse-battery", "correct-horse-battery"))
+            await pg.js(fill % (name, "correct-horse-battery"))
             await pg.js("document.getElementById('joinbtn').click()")
             await d.check("registering enters the market (the account exists and the page is no longer the visitor view)",
                           "!document.body.classList.contains('guest')&&!!localStorage.getItem('ms_token')&&document.getElementById('login').style.display==='none'", wait=15)
@@ -565,11 +567,11 @@ class BrowserPages(unittest.TestCase):
             await d.check("and forgets the token", "localStorage.getItem('ms_token')", None)
             await d.check("a returning visitor opens on Log in", "document.querySelector('#auth-tabs .on').dataset.mode", "login")
             await pg.js("document.querySelector('#auth-tabs [data-mode=login]').click()")
-            await pg.js(fill % (name, "wrong-password-1", ""))
+            await pg.js(fill % (name, "wrong-password-1"))
             await pg.js("document.getElementById('joinbtn').click()")
             await d.check("a wrong password is refused", "document.getElementById('lerr').textContent",
                           lambda t: "Wrong name or password" in t, wait=8)
-            await pg.js(fill % (name, "correct-horse-battery", ""))
+            await pg.js(fill % (name, "correct-horse-battery"))
             await pg.js("document.getElementById('joinbtn').click()")
             await d.check("the right password logs in", "document.getElementById('login').style.display", "none", wait=10)
             await pg.goto(base + "/profile", 3)
@@ -606,16 +608,16 @@ class BrowserPages(unittest.TestCase):
         d = Driver(pg)
         name = "em" + str(random.randint(1000, 9999))
         addr = name + "@example.com"
-        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('pw2','%s');set('em','%s');set('by-d','1990-05-17')})()")
+        fill = ("(()=>{const set=(i,v)=>{document.getElementById(i).value=v};set('nm','%s');set('pw','%s');set('em','%s');set('by-d','1990-05-17')})()")
         try:
             await pg.goto(base + "/", 3)
             await d.check("the sign-up form asks for an email address", "document.getElementById('em').style.display", "block", wait=8)
             await d.check("and says it is needed", "document.getElementById('em').placeholder", lambda t: "needed" in t)
-            await pg.js(fill % (name, "correct-horse-battery", "correct-horse-battery", "not-an-address"))
+            await pg.js(fill % (name, "correct-horse-battery", "not-an-address"))
             await pg.js("document.getElementById('joinbtn').click()")
             await d.check("a bad address is refused", "document.getElementById('lerr').textContent",
                           lambda t: "email" in t.lower(), wait=8)
-            await pg.js(fill % (name, "correct-horse-battery", "correct-horse-battery", addr))
+            await pg.js(fill % (name, "correct-horse-battery", addr))
             await pg.js("document.getElementById('joinbtn').click()")
             await d.check("a code is mailed first and a box for it pops up", "document.getElementById('code-pop').style.display", "flex", wait=10)
             await d.check("it says where the code went", "document.getElementById('code-msg').textContent", lambda t: "e***@example.com" in t)
@@ -744,7 +746,11 @@ class BrowserGuest(unittest.TestCase):
             await d.check("a visitor gets the Play button, no sign-up", "!!document.getElementById('dly-start')", wait=10)
             await d.check("and the words about the game", "document.querySelector('.dly-about h2').textContent", lambda t: "daily stock market game" in t)
             await pg.js("document.getElementById('dly-start').click()")
+            await d.check("a first game starts by saying what a candle is, and the clock has not started (2026-11-17)",
+                          "document.querySelector('#dly-pop h3').textContent + '|' + !!document.getElementById('dly-timer')", "Before the clock starts|false", wait=4)
+            await pg.js("document.querySelector('#dly-pop [data-dly-go]').click()")
             await d.check("the game runs", "!!document.getElementById('dly-timer')", wait=8)
+            await d.check("the two buttons say Buy and Sell, as the instructions do", "document.getElementById('dly-lb').textContent + '|' + document.getElementById('dly-ls').textContent", "Buy|Sell (short)", wait=4)
             await pg.js("document.querySelector('[data-dly=buy]').click()")
             await d.check("a trade goes through", "document.getElementById('toast').textContent", lambda t: "Bought" in t, wait=6)
             await pg.js("dlyG.done=true;dly.status='done';dlyG.dist=[0];dlyG.grid=[];dlyG.hold=0;dlyG.ret=0;dlySummary()")
@@ -753,6 +759,8 @@ class BrowserGuest(unittest.TestCase):
                           lambda t: "14 results: 2 players, 12 house traders" in t and "computer-run" in t)
             await d.check("with no house traders it only says how many played", "dlyBoard({players:3,people:3,board:[],past:[]})",
                           lambda t: "3 played" in t and "house trader" not in t)
+            await d.check("Save my result sits directly under the result", "document.querySelector('#dly-pop .dly-place').nextElementSibling.className", "dly-save")
+            await d.check("and a visitor can ask for tomorrow's chart by email", "document.querySelector('#dly-pop .dly-mail input').type", "email")
             await d.check("its lesson link opens the open lesson page, not the locked path (2026-11-17)", "document.querySelector('#dly-pop .dly-step a').getAttribute('href')",
                           lambda t: (t or "").startswith("/lessons/") and t.endswith("?from=daily"))
             await d.check("and a visitor is offered the market to watch, not to trade", "document.querySelectorAll('#dly-pop .dly-step a')[1].textContent", "Watch the live market")
