@@ -14,6 +14,11 @@ panel), the Daily Chart's own stats, and Instagram insights (`lab/insights.py`).
 
 ## By source
 
+From 17 November the rows come from the server: `python3 tools/visits.py --weekly` prints them in this shape (week,
+source, visits, Daily started, Daily finished, email asked, accounts, back within 7 days). The first week with the
+17 November fixes live is the first row worth reading. The checkpoints at the foot of this file were replaced on 17
+November by the two tripwires in `docs/ROADMAP.md` section 8 (20 December: players; 16 January: money).
+
 | Week | Source | Visits | Daily finished | Accounts |
 |---|---|---|---|---|
 | 3 to 9 Nov | all tagged links | not counted yet | not counted yet | 0 |

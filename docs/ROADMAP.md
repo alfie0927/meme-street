@@ -5,9 +5,10 @@ stock market. **Technical analysis is the core** (charts that behave like real c
 news and the economy are background. Everyone starts with **100,000 MB** (since 2026-11-15; 1,000 before); MB are a game currency with no cash value,
 never paid out. The site earns from the **Pro and Expert passes** (MB packages were sold until 2026-11-15). **The Daily Chart** is the front
 door, the daily reason to come back and the thing people share: every link lands on it and it needs no account. The
-course is a **path** (units, exercises, XP, a streak). **Instagram reels are how people find the site**: eight a day,
-written, rendered and posted by the pipeline in `tools/memestreet_daily_reel`. Later the site builds a **bridge to
-real markets**.
+course is a **path** (units, exercises, XP, a streak). **Since 17 November 2026 the plan is to sell before building**
+(section 3): eight weeks of sends by hand and a priced offer to teachers, with dates on which to decide (section 8).
+The Instagram reels keep posting by themselves (the pipeline in `tools/memestreet_daily_reel`), but in 29 days they
+sent 2 people to the site, so their development is frozen. Later the site may build a **bridge to real markets**.
 
 **This file is the one plan, for the site and for the reels.** Check it before starting any work, and update
 `HOW_IT_WORKS.md` (what the code does **today**) after every change. Section 3 is the order of work, section 4 is
@@ -194,20 +195,25 @@ reel is made after 23:00 from the day's real chart and retried through the night
   and posted at 18:06 UTC on 12 November. The same day "memebucks" got its spoken form ("meembucks") in
   `src/pronounce.json`.
 
-### The numbers
+### The numbers (measured 17 November 2026)
 
-| | Now (12 Nov) | 7 Dec | 4 Jan | 1 Feb |
-|---|---|---|---|---|
-| Median views a reel | about 115 (every reel lands between 100 and 250) | 150 | 300 | 600 |
-| Skipped in the first 3 seconds | 52% (best format 24 to 32%, worst 70 to 77%) | 60% | 55% | 50% |
-| Visits a day, bots excluded | about 3, none from Instagram's browser | 30 | 100 | 200 |
-| Visitors finishing a Daily, a day | not counted yet | 10 | 30 | 60 |
-| New accounts a week | not counted yet | 10 | 30 | 70 |
-| People active in the week | about 14 | 15 | 50 | 120 |
+From the server backup of 17 November 06:00 UTC, the reel ledger and the Daily's own log. Several figures this file
+carried were wrong, and are corrected here.
 
-The targets are tripwires for decisions, not forecasts (section 8). 600 views is about what accounts of this size
-average. Reel targets beyond these: 65% still watching at 3 seconds (32% on 11 Nov), half of a short reel watched,
-likes at 5% of reach, sends at 1%, a first reel past 300 views.
+| | This file said | Measured |
+|---|---|---|
+| Human accounts | 14 | 15, one of them yours; 8 are first-week testers; 1 new in the 17 days to 17 Nov |
+| People active in a week | about 14 | 1 or 2 besides you |
+| People who ever made a trade | not stated | 4 besides you |
+| Came back to the Daily on 2 or more days | not counted | 2 (one of them on 12 days; nobody since 10 Nov) |
+| Real visitors finishing a Daily, 12 to 16 Nov | "not counted yet" | 0 (the one visitor a day was the reel pipeline's own game) |
+| Buyers | "the two buyers" | none: the only paid order ever is your own US$1.99 test of 24 Oct; no pass has been sold |
+| Search Console | "verified" | not connected: every SEO report to 15 Nov asks for it |
+| Reels, 29 days to 17 Nov | | 12,192 strangers reached, 51 profile visits, 2 link taps, 8 follower reaches; median about 114 views |
+| Visits a day | about 3 | the visit log is on the server only and nobody has read it into a file (`tools/visits.py --weekly` now does) |
+
+The old checkpoints for 7 December, 4 January and 1 February (median views, visits a day, accounts a week) are
+replaced by the two tripwires in section 8.
 
 ### What we learned (why the order below is what it is)
 
@@ -228,32 +234,75 @@ likes at 5% of reach, sends at 1%, a first reel past 300 views.
 7. **Money waits.** No price tests and no new paywalls until about 100 people play each week; nothing paid is pushed
    at a new player before a first win.
 
+8. **Almost nobody has been told (17 Nov).** The channels that have run are automated reels (23 days), the SEO
+   routine (10 days, unmeasured) and automatic cross-posts (4 days). Every send on your own list (friends,
+   directories, Show HN, Reddit, portals, schools) was still unsent. In the five days after finding 1 above was
+   written, 46 lessons and eleven reel features were built: building stood in for telling people.
+9. **Reels cannot send visitors.** A reel carries no link that can be tapped: 12,192 people reached gave 2 taps. Ten
+   times the views would be about one visit a day.
+10. **The site lost the few who came (the first-visit audit, 17 Nov).** The Daily's board was 12 house bots in 13
+    "players"; the result's lesson link opened a locked page; a beginner was never told what a candle is; no reminder
+    worked for a visitor; sign-up was five fields; a phone's home page opened on the news wire; Pro's list never
+    named the lesson path. Fixed the same day (section 3, part 1).
+11. **Nobody pays consumers' prices for a simulator.** Investopedia, TradingView, Webull and others give real-ticker
+    paper trading away to sell something else; an app with 3.4 million installs is estimated under US$10,000 a
+    month; no example was found of subscriptions to a fictional-market simulator working. A job-level income from
+    Pro needs about 300 subscribers, so about 15,000 active players at the usual 2%.
+12. **The buyers with a record of paying are schools and universities** (Stock-Trak: about US$600 a class a year,
+    20,000 schools; SIFMA: 600,000 students a year). Even that is doubtful here: teachers' alternatives are free,
+    candlestick trading is on no syllabus, schools want a named operator, and every paying example is American.
+    Only a priced offer can settle it (section 3, part 2).
+
 ---
 
 ## 3. The plan in order
 
-**Reach first** (your call, 12 Nov): reels and distribution, then reasons to come back and bring a friend, then money,
-then depth.
+**Sell before building** (your call, 17 Nov, after the review: `docs/COUNCIL.md`, verdict FIX FIRST). It replaces
+"reach first" (12 Nov). Eight weeks: the leaks fixed, then sends by hand and a priced offer, then a decision on the
+dates in section 8. Your time is 2 to 4 hours a week; everything you send is drafted in `growth/sends.md`.
 
-### Now, to 26 November
+### Part 1. The leaks (me; done 17 November, waiting for your merge and your word to deploy)
 
-| # | Item | What | Size | Who |
-|---|---|---|---|---|
-| 1 | RL1 | **The parked reel changes go live** (your yes, 12 Nov: no test render, the scoreboard judges them). A2 to A5 and A8 to A10 are merged into the server's writer beside the 12 November work, the reel folder is committed, and from then on the server is deployed from the repo. **Started 12 Nov:** committed, and the swap on the server is queued between two reels. Next: watch the first reels the merged writer makes (its rules are stricter: a 16-word hook, a 10-word sign-off, a question first in the caption, 60 seconds). | M | Me |
-| 2 | RL2 | **All eight slots post.** A slot the critic held twice stayed empty (four of eight posted on 11 Nov). **12 Nov:** a held slot gets a third try with a format that has passed before, and the check before rendering now catches what the critic held 7 of the last 12 reels for: text over other text, and a figure's head over a label or a speech bubble over a face. Still open: figures standing on a chart's candles, the HUD running ahead of the voice (the writer is told; nothing checks it), and the voice pausing inside a phrase (3 of 12). The old reels waiting in the slots of 14 and 15 November are replaced as their slots come up. | S | Me |
-| 3 | RL4 | **The first in-depth reels**: the Strategy test (RSI under 30, 83 trades) passed the critic on 12 Nov at 9, 8, 9, 9 and posts on 13 Nov at 03:00; the Technical lesson (09:00) is being made. Fix what holds the next ones. | S | Me |
-| 4 | W1 | **The facts sweep.** **Done 12 Nov:** 114 lessons in 20 units in the reel writer's `SITE_FACTS` and in HOW_IT_WORKS (`/about` and `seo/context.md` by the SEO run of the same day); the README no longer says lessons award MB; the RULEBOOK names the Kokoro voice; "Free to play" is out of `growth/directories.md`. | S | Me |
-| 5 | RL8 | **One sign-off line** on every reel and in the bio (decision, section 6). Done 12 Nov: how many played is out of the Daily reel's facts and its caption (a small number is no advertisement, and it counted the house bots). | S | Me, after your word |
-| 6 | M13 | **Count the funnel**: shop views, buy-box opens, checkout starts, Dailies finished to accounts made; and `growth/weekly.md` filled every Monday (it has one row). | S | Me; you read me the admin page |
-| 7 | Section 4 | **Instagram, 15 minutes a day**: remove fake followers, the profile edit, a daily Story, comments. | | You |
-| 8 | RC2, RC3 | **The first sends**: your own result to 10 to 20 people; the directories; one challenge link pasted into a chat app to see its preview. | An afternoon | You |
-| 9 | RC4, RC6 | **Show HN and the write-up**, after your three answers (section 4). | | You post; the drafts are ready |
-| 10 | A11 | **A YouTube channel and its keys**: the same reels on Shorts automatically, and the retention curve Instagram never gives (the control for A1). **13 Nov:** posting is on (6 a day, one of them always the Daily; public); the channel description and its link `memestreet.net/yt` are in `growth/social.md` (yours to paste); the admin page counts clicks from YouTube beside Instagram's. | S | You, then me |
-| 11 | RL3 | **Reel reviews on 19 and 26 November**: the scoreboard's first verdicts; A2 to A5 judged on medians of ten or more reels at 24 and 72 hours; `python3 src/learn.py show` on the reel server is the table to read (RL12). | | Me |
-| 12 | RL12 | **The learning loop** (the owner, 13 Nov: "figure out why [the best did better and the worst did badly]... collate that knowledge into better reels"). **Done 13 Nov:** `src/learn.py` keeps a ledger of every posted reel (what it was beside what Instagram measured), and once a day, when three new reels are scored, Claude explains the five best and five worst against the medians and rewrites `state/learned.md`, the rules every writer prompt now ends with. First run: 45 reels, 7 rules (odd picturable openers for company stories, a feeling plus one dial for Hard truths, 9+ scenes, no jargon or bare-label openers). Watch: do the rules move the median hold (34) by the 26 Nov review? **14 Nov** (the owner: "check the instagram analytics every day and see what has done well, what has stalled, and why"): the analysis runs every day a reel was scored, keeps each reel's views at every daily read, names the stalled reels (under the median and under 3% more views in a day) and why, and writes `state/daily_report.md` (`learn.py show` prints it first). | M | Me |
-| 13 | AU1 | **The site audit (15 Nov: a shark panel, then four audits: first visit, security, speed and SEO, teaching, money and legal; reports in the session's scratchpad).** **Done 15 Nov (your list: items 1 to 12 and 18 to 20):** visitors past the first unit are asked for an account; returns measured in units, so buying MB never moves a return (rule 4 held again); open checkouts count against the limits and the deal, Stripe pages close after an hour, a second monthly pass is cancelled at Stripe; visitors see the shop and walled pages close to the Daily; no "free lessons" or "free game" copy; no shop link on the loss banner; the Daily loads at once, arrives drawn (no jump, words for search engines), a how-to line, market rows hidden for visitors; *Save my result* says why; the visitor limit explains itself; a 13 KB logo; the leverage and option lessons corrected, two skill tasks (`sized_stop`, `two_r`), 35 better wrong answers. **Done 15 Nov, later:** 100,000 MB accounts; MB packs and the MB launch deals removed, so the shop sells only Pro and Expert; no free restarts, except one to 100,000 MB for each account made before the change (instead of the Day 1 reset). **Open from the audit (yours to choose):** the operator's name and address (R9); minors buying (R5; smaller since MB are no longer sold: only the passes); the right-to-cancel waiver in Stripe's receipt; chat for under-18s (Online Safety Act); ~~terms s.3 (a reset wiping bought MB)~~ (moot: MB not sold since 15 Nov); the two other security mediums (the recovery email changed without the password; one site-wide mail cap); an HTML 404 page and `/tools`; the shell and scripts cacheable; 1200x630 preview images. **Your homework from the panel:** ask the two buyers why they paid, ask five weekly players if they would miss it, write the monthly costs down. | M | Me, then you |
+| Batch | What changed | Branch |
+|---|---|---|
+| A | The Daily says "14 results: 2 players, 12 house traders" (no tag beside a name; nothing calls a bot a player); the result's lesson link opens the lesson's open page; Pro's list names the whole lesson path first; a visit keeps its source even with no `ref` | `fix/leaks-a-trust` |
+| B | A first game opens on "Before the clock starts" (what a candle is; the button starts the two minutes); Buy and Sell wording; "Save my result" under the result; sign-up with one password box and an optional email; "Get tomorrow's chart by email" for visitors and for accounts without a confirmed address | `fix/leaks-b-first-game` |
+| C | The visitor's box first on the home page, on a phone too, in one sentence; a new account's Learn page is the path, the placement test second, the Pro box only when the day's lessons are used; `tools/visits.py --weekly` | `fix/leaks-c-home-learn-count` |
+
+Each branch contains the one before it, so merging C merges all three. Left for later: the `/about` lesson count
+computed (it waits for the lessons session's own edit of that file), and the open items of the 15 November audit:
+the operator's name and address (R9, now in part 2), minors buying (R5), the right-to-cancel waiver in Stripe's
+receipt, chat for under-18s (Online Safety Act), the two other security mediums (the recovery email changed without
+the password; one site-wide mail cap), an HTML 404 page and `/tools`, the shell and scripts cacheable, 1200x630
+preview images.
+
+### Part 2. The sends (you, about 3 hours a week; the texts are in `growth/sends.md`)
+
+| Week of | What | Time |
+|---|---|---|
+| 17 Nov | Pick the trading name and set a free forward for an address on the domain; send your own Daily result to 10 to 20 people you know; connect Search Console and Bing | 1.5 h |
+| 23 Nov | Show HN on a weekday afternoon, and answer comments for two hours; the first 20 teacher and society emails, with the price | 3.5 h |
+| 30 Nov | Ten daily-game directories; r/WebGames; 20 emails | 3 h |
+| 7 Dec | itch.io and CrazyGames (the builds are ready); 20 emails | 3 h |
+| 14 Dec | Read the numbers with me; reply to everyone who wrote | 1 h |
+| 5 Jan | One follow-up to the teachers who did not reply | 1 h |
+
+The priced offer (`growth/schools.md`): a class version (a join code, each student on their own device with no email
+address, a private class board, no shop shown) delivered by a stated date, a full refund if it is not, paid through a
+Stripe link you make. **The class version is not built until someone pays.**
+
+### Part 3. What stops until a tripwire in section 8 is met
+
+- New lessons, reel formats, reel studies, trading features and market work. The reels keep posting on today's
+  schedule by themselves; nothing new is built for them.
+- Off your list: removing fake followers, daily Stories, Instagram comments, TikTok and X by hand.
+- Price tests and new paywalls. Pro and Expert stay on sale as they are.
+- Everything under "Next" and "Later" below.
+
 
 ### Next, to the end of December
+
+*Frozen on 17 November (part 3 above). Kept as the list to pick from if a tripwire is met.*
 
 | Item | What | Size | Who |
 |---|---|---|---|
@@ -288,41 +337,38 @@ then depth.
 
 ## 4. Your list (only you can do these)
 
+Cut on 17 November to what fits 2 to 4 hours a week. The order is section 3, part 2; the texts are in
+`growth/sends.md`. Every first post on a new platform is still confirmed with you, and I never log in as you.
+
+| # | What | When | Time | The text is in |
+|---|---|---|---|---|
+| 1 | The trading name the site and its emails give as the operator, and an address on the domain that forwards to you (a free forwarder; the DNS change is yours). A caution, not legal advice: the shop already sells passes, and UK rules for online sellers generally expect the trader's own name and a postal address to be available: check before the teacher emails (R9, R4) | Week of 17 Nov | 30 min | `growth/sends.md` |
+| 2 | Your own Daily result and its challenge link to 10 to 20 people you know, one by one | Week of 17 Nov | 20 min | The Daily's share button |
+| 3 | Search Console (add the site, then Bing Webmaster Tools imports it); allow `memestreet.net` in the SEO routine's network settings | Week of 17 Nov | 15 min | |
+| 4 | Merge the fixes and tell me to deploy (staging first) | Week of 17 Nov | 5 min | Section 3, part 1 |
+| 5 | Show HN, a weekday between 14:00 and 17:00 UK time; stay two hours to answer. First your three answers: was AI used, how are the house traders shown, is it open source | Week of 23 Nov | 2.5 h | `growth/sends.md`, `growth/launch.md` |
+| 6 | Teacher and society emails with the priced class offer: 20 a week for three weeks, one person at a time; a Stripe payment link for the pre-order | From 23 Nov | 1 h a week | `growth/schools.md` |
+| 7 | Ten daily-game directories; one post on r/WebGames | Week of 30 Nov | 2 h | `growth/directories.md`, `growth/sends.md` |
+| 8 | itch.io (the frame is live) and CrazyGames | Week of 7 Dec | 2 h | `growth/portals/README.md` |
+| 9 | Read the week's numbers with me; answer everyone who wrote, and ask each one question ("what nearly stopped you?") | Week of 14 Dec | 1 h | `growth/weekly.md` |
+| 10 | Renew the Instagram token before 1 January 2027 (RL10): the reels stop without it | December | 10 min | |
+| 11 | One follow-up to teachers who did not reply | Week of 5 Jan | 1 h | `growth/schools.md` |
+
+**Off your list since 17 November:** removing the fake followers, the profile edit, daily Stories, comments on
+bigger pages, the retention screenshots, TikTok, X and Reddit by hand every day, the cross-posting accounts still
+open (a Facebook Page, Threads, Telegram, TikTok Business). They served a channel that sent 2 visitors in a month.
+
+**Parked, not dropped** (each waits for a tripwire or for its own moment): Product Hunt and the launch lists, the
+technical write-up, the lesson-plan uploads (Tes, Share My Lesson, OER Commons, Jump$tart: free listings, worth an
+hour once the emails show any pull), the other portals, a personal welcome to each new player (do it from the first
+real sign-up), the old 10,000-MB accounts (G3), phone alerts and chat moderators (G6, G7), a lawyer's read (R4),
+Cloudflare (O4), watching the market live.
+
+**The news watch, once** (unchanged):
+
 | # | What | Time | Why | The text is in |
 |---|---|---|---|---|
-| | **The news watch, once** | | | |
 | 0 | Switch the news timer on with one command (my safety check does not let me install a timer on the server): `ssh root@65.109.233.145 "cd /opt/memestreet-daily-reel && for x in service timer; do sed 's#__DIR__#/opt/memestreet-daily-reel#g; s#__USER__#root#g' systemd/memestreet-reel-news.\$x > /etc/systemd/system/memestreet-reel-news.\$x; done && systemctl daemon-reload && systemctl enable --now memestreet-reel-news.timer"` | 1 min | Until then nothing scans the news. | `tools/memestreet_daily_reel/news_watch.sh` |
-| | **Instagram, every day** | | | |
-| 1 | Remove the fake followers by hand, a few a day (439 left). Never in bulk and never through a tool that logs in. | 3 min a day | They are who Instagram thinks the reels are for. | |
-| 2 | The profile: name "Meme Street: Stock Market Game", the new bio, the link `memestreet.net/daily?ref=ig_bio`, three reels pinned, four highlights (Play, How it works, Daily Chart, Lessons). | 15 min, once | 51 profile visits gave 2 link taps. | `growth/instagram.md` |
-| 3 | A daily Story with a poll and a link sticker. | 3 min a day | Stories carry a link people can tap. | `growth/instagram.md` |
-| 4 | Comment on bigger trading pages; reply to every comment on ours. | 10 min a day | The account follows nobody and never speaks. I draft comments on request. | |
-| 5 | Delete the three trial reels and the older Daily #8 versions in the app (the API cannot delete). | 2 min | | |
-| 6 | Optional: the in-app retention graph of three best and three worst reels, as screenshots. | 5 min | The API has no retention curve. | |
-| | **Sends, once each** | | | |
-| 7 | Your own Daily result and challenge link to 10 to 20 people, one by one. | 20 min | Most games get their first players this way. | The Daily's share button |
-| 8 | Ten daily-game directories, AlternativeTo, SaaSHub, Finder. | An afternoon | Their visitors play a daily game every morning. | `growth/directories.md`, `seo/directories.md` |
-| 9 | Show HN, on a weekday morning US time. First answer three questions: was AI used, are the bots labelled, is it open source. | 1 hour | | `growth/launch.md` |
-| 10 | Product Hunt (a personal account), Launching Next, SideProjectors, Peerlist, Uneed. | 1 hour | | `growth/launch.md` |
-| 11 | The technical write-up, under your name: dev.to, Hashnode, Medium, Indie Hackers, r/Python, r/webdev, r/gamedev, LinkedIn. | 1 hour | | `growth/writeup.md` |
-| 12 | The lesson plan: pick its licence line, then Tes, Share My Lesson, OER Commons, Jump$tart, and the teacher and society emails. | 2 hours | A class is 30 players at once. | `growth/schools.md`, `growth/lesson_plan.pdf` |
-| 13 | Portal uploads: itch.io (the frame is live), CrazyGames, Coolmath Games, Playgama, Y8. | 2 hours | | `growth/portals/README.md` |
-| 14 | Paste one challenge link into a chat app and look at the preview. | 1 min | The preview title is built; nobody has seen it. | |
-| 15 | The same reels by hand on TikTok, X and Reddit; communities by hand, nine helpful posts for each mention. | 30 min a day | X's API costs about $0.20 a post, TikTok's refuses upload tools. | `growth/social.md`; `tools/fetch_reels.ps1` fills `D:\memestreet_reels` |
-| 16 | A personal welcome to each of the first 100 new players: two lines and one question ("what nearly stopped you?"). | 2 min each | Their words are the best copy we will get. | |
-| | **Accounts and keys** (you put each key into the server's `config.env` yourself) | | | |
-| 17 | ~~YouTube~~, ~~Bluesky~~, ~~Mastodon~~ (all on 13 Nov); still open: a Facebook Page, Threads, a Telegram channel; a TikTok Business account. | 20 min each | Each one switches on automatic cross-posting (A11). | `growth/cross_posting.md` |
-| 18 | Bing Webmaster Tools: import the site from Search Console. | 5 min | | |
-| 19 | Allow `memestreet.net` in the SEO routine's network settings. | 2 min | Its runs cannot fetch the live site. | |
-| 20 | Look at Search Console's Performance page about 1 December and tell me what it shows. | 5 min | The routine has no ranking data to aim with. | |
-| | **The site and the law** | | | |
-| 21 | G2: sign up on a phone inside Instagram's browser; check the Daily reminder arrives; the count of code emails Resend has sent since 31 October. | 10 min | Nobody has tested the path a reel viewer takes. | |
-| 22 | G4, R9: the name and contact address the site gives as its operator (also the footer of every email). | Decide | Consumer law, and teachers will ask. | |
-| 23 | G3, O11: the old 10,000-MB accounts: reset or keep. | Decide | | |
-| 24 | G6 phone alerts (UptimeRobot); G7 chat moderators; G8 watch disputes and the spending limit (R5). | | | |
-| 25 | R4 a lawyer's read, and G5 the ad wording: only before any ads. | | Nothing else waits on it. | |
-| 26 | O4: a Cloudflare account and the name servers. | 20 min | The server is ready. | |
-| 27 | Watch the market live now and then: does it look like a market a trader would recognise? | | The last check no tool does. | `docs/MARKET_REALISM.md` |
 
 ---
 
@@ -611,6 +657,12 @@ Done or decided: R1 to R3, R6, X1, X3 to X6, X8.
 - 12 Nov: one reel of each format a day; Instagram's skip rate cuts and boosts formats; Technical lesson in depth and
   Strategy test, both up to 100 seconds; **reach first**; **the parked reel changes go live with no test render**;
   this file is the single plan and the two older plans are deleted.
+- 17 Nov (after the review of the site, the numbers and the market; `docs/COUNCIL.md`): **sell before building**; the
+  goal is a real income, your time is 2 to 4 hours a week, big changes are allowed; **house bots are said in
+  aggregate** ("14 results: 2 players, 12 house traders"), still with no tag beside a name; **reel development is
+  frozen**, the pipeline keeps posting by itself, and your Instagram chores are off your list; the operator is given
+  as a trading name with an address on the domain; nobody but you has ever paid, so "the two buyers" was wrong; no
+  class version is built until a teacher pays; the dates in section 8 decide what happens next.
 - Settled from the old open list: the rank claim now says "the return boards" (the profit boards stay: risk 11);
   "Session" replaced "Day" (U10); the house bots stay on the boards, flagged in the data only.
 
@@ -643,29 +695,31 @@ Done or decided: R1 to R3, R6, X1, X3 to X6, X8.
 
 ---
 
-## 8. Review dates, targets and stop rules
+## 8. Review dates and tripwires
 
-**The number that matters:** people, bots excluded, who finished a Daily or made a trade this week.
+**The number that matters:** people, bots excluded, who finished a Daily or made a trade this week. **And since 17
+November: strangers who have paid** (0 so far).
 
-| When | What |
-|---|---|
-| Every Monday | `growth/weekly.md`, per source: visits, Dailies finished, accounts made, back within 7 days, invited someone. |
-| 19 and 26 Nov | The reels: the scoreboard's verdicts; A2 to A5 on medians of ten or more reels of a format, at 24 and 72 hours, never on one reel (at 110 views a reel's skip rate is good to about 5 points). |
-| About 1 Dec | Search Console's Performance page, three weeks after indexing. |
-| 7 Dec, 4 Jan, 1 Feb | The checkpoints in section 2, reset after two weeks of real counts. On 1 Feb: double the two best sources and drop the weakest; decide on money (M11, M12) if about 100 people play each week. |
-| December | Renew the Instagram token (RL10). |
+| When | What | What it decides |
+|---|---|---|
+| Every Monday | `python3 tools/visits.py --weekly` on the server, into `growth/weekly.md`: per source, visits, Dailies started and finished, email requests, accounts, back within 7 days | Which send to repeat |
+| 20 December | **Players.** After the sends of section 3: of the people who finish a Daily, do 10% or more return on another day or leave an email? | 10% or more: the Daily is worth building on (the "Next" list opens, starting with what brings people back). Under 5% after 500 real visitors: the Daily does not hold people, and no more is built on it |
+| 16 January 2027 | **Money.** From 60 priced emails to teachers and societies | 3 paid pre-orders: build the class version. 1: a side income at best; build the least that delivers it. None, and nobody asked the price: the class route is closed |
+| 31 January 2027 | **Both.** | If both failed: this stops being an income project. The site stays up as a portfolio piece, the reels pause, and your hours go to paid work that the project demonstrates |
+| December | Renew the Instagram token (RL10) | |
 
-**Stop rules**
+If Show HN or Reddit readers ask for real stock charts and the Daily holds people, a Daily on a real, unnamed
+chart is the next question (RM1: it needs a data licence, so your yes).
 
-- **Reels:** three weeks under 100 median views with skips above 65% means a change of format. Three weeks of changes
-  with a clean Account Status and no reel past 300 views makes the account the suspect: a fresh-account test is your
-  call. Under 10 visits a day from Instagram on 4 Jan means your own time goes to the best other source first.
-- **Any other source:** under 5 finished Dailies a week after 4 weeks of trying, stop it.
+**Stop rules that stay**
+
+- **Any send:** under 5 finished Dailies in the week after it, and it is not repeated.
 - **Sign-up:** more than 1 attempt in 5 failing means the form is still the leak: take out another field.
 - **Email:** any spam complaint, or more than 1 in 200 leaving after a send, stop and rethink.
-- **Cross-posted video:** under 200 median views after 4 weeks on a platform, stop that platform.
+- **Reels:** nothing is decided on them before 31 January; the scoreboard keeps cutting formats by itself.
 
 ---
+
 
 ## 9. Checking a change
 
