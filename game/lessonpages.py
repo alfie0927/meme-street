@@ -43,7 +43,11 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market.</b> Every account s
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
         'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">Expectancy calculator</a> · <a href="/tools/compound-growth-calculator">Compound growth calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a> · <a href="/vs">Compare</a><br>Everything on Meme Street is fictional and nothing is investment '
-        'advice. MB are practice money with no cash value.</footer></div></body></html>')
+        'advice. MB are practice money with no cash value.</footer></div>'
+        # where the visitor came from, kept for the sign-up as index.html keeps it: ?ref=, else the site that sent them (2026-11-17)
+        "<script>try{const h=document.referrer?new URL(document.referrer).hostname.replace(/^www\\./,''):'',"
+        "r=new URLSearchParams(location.search).get('ref')||(h&&!/(^|\\.)memestreet\\.net$/.test(h)&&h!==location.hostname?h.replace(/\\./g,'-'):'');"
+        "if(r&&/^[A-Za-z0-9_-]{1,40}$/.test(r)&&!localStorage.ms_ref)localStorage.ms_ref=r.toLowerCase()}catch(e){}</script></body></html>")
 
 CALC_PATH = "/tools/position-size-calculator"
 CALC_TITLE = "Position size calculator: how many shares to buy for a 1% risk | Meme Street"

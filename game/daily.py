@@ -375,9 +375,13 @@ class DailyMixin:
         d = self._dchart()
         board = self._daily_board(d)
         play = self._dplays(p).get(p.token)
+        bots = {b.token for b in self.house_bots()}                    # (the board says how many of its results are people, 2026-11-17)
+        people = sum(1 for x in d["plays"].values() if x.get("done") and x.get("token") not in bots)
+        past = [{"day": x["day"], "players": x["players"],             # a whitelist: rows archived before 2026-11-17 hold a bot flag
+                 "top": [{"name": r["name"], "ret": r["ret"], "trades": r.get("trades", 0)} for r in x["top"]]} for x in d["past"]]
         out = {"visitor": bool(getattr(p, "visitor", False)), "day": d["day"], "number": self._dnum(d), "live": LIVE, "history": HISTORY, "cash": START_CASH,
                "chips": CHIPS, "stats": self._daily_stats(p),
-               "board": board[:BOARD], "players": len(board), "past": d["past"], "guest": bool(getattr(p, "guest", False)),
+               "board": board[:BOARD], "players": len(board), "people": people, "past": past, "guest": bool(getattr(p, "guest", False)),
                "status": "new" if play is None else "done" if play.get("done") or self.now - play["t0"] >= LIVE else "running",
                "next": (d["day"] + 1) * DAY_SECONDS, "remind": bool(getattr(p, "remind", False))}
         if play is not None:

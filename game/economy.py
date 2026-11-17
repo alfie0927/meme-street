@@ -44,6 +44,8 @@ DEFAULT_EXPERT = [
     {"sku": "expert_year", "days": 365, "price_cents": 29999},
 ]
 PRO_FEATURES = [
+    "The whole lesson path with no daily limit (a free account does two lessons a day after the first unit; the three "
+    "advanced units need Expert)",
     "Trade any stock with leverage, up to 10x (the leveraged index products excepted): more exposure for your MB, "
     "losses magnified the same way, interest on what you borrow and an automatic close if the position runs out of margin",
     "32 more chart indicators: Bollinger bands, MACD, Ichimoku, VWAP, ATR, ADX, Stochastic RSI, OBV, pivot points and more "
@@ -52,6 +54,7 @@ PRO_FEATURES = [
 ]
 EXPERT_FEATURES = [
     "Everything in Pro",
+    "The three advanced lesson units: market microstructure, volatility as an asset, and sizing under uncertainty",
     "Trading bots you script yourself: buy, sell, short and cover on your own rules (\"buy when the price crosses above "
     "the 20 EMA, sell at the 200 EMA\"), with stops, targets, sizing and leverage",
     "News bots: they read the news wire, score each headline with your own words and weights, and trade on the score",

@@ -270,6 +270,16 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(status, 200, path)
             self.assertNotRegex(body.lower(), r"free (daily|stock market game|lessons|trading lessons|stock trading)|, free", path)
 
+    def test_the_daily_s_lesson_links_are_open_pages_that_keep_the_visitor_s_source(self):
+        """The Daily's result links to /lessons/<id> (web/daily.js dlyLesson), which anyone may read, and every lesson
+        and calculator page keeps where the visitor came from for the sign-up, as the app's own pages do (2026-11-17)."""
+        for lesson in ("trends", "support-resistance", "ranges-breakouts"):
+            status, body, _ = http(self.srv, f"/lessons/{lesson}?from=daily")
+            self.assertEqual(status, 200, lesson)
+            self.assertIn("localStorage.ms_ref", body, lesson)
+        self.assertIn("localStorage.ms_ref", http(self.srv, "/tools/position-size-calculator")[1])
+        self.assertIn("/lessons/'+id+'?from=daily", http(self.srv, "/js/daily.js")[1])
+
     def test_a_challenge_link_has_its_own_preview_title(self):
         """/daily?vs=name~return~number (web/daily.js): the result is in og:title, and only for a well-formed link."""
         plain = http(self.srv, "/daily")[1]

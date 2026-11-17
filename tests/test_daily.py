@@ -235,6 +235,20 @@ class GameTests(unittest.TestCase):
         self.assertEqual(v["past"][0]["players"], 1)
         self.assertNotIn("error", e.daily_start(p))
 
+    def test_the_board_counts_people_apart_from_house_traders_and_old_winners_carry_no_bot_flag(self):
+        """The page says "2 results: 1 player, 1 house trader" (2026-11-17): `people` leaves the house bots out, `players`
+        stays the whole board, and a winner archived while rows still held a bot flag is served without it."""
+        e, p = self.e, self.p
+        q = join(e, "housey")
+        q.hb = {"style": "trend"}                                                    # a house trader (housebots.py)
+        for x in (p, q):
+            e.daily_start(x)
+        e.now += daily.LIVE + 1
+        v = e.daily_view(p)
+        self.assertEqual((v["players"], v["people"]), (2, 1))
+        e.daily_game["past"] = [{"day": 1, "players": 2, "top": [{"name": "old", "ret": 0.1, "trades": 3, "bot": True}]}]
+        self.assertEqual(e.daily_view(p)["past"], [{"day": 1, "players": 2, "top": [{"name": "old", "ret": 0.1, "trades": 3}]}])
+
     def test_numbered_days_streaks_and_stats(self):
         """Like the daily word games: each day a number, a streak of days in a row (a missed day ends it), and stats."""
         e, p = self.e, self.p

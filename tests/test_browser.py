@@ -749,6 +749,13 @@ class BrowserGuest(unittest.TestCase):
             await d.check("a trade goes through", "document.getElementById('toast').textContent", lambda t: "Bought" in t, wait=6)
             await pg.js("dlyG.done=true;dly.status='done';dlyG.dist=[0];dlyG.grid=[];dlyG.hold=0;dlyG.ret=0;dlySummary()")
             await d.check("the result asks them to make an account to save it", "document.querySelector('#dly-pop .dly-save b').textContent", lambda t: (t or "").startswith("Save your"), wait=4)
+            await d.check("the board says how many results are people and how many are house traders (2026-11-17)", "dlyBoard({players:14,people:2,board:[],past:[]})",
+                          lambda t: "14 results: 2 players, 12 house traders" in t and "computer-run" in t)
+            await d.check("with no house traders it only says how many played", "dlyBoard({players:3,people:3,board:[],past:[]})",
+                          lambda t: "3 played" in t and "house trader" not in t)
+            await d.check("its lesson link opens the open lesson page, not the locked path (2026-11-17)", "document.querySelector('#dly-pop .dly-step a').getAttribute('href')",
+                          lambda t: (t or "").startswith("/lessons/") and t.endswith("?from=daily"))
+            await d.check("and a visitor is offered the market to watch, not to trade", "document.querySelectorAll('#dly-pop .dly-step a')[1].textContent", "Watch the live market")
             await pg.js("document.querySelector('#dly-pop [data-dly-join]').click()")
             await d.check("which opens the sign-up box", "getComputedStyle(document.getElementById('login')).display", "flex", wait=4)
             await d.check("and says why: to save the result (audit 2026-11-15)", "document.getElementById('login-why').textContent",

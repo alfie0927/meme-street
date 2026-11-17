@@ -18,7 +18,7 @@ from social import clean_chat
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
                "icon-512.png", "apple-touch-icon.png"}   # (the small icons: browser tabs, phones and search results)
 DAILY_TEXT = ("A daily stock market game, no account needed: one new chart a day, the same for everyone. Two minutes to buy, sell and "
-              "short as the candles print, then see how your return ranks against every other player. Like Wordle, "
+              "short as the candles print, then see where your return lands on the day's board. Like Wordle, "
               "for trading.")
 # The Daily as it first shows, in the page itself (audit 2026-11-15): the script draws the game over it, so the page no
 # longer jumps from "Loading..." to the game on a slow phone, and a crawler that runs scripts reads this, not "Loading...".
@@ -29,8 +29,8 @@ DAILY_SHOWN = ('<div class="dly-wrap"><div class="dly-hero"><h1 class="dly-tag">
                '<noscript><p>Turn on JavaScript to play.</p></noscript></div><div class="dly-about">'
                '<h2>The daily stock market game</h2><p>Every day there is one new chart, and everyone gets the same one. '
                'You start with 100,000 MB of practice money and have two minutes: the candles print one a second, and you '
-               'buy, sell or short as they come. When the time is up you see your return, your place, and how every '
-               'other player did.</p><p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a '
+               'buy, sell or short as they come. When the time is up you see your return, your place on the day\'s board, '
+               'and how the rest of the board did.</p><p>It is like Wordle, but for reading charts: one go a day, a streak to keep, and a '
                'result to share. The chart comes from a made-up stock, so nobody can look it up, and the next one starts '
                'at midnight UTC. New to charts? Start with the <a href="/lessons">lessons</a> or read '
                '<a href="/about">about Meme Street</a>.</p></div></div>')

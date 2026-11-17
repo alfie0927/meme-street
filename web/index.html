@@ -535,7 +535,8 @@ const view=Object.assign({sort:'ticker',dir:1,q:'',sector:'all',watch:false,secs
 const watch=new Set(lsGet('ms_watch',[]));
 let selectedTicker=page==='stock'?pageArg:null;
 // a tracking link (?ref=ig_story1, ROADMAP B4): the first one a visitor arrives by is kept and sent with the sign-up
-try{const r=new URLSearchParams(location.search).get('ref');if(r&&/^[A-Za-z0-9_-]{1,40}$/.test(r)&&!localStorage.ms_ref)localStorage.ms_ref=r.toLowerCase()}catch(e){}
+// where a visitor came from: the link's ?ref=, else the site that sent them (its host, dots as dashes), kept for the sign-up (2026-11-17)
+try{const h=document.referrer?new URL(document.referrer).hostname.replace(/^www\./,''):'',r=new URLSearchParams(location.search).get('ref')||(h&&!/(^|\.)memestreet\.net$/.test(h)&&h!==location.hostname?h.replace(/\./g,'-'):'');if(r&&/^[A-Za-z0-9_-]{1,40}$/.test(r)&&!localStorage.ms_ref)localStorage.ms_ref=r.toLowerCase()}catch(e){}
 let chartPeriod='5m',chartCandles=[],clockOffset=0,zoom=1,pan=0,yMan=null,dragY=0,dragY0=null,dragYOn=false,axisDrag=null,company=null,lastQuery=0;
 let builtFor=null,dragX=null,dragPan0=0,rafPending=false;
 const engineNow=()=>Date.now()/1000+clockOffset;
@@ -1518,7 +1519,7 @@ function drawShop(){
   if(sb&&sb.status==='active')return `<p class="up sub-line">Your monthly ${T} renews on ${shopDate(sb.until)} at ${esc(sb.price)}.${extra} <button class="sell" data-cancel-sub="${kind}">Cancel</button></p>`;
   if(sb&&sb.status==='cancelled')return `<p class="up sub-line">Your monthly ${T} is cancelled: it stays on until ${shopDate(sb.until)} and nothing more is charged.${extra}</p>`;
   return until?`<p class="up sub-line">${T} is on until ${shopDate(until)}. Buying again adds to it.${extra}</p>`:''};
- setHtml($('shop-pro'),`<p class="hint" style="margin-top:0">Extra tools and leverage. Pro adds no MB, and everything you need to learn works without it. Leverage magnifies losses exactly as much as gains.</p><ul class="hint">${c.pro_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
+ setHtml($('shop-pro'),`<p class="hint" style="margin-top:0">The whole lesson path, more chart tools and leverage. Pro adds no MB. Without it you can still play the Daily Chart, trade the market and do two lessons a day. Leverage magnifies losses exactly as much as gains.</p><ul class="hint">${c.pro_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
   +(d.expert&&!d.pro_until?'<p class="up sub-line">You have Pro with your Expert pass.</p>':status('pro',d.pro_until,''))+passes(c.pro));
  setHtml($('shop-expert'),`<p class="hint" style="margin-top:0">For traders who want to automate and test their ideas. Expert includes everything in Pro.</p><ul class="hint">${c.expert_features.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul>`
   +status('expert',d.expert_until,d.expert?' Your bots are on the <a href="/bots">Bots</a> page.':'')+passes(c.expert));
