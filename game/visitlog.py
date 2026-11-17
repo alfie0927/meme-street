@@ -13,6 +13,9 @@ import urllib.parse
 
 LOG = "/var/log/caddy/memestreet-access.log"
 NOT_PAGES = ("/api/", "/js/", "/brand/", "/ws", "/reels/", "/favicon")
+# ponytail: a finished Daily is read off the log as this many state polls (the page polls once a second for the 120 s);
+# the exact count per day is the engine's (`_daily_summary`, the admin page's Daily tab), which has no source
+FINISHED_POLLS = 100
 SHORT = {"/play": "reel", "/yt": "yt"}   # (the short addresses forward to /daily?ref=...: the visit is tagged on its first page)
 
 
@@ -45,7 +48,9 @@ def count(lines):
         who = r.get("client_ip") or r.get("remote_ip") or "?"
         path, _, query = str(r.get("uri", "")).partition("?")
         heads = r.get("headers") or {}
-        v = days[day].setdefault(who, {"src": None, "seen": False, "starts": 0, "signups": 0, "ig": False})
+        v = days[day].setdefault(who, {"src": None, "seen": False, "starts": 0, "signups": 0, "ig": False,
+                                       "polls": 0, "accounts": 0, "mails": 0})
+        ok = j.get("status") == 200                    # (a refused sign-up or email request answers 400)
         if any("Instagram" in ua for ua in heads.get("User-Agent", [])):
             v["ig"] = True
         method = r.get("method")
@@ -59,7 +64,35 @@ def count(lines):
             v["starts"] += 1
         elif method == "POST" and path == "/api/register":
             v["signups"] += 1
+            v["accounts"] += ok
+        elif method == "POST" and path == "/api/daily/remind":
+            v["mails"] += ok
+        elif path == "/api/daily/state":
+            v["polls"] += 1
     return days
+
+
+def weekly(days):
+    """ISO week -> source -> [visits, Daily started, Daily finished, email requests, accounts made, back within 7 days].
+    A visit is an address on a day; "back" is a visit whose address visited again on one of the next seven days (the
+    log keeps addresses cut short, so a phone network undercounts and a school overcounts)."""
+    seen = collections.defaultdict(list)
+    for day in sorted(days):
+        for who, v in days[day].items():
+            if v["seen"]:
+                seen[who].append(datetime.date.fromisoformat(day))
+    out = collections.defaultdict(lambda: collections.defaultdict(lambda: [0] * 6))
+    for day in sorted(days):
+        d = datetime.date.fromisoformat(day)
+        y, w, _ = d.isocalendar()
+        for who, v in days[day].items():
+            if not v["seen"]:
+                continue
+            row = out[f"{y}-W{w:02d}"][v["src"] or "direct"]
+            for i, n in enumerate((1, v["starts"], v["polls"] >= FINISHED_POLLS, v["mails"], v["accounts"],
+                                   any(0 < (x - d).days <= 7 for x in seen[who]))):
+                row[i] += n
+    return {wk: dict(by) for wk, by in out.items()}
 
 
 def from_instagram(v):

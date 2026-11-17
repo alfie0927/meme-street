@@ -25,7 +25,6 @@ async function loadLearn(){
 function drawLearn(){
  const d=lrnData;$('learn-card').classList.remove('reading');
  const tr=d.tests.reduce((a,t)=>[a[0]+t.right,a[1]+t.n],[0,0]);
- if(token&&!d.placed&&!d.passed&&!d.xp){drawPlacement(true);return}            // a new account's first visit: the placement, alone (rubric v2 A1)
  const next=d.tracks.flatMap(t=>t.lessons).find(x=>x.id===d.next);
  setHtml($('learn-body'),`<div class="lrn-top"><div><h3 style="margin:0 0 6px">Learn to trade</h3>
   <p class="about" style="margin:0">A path of ${d.total} short lessons, from what a share is to options, macro and trading bots. Every lesson has a few exercises: questions, and in many lessons a chart test on a real chart from this market or something to do on the live market. It never costs MB.</p>
@@ -37,12 +36,12 @@ function drawLearn(){
    ${token?`<span class="up">${d.today>=d.goal?`Goal reached. Come back tomorrow: any XP ${d.streak>=1?`keeps your ${d.streak}-day streak going`:'starts a streak'}.`:d.streak?`Any XP today keeps your ${d.streak}-day streak; ${d.goal-d.today} more reaches the goal.`:'Any XP today starts a streak; come back tomorrow to keep it.'}</span>`:''}
    ${d.league?`<div class="lrn-league"><b>This week's learners</b>${d.league.rows.length?`<ol>${d.league.rows.slice(0,10).map(r=>`<li><a href="/player/${encodeURIComponent(r.name)}">${esc(r.name)}</a><span>${numText(r.xp,0)} XP</span></li>`).join('')}</ol>`:'<span class="mut">Nobody has earned XP yet this week: be the first.</span>'}${d.league.rank?`<span class="mut">You are #${d.league.rank} of ${d.league.learners} with ${numText(d.league.xp,0)} XP this week.</span>`:token&&d.league.rows.length?'<span class="mut">Earn XP this week to be on it.</span>':''}</div>`:''}</div></div>
   ${token?'':'<p class="hint">You are not signed in: you can read everything, answer every question and take every test, but your progress, XP and streak are not kept. <a href="/#join">Create an account</a> to keep them.</p>'}
-  ${token&&!d.passed&&!d.placed?`<div class="lrn-place"><div><b>Already know some of this?</b><span class="mut">One quick question from each unit finds where your path should start. Units you know are marked passed.</span></div><a class="btn" href="/learn?place=1">Take the placement test</a></div>`:''}
+  ${token&&!d.passed&&!d.placed?`<div class="lrn-place"><div><b>Already know some of this?</b><span class="mut">One question from each of the ${d.tracks.length} units finds where your path should start. Units you know are marked passed.</span></div><a class="btn" href="/learn?place=1">I already know this: test me</a></div>`:''}
   ${token?lrnMineHtml(d.mine,false):''}
   ${token?lrnHabitsHtml(d.challenges):''}
   ${d.weak&&d.weak.length?`<div class="lrn-place lrn-weak"><div><b>Your weak spots</b><span class="mut">${d.weak.map(w=>`${esc(w.name)} (${w.right} of ${w.n} right)`).join(' · ')}. A review asks you again, with other questions from those units.</span></div><a class="btn" href="/learn?review=1">Review</a></div>`:''}
-  ${token&&d.allowance&&d.allowance.tier==='free'?`<div class="lrn-place lrn-allow"><div><b>${d.allowance.limited?`Your ${d.allowance.limit} free lessons for today are done.`:`Free: ${d.allowance.limit} lessons a day, ${d.allowance.used} done today.`}</b><span class="mut">The day resets at ${new Date(d.allowance.reset*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} your time. Pro opens the whole path; the review and the chart tests are always open.</span></div><a class="btn" href="/shop">Pro</a></div>`:''}
-  <h3 class="sp">The path</h3><div class="lrn-tracks">${d.tracks.map((t,k)=>{const done=t.lessons.filter(x=>x.passed).length;
+  ${token&&d.allowance&&d.allowance.tier==='free'&&d.allowance.limited?`<div class="lrn-place lrn-allow"><div><b>Today's ${d.allowance.limit} lessons are done.</b><span class="mut">The day resets at ${new Date(d.allowance.reset*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} your time. Pro opens the whole path with no daily limit. The review and the chart tests are always open.</span></div><a class="btn" href="/shop">See Pro</a></div>`:''}
+  <h3 class="sp">The path</h3>${token&&d.allowance&&d.allowance.tier==='free'&&!d.allowance.limited?`<p class="hint" style="margin:0 0 8px">On a free account: ${d.allowance.limit} lessons a day after the first unit.</p>`:''}<div class="lrn-tracks">${d.tracks.map((t,k)=>{const done=t.lessons.filter(x=>x.passed).length;
    const steps=t.lessons.filter(x=>x.ex_total>0),refs=t.lessons.filter(x=>!x.ex_total);   // a lesson without exercises (the glossary) is reference, not a step (loop 11)
    const fin=steps.length&&done===steps.length;
    return `<section class="lrn-track${fin?' done collapsed':''}" data-unit="${esc(t.id)}"><div class="lrn-th" ${fin?'data-lrn-unfold title="Finished: click to open"':''}><span class="lrn-n">${fin?'✓':k||'S'}</span><div><b>${esc(t.title)}</b><small>${fin?'Finished':`${done} of ${steps.length} passed`}</small></div></div><p class="mut">${lrnText(t.blurb)}</p>${pbar(done,steps.length||1)}
@@ -52,15 +51,14 @@ function drawLearn(){
 
 // ---- the placement test (LP6): twelve questions, one per unit, graded together; the path starts at the first unit missed
 let lrnPlace=null;
-async function drawPlacement(first){
+async function drawPlacement(){
  $('learn-card').classList.add('reading');
- const crumb=first?'':'<div class="lrn-crumb"><a href="/learn">Learn</a> › Placement test</div>';
+ const crumb='<div class="lrn-crumb"><a href="/learn">Learn</a> › Placement test</div>';
  setHtml($('learn-body'),crumb+'<p class="mut">Loading the questions…</p>');
  const d=await api('/api/learn/placement');if(!d||d.error||!d.questions){setHtml($('learn-body'),'<p>Could not load the test. <a href="/learn">Back to the path</a></p>');return}
  lrnPlace={qs:d.questions,picks:{}};
- setHtml($('learn-body'),`${crumb}<div class="${first?'lrn-first':''}"><h3 style="margin:8px 0 2px">${first?'Where should your path start?':'Where should your path start?'}</h3>
-  <p class="about" style="margin:0 0 8px">${first?`One question from each unit tells us where to start you: the units you know are marked passed and your path begins at the first one you miss.`:`One question from each unit, in the order of the course. Answer them all, then <b>See where to start</b>. The units you get right in a row from the first are marked passed and your path begins at the first one you miss.`} ${token?'':'<b>Sign in first</b> to have the result kept.'}</p>
-  ${first?'<p class="mut" style="margin:0 0 10px">New to all of this? <button class="btn" data-place-skip>Start from the beginning</button></p>':''}</div>
+ setHtml($('learn-body'),`${crumb}<div><h3 style="margin:8px 0 2px">Where should your path start?</h3>
+  <p class="about" style="margin:0 0 8px">One question from each unit, in the order of the course. Answer them all, then <b>See where to start</b>. The units you get right in a row from the first are marked passed and your path begins at the first one you miss. ${token?'':'<b>Sign in first</b> to have the result kept.'}</p></div>
   <div class="lesson-body">${d.questions.map((x,n)=>`<div class="lrn-box lrn-qbox" data-place-q="${n}"><div class="lrn-qh"><b>${n+1}. ${esc(x.title)}</b><span class="mut lrn-qs"></span></div><p class="lrn-q">${lrnText(x.q)}</p><div class="lrn-opts">${x.options.map((o,i)=>`<button data-place-pick="${i}">${esc(o)}</button>`).join('')}</div><div class="lrn-out"></div></div>`).join('')}</div>
   <div class="bar" style="margin-top:12px"><button class="buy" id="place-go" disabled>See where to start</button><span class="hint" id="place-note">Answer all ${d.questions.length} first.</span></div><div id="place-result"></div>`)}
 function lrnPlacePick(box,i){
@@ -147,7 +145,7 @@ function drawLesson(){
   document.querySelectorAll('#learn-body [data-lrn-ex]').forEach(el=>lrnExample(el,el.dataset.lrnEx));
   document.querySelectorAll('#learn-body [data-lrn-test]').forEach(el=>lrnTest(el,el.dataset.lrnTest));return}
  if(L.gate){const A=L.allowance||{};setHtml($('learn-body'),`${crumb}<div class="lrn-goal"><h3>🔒 ${esc(L.title)}</h3><p class="lrn-goalp">${lrnText(L.summary||'')}</p>
-  <p class="mut">${L.gate==='account'?'The first unit is open to everyone. A free account keeps your progress and opens two lessons a day; Pro opens the whole path.':L.gate==='expert'?'This unit is part of Expert.':`Your ${A.limit} free lessons for today are done. The day resets at ${A.reset?new Date(A.reset*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'midnight UTC'} your time.`} The review and the chart tests are always open.</p>
+  <p class="mut">${L.gate==='account'?'The first unit is open to everyone. A free account keeps your progress and opens two lessons a day; Pro opens the whole path.':L.gate==='expert'?'This unit is part of Expert.':`Today's ${A.limit} lessons are done. The day resets at ${A.reset?new Date(A.reset*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'midnight UTC'} your time.`} The review and the chart tests are always open.</p>
   <div class="bar">${L.gate==='account'?`<button class="btn buy" onclick="openSignin('register','Make an account to keep learning: two lessons a day, and your progress kept.')">Make an account</button>`:`<a class="btn buy" href="/shop">${L.gate==='expert'?'Expert':'Pro'} in the shop</a>`}<a class="btn" href="/learn?review=1">Review</a><a class="btn" href="/learn">The path</a></div></div>`);return}
  if(L.locked){setHtml($('learn-body'),`${crumb}<div class="lrn-goal"><h3>🔒 ${esc(L.title)}</h3><p class="lrn-goalp">${lrnText(L.summary||'')}</p>
   <p class="mut">${L.minutes} min · ${L.total} exercise${L.total===1?'':'s'} · locked: the path opens one lesson at a time.</p>
@@ -289,7 +287,6 @@ $('learn-card').addEventListener('click',e=>{
  if(t.dataset.lrnStart!==undefined||t.dataset.lrnNext!==undefined||t.dataset.lrnSkip!==undefined){lrnNext();return}
  const qb=t.closest('[data-lrn-q]');if(qb&&t.dataset.lrnChoice!==undefined){lrnAnswer(qb,+t.dataset.lrnChoice);return}
  if(qb&&t.dataset.lrnNumgo!==undefined){const v=parseFloat(qb.querySelector('input').value);if(!isFinite(v)){toast('Type a number first',false);return}lrnAnswer(qb,v);return}
- if(t.dataset.placeSkip!==undefined){postJson('/api/learn/placement',{skip:true},{'X-Token':token||''}).then(()=>{lrnView=null;loadLearn()});return}
  const pb=t.closest('[data-place-q]');if(pb&&t.dataset.placePick!==undefined){lrnPlacePick(pb,+t.dataset.placePick);return}
  const uf=t.closest('[data-lrn-unfold]');if(uf){uf.closest('.lrn-track').classList.toggle('collapsed');return}
  if(t.id==='place-go'){lrnPlaceGrade();return}

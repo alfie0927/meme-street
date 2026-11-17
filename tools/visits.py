@@ -3,6 +3,7 @@ shows the same numbers).
 
     python3 tools/visits.py                       # on the server: /var/log/caddy/memestreet-access.log and its rolled copies
     python3 tools/visits.py FILE...               # other log files (plain or .gz)
+    python3 tools/visits.py --weekly [FILE...]    # the week's funnel per source, as rows for growth/weekly.md
     python3 tools/visits.py --selftest
 
 For each day and source: visits, Daily Charts started, sign-up attempts and how many came through Instagram's own
@@ -24,6 +25,14 @@ def show(table):
         print(f"{day}  visits {tot[0]}  Daily starts {tot[1]}  sign-up attempts {tot[2]}  in Instagram's browser {tot[3]}")
         for src, (n, starts, signups, ig) in rows:
             print(f"    {src:28} {n:4} visits {starts:4} starts {signups:3} sign-up attempts {ig:4} Instagram")
+
+
+def show_weekly(table):
+    print("| Week | Source | Visits | Daily started | Daily finished | Email asked | Accounts | Back within 7 days |")
+    print("|---|---|---|---|---|---|---|---|")
+    for week in sorted(table):
+        for src, row in sorted(table[week].items(), key=lambda kv: -kv[1][0]):
+            print(f"| {week} | {src} | " + " | ".join(str(int(x)) for x in row) + " |")
 
 
 def selftest():
@@ -52,6 +61,14 @@ def selftest():
     assert got["2026-11-11"] == {"direct": [1, 0, 0, 0]}, got
     dash = visitlog.dashboard(days, "2026-11-11", 2)
     assert [(r["day"], r["visitors"], r["instagram"]) for r in dash] == [("2026-11-11", 1, 0), ("2026-11-10", 3, 2)], dash
+    def hit2(dt, who, method, uri, status=200):
+        return json.dumps({"ts": t + dt, "status": status, "request": {"client_ip": who, "method": method, "uri": uri, "headers": {}}})
+    lines += ([hit2(20, "5.6.7.0", "POST", "/api/daily/start")] + [hit2(21 + k, "5.6.7.0", "GET", "/api/daily/state?since=1") for k in range(120)]
+              + [hit2(150, "5.6.7.0", "POST", "/api/daily/remind"), hit2(151, "5.6.7.0", "POST", "/api/daily/remind", 400),
+                 hit2(160, "5.6.7.0", "POST", "/api/register", 400), hit2(170, "5.6.7.0", "POST", "/api/register")])
+    week = visitlog.weekly(visitlog.count(lines))
+    assert week["2026-W46"]["www.google.com"] == [1, 1, 1, 1, 1, 0], week
+    assert week["2026-W46"]["reel"] == [1, 1, 0, 0, 0, 1], week            # (came back the next day)
     print("visits.py self-check ok")
 
 
@@ -59,7 +76,11 @@ if __name__ == "__main__":
     if "--selftest" in sys.argv:
         selftest()
     else:
-        paths = sys.argv[1:] or visitlog.log_paths()
+        paths = [a for a in sys.argv[1:] if not a.startswith("--")] or visitlog.log_paths()
         if not paths:
             sys.exit(f"no log at {visitlog.LOG} (is the visit log on? deploy/Caddyfile)")
-        show(visitlog.summary(visitlog.count(visitlog.lines_of(paths))))
+        days = visitlog.count(visitlog.lines_of(paths))
+        if "--weekly" in sys.argv:
+            show_weekly(visitlog.weekly(days))
+        else:
+            show(visitlog.summary(days))

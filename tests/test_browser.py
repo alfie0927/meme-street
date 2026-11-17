@@ -783,6 +783,9 @@ class BrowserGuest(unittest.TestCase):
             await d.check("it is the visitor view", "document.body.classList.contains('guest')")
             await d.check("the live table is full", "document.querySelectorAll('#rows tr').length", lambda n: n > 100, wait=8)
             await d.check("a welcome card says what this is", shown("#guest-hero"))
+            await d.check("in one sentence, as the first thing on the page, above the side column too (2026-11-17)",
+                          "document.querySelector('#guest-hero h2').textContent+'|'+(document.getElementById('guest-hero').getBoundingClientRect().bottom<=document.querySelector('aside').getBoundingClientRect().top+1)",
+                          "Learn to read stock charts by trading a made-up market.|true")
             await d.check("there are no buy/sell controls to tap", "[...document.querySelectorAll('.ticket,#rows .hold-act')].every(e=>getComputedStyle(e).display==='none')")
             await d.check("the menu offers the market, the lessons and the Daily", "[...document.querySelectorAll('#nav a')].filter(a=>a.checkVisibility()).length", 3)
             await d.check("and the shop is a button in the header", shown("#shop-btn"))

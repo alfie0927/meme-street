@@ -818,8 +818,9 @@ class LearningBrowserTests(unittest.TestCase):
             await d.check("a new player is shown their first steps, lesson 1 among them", "document.getElementById('learn-banner').innerHTML",
                           lambda t: "first steps" in t and "l=stocks-shares" in t, wait=8)
             await pg.goto(base + "/learn", 3)
-            await d.check("a new account sees the placement test alone", "document.querySelectorAll('.lrn-first').length+'|'+document.querySelectorAll('.lrn-track').length", "1|0", wait=10)
-            await pg.js("document.querySelector('[data-place-skip]').click()")
+            await d.check("a new account sees the path, with the placement test offered second (2026-11-17)",
+                          "document.querySelectorAll('.lrn-track').length>=17&&document.querySelector('.lrn-place a[href=\"/learn?place=1\"]').textContent", "I already know this: test me", wait=10)
+            await d.check("and no Pro banner before the day's lessons are used", "document.querySelectorAll('.lrn-allow').length", 0)
             await d.check("every track is listed", "document.querySelectorAll('.lrn-track').length", lambda n: n >= 17, wait=10)
             await d.check("with the lessons after the next one locked", "document.querySelectorAll('.lrn-ls li.locked').length", lambda n: n >= 80)
             await d.check("with all its lessons", "document.querySelectorAll('.lrn-ls li').length", lambda n: n >= 90)

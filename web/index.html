@@ -247,7 +247,7 @@ body.guest .stats .stat:nth-child(n+2):nth-child(-n+6){display:none}
 body.guest .ticket,body.guest .hold-act,body.guest .detail-actions,body.guest .orders,body.guest #d-limits,body.guest #d-pos{display:none!important}
 .guest-cta{display:none;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;padding:8px 12px;margin:10px 0;border-left:2px solid var(--acc);background:var(--card2)}
 body.guest .guest-cta{display:flex}
-#guest-hero h2{margin:0 0 6px;font-size:18px}#guest-hero ul{margin:0 0 12px;padding-left:18px}
+#guest-hero{grid-column:1/-1;margin-bottom:0}#guest-hero h2{margin:0 0 6px;font-size:18px}#guest-hero ul{margin:0 0 12px;padding-left:18px}
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);padding:9px 16px;border-radius:3px;background:#161b20;border:1px solid var(--line);opacity:0;transition:.2s;z-index:10;pointer-events:none;max-width:90vw;box-shadow:0 6px 20px #0008}
 /* a price flashes green or red for a moment when it jumps (more than 0.15% in a tick), then goes back to plain; the
    everyday small ticks do not flash, so the table stays calm (two names each, so a second jump the same way flashes again) */
@@ -306,7 +306,7 @@ body.guest .guest-cta{display:flex}
  body.guest .stats{grid-template-columns:1fr 1.7fr}body.guest .stat:last-child{grid-column:auto}
  #toast{bottom:calc(62px + env(safe-area-inset-bottom))}
  /* news wire, upcoming events and the leaderboard sit above the (very long) table, folded: tap a heading to open it */
- aside{order:-1}
+ aside{order:-1}#guest-hero{order:-2}
  aside .card.fold{margin-bottom:8px;padding:10px 12px}
  aside .news{max-height:210px}
  /* the market: one card per stock, nothing wider than the screen */
@@ -435,10 +435,10 @@ body.guest .guest-cta{display:flex}
 <div class="stat"><small>Session <span id="sn"></span> ends in</small><span id="left">-</span></div>
 </div><div id="tape"><div class="tape-run"></div></div></header>
 <div id="session-banner"></div><div id="low-banner"></div><div id="learn-banner"></div>
-<main><section>
+<main><div class="card" id="guest-hero"><h2>Learn to read stock charts by trading a made-up market.</h2><p class="about" style="margin:0 0 10px">For beginners who want to practise before real money is involved. You trade with MB (memebucks): practice money with no cash value, so nothing real is at risk. Under this box the market runs live, around the clock.</p><div class="bar"><button class="buy" id="gh-daily">Play today's Daily Chart</button><span class="hint">Two minutes · no account needed</span><button id="gh-join">Create an account</button><button id="gh-login">Sign in</button><a href="/about">How it works</a></div></div>
+<section>
 <div class="tabs subnav" id="sub-pf"><a class="chip" href="/holdings" data-page="holdings">Holdings</a><a class="chip" href="/portfolio" data-page="portfolio">Overview</a><a class="chip" href="/history" data-page="history">History</a></div>
 <div class="tabs subnav" id="sub-me"><a class="chip" href="/profile" data-page="profile">Profile</a><a class="chip" href="/bots" data-page="bots">Bots</a></div>
-<div class="card" id="guest-hero"><h2>Meme Street</h2><p class="about" style="margin:0 0 10px">A made-up stock market that runs around the clock, with 180+ companies, news that moves prices and a daily leaderboard. You're watching it live. Make an account to trade with memebucks (MB), practice money with no cash value.</p><div class="bar"><button class="buy" id="gh-daily">Play today's Daily Chart</button><button id="gh-join">Create an account</button><button id="gh-login">Sign in</button><a href="/about">How it works</a></div></div>
 <div class="card" id="market-card"><div class="bar"><input id="q" type="search" placeholder="Ticker, name, industry or size" aria-label="Search stocks"><span class="mut" id="count"></span><select id="msort" aria-label="Sort the market"><option value="ticker:1">Sort: A to Z</option><option value="chg:-1">Biggest gainers</option><option value="chg:1">Biggest fallers</option><option value="price:-1">Price, high to low</option><option value="price:1">Price, low to high</option><option value="held:-1">My holdings first</option><option value="cap:-1">Largest companies first</option><option value="cap:1">Smallest companies first</option></select></div>
 <div id="secs-wrap"><div id="secs"></div><button class="chip" id="secs-toggle" aria-expanded="false"></button></div>
 <div class="ticket"><span class="lab">Buy size</span><span id="bchips"></span><span class="lab">Sell size</span><span id="schips"></span><span class="lab">or an amount</span><input class="amt-input" type="number" min="1" step="any" placeholder="MB to spend" aria-label="Amount in MB"></div>

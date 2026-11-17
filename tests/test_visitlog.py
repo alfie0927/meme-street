@@ -10,15 +10,15 @@ import visitlog  # noqa: E402
 TS = 1794571200.0          # 2026-11-13 12:00 UTC
 
 
-def hit(ip, uri, method="GET", ua="Mozilla/5.0", referer=None, ts=TS):
+def hit(ip, uri, method="GET", ua="Mozilla/5.0", referer=None, ts=TS, status=200):
     heads = {"User-Agent": [ua]}
     if referer:
         heads["Referer"] = [referer]
-    return json.dumps({"ts": ts, "request": {"client_ip": ip, "uri": uri, "method": method, "headers": heads}})
+    return json.dumps({"ts": ts, "status": status, "request": {"client_ip": ip, "uri": uri, "method": method, "headers": heads}})
 
 
 def visit(ip, first, **k):
-    return [hit(ip, first, **k), hit(ip, "/api/auth_mode")]
+    return [hit(ip, first, **k), hit(ip, "/api/auth_mode", ts=k.get("ts", TS))]
 
 
 class VisitLogTest(unittest.TestCase):
@@ -36,6 +36,25 @@ class VisitLogTest(unittest.TestCase):
         self.assertEqual((d["visitors"], d["instagram"], d["youtube"]), (5, 2, 2))
         self.assertEqual(d["did"]["youtube"], {"starts": 1, "signups": 1})
         self.assertEqual(d["did"]["instagram"], {"starts": 0, "signups": 0})
+
+    def test_the_weekly_funnel_per_source(self):
+        """`weekly` (2026-11-17), the rows of growth/weekly.md: per ISO week and source, visits, Dailies started and
+        finished, email requests and accounts that went through (a refusal answers 400), and visits that came back."""
+        day = 86400
+        hn = visit("1.1.1.0", "/daily", referer="https://news.ycombinator.com/")
+        lines = (hn + [hit("1.1.1.0", "/api/daily/start", "POST")] + [hit("1.1.1.0", "/api/daily/state?since=3")] * 120
+                 + [hit("1.1.1.0", "/api/daily/remind", "POST"), hit("1.1.1.0", "/api/daily/remind", "POST", status=400),
+                    hit("1.1.1.0", "/api/register", "POST", status=400), hit("1.1.1.0", "/api/register", "POST")]
+                 + visit("1.1.1.0", "/daily", ts=TS + day)                                    # back the next day
+                 + visit("2.2.2.0", "/daily?ref=dle_hunt") + [hit("2.2.2.0", "/api/daily/start", "POST")] + [hit("2.2.2.0", "/api/daily/state")] * 30
+                 + [hit("3.3.3.0", "/api/daily/start", "POST")] + [hit("3.3.3.0", "/api/daily/state")] * 120   # the reel pipeline: no page, no visit
+                 + visit("2.2.2.0", "/daily", ts=TS + 9 * day))                               # nine days on: not "back within 7"
+        w = visitlog.weekly(visitlog.count(lines))
+        self.assertEqual(w["2026-W46"]["news.ycombinator.com"], [1, 1, 1, 1, 1, 1])
+        self.assertEqual(w["2026-W46"]["dle_hunt"], [1, 1, 0, 0, 0, 0])
+        self.assertEqual(w["2026-W46"]["direct"], [1, 0, 0, 0, 0, 0])                         # the HN visitor's second day
+        self.assertEqual(sum(r[0] for r in w["2026-W46"].values()), 3)
+        self.assertEqual(w["2026-W47"], {"direct": [1, 0, 0, 0, 0, 0]})
 
 
 if __name__ == "__main__":
