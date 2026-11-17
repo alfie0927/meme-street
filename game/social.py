@@ -295,7 +295,7 @@ class SocialMixin:
             if not p or not self.ever_traded(p):
                 continue
             gain = r["equity"] - p.deposited
-            pnl.append({"name": r["name"], "token": r["token"], "pnl": gain, "bot": bool(p.hb),
+            pnl.append({"name": r["name"], "token": r["token"], "pnl": gain,
                         "ret": self.alltime_return(p, r["equity"])})
         pnl.sort(key=lambda x: -x["pnl"])
         ret = sorted(pnl, key=lambda x: -x["ret"])
@@ -305,18 +305,18 @@ class SocialMixin:
 
     def boards_for(self, p, top=20):
         """The boards as player `p` sees them; `p` None is a visitor without an account, who sees them with no place of
-        their own (growth plan, 2026-11-10). `bot` marks a house bot."""
+        their own (growth plan, 2026-11-10). House bots are not marked."""
         me = p.token if p is not None else None
         def trim(rows, keys):
             return [{"rank": i + 1, "me": r["token"] == me, **{k: r.get(k) for k in keys}}
                     for i, r in enumerate(rows[:top])]
         def day(rows):
-            return [{"rank": i + 1, "me": r["token"] == me, "name": r["name"], "bot": r.get("bot", False),
+            return [{"rank": i + 1, "me": r["token"] == me, "name": r["name"],
                      "ret": r["ret"], "gain": r.get("gain", 0.0), "equity": r["equity"]} for i, r in enumerate(rows[:top])]
         # four boards: today and all time, each by return (%) and by profit (MB)
         return {"season": day(self.board), "day_pnl": day(self.board_day_pnl),
-                "pnl": trim(self.boards["pnl"], ("name", "pnl", "ret", "bot")),
-                "ret": trim(self.boards.get("ret", []), ("name", "pnl", "ret", "bot")),
+                "pnl": trim(self.boards["pnl"], ("name", "pnl", "ret")),
+                "ret": trim(self.boards.get("ret", []), ("name", "pnl", "ret")),
                 "mine": {} if p is None else
                         {"season": self.rank.get(p.token), "day_pnl": self.rank_day_pnl.get(p.token),
                          "pnl": self.rank_pnl.get(p.token), "ret": self.rank_ret.get(p.token), "dd": p.maxdd},
@@ -354,7 +354,7 @@ class SocialMixin:
         if p is None:
             return None
         mine = viewer is not None and viewer.token == p.token
-        out = {"name": p.name, "public": p.public, "bot": bool(p.hb),
+        out = {"name": p.name, "public": p.public,
                "achievements": [{"id": a, "name": ACH_NAMES[a], "t": t}
                                 for a, t in sorted(p.achievements.items(), key=lambda kv: kv[1])],
                "followers": sum(1 for x in self.players.values() if p.name in x.following),
