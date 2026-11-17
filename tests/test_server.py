@@ -716,7 +716,8 @@ class ServerTests(unittest.TestCase):
             self.assertEqual((status, json.loads(body)["mine"]), (200, {}))
             self.assertNotIn(c.token, body)
             status, body, _ = http(self.srv, "/api/profile/MeShape")    # and a player's page, as any other player would
-            self.assertEqual((status, json.loads(body)["name"], json.loads(body)["bot"]), (200, "MeShape", False))
+            self.assertEqual((status, json.loads(body)["name"]), (200, "MeShape"))
+            self.assertNotIn("bot", json.loads(body))                    # (house bots are never marked)
         finally:
             c.close()
 

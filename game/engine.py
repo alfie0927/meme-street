@@ -3069,7 +3069,7 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
             e = self.equity(p)
             self._track_drawdown(p, e)
             row = {"name": p.name, "equity": e, "ret": self.season_return(p, e), "token": p.token,
-                   "gain": e - p.season_base, "bot": bool(p.hb)}       # (bot: a house bot, tagged on the boards, 2026-11-10)
+                   "gain": e - p.season_base}           # (no bot flag: house bots are never marked, the owner 2026-11-10)
             everyone.append(row)
             if self.traded_today(p):
                 rows.append(row)
