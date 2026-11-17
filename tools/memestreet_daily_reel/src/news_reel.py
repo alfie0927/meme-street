@@ -229,7 +229,7 @@ WHAT = ("VIRAL, REAL NEWS (the owner, 2026-11-12): one REALLY big real headline 
         "name as the first spoken word ('4 days. That's all it took to end ...'); then what happened, in order, one beat a line, every "
         "line shown; the market's move as the device itself changing size, with its figure; a question to the viewer near the middle "
         "(facts.news.viewer_question: sell or hold?), drawn as two big buttons; then the link: on Meme Street the companies are made up "
-        "and have bosses too, news moves their prices the same way, and you practise with 1,000 memebucks of practice money with no cash "
+        "and have bosses too, news moves their prices the same way, and you practise with 100,000 memebucks of practice money with no cash "
         "value (only what facts.meme_street says); then the sign-off scene. 35 to 60 seconds, 100 to 145 spoken words, every scene of "
         "kind \"free\" but the outro. \"type\" is \"Market news\". "
         "A clean picture (the critic held the first of these for it): every tag and name has its own lane and never sits on a figure, a "

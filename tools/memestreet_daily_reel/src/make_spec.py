@@ -90,7 +90,7 @@ CATEGORIES = {
                   "moment that proves it (for example one loss, then the urge to win it back). One stick figure may act it "
                   "out. Short lines, a pause-free build, the truth said plainly in the last scene before a short outro.",
     "Meme Street explained": "What Meme Street is and why someone learning to trade should join, told through your own device "
-                             "(never a feature list read out): a fictional market that never closes, 1,000 MB of practice money, "
+                             "(never a feature list read out): a fictional market that never closes, 100,000 MB of practice money, "
                              "real charts, lessons, the Daily Chart, fair prices. Only the facts in 'site'; pick the two or three "
                              "that make the strongest story and dramatise them. A new angle every time: read 'previous_explainers' "
                              "and take none of their angles, devices or titles.",
@@ -301,6 +301,155 @@ LESSON_KIND = {"candlesticks": "candle", "trends": "trend", "support-resistance"
                "reversal-patterns": "pattern", "continuation-patterns": "pattern", "moving-averages": "ma", "momentum": "rsi",   # the kind, for
                "fibonacci": "fib", "r-multiples": "rr", "stop-placement": "stop", "breakout-trading": "breakout",                 # the lessons
                "trend-following": "ma", "mean-reversion": "rsi"}                                                                # that have one
+# Fun and chart-free (the owner, 2026-11-16: "create more exciting and interesting reel formats, that do well in my niche. they
+# don't even need to involve graphs, as long as they're fun and enjoyable with a meaningful hook. strategy tests, market reels, lesson
+# question quizzes, and in depth lessons can sometimes all feel the same"; and "all i see currently are graph traces, showing
+# trendlines, asking if people would buy"). Seven formats with no chart, each a shape that travels in the niche (swipe.md: "every
+# financial scam explained" 67 to 80x, stick skits 75x, "every level of" 538x; tier lists, POV skits and would-you-rather games are
+# staples of short-form) and each fed real facts: a lesson of the site's own, or a sum worked out here (money_maths, bets).
+FUN_HOOK = (" THE HOOK: its own hook formula (e.g. Cost Confession, Negative Command, Nobody Tells You, The Statistic, Contrarian "
+            "Flip, Cold Open Demo, Mid-Sentence Start, Head To Head), with a character or an object a stranger knows, mid-action on "
+            "frame 0, and the stake in the first sentence. Never a chart, never 'would you buy (or sell, or hold) here?', never the "
+            "format's name as the opening. It is FUN first: a joke, a surprise or a reveal every few seconds, played straight; the "
+            "lesson lands because the viewer is still watching. No chart scene in this format.")
+FUN_EVIDENCE = [   # (swipe.md, Stick figures, 2026-11-05: each against its own account's median)
+    ["67x and 80x", "Every financial scam (or every money-laundering trick) explained: one trick acted out every few seconds."],
+    ["4.2M views", "A famous scam explained like you're 5, in crayon drawings."],
+    ["538x", "Your life at every level of a day trader: one scene per level, each a joke."],
+    ["75x", "A 15-second stick-figure skit with one punchline about a habit."],
+    ["152x", "How to actually quit it, explained by a stick figure: the habit, then the way out."]]
+LESSON_END = " The last line before the sign-off names the lesson: it is free to read on memestreet.net."
+CATEGORIES.update({
+    "Money maths": "NEW, NO CHART, one number that hurts: facts.maths is a sum our code worked out on a 100,000 MB account (its rows hold "
+                   "every number, exact), the kind beginners get wrong (a loss needs a bigger gain to win back; ten losses in a row; a "
+                   "fee on every trade; leverage; a 3x fund on a choppy week). The device makes the sum physical (a bucket that leaks "
+                   "faster than it fills, stairs down and a lift up, a stack of coins carried off a few at a time), the running number "
+                   "in the HUD. Open on the result as a dare or a confession; then the sum step by step, one row of facts.maths.rows a "
+                   "beat, said as written; then the rule that beats it (facts.maths.rule)." + LESSON_END + " Every number comes from "
+                   "facts.maths: none rounded another way, none invented." + FUN_HOOK,
+    "Would you rather": "NEW, NO CHART, a game the viewer plays: two choices with money on them (facts.bets: A and B, each a chance and "
+                        "amounts on a 100,000 MB account, worked out by our code), and the one that feels right is the one that loses. "
+                        "Scene 0 puts both on screen as two things of your device (two doors, two machines, two roads) and dares the "
+                        "viewer to pick and comment A or B; a short countdown. Then each is played over and over on screen "
+                        "(facts.bets.over_100_goes: what each makes on average in 100 goes), the counter racing; the twist lands. Then "
+                        "why in one plain line: the average each go (facts.bets.per_go, the expected value: say what that means in plain "
+                        "words), and the rule (facts.bets.rule)." + LESSON_END + " Every number comes from facts.bets, said as written." + FUN_HOOK,
+    "Red flags": "NEW, NO CHART, protecting the viewer: the red flags of one trap in the lesson (facts.lesson: a scam, a broker's trick, a "
+                 "bias, a promise too good to be true), counted as the con happens to a character on screen (a smooth 'guru', a "
+                 "too-good message, a group chat full of rockets). Each flag shoots up beside the thing that gives it away, with one "
+                 "line on why, from the lesson. Three to five flags, the biggest last, then the one rule that keeps the money safe. "
+                 "Hook formula: The Callout or Nobody Tells You. Nobody real is named: no real company, person, app or coin. Use only "
+                 "what the lesson says." + LESSON_END + FUN_HOOK,
+    "Tier list": "NEW, NO CHART, a tier list: four or five things of one kind from the lesson (order types, habits, ways to size a trade, "
+                 "styles, checks) dropped one by one onto an S to F board, each card landing in its row with a thud and one line on "
+                 "why, from the lesson; the one people love most lands lowest and is held to last ('Everyone puts this in S. It goes "
+                 "in D.'). Hook formula: Contrarian Flip, the board on frame 0 and the first card already falling. It ranks by what the "
+                 "lesson says each is good and bad for (and says for whom: 'for a beginner'), never by taste. Use only what the lesson "
+                 "says." + LESSON_END + FUN_HOOK,
+    "POV": "NEW, NO CHART, a first-person skit, 'POV: you...': the screen is the viewer's own view (their phone with a made-up trading app, "
+           "notifications, a group chat, thoughts as on-screen text, the clock jumping). One habit or trap from the lesson (FOMO, "
+           "revenge trading, the spread, a gap through a stop, a halted stock) happens to YOU, beat by beat, funny because it is true; "
+           "then a freeze frame: the thing named in plain words, the lesson's own reason it costs money, and the one habit that "
+           "stops it. Hook formula: Cold Open Demo, mid-action on frame 0. Amounts in MB; never a real app, broker or coin. Use only "
+           "what the lesson says." + LESSON_END + FUN_HOOK,
+    "Trader translator": "NEW, NO CHART, comedy: what traders say against what it really means. Three or four lines traders say ('I'm a "
+                         "long-term investor now', 'It's just a pullback', 'I'll set the stop later'), each said with confidence by a "
+                         "character, then a translator machine (or glitching subtitles) prints what it really means, deadpan, then one "
+                         "honest line from the lesson on why it costs money. The last line is one the viewer has said. Hook formula: "
+                         "Nobody Tells You, or a Cold Open with the first phrase already being translated. The joke is on the habit, "
+                         "never on a person. The honest lines use only what the lesson says." + LESSON_END + FUN_HOOK,
+    "Horror story": "NEW, NO CHART, a trading horror story told by torchlight: one made-up trader on a made-up Meme Street stock walks into "
+                    "the trap the lesson warns about (a margin call, a short squeeze, a gap through the stop, leverage that decays, an "
+                    "option running out), step by step, the account and the clock in the HUD, until the monster arrives as the "
+                    "lesson's mechanism shown literally. Spooky but kind and exact: every step happens the way the lesson says. Then "
+                    "the lights come on: the one rule that would have saved them. Hook formula: Mid-Sentence Start or Cost "
+                    "Confession ('He went to bed with 100,000 MB. He woke up to a margin call.'). Use only what the lesson says, in "
+                    "your own words; amounts sized to a 100,000 MB account." + LESSON_END + FUN_HOOK,
+})
+FUN = ("Money maths", "Would you rather", "Red flags", "Tier list", "POV", "Trader translator", "Horror story")
+LESSON_FORMATS.update({   # (a "unit/lesson" entry is that one lesson; the rest of the unit is left out)
+    "Red flags": ("real-life/scams", "real-markets/brokers", "beyond/crypto", "real-life/trading-vs-investing", "psychology/biases"),
+    "Tier list": ("orders/order-types", "risk/position-sizing", "risk/stop-placement", "strategies/styles", "strategies/investing-styles",
+                  "psychology/process", "plan/checklist", "derivatives/option-strategies"),
+    "POV": ("psychology/biases", "psychology/stopping", "psychology/journal", "basics/bid-ask", "basics/halts", "orders/costs",
+            "real-life/what-carries-over"),
+    "Trader translator": ("psychology/biases", "psychology/process", "plan/glossary", "basics/price-moves", "real-life/trading-vs-investing",
+                          "strategies/hold-market"),
+    "Horror story": ("shorting/margin-leverage", "shorting/squeezes", "shorting/leverage-maths", "orders/costs", "risk/risk-of-ruin",
+                     "derivatives/other-products", "derivatives/exercise", "risk/correlation")})
+for _k, _c in enumerate(FUN): ROTATION[("0600", "1300", "1800", "0300")[_k % 4]] += [_c]; ROTATION[("1200", "1800", "0600", "1300")[_k % 4]] += [_c]   # (each in two turns, like every new format)
+# At most one chart reel among a day's lighter reels (the owner, 2026-11-16): the rest come from CHARTLESS. The in-depth slots keep theirs.
+CHARTLESS = set(FUN) | {"Stock story", "Breaking news", "Market lesson", "Meme Street explained"}
+
+
+def unit_of(entry):
+    return entry.split("/")[0]
+
+
+# One-off reels (the owner, 2026-11-16: "there should be 'one off' reels that follow a completely different format, but only for one
+# reel. (if they do well compared to other reels, they can be made into a more consistent format). be creative with it, it can be
+# anything, so look at ALL reels in my niche"). One a day, in the 13:00 slot: the writer invents a format no reel has used (or takes an
+# untried seed of src/one_off_ideas.json, drawn from the niche's winners), names it and states it in a sentence. src/format_scores.py
+# scores each one as its own row ("One-off: <name>"); one that beats our median skip rate by PROMOTE_MARGIN points is promoted
+# (promote(): state/promoted_formats.json) and joins the rotation as a format of its own, judged like every other from then on.
+ONE_OFF, ONE_OFF_SLOT, PROMOTE_MARGIN = "One-off", "1300", 8
+ONE_OFF_SOURCES = ("lesson", "maths", "bets", "company")
+ONE_OFF_UNITS = ("basics", "charts", "indicators", "orders", "risk", "shorting", "derivatives", "strategies", "testing", "fundamentals",
+                 "macro", "beyond", "psychology", "real-markets", "real-life", "plan", "quant")   # (every unit but the three Expert ones)
+IDEAS = os.path.join(HERE, "one_off_ideas.json")
+PROMOTED = os.path.join(ROOT, "state", "promoted_formats.json")
+CATEGORIES[ONE_OFF] = (
+    "NEW, NO CHART, A ONE-OFF: a reel in a format this account has never made, made once. Invent the format: facts.formats_we_make and "
+    "facts.one_offs_so_far are taken, so make something that is neither (another genre, another kind of scene, another way to play with "
+    "the viewer: a documentary, a group chat, a courtroom, a game show, a recipe, a receipt...). facts.idea_bank holds seeds from the "
+    "niche's winners and some untested ones: take one, twist one, or invent your own. The format holds all the way through, not only in "
+    "the opening. The subject is in the facts (subject_kind: a lesson, a sum worked out by our code, two bets, or a company) and every "
+    "number and claim comes from them; when it is a lesson, the last line before the sign-off names it: it is free to read on "
+    "memestreet.net. Add to your JSON \"one_off\": {\"name\": \"the format's name, 2 to 4 words\", \"concept\": \"one or two sentences: what "
+    "happens in this format, so it can be made again with other facts\", \"idea\": \"the seed's id, or null\"}. If it beats our other reels "
+    "it becomes a regular format." + FUN_HOOK)
+
+
+def one_off_due(slot):
+    """Whether this slot makes the day's one-off: the 13:00 slot, first try only (a held slot's second try makes a regular format)."""
+    return slot[-4:] == ONE_OFF_SLOT and not int(os.environ.get("REEL_TRY") or 0)
+
+
+def promoted(path=None):
+    try: return json.load(open(path or PROMOTED, encoding="utf-8"))
+    except (OSError, ValueError): return {}
+
+
+PROMO = promoted()   # (the one-offs that won: formats of their own, in two turns each like every new format)
+for _n, _p in PROMO.items():
+    if _n in CATEGORIES: continue
+    CATEGORIES[_n] = (f"NEW, NO CHART, A ONE-OFF THAT WON, now a format ({_p.get('date')}: {_p.get('skip')}% skipped against our median "
+                      f"{_p.get('median')}%): {_p.get('concept')} Its winning reel: {_p.get('title')!r}, opening {_p.get('opening')!r}. Make "
+                      "it again with these new facts: the same shape, a new subject, a new device, new words." +
+                      (LESSON_END if _p.get("source") == "lesson" else "") + FUN_HOOK)
+    ROTATION["1800"] += [_n]; ROTATION["0300"] += [_n]; CHARTLESS.add(_n)
+CHARTLESS.add(ONE_OFF)
+
+
+def promote(rows, med, path=None, history=None, now=None):
+    """rows: the scoreboard's reels ({format, skip, ...}); med: the median skip of all reels. A one-off ("One-off: <name>") skipped
+    PROMOTE_MARGIN points less than the median becomes a format (written to `path`). Returns the names promoted now."""
+    path = path or PROMOTED; P = promoted(path)
+    if history is None: history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
+    made = {m["name"]: m for m in history.get("one_offs", []) if m.get("name")}
+    new = []
+    for r in rows:
+        f = r.get("format") or ""; n = f[len("One-off: "):] if f.startswith("One-off: ") else None
+        if n in made and n not in P and n not in CATEGORIES and med is not None and r.get("skip") is not None and r["skip"] <= med - PROMOTE_MARGIN:
+            m = made[n]
+            P[n] = {"concept": m.get("concept"), "source": m.get("source") or "lesson", "title": m.get("title"), "opening": m.get("opening"),
+                    "skip": r["skip"], "median": med, "date": time.strftime("%Y-%m-%d", time.gmtime(now))}
+            new.append(n)
+    if new:
+        os.makedirs(os.path.dirname(path), exist_ok=True); json.dump(P, open(path, "w", encoding="utf-8"), indent=1)
+    return new
+
+
 # The first 3 seconds, for every format (the owner, 2026-11-12: "use these for reel ideas/hooks/animations/generation"): the hook
 # checklist of github.com/ootto-ai/claude-virality-skill (commit 542ed54, MIT; its study of 262 reels, winners against flops frame by
 # frame), put in our terms, with our own numbers. Its "comment a keyword for a DM" rule is left out: nothing here sends DMs.
@@ -320,6 +469,9 @@ every line below, or you rewrite it before writing anything else:
 After the hook, every spoken line has its own change on screen: every line is shown, never only said.
 Rotate the angle from reel to reel: the result first; a contrarian claim; the pain first; something breaks on screen; a dare.
 "recent_devices" in the request shows the last openings: take a different angle from the last two.
+Never open on "would you buy (sell, hold) here?": that question opened too many reels (the owner, 2026-11-16).
+"hook_shape" in the facts is this reel's hook formula (the 26 formulas take turns): shape the first sentence on its template with this
+reel's own facts and your own words, and mind its trap. A format whose rules fix its opening (the Daily recap, a Loop) keeps its own.
 "openings_used" in the facts holds the first words of the last 40 reels: yours shares its first three words with none of them and is no
 near copy of one (a reel that opens like a recent one is sent back).
 """
@@ -523,14 +675,14 @@ def chart_summary(i, ch):
 
 SITE_FACTS = [   # (web/about.html, 2026-11-10: keep in step with it)
     "A free stock market game for learning to trade; nothing in it is real money and nothing is investment advice.",
-    "Every account starts with 1,000 MB (memebucks): practice money with no cash value, never paid out.",
+    "Every account starts with 100,000 MB (memebucks): practice money with no cash value, never paid out; MB are never sold.",
     "A fictional stock market that never closes: 180+ invented companies, indices and funds; every company, person and headline is made up.",
     "News moves prices: rumours, earnings, launches, lawsuits and the odd shock, about companies with their own bosses, products and rivals.",
     "Prices follow the stories, never the players: nobody's trade moves a price.",
     "Trade stocks, the MSI 50 index of the 50 biggest companies, sector funds, 2x and 3x products and tiny 'moonshots'; go long or short; limit, stop-loss and take-profit orders; calls and puts.",
     "Fair by design: simple tricks like buying every dip don't beat holding the market (checked by simulating many markets with dozens of strategies), so skill shows.",
-    "130 lessons in 21 units (charts, indicators, orders, risk, shorting, options, the economy, strategy testing, quant research, and three Expert units on the order book, volatility and position sizing), each a few minutes, plus chart tests on real game charts. A free account passes two lessons a day; Pro lifts that limit and Expert adds the Expert units.",
-    "A new leaderboard every day; ranks count returns, so buying MB can't buy a better rank.",
+    "157 lessons in 25 units (charts, indicators, orders, risk, shorting, options, the economy, strategy testing, probability, bond maths, portfolio theory, derivatives pricing, valuation, quant research, and three Expert units on the order book, volatility and position sizing), each a few minutes, plus chart tests on real game charts. A free account passes two lessons a day; Pro lifts that limit and Expert adds the Expert units.",
+    "A new leaderboard every day; ranks count returns, and MB can't be bought: the shop sells only the Pro and Expert passes.",
     "The Daily Chart: two minutes on the same mystery chart as everyone else, a new one each day, with streaks and a result to share.",
     "Every trade costs 0.1% of its size, like a broker's fee, so you learn to count costs; no hidden spread.",
     "Works on a phone; the live market can be watched without signing in.",
@@ -539,7 +691,7 @@ DAILY_FACTS = [   # (game/daily.py, 2026-11-10: keep in step with it)
     "One chart a day, the same for everyone; a new one at midnight UTC; each day has a number.",
     "One made-up stock with no name, made by the game's own price model: legs, ranges, breakouts, support and resistance, chart patterns.",
     "Start shows 60 candles at once, the lead-in, to read the levels from; then one new candle every second for 120 seconds: two minutes.",
-    "1,000 MB of paper money for the game, no fees; it never touches your real MB balance.",
+    "100,000 MB of paper money for the game, no fees; it never touches your real MB balance.",
     "Buy 25, 50, 75 or 100% of your cash; Sell 25, 50, 75 or 100% of your shares; selling with none opens a short (at most the account's worth); Buy covers a short.",
     "A trade is priced on the server at the candle showing when it arrives; the candles still to come never leave the server, so nobody can peek.",
     "At the end what you hold is valued at the last close; your score is your return.",
@@ -556,6 +708,9 @@ RSI_NOTE = ("A chart whose facts list panel_under_the_chart draws the RSI by its
             "numbers: say a reading only when the facts give it. On a chart without that strip, do not claim the chart shows the RSI.")
 
 
+HOOKS = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]   # (the ig-reel skill's 26 hook formulas)
+
+
 def lru(options, history, key, n=1):
     """The `n` options that went out longest ago (never used first, in the order given), noted in history[key]."""
     used = history.setdefault(key, [])
@@ -570,7 +725,7 @@ lesson_text = lambda d: [("## " + b["h"]) if b.get("h") else b.get("p") or "; ".
 def lesson(rng, history, tracks=LESSON_TRACKS):
     """One lesson of the site's curriculum as the facts: the one out longest ago, from the track of `tracks` out longest ago.
     With a real chart that shows it when a chart test of its kind exists (LESSON_KIND)."""
-    ids = [(t, x) for t in get("/api/learn")["tracks"] if t["id"] in tracks for x in t["lessons"]]; rng.shuffle(ids)
+    ids = [(t, x) for t in get("/api/learn")["tracks"] for x in t["lessons"] if t["id"] in tracks or t["id"] + "/" + x["id"] in tracks]; rng.shuffle(ids)
     if not ids: raise SystemExit(f"the site serves no lesson in {tracks}")   # (a unit not live yet: the slot is made again later)
     used = history.setdefault("lessons", [])
     ago = lambda hit: max((i for i, u in enumerate(used) if hit(u)), default=-1)
@@ -601,6 +756,76 @@ def indicator(rng, history):
             t["at_the_signal_candle"] = dict({"candle": t["buy_candle"] - 1}, **{x["name"]: x["values"][t["buy_candle"] - 1] for x in rows})
     facts["_subjects"] = [name]
     return facts, charts
+
+
+def lesson_facts(lid):
+    """A lesson of the site as {"title", "summary", "text"}: what a fun format names at its end and teaches from."""
+    d = get("/api/learn/lesson/" + lid)
+    return {"title": d["title"], "summary": d["summary"], "text": lesson_text(d)}
+
+
+ACCOUNT = 100000   # (every account starts here since 2026-11-15)
+
+
+def maths(topic, rng):
+    """One sum beginners get wrong, worked out exactly on a 100,000 MB account: {topic, rows, rule, lesson id}."""
+    f = lambda x: f"{x:,.0f} MB"
+    if topic == "recovery":
+        rows = [f"Lose {l}%: {f(ACCOUNT * (1 - l / 100))} left; to get back to {f(ACCOUNT)} it needs a gain of {100 / (1 - l / 100) - 100:.0f}%"
+                for l in (10, 25, 50, 75, 90)]
+        return {"topic": "a loss needs a bigger gain to win back", "rows": rows, "rule": "Small losses: cut them before they need a miracle.", "lesson": "risk/drawdown"}
+    if topic == "streak":
+        rows = [f"Risking {r}% of the account a trade, 10 losses in a row leave {f(ACCOUNT * (1 - r / 100) ** 10)} ({(1 - r / 100) ** 10 * 100:.0f}% of it)"
+                for r in (1, 2, 5, 10, 25)]
+        return {"topic": "ten losses in a row, at each size", "rows": rows, "rule": "Risk a small slice of the account a trade, so a bad run can't end it.", "lesson": "risk/position-sizing"}
+    if topic == "breakeven":
+        rows = [f"Win {w}x what you risk: you break even winning {100 / (1 + w):.0f}% of trades" for w in (0.5, 1, 2, 3)]
+        return {"topic": "how often you must win, by the size of wins against losses", "rows": rows,
+                "rule": "Your win rate means nothing without the size of your wins against your losses.", "lesson": "risk/r-multiples"}
+    if topic == "fees":
+        size, n = 10000, rng.choice((3, 5, 10))
+        rows = [f"A {f(size)} trade in and out pays 0.1% twice: {f(size * 0.002)}",
+                f"{n} round trips a day: {f(size * 0.002 * n)} a day", f"Over 250 trading days: {f(size * 0.002 * n * 250)}",
+                f"That is {size * 0.002 * n * 250 / ACCOUNT * 100:.0f}% of a {f(ACCOUNT)} account, before a single loss"]
+        return {"topic": "fees on every trade", "rows": rows, "rule": "Every trade must beat its costs first: trade less, and only your setups.", "lesson": "orders/costs"}
+    if topic == "leverage":
+        rows = [f"{x}x leverage: a {100 / x:.0f}% move against you wipes out the whole deposit" for x in (2, 5, 10, 20)]
+        return {"topic": "how far a price can move before leverage wipes you out", "rows": rows,
+                "rule": "Leverage shrinks how wrong you can be: size it so a normal move can't end the trade.", "lesson": "shorting/leverage-maths"}
+    up = lambda x, k: (1 + x) * (1 - x) if k == 1 else (1 + 3 * x) * (1 - 3 * x)   # (decay: a choppy week, up then down)
+    rows = [f"The stock goes up 10%, then down 10%, five times: it ends at {up(0.1, 1) ** 5 * 100:.1f}% of where it began",
+            f"A 3x fund on the same days goes up 30%, then down 30%: it ends at {up(0.1, 3) ** 5 * 100:.1f}%",
+            f"On {f(ACCOUNT)}: {f(ACCOUNT * up(0.1, 1) ** 5)} held plainly, {f(ACCOUNT * up(0.1, 3) ** 5)} in the 3x fund"]
+    return {"topic": "a 3x fund on a choppy week", "rows": rows, "rule": "Leveraged funds are for a day's view, not for holding through chop.", "lesson": "derivatives/other-products"}
+
+
+def money_maths(rng, history):
+    m = maths(lru(["recovery", "streak", "breakeven", "fees", "leverage", "decay"], history, "maths")[0], rng)
+    return {"maths": {k: v for k, v in m.items() if k != "lesson"}, "lesson": lesson_facts(m["lesson"].split("/")[1]), "_subjects": [m["topic"]]}
+
+
+def bet(kind, rng):
+    """Two choices where the comfortable one loses on average: {a, b, per_go, over_100_goes, rule, lesson id}."""
+    if kind == "win rate":
+        wa = rng.choice((400, 500, 600, 800)); la = round(wa * 4 * rng.choice((1.2, 1.4, 1.6)) / 100) * 100   # (80%: break-even at 4x)
+        lb = rng.choice((500, 1000)); wb = lb * rng.choice((2.5, 3, 4))
+        a = {"chance_to_win": "80%", "win": wa, "loss": la, "per_go": 0.8 * wa - 0.2 * la}
+        b = {"chance_to_win": "35%", "win": wb, "loss": lb, "per_go": 0.35 * wb - 0.65 * lb}
+        rule, lid, what = "A high win rate can still lose: weigh the size of the losses.", "risk/expectancy", "trade A wins 80% of the time, trade B 35%"
+    else:
+        sure = rng.choice((3000, 5000, 8000)); big = round(sure * rng.choice((2.4, 2.8, 3.2)) / 1000) * 1000
+        a = {"what": f"take a sure loss of {sure:,} MB now", "per_go": -sure}
+        b = {"what": f"hold on: a 50% chance of losing nothing, a 50% chance of losing {big:,} MB", "per_go": -0.5 * big}
+        rule, lid, what = "Cut a loser at your plan; hoping it comes back costs more on average.", "psychology/biases", "a sure loss now, or a gamble to avoid it"
+    for x in (a, b): x["per_go"] = round(x["per_go"])
+    return {"choices": what, "A": a, "B": b, "per_go": {"A": a["per_go"], "B": b["per_go"]},
+            "over_100_goes": {"A": a["per_go"] * 100, "B": b["per_go"] * 100}, "better": "A" if a["per_go"] > b["per_go"] else "B", "rule": rule}, lid
+
+
+def bets(rng, history):
+    b, lid = bet(lru(["win rate", "sure loss"], history, "bets")[0], rng)
+    return {"bets": b, "note": "Amounts in MB on a 100,000 MB account; per_go is the average each time (the expected value).",
+            "lesson": lesson_facts(lid.split("/")[1]), "_subjects": [b["choices"]]}
 
 
 LEARN = os.environ.get("LEARN_FILES", os.path.join(os.path.dirname(PACK), "learn-*.md"))   # (the site's lessons, answers included: content/learn-*.md)
@@ -666,6 +891,22 @@ def gather(category, rng, history, company=None):
                  "live_candles": len(C) - H, "stock_change_pct": round((C[-1][3] / C[H - 1][3] - 1) * 100, 2)}}
         facts["charts"] = [chart_summary(0, charts[0])]
         return facts, charts
+    if category == ONE_OFF or category in PROMO:           # (a one-off's subject, in turn; a promoted one keeps its kind)
+        src = PROMO[category].get("source", "lesson") if category in PROMO else lru(list(ONE_OFF_SOURCES), history, "one_off_sources")[0]
+        if src == "maths": facts = money_maths(rng, history)
+        elif src == "bets": facts = bets(rng, history)
+        elif src == "company": facts = gather("Stock story", rng, history)[0]
+        else: facts = lesson(rng, history, ONE_OFF_UNITS)[0]; facts.pop("about_the_rsi", None)
+        facts["subject_kind"] = src
+        if category == ONE_OFF:
+            made = history.get("one_offs", []); tried = {m.get("idea") for m in made}
+            ideas = [i for i in json.load(open(IDEAS, encoding="utf-8"))["ideas"] if i["id"] not in tried]; rng.shuffle(ideas)
+            facts.update(formats_we_make=sorted(c for c in CATEGORIES if c != ONE_OFF), idea_bank=ideas[:8],
+                         one_offs_so_far=[{"name": m.get("name"), "concept": m.get("concept")} for m in made][-40:])
+        facts["charts"] = []
+        return facts, []
+    if category in ("Money maths", "Would you rather"):     # (worked out here, no chart: the owner, 2026-11-16)
+        return dict((money_maths if category == "Money maths" else bets)(rng, history), charts=[]), []
     if category in DEEP or category in LESSON_FORMATS:
         if category == "Indicator":
             facts, charts = indicator(rng, history)
@@ -678,6 +919,7 @@ def gather(category, rng, history, company=None):
             facts["_subjects"] = [facts["strategy"]]
         else:
             facts, charts = lesson(rng, history, LESSON_FORMATS[category])
+            if category in FUN: charts = []; facts.pop("about_the_rsi", None)   # (a fun format never shows a chart)
         facts["charts"] = [chart_summary(i, c) for i, c in enumerate(charts)]
         return facts, charts
     if category in ("Stock story", "Chart breakdown", "Breaking news"):
@@ -825,9 +1067,15 @@ Geometry (1080 x 1920; Instagram covers y < 230, y > 1440 and the right 230 px o
 your HUD y 380-500 (a free scene has no head); the world y 520-1290 (when the scene has a chart it fills that band, so draw on
 the chart's own pixels or in its margins, never below y 1260); the punch headline at y 1270-1325 (api.punch draws it: keep that band
 clear); the transcript captions at y 1384-1440 (the template draws every spoken word there, in every scene); nothing below 1440. Every text you draw is 26 px or more (34+ for anything that matters); the renderer rejects smaller.
-Nothing you draw may cover words: the dry run rejects text over other text and a stick figure's head over any text (a speech
-bubble goes beside or above the head, never on the face; keep figures, rings and arrows clear of every tag, the chart's own
-label and price tag included). A number, a result or a verdict in your HUD appears on the word that says it, never before:
+Nothing you draw overlaps anything else (the owner, 2026-11-16: creative animation, and no overlaps, ever). The dry run rejects
+text over other text, a stick figure's head over any text, a figure over another figure or a prop, a prop over a prop or over
+text, and text cut off at the frame's edge: give every figure, prop, tag and ring its own room (20 px or more between them, all
+inside x 40 to 1040), move a queue or a crowd so no body crosses another, and when two things must meet (a hit, a handover,
+a bouncer turning someone away) they touch for a moment and part. A speech bubble goes beside or above the head, never on the
+face; figures, rings and arrows stay clear of every tag, the chart's own label and price tag included. Every figure, prop or
+object you draw by hand sits in its own <g class="obj"> (api.fig and api.prop2d mark theirs): the dry run treats each as solid
+and rejects any two that overlap and any one under text; a group with no class is scenery (ground, sky, a wall, a glow) and may
+sit under anything. A reel that draws shapes and marks nothing is sent back. A number, a result or a verdict in your HUD appears on the word that says it, never before:
 gate it with api.at(s, "the words") or the cue's time. A screen that runs ahead of its voice is the critic's most common reason to hold a reel.
 Palette: the reel's own two or three colours on a dark background: "tok": {"css": "body{background:#...!important}"} once,
 then your colours in the svg. The brand header stays readable.
@@ -1077,6 +1325,13 @@ def check(spec, facts, charts, category=None):
     free = bool(spec.get("scene_js"))                     # a director reel (every reel since 2026-11-09)
     nk = lambda w: re.sub(r"[^a-z0-9%$.]", "", str(w).lower())
     dev = spec.get("device") if isinstance(spec.get("device"), dict) else {}
+    if category == ONE_OFF:                                # (a one-off states its format, and it is a new one)
+        o = spec.get("one_off") if isinstance(spec.get("one_off"), dict) else {}; nm = str(o.get("name") or "").strip()
+        taken = {c.lower() for c in facts.get("formats_we_make", [])} | {str(m.get("name") or "").lower() for m in facts.get("one_offs_so_far", [])}
+        if not 2 <= len(nm.split()) <= 4 or not str(o.get("concept") or "").strip():
+            errs.append('a one-off needs "one_off": {"name": "2 to 4 words", "concept": "one or two sentences", "idea": "a seed id or null"}')
+        elif nm.lower() in taken:
+            errs.append(f"the one-off's format {nm!r} has been made before: invent a format of its own")
     if not free or not dev.get("metaphor"):
         errs.append('a director reel (the owner, 2026-11-09): send "device" {metaphor, opening, palette, hud} in the JSON and ONE ```js block after '
                     'it holding the scene function ({t, T, s, i, R, api}) => html (see DIRECTOR REELS)')
@@ -1084,6 +1339,8 @@ def check(spec, facts, charts, category=None):
     body = re.sub(r"^\s*(//[^\n]*\n\s*)*", "", js)          # (a comment may open the block, as the seeds do)
     if js and not (body.startswith("(") and "=>" in js): errs.append("the scene function is one arrow function expression: ({t, T, s, i, R, api}) => { ... }")
     if re.search(r"Math\.random|new Date|\bdocument\.|\bwindow\.", js): errs.append("the scene function is pure: no Math.random, Date, document or window")
+    if js and re.search(r"<(?:circle|rect|ellipse|polygon|path)\b", js) and not re.search(r"class=\\?.obj\b|api\.fig\(|api\.prop2d\(", js):   # (the owner, 2026-11-16: nothing overlaps; the dry run can only check what is marked)
+        errs.append('mark every figure, prop or object you draw by hand with its own <g class="obj"> (or draw it with api.fig / api.prop2d): the dry run treats each as solid and rejects overlaps; unmarked groups are scenery')
     for k, s_ in enumerate(sc):
         if s_.get("kind") == "free":
             tx = str(s_.get("text") or "").split()
@@ -1422,7 +1679,7 @@ def system_prompt(category):
     """The writer's standing instructions, always the current rules (a rewrite rebuilds them: a brief saved before a rule
     changed must not hold the writer to the old one)."""
     voice = open(os.path.join(ROOT, "voice.md"), encoding="utf-8").read()      # (a copy of ~/.claude/instagram/voice.md)
-    hooks = json.load(open(os.path.join(HERE, "ig", "hooks.json"), encoding="utf-8"))["hooks"]
+    hooks = HOOKS
     rb = os.path.join(ROOT, "RULEBOOK.md")              # (the owner's rulebook: highest priority, read before every reel)
     book = ("THE OWNER'S RULEBOOK. These rules override everything below; follow every one:\n" +
             open(rb, encoding="utf-8").read() + "\n\n") if os.path.exists(rb) else ""
@@ -1465,11 +1722,12 @@ def turn(slot, every, units=None):
     A lesson format waits until the site has one of its units (`units`: the live ones), so the reel code may go out before the
     site's lessons do and the format joins the cycle by itself."""
     units = live_units() if units is None else units
-    return [c for c in every if (c in DEEP) == (slot[-4:] in DEEP_SLOTS) and (units is None or c not in LESSON_FORMATS or units & set(LESSON_FORMATS[c]))]
+    return [c for c in every if (c in DEEP) == (slot[-4:] in DEEP_SLOTS) and (units is None or c not in LESSON_FORMATS or units & {unit_of(u) for u in LESSON_FORMATS[c]})]
 
 
-def recent_formats(n=40):
-    """The formats of the last `n` reels that passed the critic (posted or waiting to post), oldest first."""
+def recent_formats(n=80):
+    """The formats of the last `n` reels that passed the critic (posted or waiting to post), oldest first. 80 since 2026-11-16: with 40, a
+    format made 41 reels ago looked as new as one never made, and the new formats waited behind it."""
     q, out = os.path.join(ROOT, "queue"), []
     for x in sorted(os.listdir(q))[-80:] if os.path.isdir(q) else []:
         sp = os.path.join(ROOT, "work", "auto-" + x, "spec.json")
@@ -1495,10 +1753,13 @@ def brief(slot, category=None, remake=None):
     rng = random.Random(slot + os.environ.get("REEL_TRY", ""))   # (a held slot's second try gets another format)
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
     if not category and explainer(slot): category, remake = explainer(slot), None   # (an explainer day: it takes the slot's remake too)
+    if not category and one_off_due(slot): category = ONE_OFF   # (one a day: the owner, 2026-11-16)
     if not category:                                     # (the format of this slot's turn that went out longest ago, so every
         last = recent_formats()                          #  format keeps coming round: the owner, 2026-11-12, "only quiz reels")
         used = formats_on(slot[:10], slot)               # (one reel of each format a day: the owner, 2026-11-12)
         every = turn(slot, [c for cs in ROTATION.values() for c in cs])   # (one cycle through the slot's formats, the in-depth ones at 09:00 and 21:00: the owner, 2026-11-12 evening
+        if used - CHARTLESS - set(DEEP) and slot[-4:] not in DEEP_SLOTS:   # (one chart reel a day among the lighter ones: the owner, 2026-11-16)
+            every = [c for c in every if c in CHARTLESS] or every
         category = choose(every, every, used, last, verdicts(),           #  and 2026-11-15; five reels a day; ROTATION only lists the formats)
                           rng, int(os.environ.get("REEL_TRY") or 0))   # (Instagram's numbers steer it, each kind among its own: the owner, 2026-11-12)
     if remake and {"Chart quiz": "Chart quiz", "Stock story": "Stock story", "Technicals": "Technical lesson",
@@ -1522,6 +1783,8 @@ def brief(slot, category=None, remake=None):
     history.setdefault("subjects", []).extend(facts.pop("_subjects", [])); del history["subjects"][:-100]
     facts["recent_devices"] = [d for d in history.get("devices", []) if isinstance(d, dict)][-30:]   # (every reel invents its own device: the owner, 2026-11-09)
     facts["openings_used"] = history.get("openings", [])[-40:]   # (and its own opening: the owner, 2026-11-15; check() refuses a repeat)
+    h = next(h for h in HOOKS if h["name"] == lru([h["name"] for h in HOOKS], history, "hook_shapes")[0])   # (the 26 formulas in turn, so the openings vary: the owner, 2026-11-16)
+    facts["hook_shape"] = {k: h[k] for k in ("name", "template", "on_screen", "best_for", "trap")}
     notes = os.path.join(ROOT, "exemplar", "NOTES.md")
     ask = {"category": category, "what_this_reel_is": CATEGORIES[category], "facts": facts,
            "recent_titles_to_avoid": history.get("titles", [])[-20:],
@@ -1530,7 +1793,7 @@ def brief(slot, category=None, remake=None):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research of November 2026: swipe.md). Use the SHAPE, never the words: write an "
                                          "original line about this reel's own facts.",
-                                 "examples": DEEP_EVIDENCE if category in DEEP or category in LESSON_FORMATS else   # (the study of 2026-11-15)
+                                 "examples": FUN_EVIDENCE if category in FUN or category == ONE_OFF or category in PROMO else DEEP_EVIDENCE if category in DEEP or category in LESSON_FORMATS else   # (the study of 2026-11-15)
                                  STICK_EVIDENCE if "STICK" in CATEGORIES[category] else
                                  SHORT_EVIDENCE if category in LENGTH else VIRAL_EVIDENCE}
         ev = os.path.join(ROOT, "state", "evidence.json")      # this week's outliers (src/research.py), shapes only
@@ -1758,6 +2021,9 @@ def save(spec, B, work, again=False):
     if not again and B["category"] in EXPLAINERS:           # (the next explainer of its kind reads these and takes a new angle)
         history.setdefault("explainers", []).append({"category": B["category"], "title": spec["title"], "device": (spec.get("device") or {}).get("metaphor"),
                                                      "lines": [x.get("vo", "") for x in spec["scenes"]][:3]})
+    if not again and B["category"] == ONE_OFF and isinstance(spec.get("one_off"), dict):   # (the next one-off reads these and makes another)
+        history.setdefault("one_offs", []).append(dict(spec["one_off"], source=B["ask"]["facts"].get("subject_kind"), slot=os.path.basename(work),
+                                                       title=spec["title"], opening=(spec["scenes"] or [{}])[0].get("vo")))
     if spec.get("scene_js"): open(os.path.join(work, "scene.js"), "w", encoding="utf-8").write(spec["scene_js"])   # (for humans: the reel's own picture)
     os.makedirs(os.path.dirname(HISTORY), exist_ok=True)
     json.dump(history, open(HISTORY, "w"))
@@ -1850,7 +2116,31 @@ if __name__ == "__main__":
         files = glob.glob(os.path.join(ROOT, "..", "..", "content", "learn-*.md"))   # (on the owner's PC, the repo's lessons: every unit and lesson named here exists)
         heads = re.findall(r"(?m)^(##?) .*?\{([a-z0-9-]+)\}", "\n".join(open(f, encoding="utf-8").read() for f in files))
         units, lids = {i for h, i in heads if h == "#"}, {i for h, i in heads if h == "##"}
-        assert not files or all(t in units for ts in LESSON_FORMATS.values() for t in ts), "a lesson format names a unit the repo's lessons do not have"
+        assert not files or all(unit_of(t) in units and ("/" not in t or t.split("/")[1] in lids) for ts in LESSON_FORMATS.values() for t in ts), "a lesson format names a unit or lesson the repo's lessons do not have"
+        # one-off reels (the owner, 2026-11-16): one a day at 13:00, a new format each, and a winner becomes a format
+        assert one_off_due("2026-11-16T1300") and not one_off_due("2026-11-16T1800") and ONE_OFF not in ev and ONE_OFF in CHARTLESS
+        I = json.load(open(IDEAS, encoding="utf-8"))["ideas"]; assert len(I) >= 20 and len({i["id"] for i in I}) == len(I) and all(i["shape"] and i["evidence"] for i in I)
+        of = {"formats_we_make": ["Stock story"], "one_offs_so_far": [{"name": "Trader Courtroom"}]}
+        oe = lambda o: [e for e in check(dict(fr, one_off=o), of, [], ONE_OFF) if "one-off" in e]
+        assert oe(None) and oe({"name": "Trader courtroom", "concept": "x"}) and oe({"name": "Stock Story", "concept": "x"}) and not oe({"name": "The Group Chat", "concept": "A chat scrolls."})
+        pf = os.path.join(tempfile.mkdtemp(), "p.json"); hh = {"one_offs": [{"name": "The Group Chat", "concept": "A chat scrolls.", "source": "bets", "title": "T", "opening": "o"}]}
+        rows_ = [{"format": "One-off: The Group Chat", "skip": 39.0}, {"format": "One-off: Nope", "skip": 10.0}, {"format": "Chart quiz", "skip": 20.0}]
+        assert promote(rows_, 48.0, pf, hh) == ["The Group Chat"] and promoted(pf)["The Group Chat"]["source"] == "bets" and promote(rows_, 48.0, pf, hh) == []
+        assert promote([{"format": "One-off: The Group Chat", "skip": 41.0}], 48.0, os.path.join(tempfile.mkdtemp(), "q.json"), hh) == []   # (7 points better is not enough)
+        assert len({h["name"] for h in HOOKS}) == 26 and "hook_shape" in FIRST3 and all(h.get("trap") for h in HOOKS)
+        ob = lambda js: [e for e in check(dict(fr, scene_js=js), {}, [], "One trick") if "class=\"obj\"" in e]
+        assert ob("({t,s,api}) => '<svg><circle cx=\"1\" cy=\"1\" r=\"9\"/></svg>'") and not ob("({t,s,api}) => '<svg><g class=\"obj\"><circle r=\"9\"/></g></svg>'") and not ob("({t,s,api}) => '<svg>' + api.fig({pose:\"stand\"}, t) + '</svg>'") and not ob("({t,s,api}) => '<svg><text>hi</text></svg>'")
+        # the fun formats (the owner, 2026-11-16): no chart, two turns each, real sums, one chart reel a day among the lighter ones
+        assert all(c in CATEGORIES and "NO CHART" in CATEGORIES[c] and sum(c in cs for cs in ROTATION.values()) == 2 and c in turn("2026-11-16T1300", ev) for c in FUN)
+        assert all(not ({"Would you rather", "Money maths", c} & set(DEEP)) for c in FUN) and "would you buy" in FIRST3
+        Rf = random.Random(3)
+        for t in ("recovery", "streak", "breakeven", "fees", "leverage", "decay"):
+            m = maths(t, Rf); assert m["rows"] and m["rule"] and (not files or m["lesson"].split("/")[1] in lids), t
+        assert "needs a gain of 100%" in maths("recovery", Rf)["rows"][2] and "34,868 MB" in maths("streak", Rf)["rows"][3]
+        assert "break even winning 33%" in maths("breakeven", Rf)["rows"][2] and "10% move" in maths("leverage", Rf)["rows"][2]
+        for k in ("win rate", "sure loss"):
+            for _ in range(20):
+                b, lid = bet(k, Rf); w = "B" if k == "win rate" else "A"; assert b["better"] == w and b["per_go"][w] == max(b["per_go"].values()) and b["per_go"]["A"] != b["per_go"]["B"] and (not files or lid.split("/")[1] in lids), (k, b)
         assert all(r in backtest.TESTS and (not files or l in lids) and (d is None or backtest.drawn(d, cz)) for _, l, r, d in INDICATORS.values())
         assert not check(dict(fr, scene_js=None), {}, [], "One trick") == [] and any("director reel" in e for e in check(dict(fr, scene_js=None), {}, [], "One trick"))
         assert "- Total spoken words" not in RULES and "- Length: 35 to 60" in RULES and "- Plain words" in RULES

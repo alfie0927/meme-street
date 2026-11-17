@@ -60,6 +60,8 @@ def main():
         rows[mid] = {"format": cat or rows[mid]["format"], "posted": p["timestamp"][:16], "title": (tl or {}).get("title") or rows.get(mid, {}).get("title"),
                      "skip": round(i["reels_skip_rate"], 1), "views": i["views"], "watch_s": round((i.get("ig_reels_avg_watch_time") or 0) / 1000, 1)}
     b = board(list(rows.values()), {c for cs in ROTATION.values() for c in cs})
+    from make_spec import promote                           # (a one-off that beat the median by 8 points becomes a format)
+    for n in promote(list(rows.values()), b["median_skip"]): print("a one-off became a format:", n)
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump({"pulled": time.strftime("%F %T UTC", time.gmtime()), **b, "rows": rows}, open(OUT + ".tmp", "w", encoding="utf-8"), indent=1, ensure_ascii=False)
     os.replace(OUT + ".tmp", OUT)                           # (whole or not at all: brief() reads it)

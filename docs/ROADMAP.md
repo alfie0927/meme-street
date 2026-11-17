@@ -89,7 +89,7 @@ a frame for itch.io (`/embed/daily`), the visit log, six comparison pages at `/v
 | The market | Drift, regimes, trends in legs, ranges and breakouts, support and resistance of many kinds, volume that confirms, ten named chart patterns, volatility clustering and fat tails, sessions, IPOs and takeovers; 157 companies in 30 sectors (193 listings with the indices and funds), 72 house bots; realism and no-free-money checks | P15, P10, P8, P9, P12, P13, the MARKET_REALISM list |
 | Charts and trading | Five chart types, 49 indicators, 16 drawing tools saved on the server, trades and orders on the chart, 2,000 candles a timeframe; limit, stop, trailing and bracket orders; options (buy-only), leverage to 10x (Pro), bots and single-ticker backtests (Expert) | TA-B5, TA-B7, TA-B8, TA-B10, TA-B11, TA-B12, T14, T15, U1 to U7 |
 | The Daily Chart | A numbered mystery chart a day, the same for everyone, no account needed; streaks, stats, a result grid, sharing as text, picture and challenge link; a next step on the result card; the reminder email; framed for other sites | TA-D2, TA-D3, TA-D6, TA-D7, TA-D8, TA-D12, browser notifications |
-| Learning | A path of **127 lessons in 20 units** (*Start here* removed 15 Nov; *Market basics* is the open first unit; 3 Expert units; the 21st is *Quant research*, 16 lessons, 15 Nov): placement first, lessons as runs of cards, exercises, XP, levels, a streak, a daily goal, review, leagues; a free tier of two lessons a day; eleven kinds of chart test; public lesson pages | The Learn loop's 7 failing checks, power-ups, the rest of LP15 |
+| Learning | A path of **157 lessons in 25 units** (*Start here* removed 15 Nov; *Market basics* is the open first unit; 3 Expert units; *Quant research*, 16 lessons, 15 Nov; five textbook units, 30 lessons, 16 Nov: *Probability for traders* (from the MIT Sloan *Quant Bible*), *Bond maths*, *Portfolio theory*, *How derivatives are priced*, *Valuing a company*): placement first, lessons as runs of cards, exercises, XP, levels, a streak, a daily goal, review, leagues; a free tier of two lessons a day; eleven kinds of chart test; public lesson pages | The Learn loop's 7 failing checks, power-ups, the rest of LP15 |
 | Found by people | The daily SEO routine (Search Console verified), public lessons, calculators, comparison pages, `/llms.txt`, IndexNow, tracking links, the visit log | Bing, SEO backlog 4, 8, 9, 10, 12, 13; every send in section 4 |
 | Community | Four leaderboards open to visitors; chat with moderation, follows, public profiles; badges | S1 to S4, TA-D7 |
 | Money | 100,000 MB start (2026-11-15), MB by source, Pro and Expert monthly or yearly (MB packs removed 15 Nov), the New Launch Deal (a half-price first month), refunds, spending limits, one free restart for older accounts (no recurring restart since 15 Nov), invite links | M11, M12, M13, M4, M8, M9, B5, B6 |
@@ -106,10 +106,11 @@ critic (two rounds, one rewrite) and queues it; approved reels post on time by t
 **director reel**: its own device, palette and scene code, a punch headline, captions for every word. The Daily Chart
 reel is made after 23:00 from the day's real chart and retried through the night.
 
-- **Formats in rotation (22):** in-depth (09:00 and 21:00): Technical lesson, Strategy test, Quant lesson, Indicator;
+- **Formats in rotation (29):** in-depth (09:00 and 21:00): Technical lesson, Strategy test, Quant lesson, Indicator;
   the rest: Stock story, Trading mistake, Expectation vs reality, Trade diary, Chart quiz, Chart breakdown, Breaking
   news, Instant replay, Chart twist, Hard truth, Big players, Guess the move, Trader levels, Stick skit, Rewind, Two
-  traders, Candles talk, Market lesson (and the short Loop). Plus the Daily recap, and an
+  traders, Candles talk, Market lesson, and the chart-free Money maths, Would you rather, Red flags, Tier list, POV,
+  Trader translator, Horror story (and the short Loop). Plus the Daily recap, and an
   explainer at 18:00 every third day (Meme Street explained, Daily Chart explained, in turn).
 - **Instagram's numbers steer it** (`src/format_scores.py`, twice a day): a format with three or more scored reels is
   cut when its median skip rate is 8 points worse than all reels' and made daily when 8 points better; at least nine
@@ -125,6 +126,31 @@ reel is made after 23:00 from the day's real chart and retried through the night
   stochastic, ATR); six more tests, two of them demonstrations of overfitting and of luck on the game's own candles;
   a reel whose opening starts like one of the last 40 is sent back. Quant lesson joins the cycle by itself on the
   first slot after the unit is live on the site.
+- **New on 16 November** (you: "create more exciting and interesting reel formats... they don't even need to involve
+  graphs, as long as they're fun and enjoyable with a meaningful hook"; RL16): seven chart-free formats, each fed real
+  facts: **Money maths** and **Would you rather** (sums worked out in code on a 100,000 MB account: what a loss needs to
+  win back, a losing streak at each size, the break-even win rate, fees, leverage, a 3x fund on a choppy week; two
+  bets where the comfortable one loses on average), **Red flags**, **Tier list**, **POV**, **Trader translator** and
+  **Horror story** (each from chosen site lessons: scams, biases, order types, margin calls, squeezes...). Of a day's
+  three lighter reels at most one shows a chart; no reel opens on "would you buy here?". The writer's site facts now
+  say 100,000 MB, MB not sold, 127 lessons in 20 units.
+- **One-off reels (16 November**, you: "'one off' reels that follow a completely different format, but only for one reel.
+  if they do well... they can be made into a more consistent format"; RL17): the 13:00 reel is a format invented for that
+  reel alone, seeded by `src/one_off_ideas.json` (26 shapes from the niche's winners and some untested ones). Each one-off
+  is scored as its own row on the scoreboard; one that beats the median skip rate by 8 points is promoted into the rotation
+  by `promote()` (`state/promoted_formats.json`).
+- **Nothing overlaps, and a hook formula in turn (16 November**, you: "remember, creative animation with no overlaps or
+  anything. use all the reels skills you have to make the reels better"; RL18): the pre-voice dry run now rejects a figure
+  over a figure or a prop, a prop over a prop or text, a hand-drawn object (`<g class="obj">`) over anything, and text cut
+  off at an edge; the critic blocks an overlap instead of noting it; each reel takes one of the ig-reel skill's 26 hook
+  formulas in turn (`hook_shape`). The other reel skills (virality's checklist, the hook scorer, the caption lint, the slop
+  list) were already in the writer's checks.
+- **The plateau read (17 November**, you: "constantly check the instagram stats to see what reel does well, and why...
+  what about the hook was so interesting? what kept people watching?", "i want to get out of the 100-200 view plateau";
+  RL12, RL19): the daily analysis now answers hook and body separately, carries each reel's beats and hook formula, reads
+  the account (followers against strangers reached) and names the breakouts and what they shared, at the top of what the
+  writer reads. The first read: every view is a stranger's (8 follower reaches in 29 days against 12,192), views stop
+  after day one, and the six reels that left the plateau held 64% or more past 3 seconds with 30% or more watched.
 - **Two copies of the code, becoming one (RL1, 12 November).** The server ran the 12 November work; the repo held
   that and the reach plan's reel changes (A2 to A5, A8 to A10, the Loop format), which were **not** on the server. A
   file-by-file comparison found nothing on the server that the repo lacks, so the repo's reel folder is committed and
@@ -317,6 +343,10 @@ then depth.
 | RL13 | The story serial "Money On Your Chest" (the owner, 14 Nov: "create the story yourself part 2, 3, 4, etc... post them one a day"): blocky-game story reels, one part a day about 10:00 UTC, on top of the five auto reels (`src/story_reel.py next`, `src/stories.json`). Since 14 Nov evening, the owner: every part is filmed in a 3D toy-block town with walking people (`src/world3d.js`), with the serial's own tune and a quick, bright narrator, the cover says PART N, and each part goes to YouTube too. | Part 1 posted 14 Nov, remade in 3D and posted again the same evening; part 2 posted 15 Nov, written and filmed by the pipeline itself; parts 3 to 8 are written and go out 16 to 21 Nov, part 8 ends the story. Then: read the parts' numbers in the daily report and decide on a second story | S |
 | RL14 | Deeper, less repetitive reels (you, 15 Nov). The Quant research unit (`content/learn-16b-quant.md`, 16 lessons, open to everyone, before the Expert units on the path); the formats Quant lesson, Indicator and Market lesson; indicator lines and a strip on the reel chart; two in-depth slots a day; a repeated opening refused. | Written and self-checked 15 Nov. Open: the reel deploy (after the site's), the first reel of each new format read with its critic result, the scoreboard's verdicts once each has three scored reels. Later: VWAP, OBV and ADX as indicator reels | M |
 | RL15 | The niche study (you, 15 Nov: "watch all reels in my niche that do INCREDIBLY well... what made them so popular?"): Shorts that beat their own channel's median tenfold, watched frame by frame; the patterns go to the writer. | Done 15 Nov: 2,141 Shorts from 63 channels ranked, 42 watched (29 winners, 6 flops from the same channels). Solid: frame 0 is one thing known at a glance and fills the frame. Likely: a rule the viewer can apply and a trade played to its result; "X explained" with no rule and no outcome is the flop. A test is the proof, never the headline: no "we tested it" Short beat its channel fivefold. In the writer the same day (`DEEP_EVIDENCE`, `exemplar/NOTES.md`, the in-depth format texts); the write-up is `tools/memestreet_daily_reel/swipe.md`, "Teardowns (November 2026)". Open: Instagram reels you paste (the study is YouTube only) | S |
+| RL19 | The plateau (you, 17 Nov: "get out of the 100-200 view plateau"): `learn.py` reads the account daily (`account()`: followers, reach split followers/strangers), lists the breakouts (over twice the median views) and asks what they shared; `learned.md` opens with the answer; rules split into hook and body; rows carry beats, hook formula, likes per 100. | Built 17 Nov, demo passes; deployed with RL18. Read `state/learned.md` after the next daily run; watch the strangers' reach and the breakout count week by week. |
+| RL18 | Nothing overlaps (you, 16 Nov: "creative animation with no overlaps or anything"): `reel.html qa(t,1)` rejects figures, props, marked objects and text on each other and text cut off at an edge; `check()` insists hand-drawn objects are marked `obj`; the critic blocks overlaps; `brief()` hands each reel a hook formula in turn (`hook_shape`). | Built 16 Nov, selftest and a local dry run pass; waits for `./deploy.sh`. Then read the dry-run faults in `logs/` for false alarms (two figures standing close). |
+| RL17 | One-off reels (you, 16 Nov): a never-made format every day at 13:00, from `src/one_off_ideas.json` or invented; `own_reels.made()` scores each as `One-off: <name>`; `format_scores.py` calls `make_spec.promote()` so a one-off 8 points under the median skip becomes a format. | Built 16 Nov, selftests pass; deploy with the fun formats. Then read `state/promoted_formats.json` and the scoreboard's `One-off:` rows. |
+| RL16 | Fun, chart-free formats (you, 16 Nov: "all i see currently are graph traces, showing trendlines, asking if people would buy"): Money maths, Would you rather, Red flags, Tier list, POV, Trader translator, Horror story; at most one chart reel among the three lighter reels a day (`CHARTLESS`, `FUN` in `src/make_spec.py`). | Built 16 Nov, selftest passes; waits for `./deploy.sh` (yours). Then watch their skip rates on the scoreboard. |
 | RL12 | The learning loop: Instagram's numbers explain each reel; the lessons go to the writer (`src/learn.py`, `state/learned.md`). | Running since 13 Nov. Later: read Instagram once a day for all three (`own_reels`, `format_scores`, `learn`); YouTube numbers in the ledger once its key can read | M |
 
 Done: director reels and posting without approval (9 Nov); the Daily as a director reel with retries, captions on

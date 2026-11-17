@@ -68,7 +68,7 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - Never a death, a disaster, violence, war, a crime against a person, someone's health, a child or an election.
 - Shape: the story's extraordinary event inside the first second, the number or the name as the first spoken word; what happened,
   in order; the market's move as the device changing size; a question to the viewer (sell or hold?); then Meme Street: made-up
-  companies with bosses too, news moves their prices the same way, 1,000 memebucks of practice money with no cash value; the sign-off.
+  companies with bosses too, news moves their prices the same way, 100,000 memebucks of practice money (1,000 before 2026-11-15) with no cash value; the sign-off.
 - The caption names its sources and says "Not investment advice."
 
 ## Thumbnails
@@ -98,6 +98,7 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - 2026-11-08: The voice keeps one speed through the whole reel and across all reels: never slowing down or speeding up between lines (Kokoro at 1.0 for every line).
 - 2026-11-08: Nothing overlaps: an acted opening scene stands alone (the chart and its tags come in from scene 1), and no tag sits on another prop, a cloud or another tag; a tag that has no room above its prop goes beside it.
 - 2026-11-08: A tag appears when its words are said, never before, and stays up while its prop is on screen: it never blinks off and back on.
+- 2026-11-16: Creative animation, and nothing overlaps anything, ever: not a figure over a figure, a figure over a prop, a prop over a prop, a tag over a prop, nor text cut off at the frame's edge (the first one-off, "Thrown Out Of The Club", posted with a figure walking through the bouncer and a tag clipped to "rick"). The dry run rejects these before the voice is made; the critic blocks a cut that shows one.
 - 2026-11-08: Props stay upright. A candle, chart card or question card never flies, falls or crashes; it grows, changes colour, bursts or counts where it stands.
 - 2026-11-08: Story scenes are alive, not stiff: at least two things happen in each, on their words.
 
@@ -157,6 +158,20 @@ also checked automatically (make_spec.py, render.py, narrate.py).
 - No reel opens like a recent one (the owner, 2026-11-15, "repetitive"): the first three words differ from those of the
   last 40 reels and the first six are no near copy ("One red candle, and your...", "This chart looked..." and "Three
   chart reads..." each went out three times in a week). `check()` in make_spec.py sends a repeat back.
+- Fun first, and fewer charts (the owner, 2026-11-16: "create more exciting and interesting reel formats, that do well in my
+  niche. they don't even need to involve graphs, as long as they're fun and enjoyable with a meaningful hook"; "all i see
+  currently are graph traces, showing trendlines, asking if people would buy"): seven chart-free formats, Money maths, Would
+  you rather, Red flags, Tier list, POV, Trader translator and Horror story, each fed real facts (a site lesson, or a sum
+  worked out in code). Of a day's three lighter reels at most one shows a chart; the in-depth slots keep theirs. No reel
+  opens on "would you buy (sell, hold) here?".
+- One-off reels (the owner, 2026-11-16: "there should be 'one off' reels that follow a completely different format, but only
+  for one reel. (if they do well compared to other reels, they can be made into a more consistent format). be creative with
+  it, it can be anything, so look at ALL reels in my niche"): the 13:00 reel each day is a one-off, a format this account
+  has never made, invented by the writer (or taken from `src/one_off_ideas.json`, seeds from the niche's winners: 3,400
+  Shorts ranked on 4 to 15 Nov, the Volume money tracker's 623 posts, the wide pull of 16 Nov). It names its format and
+  states it in a sentence; its subject is a lesson, a sum, two bets or a company in turn. The scoreboard scores each one-off
+  as its own row; one skipped 8 points less than our median becomes a regular format by itself (`state/promoted_formats.json`,
+  two turns a day like every new format). A promoted format is still judged like every other and can be cut.
 
 ## By format (the owner's feedback on each type as it posts; a reel of that type follows its lines)
 <!-- "### Format name" then "- YYYY-MM-DD: rule", newest last -->
@@ -197,6 +212,22 @@ without review. A complaint puts it back to watched. Status: every format watche
 - (new 2026-11-15: no feedback yet.)
 ### Market lesson
 - (new 2026-11-15: no feedback yet.)
+### Money maths
+- (new 2026-11-16: no feedback yet.)
+### Would you rather
+- (new 2026-11-16: no feedback yet.)
+### Red flags
+- (new 2026-11-16: no feedback yet.)
+### Tier list
+- (new 2026-11-16: no feedback yet.)
+### POV
+- (new 2026-11-16: no feedback yet.)
+### Trader translator
+- (new 2026-11-16: no feedback yet.)
+### Horror story
+- (new 2026-11-16: no feedback yet.)
+### One-off
+- (new 2026-11-16: no feedback yet. A line here applies to every one-off; a promoted one gets its own heading.)
 ### Myth or fact
 - 2026-11-09 (round 7): ugly. The "Your call" tag sits at the start of its line so it does not jump as the price moves. Same chart: no transition.
 ### Speed cheat sheet

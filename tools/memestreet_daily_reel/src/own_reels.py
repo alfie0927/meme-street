@@ -57,6 +57,9 @@ def made():
         except (OSError, ValueError): continue
         try: cat = load(os.path.join(w, "brief.json")).get("category")
         except (OSError, ValueError): cat = None
+        if cat == "One-off":                               # (each one-off is scored as its own format: make_spec.promote())
+            try: cat = "One-off: " + load(os.path.join(w, "spec.json"))["one_off"]["name"]
+            except (OSError, ValueError, KeyError, TypeError): pass
         out[mid] = (tl, cat)
     return out
 

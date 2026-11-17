@@ -183,7 +183,9 @@ feedback after reels post. Your job is narrow: stop a reel that would embarrass 
    top of another prop, a cloud or another tag; story props drawn over a chart; a tilted or flying candle, chart card or
    question card; a tag shown before its words are said, or one that vanishes and comes back (the owner, 2026-11-08).
    A frame clearly less polished than the owner's reference frames (cluttered, cramped, props touching, uneven sizes,
-   harsh glow) is a broken frame too.
+   harsh glow) is a broken frame too. Anything drawn over anything else is a BLOCKER, never a note (the owner, 2026-11-16:
+   "creative animation with no overlaps or anything"): a figure walking across or standing on another figure, a figure or a
+   tag over a prop, a prop over a prop, a tag or a label cut off at the frame's edge.
 4. A word the listener hears wrongly (the transcript of the final mix against the script; a number written as digits,
    or a homophone, is not a mispronunciation; nor is Whisper's phonetic spelling of a rare trading term that the voice
    lexicon covers, e.g. 'Marubazu' for marubozu or 'dojee' for doji: a one-letter spelling drift with the same sounds), or a garbled stretch of voice, or a pause inside a phrase where the script

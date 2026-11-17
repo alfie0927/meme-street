@@ -196,7 +196,7 @@ function drawFigure(s,f,k,t,cx,gy,sc,colW=470){const P=figPose(s,f,k,t),R=Math.P
  const col=f.color&&f.color[0]==='#'?f.color:f.color==='teal'?TE:f.color==='amber'?AM:'#e6e9ec',sw=9*sc,fa=out(seg(t,s.t0+(f.enter||0),s.t0+(f.enter||0)+.4));
  const tl=P.tilt,ex=head[0],ey=head[1],mood=f.mood&&P.u<.5?f.mood:MOOD[P.name]||'flat',who=(f.label||'').toLowerCase();
  const mouth=mood==='smile'?`M${ex-9*sc} ${ey+8*sc}Q${ex} ${ey+16*sc} ${ex+9*sc} ${ey+8*sc}`:mood==='frown'?`M${ex-9*sc} ${ey+13*sc}Q${ex} ${ey+5*sc} ${ex+9*sc} ${ey+13*sc}`:mood==='o'?'':`M${ex-8*sc} ${ey+11*sc}H${ex+8*sc}`;
- let g=`<g opacity="${fa}" transform="translate(0 ${(1-fa)*30})"><g stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" fill="none">
+ let g=`<g class="fig" opacity="${fa}" transform="translate(0 ${(1-fa)*30})"><g stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" fill="none">
   <path d="M${hip[0]} ${hip[1]}L${neck[0]} ${neck[1]}"/><path d="${legs(P.ll)}"/><path d="${legs(P.rl)}"/>
   <circle class="fighead" cx="${ex}" cy="${ey}" r="${28*sc}" fill="#080a0b" transform="rotate(${tl} ${ex} ${ey+28*sc})"/><path d="${seg2(sho,P.la)}"/><path d="${seg2(sho,P.ra)}"/></g>
   <g transform="rotate(${tl} ${ex} ${ey+28*sc})"><circle cx="${ex-9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/><circle cx="${ex+9*sc}" cy="${ey-4*sc}" r="${3.6*sc}" fill="${col}"/>
@@ -339,7 +339,7 @@ const PSZ={egg:[192,230],cage:[260,280],lake:[420,104],chart:[240,210],candle:[7
 const fitK=(p,k,w,h)=>{const z=PSZ[(p||{}).p]||[200,220];return Math.min(k,w/z[0],h/z[1])};
 // draw one prop: at (x,y), scale k, popping in at t0, idling gently; returns svg
 function prop2d(p,x,y,k,t,t0,j){const a=t0==null?1:back(seg(t,t0-.05,t0+.35)),u=Math.max(0,t-(t0||0));if(a<=0)return '';const f=PROP2D[(p||{}).p]||PROP2D.crate;
- return `<g transform="translate(${x} ${(y+4*Math.sin(t*1.2+j)).toFixed(1)}) scale(${(k*(.85+.15*a)).toFixed(3)})" opacity="${cl(a).toFixed(3)}">${f(sc2(p),u)}</g>`}
+ return `<g class="prop" transform="translate(${x} ${(y+4*Math.sin(t*1.2+j)).toFixed(1)}) scale(${(k*(.85+.15*a)).toFixed(3)})" opacity="${cl(a).toFixed(3)}">${f(sc2(p),u)}</g>`}
 const STAGE={x0:80,x1:1000,ground:1180,top:600};
 const FLY=['dragon','bird','plane','drone','fish','rocket'];
 function drawStory(s,t){const P=s.props||[],L=[],T0=k=>P[k]&&P[k].t!=null?(k===0?Math.min(P[k].t,s.t0+.3):P[k].t):null,G=STAGE.ground,lay=s.layout||'hero';let g='';   // (the lead prop is up from the start: no empty stage)
@@ -560,16 +560,25 @@ window.qa=async(T,deep)=>{await render(T);const els=[document.getElementById('he
  const B=els.map(e=>[e,vis(e)]).filter(x=>x[1]),bad=[];
  for(let a=0;a<B.length;a++)for(let b=a+1;b<B.length;b++){const p=B[a][1],q=B[b][1];if(B[a][0].contains(B[b][0])||B[b][0].contains(B[a][0]))continue;
   if(p.left<q.right-2&&q.left<p.right-2&&p.top<q.bottom-2&&q.top<p.bottom-2)bad.push([(B[a][0].id||B[a][0].className.baseVal||B[a][0].className)+':'+B[a][0].textContent.trim().slice(0,30),(B[b][0].id||B[b][0].className.baseVal||B[b][0].className)+':'+B[b][0].textContent.trim().slice(0,30)])}
- if(deep){   // (the dry run only: what the scene function draws. Text over other text, and a stick figure's head over any text. A crossfade never has both sides above .55, and the same words drawn twice are a glow, not a fault)
+ if(deep){   // (the dry run only: what the scene function draws. Text over other text, a stick figure's head over any text, and (the owner, 2026-11-16: nothing overlaps) a figure over a figure or a prop, a prop over a prop or over text, text cut off at the frame's edge. A crossfade never has both sides above .55, and the same words drawn twice are a glow, not a fault)
   const fr=document.getElementById('free'),X='http://www.w3.org/1999/xhtml',box=(e,any)=>[e,vis(e,any,.55)],on=x=>x[1],
    L=[...fr.querySelectorAll('*')].filter(x=>(x.tagName==='text'||(x.namespaceURI===X&&[...x.childNodes].some(n=>n.nodeType===3&&n.textContent.trim())))&&!els.some(e=>e&&e.contains(x))).map(x=>box(x)).filter(on),
    O=[...B,...[...document.querySelectorAll('#chart text')].map(x=>box(x)).filter(on)],H=[...fr.querySelectorAll('.fighead')].map(x=>box(x,1)).filter(on),
-   nm=e=>e.classList&&e.classList.contains('fighead')?"a stick figure's head":'"'+e.textContent.trim().slice(0,30)+'"',
+   FG=[...fr.querySelectorAll('.fig')].map(x=>box(x,1)).filter(on),PR=[...fr.querySelectorAll('.prop')].map(x=>box(x,1)).filter(on),OB=[...fr.querySelectorAll('.obj')].map(x=>box(x,1)).filter(on),
+   nm=e=>e.classList&&e.classList.contains('fighead')?"a stick figure's head":e.classList&&e.classList.contains('obj')?'an object'+(e.querySelector('text')?' ('+e.querySelector('text').textContent.trim().slice(0,20)+')':''):e.classList&&e.classList.contains('fig')?'a stick figure'+(e.querySelector('text')?' ('+e.querySelector('text').textContent.trim().slice(0,20)+')':''):e.classList&&e.classList.contains('prop')?'a prop':'"'+e.textContent.trim().slice(0,30)+'"',
+   apart=(a,b)=>!a.contains(b)&&!b.contains(a),
    hit=(p,q)=>{const w=Math.min(p.right,q.right)-Math.max(p.left,q.left),h=Math.min(p.bottom,q.bottom)-Math.max(p.top,q.top);return w>4&&h>4&&w*h>=.15*Math.min((p.right-p.left)*(p.bottom-p.top),(q.right-q.left)*(q.bottom-q.top))};
   for(let a=0;a<L.length;a++){
    for(let b=a+1;b<L.length;b++)if(L[a][0].textContent.trim()!==L[b][0].textContent.trim()&&!L[a][0].contains(L[b][0])&&!L[b][0].contains(L[a][0])&&hit(L[a][1],L[b][1]))bad.push([nm(L[a][0]),nm(L[b][0])]);
    for(const o of O)if(hit(L[a][1],o[1]))bad.push([nm(L[a][0]),nm(o[0])])}
-  for(const h of H)for(const o of [...L,...O])if(hit(h[1],o[1]))bad.push([nm(h[0]),nm(o[0])])}
+  for(const h of H)for(const o of [...L,...O])if(hit(h[1],o[1]))bad.push([nm(h[0]),nm(o[0])]);
+  for(let a=0;a<FG.length;a++){for(let b=a+1;b<FG.length;b++)if(apart(FG[a][0],FG[b][0])&&hit(FG[a][1],FG[b][1]))bad.push([nm(FG[a][0]),nm(FG[b][0])]);
+   for(const p of PR)if(apart(FG[a][0],p[0])&&hit(FG[a][1],p[1]))bad.push([nm(FG[a][0]),nm(p[0])])}
+  for(let a=0;a<PR.length;a++){for(let b=a+1;b<PR.length;b++)if(apart(PR[a][0],PR[b][0])&&hit(PR[a][1],PR[b][1]))bad.push([nm(PR[a][0]),nm(PR[b][0])]);
+   for(const o of [...L,...O])if(apart(PR[a][0],o[0])&&hit(PR[a][1],o[1]))bad.push([nm(PR[a][0]),nm(o[0])])}
+  for(let a=0;a<OB.length;a++){for(let b=a+1;b<OB.length;b++)if(apart(OB[a][0],OB[b][0])&&hit(OB[a][1],OB[b][1]))bad.push([nm(OB[a][0]),nm(OB[b][0])]);   // (a hand-drawn figure or object the writer marked <g class="obj">: solid, like a figure or a prop)
+   for(const o of [...FG,...PR,...L,...O])if(apart(OB[a][0],o[0])&&hit(OB[a][1],o[1]))bad.push([nm(OB[a][0]),nm(o[0])])}
+  for(const l of L)if(l[1].left<20||l[1].right>1060)bad.push([nm(l[0]),"the edge of the frame (text is cut off: keep it inside x 40 to 1040)"])}
  return bad};
 // the reel's cover: its first chart (or its first scene) under the title
 window.cover=async date=>{   // the reel's cover, the November template: brand header, the main picture in a framed panel, the title, the site

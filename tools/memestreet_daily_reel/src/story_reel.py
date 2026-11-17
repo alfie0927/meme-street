@@ -82,7 +82,7 @@ WHAT = ("A STORY REEL IN PARTS (the owner, 2026-11-14), made like the viral bloc
         "so, in the same town, palette and chest labels in every part (the device is the series' own: the same on purpose). "
         "facts.story.lesson is the one trading idea this part teaches: the story says it once, in plain words. The link to Meme "
         "Street is one line, where the story places it (only what facts.meme_street says: made-up companies, news that moves prices, "
-        "1,000 memebucks of practice money with no cash value, the lessons and the Daily Chart); 'better' means a plan and practice, "
+        "100,000 memebucks of practice money with no cash value, the lessons and the Daily Chart); 'better' means a plan and practice, "
         "never a promise of money or of beating the market. Then facts.story.cliffhanger, as the last story line before the sign-off: "
         "a MAJOR cliffhanger, something shocking happens on screen (a number crashes, the door bursts open, the sky turns red: \"sky\": \"red\" with \"sky_say\") and "
         "the line breaks off unresolved. The sign-off scene names the next part: 'Part 3 drops soon. Join free at memestreet.net.' "

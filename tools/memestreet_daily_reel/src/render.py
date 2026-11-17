@@ -34,7 +34,8 @@ async def frames(R, fdir, cover=None, date=""):
 
 async def dry(R, fdir, fps=2):
     """DRY=1: a director reel's scene function (make_spec.py scene_js) is run through the whole reel at 2 fps before any
-    voice is made: a JavaScript error, text on text, text under 26 px, three seconds in which nothing on screen changes,
+    voice is made: a JavaScript error, text on text, a figure or a prop on another figure, prop or text, text cut off at an edge
+    (the owner, 2026-11-16: nothing overlaps), text under 26 px, three seconds in which nothing on screen changes,
     or a frame that takes too long to draw, and the writer gets the reason back. Returns the list of faults."""
     import time
     os.makedirs(fdir, exist_ok=True); n = int(round(R["T"] * fps)); faults = []; took = []; small = {}; bad = {}
@@ -60,7 +61,7 @@ async def dry(R, fdir, fps=2):
             if i == 0 and R.get("scene_js") and await pg.evaluate("hook0()") < 72:   # (the first frame is the hook: whole, large, readable with the sound off)
                 faults.append("frame 0 has no large hook: scene 0 is a free scene whose punch 'text' is 2 to 5 short words (the template draws it whole at the top, 72 px or more, in two lines at most)")
         await b.close()
-    for (a, c), t in list(bad.items())[:5]: faults.append(f"covered at {t:.1f}s: {a} and {c} overlap; move one of them so both read clean (a label is never under a figure, a ring or another label)")
+    for (a, c), t in list(bad.items())[:5]: faults.append(f"covered at {t:.1f}s: {a} and {c} overlap; move one of them so both read clean (nothing drawn sits on anything else: not a label on a figure, a figure on a figure or a prop, a prop on a prop, a tag on a tag; things that must meet touch for a moment and part)")
     for m, t in list(small.items())[:3]: faults.append(f"text {m} px at {t:.1f}s: nothing the scene draws may be under 26 px (unreadable on a phone)")
     raw = subprocess.run(["ffmpeg", "-v", "error", "-framerate", str(fps), "-i", f"{fdir}/f%05d.jpg", "-vf", "scale=135:240,format=gray", "-f", "rawvideo", "-"],
                          capture_output=True).stdout
