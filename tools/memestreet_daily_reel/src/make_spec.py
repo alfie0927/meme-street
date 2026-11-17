@@ -510,10 +510,22 @@ CATEGORIES[CARD] = (
     "so something arrives all the way through; after the last one a highlight ring moves cell to cell until the end. Dense is the point, "
     "overlap is not: cells never touch, the badge sits inside its cell, nothing under 26 px. No outro, no sign-off and no spoken address: "
     "the caption names the lesson (it is free to read on memestreet.net) and asks the viewer to save the card. Every name and rule comes from the lesson, said "
-    "as written; nothing invented.")
+    "as written; nothing invented. Every reel is a card now (the owner, 2026-11-17: \"make all reels like this now\"), so the card "
+    "has a look of its own: a device that frames the cells (a menu board, a field-guide page, a periodic table, a subway map, a vending "
+    "machine, a binder of trading cards, a recipe card), its own palette and its own way of landing a cell, never a recent device's.")
 LESSON_FORMATS[CARD] = ("charts/candlesticks", "charts/reversal-patterns", "charts/continuation-patterns", "charts/gaps", "orders/order-types",
                         "orders/brackets", "indicators/momentum", "indicators/moving-averages", "risk/stop-placement", "risk/r-multiples",
-                        "plan/checklist", "plan/glossary", "strategies/styles", "derivatives/option-strategies", "psychology/biases", "real-life/scams")
+                        "plan/checklist", "plan/glossary", "strategies/styles", "derivatives/option-strategies", "psychology/biases", "real-life/scams",
+                        # (every reel a card since 2026-11-17: five a day need a deep pool, the lesson out longest ago first)
+                        "charts/trends", "charts/support-resistance", "charts/ranges-breakouts", "charts/volume", "indicators/volatility",
+                        "indicators/volume-tools", "indicators/fibonacci", "indicators/trend-strength", "indicators/combining-indicators",
+                        "orders/costs", "orders/trailing-scaling", "risk/position-sizing", "risk/drawdown", "risk/expectancy",
+                        "fundamentals/key-numbers", "fundamentals/statements", "fundamentals/valuation", "macro/data-releases",
+                        "macro/risk-on-off", "derivatives/greeks", "strategies/trend-following", "strategies/mean-reversion",
+                        "strategies/breakout-trading", "testing/performance-stats", "psychology/process", "real-markets/brokers",
+                        "plan/trading-plan", "plan/review", "quant/factor-zoo", "quant/anomalies", "quant/fat-tails", "quant/research-checklist")
+ONLY = CARD   # (the owner, 2026-11-17: "make all reels like this now in this style and upload schedule. remake all reels": every auto slot
+              #  makes a Reference card; the story serial, the Daily recap and the news reels keep their own. ONLY = None restores the rotation)
 LENGTH[CARD] = (5, 14, False); SECONDS[CARD] = (6, 12); ROTATION["0600"] += [CARD]; ROTATION["1800"] += [CARD]; CHARTLESS.add(CARD)   # (two turns, like every new format)
 VIRAL_EVIDENCE = [
     ["37x", "It still looked bearish... but the candles told a different story."],
@@ -1814,6 +1826,7 @@ def brief(slot, category=None, remake=None):
     """Everything the writer needs for one reel: the system prompt, the request (facts included) and the charts."""
     rng = random.Random(slot + os.environ.get("REEL_TRY", ""))   # (a held slot's second try gets another format)
     history = json.load(open(HISTORY)) if os.path.exists(HISTORY) else {}
+    if not category and ONLY: category, remake = ONLY, None   # (every reel a card: the owner, 2026-11-17)
     if not category and explainer(slot): category, remake = explainer(slot), None   # (an explainer day: it takes the slot's remake too)
     if not category and one_off_due(slot): category = ONE_OFF   # (one a day: the owner, 2026-11-16)
     if not category:                                     # (the format of this slot's turn that went out longest ago, so every
@@ -2251,6 +2264,7 @@ if __name__ == "__main__":
         es = check(dict(lp, caption=f"x {DISCLAIMER} #MemeStreet", scenes=lp["scenes"] + [fr["scenes"][1]]), {}, [], "Loop")
         assert any("no outro scene" in e for e in es) and any("put memestreet.net in its caption" in e for e in es), es
         assert ROTATION["1300"].count("Loop") == 2 and "Hard truth" in ROTATION["1200"] and LENGTH["Loop"][2] is False and "Loop" in CATEGORIES and "Loop" in KINDS
+        assert ONLY in (None, CARD) and len(set(LESSON_FORMATS[CARD])) >= 40 and "never a recent device's" in CATEGORIES[CARD]
         assert CARD in CATEGORIES and CARD in LESSON_FORMATS and CARD in CHARTLESS and LENGTH[CARD][2] is False and SECONDS[CARD] == (6, 12)   # the reference card (2026-11-17)
         assert sum(CARD in cs for cs in ROTATION.values()) == 2 and CARD in turn("2026-11-16T1300", ev, {"charts"}) and CARD not in turn("2026-11-16T2100", ev, {"charts"})
         cd = {"title": "Candle Card", "headline": "Nine candles you must know", "caption": f"Nine candle patterns, one card. Save it. The lesson is free at memestreet.net {DISCLAIMER} #MemeStreet",

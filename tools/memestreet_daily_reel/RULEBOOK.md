@@ -229,6 +229,7 @@ without review. A complaint puts it back to watched. Status: every format watche
 ### One-off
 - (new 2026-11-16: no feedback yet. A line here applies to every one-off; a promoted one gets its own heading.)
 ### Reference card
+- 2026-11-17: the owner, "make all reels like this now in this style and upload schedule. remake all reels": every auto reel is a Reference card, each with a look of its own. The story serial, the Daily recap and the news reels keep their own form.
 - (new 2026-11-17: no feedback yet. One scene, the hook spoken, then the card fills while the screen holds; dense, nothing touching, every cell from the lesson.)
 ### Myth or fact
 - 2026-11-09 (round 7): ugly. The "Your call" tag sits at the start of its line so it does not jump as the price moves. Same chart: no transition.
