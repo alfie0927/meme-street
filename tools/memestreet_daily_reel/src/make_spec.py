@@ -492,6 +492,29 @@ CATEGORIES["Loop"] = ("SHORT LOOP (a test, the owner 2026-11-11): 7 to 12 second
 KINDS["Loop"] = KINDS["Hard truth"]; LENGTH["Loop"] = (16, 30, False); ROTATION["1300"] += ["Loop", "Loop"]; ROTATION["1200"] += ["Hard truth"]
 SECONDS = {"Loop": (6, 12.5)}   # a format's length in seconds at the voice's pace, checked by the dry run (every other format: at most 60, the owner 2026-11-11)
 SECONDS.update({c: (0, 105) for c in DEEP})   # (the in-depth formats may run to 100 seconds: the owner, 2026-11-12)
+
+# A reference card (the owner, 2026-11-17, "do it all"; the niche study, research/niche_2026-11-17.md: a silent five-second card of nine
+# candle patterns with BUY/SELL badges did 11x its channel on 200k views, a 15-truths wall 261x; the one winning shape this account had
+# never tried). The voice says only the hook; then the scene's "hold" (narrate.py, lab/silent.py) keeps the screen while the card fills.
+CARD = "Reference card"
+CATEGORIES[CARD] = (
+    "NEW, NO CHART, A REFERENCE CARD, made to be paused and saved (the niche study of 2026-11-17: a silent five-second card of nine candle "
+    "patterns with a BUY or SELL badge on each did 11x its channel; a wall of 15 truths 261x). ONE free scene and nothing else, 6 to 12 "
+    "seconds. The voice says only the hook, 5 to 14 words: a command or a claim that names the count and the thing ('Nine candle patterns, "
+    "one card. Save it.'); the punch text is 2 to 5 of its words; the headline is the card's title. Then the screen holds: \"hold\": 5 to 7 "
+    "(seconds) on the scene, and the card fills while it holds. THE CARD: 6 to 9 cells in a grid that fills the world band (y 520-1290; "
+    "cells 300 px wide or more), each one thing of ONE kind from the lesson (facts.lesson: candle or chart patterns, order types, indicator "
+    "readings, risk rules, checklist lines, glossary terms), drawn as a small picture (two or three candles, an order ladder, a line with "
+    "an arrow) with its name under it in 30 px or more and one badge of one to three words inside the cell (BUY, SELL, WAIT, or its "
+    "one-line rule). Cells land one at a time with a thud, about half a second apart, from the first word to the last second of the hold, "
+    "so something arrives all the way through; after the last one a highlight ring moves cell to cell until the end. Dense is the point, "
+    "overlap is not: cells never touch, the badge sits inside its cell, nothing under 26 px. No outro, no sign-off and no spoken address: "
+    "the caption names the lesson (it is free to read on memestreet.net) and asks the viewer to save the card. Every name and rule comes from the lesson, said "
+    "as written; nothing invented.")
+LESSON_FORMATS[CARD] = ("charts/candlesticks", "charts/reversal-patterns", "charts/continuation-patterns", "charts/gaps", "orders/order-types",
+                        "orders/brackets", "indicators/momentum", "indicators/moving-averages", "risk/stop-placement", "risk/r-multiples",
+                        "plan/checklist", "plan/glossary", "strategies/styles", "derivatives/option-strategies", "psychology/biases", "real-life/scams")
+LENGTH[CARD] = (5, 14, False); SECONDS[CARD] = (6, 12); ROTATION["0600"] += [CARD]; ROTATION["1800"] += [CARD]; CHARTLESS.add(CARD)   # (two turns, like every new format)
 VIRAL_EVIDENCE = [
     ["37x", "It still looked bearish... but the candles told a different story."],
     ["6x", "It looked bullish, until the second test changed everything."],
@@ -940,7 +963,7 @@ def gather(category, rng, history, company=None):
             facts["_subjects"] = [facts["strategy"]]
         else:
             facts, charts = lesson(rng, history, LESSON_FORMATS[category])
-            if category in FUN: charts = []; facts.pop("about_the_rsi", None)   # (a fun format never shows a chart)
+            if category in FUN or category == CARD: charts = []; facts.pop("about_the_rsi", None)   # (a fun format or a card never shows a chart)
         facts["charts"] = [chart_summary(i, c) for i, c in enumerate(charts)]
         return facts, charts
     if category in ("Stock story", "Chart breakdown", "Breaking news"):
@@ -996,7 +1019,7 @@ def gather(category, rng, history, company=None):
 
 SCHEMA = """Reply with JSON only, no prose, in this shape:
 {"title": "cover title, 2 to 5 words", "type": "%s",
- "headline": "a director reel's claim in 3 to 7 words, drawn by the template at the top from scene 1 to the end (what this reel proves; not the title, not the hook's words)",
+ "headline": "a director reel's claim in 3 to 7 words, drawn by the template at the top from scene 1 to the end, or from scene 0 when the reel has one scene (what this reel proves; not the title, not the hook's words)",
  "hooks": ["three different spoken hook lines, best first"],
  "scenes": [ ...in order... ],
  "caption": "the Instagram caption"}
@@ -1045,7 +1068,8 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
     its own motion and sound; positions and sizes are fixed. Shots (name: what it acts out. roles; moments; options):
 <<SHOTS>>
  {"kind":"free","vo":"...","text":"the punch caption: 2 to 5 words of the line, in order","hot":"the one word of the text shown in the hot colour","chart":N or null,"show":candle index shown at the start (optional),
-   "cues":[chart cues as above (with a chart they draw themselves under your scene), and {"say":"exact phrase from vo","do":"fx","name":"<a name your scene function reads>", ...any fields you need}]}
+   "cues":[chart cues as above (with a chart they draw themselves under your scene), and {"say":"exact phrase from vo","do":"fx","name":"<a name your scene function reads>", ...any fields you need}],
+   "hold":seconds (a Reference card only: the screen keeps after the line while the cells land)}
    (a director reel's own scene: your scene function draws its world, HUD and effects, and a punch headline over the transcript captions; no "head": the HUD takes the title's place)
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 Top level, next to "scenes": "device": {"metaphor": "what the picture is, one line", "opening": "the first second", "palette": "the two or three colours", "hud": "what the HUD shows and how it changes"},
@@ -1086,7 +1110,7 @@ price, draw your own marks in real pixels. Setting api.cam = {k, ox, oy} inside 
 (k 1..1.3 around ox, oy; ease it in and out); the HUD stays put.
 Geometry (1080 x 1920; Instagram covers y < 230, y > 1440 and the right 230 px of the lower half): brand header y 250-310
 (hidden until scene 1: in scene 0 the template draws your hook at y 236-382, so draw nothing above y 384 in scene 0);
-the headline y 384-444 (the template draws your "headline" there from scene 1 to the end: the claim the reel proves, 3 to 7
+the headline y 384-444 (the template draws your "headline" there from scene 1 to the end, from scene 0 when the reel has one scene: the claim the reel proves, 3 to 7
 words, the way the niche's winners keep their subject on screen the whole way; draw nothing in that band after scene 0);
 your HUD y 450-520 (a free scene has no head); the world y 520-1290 (when the scene has a chart it fills that band, so draw on
 the chart's own pixels or in its margins, never below y 1260); the punch headline at y 1270-1325 (api.punch draws it: keep that band
@@ -1356,6 +1380,12 @@ def check(spec, facts, charts, category=None):
         hl = str(spec.get("headline") or "").strip(); hw = hl.split()
         if not 3 <= len(hw) <= 7: errs.append('"headline": the claim this reel proves, 3 to 7 words, drawn at the top from scene 1 to the end')
         elif nk(hl) in (nk(str(spec.get("title") or "")), nk(str((sc[0] if sc else {}).get("text") or ""))): errs.append("the headline is the claim the reel proves, in other words than the title and the hook")
+    if category == CARD:                                   # (one scene, the hook said, then the hold while the card fills)
+        try: hold = float(sc[0].get("hold") or 0) if sc else 0
+        except (TypeError, ValueError): hold = 0
+        if len(sc) != 1 or sc[0].get("kind") != "free": errs.append("a Reference card is ONE free scene and nothing else: the hook line, then the hold while the card fills")
+        elif not 5 <= hold <= 7: errs.append('"hold": 5 to 7 (seconds) on the one scene: the time the card keeps the screen while its cells land')
+    elif any(s.get("hold") for s in sc): errs.append('"hold" belongs to the Reference card only: another format fills its time with spoken lines')
     if category == ONE_OFF:                                # (a one-off states its format, and it is a new one)
         o = spec.get("one_off") if isinstance(spec.get("one_off"), dict) else {}; nm = str(o.get("name") or "").strip()
         taken = {c.lower() for c in facts.get("formats_we_make", [])} | {str(m.get("name") or "").lower() for m in facts.get("one_offs_so_far", [])}
@@ -1516,9 +1546,10 @@ def check(spec, facts, charts, category=None):
             errs.append("only a reel about the Daily Chart mentions it: end with \"Join free at memestreet.net.\"")
         if strict and category != "Daily Chart explained" and (len(ov.split()) > 10 or "?" in ov):   # (docs/ROADMAP.md A5: the ending takes 2 seconds, not 6)
             errs.append("the outro is the sign-off, 10 words at most: one short echo of the hook if you like, then Join free at memestreet.net. (no promo sentence; the question to the viewer is asked in the hook or the middle)")
-    if category == "Loop":                                   # (docs/ROADMAP.md A4: a loop has no sign-off, so its caption carries the address)
-        if any(x.get("kind") == "outro" for x in sc): errs.append("a loop has no outro scene: it ends where it began, so the replay is seamless")
-        if "memestreet.net" not in str(spec.get("caption", "")).lower(): errs.append("a loop never says the address: put memestreet.net in its caption")
+    if category in ("Loop", CARD):                           # (docs/ROADMAP.md A4: a loop has no sign-off, so its caption carries the address; a Reference card the same)
+        what = "a loop" if category == "Loop" else "a Reference card"
+        if any(x.get("kind") == "outro" for x in sc): errs.append(f"{what} has no outro scene: " + ("it ends where it began, so the replay is seamless" if category == "Loop" else "the card holds to the last frame"))
+        if "memestreet.net" not in str(spec.get("caption", "")).lower(): errs.append(f"{what} never says the address: put memestreet.net in its caption")
     elif sc and "memestreet.net" not in sc[-1].get("vo", "").lower():
         errs.append("the last scene's line must end by saying memestreet.net (spoken as 'Meem Street dot net')")
     if facts.get("plan_beat_holding") is False:
@@ -1824,7 +1855,7 @@ def brief(slot, category=None, remake=None):
         ask["what_works_now"] = {"note": "Openings of short trading videos that beat their own account's usual views "
                                          "(research of November 2026: swipe.md). Use the SHAPE, never the words: write an "
                                          "original line about this reel's own facts.",
-                                 "examples": (FUN_EVIDENCE + STUDY_EVIDENCE) if category in FUN or category == ONE_OFF or category in PROMO else STUDY_EVIDENCE + DEEP_EVIDENCE if category in DEEP or category in LESSON_FORMATS else   # (the study of 2026-11-15)
+                                 "examples": (FUN_EVIDENCE + STUDY_EVIDENCE) if category in FUN or category in (ONE_OFF, CARD) or category in PROMO else STUDY_EVIDENCE + DEEP_EVIDENCE if category in DEEP or category in LESSON_FORMATS else   # (the study of 2026-11-15)
                                  STICK_EVIDENCE if "STICK" in CATEGORIES[category] else
                                  SHORT_EVIDENCE if category in LENGTH else VIRAL_EVIDENCE}
         ev = os.path.join(ROOT, "state", "evidence.json")      # this week's outliers (src/research.py), shapes only
@@ -2220,6 +2251,15 @@ if __name__ == "__main__":
         es = check(dict(lp, caption=f"x {DISCLAIMER} #MemeStreet", scenes=lp["scenes"] + [fr["scenes"][1]]), {}, [], "Loop")
         assert any("no outro scene" in e for e in es) and any("put memestreet.net in its caption" in e for e in es), es
         assert ROTATION["1300"].count("Loop") == 2 and "Hard truth" in ROTATION["1200"] and LENGTH["Loop"][2] is False and "Loop" in CATEGORIES and "Loop" in KINDS
+        assert CARD in CATEGORIES and CARD in LESSON_FORMATS and CARD in CHARTLESS and LENGTH[CARD][2] is False and SECONDS[CARD] == (6, 12)   # the reference card (2026-11-17)
+        assert sum(CARD in cs for cs in ROTATION.values()) == 2 and CARD in turn("2026-11-16T1300", ev, {"charts"}) and CARD not in turn("2026-11-16T2100", ev, {"charts"})
+        cd = {"title": "Candle Card", "headline": "Nine candles you must know", "caption": f"Nine candle patterns, one card. Save it. The lesson is free at memestreet.net {DISCLAIMER} #MemeStreet",
+              "device": {"metaphor": "a trading card binder page", "opening": "the page slaps down"}, "scene_js": "({t, api}) => ''",
+              "scenes": [{"kind": "free", "vo": "Nine candle patterns. Save this card.", "text": "Save this card", "hot": "Save", "hold": 6}]}
+        es = check(cd, {}, [], CARD); assert not any(m in e for e in es for m in ("hold", "outro", "narration is", "memestreet.net", "ONE free scene")), es
+        es = check(dict(cd, scenes=[dict(cd["scenes"][0], hold=2)]), {}, [], CARD); assert any('"hold": 5 to 7' in e for e in es), es
+        es = check(dict(cd, scenes=cd["scenes"] + [fr["scenes"][1]]), {}, [], CARD); assert any("ONE free scene" in e for e in es) and any("no outro scene" in e for e in es), es
+        assert any("belongs to the Reference card" in e for e in check(dict(fr, scenes=[dict(fr["scenes"][0], hold=5), fr["scenes"][1]]), {}, [], "One trick"))
         import tempfile                                   # the quiz's lesson questions (2026-11-14)
         with tempfile.TemporaryDirectory() as td:
             for k, tr in enumerate(("Macro", "Derivatives")):

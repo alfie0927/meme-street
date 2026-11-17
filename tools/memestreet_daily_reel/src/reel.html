@@ -507,11 +507,11 @@ function render(T){
   const fa=out(seg(T,s.t0,s.t0+.3));fm.style.opacity=fa;fs.style.opacity=fa;fm.style.transform=`scale(${1.02+.05*seg(T,s.t0,s.t1)})`}
  else{fm.style.opacity=0;fs.style.opacity=0}
  drawBg(T);document.getElementById('tag').textContent=R.type||'';document.getElementById('prog').style.width=(cl(T/R.T)*100)+'%';
- {const hs=Math.max(3,SC[1]?SC[1].t0:3),hb=io(seg(T,hs,hs+.4));document.querySelector('.hdr').style.opacity=hb;document.querySelector('.prog').style.opacity=hb}   // (the first seconds belong to the hook: no brand row, format label or progress bar until scene 1 starts or 3 s, whichever is later)
+ {const hs=Math.max(3,SC[1]?SC[1].t0:3),hb=SC[1]?io(seg(T,hs,hs+.4)):0;document.querySelector('.hdr').style.opacity=hb;document.querySelector('.prog').style.opacity=hb}   // (the first seconds belong to the hook: no brand row, format label or progress bar until scene 1 starts or 3 s, whichever is later)   // (a one-scene reel, the Reference card, keeps its hook up the whole way: the brand row never comes in over it)
  // the scene title slides in
  const hd=document.getElementById('head'),hu=out(seg(t,s.t0,s.t0+.4));
  const hookTxt=s.kind==='hook'&&(s.chart!=null||s.layout)&&s.text;   // the on-screen hook sits in the title zone, in amber
- const hl=R.headline&&R.scene_js&&i>0&&s.kind==='free'&&!s.head&&!hookTxt?String(R.headline):'';   // (the reel's claim stays up from scene 1 to the end, at the top of the title band: y 384-444; the writer's HUD sits under it)
+ const hl=R.headline&&R.scene_js&&(i>0||SC.length===1)&&s.kind==='free'&&!s.head&&!hookTxt?String(R.headline):'';   // (a one-scene reel, the Reference card, shows it from scene 0)   // (the reel's claim stays up from scene 1 to the end, at the top of the title band: y 384-444; the writer's HUD sits under it)
  hd.innerHTML=hl?`<span class="hl">${esc(hl)}</span>`:hookTxt?`<span style="color:${AM}">${esc(s.text)}</span>`:s.head?(s.badge?`<span class="hb"><b>${esc(s.badge)}</b><span>${esc(s.head)}</span></span>`:esc(s.head)):'';const hb=back(seg(t,s.t0,s.t0+.4));hd.style.padding=s.kind==='question'?'0 150px':'0';hd.style.boxSizing='border-box';hd.style.opacity=s.kind==='big'?0:(hl?out(seg(t,SC[1]?SC[1].t0:0,(SC[1]?SC[1].t0:0)+.4)):hu);hd.style.transform=hl?'':`translateY(${(1-hu)*24}px) scale(${.85+.15*hb})`;if(hl){const sp=hd.querySelector('.hl');let f=40;sp.style.fontSize=f+'px';while(sp.scrollHeight>60&&f>28){f-=2;sp.style.fontSize=f+'px'}}else fit(hd,130,hookTxt?62:58);
  {const hold=s.kind==='big'&&i>0&&SC[i-1].chart!=null&&s.text_t&&t<s.text_t[0];hold?drawChart(i-1,SC[i-1].t1-.01):drawChart(i,t)}   // (big text: the last chart stays until its first word; the owner, round 5)
  // cards, big text
