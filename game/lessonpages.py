@@ -41,7 +41,7 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market.</b> Every account s
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
-        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">Expectancy calculator</a> · <a href="/about">About Meme Street</a>'
+        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">Expectancy calculator</a> · <a href="/tools/compound-growth-calculator">Compound growth calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a> · <a href="/vs">Compare</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
 
@@ -254,6 +254,45 @@ o.innerHTML=h}
 document.getElementById("f").addEventListener("input",go);go()})();
 </script>"""
 
+CG_PATH = "/tools/compound-growth-calculator"
+CG_TITLE = "Compound growth calculator and rule of 72 | Meme Street"
+CG_DESC = ("Free compound growth calculator with the rule of 72. Enter an amount, a yearly return and a number of years to see "
+           "what it grows to, and how long it takes to double. At 8% a year money doubles in about 9 years.")
+CG_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> &rsaquo; Tools</p><h1>Compound growth calculator and rule of 72</h1>
+<p class="lead">Divide 72 by the yearly return to get roughly how many years money takes to double: at 8% a year, 72 &divide; 8 = 9 years.
+Compounding means each year's gain is earned on the gains before it, so the balance after n years is the start &times; (1 + return)<sup>n</sup>.
+Enter your own numbers below.</p>
+<form id="f" class="try" onsubmit="return false">
+<p><label>Start amount <input id="p" type="number" min="0" step="any" value="10000"></label>
+<label>Yearly return (%) <input id="r" type="number" step="any" value="8"></label>
+<label>Years <input id="n" type="number" min="0" step="any" value="10"></label></p>
+<p class="sub">A steady yearly return is an assumption. Real returns vary from year to year, and the result ignores fees and tax.</p>
+</form>
+<div id="out" class="box tip" aria-live="polite">Enter your numbers above.</div>
+<noscript><p>This calculator needs JavaScript. The sum is: end balance = start &times; (1 + yearly return)<sup>years</sup>, and the years to double are about 72 &divide; the yearly return in %.</p></noscript>
+<h2>How it works</h2>
+<p>The end balance is the start amount multiplied by (1 + return) once for every year. The rule of 72 is a shortcut for the doubling time:
+72 &divide; the return in % gives the years, so about 12 years at 6% and about 8 years at 9%. The page also shows the exact doubling time,
+which is the same sum worked out with logarithms. The shortcut is close for returns of a few percent up to about 10%.</p>
+<div class="box warn"><b>Watch out:</b> compounding works against you too. A loss of 50% needs a gain of 100% to get back, which is why
+<a href="/tools/drawdown-recovery-calculator">the drawdown recovery calculator</a> matters as much as this one.</div>
+<p>Learn the idea in <a href="/lessons/basics-first">The basics first</a> and see how a strategy pays per trade with the
+<a href="/tools/expectancy-calculator">expectancy calculator</a>.</p>
+<script>
+(function(){var $=function(i){return document.getElementById(i)},o=$("out");
+function fmt(x){return x.toLocaleString("en-US",{maximumFractionDigits:2})}
+function go(){var p=+$("p").value,r=+$("r").value,n=+$("n").value;
+if(!(p>=0&&r>-100&&n>=0)){o.textContent="Enter a start amount of zero or more, a yearly return above -100 and zero or more years.";return}
+var e=p*Math.pow(1+r/100,n),h="<b>After "+fmt(n)+" years: "+fmt(e)+".</b> That is "+(e>=p?"a gain of ":"a loss of ")+fmt(Math.abs(e-p))+" on "+fmt(p)+".<br>";
+if(r>0){h+="Rule of 72: about "+fmt(72/r)+" years to double. Exact: "+fmt(Math.log(2)/Math.log(1+r/100))+" years."}
+else if(r===0){h+="At a return of 0% the balance never changes."}
+else{h+="With a negative return the balance shrinks and never doubles."}
+o.innerHTML=h}
+document.getElementById("f").addEventListener("input",go);go()})();
+</script>"""
+
+CG_LINK = ('<div class="try">Try it: the <a href="/tools/compound-growth-calculator">free compound growth calculator</a> '
+           "shows what a yearly return grows to and the years to double.</div>")
 SL_LINK = ('<div class="try">Try it: the <a href="/tools/stop-loss-calculator">free stop loss calculator</a> '
            "gives the stop price and the loss if it is hit.</div>")
 RR_LINK = ('<div class="try">Try it: the <a href="/tools/risk-reward-calculator">free risk reward ratio calculator</a> '
@@ -355,7 +394,7 @@ class Lessons:
                             url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
                 f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
-                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else DD_LINK if lid == "drawdown" else EX_LINK if lid == "expectancy" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else DD_LINK if lid == "drawdown" else EX_LINK if lid == "expectancy" else CG_LINK if lid == "basics-first" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
 
     def calculator(self):
         """The free position size calculator (works without an account; the sum runs in the page)."""
@@ -432,6 +471,21 @@ class Lessons:
         return (HEAD.format(t=html.escape(EX_TITLE), d=html.escape(EX_DESC), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=css) + EX_BODY + CTA + FOOT)
 
+    def compound_growth(self):
+        """The free compound growth calculator with the rule of 72 (works without an account; the sum runs in the page)."""
+        url = self.site + CG_PATH
+        ld = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Compound growth calculator",
+               "url": url, "description": CG_DESC, "applicationCategory": "FinanceApplication",
+               "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": "Compound growth calculator", "item": url}]}]
+        css = CSS + "label{display:inline-block;margin:6px 14px 6px 0}input{display:block;margin-top:4px;width:11em;max-width:100%;" \
+            "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
+        return (HEAD.format(t=html.escape(CG_TITLE), d=html.escape(CG_DESC), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=css) + CG_BODY + CTA + FOOT)
+
     def hub(self):
         url = self.site + "/lessons"
         d = self.hub_text
@@ -450,7 +504,7 @@ class Lessons:
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 100,000 MB of practice money on Meme Street's fictional market.</p>"
-                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">expectancy calculator</a></p>'
+                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">expectancy calculator</a> · <a href="/tools/compound-growth-calculator">compound growth calculator</a></p>'
                 + "".join(parts) + FOOT)
 
 
@@ -471,6 +525,9 @@ if __name__ == "__main__":
     assert dd.count("<h1>") == 1 and f'href="https://memestreet.net{DD_PATH}"' in dd and dd.count("<script>") == 1
     ex = L.expectancy()
     assert ex.count("<h1>") == 1 and f'href="https://memestreet.net{EX_PATH}"' in ex and ex.count("<script>") == 1
+    cg = L.compound_growth()
+    assert cg.count("<h1>") == 1 and f'href="https://memestreet.net{CG_PATH}"' in cg and cg.count("<script>") == 1
+    assert 'href="/tools/compound-growth-calculator"' in L.page("basics-first")
     assert 'href="/tools/expectancy-calculator"' in L.page("expectancy")
     assert 'href="/tools/drawdown-recovery-calculator"' in L.page("drawdown")
     assert 'href="/tools/stop-loss-calculator"' in L.page("stop-placement")

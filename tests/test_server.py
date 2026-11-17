@@ -148,7 +148,7 @@ class ServerTests(unittest.TestCase):
         self.assertTrue(body.startswith("# Meme Street\n\n> "))
         self.assertIn("/lessons/position-sizing): ", body)
         self.assertIn("no cash value", body)
-        for tool in ("position-size", "risk-reward", "stop-loss", "drawdown-recovery", "expectancy"):
+        for tool in ("position-size", "risk-reward", "stop-loss", "drawdown-recovery", "expectancy", "compound-growth"):
             self.assertIn(f"/tools/{tool}-calculator): ", body)
         import pages
         self.assertEqual(http(self.srv, f"/{pages.INDEXNOW_KEY}.txt")[:2], (200, pages.INDEXNOW_KEY))
@@ -232,6 +232,17 @@ class ServerTests(unittest.TestCase):
         self.assertIn("/tools/expectancy-calculator</loc>", body)
         status, body, _ = http(self.srv, "/lessons/expectancy")
         self.assertIn('href="/tools/expectancy-calculator"', body)
+
+    def test_the_compound_growth_calculator_is_a_plain_page(self):
+        status, body, _ = http(self.srv, "/tools/compound-growth-calculator")
+        self.assertEqual(status, 200)
+        self.assertIn("<h1>Compound growth calculator and rule of 72</h1>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/tools/compound-growth-calculator"', body)
+        self.assertIn('id="r"', body)
+        status, body, _ = http(self.srv, "/sitemap.xml")
+        self.assertIn("/tools/compound-growth-calculator</loc>", body)
+        status, body, _ = http(self.srv, "/lessons/basics-first")
+        self.assertIn('href="/tools/compound-growth-calculator"', body)
 
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")
