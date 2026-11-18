@@ -3,8 +3,8 @@
 import { makeLabel } from "./journal.js";
 import { pipSize, pointsToPips, roundPrice, sizeTrade, toPoints } from "./risk.js";
 
-function fail(code, message) {
-  return { ok: false, code, message };
+function fail(code, message, key = code) {
+  return { ok: false, code, message, key };
 }
 
 /**
@@ -20,35 +20,35 @@ function fail(code, message) {
  */
 export function buildOrder(input) {
   const { symbol, side, orderType, entry, stop, target, quote } = input;
-  if (input.limitsKnown === false) return fail("limits", "Your loss limits could not be checked (the account's history did not load). Nothing is placed until they can.");
-  if (input.accountType === "spreadBetting") return fail("account", "This is a spread-betting account: sizes there are stakes per point, which this panel does not size. Use the platform's own ticket.");
-  if (!symbol) return fail("symbol", "Open the panel on a symbol first.");
-  if (symbol.isPredictionMarket) return fail("symbol", "This is a prediction-market symbol, which this panel does not size.");
+  if (input.limitsKnown === false) return fail("limits", "Your loss limits could not be checked (the account's history did not load). Nothing is placed until they can.", "limitsUnknown");
+  if (input.accountType === "spreadBetting") return fail("account", "This is a spread-betting account: sizes there are stakes per point, which this panel does not size. Use the platform's own ticket.", "spreadBetting");
+  if (!symbol) return fail("symbol", "Open the panel on a symbol first.", "noSymbol");
+  if (symbol.isPredictionMarket) return fail("symbol", "This is a prediction-market symbol, which this panel does not size.", "prediction");
   if (input.accountType === "netted" && input.positionOnSymbol) {
-    return fail("netted", `This is a netting account and you already hold ${symbol.name}: a new order would change that position instead of opening its own. Close it first, or use the platform's own ticket.`);
+    return fail("netted", `This is a netting account and you already hold ${symbol.name}: a new order would change that position instead of opening its own. Close it first, or use the platform's own ticket.`, "netted");
   }
   if (!["market", "limit", "stop"].includes(orderType)) return fail("type", "Choose market, limit or stop.");
-  if (!quote || !(quote.bid > 0) || !(quote.ask > 0)) return fail("quote", "No live price for this symbol yet.");
+  if (!quote || !(quote.bid > 0) || !(quote.ask > 0)) return fail("quote", "No live price for this symbol yet.", "noQuote");
   const pip = pipSize(symbol.pipPosition);
   if (orderType === "market") {
     const gap = side === "buy" ? quote.bid - stop : stop - quote.ask;      // (from the price the stop is triggered by)
     if (stop > 0 && gap < pip - 1e-12) {
-      return fail("stop", `The stop is too close: it must be at least 1 pip beyond the ${side === "buy" ? "bid" : "ask"}, or it would be hit as soon as the order fills.`);
+      return fail("stop", `The stop is too close: it must be at least 1 pip beyond the ${side === "buy" ? "bid" : "ask"}, or it would be hit as soon as the order fills.`, "stopTooClose");
     }
   } else {
     const now = side === "buy" ? quote.ask : quote.bid;
     const ok = orderType === "limit" ? (side === "buy" ? entry < now : entry > now) : (side === "buy" ? entry > now : entry < now);
     if (!ok) {
       const where = (orderType === "limit") === (side === "buy") ? "below" : "above";
-      return fail("entry", `A ${side} ${orderType} order must be ${where} the current price.`);
+      return fail("entry", `A ${side} ${orderType} order must be ${where} the current price.`, "entrySide");
     }
   }
   const size = sizeTrade(input);
   if (!size.ok) return size;
   if (target != null && target !== "") {
-    if (!(target > 0)) return fail("target", "The target price is not valid.");
+    if (!(target > 0)) return fail("target", "The target price is not valid.", "targetInvalid");
     if (side === "buy" ? !(target > entry) : !(target < entry)) {
-      return fail("target", side === "buy" ? "For a buy, the target must be above the entry." : "For a sell, the target must be below the entry.");
+      return fail("target", side === "buy" ? "For a buy, the target must be above the entry." : "For a sell, the target must be below the entry.", "targetSide");
     }
   }
   const request = { symbolId: symbol.symbolId, orderType, side, volume: size.volume, stopLossTriggerMethod: "trade",

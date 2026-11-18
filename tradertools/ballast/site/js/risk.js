@@ -155,13 +155,16 @@ export function marketEntry(side, quote) {
 
 /**
  * Commission per unit per side, in the account's money.
- * c: { mode: "none" | "lot" (money per lot per side) | "million" (USD per million USD traded per side), value }
+ * c: { mode: "none" | "lot" (money per lot per side) | "million" (USD per million USD traded per side) |
+ *       "percent" (percent of the trade's value per side), value }
  * For "million": usdPerUnit is one unit's value in USD now (price x quote-to-USD rate) and usdToDeposit the rate
- * from USD to the account's money (both conservative).
+ * from USD to the account's money (both conservative). For "percent": depositPerUnit is one unit's value in the
+ * account's money (price x quote-to-deposit rate).
  */
-export function commissionPerUnit(c, { lotUnits, usdPerUnit, usdToDeposit } = {}) {
+export function commissionPerUnit(c, { lotUnits, usdPerUnit, usdToDeposit, depositPerUnit } = {}) {
   if (!c || c.mode === "none" || !(c.value > 0)) return 0;
   if (c.mode === "lot") return finitePositive(lotUnits) ? c.value / lotUnits : NaN;
+  if (c.mode === "percent") return finitePositive(depositPerUnit) ? (depositPerUnit * c.value) / 100 : NaN;
   if (c.mode === "million") return finitePositive(usdPerUnit) && finitePositive(usdToDeposit) ? (usdPerUnit * c.value * usdToDeposit) / 1e6 : NaN;
   return NaN;
 }
@@ -184,27 +187,27 @@ export function sizeTrade(input) {
   const commission = input.commission ?? 0;
   const feeRate = input.feeRate ?? 0;
   if (!symbol || !finitePositive(symbol.volumeStep) || !finitePositive(symbol.lotSize)) {
-    return fail("symbol", "This symbol's trading details are missing. Reopen the panel on the symbol.");
+    return fail("symbol", "This symbol's trading details are missing. Reopen the panel on the symbol.", { key: "symbolDetails" });
   }
-  if (!finitePositive(balance)) return fail("balance", "The account balance is not available.");
-  if (!finitePositive(risk)) return fail("risk", "Enter the risk: a percent of the balance, or an amount of money.");
-  if (riskMode === "percent" && risk > 100) return fail("risk", "A risk above 100% of the balance is not possible.");
-  if (!finitePositive(entry)) return fail("entry", "Enter the entry price.");
-  if (!finitePositive(stop)) return fail("stop", "Enter the stop.");
-  if (!finitePositive(rate)) return fail("rate", "No exchange rate into the account's currency is available yet, so the risk cannot be sized.");
-  if (!(commission >= 0) || !Number.isFinite(commission)) return fail("commission", "The commission cannot be worked out for this symbol. Check the commission setting.");
-  if (!(feeRate >= 0) || feeRate >= 1) return fail("fee", "The platform's conversion fee for this symbol is not valid.");
-  if (side !== "buy" && side !== "sell") return fail("side", "Choose Buy or Sell.");
+  if (!finitePositive(balance)) return fail("balance", "The account balance is not available.", { key: "balance" });
+  if (!finitePositive(risk)) return fail("risk", "Enter the risk: a percent of the balance, or an amount of money.", { key: "riskEmpty" });
+  if (riskMode === "percent" && risk > 100) return fail("risk", "A risk above 100% of the balance is not possible.", { key: "riskTooBig" });
+  if (!finitePositive(entry)) return fail("entry", "Enter the entry price.", { key: "entryEmpty" });
+  if (!finitePositive(stop)) return fail("stop", "Enter the stop.", { key: "stopEmpty" });
+  if (!finitePositive(rate)) return fail("rate", "No exchange rate into the account's currency is available yet, so the risk cannot be sized.", { key: "noRate" });
+  if (!(commission >= 0) || !Number.isFinite(commission)) return fail("commission", "The commission cannot be worked out for this symbol. Check the commission setting.", { key: "commission" });
+  if (!(feeRate >= 0) || feeRate >= 1) return fail("fee", "The platform's conversion fee for this symbol is not valid.", { key: "fee" });
+  if (side !== "buy" && side !== "sell") return fail("side", "Choose Buy or Sell.", { key: "side" });
 
   const points = Math.abs(toPoints(entry, symbol.digits) - toPoints(stop, symbol.digits));
-  if (points === 0) return fail("stop", "The stop is at the entry price: there is no distance to size from.");
-  if (side === "buy" && stop > entry) return fail("stop", "For a buy, the stop must be below the entry.");
-  if (side === "sell" && stop < entry) return fail("stop", "For a sell, the stop must be above the entry.");
+  if (points === 0) return fail("stop", "The stop is at the entry price: there is no distance to size from.", { key: "stopAtEntry" });
+  if (side === "buy" && stop > entry) return fail("stop", "For a buy, the stop must be below the entry.", { key: "stopSideBuy" });
+  if (side === "sell" && stop < entry) return fail("stop", "For a sell, the stop must be above the entry.", { key: "stopSideSell" });
 
   let budget = riskMode === "percent" ? (balance * risk) / 100 : risk;
   let cut = false;
   if (input.room != null) {
-    if (!(input.room > 0)) return fail("limit", "Your loss limit has no room left. This panel will not place orders until it resets.");
+    if (!(input.room > 0)) return fail("limit", "Your loss limit has no room left. This panel will not place orders until it resets.", { key: "noRoom" });
     if (input.room < budget) {
       budget = input.room;
       cut = true;
@@ -232,7 +235,7 @@ export function sizeTrade(input) {
   }
   if (volume < minVolume - EPS) {
     const minRisk = minVolume * riskPerVolume;
-    return fail("min", `The smallest size this symbol allows would risk ${money(minRisk)}, more than the ${money(budget)} ${cut ? "your limits leave" : "chosen"}. Nothing is placed.`, { minRisk, budget });
+    return fail("min", `The smallest size this symbol allows would risk ${money(minRisk)}, more than the ${money(budget)} ${cut ? "your limits leave" : "chosen"}. Nothing is placed.`, { minRisk, budget, cut, key: "minSize" });
   }
   const units = roundClean(volume * unitsPerVolume);
   return {

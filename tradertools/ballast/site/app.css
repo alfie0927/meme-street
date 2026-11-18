@@ -79,3 +79,23 @@ footer { text-align: center; padding: 4px 0 10px; }
 textarea { width: 100%; font: 12px/1.35 ui-monospace, Consolas, monospace; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 6px; }
 ol { margin: 0; padding-left: 20px; }
 li { margin: 2px 0; word-break: break-word; }
+/* quick risk chips; the Place button in the side's colour */
+.chips { display: flex; gap: 6px; }
+.chips button { flex: 1; min-height: 30px; padding: 3px 6px; font-size: 13px; color: var(--mut); }
+.chips button.on { color: var(--text); border-color: var(--acc); }
+#place.buy { background: var(--buy); border-color: var(--buy); color: #04140a; }
+#place.sell { background: var(--sell); border-color: var(--sell); color: #1a0402; }
+.neutral { color: var(--mut); }
+.tabs { scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+/* narrow panels and phones: labels above their fields, tabs that fit, controls big enough to tap */
+@media (max-width: 440px) {
+  .grid.stack { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .grid.stack label { margin-top: 6px; }
+  .tabs button { padding: 8px 6px; font-size: 13px; flex: 1; }
+}
+@media (pointer: coarse) {
+  input, select, button { min-height: 44px; font-size: 16px; }
+  .chips button { min-height: 40px; font-size: 15px; }
+  .tabs button { min-height: 44px; }
+}

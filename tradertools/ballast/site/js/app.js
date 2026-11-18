@@ -1,17 +1,19 @@
 // Ballast: the panel. Five tools over one account: Ticket (size, review, place), Limits (daily and total loss, the way
 // funded-account firms count them), Exposure (open risk at the stops), Journal (trades in R) and Sessions (the
 // market's clock). The maths is in risk.js, limits.js, journal.js and sessions.js; ticket.js builds the order and is
-// the only way one is sent; host.js (cTrader) or host-mock.js (?mock=1) supplies the account and prices.
+// the only way one is sent; host.js (cTrader) or host-mock.js (?mock=1) supplies the account and prices; every
+// sentence shown is in i18n.js.
+import { applyStatic, setLanguage, t } from "./i18n.js";
 import { bySymbol, newTradeId, stats, toCSV, tradeLog } from "./journal.js";
 import { dayStart, limitState } from "./limits.js";
 import {
-  atr, commissionPerUnit, conversionPath, conversionRate, lotDecimals, marketEntry, money, parseNumber, pipSize,
-  positionRisk, rewardRisk, roundPrice, targetFromR,
+  atr, commissionPerUnit, conversionPath, conversionRate, lotDecimals, marketEntry, parseNumber, pipSize, positionRisk,
+  rewardRisk, roundPrice, targetFromR,
 } from "./risk.js";
 import { fxWeekOpen, sessionState, span } from "./sessions.js";
 import { buildOrder, createPlacer } from "./ticket.js";
 
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 // The paid plugin's id in the cTrader Store (the `id` query parameter). Empty until the Store gives one; then only
 // that id may place orders from this page. ponytail: a determined copier can get round it; there is no server.
 const PAID_IDS = [];
@@ -20,20 +22,26 @@ const KEY = "ballast.v1";
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const edition = document.body.dataset.edition === "trial" ? "trial" : "full";
-const canPlace = edition === "full" && (PAID_IDS.length === 0 || PAID_IDS.includes(params.get("id")));
+const full = edition === "full";
+const canPlace = full && (PAID_IDS.length === 0 || PAID_IDS.includes(params.get("id")));
 document.documentElement.dataset.theme = params.get("theme") === "light" ? "light" : "dark";
+document.documentElement.lang = setLanguage(params.get("lang"));
+applyStatic();
 const DEC = (1.5).toLocaleString().includes(",") ? "," : ".";
 const num = (v) => parseNumber(v, DEC);
 const browserTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } })();
 const TZS = [[browserTz, `Your time zone (${browserTz})`], ["UTC", "UTC"], ["Europe/Prague", "Prague (FTMO and others)"],
-             ["Europe/Athens", "Athens: many brokers' server time"], ["America/New_York", "New York (the forex day ends at 17:00)"],
+             ["Europe/Athens", "Athens: many brokers' server time"], ["America/New_York", "New York (forex day ends 17:00)"],
              ["Europe/London", "London"], ["Asia/Dubai", "Dubai"], ["Asia/Singapore", "Singapore"], ["Australia/Sydney", "Sydney"]]
   .filter((x, i, a) => a.findIndex((y) => y[0] === x[0]) === i);
+const TZ_NAME = { "Europe/Prague": "Prague", "Europe/Athens": "Athens", "America/New_York": "New York", "Europe/London": "London",
+                  "Asia/Dubai": "Dubai", "Asia/Singapore": "Singapore", "Australia/Sydney": "Sydney", UTC: "UTC" };
 
 $("version").textContent = "v" + VERSION;
-$("edition").textContent = edition === "trial" ? "Trial: sizes and checks; does not place orders" : "Risk toolkit";
+$("edition").textContent = t(full ? "h.full" : "h.trial");
+$("acct").textContent = t("h.connecting");
 
-// ---- storage: one record per account, in this browser only ----------------------------------------------------------
+// ---- storage: one record per account, in this browser or app only ---------------------------------------------------
 let cfg = {};
 let cfgKey = KEY;
 function load(key) {
@@ -43,12 +51,22 @@ function save() {
   try { localStorage.setItem(cfgKey, JSON.stringify(cfg)); } catch { /* storage may be off: settings last for this visit */ }
 }
 
-const st = { host: null, acct: null, sym: null, list: [], assetId: {}, depositAsset: null, usdAsset: null, quotes: {},
-             quoteKey: "", stopQuotes: () => {}, details: {}, positions: [], deals: [], dealsComplete: false, built: null,
-             frozen: null, limits: null, atr: null, tradeId: newTradeId(), side: "buy", painting: false };
+const st = { host: null, acct: null, sym: null, list: [], assetId: {}, assetName: {}, depositAsset: null, usdAsset: null,
+             quotes: {}, quoteKey: "", stopQuotes: () => {}, details: {}, positions: [], deals: [], dealsComplete: false,
+             built: null, frozen: null, limits: null, atr: null, tradeId: newTradeId(), side: "buy", painting: false, sent: false };
 
-const fmt = (x, d) => (Number.isFinite(x) ? x.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d }) : "-");
+// ---- numbers: one format, the reader's own ---------------------------------------------------------------------------
+const nf = (x, d) => (Number.isFinite(x) ? x.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d }) : "-");
+const CUR_DEC = { BTC: 8, ETH: 6, JPY: 0, HUF: 0, KRW: 0 };
 const cur = () => (st.acct ? st.acct.currency : "");
+const money = (x) => `${nf(x, CUR_DEC[cur()] ?? 2)} ${cur()}`;
+const price = (x, s = st.sym) => nf(x, s ? s.digits : 5);
+const isPoints = (s) => s && s.pipPosition === 0;
+const unit = (s, one = false) => t(isPoints(s) ? (one ? "units.point" : "units.points") : (one ? "units.pip" : "units.pips"));
+function baseName(s) {
+  const n = s && st.assetName[s.baseAssetId];
+  return n && n.length <= 6 ? n : t("units.units");
+}
 function el(tag, cls, text) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -59,32 +77,49 @@ function banner(text) {
   $("banner").hidden = !text;
   $("banner").textContent = text || "";
 }
+/** A refusal from the maths, in the reader's words. */
+function why(r) {
+  if (!r) return "";
+  if (r.key === "minSize") return t("e.minSize", { min: money(r.minRisk), budget: money(r.budget), whose: t(r.cut ? "e.minSize.limits" : "e.minSize.chosen") });
+  if (r.key === "entrySide") return t(`e.entrySide.${st.side}.${$("otype").value}`);
+  if (r.key === "targetSide") return t(`e.targetSide.${st.side}`);
+  if (r.key === "stopTooClose") return t("e.stopTooClose", { unit1: unit(st.sym, true), side: st.side === "buy" ? "bid" : "ask" });
+  if (r.key === "netted") return t("e.netted", { symbol: st.sym ? st.sym.name : "" });
+  if (r.key === "noRate") return t("e.noRate", { cur: cur() });
+  return r.key ? t("e." + r.key) : r.message;
+}
 
 // ---- start-up --------------------------------------------------------------------------------------------------------
 const FIELDS = ["risk", "risk-mode", "stop-unit", "target-unit", "comm-mode", "comm", "atr-period", "lim-day", "lim-day-mode",
-                "lim-total", "lim-total-mode", "lim-start", "lim-rule", "lim-trail", "lim-hour", "lim-tz", "lim-open"];
-const DEFAULTS = { risk: "1", "risk-mode": "percent", "stop-unit": "pips", "target-unit": "r", "comm-mode": "none",
-                   "lim-day-mode": "money", "lim-total-mode": "money", "lim-rule": "balance", "lim-trail": "static",
+                "lim-total", "lim-total-mode", "lim-start", "lim-rule", "lim-trail", "lim-hour", "lim-tz", "lim-open", "lim-totalfloor"];
+const DAILY_FIELDS = ["lim-dayfloor", "lim-sodeq"];            // (today's figures: forgotten when the day resets)
+const DEFAULTS = { risk: "1", "risk-mode": "percent", "stop-unit": "pips", "target-unit": "r", "comm-mode": "unset",
+                   "lim-day-mode": "pct", "lim-total-mode": "pct", "lim-rule": "balance", "lim-trail": "static",
                    "lim-hour": "0", "lim-tz": "Europe/Prague", "lim-open": "stops" };
 
 async function start() {
   for (let h = 0; h < 24; h++) $("lim-hour").add(new Option(String(h).padStart(2, "0") + ":00", String(h)));
-  for (const [v, t] of TZS) $("lim-tz").add(new Option(t, v));
+  for (const [v, text] of TZS) $("lim-tz").add(new Option(text, v));
   showTab(load(KEY).tab || "ticket");
   if (!canPlace) {
     $("place").hidden = true;
     $("review-note").hidden = false;
-    $("review-note").textContent = edition === "trial"
-      ? "The trial sizes the trade and checks your limits. Placing it from here is in the full version."
-      : "This copy is not the Store's paid plugin, so it does not place orders.";
+    $("review-note").textContent = t(full ? "v.notPaid" : "v.trial");
+  }
+  if (!full) {
+    $("limits-form").hidden = true;
+    $("limits-out").textContent = t("f.limits");
+    for (const id of ["journal-tables", "journal-log-card"]) $(id).hidden = true;
+    $("csv").hidden = true;
+    $("journal-sum").textContent = t("f.journal");
   }
   try {
     st.host = params.has("mock") ? await import("./host-mock.js") : await import("./host.js");
     await st.host.connect();
     st.acct = await st.host.account();
   } catch (e) {
-    $("acct").textContent = "Not connected";
-    banner("Ballast runs inside cTrader. It could not reach cTrader here" + (e && e.message ? ` (${e.message})` : "") + ".");
+    $("acct").textContent = t("h.notConnected");
+    banner(t("e.notConnected", { why: e && e.message ? ` (${e.message})` : "" }));
     return;
   }
   cfgKey = `${KEY}.${st.acct.login}`;
@@ -94,8 +129,11 @@ async function start() {
   try {
     st.list = await st.host.symbolList();
     const ids = [...new Set(st.list.flatMap((s) => [s.baseAssetId, s.quoteAssetId]).filter((x) => x != null))];
-    for (const a of await st.host.assets(ids)) st.assetId[a.name] = a.assetId;
-  } catch { /* without the list, only same-currency symbols can be sized; the banner says so */ }
+    for (const a of await st.host.assets(ids)) {
+      st.assetId[a.name] = a.assetId;
+      st.assetName[a.assetId] = a.name;
+    }
+  } catch { /* without the list only same-currency symbols can be sized; the ticket says so */ }
   st.depositAsset = st.assetId[st.acct.currency] ?? null;
   st.usdAsset = st.assetId.USD ?? null;
   try {
@@ -107,13 +145,13 @@ async function start() {
   await refreshAll();
   let pending = null;
   st.host.onExecution(() => { clearTimeout(pending); pending = setTimeout(refreshAll, 800); });
-  setInterval(refreshAll, 30000);                          // (reading only: nothing is ever sent on a timer)
+  setInterval(refreshAll, 30000);                           // (reading only: nothing is ever sent on a timer)
   setInterval(renderSessions, 30000);
 }
 
 function showAccount() {
   const a = st.acct;
-  $("acct").textContent = `${a.environment === "demo" ? "Demo" : "Live"} · ${fmt(a.balance, 2)} ${a.currency}`;
+  $("acct").textContent = `${t(a.environment === "demo" ? "h.demo" : "h.live")} · ${money(a.balance)}`;
 }
 
 async function refreshAll() {
@@ -130,7 +168,7 @@ async function refreshAll() {
   }
   const missing = [...new Set(st.positions.map((p) => p.symbolId))].filter((id) => !st.details[id]);
   if (missing.length) {
-    try { for (const d of await st.host.symbolsById(missing)) st.details[d.symbolId] = d; } catch { /* exposure shows "unknown" */ }
+    try { for (const d of await st.host.symbolsById(missing)) st.details[d.symbolId] = d; } catch { /* exposure shows "no price yet" */ }
   }
   subscribe();
   paint();
@@ -157,7 +195,7 @@ function subscribe() {
     const o = st.quotes[q.symbolId] || (st.quotes[q.symbolId] = {});
     if (q.bid != null) o.bid = q.bid;                        // (an event may carry one side only)
     if (q.ask != null) o.ask = q.ask;
-    if (st.sym && q.symbolId === st.sym.symbolId) $("px").textContent = `${fmt(o.bid, st.sym.digits)} / ${fmt(o.ask, st.sym.digits)}`;
+    if (st.sym && q.symbolId === st.sym.symbolId) $("px").textContent = `${price(o.bid)} / ${price(o.ask)}`;
     if (!st.painting) {
       st.painting = true;
       requestAnimationFrame(() => { st.painting = false; paint(); });
@@ -179,12 +217,13 @@ async function loadSymbol(name) {
   st.sym = name ? await st.host.symbol(name).catch(() => null) : null;
   st.atr = null;
   if (!st.sym) {
-    banner(`No symbol called ${name || "(empty)"} on this account.`);
+    banner(name ? t("e.noSymbolFound", { name }) : "");
   } else {
     st.details[st.sym.symbolId] = st.sym;
-    banner(pathOf(st.sym.quoteAssetId) ? "" : `There is no price to turn ${name}'s currency into ${cur()}, so its risk cannot be sized.`);
+    banner(pathOf(st.sym.quoteAssetId) ? "" : t("e.noPath", { name, cur: cur() }));
     cfg.symbol = name;
     save();
+    $("opt-pips").textContent = isPoints(st.sym) ? "points away" : "pips away";
     loadAtr();
   }
   subscribe();
@@ -209,9 +248,9 @@ function ticketInputs() {
   const quote = s ? st.quotes[s.symbolId] : null;
   const entry = orderType === "market" ? marketEntry(st.side, quote) : num($("entry").value);
   let stop = num($("stop").value);
-  const unit = $("stop-unit").value;
-  if (s && Number.isFinite(stop) && Number.isFinite(entry) && unit !== "price") {
-    const d = unit === "pips" ? stop * pipSize(s.pipPosition) : stop * (st.atr || NaN);
+  const u = $("stop-unit").value;
+  if (s && Number.isFinite(stop) && Number.isFinite(entry) && u !== "price") {
+    const d = u === "pips" ? stop * pipSize(s.pipPosition) : stop * (st.atr || NaN);
     stop = roundPrice(st.side === "buy" ? entry - d : entry + d, s.digits);
   }
   let target = num($("target").value);
@@ -220,19 +259,22 @@ function ticketInputs() {
   const rate = s ? rateFor(s, stop) : NaN;
   let commission = 0;
   const cm = $("comm-mode").value;
-  if (s && cm !== "none") {
+  if (s && cm !== "unset" && cm !== "none") {
     const value = num($("comm").value);
     const lotUnits = s.lotSize * (s.unitsPerVolume || 1);
     const toUsd = s.quoteAssetId === st.usdAsset ? 1 : (() => { const r = conversionRate(pathOf(s.quoteAssetId, st.usdAsset), st.quotes); return r.ok ? r.rate : NaN; })();
     const usdToDep = st.usdAsset === st.depositAsset ? 1 : (() => { const r = conversionRate(pathOf(st.usdAsset), st.quotes); return r.ok ? r.rate : NaN; })();
-    commission = Number.isFinite(value) ? commissionPerUnit({ mode: cm, value }, { lotUnits, usdPerUnit: entry * toUsd, usdToDeposit: usdToDep }) : NaN;
+    commission = Number.isFinite(value)
+      ? commissionPerUnit({ mode: cm, value }, { lotUnits, usdPerUnit: entry * toUsd, usdToDeposit: usdToDep, depositPerUnit: entry * rate })
+      : NaN;
   }
   const L = st.limits;
   return {
     symbol: s, side: st.side, orderType, entry, stop, target, quote, balance: st.acct ? st.acct.balance : NaN,
     riskMode: $("risk-mode").value, risk: num($("risk").value), rate, commission,
     feeRate: s && s.quoteAssetId !== st.depositAsset ? s.feeRate || 0 : 0,
-    room: L && L.room != null ? L.room : null, limitsKnown: L ? L.known : true, accountType: st.acct && st.acct.accountType,
+    room: full && L && L.room != null ? L.room : null, limitsKnown: full && L ? L.known : true,
+    accountType: st.acct && st.acct.accountType,
     positionOnSymbol: !!(s && st.positions.some((p) => p.symbolId === s.symbolId)), tradeId: st.tradeId,
   };
 }
@@ -242,170 +284,216 @@ function renderTicket() {
   st.built = buildOrder(inp);
   const out = $("result");
   out.textContent = "";
-  const d = st.sym ? lotDecimals(st.sym) : 2;
+  const s = st.sym;
+  const lotD = s ? lotDecimals(s) : 2;
+  const L = full && st.limits;
   if (!st.built.ok) {
-    out.append(el("p", "warn", st.built.message));
+    out.append(el("p", st.built.key === "stopEmpty" || st.built.key === "noQuote" ? "neutral" : "warn", why(st.built)));
   } else {
     const r = st.built.review;
-    out.append(el("div", "big", `${fmt(r.lots, d)} lots`));
-    out.append(el("div", null, `Loses ${money(r.riskMoney)} ${cur()} at the stop${r.commissionRisk > 0 ? ` (${money(r.priceRisk)} price, ${money(r.commissionRisk)} commission)` : ""} · stop ${fmt(r.pips, 1)} pips`));
-    out.append(el("div", "mut small", `${fmt(r.units, 2)} units · budget ${money(r.budget)} ${cur()}`));
+    out.append(el("div", "big", t("r.lots", { lots: nf(r.lots, lotD) })), el("div", "mut small", t("r.units", { units: nf(r.units, r.units < 10 ? 2 : 0), base: baseName(s) })));
+    out.append(el("div", null, t("r.stopLine", { stop: price(r.stop), dist: nf(r.pips, 1), unit: unit(s), loss: money(r.riskMoney) })));
+    if (r.commissionRisk > 0) out.append(el("div", "mut small", t("r.split", { price: money(r.priceRisk), comm: money(r.commissionRisk) })));
+    const perPip = r.units * pipSize(s.pipPosition) * inp.rate;
+    out.append(el("div", "mut small", t("r.perUnit", { unit1: unit(s, true), value: money(perPip) })));
+    if (s.pipPosition !== 4 && s.pipPosition !== 2 && !isPoints(s)) {
+      out.append(el("div", "mut small", t("r.priceDistance", { dist: nf(r.pips, 1), unit: unit(s), price: nf(Math.abs(r.entry - r.stop), s.digits) })));
+    }
+    if (s.quoteAssetId !== st.depositAsset && st.assetName[s.quoteAssetId]) {
+      out.append(el("div", "mut small", t("r.conversion", { cur: cur(), quote: st.assetName[s.quoteAssetId], rate: nf(inp.rate, 5) })));
+    }
     const rr = inp.target ? rewardRisk(inp.entry, inp.stop, inp.target) : null;
-    if (rr) out.append(el("div", "mut small", `Target ${fmt(inp.target, st.sym.digits)}: ${fmt(rr.rr, 2)} times the risk; it breaks even at ${fmt(rr.breakEvenWinRate * 100, 0)}% wins, before costs.`));
-    if (r.cut) out.append(el("div", "warn", "Cut to fit your loss limits: this is the most they leave room for."));
-    if (r.capped) out.append(el("div", "warn", "Capped at the largest size this symbol allows."));
-    if (r.leverage > 20) out.append(el("div", "warn", `This position is worth ${fmt(r.leverage, 0)} times your balance: a tight stop makes a big position. Check the margin it needs.`));
-    if ($("comm-mode").value === "none") out.append(el("div", "mut small", "Commission is set to none: if your account pays commission, set it under Costs."));
+    if (rr) out.append(el("div", "mut small", t("r.target", { target: price(inp.target), rr: nf(rr.rr, 2), be: nf(rr.breakEvenWinRate * 100, 0) })));
+    if (r.cut) out.append(el("div", "warn", t("r.cut")));
+    if (r.capped) out.append(el("div", "warn", t("r.capped")));
+    if (r.leverage > 20) out.append(el("div", "warn", t("r.leverage", { x: nf(r.leverage, 0) })));
+  }
+  if ($("comm-mode").value === "unset" && s) out.append(el("div", "mut small", t("r.commUnset")));
+  if (L) {
+    for (const [k, x] of [["day", L.day], ["total", L.total]]) {
+      if (x && !x.error && (x.light === "amber" || x.light === "red")) out.append(el("div", "warn", t("r.limitWarn", { which: t("r.which." + k), pct: nf(x.used * 100, 0) })));
+    }
   }
   const atrOn = $("stop-unit").value === "atr";
-  $("atr-line").hidden = !(st.atr && st.sym);
-  if (st.atr && st.sym) {
-    const pips = st.atr / pipSize(st.sym.pipPosition);
-    const k = atrOn ? num($("stop").value) : NaN;
-    $("atr-line").textContent = `Volatility: ATR(14) on the ${$("atr-period").selectedOptions[0]?.text || "chart"} is ${fmt(st.atr, st.sym.digits)} (${fmt(pips, 1)} pips)` +
-      (Number.isFinite(k) ? `; ${fmt(k, 2)} x ATR is ${fmt(pips * k, 1)} pips.` : ". Choose \"x ATR\" to set the stop as a multiple of it.");
+  document.querySelectorAll(".atr-row").forEach((e) => { e.hidden = !atrOn; });
+  if (atrOn && s) {
+    const period = $("atr-period").selectedOptions[0]?.text || "";
+    if (st.atr) {
+      const pips = st.atr / pipSize(s.pipPosition);
+      const k = num($("stop").value);
+      $("atr-line").textContent = t("r.atr", { period, atr: nf(st.atr, s.digits), pips: nf(pips, 1), unit: unit(s), k: Number.isFinite(k) ? nf(k, 2) : "-", kpips: Number.isFinite(k) ? nf(pips * k, 1) : "-" });
+    } else {
+      $("atr-line").textContent = t("r.atrNone", { period });
+    }
   }
   const cm = $("comm-mode").value;
-  document.querySelectorAll(".comm-row").forEach((e) => { e.hidden = cm === "none"; });
-  $("costs-sum").textContent = cm === "none" ? "· no commission" : `· ${$("comm").value || "?"} ${cm === "lot" ? cur() + " per lot" : "USD per million"}, each side`;
+  document.querySelectorAll(".comm-row").forEach((e) => { e.hidden = cm === "unset" || cm === "none"; });
+  const sumText = { unset: "· not set", none: "· no commission", lot: `· ${$("comm").value || "?"} ${cur()} a lot, each side`,
+                    million: `· ${$("comm").value || "?"} USD a million, each side`, percent: `· ${$("comm").value || "?"}% each side` };
+  $("costs-sum").textContent = sumText[cm] || "";
+  document.querySelectorAll("[data-risk]").forEach((b) => b.classList.toggle("on", $("risk-mode").value === "percent" && num($("risk").value) === Number(b.dataset.risk)));
   $("review").disabled = !st.built.ok;
 }
 
 // ---- limits -------------------------------------------------------------------------------------------------------------
 function openRisk() {
-  let total = 0;
+  let fromEntry = 0;
+  let fromNow = 0;
   let noStop = 0;
   let unknown = 0;
   const rows = st.positions.map((p) => {
     const d = st.details[p.symbolId];
     const rate = d ? rateFor(d, p.stopLoss) : NaN;
-    const risk = d && Number.isFinite(rate) ? positionRisk(p, rate, d.unitsPerVolume || 1) : undefined;
+    const u = d ? d.unitsPerVolume || 1 : 1;
+    const risk = d && Number.isFinite(rate) ? positionRisk(p, rate, u) : undefined;
+    const q = st.quotes[p.symbolId];
+    const exitNow = q ? (p.side === "buy" ? q.bid : q.ask) : NaN;
+    const now = risk == null || !Number.isFinite(exitNow) ? risk : positionRisk({ ...p, entryPrice: exitNow }, rate, u);
     if (risk === null) noStop += 1;
     else if (risk === undefined) unknown += 1;
-    else total += risk;
-    return { p, d, risk };
+    else {
+      fromEntry += risk;
+      fromNow += Number.isFinite(now) ? now : risk;
+    }
+    return { p, d, risk, now };
   });
-  return { rows, total, noStop, unknown };
+  return { rows, fromEntry, fromNow, noStop, unknown };
 }
 
 function computeLimits() {
   const a = st.acct;
-  if (!a) return null;
+  if (!a || !full) return null;
   const startBal = num($("lim-start").value);
-  const asMoney = (v, mode) => (mode === "pct" ? (Number.isFinite(startBal) ? (startBal * v) / 100 : NaN) : v);
-  const dayLimit = asMoney(num($("lim-day").value), $("lim-day-mode").value);
-  const totalLimit = asMoney(num($("lim-total").value), $("lim-total-mode").value);
+  const asMoney = (id, modeId) => {
+    const v = num($(id).value);
+    if (!Number.isFinite(v)) return null;                   // (empty: no limit)
+    return $(modeId).value === "pct" ? (Number.isFinite(startBal) && startBal > 0 ? (startBal * v) / 100 : NaN) : v;
+  };
   const now = Date.now();
-  const dayFrom = dayStart(now, Number($("lim-hour").value) || 0, $("lim-tz").value || "UTC");
+  const tz = $("lim-tz").value || "UTC";
+  const dayFrom = dayStart(now, Number($("lim-hour").value) || 0, tz);
   const equity = Number.isFinite(a.equity) ? a.equity : a.balance;
-  if (!cfg.sod || cfg.sod.day !== dayFrom) {                 // (the day's opening equity, if this panel sees the day begin)
+  if (!cfg.sod || cfg.sod.day !== dayFrom) {                // (the day's opening equity, if this panel sees the day begin)
     cfg.sod = { day: dayFrom, equity: now - dayFrom < 15 * 60000 ? equity : null };
+    cfg.daily = { day: dayFrom };                           // (today's typed figures are forgotten at the reset)
+    for (const f of DAILY_FIELDS) $(f).value = "";
     save();
   }
   const peak = Math.max(cfg.peak || 0, a.balance, equity);
   if (peak !== cfg.peak) { cfg.peak = peak; save(); }
   const exp = openRisk();
-  let eff = equity;
-  let openNote = "";
-  if ($("lim-open").value === "stops") {
-    if (exp.noStop || exp.unknown) openNote = `${exp.noStop + exp.unknown} open trade${exp.noStop + exp.unknown === 1 ? " has" : "s have"} no stop (or no price yet), so ${exp.noStop + exp.unknown === 1 ? "it is" : "they are"} counted at today's price only.`;
-    eff = Math.min(equity, a.balance - exp.total);
-  }
-  const s = limitState({ balance: a.balance, equity: eff, deals: st.deals, dayFrom, dealsOk: st.dealsComplete,
-                         rule: $("lim-rule").value, sodEquity: cfg.sod.equity, dayLimit, totalLimit, initial: startBal,
-                         totalMode: $("lim-trail").value, peak });
-  s.openNote = openNote;
+  const worstEquity = $("lim-open").value === "stops" ? equity - exp.fromNow : equity;
+  const sodTyped = num($("lim-sodeq").value);
+  const s = limitState({ balance: a.balance, equity, worstEquity, deals: st.deals, dayFrom, dealsOk: st.dealsComplete,
+                         rule: $("lim-rule").value, sodEquity: Number.isFinite(sodTyped) ? sodTyped : cfg.sod.equity,
+                         dayFloor: num($("lim-dayfloor").value), dayLimit: asMoney("lim-day", "lim-day-mode"),
+                         totalLimit: asMoney("lim-total", "lim-total-mode"), initial: startBal, totalMode: $("lim-trail").value,
+                         peak, totalFloor: num($("lim-totalfloor").value) });
+  s.openNoStop = $("lim-open").value === "stops" ? exp.noStop + exp.unknown : 0;
   s.dayFrom = dayFrom;
+  s.tz = tz;
   return s;
 }
 
 function renderLimits() {
   const s = (st.limits = computeLimits());
+  if (!full) return;
   const box = $("limits-out");
   box.textContent = "";
   if (!s || (!s.day && !s.total)) {
-    box.append(el("p", "mut", "No limits set. If a firm funds your account, enter its daily and total loss limits below; Ballast then sizes every trade so a stop-out cannot break them."));
+    box.append(el("p", "mut", t("l.none")), el("p", "mut small", t("l.device")));
     $("light-tab").hidden = true;
     return;
   }
-  const worst = [s.day, s.total].filter(Boolean).map((x) => x.light);
-  const lightAll = worst.includes("unknown") ? "unknown" : worst.includes("red") ? "red" : worst.includes("amber") ? "amber" : "green";
+  const lights = [s.day, s.total].filter(Boolean).map((x) => x.light);
+  const lightAll = lights.includes("unknown") ? "unknown" : lights.includes("red") ? "red" : lights.includes("amber") ? "amber" : "green";
   $("light-tab").hidden = false;
   $("light-tab").className = "dot " + lightAll;
-  for (const [name, x] of [["Today", s.day], ["In total", s.total]]) {
+  for (const [name, x] of [["l.today", s.day], ["l.total", s.total]]) {
     if (!x) continue;
-    box.append(el("h3", null, name));
-    if (x.loss == null || x.light === "unknown") {
-      box.append(el("p", "bad", name === "Today" ? "Unknown: the account's history did not load, so today's loss cannot be checked. Orders are blocked until it loads." : `Unknown: ${x.refNote}.`));
+    box.append(el("h3", null, t(name)));
+    if (x.error) {
+      box.append(el("p", "bad", t("l.err." + x.error)));
       continue;
     }
     const meter = el("div", "meter");
     const bar = el("i", x.light);
     bar.style.width = Math.min(100, x.used * 100).toFixed(1) + "%";
     meter.append(bar);
-    box.append(el("div", null, `${money(x.loss)} of ${money(x.limit)} ${cur()} used (${fmt(x.used * 100, 0)}%)`), meter,
-               el("div", "mut small", `Counted from ${x.refNote}: ${money(x.ref)} ${cur()}.`));
+    box.append(el("div", null, t("l.used", { loss: money(x.loss), limit: money(x.limit), pct: nf(x.used * 100, 0) })), meter);
+    if (x.worst > x.loss + 0.005) box.append(el("div", "small", t("l.worst", { worst: money(x.worst) })));
+    box.append(el("div", "mut small", t("l.from", { what: t("l.ref." + x.refCode), ref: money(x.ref) })));
+    if (x.uncertain) box.append(el("p", "warn", t("l.unc." + x.uncertain)));
   }
-  if (s.room != null) box.append(el("p", s.room > 0 ? null : "bad", s.room > 0 ? `A new trade may lose at most ${money(s.room)} ${cur()}: Ticket cuts the size to fit.` : "A limit is reached: this panel will not place orders until it resets."));
-  if (s.day) box.append(el("p", "mut small", `The day began ${new Date(s.dayFrom).toLocaleString()} (${$("lim-tz").value}).`));
-  if (s.openNote) box.append(el("p", "warn", s.openNote));
-  if (!st.dealsComplete && s.day) box.append(el("p", "bad", "The history is incomplete."));
+  if (s.room != null) {
+    const reached = [s.day, s.total].some((x) => x && !x.error && x.light === "red");
+    box.append(el("p", s.room > 0 ? null : "bad", s.room > 0 ? t("l.room", { room: money(s.room) }) : t(reached ? "l.reached" : "l.full")));
+  }
+  if (s.day) {
+    const local = new Date(s.dayFrom).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    box.append(el("p", "mut small", t("l.dayBegan", { hour: String($("lim-hour").value).padStart(2, "0") + ":00", zone: TZ_NAME[s.tz] || s.tz, local })));
+  }
+  if (s.openNoStop) box.append(el("p", "warn", t("l.openNoStop", { n: s.openNoStop })));
+  box.append(el("p", "mut small", t("l.gap")), el("p", "mut small", t("l.device")));
 }
 
 // ---- exposure -----------------------------------------------------------------------------------------------------------
 function renderExposure() {
   const box = $("exposure-out");
   box.textContent = "";
-  const exp = openRisk();
   if (!st.positions.length) {
-    box.append(el("p", "mut", "No open positions."));
+    box.append(el("p", "mut", t("x2.none")));
     return;
   }
-  for (const { p, d, risk } of exp.rows) {
+  const exp = openRisk();
+  const bal = st.acct.balance;
+  for (const { p, d, risk, now } of exp.rows) {
     const row = el("div", "row");
     const left = el("div");
-    const lots = d ? `${fmt(p.volume / d.lotSize, lotDecimals(d))} lots` : `${p.volume} units`;
-    left.append(el("b", null, `${p.symbolName} ${p.side === "buy" ? "buy" : "sell"}`), el("div", "mut small", `${lots} at ${fmt(p.entryPrice, d ? d.digits : 5)} · stop ${p.stopLoss ? fmt(p.stopLoss, d ? d.digits : 5) : "none"}`));
+    const lots = d ? nf(p.volume / d.lotSize, lotDecimals(d)) : String(p.volume);
+    left.append(el("b", null, `${p.symbolName} ${t(p.side === "buy" ? "v.buy" : "v.sell")}`),
+                el("div", "mut small", t("x2.line", { lots, entry: price(p.entryPrice, d), stop: p.stopLoss ? price(p.stopLoss, d) : t("v.none") })));
     const right = el("div", "num");
-    if (risk === null) right.append(el("span", "bad", "no stop: no limit"));
-    else if (risk === undefined) right.append(el("span", "mut", "price not known yet"));
-    else right.append(el("b", null, `${money(risk)} ${cur()}`), el("div", "mut small", `${fmt((risk / st.acct.balance) * 100, 2)}% of balance`));
+    if (risk === null) right.append(el("span", "bad", t("x2.noStop")));
+    else if (risk === undefined) right.append(el("span", "mut", t("x2.noPrice")));
+    else right.append(el("b", null, t("x2.risk", { fromNow: money(now) })), el("div", "mut small", t("x2.fromEntry", { fromEntry: money(risk), pct: nf((risk / bal) * 100, 2) })));
     row.append(left, right);
     box.append(row);
   }
-  box.append(el("h3", null, "Total"));
-  box.append(el("div", null, `At risk at the stops: ${money(exp.total)} ${cur()} (${fmt((exp.total / st.acct.balance) * 100, 2)}% of balance)`));
-  if (exp.noStop) box.append(el("p", "bad", `${exp.noStop} position${exp.noStop === 1 ? " has" : "s have"} no stop: ${exp.noStop === 1 ? "its" : "their"} loss has no limit.`));
-  else box.append(el("div", "mut small", `If every stop is hit: balance ${money(st.acct.balance - exp.total)} ${cur()}, before commission and slippage.`));
+  box.append(el("h3", null, t("l.total")));
+  box.append(el("div", null, t("x2.total", { total: money(exp.fromNow), pct: nf((exp.fromNow / bal) * 100, 2) })));
+  if (exp.noStop) box.append(el("p", "bad", t("x2.totalNoStop", { n: exp.noStop })));
+  else box.append(el("div", "mut small", t("x2.after", { bal: money(bal - exp.fromEntry) })));
 }
 
 // ---- journal ------------------------------------------------------------------------------------------------------------
 function renderJournal() {
+  if (!full) return;
   const trades = tradeLog(st.deals);
   const s = stats(trades);
   const box = $("journal-sum");
   box.textContent = "";
   if (!s.count) {
-    box.append(el("p", "mut", "Trades placed from Ballast show here once they close, each in R (its result divided by the money it risked)."));
+    box.append(el("p", "mut", t("j.none")));
   } else {
     const dl = el("dl");
-    const add = (k, v) => dl.append(el("dt", null, k), el("dd", null, v));
-    add("Trades (35 days)", String(s.count));
-    add("Won", `${s.wins} (${fmt(s.winRate * 100, 0)}%)`);
-    add("Average", s.avgR === null ? "-" : `${fmt(s.avgR, 2)} R per trade`);
-    add("Average win / loss", `${s.avgWinR === null ? "-" : fmt(s.avgWinR, 2) + " R"} / ${s.avgLossR === null ? "-" : fmt(s.avgLossR, 2) + " R"}`);
-    add("Profit factor", s.profitFactor === null ? "-" : fmt(s.profitFactor, 2));
-    add("Net", `${money(s.net)} ${cur()}`);
-    add("Longest losing run", String(s.maxLosingStreak));
+    const add = (k, v) => dl.append(el("dt", null, t(k)), el("dd", null, v));
+    add("j.trades", String(s.count));
+    add("j.won", `${s.wins} (${nf(s.winRate * 100, 0)}%)`);
+    add("j.avg", s.avgR === null ? "-" : t("j.perTrade", { r: nf(s.avgR, 2) }));
+    add("j.avgWL", `${s.avgWinR === null ? "-" : nf(s.avgWinR, 2) + " R"} / ${s.avgLossR === null ? "-" : nf(s.avgLossR, 2) + " R"}`);
+    add("j.pf", s.profitFactor === null ? "-" : nf(s.profitFactor, 2));
+    add("j.net", money(s.net));
+    add("j.streak", String(s.maxLosingStreak));
     box.append(dl);
-    if (s.count < 30) box.append(el("p", "mut small", `${s.count} trades is a small sample: these numbers swing a lot until there are 30 or more.`));
+    if (s.count < 30) box.append(el("p", "mut small", t("j.small")));
   }
-  if (!st.dealsComplete) box.append(el("p", "warn", "Part of the history did not load, so some trades may be missing."));
+  if (!st.dealsComplete) box.append(el("p", "warn", t("j.incomplete")));
   const sym = $("journal-sym").tBodies[0];
   sym.textContent = "";
   for (const x of bySymbol(trades)) {
     const r = sym.insertRow();
-    [x.symbol, x.count, fmt(x.winRate * 100, 0) + "%", x.avgR === null ? "-" : fmt(x.avgR, 2), money(x.net)].forEach((v, i) => {
+    [x.symbol, x.count, nf(x.winRate * 100, 0) + "%", x.avgR === null ? "-" : nf(x.avgR, 2), money(x.net)].forEach((v, i) => {
       const c = r.insertCell();
       c.textContent = v;
       if (i) c.className = "num" + (i === 4 ? (x.net >= 0 ? " pos" : " neg") : "");
@@ -413,12 +501,12 @@ function renderJournal() {
   }
   const log = $("journal-log").tBodies[0];
   log.textContent = "";
-  for (const t of trades.slice(0, 50)) {
+  for (const tr of trades.slice(0, 50)) {
     const r = log.insertRow();
-    [new Date(t.closed).toLocaleDateString(), t.symbol, t.side, money(t.net), t.r === null ? "-" : fmt(t.r, 2)].forEach((v, i) => {
+    [new Date(tr.closed).toLocaleDateString(), tr.symbol, t(tr.side === "buy" ? "v.buy" : "v.sell"), money(tr.net), tr.r === null ? "-" : nf(tr.r, 2)].forEach((v, i) => {
       const c = r.insertCell();
       c.textContent = v;
-      if (i >= 3) c.className = "num " + (t.net >= 0 ? "pos" : "neg");
+      if (i >= 3) c.className = "num " + (tr.net >= 0 ? "pos" : "neg");
     });
   }
   $("csv").disabled = !trades.length;
@@ -433,21 +521,21 @@ function renderSessions() {
   for (const s of ss) {
     const row = el("div", "row");
     const left = el("div");
-    left.append(el("b", null, s.name), el("div", "mut small", `${s.local} there`));
+    left.append(el("b", null, s.name), el("div", "mut small", t("s.there", { time: s.local })));
     const right = el("div", "num");
-    right.append(s.open ? el("span", "open-badge", "Open") : el("span", "mut", "Closed"),
-                 el("div", "mut small", s.next ? `${s.open ? "closes" : "opens"} in ${span(s.next - now)}` : ""));
+    right.append(s.open ? el("span", "open-badge", t("s.open")) : el("span", "mut", t("s.closed")),
+                 el("div", "mut small", s.next ? t(s.open ? "s.closes" : "s.opens", { span: span(s.next - now) }) : ""));
     row.append(left, right);
     box.append(row);
   }
   const open = ss.filter((s) => s.open).map((s) => s.name);
-  box.append(el("p", "small", !fxWeekOpen(now) ? "The forex market is shut for the weekend: it reopens on Sunday at 17:00 New York time."
-    : open.includes("London") && open.includes("New York") ? "London and New York overlap now: usually the busiest hours." : open.length ? `Open now: ${open.join(", ")}.` : "Between sessions."));
+  box.append(el("p", "small", !fxWeekOpen(now) ? t("s.weekend") : open.includes("London") && open.includes("New York") ? t("s.overlap") : open.length ? t("s.openNow", { list: open.join(", ") }) : t("s.between")),
+             el("p", "mut small", t("s.yourTime", { time: new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })));
 }
 
 // ---- painting ---------------------------------------------------------------------------------------------------------
 function paint() {
-  renderLimits();                                         // (first: the ticket sizes against the limits' room)
+  renderLimits();                                           // (first: the ticket sizes against the limits' room)
   renderTicket();
   renderExposure();
   renderJournal();
@@ -460,54 +548,70 @@ const placer = createPlacer((request) => st.host.placeOrder(request));
 function openReview() {
   if (!st.built || !st.built.ok) return;
   st.frozen = st.built;
+  st.sent = false;
   const r = st.frozen.review;
-  const d = st.sym.digits;
-  const rows = [["Symbol", r.symbol], ["Side", r.side === "buy" ? "Buy" : "Sell"], ["Order", r.orderType],
-                ["Entry", r.orderType === "market" ? `at the market (now ${fmt(r.entry, d)})` : fmt(r.entry, d)],
-                ["Stop", `${fmt(r.stop, d)}, ${fmt(r.pips, 1)} pips${r.orderType === "market" ? " from the fill" : ""}`],
-                ["Target", r.target ? fmt(r.target, d) : "none"], ["Size", `${fmt(r.lots, lotDecimals(st.sym))} lots`],
-                ["Loss at the stop", `${money(r.riskMoney)} ${cur()}${r.commissionRisk > 0 ? ", commission included" : ""}`]];
+  const s = st.sym;
+  const typeName = t({ market: "v.market", limit: "v.limit", stop: "v.stopOrder" }[r.orderType]);
+  const rows = [["v.symbol", r.symbol], ["v.side", t(r.side === "buy" ? "v.buy" : "v.sell")], ["v.order", typeName],
+                ["v.entry", r.orderType === "market" ? t("v.entryMarket", { price: price(r.entry) }) : price(r.entry)],
+                ["v.stop", t("v.stopValue", { stop: price(r.stop), dist: nf(r.pips, 1), unit: unit(s), fromFill: r.orderType === "market" ? t("v.fromFill") : "" })],
+                ["v.target", r.target ? price(r.target) : t("v.none")], ["v.size", t("r.lots", { lots: nf(r.lots, lotDecimals(s)) })],
+                ["v.loss", t("v.lossValue", { loss: money(r.riskMoney), comm: r.commissionRisk > 0 ? t("v.lossComm") : "" })]];
   const dl = $("review-list");
   dl.textContent = "";
-  for (const [k, v] of rows) dl.append(el("dt", null, k), el("dd", null, v));
+  for (const [k, v] of rows) dl.append(el("dt", null, t(k)), el("dd", null, v));
+  $("place").textContent = t("v.place", { side: t(r.side === "buy" ? "v.buy" : "v.sell"), lots: nf(r.lots, lotDecimals(s)), symbol: r.symbol });
+  $("place").className = "go " + r.side;
   $("place-msg").textContent = "";
   $("place").disabled = false;
+  $("again").hidden = true;
+  for (const id of ["ticket-form", "result", "review"]) $(id).hidden = true;   // (the review takes the form's place)
   $("reviewbox").hidden = false;
-  $("review").hidden = true;
+  $("app").scrollIntoView({ block: "start" });
 }
 
 function closeReview() {
   st.frozen = null;
   $("reviewbox").hidden = true;
-  $("review").hidden = false;
+  for (const id of ["ticket-form", "result", "review"]) $(id).hidden = false;
+}
+
+function refusal(res) {
+  if (res.code === "timeout" || res.code === "busy") return t("x." + res.code);
+  const raw = String(res.message || "").replace(/^cTrader refused the order: /, "").replace(/\.$/, "");
+  const code = Object.keys({ NOT_ENOUGH_MONEY: 1, MARKET_CLOSED: 1, TRADING_DISABLED: 1, INVALID_VOLUME: 1, TRADING_BAD_VOLUME: 1, TRADING_BAD_STOPS: 1 }).find((c) => raw.includes(c));
+  return code ? t("x." + code) : t("x.other", { why: raw || "unknown reason" });
 }
 
 async function place(ev) {
-  if (!ev.isTrusted || !canPlace || !st.frozen) return;          // (a real click only)
-  const now = buildOrder(ticketInputs());                        // (the limits and the account, checked again now)
-  const blocking = ["limit", "limits", "netted", "account", "quote", "symbol"];
-  if (!now.ok && blocking.includes(now.code)) {
-    $("place-msg").textContent = now.message;
+  if (!ev.isTrusted || !canPlace || !st.frozen || st.sent) return;   // (a real click only)
+  const now = buildOrder(ticketInputs());                           // (the limits and the account, checked again now)
+  if (!now.ok && ["limit", "limits", "netted", "account", "quote", "symbol"].includes(now.code)) {
+    $("place-msg").textContent = why(now);
     return;
   }
   if (st.limits && st.limits.room != null && st.frozen.review.riskMoney > st.limits.room + 1e-9) {
-    $("place-msg").textContent = "Your loss limits leave less room than when you reviewed: review again.";
+    $("place-msg").textContent = t("v.again", { room: money(st.limits.room) });
     return;
   }
   $("place").disabled = true;
-  $("place-msg").textContent = "Sending...";
+  $("place-msg").textContent = t("v.sending");
   const res = await placer.place(st.frozen.request);
-  $("place-msg").textContent = res.ok ? `Sent. cTrader order ${res.answer && res.answer.orderId != null ? "#" + res.answer.orderId : "accepted"}.` : res.message;
   if (res.ok) {
-    st.tradeId = newTradeId();                                   // (the next trade gets its own id)
+    st.sent = true;
+    $("place-msg").textContent = t("v.sent", { id: res.answer && res.answer.orderId != null ? "#" + res.answer.orderId : "" });
+    $("again").hidden = false;
+    st.tradeId = newTradeId();                                     // (the next trade gets its own id)
     setTimeout(refreshAll, 1500);
+  } else {
+    $("place-msg").textContent = refusal(res);
   }
 }
 
 // ---- events -------------------------------------------------------------------------------------------------------------
 function showTab(name) {
   document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === name)));
-  document.querySelectorAll(".tab").forEach((t) => { t.hidden = t.id !== "tab-" + name; });
+  document.querySelectorAll(".tab").forEach((x) => { x.hidden = x.id !== "tab-" + name; });
   try { const g = load(KEY); g.tab = name; localStorage.setItem(KEY, JSON.stringify(g)); } catch { /* fine */ }
 }
 document.querySelectorAll("[data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
@@ -516,13 +620,22 @@ document.querySelectorAll("[data-side]").forEach((b) => b.addEventListener("clic
   document.querySelectorAll("[data-side]").forEach((x) => x.classList.toggle("on", x === b));
   edited();
 }));
+document.querySelectorAll("[data-risk]").forEach((b) => b.addEventListener("click", () => {
+  $("risk").value = b.dataset.risk;
+  $("risk-mode").value = "percent";
+  edited();
+}));
 $("otype").addEventListener("change", () => {
   document.querySelectorAll(".entry-row").forEach((e) => { e.hidden = $("otype").value === "market"; });
   edited();
 });
-for (const id of ["entry", "stop", "target", ...FIELDS]) {
-  $(id).addEventListener(id.startsWith("lim") || $(id).tagName === "SELECT" ? "change" : "input", edited);
-  if ($(id).tagName === "INPUT") $(id).addEventListener("change", edited);
+for (const id of ["entry", "stop", "target", ...FIELDS, ...DAILY_FIELDS]) {
+  const e = $(id);
+  e.addEventListener(e.tagName === "SELECT" ? "change" : "input", edited);
+  if (e.tagName === "INPUT") e.addEventListener("change", edited);
+}
+for (const id of ["entry", "stop", "target", "risk"]) {
+  $(id).addEventListener("keydown", (ev) => { if (ev.key === "Enter" && !$("review").disabled) openReview(); });
 }
 $("atr-period").addEventListener("change", loadAtr);
 $("comm-mode").addEventListener("change", subscribe);
@@ -535,6 +648,12 @@ function edited() {
 $("sym").addEventListener("change", () => { if (st.frozen) closeReview(); loadSymbol($("sym").value); });
 $("review").addEventListener("click", openReview);
 $("back").addEventListener("click", closeReview);
+$("again").addEventListener("click", () => {
+  $("stop").value = "";
+  $("target").value = "";
+  closeReview();
+  paint();
+});
 $("place").addEventListener("click", place);
 $("csv").addEventListener("click", () => {
   const blob = new Blob([toCSV(tradeLog(st.deals))], { type: "text/csv" });

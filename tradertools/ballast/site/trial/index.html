@@ -3,131 +3,146 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ballast (trial)</title>
+<title>Ballast Free</title>
 <link rel="icon" href="../brand/mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../app.css">
 </head>
 <body data-edition="trial">
 <main id="app">
   <header class="top">
-    <img src="../brand/mark.svg" alt="" class="mark" width="26" height="26">
+    <img src="../brand/mark.svg" alt="" class="mark" width="28" height="28">
     <div class="brand"><b>Ballast</b><span id="edition" class="mut small"></span></div>
     <div id="acct" class="mut small">Connecting to cTrader...</div>
   </header>
   <p id="banner" class="banner" hidden></p>
 
   <nav class="tabs" role="tablist" aria-label="Tools">
-    <button type="button" role="tab" data-tab="ticket" aria-selected="true">Ticket</button>
-    <button type="button" role="tab" data-tab="limits" aria-selected="false">Limits <span id="light-tab" class="dot" hidden></span></button>
-    <button type="button" role="tab" data-tab="exposure" aria-selected="false">Exposure</button>
-    <button type="button" role="tab" data-tab="journal" aria-selected="false">Journal</button>
-    <button type="button" role="tab" data-tab="sessions" aria-selected="false">Sessions</button>
+    <button type="button" role="tab" data-tab="ticket" aria-selected="true" data-t="tab.ticket">Ticket</button>
+    <button type="button" role="tab" data-tab="limits" aria-selected="false"><span data-t="tab.limits">Limits</span><span id="light-tab" class="dot" hidden></span></button>
+    <button type="button" role="tab" data-tab="exposure" aria-selected="false" data-t="tab.exposure">Exposure</button>
+    <button type="button" role="tab" data-tab="journal" aria-selected="false" data-t="tab.journal">Journal</button>
+    <button type="button" role="tab" data-tab="sessions" aria-selected="false" data-t="tab.sessions">Sessions</button>
   </nav>
 
-  <!-- TICKET: size a trade from the risk and the stop, review it, place it -->
+  <!-- TICKET: the size for the risk and the stop; review; place -->
   <section id="tab-ticket" class="tab" role="tabpanel">
-    <div class="card">
+    <div id="ticket-form" class="card">
       <div class="symrow">
-        <label for="sym" class="vh">Symbol</label><input id="sym" autocomplete="off" spellcheck="false">
+        <label for="sym" class="vh">Symbol</label><input id="sym" autocomplete="off" spellcheck="false" enterkeyhint="go">
         <span id="px" class="mut"></span>
       </div>
       <div class="seg" role="group" aria-label="Side">
-        <button type="button" data-side="buy" class="on">Buy</button><button type="button" data-side="sell">Sell</button>
+        <button type="button" data-side="buy" class="on" data-t="v.buy">Buy</button><button type="button" data-side="sell" data-t="v.sell">Sell</button>
       </div>
       <div class="grid">
-        <label for="otype">Order</label>
-        <select id="otype"><option value="market">Market, now</option><option value="limit">Limit (a better price)</option><option value="stop">Stop (a breakout price)</option></select>
-        <label for="entry" class="entry-row" hidden>Entry price</label>
+        <label for="otype" data-t="f.order">Order</label>
+        <select id="otype"><option value="market" data-t="f.market">Market: now</option><option value="limit" data-t="f.limit">Limit: at a better price</option><option value="stop" data-t="f.stopo">Stop: when the price moves further</option></select>
+        <label for="entry" class="entry-row" hidden data-t="f.entry">Entry price</label>
         <input id="entry" class="entry-row" inputmode="decimal" hidden>
-        <label for="stop">Stop</label>
-        <div class="pair"><input id="stop" inputmode="decimal"><select id="stop-unit" aria-label="Stop in"><option value="pips">pips away</option><option value="price">price</option><option value="atr">x ATR</option></select></div>
-        <label for="target">Target</label>
-        <div class="pair"><input id="target" inputmode="decimal" placeholder="none"><select id="target-unit" aria-label="Target in"><option value="r">x the risk</option><option value="price">price</option></select></div>
-        <label for="risk">Risk</label>
-        <div class="pair"><input id="risk" inputmode="decimal"><select id="risk-mode" aria-label="Risk as"><option value="percent">% of balance</option><option value="money">money</option></select></div>
+        <label for="stop" data-t="f.stop">Stop</label>
+        <div class="pair"><input id="stop" inputmode="decimal" placeholder="e.g. 20"><select id="stop-unit" aria-label="Stop in"><option value="pips" id="opt-pips">pips away</option><option value="price" data-t="f.price">price</option><option value="atr" data-t="f.atr">x ATR</option></select></div>
+        <label for="atr-period" class="atr-row" hidden data-t="f.atrChart">ATR chart</label>
+        <select id="atr-period" class="atr-row" hidden></select>
+        <label for="target" data-t="f.target">Target</label>
+        <div class="pair"><input id="target" inputmode="decimal" placeholder="optional"><select id="target-unit" aria-label="Target in"><option value="r" data-t="f.xrisk">x your risk</option><option value="price" data-t="f.price">price</option></select></div>
+        <label for="risk" data-t="f.risk">Risk</label>
+        <div class="pair"><input id="risk" inputmode="decimal"><select id="risk-mode" aria-label="Risk as"><option value="percent" data-t="f.pct">% of balance</option><option value="money" data-t="f.money">money</option></select></div>
+        <span></span>
+        <div class="chips" role="group" aria-label="Quick risk"><button type="button" data-risk="0.5">0.5%</button><button type="button" data-risk="1">1%</button><button type="button" data-risk="2">2%</button></div>
       </div>
-      <p id="atr-line" class="mut small" hidden></p>
+      <p id="atr-line" class="mut small atr-row" hidden></p>
       <details id="costs" class="sub">
-        <summary>Costs <span id="costs-sum" class="mut small"></span></summary>
+        <summary><span data-t="f.costs">Costs</span> <span id="costs-sum" class="mut small"></span></summary>
         <div class="grid">
-          <label for="comm-mode">Commission</label>
-          <select id="comm-mode"><option value="none">none</option><option value="lot">per lot, each side</option><option value="million">per million USD, each side</option></select>
-          <label for="comm" class="comm-row">Amount</label><input id="comm" class="comm-row" inputmode="decimal" placeholder="e.g. 3.5">
-          <label for="atr-period">ATR chart</label><select id="atr-period"></select>
+          <label for="comm-mode" data-t="f.comm">Commission</label>
+          <select id="comm-mode"><option value="unset" data-t="f.commUnset">not set</option><option value="none" data-t="f.commNone">none on my account</option><option value="lot" data-t="f.commLot">per lot, each side</option><option value="million" data-t="f.commMillion">per million USD, each side</option><option value="percent" data-t="f.commPct">% of trade value, each side</option></select>
+          <label for="comm" class="comm-row" data-t="f.amount">Amount</label><input id="comm" class="comm-row" inputmode="decimal" placeholder="e.g. 3.5">
         </div>
-        <p class="mut small">Your broker's commission is in cTrader's symbol information (or your account's terms). It is charged when a trade opens and again when it closes, and Ballast counts both. The platform's currency-conversion fee is counted by itself.</p>
+        <p class="mut small" data-t="f.commHelp">Your broker's commission is in cTrader's symbol information or your account's terms. It is charged when a trade opens and again when it closes; Ballast counts both. cTrader's currency-conversion fee is counted automatically.</p>
       </details>
     </div>
     <section class="card out" id="result" aria-live="polite"></section>
-    <button type="button" id="review" class="go wide" disabled>Review order</button>
+    <button type="button" id="review" class="go wide" disabled data-t="b.review">Review order</button>
     <section class="card" id="reviewbox" hidden>
-      <h2>Check before sending</h2>
+      <h2 data-t="v.title">Check before sending</h2>
       <dl id="review-list"></dl>
-      <p class="mut small">The loss shown is at the stop, commission included, before slippage. A stop is a price level, not a guaranteed price: in a fast market or over a gap the fill can be worse.</p>
+      <p class="mut small" data-t="v.caveat">The loss shown is what hitting the stop costs, commission included. A stop is a price level, not a guaranteed price: in a fast market or over a gap the fill can be worse.</p>
       <p id="review-note" class="note" hidden></p>
-      <div class="buttons"><button type="button" id="place" class="go">Place order</button><button type="button" id="back">Back</button></div>
+      <div class="buttons"><button type="button" id="place" class="go"></button><button type="button" id="back" data-t="b.back">Back</button></div>
       <p id="place-msg" aria-live="assertive"></p>
+      <button type="button" id="again" class="wide" hidden data-t="b.again">New trade</button>
     </section>
-    <details class="help"><summary>How the size is worked out</summary>
-      <p>Ballast finds the largest size whose loss at your stop, commission included, is no more than the risk you set. It always rounds down to a size the symbol allows, takes every exchange rate on the side that makes the loss larger, and values the loss at the rate it would have when the stop is hit. If even the smallest allowed size would lose more than you set, it says so and places nothing. If your loss limits leave less room than you asked for, the size is cut to fit and the review says so.</p>
-      <p><b>Pip</b>: the usual small step of a price (0.0001 on most currency pairs, 0.01 on yen pairs). <b>Lot</b>: the symbol's standard size (100,000 units of a currency pair). <b>R</b>: the money you risk on one trade; a target of 2 R makes twice that if it is reached.</p>
+    <details class="help"><summary data-t="help.size.t">How the size is worked out</summary>
+      <p data-t="help.size.1">Ballast finds the largest size whose loss at your stop, commission included, is no more than the risk you set. It always rounds down to a size the symbol allows, takes every exchange rate on the side that makes the loss larger, and values the loss at the rate it would have when the stop is hit. If even the smallest allowed size would lose more than you set, it says so and places nothing. If your loss limits leave less than you asked for, the size is made smaller and the review says so.</p>
+      <p data-t="help.size.2">Pip: the usual small step of a currency price (0.0001 on most pairs, 0.01 on yen pairs). Point: one unit of an index or crypto price. Lot: the symbol's standard size (100,000 units of a currency pair). R: the money you risk on one trade; a target of 2 makes twice that if it is reached.</p>
     </details>
   </section>
 
-  <!-- LIMITS: the daily and total loss limits, the way funded-account firms count them -->
+  <!-- LIMITS -->
   <section id="tab-limits" class="tab" role="tabpanel" hidden>
     <div class="card" id="limits-out"></div>
-    <div class="card">
-      <div class="grid">
-        <label for="lim-day">Daily loss limit</label>
-        <div class="pair"><input id="lim-day" inputmode="decimal" placeholder="off"><select id="lim-day-mode" aria-label="Daily limit as"><option value="money">money</option><option value="pct">% of starting balance</option></select></div>
-        <label for="lim-total">Total loss limit</label>
-        <div class="pair"><input id="lim-total" inputmode="decimal" placeholder="off"><select id="lim-total-mode" aria-label="Total limit as"><option value="money">money</option><option value="pct">% of starting balance</option></select></div>
-        <label for="lim-start">Starting balance</label><input id="lim-start" inputmode="decimal" placeholder="the account's size when it began">
-        <label for="lim-rule">Daily loss counts from</label>
-        <select id="lim-rule"><option value="balance">the day's opening balance</option><option value="higher">the higher of opening balance and equity</option></select>
-        <label for="lim-trail">Total loss counts from</label>
-        <select id="lim-trail"><option value="static">the starting balance</option><option value="trailing">the highest balance or equity (trailing)</option></select>
-        <label for="lim-tz">The day starts at</label>
+    <div class="card" id="limits-form">
+      <div class="grid stack">
+        <label for="lim-day" data-t="l.f.day">Daily loss limit</label>
+        <div class="pair"><input id="lim-day" inputmode="decimal" placeholder="off"><select id="lim-day-mode" aria-label="Daily limit as"><option value="pct">% of start</option><option value="money" data-t="f.money">money</option></select></div>
+        <label for="lim-total" data-t="l.f.total">Total loss limit</label>
+        <div class="pair"><input id="lim-total" inputmode="decimal" placeholder="off"><select id="lim-total-mode" aria-label="Total limit as"><option value="pct">% of start</option><option value="money" data-t="f.money">money</option></select></div>
+        <label for="lim-start" data-t="l.f.start">Starting balance</label><input id="lim-start" inputmode="decimal" placeholder="the account's size when it began">
+        <label for="lim-rule" data-t="l.f.rule">Daily loss counts from</label>
+        <select id="lim-rule"><option value="balance" data-t="l.o.balance">Opening balance</option><option value="higher" data-t="l.o.higher">Higher of balance or equity</option></select>
+        <label for="lim-trail" data-t="l.f.trail">Total loss counts from</label>
+        <select id="lim-trail"><option value="static" data-t="l.o.static">Starting balance</option><option value="trailing" data-t="l.o.trailing">Highest equity (trailing)</option></select>
+        <label for="lim-hour" data-t="l.f.reset">The day starts at</label>
         <div class="pair"><select id="lim-hour" aria-label="Hour"></select><select id="lim-tz" aria-label="Time zone"></select></div>
-        <label for="lim-open">Open trades</label>
-        <select id="lim-open"><option value="stops">count them at their stops (safer)</option><option value="now">count them at today's price</option></select>
+        <label for="lim-open" data-t="l.f.open">Open trades</label>
+        <select id="lim-open"><option value="stops" data-t="l.o.stops">At their stops (safer)</option><option value="now" data-t="l.o.now">At today's price</option></select>
       </div>
+      <details class="sub">
+        <summary data-t="l.f.exact">Exact figures from your firm (optional)</summary>
+        <div class="grid stack">
+          <label for="lim-dayfloor" data-t="l.f.dayfloor">Today's lowest allowed equity</label><input id="lim-dayfloor" inputmode="decimal" placeholder="from your firm's dashboard">
+          <label for="lim-sodeq" data-t="l.f.sodeq">Today's opening equity</label><input id="lim-sodeq" inputmode="decimal" placeholder="if your rule uses it">
+          <label for="lim-totalfloor" data-t="l.f.totalfloor">Lowest allowed equity overall</label><input id="lim-totalfloor" inputmode="decimal" placeholder="from your firm's dashboard">
+        </div>
+        <p class="mut small" data-t="l.f.exactHelp">These come from your firm's dashboard. Today's figures are forgotten when the day resets. Where a figure is given, it is used exactly.</p>
+      </details>
     </div>
-    <details class="help"><summary>How the limits work</summary>
-      <p>Firms that fund traders close an account that loses more than a set amount in a day or in total, and they count open trades too. Set your firm's numbers here and Ballast does three things: it shows how much room is left, it cuts the size of a new trade so that a stop-out cannot take you past either limit, and it refuses to place orders once a limit is reached. With "count them at their stops", open trades are counted as if every stop were hit, so a new trade can never add up to a breach.</p>
-      <p>Firms differ: some count the day from the opening balance, some from the higher of balance and equity, some reset at midnight in Prague, others at the broker's server midnight. Read your firm's rules and match them here. The limits protect this panel's orders only: trades placed elsewhere in cTrader are counted, but not blocked.</p>
+    <details class="help"><summary data-t="help.lim.t">How the limits work</summary>
+      <p data-t="help.lim.1">Firms that fund traders close an account that loses more than a set amount in a day or in total, and they count open trades too. Enter your firm's numbers here. Ballast shows how much is used and how much is left, makes every new trade small enough that hitting its stop keeps you inside both limits (with open trades counted at their stops), and stops placing orders when a limit is reached.</p>
+      <p data-t="help.lim.2">Firms differ: some count the day from the opening balance, some from the higher of balance and equity; some reset at midnight in Prague, others at the broker's server midnight. Read your firm's rules and match them here. A stop that fills worse than its price (in a fast market or over a gap) can still take you past a limit. Ballast blocks its own orders only: trades placed elsewhere in cTrader are counted, not blocked.</p>
     </details>
   </section>
 
-  <!-- EXPOSURE: what every open trade risks at its stop -->
+  <!-- EXPOSURE -->
   <section id="tab-exposure" class="tab" role="tabpanel" hidden>
     <div class="card" id="exposure-out"></div>
-    <details class="help"><summary>What this shows</summary>
-      <p>Each open position, what it would lose from its entry if its stop is hit, in your account's money, and the total. A position without a stop has no limit on what it can lose, so it is marked. "If every stop is hit" is your balance afterwards, before commission and slippage.</p>
+    <details class="help"><summary data-t="help.exp.t">What this shows</summary>
+      <p data-t="help.exp.1">Each open position: what it would still lose from the current price if its stop is hit, and its loss from the entry, in your account's money. A position without a stop has no limit on what it can lose, so it is marked.</p>
     </details>
   </section>
 
-  <!-- JOURNAL: the trades placed from this panel, in R -->
+  <!-- JOURNAL -->
   <section id="tab-journal" class="tab" role="tabpanel" hidden>
     <div class="card" id="journal-sum"></div>
-    <div class="card"><table id="journal-sym"><thead><tr><th>Symbol</th><th class="num">Trades</th><th class="num">Won</th><th class="num">Avg R</th><th class="num">Net</th></tr></thead><tbody></tbody></table></div>
-    <div class="card"><table id="journal-log"><thead><tr><th>Closed</th><th>Symbol</th><th>Side</th><th class="num">Net</th><th class="num">R</th></tr></thead><tbody></tbody></table></div>
-    <div class="buttons"><button type="button" id="csv">Download as CSV</button></div>
-    <details class="help"><summary>What R tells you</summary>
-      <p>Each trade placed from Ballast carries the money it risked. A trade that made twice its risk is +2 R; one stopped out is about -1 R. The average R over many trades is your edge per trade: above zero, the way you trade has made money so far; below zero, it has not, whatever the win rate. A position closed in parts counts as one trade.</p>
+    <div class="card" id="journal-tables">
+      <table id="journal-sym"><thead><tr><th data-t="j.h.symbol">Symbol</th><th class="num" data-t="j.h.trades">Trades</th><th class="num" data-t="j.h.won">Won</th><th class="num" data-t="j.h.avgr">Avg R</th><th class="num" data-t="j.h.net">Net</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="card" id="journal-log-card"><table id="journal-log"><thead><tr><th data-t="j.h.closed">Closed</th><th data-t="j.h.symbol">Symbol</th><th data-t="j.h.side">Side</th><th class="num" data-t="j.h.net">Net</th><th class="num">R</th></tr></thead><tbody></tbody></table></div>
+    <div class="buttons"><button type="button" id="csv" data-t="b.csv">Download as CSV</button></div>
+    <details class="help"><summary data-t="help.j.t">What R means</summary>
+      <p data-t="help.j.1">Each trade placed from Ballast carries the money it risked. A trade that made twice its risk is +2 R; one stopped out is about -1 R. The average R over many trades is your average result per trade: above zero, the way you trade has made money so far; below zero, it has not, whatever the win rate. A position closed in parts counts as one trade.</p>
     </details>
   </section>
 
-  <!-- SESSIONS: the market's clock -->
+  <!-- SESSIONS -->
   <section id="tab-sessions" class="tab" role="tabpanel" hidden>
     <div class="card" id="sessions-out"></div>
-    <details class="help"><summary>About the sessions</summary>
-      <p>The conventional hours of the four main trading sessions, each in its own city's time so daylight saving is right everywhere. Prices usually move most when London and New York overlap, and least late in the New York afternoon and around the weekly open. Your broker's own hours for a symbol can differ: cTrader's symbol information has them.</p>
+    <details class="help"><summary data-t="help.s.t">About the sessions</summary>
+      <p data-t="help.s.1">The usual hours of the four main forex sessions, each in its own city's time so daylight saving is right everywhere. Prices usually move most when London and New York overlap. Your broker's hours for a symbol can differ (cTrader's symbol information shows them); index and crypto markets keep their own hours.</p>
     </details>
   </section>
 
-  <footer class="mut small">No signals and no advice: Ballast sizes, checks and records the trades you choose. Try it on a demo account first. <span id="version"></span></footer>
+  <footer class="mut small"><span data-t="foot">No signals and no advice: Ballast sizes, checks and records the trades you choose. Try it on a demo account first.</span> <span id="version"></span></footer>
 </main>
 <script type="module" src="../js/app.js"></script>
 </body>

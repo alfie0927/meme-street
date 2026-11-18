@@ -98,17 +98,20 @@ class BallastPage(unittest.TestCase):
             await set_value(pg, "stop", "20")
             await set_value(pg, "target", "2")
             check("1% of 10,000 over 20 pips is 0.50 lots", await wait_for(pg, BIG), "0.50 lots")
-            check("with the loss at the stop and the reward to risk", await pg.js(RESULT), lambda t: "Loses 100.00 USD at the stop" in (t or "") and "2.00 times the risk" in (t or ""))
+            check("with the stop as a price, the loss if hit, the value of a pip and the reward to risk", await pg.js(RESULT),
+                  lambda t: "Stop 1.09800 · 20.0 pips · loses 100.00 USD if hit" in (t or "") and "1 pip = 5.00 USD" in (t or "") and "2.00 times your risk" in (t or ""))
             await set_value(pg, "comm-mode", "lot")
             await set_value(pg, "comm", "3.5")
             # 20 pips is 0.0020 a unit, plus 2 x 3.50 / 100,000 of commission: 100 / 0.00207 = 48,309 units, 0.48 lots
             check("commission (3.50 a lot, each side) shrinks the size", await wait_for(pg, f"({BIG})!=='0.50 lots'&&{BIG}"), "0.48 lots")
-            check("and is shown in the loss", await pg.js(RESULT), lambda t: "commission)" in (t or ""))
+            check("and is shown in the loss", await pg.js(RESULT), lambda t: "3.36 USD commission" in (t or ""))
             await set_value(pg, "comm-mode", "none")
             await wait_for(pg, f"({BIG})==='0.50 lots'")
+            check("the review button colours and names the trade", True, True)
             await real_click(pg, "#review")
-            check("Review shows the order before anything is sent", await wait_for(pg, "!document.getElementById('reviewbox').hidden&&document.getElementById('review-list').textContent"),
+            check("Review shows the order before anything is sent, in place of the form", await wait_for(pg, "!document.getElementById('reviewbox').hidden&&document.getElementById('ticket-form').hidden&&document.getElementById('review-list').textContent"),
                   lambda t: "0.50 lots" in (t or "") and "100.00 USD" in (t or ""))
+            check("and the Place button names the trade in its side's colour", await pg.js("document.getElementById('place').textContent+'|'+document.getElementById('place').className"), "Buy 0.50 lots EURUSD|go buy")
             await pg.js("document.getElementById('place').click()")             # a script's click is not the user's
             await asyncio.sleep(0.4)
             check("a scripted click sends nothing", await pg.js("window.__mock.sent.length"), 0)
@@ -119,7 +122,9 @@ class BallastPage(unittest.TestCase):
             check("with the stop triggered on the closing price and the trade's id in the label",
                   await pg.js("(()=>{const r=window.__mock.sent[0];return [r.volume,r.stopLossPips,r.takeProfitPips,r.stopLossTriggerMethod,/^BLST r=100\\.00 id=[a-z0-9]{8}$/.test(r.label)].join('|')})()"),
                   "50000|20|40|trade|true")
-            await real_click(pg, "#back")
+            check("then offers a new trade", await pg.js("document.getElementById('again').hidden"), False)
+            await real_click(pg, "#again")
+            check("which clears the stop and returns to the form", await wait_for(pg, "!document.getElementById('ticket-form').hidden&&document.getElementById('stop').value"), "")
             await set_value(pg, "stop", "0.5")
             check("a stop inside the spread is refused", await wait_for(pg, f"{RESULT}.includes('too close')&&{RESULT}"), lambda t: "at least 1 pip beyond the bid" in (t or ""))
             await set_value(pg, "stop", "20")
@@ -132,20 +137,26 @@ class BallastPage(unittest.TestCase):
             await pg.goto(self.base + "/index.html?mock=1&symbol=EURUSD", 2)
             await wait_for(pg, "document.getElementById('acct').textContent.includes('Demo')")
             await set_value(pg, "stop", "20")
+            await set_value(pg, "lim-day", "5")                       # (5% with no starting balance: blocked, never "no limit")
+            check("a % limit with no starting balance blocks orders", await wait_for(pg, f"{RESULT}.includes('cannot be checked')&&{RESULT}"), lambda t: "Nothing is placed" in (t or ""))
+            check("and Limits says why", await pg.js("document.getElementById('limits-out').textContent"), lambda t: "Enter the starting balance" in (t or ""))
+            await set_value(pg, "lim-day-mode", "money")
             for k, v in (("lim-start", "10000"), ("lim-day", "120"), ("lim-total", "1000")):
                 await set_value(pg, k, v)
-            # the open EURUSD trade risks 50 at its stop (the gold one has no stop): 50 of 120 used, 70 of room
-            check("the room left is shown", await wait_for(pg, "document.getElementById('limits-out').textContent.includes('at most 70.00')"), True)
-            check("and the ticket cuts the size to fit it", await wait_for(pg, BIG), "0.35 lots")
-            check("and says so", await pg.js(RESULT), lambda t: "Cut to fit your loss limits" in (t or ""))
+            # the open EURUSD trade would lose 19.60 more at its stop; equity 9,960 is 40 down: worst 59.60 of 120, 60.40 of room
+            check("the room left is shown", await wait_for(pg, "document.getElementById('limits-out').textContent.includes('at most 60.40 USD')"), True)
+            check("and the ticket cuts the size to fit it (60.40 / 0.0020 = 30,200 units)", await wait_for(pg, BIG), "0.30 lots")
+            check("and says so", await pg.js(RESULT), lambda t: "Made smaller to stay inside your loss limits" in (t or ""))
             await pg.js("window.__mock.deals.push({dealId:9,symbolName:'EURUSD',openingDirection:'buy',openingTime:new Date().toISOString(),"
                         "closingTime:new Date().toISOString(),netProfit:-70,label:'BLST r=70.00 id=lim00001'});window.__mock.balance=9930;window.__mock.equity=9890;"
                         "window.__mock.execs.forEach(f=>f())")
-            check("a day at its limit blocks the ticket", await wait_for(pg, f"{RESULT}.includes('no room left')&&{RESULT}"), lambda t: "will not place orders" in (t or ""))
-            check("and the Limits tab is red", await pg.js("document.getElementById('light-tab').className"), "dot red")
+            check("a day at its limit blocks the ticket", await wait_for(pg, f"{RESULT}.includes('leave no room')&&{RESULT}"), lambda t: "will not place orders" in (t or ""))
+            check("Limits keeps the real loss apart from the worst case", await pg.js("document.getElementById('limits-out').textContent"),
+                  lambda t: "Lost so far: 110.00 USD of 120.00 USD" in (t or "") and "If every open stop is hit: 129.60 USD" in (t or "") and "No room left for a new trade" in (t or ""))
+            check("and the Limits tab is amber: 110 of 120 lost for real, the rest taken by the open stop", await pg.js("document.getElementById('light-tab').className"), "dot amber")
             await set_value(pg, "lim-day", "500")
             await pg.js("window.__mock.failDeals=true;window.__mock.execs.forEach(f=>f())")
-            check("if the history does not load, orders are blocked (fail closed)", await wait_for(pg, f"{RESULT}.includes('could not be checked')&&{RESULT}"), lambda t: "Nothing is placed" in (t or ""))
+            check("if the history does not load, orders are blocked (fail closed)", await wait_for(pg, f"{RESULT}.includes('cannot be checked')&&{RESULT}"), lambda t: "Nothing is placed" in (t or ""))
             await pg.js("window.__mock.failDeals=false;window.__mock.accountType='netted';window.__mock.execs.forEach(f=>f())")
             check("a netting account that already holds the symbol is refused", await wait_for(pg, f"{RESULT}.includes('netting account')&&{RESULT}"), lambda t: "already hold EURUSD" in (t or ""))
         self.run_page(go, 9362)
@@ -155,9 +166,9 @@ class BallastPage(unittest.TestCase):
             await pg.goto(self.base + "/index.html?mock=1&symbol=EURUSD", 2)
             await wait_for(pg, "document.getElementById('acct').textContent.includes('Demo')")
             await real_click(pg, "[data-tab=exposure]")
-            check("exposure: the open EURUSD trade risks 50 at its stop, the gold one has none",
-                  await wait_for(pg, "document.getElementById('exposure-out').textContent.includes('50.00 USD')&&document.getElementById('exposure-out').textContent"),
-                  lambda t: "no stop: no limit" in (t or "") and "At risk at the stops: 50.00 USD" in (t or ""))
+            check("exposure: the open EURUSD trade risks 50 from entry and (1.09998 - 1.09900) x 20,000 = 19.60 more from the bid; the gold one has no stop",
+                  await wait_for(pg, "document.getElementById('exposure-out').textContent.includes('19.60 USD more')&&document.getElementById('exposure-out').textContent"),
+                  lambda t: "no stop: no limit" in (t or "") and "50.00 USD from entry" in (t or "") and "At risk at the stops: 19.60 USD" in (t or "") and "1 position(s) with no stop" in (t or ""))
             await real_click(pg, "[data-tab=journal]")
             check("journal: a position closed in two parts is one trade; three trades, average 0.84 R",
                   await wait_for(pg, "document.getElementById('journal-sum').textContent"), lambda t: "3" in (t or "") and "0.84 R per trade" in (t or "") and "3.63" in (t or ""))
@@ -178,8 +189,10 @@ class BallastPage(unittest.TestCase):
             await real_click(pg, "#review")
             check("but shows no Place button, and says why",
                   await wait_for(pg, "!document.getElementById('reviewbox').hidden&&[document.getElementById('place').hidden,document.getElementById('review-note').textContent].join('|')"),
-                  lambda t: (t or "").startswith("true|The trial sizes"))
-            check("its footer says it is the trial", await pg.js("document.getElementById('edition').textContent.startsWith('Trial')"), True)
+                  lambda t: (t or "").startswith("true|Ballast Free sizes the trade"))
+            check("its header says it is the free edition", await pg.js("document.getElementById('edition').textContent.startsWith('Free')"), True)
+            await real_click(pg, "[data-tab=limits]")
+            check("and Limits explains it is in the full version", await pg.js("document.getElementById('limits-out').textContent"), lambda t: "in Ballast (the full version)" in (t or ""))
         self.run_page(go, 9364)
 
 

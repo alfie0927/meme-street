@@ -110,6 +110,17 @@ test("Commission per million USD traded (audit 1)", () => {
   assert.equal(commissionPerUnit({ mode: "none", value: 9 }), 0);
 });
 
+test("Commission as a percent of the trade's value (crypto and some index CFDs)", () => {
+  // bitcoin at 60,000 in a USD account, 0.05% each side: 30 a coin each side, 60 a coin both ways
+  const c = commissionPerUnit({ mode: "percent", value: 0.05 }, { depositPerUnit: 60000 });
+  near(c, 30);
+  const BTC1 = { digits: 2, pipPosition: 0, lotSize: 1, minVolume: 0.01, maxVolume: 100, volumeStep: 0.01 };
+  const r = sizeTrade({ ...base, balance: 10000, risk: 1, entry: 60000, stop: 59400, symbol: BTC1, commission: c });
+  assert.equal(r.volume, 0.15);                            // 100 / (600 + 60) = 0.1515 coins
+  near(r.riskMoney, 99);
+  assert.ok(Number.isNaN(commissionPerUnit({ mode: "percent", value: 0.05 }, {})));
+});
+
 test("The platform's conversion fee is added (audit 9)", () => {
   const r = sizeTrade({ ...base, balance: 5000, stop: 1.0975, rate: 0.8, feeRate: 0.001 });
   assert.equal(r.volume, 24000);
