@@ -28,7 +28,7 @@ folder the game is started from.
 | `docs/` | This guide, `ROADMAP.md` (the one plan, for the site and the reels: since 2026-11-12 the reach plan and the growth plan are folded into it, and their two files are deleted), `MARKET_REALISM.md` (the research behind the charts) and `COUNCIL.md` (verdicts from `/council`) |
 | `deploy/` | Putting the game on a rented server (below) |
 | `tests/` | The test suite (§16) |
-| `tradertools/` | Since 2026-11-18: small trader tools sold in trading platforms' stores, apart from the game (§18). First `ctrader-risk/`, a risk-sizing order ticket for the cTrader Store |
+| `tradertools/` | Since 2026-11-18: small trader tools sold in trading platforms' stores, apart from the game (§18). First `ballast/`, Ballast, a risk toolkit for the cTrader Store |
 | `brand/` | The logo and the header image (an old screenshot and promo video were removed on 2026-10-20; they are in the git history) |
 
 The top folder only holds `start_game.ps1` (start the game), `README.md`, `requirements.txt` and `requirements-lock.txt`.
@@ -242,7 +242,7 @@ Every `.json` file here is a content pack: the engine reads them all in name ord
 |---|---|
 | `deploy/` | Putting the game on a rented server with a domain name and https: a guide, the upload and update scripts, the setup script, the services, the web-server file and the backup job (§1, "Running it on a real server") |
 | `tests/` | The automated test suite: engine, server, browser, stress, capacity and slow checks (§16). |
-| `.github/workflows/tests.yml` | Runs Ruff, mypy and the test suite automatically on every push (the project is on GitHub), and since 2026-11-18 `node --test` for `tradertools/ctrader-risk` (§18). |
+| `.github/workflows/tests.yml` | Runs Ruff, mypy and the test suite automatically on every push (the project is on GitHub), and since 2026-11-18 `node --test` for `tradertools/ballast` (§18). |
 
 ---
 
@@ -2140,7 +2140,7 @@ Advance time with `advance(e, seconds)` (whole one-second ticks) or move the clo
 
 ---
 
-**Trader tools (2026-11-18).** `tests/test_tradertools.py` serves `tradertools/ctrader-risk/site` from a small local web server and drives the panel against its stand-in for cTrader (`?mock=1`, `host-mock.js`) in headless Edge or Chrome: the size shown (1% of 10,000 over 20 pips is 0.50 lots), the review step, one order per real click (a script's `click()` sends nothing, a double tap sends one), the loss limit's lock, the log's R, the "smallest size risks too much" refusal, settings kept, and the trial page without a Place button. The maths has its own 21 tests: `cd tradertools/ctrader-risk && node --test test/*.test.js` (CI's `tradertools` job).
+**Trader tools (2026-11-18).** `tests/test_tradertools.py` serves `tradertools/ballast/site` from a small local web server and drives Ballast against its stand-in for cTrader (`?mock=1`) in headless Edge or Chrome: the size (1% of 10,000 over 20 pips is 0.50 lots; 0.48 with 3.50 a lot of commission), the review, one order per real click (a script's `click()` sends nothing, a double tap sends one) with the stop trigger and the trade's id in the label, a stop inside the spread refused, settings kept per account, the limits' room cutting the size and a reached limit blocking it, an unreadable history blocking it (fail closed), a netting account refused, Exposure, Journal and Sessions, and the free edition without a Place button. The maths has its own 48 tests: `cd tradertools/ballast && node --test test/*.test.js` (CI's `tradertools` job).
 
 ## 17. Latest economy-check results
 
@@ -2425,46 +2425,70 @@ Every direction-neutral group loses in every seed but one (the 30-day straddle a
 ## 18. Trader tools (`tradertools/`, since 2026-11-18)
 
 **Why it exists.** On 17 and 18 November 2026 the owner asked for a pivot that earns without selling by hand. Six
-families of routes were researched (the record is in `docs/ROADMAP.md` §2 and §3); the only place where unknown
-sellers of honest tools visibly make sales is the stores inside trading platforms. The owner chose small, honest
-utilities sold there, starting with the cTrader Store. They share no code with the game and run nowhere on the game's
-server: each is a static site.
+families of routes were researched (`docs/ROADMAP.md` §2 lesson 13); the only place where unknown sellers of honest
+tools visibly make sales is the stores inside trading platforms. The owner chose one bundled toolkit sold there as
+one subscription ("my own cTrader... you buy all of them at once with one subscription", answered as: a toolkit
+inside cTrader, not a platform of our own, which would need broker deals, data licences and regulation). Meme
+Street's code stays; it is no longer the product, except the Daily Chart, which stays live.
 
-**`tradertools/ctrader-risk/`: Exact Risk Ticket (working name).** A cTrader "web plugin": a page cTrader opens in a
-frame (Web, Windows, Mac and the phone apps) and talks to through its Plugin API v2. Its README is the full manual
-(files, testing, the probe, hosting, releases, the demo checklist).
-- **What it does.** Sizes a trade from the balance, the risk chosen (a percent or an amount) and the stop distance
-  (price or pips), using the symbol's own lot size, minimum and step (`risk.js` `sizeTrade`). The size is always
-  rounded **down**, capped at the symbol's maximum, and refused, never rounded up, when the smallest size would risk
-  more than chosen. The risk is converted into the account's currency through at most two symbols
-  (`conversionPath`, `conversionRate`), each price taken on the side that makes the risk larger (ask when
-  multiplying, 1/bid when dividing). The target is a price or a multiple of the risk; the panel shows reward to risk
-  and the break-even win rate. **Review, then place** (`ticket.js`): a market order carries its stop and target as
-  pips (`stopLossPips`, `takeProfitPips`), so the reviewed risk holds whatever the fill; a limit or stop order
-  carries prices and must sit on the right side of the market. The order's `label` is `ERT r=<planned risk>`, which
-  the **log** reads back from closed deals to show each trade in R, with win rate, average R and profit factor.
-  **Loss lights**: the day's realised loss (every closed deal since a chosen hour) against a daily limit, and the
-  fall from a chosen balance against a total limit; amber at 80%, red at 100%, and red locks this panel's Place
-  button (not the rest of cTrader; open trades are not counted).
-- **Safeguards.** One function sends an order (`createPlacer`): once per reviewed request, refusing a second tap
-  while one is in flight, never retrying (no answer in 10 s says "check your positions"). The Place button acts only
-  on a real click (`event.isTrusted`), never on load, a timer or the address. Any change to the inputs while the
-  review is open closes it. The page's security policy (`site/_headers`, `connect-src 'none'`) means it cannot send
-  data anywhere; its settings stay in the browser (`localStorage` key `ert.v1`).
-- **Editions.** `site/index.html` (full) and `site/trial/index.html` (the same page, `data-edition="trial"`: sizes and
-  shows the limits, no Place button). `PAID_IDS` in `app.js` names the Store plugin's id (cTrader passes `?id=`); empty
-  until the Store assigns one.
-- **cTrader's side.** `host.js` is the only file that talks to cTrader, through `site/vendor/ctrader-sdk.js`: the
-  SDK's v2 packages (`@spotware-web-team/sdk` 2.1.5, `sdk-external-api` 2.0.1, with zod, uuid and rxjs) bundled into
-  one file, because a plugin may load files only from its own address (`vendor-build.sh` rebuilds it; licences in
-  `site/vendor/LICENSES.txt`). The help pages still describe the older v0 API; the code follows the package. Not yet
-  verified on a real account (the probe of 25 November, `site/probe.html`): the unit of `volume`
-  (`UNITS_PER_VOLUME`), whether every cTrader app speaks v2, whether a closed deal keeps its label, storage, and the
-  plugin id. `host-mock.js` offers the same functions over a 10,000 USD demo account for `?mock=1` and the tests.
-- **Hosting.** Cloudflare Pages on the free plan, set up by the owner; no change to the game's server or Caddy.
-- **Tests.** `node --test test/*.test.js` (21: worked examples for EURUSD in USD and GBP accounts, USDJPY, EURJPY in
-  GBP, an index, gold in EUR, bitcoin, the exact boundary, the blocks, conversion paths, the log and the lights, one
-  order per click) and `tests/test_tradertools.py` (§16).
+**`tradertools/ballast/`: Ballast, the risk toolkit for cTrader.** A cTrader "web plugin": a static page cTrader opens
+in a frame (Web, Windows, Mac and the phone apps) and talks to through Plugin API v2. Its README is the owner's
+manual (running, testing, the probe, hosting, building the plugins, publishing, releasing); `USER_GUIDE.md` is for
+buyers; `LISTING.md` is the Store form's text and the pricing proposal (US$9.99 a month or US$79 a year, with a free
+edition). The brand: the name Ballast (no trading product of that name found; "Riskdeck" was too close to an existing
+RiskDesk), a mark of a small boat on a waterline with its ballast keel below, deep-sea navy and sea-teal.
+
+- **Ticket** (`risk.js` `sizeTrade`, `ticket.js` `buildOrder`). The size whose loss at the stop, commission included,
+  is no more than the risk chosen (a percent of balance or money; the stop in pips, as a price, or as a multiple of
+  ATR(14) on a chosen chart period). Always rounded down to the volume step; refused below the minimum; capped at the
+  maximum. The loss is converted from the quote currency into the account's money through at most two symbols
+  (`conversionPath`, a direct pair first, USD preferred in the middle), every price on the side that makes the loss
+  larger, and a leg on the traded symbol itself valued at the stop as well as now (the worse used), because a loss is
+  converted when the stop is hit. Commission is entered once (per lot each side, or per million USD each side) and
+  charged twice; the platform's conversion fee (`pnlConversionFeeRate`) is added when the quote currency is not the
+  account's. A market order's stop must sit at least a pip beyond the price it is triggered on (the bid for a buy,
+  the ask for a sell); every order carries `stopLossTriggerMethod: "trade"`; market orders carry stop and target as
+  pips from the fill, pending orders as prices rounded to the symbol. Spread-betting accounts, prediction-market
+  symbols and a netting account that already holds the symbol are refused. The label `BLST r=<planned risk>
+  id=<trade id>` lets the journal read R back. The review freezes the order; any edit closes it; Place acts only on a
+  real click, re-checks the limits at that moment, and sends once (`createPlacer`: no second send while one is in
+  flight, never a retry; no answer in 10 s says "check your positions").
+- **Limits** (`limits.js` `limitState`, `dayStart`). Daily loss = the day's reference (the opening balance, which is
+  the balance minus the net of deals closed since the day began, or the higher of that and the opening equity when
+  the panel saw the day begin) minus equity; total loss = the starting balance (static) or the highest balance or
+  equity seen (trailing) minus equity. "Count open trades at their stops" (the default) uses the lower of equity and
+  balance minus every open position's loss at its stop, so a new trade can never add up to a breach. Limits in money
+  or as a percent of the starting balance; the day starts at a chosen hour in a chosen IANA time zone (default
+  Prague), right across daylight saving. The room left (snapped to 0 under half a cent) cuts the ticket's budget;
+  none left blocks it; an incomplete history (`history.js` `readDeals`: one-week windows, split when the platform
+  says there is more) makes the limits unknown and blocks orders (fail closed).
+- **Exposure**: each open position's loss at its stop in the account's money and as a share of the balance
+  (`positionRisk`, converted like the ticket), the total, positions without a stop marked as unlimited.
+- **Journal** (`journal.js`): the closed deals with Ballast's label, grouped by trade id (a position closed in parts
+  is one trade), each in R; win rate, average R, average win and loss in R, profit factor, net, best and worst, the
+  longest losing run; by symbol; the last 50; CSV download.
+- **Sessions** (`sessions.js`): Sydney 07-16, Tokyo 09-18, London 08-17, New York 08-17, each in its own city's time,
+  inside the forex week (Sunday 17:00 to Friday 17:00 New York); open or closed and when that changes; the
+  London-New York overlap named.
+- **Settings** are kept per trading account (`localStorage` key `ballast.v1.<login>`), the open tab per browser.
+- **Editions.** `site/index.html` (full) and `site/trial/index.html` (Ballast Free: `data-edition="trial"`, no Place
+  button). `PAID_IDS` in `app.js` names the Store plugin's id (cTrader passes `?id=`); empty until the Store assigns one.
+- **cTrader's side.** `host.js` is the only file that talks to cTrader, through `site/vendor/ctrader-sdk.js` (the
+  SDK's v2 packages bundled into one file, because a plugin may load files only from its own address;
+  `vendor-build.sh` rebuilds it; licences in `site/vendor/LICENSES.txt`). The help pages still describe the older v0
+  API; the code follows the package. Not yet seen on a real account (the probe, `site/probe.html`): the unit of
+  `volume` (`UNITS_PER_VOLUME`), v2 on every app, the label kept on closing deals, storage, chart bars, the plugin
+  id. `host-mock.js` offers the same functions over a 10,000 USD demo account with two open positions and three
+  closed trades, for `?mock=1`, screenshots and the browser test.
+- **Security and privacy.** `site/_headers` (Cloudflare Pages) sets `connect-src 'none'` and allows scripts and styles
+  from the site only: Ballast cannot send data anywhere. No signals, no advice (UK FCA PERG 8.30).
+- **Hosting.** Cloudflare Pages on the free plan, set up by the owner; nothing on the game's server.
+- **Tests.** `node --test test/*.test.js` (48: worked examples for EURUSD in USD, GBP and EUR accounts, USDJPY and
+  EURJPY, an index, gold, bitcoin, commission per lot and per million, the conversion fee, the rate at the stop, the
+  limits' room, steps that are not powers of ten, number parsing in both decimal conventions, the limits the way
+  FTMO and FundedNext count, time zones across daylight saving, the journal's grouping, the sessions, the history
+  reader, the order builder and the one-send placer) and `tests/test_tradertools.py` (§16). Two independent audits
+  checked the maths; the first one's twelve findings are fixed and tested.
 
 ## Keeping the docs current
 

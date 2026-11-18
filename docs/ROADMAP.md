@@ -7,8 +7,9 @@ never paid out. The site earns from the **Pro and Expert passes** (MB packages w
 door, the daily reason to come back and the thing people share: every link lands on it and it needs no account. The
 course is a **path** (units, exercises, XP, a streak). **Since 18 November 2026 the work is a pivot (section 3):**
 small, honest trader tools sold inside the stores of trading platforms, where the store brings the buyers and takes
-the payment, starting with a risk-sizing order ticket for the cTrader Store (`tradertools/ctrader-risk`). Meme Street
-stays online in maintenance; its reels are paused.
+the payment, starting with Ballast, a risk toolkit for the cTrader Store sold as one subscription (`tradertools/ballast`).
+Meme Street's code stays but it is no longer the product, except the Daily Chart, which stays live; the reels grow a
+following around the toolkit's subject.
 
 **This file is the one plan, for the site and for the reels.** Check it before starting any work, and update
 `HOW_IT_WORKS.md` (what the code does **today**) after every change. Section 3 is the order of work, section 4 is
@@ -268,20 +269,23 @@ replaced by the two tripwires in section 8.
 
 ## 3. The plan in order
 
-**The pivot: Exact Risk Ticket on the cTrader Store** (your call, 18 Nov, after the research in section 2, lesson 13;
-it replaces "sell before building" of 17 Nov, whose sends are dropped; the site fixes of that day stay). A panel
-inside cTrader (Web, desktop, phone) that sizes a trade from the risk chosen and the stop, converts the risk into the
-account's currency for any symbol, always rounds down, and places the order with its stop and target attached after
-a review; it shows the day's realised loss against your own limits and keeps a log in R. **No signals, no advice.**
-Price: $29 one-off, $19 at launch, with a free trial that sizes but does not place orders; the store keeps 30%. The
-honest odds: **£100 to £600 in the first year** from cTrader alone; more needs the MetaTrader port (stage 3). Code and
-manual: `tradertools/ctrader-risk/` and its README; how it works: HOW_IT_WORKS §18.
+**The pivot: Ballast on the cTrader Store** (your calls, 18 Nov: a pivot that earns without selling by hand, after the
+research in section 2 lesson 13; "my own cTrader... all of them at once with one subscription", answered as one
+toolkit inside cTrader rather than a platform of our own; the name and brand left to me). It replaces "sell before
+building" of 17 Nov, whose sends are dropped; the site fixes of that day stay. **Ballast** is one panel inside cTrader
+(Web, desktop, phone) with five tools: **Ticket** (the size whose loss at the stop, commission included, is no more
+than the risk chosen; review, then place), **Limits** (daily and total loss the way funded-account firms count them;
+new trades cut to the room left; blocked at the limit), **Exposure** (risk at the stops), **Journal** (trades in R)
+and **Sessions** (the market's clock). **No signals, no advice.** Proposed price: one subscription, US$9.99 a month
+or US$79 a year, with Ballast Free (sizes and checks, does not place orders) attached as the trial; the Store keeps
+30%. The honest odds: **£100 to £600 in the first year** from cTrader alone; more needs a MetaTrader port (stage 3).
+Code and manual: `tradertools/ballast/` (README, USER_GUIDE, LISTING); how it works: HOW_IT_WORKS §18.
 
 ### Stage 0, 18 to 25 November: does the platform do what its documents say
 
 | What | Who | State |
 |---|---|---|
-| The maths with worked examples (21 tests), the order builder and its one-send placer, the panel against a stand-in for cTrader, the browser test, the SDK bundled, the probe page | Me | **Done 18 Nov** (branch `tradertools/risk-ticket`) |
+| Ballast built overnight: the five tools, every finding of an independent maths audit fixed (commission, the rate at the stop, stops inside the spread, the limits' room, equity-based limits, failing closed, partial closes, netting accounts), 48 maths tests and 4 browser tests, the brand, the store image and screenshots, the listing, the guides | Me | **Done 18 Nov** (branch `tradertools/toolkit`) |
 | A cTrader ID, a demo account, the phone app; whether cTrader's own order ticket already sizes by risk percent (if it does, the paid value shrinks to the limits and the log, and we decide before building more) | You | Open |
 | Seller registration and the identity check (photo ID, selfie, proof of address); a UK debit card for payouts | You | Open |
 | Hosting on Cloudflare Pages (free; README "Hosting") | You | Open |
@@ -291,15 +295,12 @@ If the probe fails on both Web and the phone, the fallback is a desktop-only plu
 
 ### Stage 1, 25 November to 21 December: build and list
 
-Fit the probe's answers (`UNITS_PER_VOLUME`, the log), finish the panel, delete the probe, put the plugin's id into
-`PAID_IDS`, screenshots (you, 20 minutes), the listing below; your 15-minute demo checklist on 2 and 9 December
+Fit the probe's answers (`UNITS_PER_VOLUME`, the journal's label), delete the probe, build the two plugins and put
+the paid one's id into `PAID_IDS`, the listing (`tradertools/ballast/LISTING.md`); your 15-minute demo checklist on 2 and 9 December
 (README); submit by 15 December (review takes 1 to 3 working days); listed by 21 December, 8 January at the latest.
 
-**The listing.** Title *Exact Risk Ticket* (checked against the store first). Short description: *Sizes each trade
-from your risk and stop, rounds down, and places it with stop and target attached. No signals.* The long text says
-what it does and what it does not (no signals or advice; it cannot stop orders placed elsewhere; the limits count
-closed trades only; a stop is not a guaranteed price), that it sends no data anywhere, and that it does not make
-trading profitable.
+**The listing** is written: `tradertools/ballast/LISTING.md` (name *Ballast Risk Toolkit*, the descriptions, the
+images in `tradertools/ballast/listing/`, the answers to likely questions).
 
 ### Stage 2, the reads
 
@@ -312,11 +313,14 @@ registration takes about 10 working days); otherwise a second cTrader tool chose
 
 ### Meanwhile
 
-- **Meme Street: maintenance only.** It stays online; the daily SEO routine keeps running. The fixes of 17 November
-  (the Daily's house traders said in aggregate, the open lesson link, the first-game card, the lighter sign-up,
-  tomorrow's chart by email) ship when you merge and say deploy. No new lessons, reel formats or features.
-- **The reels are paused** (your call, 18 Nov): the reel timers on the server are off; the account and every posted
-  reel stay. Switching back on is one command (section 4).
+- **Meme Street: kept, not used** (your call, 18 Nov: "keep the memestreet code but we won't use it anymore... keep the
+  daily chart i think it's cool"). The site stays online for the Daily Chart; nothing new is built on it. The fixes
+  of 17 November ship when you merge and say deploy.
+- **The reels keep posting at the same rate** (your call, 18 Nov), around the toolkit's subject: the cards teach risk,
+  sizing, orders, limits and the journal (`LESSON_FORMATS[CARD]`, committed to main on 18 Nov); the Daily Chart reel
+  stays; the story serial runs to its end on 28 Nov; no reel names Ballast until it is listed. **The change reaches the
+  reel server only with your command** (section 4): the server holds about 17 files the repo lacks (another session's
+  work), so a full `./deploy.sh` would undo them; copy the one file.
 - Off your list: the eight weeks of sends, Show HN, the teacher emails, the Instagram chores.
 
 
@@ -357,7 +361,7 @@ registration takes about 10 working days); otherwise a second cTrader tool chose
 
 ## 4. Your list (only you can do these)
 
-Since 18 November: the trader-tools pivot (section 3). The steps are in `tradertools/ctrader-risk/README.md`.
+Since 18 November: Ballast (section 3). Every step is in `tradertools/ballast/README.md`.
 
 | # | What | When | Time |
 |---|---|---|---|
@@ -370,9 +374,10 @@ Since 18 November: the trader-tools pivot (section 3). The steps are in `tradert
 | 7 | The demo checklist (2 and 9 Dec) and three screenshots | December | 50 min |
 | 8 | Answer buyers' comments (I draft, you post); keep a note of income for your tax return | As they come | |
 | 9 | Merge the branch and say deploy when you want Meme Street's fixes of 17 November live | Any time | 5 min |
-| 10 | Renew the Instagram token before 1 January 2027 only if the reels are switched back on | December | |
+| 10 | Renew the Instagram token before 1 January 2027 (the reels stop without it) | December | 10 min |
+| 11 | Send the reels' new topics to the reel server: `scp` the one file, as in the command below | Once | 2 min |
 
-**To switch the reels back on** (one command): `ssh root@65.109.233.145 'for t in $(cat /root/reel-timers-paused-2026-11-18.txt); do systemctl enable --now "$t"; done'`.
+**The reels' new topics to the server** (one command, from `D:\stock_market_sim` after `git pull`; it copies only `make_spec.py`, which is otherwise identical on both sides): `git show origin/main:tools/memestreet_daily_reel/src/make_spec.py | ssh root@65.109.233.145 'cat > /opt/memestreet-daily-reel/src/.ms.new && mv /opt/memestreet-daily-reel/src/.ms.new /opt/memestreet-daily-reel/src/make_spec.py && cd /opt/memestreet-daily-reel && python3 src/make_spec.py selftest'` (it prints ok). The reel timers are on (switched back on 18 Nov); to pause them again: `ssh root@65.109.233.145 'for t in $(cat /root/reel-timers-paused-2026-11-18.txt); do systemctl disable --now "$t"; done'`.
 
 Do not join the store's broker affiliate programme without legal advice: earning from broker activity is a different
 question from selling a calculator.
@@ -688,9 +693,11 @@ Done or decided: R1 to R3, R6, X1, X3 to X6, X8.
   as a trading name with an address on the domain; nobody but you has ever paid, so "the two buyers" was wrong; no
   class version is built until a teacher pays; the dates in section 8 decide what happens next.
 - 18 Nov (after researching pivots that earn without selling, section 2 lesson 13): **pivot to honest trader tools in
-  platform stores**, first a risk-sizing order ticket on the cTrader Store, then MetaTrader if it works; a small
-  income that grows is worth it; the identity check with the store is fine; small monthly costs are allowed (none
-  needed so far); **the reels are paused**; Meme Street goes into maintenance; the sends of 17 November are dropped.
+  platform stores**: **Ballast**, one toolkit inside cTrader under one subscription (not a platform of our own), then
+  MetaTrader if it works; a small income that grows is worth it; the identity check with the store is fine; small
+  monthly costs are allowed (none needed so far); the name and brand are mine to choose; **Meme Street's code is kept,
+  not used**, except the Daily Chart; **the reels keep posting at the same rate, about risk and the toolkit's subject**;
+  the sends of 17 November are dropped.
 - Settled from the old open list: the rank claim now says "the return boards" (the profit boards stay: risk 11);
   "Session" replaced "Day" (U10); the house bots stay on the boards, flagged in the data only.
 
@@ -725,8 +732,8 @@ Done or decided: R1 to R3, R6, X1, X3 to X6, X8.
 
 ## 8. Review dates and tripwires
 
-**The number that matters since 18 November:** purchases of Exact Risk Ticket in the cTrader Store (its product page
-shows them), then payouts received.
+**The number that matters since 18 November:** subscriptions to Ballast in the cTrader Store (its product page shows
+them) and installs of Ballast Free, then payouts received.
 
 | When | What | What it decides |
 |---|---|---|
