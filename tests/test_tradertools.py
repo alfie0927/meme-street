@@ -191,6 +191,12 @@ class BallastPage(unittest.TestCase):
             # 0.30 lots over 20 pips is 60.00: held against the room until the account shows the new position
             check("an order just sent is held against the room", await wait_for(pg, "document.getElementById('limits-out').textContent.includes('is held')&&document.getElementById('limits-out').textContent"),
                   lambda t: "at most 0.40 USD" in (t or "") and "60.00 USD of that is held" in (t or ""))
+            await pg.js("window.__mock.positions.push({positionId:13,symbolId:1,symbolName:'EURUSD',side:'buy',volume:30000,entryPrice:1.1,"
+                        "stopLoss:1.098,netPnl:0,openTimestamp:new Date().toISOString()});window.__mock.execs.forEach(f=>f())")
+            check("and released once the account shows the new position, which then counts itself",
+                  await wait_for(pg, "!document.getElementById('limits-out').textContent.includes('is held')&&document.getElementById('limits-out').textContent"),
+                  # (it counts 59.40 from the bid, 1.09998 - 1.09800, where the hold was 60.00 from entry: 120 - 59.60 - 59.40)
+                  lambda t: "at most 1.00 USD" in (t or ""))
         self.run_page(go, 9365)
 
     def test_exposure_journal_and_sessions(self):

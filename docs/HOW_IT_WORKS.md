@@ -2140,7 +2140,7 @@ Advance time with `advance(e, seconds)` (whole one-second ticks) or move the clo
 
 ---
 
-**Trader tools (2026-11-18).** `tests/test_tradertools.py` serves `tradertools/ballast/site` from a small local web server and drives Ballast against its stand-in for cTrader (`?mock=1`) in headless Edge or Chrome: the size (1% of 10,000 over 20 pips is 0.50 lots; 0.48 with 3.50 a lot of commission), the review, one order per real click (a script's `click()` sends nothing, a double tap sends one) with the stop trigger and the trade's id in the label, a stop inside the spread refused, settings kept per account, the limits' room cutting the size and a reached limit blocking it, an unreadable history blocking it (fail closed), a netting account refused; a pending order taking room, a pending order without a stop and positions that did not load blocking orders, an order just sent held against the room; Exposure, Journal and Sessions, and the free edition without a Place button. The maths has its own 60 tests: `cd tradertools/ballast && node --test test/*.test.js` (CI's `tradertools` job).
+**Trader tools (2026-11-18).** `tests/test_tradertools.py` serves `tradertools/ballast/site` from a small local web server and drives Ballast against its stand-in for cTrader (`?mock=1`) in headless Edge or Chrome: the size (1% of 10,000 over 20 pips is 0.50 lots; 0.48 with 3.50 a lot of commission), the review, one order per real click (a script's `click()` sends nothing, a double tap sends one) with the stop trigger and the trade's id in the label, a stop inside the spread refused, settings kept per account, the limits' room cutting the size and a reached limit blocking it, an unreadable history blocking it (fail closed), a netting account refused; a pending order taking room, a pending order without a stop and positions that did not load blocking orders, an order just sent held against the room; Exposure, Journal and Sessions, and the free edition without a Place button. The maths has its own 61 tests: `cd tradertools/ballast && node --test test/*.test.js` (CI's `tradertools` job).
 
 ## 17. Latest economy-check results
 
@@ -2470,7 +2470,8 @@ RiskDesk), a mark of a small boat on a waterline with its ballast keel below, de
   and the worst case: "count open trades at their stops" (the default) takes equity less every open position's loss
   from the current price to its stop (with one more side of commission) and every pending order's loss from its
   entry to its stop. The room left is the smallest limit less its worst case (snapped to 0 under half a cent), less
-  what orders just sent risk (held until a read started 10 s after the send has seen the account). Limits are in
+  what orders just sent risk (each held until a read begun after the send shows a new position or order on its
+  symbol, or 5 minutes; a send that timed out is held too, since it may have been placed). Limits are in
   money or as a percent of the starting balance; the day starts at a chosen hour in a chosen IANA time zone (default
   Prague), right across daylight saving (a repeated hour counts from its first time, a skipped one from the jump).
   **Fail closed:** with a limit set, orders are blocked and the reason shown whenever the figures cannot be trusted:
@@ -2478,10 +2479,14 @@ RiskDesk), a mark of a small boat on a waterline with its ballast keel below, de
   50 hours each refresh) incomplete, the positions or pending orders not loaded, the account older than 90 s, an open
   trade that cannot be valued, a pending order without a stop, the "higher of" rule without an opening equity, a
   trailing limit without the firm's floor. A position without a stop is counted at today's price and flagged.
-- **Refreshing** (`app.js` `refreshAll`): the account, positions, pending orders and deals are read together every
-  30 s, after every execution event and after a send; only the latest read is kept. The 35-day history for the
-  journal is read every 5 minutes or after a fill. A quote older than two minutes is not used, and a quiet price
-  stream is opened again.
+- **Refreshing** (`app.js` `refreshAll`): the account, pending orders, positions (in that order, so an order filling
+  between the reads is counted twice, never missed) and the last 50 hours of deals every 30 s, after every execution
+  event and after a send; a read is applied unless a later one has already landed. The journal's 35 days are read
+  apart (`readJournal`), every 5 minutes or after a fill, so a slow history never holds up the limits. A quote older
+  than two minutes is not used, and a quiet price stream is opened again. A position without a fresh price is valued
+  from the platform's gross result; without that it is unknown and blocks. At the click the limits are recomputed
+  from that moment's figures. An order request waits 60 s in the SDK, so the placer's own 10 s timeout (which holds
+  the order's risk and says "check your positions") always comes first.
 - **Exposure**: each open position's loss at its stop from the current price and from its entry, in the account's
   money and as a share of the balance (`positionRisk`, converted like the ticket, with the closing commission), each
   pending order's loss if it fills and its stop is hit, the total, and positions without a stop marked as unlimited.
@@ -2510,7 +2515,7 @@ RiskDesk), a mark of a small boat on a waterline with its ballast keel below, de
 - **Security and privacy.** `site/_headers` (Cloudflare Pages) sets `connect-src 'none'` and allows scripts and styles
   from the site only: Ballast cannot send data anywhere. No signals, no advice (UK FCA PERG 8.30).
 - **Hosting.** Cloudflare Pages on the free plan, set up by the owner; nothing on the game's server.
-- **Tests.** `node --test test/*.test.js` (60: worked examples for EURUSD in USD, GBP and EUR accounts, USDJPY and
+- **Tests.** `node --test test/*.test.js` (61: worked examples for EURUSD in USD, GBP and EUR accounts, USDJPY and
   EURJPY, an index, gold, bitcoin, commission per lot and per million, the conversion fee, the rate at the stop, the
   limits' room, steps that are not powers of ten, number parsing in both decimal conventions, the limits the way
   FTMO and FundedNext count, time zones across daylight saving, the journal's grouping, the sessions, the history

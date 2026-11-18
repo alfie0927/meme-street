@@ -86,3 +86,10 @@ test("A pending order's stop must clear the spread at the fill, or it fires at o
   assert.equal(buildOrder({ ...sst, stop: 1.09911 }).key, "stopTooClosePending");
   assert.equal(buildOrder({ ...sst, stop: 1.09912 }).ok, true);
 });
+
+test("The platform's own timeout is reported as a timeout, not a refusal (review of 1.2)", async () => {
+  const p = createPlacer(() => Promise.reject(Object.assign(new Error("newOrderReq timed out after 10000ms"), { code: "TIMEOUT" })));
+  assert.equal((await p.place({})).code, "timeout");
+  const q = createPlacer(() => Promise.reject(new Error("MARKET_CLOSED")));
+  assert.equal((await q.place({})).code, "rejected");
+});

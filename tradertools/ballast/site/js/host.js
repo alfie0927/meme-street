@@ -106,7 +106,8 @@ export async function bars(symbolId, period, count) {
 
 /** Sends one order (ticket.js createPlacer is the only caller). Resolves { orderId } or rejects with the reason. */
 export function placeOrder(request) {
-  return call(newOrder, { ...request });
+  // (a longer wait than createPlacer's 10 s, so the placer's own timeout, which holds the order's risk, comes first)
+  return firstValueFrom(newOrder(adapter, { ...request }, { timeoutMs: 60000 }));
 }
 
 /** Cancels a pending order (the probe's limit-order test). */

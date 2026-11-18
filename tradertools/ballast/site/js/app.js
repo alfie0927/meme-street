@@ -55,7 +55,7 @@ function save() {
 const st = { host: null, acct: null, sym: null, list: [], assetId: {}, assetName: {}, depositAsset: null, usdAsset: null,
              quotes: {}, quoteKey: "", stopQuotes: () => {}, details: {}, positions: [], orders: [], positionsOk: false,
              ordersOk: false, acctAt: 0, gen: 0, inflight: [], dayDeals: [], dayDealsOk: false, deals: [], dealsComplete: false,
-             journalAt: 0, journalDirty: true, built: null, frozen: null, limits: null, atr: null, tradeId: newTradeId(),
+             journalAt: 0, journalDirty: true, journalBusy: false, appliedGen: 0, built: null, frozen: null, limits: null, atr: null, tradeId: newTradeId(),
              side: "buy", painting: false, sent: false };
 
 // ---- numbers: one format, the reader's own ---------------------------------------------------------------------------
@@ -162,21 +162,31 @@ function showAccount() {
   $("acct").textContent = `${t(a.environment === "demo" ? "h.demo" : "h.live")} · ${money(a.balance)}`;
 }
 
+const settle = (p) => p.then((value) => ({ status: "fulfilled", value }), (reason) => ({ status: "rejected", reason }));
+
+/** The ids of the positions ("p...") and pending orders ("o...") on one symbol, as last read. */
+function idsOn(symbolId) {
+  return new Set([...st.positions.filter((p) => p.symbolId === symbolId).map((p) => "p" + p.positionId),
+                  ...st.orders.filter((o) => o.symbolId === symbolId).map((o) => "o" + o.orderId)]);
+}
+
 /**
- * Reads the account, open positions, pending orders and the deals, all at once. Only the latest call's figures are
- * kept; a part that fails is marked, and the limits then block orders rather than count on old figures.
+ * Reads the account, pending orders, open positions and today's deals. Pending orders are read before positions, so
+ * an order that fills between the two reads is counted twice rather than not at all. A read's figures are kept unless
+ * a later read has already landed; a part that fails is marked, and the limits then block orders rather than count
+ * on old figures. The journal's 35 days are read separately, so a slow history never holds up the limits.
  */
 async function refreshAll() {
   if (!st.host) return;
   const gen = ++st.gen;
   const now = Date.now();
-  const journal = st.journalDirty || now - st.journalAt > 300000;     // (35 days of history: every 5 minutes, or after a fill)
-  const [a, ps, os, dd, jd] = await Promise.allSettled([
-    st.host.account(), st.host.positions(), st.host.pendingOrders(),
-    st.host.deals(now - 50 * 3600000, now),                   // (covers any day start: the limits need today only)
-    journal ? st.host.deals(now - 35 * 86400000, now) : null,
-  ]);
-  if (gen !== st.gen) return;                                  // (a later refresh started: its figures are newer)
+  if (st.journalDirty || now - st.journalAt > 300000) readJournal();   // (every 5 minutes, or after a fill)
+  const side = Promise.allSettled([st.host.account(), st.host.deals(now - 50 * 3600000, now)]);   // (50 h: any day start)
+  const os = await settle(st.host.pendingOrders());
+  const ps = await settle(st.host.positions());
+  const [a, dd] = await side;
+  if (gen <= st.appliedGen) return;                            // (a later read already landed: its figures are newer)
+  st.appliedGen = gen;
   if (a.status === "fulfilled") { st.acct = a.value; st.acctAt = now; showAccount(); }
   st.positionsOk = ps.status === "fulfilled";
   if (st.positionsOk) st.positions = ps.value;
@@ -184,16 +194,11 @@ async function refreshAll() {
   if (st.ordersOk) st.orders = os.value;
   st.dayDealsOk = dd.status === "fulfilled" && dd.value.complete;
   if (dd.status === "fulfilled") st.dayDeals = dd.value.deals;
-  if (journal) {
-    if (jd.status === "fulfilled") {
-      st.deals = jd.value.deals;
-      st.dealsComplete = jd.value.complete;
-      st.journalAt = now;
-      st.journalDirty = false;
-    } else st.dealsComplete = false;
+  // An order sent is held against the room until a read begun after the send shows a new position or order on its
+  // symbol (positions carry no label to match), or for 5 minutes at most.
+  if (st.positionsOk && st.ordersOk) {
+    st.inflight = st.inflight.filter((x) => now - x.at < 300000 && (now <= x.at || ![...idsOn(x.symbolId)].some((id) => !x.seen.has(id))));
   }
-  // An order sent is held against the room until a read started well after it shows the position or order it made.
-  if (st.positionsOk && st.ordersOk) st.inflight = st.inflight.filter((x) => x.at > now - 10000);
   const missing = [...new Set([...st.positions, ...st.orders].map((p) => p.symbolId))].filter((id) => !st.details[id]);
   if (missing.length) {
     try { for (const d of await st.host.symbolsById(missing)) st.details[d.symbolId] = d; } catch { /* exposure shows "no price yet" */ }
@@ -202,6 +207,25 @@ async function refreshAll() {
   if (st.quoteKey.split(",").some((id) => id && !(now - (st.quotes[id] || {}).at < STALE_MS))) st.quoteKey = "";
   subscribe();
   paint();
+}
+
+/** The journal's 35 days of closed deals, read apart from the limits (it can take many requests). */
+async function readJournal() {
+  if (st.journalBusy) return;
+  st.journalBusy = true;
+  st.journalDirty = false;                                     // (a fill during the read marks it again)
+  const now = Date.now();
+  try {
+    const r = await st.host.deals(now - 35 * 86400000, now);
+    st.deals = r.deals;
+    st.dealsComplete = r.complete;
+  } catch {
+    st.dealsComplete = false;
+  } finally {
+    st.journalAt = now;
+    st.journalBusy = false;
+  }
+  renderJournal();
 }
 
 // ---- prices -----------------------------------------------------------------------------------------------------------
@@ -401,7 +425,8 @@ function openRisk() {
     let now = risk;
     if (risk != null) {
       if (Number.isFinite(exitNow)) now = positionRisk({ ...p, entryPrice: exitNow }, rate, u);
-      else if (Number.isFinite(p.netPnl)) now = Math.max(0, p.netPnl + risk);   // (no price: the platform's own result so far)
+      // (no fresh price: the platform's own price result so far; gross, since equity already holds commission and swap)
+      else if (Number.isFinite(p.grossPnl)) now = Math.max(0, p.grossPnl + risk);
       else now = undefined;
     }
     if (risk === null) noStop += 1;
@@ -683,6 +708,7 @@ function refusal(res) {
 
 async function place(ev) {
   if (!ev.isTrusted || !canPlace || !st.frozen || st.sent) return;   // (a real click only)
+  renderLimits();                                                   // (the limits from this moment's figures, not the last paint's)
   const now = buildOrder(ticketInputs());                           // (the limits and the account, checked again now)
   if (!now.ok) {                                                    // (anything the market or account changed: refused)
     $("place-msg").textContent = why(now);
@@ -694,9 +720,11 @@ async function place(ev) {
   }
   $("place").disabled = true;
   $("place-msg").textContent = t("v.sending");
+  const symbolId = st.frozen.request.symbolId;
+  const hold = { risk: st.frozen.review.riskMoney, at: Date.now(), symbolId, seen: idsOn(symbolId) };
   const res = await placer.place(st.frozen.request);
   if (res.ok || res.code === "timeout") {                          // (a timeout may still have placed it: held either way)
-    st.inflight.push({ risk: st.frozen.review.riskMoney, at: Date.now() });
+    st.inflight.push(hold);
     setTimeout(refreshAll, 12000);
   }
   if (res.code !== "busy") st.tradeId = newTradeId();             // (a second attempt is its own trade in the journal)

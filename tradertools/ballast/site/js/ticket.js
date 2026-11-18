@@ -110,6 +110,10 @@ export function createPlacer(send, timeoutMs = 10000) {
         }
         return { ok: true, answer };
       } catch (e) {
+        // (the platform's own timeout is not a refusal: the order may still have been placed)
+        if (e && (e.code === "TIMEOUT" || /timed? ?out/i.test(String(e.message || "")))) {
+          return { ok: false, code: "timeout", message: "No answer from cTrader. Check your positions and orders before trying again." };
+        }
         return { ok: false, code: "rejected", message: `cTrader refused the order: ${(e && (e.message || e.code)) || "unknown reason"}.` };
       } finally {
         clearTimeout(timer);

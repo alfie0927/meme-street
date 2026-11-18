@@ -30,7 +30,7 @@ signals and no advice.
 | `site/_headers` | The security policy on Cloudflare Pages: no network connections at all, so Ballast cannot send data anywhere |
 | `site/probe.html`, `site/js/probe.js` | The one-off platform check on a demo account. **Delete before the listing goes live** |
 | `listing/` | The 300 x 300 store image and four 840-px screenshots |
-| `test/` | `node --test`: 60 tests with worked examples |
+| `test/` | `node --test`: 61 tests with worked examples |
 | `../../tests/test_tradertools.py` | The panel in a real browser (5 tests) |
 
 ## Run it on this computer
