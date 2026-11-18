@@ -954,7 +954,10 @@ DAILY_END = (" FUN FIRST: this is a game, not a lesson; no lesson is named and n
              "when facts.reveal.events is empty, say nothing about why it moved. Never name or hint at today's Daily stock. The outro "
              "sends the viewer to today's mystery stock at memestreet.net (\"Today's stock is live. Play it at memestreet.net.\"). "
              "THE HOOK: frame 0 already moving, the chart's most dramatic stretch big on screen with your device's character reacting "
-             "to it, and the stake in the first sentence (the move itself: how far, how fast); never a bare chart, never the name.")
+             "to it, and the stake in the first sentence (the move itself: how far, how fast); never a bare chart, never the name. "
+             "THE TWO THINGS THE CRITIC HOLDS THESE REELS FOR (2026-11-18): every price or percentage on screen is a CLOSE from the "
+             "facts (the price tag shows closes; a wick's low or high is never a HUD figure), and every tag, price line or name card "
+             "appears on the words that say it (api.at), never before.")
 CATEGORIES[GUESS] = (
     "NEW, A REAL STOCK, GUESS WHICH: chart 0 is six months of a real US stock (2016 to 2021), shown as Meme Street's daily game "
     "shows it: rebased to 100, no dates, no name. The hook dares the viewer with the move (facts.move). The chart plays out on "
@@ -1924,8 +1927,8 @@ def system_prompt(category):
     rb = os.path.join(ROOT, "RULEBOOK.md")              # (the owner's rulebook: highest priority, read before every reel)
     book = ("THE OWNER'S RULEBOOK. These rules override everything below; follow every one:\n" +
             open(rb, encoding="utf-8").read() + "\n\n") if os.path.exists(rb) else ""
-    s = book + ("You write Instagram Reels for Meme Street, a free stock market game with fictional companies "
-            "(memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
+    s = book + ("You write Instagram Reels for Meme Street, a free daily game: one real US stock chart a day, the same for "
+            "everyone, two minutes to trade it with practice money, its name revealed at the end (memestreet.net). Voice profile:\n" + voice + "\n\nHook formulas you may use:\n" +
             "\n".join(f"- {h['name']}: {h['template']}" for h in hooks) + "\n\n" + RULES + "\n" + SCHEMA % (category, ", ".join(WORLD_PROPS))
          + "\n" + DIRECTOR % (", ".join(WORLD_PROPS), ", ".join(POSES), examples()) + FIRST3)
     r = rules_file(category)

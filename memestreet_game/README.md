@@ -42,9 +42,11 @@ Five a day, every one about the Daily:
 
 | Slot (UTC) | Format | What it is |
 |---|---|---|
-| 03:00 | Yesterday's stock | The Daily that ended at midnight, replayed: how players did, the best trade, then the name. |
-| 09:00, 18:00 | Guess the stock | A real stretch from the reel bank plays out. Three names to pick from, then the reveal. |
-| 13:00, 21:00 | Beat the chart | Two traders worked out by code race the real stock, then the best trade and the reveal. |
+| 03:00 | Yesterday's stock | The Daily that ended at midnight, replayed: how players did, the best trade, then the name. When last night's chart wasn't a real one, a Beat the chart reel takes the slot. |
+| 09:00, and 21:00 at weekends | Guess the stock | A real stretch from the reel bank plays out. Three names to pick from, then the reveal. |
+| 13:00 | Beat the chart | Two traders worked out by code race the real stock, then the best trade and the reveal. |
+| 18:00 | Higher or lower | A game show: the chart freezes three times, the viewer calls the next move, then the reveal. |
+| 21:00 on weekdays | Market today | The day's biggest market story after the US close, researched across three outlets and fact-checked twice. If no story passes, a game reel takes the slot. |
 | after 23:00 | Daily recap | Tonight's chart and how a careful plan did. It never names the stock, because the day isn't over everywhere. |
 
 None of them names or hints at today's stock. Deploy from Git Bash:

@@ -169,7 +169,7 @@ def daily_text(p, d):
     g = d["game"]; C = g["candles"]; h = g.get("hold", C[-1][3] / C[g.get("history", 60)][3] - 1); n = d["number"]   # (the hold of analyze.py)
     did = "ended flat" if abs(h) < .005 else f"{'rose' if h > 0 else 'fell'} {abs(h) * 100:.0f}%"
     return (f"Daily Chart #{n} {did}. Chart #{n + 1} is open now: one made-up stock, two minutes, the same chart for everyone. "
-            f"Can you beat just holding it? Practice money, no cash value.\n{LINK}{REF[p]}")
+            f"Can you beat just holding it? Practice money only.\n{LINK}{REF[p]}")
 
 
 def daily():
