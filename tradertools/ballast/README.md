@@ -1,108 +1,129 @@
-# Exact Risk Ticket (working name)
+# Ballast: the owner's manual
 
-A panel inside cTrader that sizes a trade from the risk the trader chooses and the stop distance, converts that risk
-into the account's currency for any symbol, and places the order with its stop and target attached, after a review
-step. It also shows the day's realised loss against the trader's own limits and keeps a log of its trades in R. It
-gives no signals and no advice. It is sold in the cTrader Store (the plan: `docs/ROADMAP.md`, section 3).
+Ballast is a risk toolkit for traders, sold in the cTrader Store as one subscription. It runs inside cTrader (Web,
+Windows, Mac and the phone apps) as a "web plugin": a static web page that cTrader opens in a frame and talks to
+through its Plugin API v2. It has five tools: **Ticket** (position size from risk and stop, commission included,
+review then place), **Limits** (daily and total loss limits the way funded-account firms count them), **Exposure**
+(risk at the stops of open positions), **Journal** (trades in R) and **Sessions** (the market's clock). It gives no
+signals and no advice.
 
-It is a static web page: cTrader opens it in a frame and talks to it through its Plugin API v2. Nothing in the game
-(`game/`, `web/`) uses it, and it uses nothing of the game.
+- For buyers: [USER_GUIDE.md](USER_GUIDE.md). For the Store form: [LISTING.md](LISTING.md).
+- How it fits the business: `docs/ROADMAP.md` section 3. How the code works: `docs/HOW_IT_WORKS.md` section 18.
 
 ## Files
 
 | Path | What |
 |---|---|
-| `site/js/risk.js` | The maths, pure: sizing (always rounded down), the conversion into the account's currency, R, the loss light |
-| `site/js/ticket.js` | From the inputs to one order request or a plain reason why not; `createPlacer`, the only way an order is sent |
-| `site/js/host.js` | The only file that talks to cTrader (the vendored SDK) |
-| `site/js/host-mock.js` | The same functions over fixed data, for `?mock=1` and the browser test |
-| `site/js/app.js`, `site/index.html`, `site/trial/index.html`, `site/app.css` | The panel; the trial is the same page with `data-edition="trial"` |
-| `site/probe.html`, `site/js/probe.js` | Stage 0 only: what cTrader really gives a web plugin. **Delete before the Store listing.** |
-| `site/vendor/ctrader-sdk.js`, `site/vendor/LICENSES.txt` | cTrader's SDK (`@spotware-web-team/sdk` 2.1.5, `sdk-external-api` 2.0.1) with zod, uuid and rxjs, bundled into one file: a plugin may load files only from its own address. MIT, ISC and Apache-2.0 |
-| `vendor-build.sh`, `vendor-entry.mjs` | Rebuild the bundle (pinned versions) |
-| `site/_headers` | The page's security policy on Cloudflare Pages: scripts and styles from this site only, **no network connections at all** (`connect-src 'none'`), so it cannot send data anywhere |
-| `test/*.test.js` | `node --test`: worked examples for every kind of symbol, the boundary, the blocks, one order per click |
-| `../../tests/test_tradertools.py` | The page in a real browser against the stand-in |
+| `site/` | Everything that is published (one static folder, no build step) |
+| `site/index.html`, `site/trial/index.html` | The paid edition and the free one (the same page with `data-edition="trial"`: no Place button) |
+| `site/js/app.js` | The panel: the five tabs, settings per account, review and place |
+| `site/js/risk.js` | Sizing maths (pure): rounding down, conversion into the account's money at the stop, commission, the conversion fee, ATR, number parsing |
+| `site/js/limits.js` | Loss limits (pure): daily and total loss on equity, the day in a firm's time zone |
+| `site/js/journal.js` | Trades from labels, in R; statistics; CSV |
+| `site/js/sessions.js` | The sessions clock |
+| `site/js/history.js` | Reads closed deals in full, or says it could not |
+| `site/js/ticket.js` | Builds the order or says why not; `createPlacer`, the only way an order is sent |
+| `site/js/host.js` | The only file that talks to cTrader |
+| `site/js/host-mock.js` | The same functions over a stand-in demo account (`?mock=1`) |
+| `site/vendor/` | cTrader's SDK (`@spotware-web-team/sdk` 2.1.5, `sdk-external-api` 2.0.1, with zod, uuid, rxjs) bundled into one file, and its licences (MIT, ISC, Apache-2.0). Rebuild with `vendor-build.sh` |
+| `site/brand/` | The mark (a boat with its ballast keel), the wordmark, the page that renders the store image |
+| `site/_headers` | The security policy on Cloudflare Pages: no network connections at all, so Ballast cannot send data anywhere |
+| `site/probe.html`, `site/js/probe.js` | The one-off platform check on a demo account. **Delete before the listing goes live** |
+| `listing/` | The 300 x 300 store image and four 840-px screenshots |
+| `test/` | `node --test`: 48 tests with worked examples |
+| `../../tests/test_tradertools.py` | The panel in a real browser (4 tests) |
 
-## Testing
+## Run it on this computer
 
 ```
-cd tradertools/ctrader-risk && node --test test/*.test.js        # the maths (21 tests, under a second)
-cd tests && python -m unittest test_tradertools                   # the page in Edge or Chrome (about 8 s)
+cd tradertools/ballast/site
+python -m http.server 8765
 ```
 
-By hand: `python -m http.server 8765` in `site/`, then open `http://127.0.0.1:8765/index.html?mock=1&symbol=EURUSD`
-(also `GBPUSD`, `USDJPY`, `EURJPY`, `XAUUSD`, `US500`, `BTCUSD`; `?theme=light`). The stand-in is a 10,000 USD demo
-account; `window.__mock` holds the orders "sent".
+Open `http://127.0.0.1:8765/index.html?mock=1&symbol=EURUSD`. The stand-in is a 10,000 USD demo account with two
+open positions (one without a stop) and three closed trades; symbols `EURUSD`, `GBPUSD`, `USDJPY`, `EURJPY`,
+`XAUUSD`, `US500`, `BTCUSD`; add `&theme=light` for the light theme; the trial is `/trial/index.html?mock=1`.
 
-## What the SDK gives (read from the package, 18 November 2026)
+## Test it
 
-The help pages describe an older v0.0.x API (`createNewOrder`, volume "in cents", balance in integers with
-`moneyDigits`). The package on npm is v2 and different: `handshake`, `accountInfo` (with `depositCurrency`, `equity`
-and `environmentType` demo or live), `symbolByName` (`lotSize`, `minVolume`, `volumeStep`, `digits`, `pipPosition`,
-`baseAssetId`, `quoteAssetId`), `symbols`, `asset`, `subscribeQuotes` (`bid`, `ask`), `newOrder` (`orderType`
-market/limit/stop..., `side` buy/sell, `volume`, `stopLossPips`, `takeProfitPips`, `stopLoss`, `takeProfit`,
-`entryPrice`, `label`), `positions`, `pendingOrders`, `closePosition`, `cancelOrder`, `dealHistory` (`netProfit`,
-`label`, `closingTime`) and `subscribeExecutions`. v2 also has `breakEven` and trailing on orders and a positions
-list, which v0 lacked: break-even and trailing rules are possible later.
+```
+cd tradertools/ballast && node --test test/*.test.js     # the maths, under a second
+cd tests && python -m unittest test_tradertools           # the panel in Edge or Chrome, about 20 s
+```
 
-**Not known until the probe:** the unit of `volume` (units of the base asset, or hundredths: `UNITS_PER_VOLUME` in
-`host.js`), whether the host on Web, desktop and phone speaks v2 at all, whether a closed deal keeps the order's
-label (the log's R needs it), whether `localStorage` survives, whether a hidden panel keeps receiving prices, and the
-value of `id` that cTrader passes.
+CI runs both (the `tradertools` job, and `test_tradertools` inside the test parts).
 
-## Stage 0: the probe (owner, about 30 minutes, on a demo account)
+## Stage 0: the probe (you, about 30 minutes, on a demo account)
 
-1. Host the site (below) and note its address, for example `https://exact-risk-ticket.pages.dev`.
-2. In cTrader Web (a **demo** account): Algo, Plugins, Create. Name "ERT probe", any 300x300 image, placement
-   "Block in Active Symbol Panel" (size L) and on mobile "Bottom sheet from the symbol Overview tab" (80%). URL:
-   `https://<your address>/probe.html`. Tick the confirmations and Publish. It stays private to your account.
-3. Open it on EURUSD. The list fills in. If "Connect FAILED" shows, stop and send me the text.
-4. Click the order tests in order: 1 (a market order at the smallest size with a stop and target 50 pips away), 2
-   (close it), 3 (a limit order 10% below the price, which will not fill), 4 (cancel it), then wait 10 seconds and 5
-   (read the closed deals). The buttons stay off on a live account.
-5. Reload the panel once (for the storage check). Hide the panel for 20 seconds, show it again.
-6. Do 3 and 4 again on the phone app (the same plugin appears under the symbol's Overview).
+The SDK's own help pages describe an older API; the code follows the package. These are not yet seen on a real
+account: the unit of `volume`, whether every cTrader app speaks Plugin API v2, whether a closed deal keeps its
+order's label, storage, chart bars, and the plugin `id`.
+
+1. Host the site (below) and note its address, for example `https://ballast-toolkit.pages.dev`.
+2. In cTrader Web on a **demo** account: Algo, Plugins, Create. Name "Ballast probe", the image
+   `listing/store-image-300.png`, placement "Block in Active Symbol Panel" (L) and, for mobile, "Bottom sheet from
+   the symbol Overview tab" (80%). URL `https://<your address>/probe.html`. Tick the confirmations, Publish. It stays
+   private to your account.
+3. Open it on EURUSD. If "Connect FAILED" shows, stop and send me the text.
+4. Click the order tests in order: 1 (market order, smallest size, stop and target 50 pips), 2 (close it), 3 (a limit
+   order 10% below the price), 4 (cancel it); wait 10 seconds; 5 (read the closed deals). They stay off on a live
+   account.
+5. Reload the panel once; hide it for 20 seconds and show it again.
+6. Do 3 and 4 again in the phone app.
 7. Copy the "Results to send back" box (from both) and paste it to me.
 
-**What decides what:** if the connect fails or orders are refused on both, the fallback is a desktop-only plugin in
-C#. If the deal does not keep the label, the log shows money only. `position.volume` against `quantity` and
-`lotSize` settles the volume unit.
+What it decides: `UNITS_PER_VOLUME` in `host.js` (from `position.volume` against `quantity` and `lotSize`); whether
+the journal's R works (the label on the closing deal); whether the ATR stop works (chart bars). If orders fail on
+both Web and the phone, the fallback is a desktop-only plugin in C#.
 
-## Hosting (owner, once, about 20 minutes)
+## Hosting (you, once, about 20 minutes, free)
 
-Cloudflare Pages, free plan; no change to the game's server.
-1. A Cloudflare account; Workers & Pages, Create, Pages, "Upload assets" (simplest: drag the `site` folder in), or
-   connect the GitHub repository with root directory `tradertools/ctrader-risk/site`, no build command, production
-   branch `tradertools-live` (only your merge moves it).
-2. The project's address is `<name>.pages.dev`. The `_headers` file applies by itself.
-3. Each release: drag the folder in again (or merge to `tradertools-live`). A version number shows in the panel's footer.
+Cloudflare Pages, free plan. Nothing on the game's server changes.
+1. A Cloudflare account. Workers & Pages, Create, Pages.
+2. Either "Upload assets" and drag in the `site` folder (simplest), or connect the GitHub repository with root
+   directory `tradertools/ballast/site`, no build command, and production branch `tradertools-live` (only your merge
+   moves it).
+3. Name the project (for example `ballast-toolkit`). The address is `https://<name>.pages.dev`. The `_headers` file
+   applies by itself.
 
-## Releasing (each version)
+## Build the plugins in cTrader (you, after the probe)
 
-1. `node --test`, `test_tradertools`, then the 15-minute demo checklist below, on Web and the phone.
-2. Bump `VERSION` in `site/js/app.js`. Upload. Existing buyers get it at their next open.
-3. Only a change of address or placement needs a new plugin build in cTrader and a new Store version.
+Two plugins, both in cTrader Web: Algo, Plugins, Create.
+- **Ballast** (paid): URL `https://<address>/index.html`. Placements: Block in Active Symbol Panel (L), Tab in Trade
+  Watch, Separate window; mobile: Bottom sheet from the symbol Overview tab (80%), Bottom sheet from the Trade app
+  tabs (80%). Image: `listing/store-image-300.png`.
+- **Ballast Free**: the same, URL `https://<address>/trial/`.
 
-**The demo checklist:** the balance matches cTrader; one size matches a sum done by hand; a JPY pair, gold and an
-index each size and show their conversion; the "too small" and "wrong side" messages appear; a market order arrives
-once with its stop and target as shown; a double tap gives one position; a limit order is placed and cancelled; a
-closed trade appears in the log and moves the light; red locks Place; settings survive a reload; the same on the phone.
+Note each plugin's id (cTrader passes it to the page as `?id=`). Put the paid one into `PAID_IDS` in
+`site/js/app.js`, so only that plugin's page places orders, and re-upload the site.
 
-## Before the listing (stage 1)
+## Publish in the Store (you)
 
-- Delete `site/probe.html` and `site/js/probe.js`.
-- Put the paid plugin's id into `PAID_IDS` in `site/js/app.js` (cTrader passes it as `?id=`), so only the paid
-  plugin's page places orders. The trial plugin's URL is `.../trial/`.
-- Store listing: the price ($19 launch, $29 after), screenshots (3, at least 800 px wide), a 300x300 image, and the
-  copy in `docs/ROADMAP.md` section 3. No links to other sites in the listing.
+1. Become a seller: cTrader Store, "Join as a seller"; identity check (photo ID, selfie, proof of address); a Visa or
+   Mastercard in your name for payouts (weekly, minimum $50, from funds at least 14 days old; the Store keeps 30%).
+2. Publish the paid plugin with the text and images in `LISTING.md`, the subscription prices there, and attach Ballast
+   Free as its trial.
+3. Review takes 1 to 3 working days; a rejection comes with reasons and 30 days to fix.
 
-## Rules this product keeps
+## Release a new version
 
-- No signals, no advice, no profit claims (UK FCA PERG 8.30: software that tells a user to buy or sell can count as
-  investment advice; a calculator and an order ticket do not).
-- An order goes out only from a real click on the review screen (`isTrusted`), once (`createPlacer`), never retried,
-  never on load, on a timer or from the address.
-- The size is always rounded down, conversions are taken on the side that makes the risk larger, and a size that
-  would risk more than chosen is refused, never rounded up.
-- It sends no data anywhere (the security policy enforces it) and keeps its settings in the browser only.
+1. `node --test`, `test_tradertools`, then the demo checklist below, on Web and the phone.
+2. Bump `VERSION` in `site/js/app.js`; upload the `site` folder again. Every buyer gets it at their next open.
+3. Only a change of address or placements needs a new plugin build and a new Store version.
+
+**The demo checklist (15 minutes):** the balance matches cTrader; one size matches a sum by hand (with commission);
+a JPY pair, gold and an index each size; "too close" and "smallest size" messages appear; a market order arrives once
+with its stop and target; a double tap gives one position; a limit order is placed and cancelled; a closed trade
+appears in the journal in R and moves the daily limit; a reached limit blocks Place; settings survive a reload; the
+same on the phone.
+
+## The rules this product keeps
+
+- No signals, no advice, no profit claims (UK FCA PERG 8.30: software that tells someone to buy or sell can be
+  investment advice; a calculator, an order ticket and a journal are not).
+- An order goes out only from a real click on the review (`isTrusted`), once (`createPlacer`), never retried, never on
+  load, a timer or the address; the limits are checked again at the click.
+- Sizes round down; rates are taken on the side that makes the loss larger, at the stop as well as now; commission and
+  the conversion fee are in; a size that would lose more than chosen is refused.
+- With limits set, an incomplete history blocks orders (fail closed).
+- It sends no data anywhere and keeps settings on the device, per account.

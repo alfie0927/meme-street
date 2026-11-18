@@ -1,5 +1,5 @@
 {
-  "name": "exact-risk-ticket",
+  "name": "ballast",
   "private": true,
   "type": "module",
   "scripts": { "test": "node --test test/*.test.js" }

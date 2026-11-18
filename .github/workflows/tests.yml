@@ -26,7 +26,7 @@ jobs:
       - name: mypy
         run: mypy game tools/realism.py tools/pricing_model.py --ignore-missing-imports
 
-  # Exact Risk Ticket (tradertools/ballast): the sizing and order maths, with Node's own test runner and no
+  # Ballast (tradertools/ballast): the sizing and order maths, with Node's own test runner and no
   # packages. The page itself is tested in the browser by tests/test_tradertools.py, inside the parts below.
   tradertools:
     runs-on: ubuntu-latest

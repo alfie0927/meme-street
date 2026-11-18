@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 64" role="img" aria-label="Ballast">
   <rect width="64" height="64" rx="14" fill="#0f1c26"/>
-  <path d="M12 24h40" stroke="#e8eef2" stroke-width="4" stroke-linecap="round"/>
-  <path d="M29.5 24h5l-0.6 14h-3.8z" fill="#2fb5a3"/>
-  <ellipse cx="32" cy="43" rx="10" ry="5.5" fill="#2fb5a3"/>
+  <path d="M33 9v12h11z" fill="#e8eef2"/>
+  <path d="M31 12v9h-7z" fill="#e8eef2" opacity="0.6"/>
+  <path d="M15 23h34l-4 5H19z" fill="#e8eef2"/>
+  <path d="M10 30.5h44" stroke="#2fb5a3" stroke-width="1.6" stroke-linecap="round" opacity="0.55"/>
+  <path d="M29.6 28h4.8l-0.7 10h-3.4z" fill="#2fb5a3"/>
+  <ellipse cx="32" cy="42.5" rx="9.5" ry="5" fill="#2fb5a3"/>
   <text x="78" y="43" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="34" font-weight="700" fill="#e8eef2" letter-spacing="0.5">Ballast</text>
 </svg>
