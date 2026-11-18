@@ -513,17 +513,20 @@ CATEGORIES[CARD] = (
     "as written; nothing invented. Every reel is a card now (the owner, 2026-11-17: \"make all reels like this now\"), so the card "
     "has a look of its own: a device that frames the cells (a menu board, a field-guide page, a periodic table, a subway map, a vending "
     "machine, a binder of trading cards, a recipe card), its own palette and its own way of landing a cell, never a recent device's.")
-LESSON_FORMATS[CARD] = ("charts/candlesticks", "charts/reversal-patterns", "charts/continuation-patterns", "charts/gaps", "orders/order-types",
-                        "orders/brackets", "indicators/momentum", "indicators/moving-averages", "risk/stop-placement", "risk/r-multiples",
-                        "plan/checklist", "plan/glossary", "strategies/styles", "derivatives/option-strategies", "psychology/biases", "real-life/scams",
-                        # (every reel a card since 2026-11-17: five a day need a deep pool, the lesson out longest ago first)
-                        "charts/trends", "charts/support-resistance", "charts/ranges-breakouts", "charts/volume", "indicators/volatility",
-                        "indicators/volume-tools", "indicators/fibonacci", "indicators/trend-strength", "indicators/combining-indicators",
-                        "orders/costs", "orders/trailing-scaling", "risk/position-sizing", "risk/drawdown", "risk/expectancy",
-                        "fundamentals/key-numbers", "fundamentals/statements", "fundamentals/valuation", "macro/data-releases",
-                        "macro/risk-on-off", "derivatives/greeks", "strategies/trend-following", "strategies/mean-reversion",
-                        "strategies/breakout-trading", "testing/performance-stats", "psychology/process", "real-markets/brokers",
-                        "plan/trading-plan", "plan/review", "quant/factor-zoo", "quant/anomalies", "quant/fat-tails", "quant/research-checklist")
+LESSON_FORMATS[CARD] = (   # (the owner, 2026-11-18: the reels grow a following around the trading toolkit, so the cards teach its subject:
+                          #  risk, sizing, orders, limits, the journal and the head; the lesson out longest ago first, about a five-day cycle)
+    "risk/position-sizing", "risk/stop-placement", "risk/r-multiples", "risk/expectancy", "risk/drawdown", "risk/correlation",
+    "risk/risk-of-ruin", "orders/order-types", "orders/brackets", "orders/trailing-scaling", "orders/costs",
+    "psychology/biases", "psychology/process", "psychology/journal", "psychology/stopping", "testing/performance-stats",
+    "testing/backtesting", "plan/trading-plan", "plan/checklist", "plan/review", "sizing-uncertainty/kelly",
+    "sizing-uncertainty/fractional-kelly", "sizing-uncertainty/losing-streaks", "sizing-uncertainty/ruin-probability",
+    "charts/support-resistance", "indicators/volatility", "real-life/scams", "real-markets/brokers",
+    # (the self-check wants 40 or more, so five a day do not repeat within a week: the nearest lessons to placing and
+    #  managing a trade)
+    "sizing-uncertainty/monte-carlo", "sizing-uncertainty/portfolio-risk", "testing/walk-forward", "plan/glossary",
+    "charts/trends", "charts/ranges-breakouts", "charts/volume", "indicators/moving-averages", "indicators/trend-strength",
+    "strategies/styles", "strategies/trend-following", "strategies/mean-reversion", "strategies/breakout-trading",
+    "real-life/basics-first", "real-life/what-carries-over", "real-markets/market-makers")
 ONLY = CARD   # (the owner, 2026-11-17: "make all reels like this now in this style and upload schedule. remake all reels": every auto slot
               #  makes a Reference card; the story serial, the Daily recap and the news reels keep their own. ONLY = None restores the rotation)
 LENGTH[CARD] = (5, 14, False); SECONDS[CARD] = (6, 12); ROTATION["0600"] += [CARD]; ROTATION["1800"] += [CARD]; CHARTLESS.add(CARD)   # (two turns, like every new format)
