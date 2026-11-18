@@ -64,6 +64,12 @@ class RealChartTests(unittest.TestCase):
             self.assertIn(lv["kind"], ("support", "resistance"))
             self.assertTrue(all(daily.HISTORY <= k < daily.HISTORY + daily.LIVE and o in ("held", "broke", "fake break") for k, o in lv["tests"]))
 
+    def test_the_best_short_is_the_fall_over_the_price_it_was_sold_at(self):
+        cs = [[100, 100, 100, 100, 1]] * daily.HISTORY + [[100 - k * 0.5] * 4 + [1] for k in range(daily.LIVE + 1)]
+        b = daily.DailyMixin._daily_best(cs[:daily.HISTORY + daily.LIVE])
+        self.assertEqual(b["side"], "short")
+        self.assertAlmostEqual(b["ret"], 1 - cs[daily.HISTORY + daily.LIVE - 1][3] / 100, places=6)   # (100 to 40.5: 59.5%, not 147%)
+
     def test_every_real_chart_has_levels_from_its_own_swings(self):
         bank = daily.real_bank()
         counts = [len(daily.rebased(x, i)["levels"]) for i, x in enumerate(bank)]

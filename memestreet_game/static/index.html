@@ -160,7 +160,7 @@ function grid(){   // one square per 15 seconds: did the account's worth rise, f
 }
 function bestTrade(){   // the best single trade the two minutes offered, long or short
  const cl=C.slice(HISTORY-1).map(c=>c[3]);let lo=0,hi=0,b={side:'long',ret:0,from:0,to:0};
- for(let j=1;j<cl.length;j++){const up=cl[j]/cl[lo]-1,dn=cl[hi]/cl[j]-1;
+ for(let j=1;j<cl.length;j++){const up=cl[j]/cl[lo]-1,dn=1-cl[j]/cl[hi];
   if(up>b.ret)b={side:'long',ret:up,from:lo,to:j};if(dn>b.ret)b={side:'short',ret:dn,from:hi,to:j};
   if(cl[j]<cl[lo])lo=j;if(cl[j]>cl[hi])hi=j}
  return b;

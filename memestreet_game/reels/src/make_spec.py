@@ -957,10 +957,12 @@ DAILY_END = (" FUN FIRST: this is a game, not a lesson; no lesson is named and n
              "to it, and the stake in the first sentence (the move itself: how far, how fast); never a bare chart, never the name. "
              "THE TWO THINGS THE CRITIC HOLDS THESE REELS FOR (2026-11-18): every price or percentage on screen is a CLOSE from the "
              "facts (the price tag shows closes; a wick's low or high is never a HUD figure), and every tag, price line or name card "
-             "appears on the words that say it (api.at), never before.")
+             "appears on the words that say it (api.at), never before; the candle the voice talks about is the live one on screen, "
+             "revealed on its words (a reveal cue), never a candle ahead. ONE price scale: chart 0 is in real dollars, the same as "
+             "facts.reveal and facts.move; never mix in another. 45 to 58 seconds: 95 to 140 spoken words.")
 CATEGORIES[GUESS] = (
-    "NEW, A REAL STOCK, GUESS WHICH: chart 0 is six months of a real US stock (2016 to 2021), shown as Meme Street's daily game "
-    "shows it: rebased to 100, no dates, no name. The hook dares the viewer with the move (facts.move). The chart plays out on "
+    "NEW, A REAL STOCK, GUESS WHICH: chart 0 is six months of a real US stock (2016 to 2021), in real dollars "
+    "with no dates and no name on screen. The hook dares the viewer with the move (facts.move). The chart plays out on "
     "screen while the voice reacts like a player watching it live (where it turned, the scary day: facts.biggest_days). Before "
     "the reveal, facts.options go up as three cards and the viewer is asked to comment their guess (a decision, in the middle, "
     "never in the outro). Then the reveal, big: the name and ticker (facts.reveal), its real dates and its real prices, and what "
@@ -979,14 +981,15 @@ CATEGORIES[YESTERDAY] = (
     "name, the dates, the real prices and what happened in those months (facts.reveal). The outro: today's stock is already live, "
     "its name a secret until you finish it." + DAILY_END)
 CATEGORIES[HILO] = (
-    "NEW, A REAL STOCK, HIGHER OR LOWER, A GAME SHOW: chart 0 is six months of a real US stock (2016 to 2021), rebased to 100, no "
-    "name. It plays and FREEZES three times (facts.stops: the second it stops, the price there, and what it was 12 seconds later). "
+    "NEW, A REAL STOCK, HIGHER OR LOWER, A GAME SHOW: chart 0 is six months of a real US stock (2016 to 2021), in real dollars, no "
+    "name on screen. It plays and FREEZES three times (facts.stops: the second it stops, the price there, and what it was 12 seconds later). "
     "At each stop the viewer calls it: two big buttons, HIGHER and LOWER, and a short countdown; then the chart runs on and the "
     "answer lands (facts.stops[n].answer, by how much), with a score counter for the viewer (0 of 3, 1 of 3...). The hook dares "
     "them to get three out of three. After the third, the reveal: the name and ticker, the dates, the real prices and what "
     "happened in those months (facts.reveal). Ask for their score in the comments." + DAILY_END)
 for _c in DAILY_FORMATS:
     KINDS[_c] = []
+    LENGTH[_c] = (95, 140, True)                            # (45 to 58 seconds: the critic held a 63-second one, 2026-11-18)
 
 
 def daily_slot(slot, yesterday_file=None):
@@ -1021,16 +1024,17 @@ def chart_facts(C, H, rng):
     lo = hi = 0
     best = {"side": "long", "pct": 0.0, "from_second": 0, "to_second": 0}
     for j in range(1, len(game)):
-        up, dn = game[j] / game[lo] - 1, game[hi] / game[j] - 1
+        up, dn = game[j] / game[lo] - 1, 1 - game[j] / game[hi]   # (a short's gain: the fall over the price it was sold at; the critic caught high/low - 1, 2026-11-18)
         if up > best["pct"]: best = {"side": "long", "pct": up, "from_second": lo, "to_second": j}
         if dn > best["pct"]: best = {"side": "short", "pct": dn, "from_second": hi, "to_second": j}
         if game[j] < game[lo]: lo = j
         if game[j] > game[hi]: hi = j
     cash = 100000
+    base = game[0]
     sold = next((j for j in range(1, len(game)) if game[j] <= game[0] * 0.85), None)   # the panic seller: out at the first 15% loss
     panic = cash * (game[sold] / game[0]) if sold is not None else cash * (1 + hold)
     return {"lead_in_candles": H, "seconds": len(game) - 1,
-            "move": {"start": 100.0, "end": round(game[-1], 2), "pct": round(hold * 100, 1),
+            "move": {"start": round(base, 2), "end": round(game[-1], 2), "pct": round(hold * 100, 1),
                      "highest": round(max(game), 2), "lowest": round(min(game), 2)},
             "biggest_days": [{"second": j, "pct": round(r * 100, 1)} for r, j in days],
             "best": {"side": best["side"], "from_second": best["from_second"], "to_second": best["to_second"], "pct": round(best["pct"] * 100, 1)},
@@ -1047,9 +1051,10 @@ def daily_facts(category, rng, history, slot=None):
     if category == YESTERDAY:
         d = json.load(open(yesterday_data(slot or time.strftime("%Y-%m-%dT0300", time.gmtime())), encoding="utf-8"))
         g = d["game"]
-        C, H, rv = g["candles"], g.get("history", 60), g.get("real")
+        H, rv = g.get("history", 60), g.get("real")
         if not rv:
             raise SystemExit("yesterday's Daily was a model chart: nothing to reveal")
+        C = [[round(o * rv["k"], 2), round(h * rv["k"], 2), round(lo * rv["k"], 2), round(c * rv["k"], 2), v] for o, h, lo, c, v in g["candles"]]   # (real dollars: one scale with the reveal)
         facts = dict(chart_facts(C, H, rng), number=d.get("number"),
                      best_player_pct=round(max(b["ret"] for b in d["board"]) * 100, 1) if d.get("board") else None)
         label = f"Meme Street #{d.get('number')}"
@@ -1057,8 +1062,7 @@ def daily_facts(category, rng, history, slot=None):
         bank = json.load(open(DAILY_CHARTS, encoding="utf-8"))["charts"]
         i = lru(list(range(len(bank))), history, "daily_reel_charts")[0]
         x = bank[i]
-        k = x["c"][59][3] / 100.0
-        C, H = [[round(o / k, 2), round(h / k, 2), round(lo / k, 2), round(c / k, 2), v] for o, h, lo, c, v in x["c"]], 60
+        C, H = [list(c) for c in x["c"]], 60                # (real dollars, as the reveal: one price scale in the reel, 2026-11-18)
         rv = {"ticker": x["t"], "name": x["n"], "from": x["d"][0], "start": x["d"][1], "end": x["d"][2], "first": x["c"][59][3],
               "last": x["c"][-1][3], "events": x.get("e", [])}
         facts = chart_facts(C, H, rng)
@@ -2446,10 +2450,12 @@ if __name__ == "__main__":
         hl, _ = daily_facts(HILO, _r.Random(3), {})
         assert len(hl["stops"]) == 3 and all(s["answer"] in ("higher", "lower") and (s["pct"] > 0) == (s["answer"] == "higher") for s in hl["stops"])
         assert all(b["second"] - a["second"] >= 25 for a, b in zip(hl["stops"], hl["stops"][1:]))
+        crash = chart_facts([[100, 100, 100, 100, 1]] * 60 + [[100 - k * 0.5] * 4 + [1] for k in range(121)], 60, _r.Random(1))
+        assert crash["best"]["side"] == "short" and abs(crash["best"]["pct"] - 60.0) < 0.1, crash["best"]   # (100 to 40: a short makes 60%, never 150%)
         import random as _r
         dfa, dch = daily_facts(GUESS, _r.Random(1), {})
-        assert len(dch[0]["candles"]) == 180 and dch[0]["candles"][59][3] == 100.0 and dfa["reveal"]["name"] in dfa["options"] and len(set(dfa["options"])) == 3
-        assert dfa["move"]["start"] == 100.0 and len(dfa["players"]) == 2 and dfa["best"]["pct"] >= abs(dfa["move"]["pct"]) - 1e-9 and "Mystery" in dch[0]["label"]
+        assert len(dch[0]["candles"]) == 180 and abs(dch[0]["candles"][59][3] - dfa["reveal"]["first"]) < 0.01 and dfa["reveal"]["name"] in dfa["options"] and len(set(dfa["options"])) == 3
+        assert dfa["move"]["start"] == round(dfa["reveal"]["first"], 2) and abs(dfa["move"]["end"] - dfa["reveal"]["last"]) < 0.01 and len(dfa["players"]) == 2 and LENGTH[GUESS] == (95, 140, True) and dfa["best"]["pct"] >= abs(dfa["move"]["pct"]) - 1e-9 and "Mystery" in dch[0]["label"]
         hb = {}
         one, two = (daily_facts(BEAT, _r.Random(2), hb)[0]["reveal"] for _ in range(2))
         assert (one["ticker"], one["start"]) != (two["ticker"], two["start"]) and len(hb["daily_reel_charts"]) == 2   # (the charts take turns)

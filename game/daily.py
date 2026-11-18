@@ -422,7 +422,7 @@ class DailyMixin:
         lo = hi = 0
         best = {"side": "long", "ret": 0.0, "from": 0, "to": 0}
         for j in range(1, len(closes)):
-            up, down = closes[j] / closes[lo] - 1, closes[hi] / closes[j] - 1
+            up, down = closes[j] / closes[lo] - 1, 1 - closes[j] / closes[hi]   # (a short's gain is the fall over the price it was sold at: 2026-11-18, was high/low - 1)
             if up > best["ret"]:
                 best = {"side": "long", "ret": up, "from": lo, "to": j}
             if down > best["ret"]:
