@@ -41,7 +41,7 @@ CTA = ('<div class="cta"><p><b>Practise it on a live market.</b> Every account s
        'money (no cash value, never paid out) on a fictional market that runs around the clock.</p>'
        '<a class="btn go" href="/#join">Create a free account</a> <a class="btn" href="/daily">Play today\'s Daily Chart</a></div>')
 FOOT = ('<footer><a href="/lessons">All lessons</a> · <a href="/daily">Daily Chart</a> · <a href="/tools/position-size-calculator">'
-        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">Expectancy calculator</a> · <a href="/tools/compound-growth-calculator">Compound growth calculator</a> · <a href="/about">About Meme Street</a>'
+        'Position size calculator</a> · <a href="/tools/risk-reward-calculator">Risk reward calculator</a> · <a href="/tools/stop-loss-calculator">Stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">Drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">Expectancy calculator</a> · <a href="/tools/compound-growth-calculator">Compound growth calculator</a> · <a href="/tools/trading-fees-calculator">Trading fees calculator</a> · <a href="/about">About Meme Street</a>'
         ' · <a href="/bots/guide">Trading bots</a> · <a href="/vs">Compare</a><br>Everything on Meme Street is fictional and nothing is investment '
         'advice. MB are practice money with no cash value.</footer></div></body></html>')
 
@@ -293,6 +293,46 @@ document.getElementById("f").addEventListener("input",go);go()})();
 
 CG_LINK = ('<div class="try">Try it: the <a href="/tools/compound-growth-calculator">free compound growth calculator</a> '
            "shows what a yearly return grows to and the years to double.</div>")
+TF_PATH = "/tools/trading-fees-calculator"
+TF_TITLE = "Trading fees calculator: break-even after fees | Meme Street"
+TF_DESC = ("Free trading fees calculator. Enter a trade size and the fee per side to see what a round trip costs, how far the price "
+           "must move to break even, and how much of a small gain the fees take. At 0.1% a side the round trip costs about 0.2%.")
+TF_BODY = """<p class="crumb"><a href="/lessons">Lessons</a> &rsaquo; Tools</p><h1>Trading fees calculator: break-even after fees</h1>
+<p class="lead">A fee on the buy and a fee on the sell mean a trade must gain a little before it has paid for itself. At 0.1% a side the round trip
+costs about 0.2% of the money traded, so a price that rises 0.3% leaves about a third of that gain. Enter your own numbers below.</p>
+<form id="f" class="try" onsubmit="return false">
+<p><label>Trade size (value bought) <input id="s" type="number" min="0" step="any" value="1000"></label>
+<label>Fee per side (%) <input id="f1" type="number" min="0" step="any" value="0.1"></label>
+<label>Price gain on the trade (%) <input id="g" type="number" step="any" value="0.3"></label>
+<label>Round trips <input id="n" type="number" min="0" step="1" value="500"></label></p>
+<p class="sub">Meme Street charges a fee of 0.1% a side on shares, so 0.1 is the starting value. Enter your broker's fee to see theirs. The calculator charges the fee on the value bought and again on the value sold, and ignores spreads, slippage and tax.</p>
+</form>
+<div id="out" class="box tip" aria-live="polite">Enter your numbers above.</div>
+<noscript><p>This calculator needs JavaScript. The sums: the fee on the buy is the trade size &times; the fee; the fee on the sell is the value sold &times; the fee; the break-even gain is (1 + fee) &divide; (1 &minus; fee) &minus; 1, about twice the fee.</p></noscript>
+<h2>How it works</h2>
+<p>You pay the fee when you buy and again when you sell, so the round trip costs a little more than twice the fee, because the second fee is charged on the
+sold value. The break-even gain is (1 + fee) &divide; (1 &minus; fee) &minus; 1. At 0.1% a side that is about 0.2%: a trade that gains less than that loses money.
+The more often you trade, the more the fees add up. At 0.2% a round trip, 500 round trips of the same size cost as much as the money traded in one trade.</p>
+<div class="box warn"><b>Watch out:</b> fees are only one cost. A stock with a wide spread, or a fast move that fills you at a worse price, adds to them, which is why small targets are hard to hit.</div>
+<p>Learn more in <a href="/lessons/costs">Slippage, gaps through stops, and fees</a> and in <a href="/lessons/bid-ask">The bid, the ask and the spread</a>, and see what each trade is worth with the
+<a href="/tools/expectancy-calculator">expectancy calculator</a>.</p>
+<script>
+(function(){var $=function(i){return document.getElementById(i)},o=$("out");
+function fmt(x,d){return x.toLocaleString("en-US",{maximumFractionDigits:d===undefined?2:d})}
+function go(){var s=+$("s").value,f=+$("f1").value/100,g=+$("g").value/100,n=+$("n").value;
+if(!(s>=0&&f>=0&&f<1&&g>-1&&n>=0)){o.textContent="Enter a trade size of zero or more, a fee from 0 up to (not including) 100%, a gain above -100% and zero or more round trips.";return}
+var buy=s*f,sold=s*(1+g),sell=sold*f,cost=buy+sell,be=(1+f)/(1-f)-1,net=sold-sell-s-buy,h;
+h="<b>Break-even: the price must rise "+fmt(be*100,3)+"%.</b> The fee on the buy is "+fmt(buy)+" and on the sell "+fmt(sell)+", so a round trip costs "+fmt(cost)+" ("+fmt(s>0?cost/s*100:0,3)+"% of the trade size).<br>";
+h+="A price gain of "+fmt(g*100,3)+"% leaves "+fmt(net)+" after fees";
+if(g>0&&s>0){h+=", so fees take "+fmt(Math.min(cost/(s*g),9.99)*100,1)+"% of the gain"}
+h+=".<br>";
+if(n>0){h+="Over "+fmt(n,0)+" round trips of this size the fees come to "+fmt(cost*n)+", or "+fmt(s>0?cost*n/s*100:0,1)+"% of one trade's size."}
+o.innerHTML=h}
+document.getElementById("f").addEventListener("input",go);go()})();
+</script>"""
+
+TF_LINK = ('<div class="try">Try it: the <a href="/tools/trading-fees-calculator">free trading fees calculator</a> '
+           "shows the round-trip cost and the break-even move.</div>")
 SL_LINK = ('<div class="try">Try it: the <a href="/tools/stop-loss-calculator">free stop loss calculator</a> '
            "gives the stop price and the loss if it is hit.</div>")
 RR_LINK = ('<div class="try">Try it: the <a href="/tools/risk-reward-calculator">free risk reward ratio calculator</a> '
@@ -394,7 +434,7 @@ class Lessons:
                             url=url, ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb"><a href="/lessons">Lessons</a> › <a href="/lessons#{tr["id"]}">{html.escape(tr["title"])}</a>'
                 f' · {x["minutes"]} min read</p><h1>{html.escape(x["title"])}</h1><p class="lead">{inline(x["summary"])}</p>'
-                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else DD_LINK if lid == "drawdown" else EX_LINK if lid == "expectancy" else CG_LINK if lid == "basics-first" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
+                + body_html(x) + (CALC_LINK if lid == "position-sizing" else RR_LINK if lid == "r-multiples" else SL_LINK if lid == "stop-placement" else DD_LINK if lid == "drawdown" else EX_LINK if lid == "expectancy" else CG_LINK if lid == "basics-first" else TF_LINK if lid == "costs" else "") + nav + CTA + f'<h2>More in {html.escape(tr["title"])}</h2><ol class="toc">{toc}</ol>' + FOOT)
 
     def calculator(self):
         """The free position size calculator (works without an account; the sum runs in the page)."""
@@ -486,6 +526,21 @@ class Lessons:
         return (HEAD.format(t=html.escape(CG_TITLE), d=html.escape(CG_DESC), url=url,
                             ld=json.dumps(ld).replace("</", "<\\/"), css=css) + CG_BODY + CTA + FOOT)
 
+    def trading_fees(self):
+        """The free trading fees / break-even calculator (works without an account; the sum runs in the page)."""
+        url = self.site + TF_PATH
+        ld = [{"@context": "https://schema.org", "@type": "WebApplication", "name": "Trading fees calculator",
+               "url": url, "description": TF_DESC, "applicationCategory": "FinanceApplication",
+               "operatingSystem": "Any", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+               "provider": {"@type": "Organization", "name": "Meme Street", "url": self.site + "/"}},
+              {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+                  {"@type": "ListItem", "position": 1, "name": "Lessons", "item": self.site + "/lessons"},
+                  {"@type": "ListItem", "position": 2, "name": "Trading fees calculator", "item": url}]}]
+        css = CSS + "label{display:inline-block;margin:6px 14px 6px 0}input{display:block;margin-top:4px;width:11em;max-width:100%;" \
+            "padding:6px;background:#0d1013;color:var(--txt);border:1px solid var(--line);font:15px var(--mono)}"
+        return (HEAD.format(t=html.escape(TF_TITLE), d=html.escape(TF_DESC), url=url,
+                            ld=json.dumps(ld).replace("</", "<\\/"), css=css) + TF_BODY + CTA + FOOT)
+
     def hub(self):
         url = self.site + "/lessons"
         d = self.hub_text
@@ -504,7 +559,7 @@ class Lessons:
                             ld=json.dumps(ld).replace("</", "<\\/"), css=CSS)
                 + f'<p class="crumb">Lessons</p><h1>Learn to trade</h1><p class="lead">{html.escape(d)} Read them '
                 "here, then practise each idea with 100,000 MB of practice money on Meme Street's fictional market.</p>"
-                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">expectancy calculator</a> · <a href="/tools/compound-growth-calculator">compound growth calculator</a></p>'
+                + CTA + '<p class="try">Free tools: <a href="/tools/position-size-calculator">position size calculator</a> · <a href="/tools/risk-reward-calculator">risk reward ratio calculator</a> · <a href="/tools/stop-loss-calculator">stop loss calculator</a> · <a href="/tools/drawdown-recovery-calculator">drawdown recovery calculator</a> · <a href="/tools/expectancy-calculator">expectancy calculator</a> · <a href="/tools/compound-growth-calculator">compound growth calculator</a> · <a href="/tools/trading-fees-calculator">trading fees calculator</a></p>'
                 + "".join(parts) + FOOT)
 
 
@@ -527,6 +582,9 @@ if __name__ == "__main__":
     assert ex.count("<h1>") == 1 and f'href="https://memestreet.net{EX_PATH}"' in ex and ex.count("<script>") == 1
     cg = L.compound_growth()
     assert cg.count("<h1>") == 1 and f'href="https://memestreet.net{CG_PATH}"' in cg and cg.count("<script>") == 1
+    tf = L.trading_fees()
+    assert tf.count("<h1>") == 1 and f'href="https://memestreet.net{TF_PATH}"' in tf and tf.count("<script>") == 1
+    assert 'href="/tools/trading-fees-calculator"' in L.page("costs")
     assert 'href="/tools/compound-growth-calculator"' in L.page("basics-first")
     assert 'href="/tools/expectancy-calculator"' in L.page("expectancy")
     assert 'href="/tools/drawdown-recovery-calculator"' in L.page("drawdown")

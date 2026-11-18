@@ -194,7 +194,7 @@ def add_pages(app):
     lessons = lessonpages.Lessons(site)
     # (pages with their own content; not /learn or /leaders, which are the game's page and empty without JavaScript,
     # nor /terms and /privacy, which are noindex)
-    public = ["/"] if DAILY_ONLY else ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH, lessonpages.SL_PATH, lessonpages.DD_PATH, lessonpages.EX_PATH, lessonpages.CG_PATH] + lessons.paths() + vspages.paths()
+    public = ["/"] if DAILY_ONLY else ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH, lessonpages.SL_PATH, lessonpages.DD_PATH, lessonpages.EX_PATH, lessonpages.CG_PATH, lessonpages.TF_PATH] + lessons.paths() + vspages.paths()
 
     @app.get("/robots.txt")
     async def robots():
@@ -219,6 +219,7 @@ def add_pages(app):
          f"- [Drawdown recovery calculator]({site}{lessonpages.DD_PATH}): {lessonpages.DD_DESC}",
          f"- [Expectancy calculator]({site}{lessonpages.EX_PATH}): {lessonpages.EX_DESC}",
          f"- [Compound growth calculator]({site}{lessonpages.CG_PATH}): {lessonpages.CG_DESC}",
+         f"- [Trading fees calculator]({site}{lessonpages.TF_PATH}): {lessonpages.TF_DESC}",
          f"\n## Lessons\n\n{lessons.hub_text} [All lessons]({site}/lessons)\n"]
         + [f"- [{x['title']}]({site}/lessons/{x['id']}): {x['summary']}" for x in lessons.lessons]
         + [f"\n## Compare\n\n{vspages.HUB_DESC} [All comparisons]({site}/vs)\n"]
@@ -315,6 +316,11 @@ def add_pages(app):
     async def compound_growth_calculator():
         """A free compound growth calculator with the rule of 72 (lessonpages.py), for searches such as "rule of 72 calculator"."""
         return HTMLResponse(lessons.compound_growth(), headers={"Cache-Control": "public, max-age=300"})
+
+    @app.get(lessonpages.TF_PATH)
+    async def trading_fees_calculator():
+        """A free trading fees and break-even calculator (lessonpages.py), for searches such as "trading fees calculator"."""
+        return HTMLResponse(lessons.trading_fees(), headers={"Cache-Control": "public, max-age=300"})
 
     @app.get(lessonpages.EX_PATH)
     async def expectancy_calculator():

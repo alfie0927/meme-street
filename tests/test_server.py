@@ -150,6 +150,7 @@ class ServerTests(unittest.TestCase):
         self.assertIn("no cash value", body)
         for tool in ("position-size", "risk-reward", "stop-loss", "drawdown-recovery", "expectancy", "compound-growth"):
             self.assertIn(f"/tools/{tool}-calculator): ", body)
+        self.assertIn("/tools/trading-fees-calculator): ", body)
         import pages
         self.assertEqual(http(self.srv, f"/{pages.INDEXNOW_KEY}.txt")[:2], (200, pages.INDEXNOW_KEY))
         self.assertEqual(http(self.srv, "/" + "0" * 32 + ".txt")[0], 404)
@@ -243,6 +244,17 @@ class ServerTests(unittest.TestCase):
         self.assertIn("/tools/compound-growth-calculator</loc>", body)
         status, body, _ = http(self.srv, "/lessons/basics-first")
         self.assertIn('href="/tools/compound-growth-calculator"', body)
+
+    def test_the_trading_fees_calculator_is_a_plain_page(self):
+        status, body, _ = http(self.srv, "/tools/trading-fees-calculator")
+        self.assertEqual(status, 200)
+        self.assertIn("<h1>Trading fees calculator: break-even after fees</h1>", body)
+        self.assertIn('rel="canonical" href="https://memestreet.net/tools/trading-fees-calculator"', body)
+        self.assertIn('id="f1"', body)
+        status, body, _ = http(self.srv, "/sitemap.xml")
+        self.assertIn("/tools/trading-fees-calculator</loc>", body)
+        status, body, _ = http(self.srv, "/lessons/costs")
+        self.assertIn('href="/tools/trading-fees-calculator"', body)
 
     def test_the_daily_chart_has_its_own_title_description_and_address(self):
         status, body, _ = http(self.srv, "/daily")
