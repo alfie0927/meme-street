@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ballast (trial)</title>
+<link rel="icon" href="../brand/mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../app.css">
+</head>
+<body data-edition="trial">
+<main id="app">
+  <header class="top">
+    <img src="../brand/mark.svg" alt="" class="mark" width="26" height="26">
+    <div class="brand"><b>Ballast</b><span id="edition" class="mut small"></span></div>
+    <div id="acct" class="mut small">Connecting to cTrader...</div>
+  </header>
+  <p id="banner" class="banner" hidden></p>
+
+  <nav class="tabs" role="tablist" aria-label="Tools">
+    <button type="button" role="tab" data-tab="ticket" aria-selected="true">Ticket</button>
+    <button type="button" role="tab" data-tab="limits" aria-selected="false">Limits <span id="light-tab" class="dot" hidden></span></button>
+    <button type="button" role="tab" data-tab="exposure" aria-selected="false">Exposure</button>
+    <button type="button" role="tab" data-tab="journal" aria-selected="false">Journal</button>
+    <button type="button" role="tab" data-tab="sessions" aria-selected="false">Sessions</button>
+  </nav>
+
+  <!-- TICKET: size a trade from the risk and the stop, review it, place it -->
+  <section id="tab-ticket" class="tab" role="tabpanel">
+    <div class="card">
+      <div class="symrow">
+        <label for="sym" class="vh">Symbol</label><input id="sym" autocomplete="off" spellcheck="false">
+        <span id="px" class="mut"></span>
+      </div>
+      <div class="seg" role="group" aria-label="Side">
+        <button type="button" data-side="buy" class="on">Buy</button><button type="button" data-side="sell">Sell</button>
+      </div>
+      <div class="grid">
+        <label for="otype">Order</label>
+        <select id="otype"><option value="market">Market, now</option><option value="limit">Limit (a better price)</option><option value="stop">Stop (a breakout price)</option></select>
+        <label for="entry" class="entry-row" hidden>Entry price</label>
+        <input id="entry" class="entry-row" inputmode="decimal" hidden>
+        <label for="stop">Stop</label>
+        <div class="pair"><input id="stop" inputmode="decimal"><select id="stop-unit" aria-label="Stop in"><option value="pips">pips away</option><option value="price">price</option><option value="atr">x ATR</option></select></div>
+        <label for="target">Target</label>
+        <div class="pair"><input id="target" inputmode="decimal" placeholder="none"><select id="target-unit" aria-label="Target in"><option value="r">x the risk</option><option value="price">price</option></select></div>
+        <label for="risk">Risk</label>
+        <div class="pair"><input id="risk" inputmode="decimal"><select id="risk-mode" aria-label="Risk as"><option value="percent">% of balance</option><option value="money">money</option></select></div>
+      </div>
+      <p id="atr-line" class="mut small" hidden></p>
+      <details id="costs" class="sub">
+        <summary>Costs <span id="costs-sum" class="mut small"></span></summary>
+        <div class="grid">
+          <label for="comm-mode">Commission</label>
+          <select id="comm-mode"><option value="none">none</option><option value="lot">per lot, each side</option><option value="million">per million USD, each side</option></select>
+          <label for="comm" class="comm-row">Amount</label><input id="comm" class="comm-row" inputmode="decimal" placeholder="e.g. 3.5">
+          <label for="atr-period">ATR chart</label><select id="atr-period"></select>
+        </div>
+        <p class="mut small">Your broker's commission is in cTrader's symbol information (or your account's terms). It is charged when a trade opens and again when it closes, and Ballast counts both. The platform's currency-conversion fee is counted by itself.</p>
+      </details>
+    </div>
+    <section class="card out" id="result" aria-live="polite"></section>
+    <button type="button" id="review" class="go wide" disabled>Review order</button>
+    <section class="card" id="reviewbox" hidden>
+      <h2>Check before sending</h2>
+      <dl id="review-list"></dl>
+      <p class="mut small">The loss shown is at the stop, commission included, before slippage. A stop is a price level, not a guaranteed price: in a fast market or over a gap the fill can be worse.</p>
+      <p id="review-note" class="note" hidden></p>
+      <div class="buttons"><button type="button" id="place" class="go">Place order</button><button type="button" id="back">Back</button></div>
+      <p id="place-msg" aria-live="assertive"></p>
+    </section>
+    <details class="help"><summary>How the size is worked out</summary>
+      <p>Ballast finds the largest size whose loss at your stop, commission included, is no more than the risk you set. It always rounds down to a size the symbol allows, takes every exchange rate on the side that makes the loss larger, and values the loss at the rate it would have when the stop is hit. If even the smallest allowed size would lose more than you set, it says so and places nothing. If your loss limits leave less room than you asked for, the size is cut to fit and the review says so.</p>
+      <p><b>Pip</b>: the usual small step of a price (0.0001 on most currency pairs, 0.01 on yen pairs). <b>Lot</b>: the symbol's standard size (100,000 units of a currency pair). <b>R</b>: the money you risk on one trade; a target of 2 R makes twice that if it is reached.</p>
+    </details>
+  </section>
+
+  <!-- LIMITS: the daily and total loss limits, the way funded-account firms count them -->
+  <section id="tab-limits" class="tab" role="tabpanel" hidden>
+    <div class="card" id="limits-out"></div>
+    <div class="card">
+      <div class="grid">
+        <label for="lim-day">Daily loss limit</label>
+        <div class="pair"><input id="lim-day" inputmode="decimal" placeholder="off"><select id="lim-day-mode" aria-label="Daily limit as"><option value="money">money</option><option value="pct">% of starting balance</option></select></div>
+        <label for="lim-total">Total loss limit</label>
+        <div class="pair"><input id="lim-total" inputmode="decimal" placeholder="off"><select id="lim-total-mode" aria-label="Total limit as"><option value="money">money</option><option value="pct">% of starting balance</option></select></div>
+        <label for="lim-start">Starting balance</label><input id="lim-start" inputmode="decimal" placeholder="the account's size when it began">
+        <label for="lim-rule">Daily loss counts from</label>
+        <select id="lim-rule"><option value="balance">the day's opening balance</option><option value="higher">the higher of opening balance and equity</option></select>
+        <label for="lim-trail">Total loss counts from</label>
+        <select id="lim-trail"><option value="static">the starting balance</option><option value="trailing">the highest balance or equity (trailing)</option></select>
+        <label for="lim-tz">The day starts at</label>
+        <div class="pair"><select id="lim-hour" aria-label="Hour"></select><select id="lim-tz" aria-label="Time zone"></select></div>
+        <label for="lim-open">Open trades</label>
+        <select id="lim-open"><option value="stops">count them at their stops (safer)</option><option value="now">count them at today's price</option></select>
+      </div>
+    </div>
+    <details class="help"><summary>How the limits work</summary>
+      <p>Firms that fund traders close an account that loses more than a set amount in a day or in total, and they count open trades too. Set your firm's numbers here and Ballast does three things: it shows how much room is left, it cuts the size of a new trade so that a stop-out cannot take you past either limit, and it refuses to place orders once a limit is reached. With "count them at their stops", open trades are counted as if every stop were hit, so a new trade can never add up to a breach.</p>
+      <p>Firms differ: some count the day from the opening balance, some from the higher of balance and equity, some reset at midnight in Prague, others at the broker's server midnight. Read your firm's rules and match them here. The limits protect this panel's orders only: trades placed elsewhere in cTrader are counted, but not blocked.</p>
+    </details>
+  </section>
+
+  <!-- EXPOSURE: what every open trade risks at its stop -->
+  <section id="tab-exposure" class="tab" role="tabpanel" hidden>
+    <div class="card" id="exposure-out"></div>
+    <details class="help"><summary>What this shows</summary>
+      <p>Each open position, what it would lose from its entry if its stop is hit, in your account's money, and the total. A position without a stop has no limit on what it can lose, so it is marked. "If every stop is hit" is your balance afterwards, before commission and slippage.</p>
+    </details>
+  </section>
+
+  <!-- JOURNAL: the trades placed from this panel, in R -->
+  <section id="tab-journal" class="tab" role="tabpanel" hidden>
+    <div class="card" id="journal-sum"></div>
+    <div class="card"><table id="journal-sym"><thead><tr><th>Symbol</th><th class="num">Trades</th><th class="num">Won</th><th class="num">Avg R</th><th class="num">Net</th></tr></thead><tbody></tbody></table></div>
+    <div class="card"><table id="journal-log"><thead><tr><th>Closed</th><th>Symbol</th><th>Side</th><th class="num">Net</th><th class="num">R</th></tr></thead><tbody></tbody></table></div>
+    <div class="buttons"><button type="button" id="csv">Download as CSV</button></div>
+    <details class="help"><summary>What R tells you</summary>
+      <p>Each trade placed from Ballast carries the money it risked. A trade that made twice its risk is +2 R; one stopped out is about -1 R. The average R over many trades is your edge per trade: above zero, the way you trade has made money so far; below zero, it has not, whatever the win rate. A position closed in parts counts as one trade.</p>
+    </details>
+  </section>
+
+  <!-- SESSIONS: the market's clock -->
+  <section id="tab-sessions" class="tab" role="tabpanel" hidden>
+    <div class="card" id="sessions-out"></div>
+    <details class="help"><summary>About the sessions</summary>
+      <p>The conventional hours of the four main trading sessions, each in its own city's time so daylight saving is right everywhere. Prices usually move most when London and New York overlap, and least late in the New York afternoon and around the weekly open. Your broker's own hours for a symbol can differ: cTrader's symbol information has them.</p>
+    </details>
+  </section>
+
+  <footer class="mut small">No signals and no advice: Ballast sizes, checks and records the trades you choose. Try it on a demo account first. <span id="version"></span></footer>
+</main>
+<script type="module" src="../js/app.js"></script>
+</body>
+</html>

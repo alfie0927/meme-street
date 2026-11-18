@@ -1,27 +1,41 @@
-// From what the trader typed to one order request, or a plain reason why not; and the one place an order is sent.
-// Pure apart from `createPlacer`, which only calls the `send` function it is given.
-import { makeLabel, pointsToPips, sizeTrade, toPoints } from "./risk.js";
+// Ballast: from what the trader typed to one order request, or a plain reason why not; and the one place an order
+// is sent. Pure apart from `createPlacer`, which only calls the `send` function it is given.
+import { makeLabel } from "./journal.js";
+import { pipSize, pointsToPips, roundPrice, sizeTrade, toPoints } from "./risk.js";
 
 function fail(code, message) {
   return { ok: false, code, message };
 }
 
 /**
- * input: { symbol: {symbolId, name, digits, pipPosition, ...}, side, orderType: "market"|"limit"|"stop",
- *          entry, stop, target (or null), quote: {bid, ask}, balance, riskMode, risk, rate, limitReached }
+ * input: everything sizeTrade takes, plus { symbol: {symbolId, name, digits, pipPosition, isPredictionMarket, ...},
+ *        orderType: "market"|"limit"|"stop", target (or null), quote: {bid, ask}, accountType, positionOnSymbol (bool),
+ *        limitsKnown (false when the limits could not be read), tradeId }
  * returns { ok: true, request, review } or { ok: false, code, message }
  *
- * A market order carries its stop and target as distances in pips (the platform measures them from the fill), so
- * the risk stays the one reviewed even if the price moves before it fills. A limit or stop order carries them as
- * prices.
+ * A market order carries its stop and target as distances in pips, measured by the platform from the fill, so the
+ * risk reviewed holds whatever the fill price. A limit or stop order carries them as prices, rounded to the symbol.
+ * Every stop is triggered by the price the position would close at (`stopLossTriggerMethod: "trade"`: a buy's stop
+ * on the bid, a sell's on the ask), which is what the loss is computed on.
  */
 export function buildOrder(input) {
-  const { symbol, side, orderType, entry, stop, target, quote, limitReached } = input;
-  if (limitReached) return fail("limit", "Your loss limit for today is reached. This panel will not place orders until it resets.");
+  const { symbol, side, orderType, entry, stop, target, quote } = input;
+  if (input.limitsKnown === false) return fail("limits", "Your loss limits could not be checked (the account's history did not load). Nothing is placed until they can.");
+  if (input.accountType === "spreadBetting") return fail("account", "This is a spread-betting account: sizes there are stakes per point, which this panel does not size. Use the platform's own ticket.");
   if (!symbol) return fail("symbol", "Open the panel on a symbol first.");
+  if (symbol.isPredictionMarket) return fail("symbol", "This is a prediction-market symbol, which this panel does not size.");
+  if (input.accountType === "netted" && input.positionOnSymbol) {
+    return fail("netted", `This is a netting account and you already hold ${symbol.name}: a new order would change that position instead of opening its own. Close it first, or use the platform's own ticket.`);
+  }
   if (!["market", "limit", "stop"].includes(orderType)) return fail("type", "Choose market, limit or stop.");
   if (!quote || !(quote.bid > 0) || !(quote.ask > 0)) return fail("quote", "No live price for this symbol yet.");
-  if (orderType !== "market") {
+  const pip = pipSize(symbol.pipPosition);
+  if (orderType === "market") {
+    const gap = side === "buy" ? quote.bid - stop : stop - quote.ask;      // (from the price the stop is triggered by)
+    if (stop > 0 && gap < pip - 1e-12) {
+      return fail("stop", `The stop is too close: it must be at least 1 pip beyond the ${side === "buy" ? "bid" : "ask"}, or it would be hit as soon as the order fills.`);
+    }
+  } else {
     const now = side === "buy" ? quote.ask : quote.bid;
     const ok = orderType === "limit" ? (side === "buy" ? entry < now : entry > now) : (side === "buy" ? entry > now : entry < now);
     if (!ok) {
@@ -37,18 +51,20 @@ export function buildOrder(input) {
       return fail("target", side === "buy" ? "For a buy, the target must be above the entry." : "For a sell, the target must be below the entry.");
     }
   }
-  const request = { symbolId: symbol.symbolId, orderType, side, volume: size.volume, label: makeLabel(size.riskMoney) };
+  const request = { symbolId: symbol.symbolId, orderType, side, volume: size.volume, stopLossTriggerMethod: "trade",
+                    label: makeLabel(size.riskMoney, input.tradeId || "x0000000") };
   if (orderType === "market") {
     request.stopLossPips = size.pips;
     if (target) request.takeProfitPips = pointsToPips(Math.abs(toPoints(target, symbol.digits) - toPoints(entry, symbol.digits)), symbol.digits, symbol.pipPosition);
   } else {
-    request.entryPrice = entry;
-    request.stopLoss = stop;
-    if (target) request.takeProfit = target;
+    request.entryPrice = roundPrice(entry, symbol.digits);
+    request.stopLoss = roundPrice(stop, symbol.digits);
+    if (target) request.takeProfit = roundPrice(target, symbol.digits);
   }
   const review = Object.freeze({
-    symbol: symbol.name, side, orderType, entry, stop, target: target || null,
-    lots: size.lots, units: size.units, riskMoney: size.riskMoney, budget: size.budget, pips: size.pips, capped: size.capped,
+    symbol: symbol.name, side, orderType, entry, stop, target: target || null, lots: size.lots, units: size.units,
+    riskMoney: size.riskMoney, priceRisk: size.priceRisk, commissionRisk: size.commissionRisk, budget: size.budget,
+    cut: size.cut, pips: size.pips, capped: size.capped, leverage: size.leverage,
   });
   return { ok: true, request: Object.freeze(request), review };
 }

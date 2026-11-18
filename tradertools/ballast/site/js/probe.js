@@ -1,9 +1,9 @@
-// Stage 0: what does cTrader really give a web plugin? Each answer goes into one block of text the owner copies
+// Ballast, stage 0: what does cTrader really give a web plugin? Each answer goes into one block of text the owner copies
 // back. Orders are possible only on an account cTrader reports as demo, only from a real click, and only at the
 // symbol's smallest size. Delete this file and probe.html before the Store listing.
 import {
-  accountInfo, cancelOrder, closePosition, createClientAdapter, dealHistory, firstValueFrom, handshake, newOrder,
-  pendingOrders, positions, sdkVersion, subscribeQuotes, symbolByName,
+  accountInfo, availablePeriods, cancelOrder, closePosition, createClientAdapter, dealHistory, firstValueFrom, handshake, newOrder,
+  pendingOrders, positions, sdkVersion, subscribeQuotes, symbolByName, trendbars,
 } from "../vendor/ctrader-sdk.js";
 
 const $ = (id) => document.getElementById(id);
@@ -72,6 +72,25 @@ async function run() {
     });
     document.addEventListener("visibilitychange", () => { if (document.hidden) res.quotes.hiddenSpells += 1; show(); });
   }
+  try {
+    const ps = (await call(availablePeriods, null)).periods || [];
+    res.periods = ps.map((p) => p.code + "=" + p.name).join(", ");
+    const h1 = (ps.find((p) => /hour/i.test(p.name)) || ps[0] || {}).code;
+    const bars = sym && h1 ? (await call(trendbars, { symbolId: sym.symbolId, period: h1, count: 20 })).bars || [] : [];
+    res.bars = { period: h1, count: bars.length, first: bars[0], last: bars[bars.length - 1] };
+    step("Chart bars", res.bars.count + " bars of " + h1);
+  } catch (e) {
+    res.bars = err(e);
+    step("Chart bars FAILED", res.bars);
+  }
+  try {
+    const open = (await call(positions, null)).positions || [];
+    res.openPositions = open.slice(0, 3);
+    step("Open positions", open.length);
+  } catch (e) {
+    res.openPositions = err(e);
+    step("Open positions FAILED", res.openPositions);
+  }
   const demo = res.account && res.account.environment === "demo";
   if (!demo) {
     msg("cTrader does not report this account as demo, so the order tests stay off.");
@@ -89,7 +108,7 @@ function smallest() {
 $("t-market").addEventListener("click", async (ev) => {
   if (!ev.isTrusted) return;
   $("t-market").disabled = true;
-  const req = { symbolId: sym.symbolId, orderType: "market", side: "buy", volume: smallest(), stopLossPips: 50, takeProfitPips: 50, label: "ERT r=1.00" };
+  const req = { symbolId: sym.symbolId, orderType: "market", side: "buy", volume: smallest(), stopLossPips: 50, takeProfitPips: 50, stopLossTriggerMethod: "trade", label: "BLST r=1.00 id=probe001" };
   try {
     res.market = { request: req, answer: await call(newOrder, req) };
     await new Promise((r) => setTimeout(r, 2000));
@@ -128,7 +147,7 @@ $("t-limit").addEventListener("click", async (ev) => {
   const entry = Math.round(lastQuote.bid * 0.9 * f) / f;              // 10% below: it will not fill
   const pip = 10 ** -sym.pipPosition;
   const req = { symbolId: sym.symbolId, orderType: "limit", side: "buy", volume: smallest(), entryPrice: entry,
-                stopLoss: Math.round((entry - 50 * pip) * f) / f, takeProfit: Math.round((entry + 50 * pip) * f) / f, label: "ERT r=1.00" };
+                stopLoss: Math.round((entry - 50 * pip) * f) / f, takeProfit: Math.round((entry + 50 * pip) * f) / f, stopLossTriggerMethod: "trade", label: "BLST r=1.00 id=probe002" };
   try {
     res.limit = { request: req, answer: await call(newOrder, req) };
     orderId = res.limit.answer.orderId;

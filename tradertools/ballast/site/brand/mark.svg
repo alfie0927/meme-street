@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ballast">
+  <rect width="64" height="64" rx="14" fill="#0f1c26"/>
+  <path d="M12 24h40" stroke="#e8eef2" stroke-width="4" stroke-linecap="round"/>
+  <path d="M29.5 24h5l-0.6 14h-3.8z" fill="#2fb5a3"/>
+  <ellipse cx="32" cy="43" rx="10" ry="5.5" fill="#2fb5a3"/>
+  <path d="M22.5 41.5q9.5-3.4 19 0" stroke="#0f1c26" stroke-width="1.2" fill="none" opacity="0.35"/>
+</svg>
