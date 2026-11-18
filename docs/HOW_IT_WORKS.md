@@ -2,7 +2,7 @@
 
 This document explains the whole system: what each file does, how prices and trading work, how money flows, how news, earnings and ratings are generated, how the social features and the server protocol work, and what to watch out for. Numbers quoted are the current defaults from the content packs (in `content/`: `base.json`, `expansion.json`, `pack_growth.json`, `pack_fiction.json`) and the constants at the top of `game/engine.py`. File names without a folder are in `game/` (code), `web/` (pages), `content/` (packs) or `tools/` (scripts): §1, "Where things are".
 
-**A guide to the sections.** §1 running it · §2 the files · §3 time · §4 trading · §5 where money lives · §6 how prices move (including volatility, the trading sessions, moonshots and how the tails are kept thin) · §7 news, catalysts, industry-wide shocks, company stories and ratings · §8 listings · §9 indices, ETFs and leveraged products · §10 players, accounts, days, badges, the Daily Chart and chat · §11 the web pages · §12 the server, its protocol and gateways (more than one process) · §13 saving and the crash-proof ledger · §14 settings · §15 things to know · §16 tests · §17 the latest economy-check results.
+**A guide to the sections.** §1 running it · §2 the files · §3 time · §4 trading · §5 where money lives · §6 how prices move (including volatility, the trading sessions, moonshots and how the tails are kept thin) · §7 news, catalysts, industry-wide shocks, company stories and ratings · §8 listings · §9 indices, ETFs and leveraged products · §10 players, accounts, days, badges, the Daily Chart and chat · §11 the web pages · §12 the server, its protocol and gateways (more than one process) · §13 saving and the crash-proof ledger · §14 settings · §15 things to know · §16 tests · §18 trader tools · §17 the latest economy-check results.
 
 Keep this file in step with the code: update it after every change (see "Keeping the docs current" at the end).
 
@@ -28,6 +28,7 @@ folder the game is started from.
 | `docs/` | This guide, `ROADMAP.md` (the one plan, for the site and the reels: since 2026-11-12 the reach plan and the growth plan are folded into it, and their two files are deleted), `MARKET_REALISM.md` (the research behind the charts) and `COUNCIL.md` (verdicts from `/council`) |
 | `deploy/` | Putting the game on a rented server (below) |
 | `tests/` | The test suite (§16) |
+| `tradertools/` | Since 2026-11-18: small trader tools sold in trading platforms' stores, apart from the game (§18). First `ctrader-risk/`, a risk-sizing order ticket for the cTrader Store |
 | `brand/` | The logo and the header image (an old screenshot and promo video were removed on 2026-10-20; they are in the git history) |
 
 The top folder only holds `start_game.ps1` (start the game), `README.md`, `requirements.txt` and `requirements-lock.txt`.
@@ -241,7 +242,7 @@ Every `.json` file here is a content pack: the engine reads them all in name ord
 |---|---|
 | `deploy/` | Putting the game on a rented server with a domain name and https: a guide, the upload and update scripts, the setup script, the services, the web-server file and the backup job (§1, "Running it on a real server") |
 | `tests/` | The automated test suite: engine, server, browser, stress, capacity and slow checks (§16). |
-| `.github/workflows/tests.yml` | Runs Ruff, mypy and the test suite automatically on every push (the project is on GitHub). |
+| `.github/workflows/tests.yml` | Runs Ruff, mypy and the test suite automatically on every push (the project is on GitHub), and since 2026-11-18 `node --test` for `tradertools/ctrader-risk` (§18). |
 
 ---
 
@@ -2139,6 +2140,8 @@ Advance time with `advance(e, seconds)` (whole one-second ticks) or move the clo
 
 ---
 
+**Trader tools (2026-11-18).** `tests/test_tradertools.py` serves `tradertools/ctrader-risk/site` from a small local web server and drives the panel against its stand-in for cTrader (`?mock=1`, `host-mock.js`) in headless Edge or Chrome: the size shown (1% of 10,000 over 20 pips is 0.50 lots), the review step, one order per real click (a script's `click()` sends nothing, a double tap sends one), the loss limit's lock, the log's R, the "smallest size risks too much" refusal, settings kept, and the trial page without a Place button. The maths has its own 21 tests: `cd tradertools/ctrader-risk && node --test test/*.test.js` (CI's `tradertools` job).
+
 ## 17. Latest economy-check results
 
 > **History.** These are the results of the old zero-edge market's checks (`sim.py`, `bots.py`, `edge.py`, `paired.py`, `probe.py`), which were removed on 2026-10-13 with that rule. The market today is checked with `chart_check.py` and `realism.py`; the results are in MARKET_REALISM.md section 4.
@@ -2418,6 +2421,50 @@ With the starting 10,000 MB, a 0.1% fee and this mix of players (all assumptions
 Every direction-neutral group loses in every seed but one (the 30-day straddle and strangles in a seed with a strong trend, +2% to +5%: what a real straddle buyer can win in such a market). Single calls and puts follow the market's direction, as the stock does; a 10%-in-the-money call is close to owning the stock and gains in the seeds where the market rose.
 
 ---
+
+## 18. Trader tools (`tradertools/`, since 2026-11-18)
+
+**Why it exists.** On 17 and 18 November 2026 the owner asked for a pivot that earns without selling by hand. Six
+families of routes were researched (the record is in `docs/ROADMAP.md` §2 and §3); the only place where unknown
+sellers of honest tools visibly make sales is the stores inside trading platforms. The owner chose small, honest
+utilities sold there, starting with the cTrader Store. They share no code with the game and run nowhere on the game's
+server: each is a static site.
+
+**`tradertools/ctrader-risk/`: Exact Risk Ticket (working name).** A cTrader "web plugin": a page cTrader opens in a
+frame (Web, Windows, Mac and the phone apps) and talks to through its Plugin API v2. Its README is the full manual
+(files, testing, the probe, hosting, releases, the demo checklist).
+- **What it does.** Sizes a trade from the balance, the risk chosen (a percent or an amount) and the stop distance
+  (price or pips), using the symbol's own lot size, minimum and step (`risk.js` `sizeTrade`). The size is always
+  rounded **down**, capped at the symbol's maximum, and refused, never rounded up, when the smallest size would risk
+  more than chosen. The risk is converted into the account's currency through at most two symbols
+  (`conversionPath`, `conversionRate`), each price taken on the side that makes the risk larger (ask when
+  multiplying, 1/bid when dividing). The target is a price or a multiple of the risk; the panel shows reward to risk
+  and the break-even win rate. **Review, then place** (`ticket.js`): a market order carries its stop and target as
+  pips (`stopLossPips`, `takeProfitPips`), so the reviewed risk holds whatever the fill; a limit or stop order
+  carries prices and must sit on the right side of the market. The order's `label` is `ERT r=<planned risk>`, which
+  the **log** reads back from closed deals to show each trade in R, with win rate, average R and profit factor.
+  **Loss lights**: the day's realised loss (every closed deal since a chosen hour) against a daily limit, and the
+  fall from a chosen balance against a total limit; amber at 80%, red at 100%, and red locks this panel's Place
+  button (not the rest of cTrader; open trades are not counted).
+- **Safeguards.** One function sends an order (`createPlacer`): once per reviewed request, refusing a second tap
+  while one is in flight, never retrying (no answer in 10 s says "check your positions"). The Place button acts only
+  on a real click (`event.isTrusted`), never on load, a timer or the address. Any change to the inputs while the
+  review is open closes it. The page's security policy (`site/_headers`, `connect-src 'none'`) means it cannot send
+  data anywhere; its settings stay in the browser (`localStorage` key `ert.v1`).
+- **Editions.** `site/index.html` (full) and `site/trial/index.html` (the same page, `data-edition="trial"`: sizes and
+  shows the limits, no Place button). `PAID_IDS` in `app.js` names the Store plugin's id (cTrader passes `?id=`); empty
+  until the Store assigns one.
+- **cTrader's side.** `host.js` is the only file that talks to cTrader, through `site/vendor/ctrader-sdk.js`: the
+  SDK's v2 packages (`@spotware-web-team/sdk` 2.1.5, `sdk-external-api` 2.0.1, with zod, uuid and rxjs) bundled into
+  one file, because a plugin may load files only from its own address (`vendor-build.sh` rebuilds it; licences in
+  `site/vendor/LICENSES.txt`). The help pages still describe the older v0 API; the code follows the package. Not yet
+  verified on a real account (the probe of 25 November, `site/probe.html`): the unit of `volume`
+  (`UNITS_PER_VOLUME`), whether every cTrader app speaks v2, whether a closed deal keeps its label, storage, and the
+  plugin id. `host-mock.js` offers the same functions over a 10,000 USD demo account for `?mock=1` and the tests.
+- **Hosting.** Cloudflare Pages on the free plan, set up by the owner; no change to the game's server or Caddy.
+- **Tests.** `node --test test/*.test.js` (21: worked examples for EURUSD in USD and GBP accounts, USDJPY, EURJPY in
+  GBP, an index, gold in EUR, bitcoin, the exact boundary, the blocks, conversion paths, the log and the lights, one
+  order per click) and `tests/test_tradertools.py` (§16).
 
 ## Keeping the docs current
 

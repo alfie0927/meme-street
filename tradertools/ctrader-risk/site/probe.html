@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exact Risk Ticket: platform probe</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main>
+  <h2>Platform probe (stage 0, delete before listing)</h2>
+  <p class="mut small">Run this on a <b>demo</b> account. It reads what cTrader gives a web plugin, and the two order tests
+    place the smallest possible orders. The order buttons stay off unless cTrader reports a demo account.</p>
+  <ol id="steps" class="card small"></ol>
+  <section class="card">
+    <h2>Order tests (demo only)</h2>
+    <div class="buttons"><button type="button" id="t-market" disabled>1. Market order, smallest size, stop and target in pips</button></div>
+    <div class="buttons"><button type="button" id="t-close" disabled>2. Close that position</button></div>
+    <div class="buttons"><button type="button" id="t-limit" disabled>3. Limit order far from the price, stop and target as prices</button></div>
+    <div class="buttons"><button type="button" id="t-cancel" disabled>4. Cancel that order</button></div>
+    <div class="buttons"><button type="button" id="t-deals" disabled>5. Read the last two days of closed deals</button></div>
+    <p id="t-msg" class="note" aria-live="polite"></p>
+  </section>
+  <section class="card">
+    <h2>Results to send back</h2>
+    <p class="mut small">Hide this panel for 20 seconds and show it again before copying (it counts what arrives while hidden).</p>
+    <textarea id="out" rows="14" readonly></textarea>
+  </section>
+</main>
+<script type="module" src="js/probe.js"></script>
+</body>
+</html>

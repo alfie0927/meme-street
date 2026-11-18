@@ -26,6 +26,23 @@ jobs:
       - name: mypy
         run: mypy game tools/realism.py tools/pricing_model.py --ignore-missing-imports
 
+  # Exact Risk Ticket (tradertools/ctrader-risk): the sizing and order maths, with Node's own test runner and no
+  # packages. The page itself is tested in the browser by tests/test_tradertools.py, inside the parts below.
+  tradertools:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: node --test
+        working-directory: tradertools/ctrader-risk
+        run: node --test test/*.test.js
+      - name: The scripts parse
+        working-directory: tradertools/ctrader-risk/site/js
+        run: for f in *.js; do node --check "$f"; done
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 30

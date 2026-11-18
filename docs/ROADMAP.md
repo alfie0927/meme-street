@@ -5,10 +5,10 @@ stock market. **Technical analysis is the core** (charts that behave like real c
 news and the economy are background. Everyone starts with **100,000 MB** (since 2026-11-15; 1,000 before); MB are a game currency with no cash value,
 never paid out. The site earns from the **Pro and Expert passes** (MB packages were sold until 2026-11-15). **The Daily Chart** is the front
 door, the daily reason to come back and the thing people share: every link lands on it and it needs no account. The
-course is a **path** (units, exercises, XP, a streak). **Since 17 November 2026 the plan is to sell before building**
-(section 3): eight weeks of sends by hand and a priced offer to teachers, with dates on which to decide (section 8).
-The Instagram reels keep posting by themselves (the pipeline in `tools/memestreet_daily_reel`), but in 29 days they
-sent 2 people to the site, so their development is frozen. Later the site may build a **bridge to real markets**.
+course is a **path** (units, exercises, XP, a streak). **Since 18 November 2026 the work is a pivot (section 3):**
+small, honest trader tools sold inside the stores of trading platforms, where the store brings the buyers and takes
+the payment, starting with a risk-sizing order ticket for the cTrader Store (`tradertools/ctrader-risk`). Meme Street
+stays online in maintenance; its reels are paused.
 
 **This file is the one plan, for the site and for the reels.** Check it before starting any work, and update
 `HOW_IT_WORKS.md` (what the code does **today**) after every change. Section 3 is the order of work, section 4 is
@@ -255,56 +255,74 @@ replaced by the two tripwires in section 8.
     Challenge) is free and had 9,800 schools. Only a priced offer can settle it (section 3, part 2), and the
     societies are written to first (`growth/outreach_contacts.md`).
 
+13. **Nowhere sells this product without the seller selling (18 Nov).** Asked for a pivot where people pay without
+    outreach, six families of routes were researched: synthetic data and APIs (free alternatives everywhere),
+    Steam, phone stores and portals (median Steam release about $300; marketing first), Discord and Telegram
+    (payments, no customers; ten or more free stock bots), interview practice for trading firms (a niche of about
+    $0.4 to $1.2 million a year with entrenched incumbents), Etsy, Gumroad and Apify (saturated or brittle). The one
+    place unknown sellers of honest tools visibly make sales is the stores inside trading platforms: on the cTrader
+    Store a small seller's risk tool shows 58 purchases at $45. Even there the honest estimate is small: about
+    £100 to £600 in the first year from cTrader alone.
+
 ---
 
 ## 3. The plan in order
 
-**Sell before building** (your call, 17 Nov, after the review: `docs/COUNCIL.md`, verdict FIX FIRST). It replaces
-"reach first" (12 Nov). Eight weeks: the leaks fixed, then sends by hand and a priced offer, then a decision on the
-dates in section 8. Your time is 2 to 4 hours a week; everything you send is drafted in `growth/sends.md`.
+**The pivot: Exact Risk Ticket on the cTrader Store** (your call, 18 Nov, after the research in section 2, lesson 13;
+it replaces "sell before building" of 17 Nov, whose sends are dropped; the site fixes of that day stay). A panel
+inside cTrader (Web, desktop, phone) that sizes a trade from the risk chosen and the stop, converts the risk into the
+account's currency for any symbol, always rounds down, and places the order with its stop and target attached after
+a review; it shows the day's realised loss against your own limits and keeps a log in R. **No signals, no advice.**
+Price: $29 one-off, $19 at launch, with a free trial that sizes but does not place orders; the store keeps 30%. The
+honest odds: **£100 to £600 in the first year** from cTrader alone; more needs the MetaTrader port (stage 3). Code and
+manual: `tradertools/ctrader-risk/` and its README; how it works: HOW_IT_WORKS §18.
 
-### Part 1. The leaks (me; done 17 November, waiting for your merge and your word to deploy)
+### Stage 0, 18 to 25 November: does the platform do what its documents say
 
-| Batch | What changed | Branch |
+| What | Who | State |
 |---|---|---|
-| A | The Daily says "14 results: 2 players, 12 house traders" (no tag beside a name; nothing calls a bot a player); the result's lesson link opens the lesson's open page; Pro's list names the whole lesson path first; a visit keeps its source even with no `ref` | `fix/leaks-a-trust` |
-| B | A first game opens on "Before the clock starts" (what a candle is; the button starts the two minutes); Buy and Sell wording; "Save my result" under the result; sign-up with one password box and an optional email; "Get tomorrow's chart by email" for visitors and for accounts without a confirmed address | `fix/leaks-b-first-game` |
-| C | The visitor's box first on the home page, on a phone too, in one sentence; a new account's Learn page is the path, the placement test second, the Pro box only when the day's lessons are used; `tools/visits.py --weekly` | `fix/leaks-c-home-learn-count` |
+| The maths with worked examples (21 tests), the order builder and its one-send placer, the panel against a stand-in for cTrader, the browser test, the SDK bundled, the probe page | Me | **Done 18 Nov** (branch `tradertools/risk-ticket`) |
+| A cTrader ID, a demo account, the phone app; whether cTrader's own order ticket already sizes by risk percent (if it does, the paid value shrinks to the limits and the log, and we decide before building more) | You | Open |
+| Seller registration and the identity check (photo ID, selfie, proof of address); a UK debit card for payouts | You | Open |
+| Hosting on Cloudflare Pages (free; README "Hosting") | You | Open |
+| **Gate, 25 November:** the probe on a demo account, on Web and the phone (README "Stage 0"): does the v2 connection work, does a smallest-size order go through with stop and target, what unit is `volume`, does a closed deal keep the label, does storage persist | You, then me | Open |
 
-Each branch contains the one before it, so merging C merges all three. Left for later: the `/about` lesson count
-computed (it waits for the lessons session's own edit of that file), and the open items of the 15 November audit:
-the operator's name and address (R9, now in part 2), minors buying (R5), the right-to-cancel waiver in Stripe's
-receipt, chat for under-18s (Online Safety Act), the two other security mediums (the recovery email changed without
-the password; one site-wide mail cap), an HTML 404 page and `/tools`, the shell and scripts cacheable, 1200x630
-preview images.
+If the probe fails on both Web and the phone, the fallback is a desktop-only plugin in C#, about three weeks later.
 
-### Part 2. The sends (you, about 3 hours a week; the texts are in `growth/sends.md`)
+### Stage 1, 25 November to 21 December: build and list
 
-| Week of | What | Time |
-|---|---|---|
-| 17 Nov | Pick the trading name and set a free forward for an address on the domain; send your own Daily result to 10 to 20 people you know; connect Search Console and Bing | 1.5 h |
-| 23 Nov | Show HN on a weekday afternoon, and answer comments for two hours; the first 20 teacher and society emails, with the price | 3.5 h |
-| 30 Nov | Ten daily-game directories; r/WebGames; 20 emails | 3 h |
-| 7 Dec | itch.io and CrazyGames (the builds are ready); 20 emails | 3 h |
-| 14 Dec | Read the numbers with me; reply to everyone who wrote | 1 h |
-| 5 Jan | One follow-up to the teachers who did not reply | 1 h |
+Fit the probe's answers (`UNITS_PER_VOLUME`, the log), finish the panel, delete the probe, put the plugin's id into
+`PAID_IDS`, screenshots (you, 20 minutes), the listing below; your 15-minute demo checklist on 2 and 9 December
+(README); submit by 15 December (review takes 1 to 3 working days); listed by 21 December, 8 January at the latest.
 
-The priced offer (`growth/schools.md`): a class version (a join code, each student on their own device with no email
-address, a private class board, no shop shown) delivered by a stated date, a full refund if it is not, paid through a
-Stripe link you make. **The class version is not built until someone pays.**
+**The listing.** Title *Exact Risk Ticket* (checked against the store first). Short description: *Sizes each trade
+from your risk and stop, rounds down, and places it with stop and target attached. No signals.* The long text says
+what it does and what it does not (no signals or advice; it cannot stop orders placed elsewhere; the limits count
+closed trades only; a stop is not a guaranteed price), that it sends no data anywhere, and that it does not make
+trading profitable.
 
-### Part 3. What stops until a tripwire in section 8 is met
+### Stage 2, the reads
 
-- New lessons, reel formats, reel studies, trading features and market work. The reels keep posting on today's
-  schedule by themselves; nothing new is built for them.
-- Off your list: removing fake followers, daily Stories, Instagram comments, TikTok and X by hand.
-- Price tests and new paywalls. Pro and Expert stay on sale as they are.
-- Everything under "Next" and "Later" below.
+Short looks on 20 January and 19 February; the decision on **21 March 2027** (section 8).
+
+### Stage 3, from 21 March 2027 (only on green)
+
+The MetaTrader 5 port if your MQL5 account offers a workable payout to a UK card (checked before any build:
+registration takes about 10 working days); otherwise a second cTrader tool chosen from what buyers asked for.
+
+### Meanwhile
+
+- **Meme Street: maintenance only.** It stays online; the daily SEO routine keeps running. The fixes of 17 November
+  (the Daily's house traders said in aggregate, the open lesson link, the first-game card, the lighter sign-up,
+  tomorrow's chart by email) ship when you merge and say deploy. No new lessons, reel formats or features.
+- **The reels are paused** (your call, 18 Nov): the reel timers on the server are off; the account and every posted
+  reel stay. Switching back on is one command (section 4).
+- Off your list: the eight weeks of sends, Show HN, the teacher emails, the Instagram chores.
 
 
 ### Next, to the end of December
 
-*Frozen on 17 November (part 3 above). Kept as the list to pick from if a tripwire is met.*
+*Frozen since 17 November and parked by the pivot of 18 November. Kept as the list to pick from if Meme Street is ever resumed.*
 
 | Item | What | Size | Who |
 |---|---|---|---|
@@ -339,24 +357,28 @@ Stripe link you make. **The class version is not built until someone pays.**
 
 ## 4. Your list (only you can do these)
 
-Cut on 17 November to what fits 2 to 4 hours a week. The order is section 3, part 2; the texts are in
-`growth/sends.md`. Every first post on a new platform is still confirmed with you, and I never log in as you.
+Since 18 November: the trader-tools pivot (section 3). The steps are in `tradertools/ctrader-risk/README.md`.
 
-| # | What | When | Time | The text is in |
-|---|---|---|---|---|
-| 1 | The trading name the site and its emails give as the operator, and an address on the domain that forwards to you (a free forwarder; the DNS change is yours). A caution, not legal advice: the shop already sells passes, and UK rules for online sellers generally expect the trader's own name and a postal address to be available: check before the teacher emails (R9, R4) | Week of 17 Nov | 30 min | `growth/sends.md` |
-| 2 | Your own Daily result and its challenge link to 10 to 20 people you know, one by one | Week of 17 Nov | 20 min | The Daily's share button |
-| 3 | Search Console (add the site, then Bing Webmaster Tools imports it); allow `memestreet.net` in the SEO routine's network settings | Week of 17 Nov | 15 min | |
-| 4 | Merge the fixes and tell me to deploy (staging first) | Week of 17 Nov | 5 min | Section 3, part 1 |
-| 5 | Show HN, a weekday between 14:00 and 17:00 UK time; stay two hours to answer. First your three answers: was AI used, how are the house traders shown, is it open source | Week of 23 Nov | 2.5 h | `growth/sends.md`, `growth/launch.md` |
-| 6 | Teacher and society emails with the priced class offer: 20 a week for three weeks, one person at a time; a Stripe payment link for the pre-order | From 23 Nov | 1 h a week | `growth/schools.md` |
-| 7 | Ten daily-game directories; one post on r/WebGames | Week of 30 Nov | 2 h | `growth/directories.md`, `growth/sends.md` |
-| 8 | itch.io (the frame is live) and CrazyGames | Week of 7 Dec | 2 h | `growth/portals/README.md` |
-| 9 | Read the week's numbers with me; answer everyone who wrote, and ask each one question ("what nearly stopped you?") | Week of 14 Dec | 1 h | `growth/weekly.md` |
-| 10 | Renew the Instagram token before 1 January 2027 (RL10): the reels stop without it | December | 10 min | |
-| 11 | One follow-up to teachers who did not reply | Week of 5 Jan | 1 h | `growth/schools.md` |
+| # | What | When | Time |
+|---|---|---|---|
+| 1 | A cTrader ID, a demo account, the phone app signed in | This week | 15 min |
+| 2 | Look at cTrader's own order ticket on Web and the phone: does it size by risk percent? Tell me | This week | 10 min |
+| 3 | Join as a seller in the cTrader Store: photo ID, selfie, proof of address (it gates publishing, so start now) | This week | 20 min, then a wait |
+| 4 | A free Cloudflare account and the Pages project (README "Hosting") | This week | 20 min |
+| 5 | The probe on a demo account, Web and phone, and paste me the results (README "Stage 0") | 25 Nov | 30 min |
+| 6 | A UK debit card for payouts in the store's Finances | Before listing | 5 min |
+| 7 | The demo checklist (2 and 9 Dec) and three screenshots | December | 50 min |
+| 8 | Answer buyers' comments (I draft, you post); keep a note of income for your tax return | As they come | |
+| 9 | Merge the branch and say deploy when you want Meme Street's fixes of 17 November live | Any time | 5 min |
+| 10 | Renew the Instagram token before 1 January 2027 only if the reels are switched back on | December | |
 
-**Off your list since 17 November:** removing the fake followers, the profile edit, daily Stories, comments on
+**To switch the reels back on** (one command): `ssh root@65.109.233.145 'for t in $(cat /root/reel-timers-paused-2026-11-18.txt); do systemctl enable --now "$t"; done'`.
+
+Do not join the store's broker affiliate programme without legal advice: earning from broker activity is a different
+question from selling a calculator.
+
+
+**Off your list since 17 and 18 November:** removing the fake followers, the profile edit, daily Stories, comments on
 bigger pages, the retention screenshots, TikTok, X and Reddit by hand every day, the cross-posting accounts still
 open (a Facebook Page, Threads, Telegram, TikTok Business). They served a channel that sent 2 visitors in a month.
 
@@ -665,6 +687,10 @@ Done or decided: R1 to R3, R6, X1, X3 to X6, X8.
   frozen**, the pipeline keeps posting by itself, and your Instagram chores are off your list; the operator is given
   as a trading name with an address on the domain; nobody but you has ever paid, so "the two buyers" was wrong; no
   class version is built until a teacher pays; the dates in section 8 decide what happens next.
+- 18 Nov (after researching pivots that earn without selling, section 2 lesson 13): **pivot to honest trader tools in
+  platform stores**, first a risk-sizing order ticket on the cTrader Store, then MetaTrader if it works; a small
+  income that grows is worth it; the identity check with the store is fine; small monthly costs are allowed (none
+  needed so far); **the reels are paused**; Meme Street goes into maintenance; the sends of 17 November are dropped.
 - Settled from the old open list: the rank claim now says "the return boards" (the profit boards stay: risk 11);
   "Session" replaced "Day" (U10); the house bots stay on the boards, flagged in the data only.
 
@@ -699,26 +725,22 @@ Done or decided: R1 to R3, R6, X1, X3 to X6, X8.
 
 ## 8. Review dates and tripwires
 
-**The number that matters:** people, bots excluded, who finished a Daily or made a trade this week. **And since 17
-November: strangers who have paid** (0 so far).
+**The number that matters since 18 November:** purchases of Exact Risk Ticket in the cTrader Store (its product page
+shows them), then payouts received.
 
 | When | What | What it decides |
 |---|---|---|
-| Every Monday | `python3 tools/visits.py --weekly` on the server, into `growth/weekly.md`: per source, visits, Dailies started and finished, email requests, accounts, back within 7 days | Which send to repeat |
-| 20 December | **Players.** After the sends of section 3: of the people who finish a Daily, do 10% or more return on another day or leave an email? | 10% or more: the Daily is worth building on (the "Next" list opens, starting with what brings people back). Under 5% after 500 real visitors: the Daily does not hold people, and no more is built on it |
-| 16 January 2027 | **Money.** From 60 priced emails to teachers and societies | 3 paid pre-orders: build the class version. 1: a side income at best; build the least that delivers it. None, and nobody asked the price: the class route is closed |
-| 31 January 2027 | **Both.** | If both failed: this stops being an income project. The site stays up as a portfolio piece, the reels pause, and your hours go to paid work that the project demonstrates |
-| December | Renew the Instagram token (RL10) | |
+| 25 Nov 2026 | **Gate A: the probe** (section 3, stage 0) | All pass: build as planned. Orders refused on both Web and phone: a C# desktop plugin instead. No label on closed deals: the log shows money only |
+| 15 Dec 2026 | Submitted to the store | |
+| 20 Jan, 19 Feb 2027 | Short reads: purchases, trial installs, rating, refunds, support messages | |
+| **21 Mar 2027** | **The 90-day read** | **Green** (15 or more purchases, rating 4.5 or better from 3 or more reviews, refunds under 15%): stage 3. **Amber** (5 to 14 purchases, or 300 or more trial installs with under 5 purchases): one round of fixes, $19, read again at day 150. **Red** (under 5 purchases and under 150 trial installs): no more building on it; it stays listed |
+| **30 Jun 2027** | **Stop rule** | Payouts under $150 in total, or support above an hour a week for under $50 a month: no more trader tools are built |
 
-If Show HN or Reddit readers ask for real stock charts and the Daily holds people, a Daily on a real, unnamed
-chart is the next question (RM1: it needs a data licence, so your yes).
+**At any time:** a report of a wrong size or an unintended order is fixed within 48 hours or the listing comes down;
+refunds above 25% over 8 or more sales mean the description is rewritten first.
 
-**Stop rules that stay**
-
-- **Any send:** under 5 finished Dailies in the week after it, and it is not repeated.
-- **Sign-up:** more than 1 attempt in 5 failing means the form is still the leak: take out another field.
-- **Email:** any spam complaint, or more than 1 in 200 leaving after a send, stop and rethink.
-- **Reels:** nothing is decided on them before 31 January; the scoreboard keeps cutting formats by itself.
+**Meme Street:** nothing is decided on it before 30 June 2027; it runs in maintenance. The old stop rules (reels,
+sends, email) are parked with it.
 
 ---
 
