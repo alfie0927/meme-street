@@ -3330,6 +3330,14 @@ class Engine(SocialMixin, AccountsMixin, economy.EconomyMixin, learning.Learning
         self._social_tick()
         self._tick_ledger()
 
+    def daily_tick(self, now=None):
+        """memestreet.net as just the Daily (2026-11-18, server.DAILY_ONLY): the clock, content changes and the house
+        traders' Daily games go on; the market, its news, bots and boards stand still (and its ledger stops growing)."""
+        self.now = now if now is not None else time.time()
+        if self._sig() != self.content_sig:
+            self._reload()
+        self._house_tick(daily_only=True)
+
     def _update_index(self):
         """Roll the daily candle when the game day changes."""
         current_day = int(self.now // MARKET_DAY_SECONDS)

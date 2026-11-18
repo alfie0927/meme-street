@@ -1,0 +1,35 @@
+# voice.md
+
+## Who I am
+
+- **Name:** Meme Street
+- **Handle:** @memestreetgame
+- **What I do, in one sentence:** Meme Street, a free daily game: one real stock chart a day, two minutes to trade it with practice money, and its name revealed at the end.
+- **Who I am talking to:** beginners who want to learn chart reading and trading without risking real money; many play the Daily Chart (memestreet.net/daily).
+- **What I sell:** nothing directly; the game is free. The ask is to play at memestreet.net.
+
+## What I sound like
+
+- **Three of my own reels:** (from the November chart quizzes)
+  - "Three charts. Three new skills to test. Patterns, candles and entries."
+  - "Question two. After a long run up, three candles are marked. Which one was the warning sign? A, B, or C?"
+  - "A chases the spike, and C buys before anything's confirmed. B is confirmed, and close to a clear stop just under the level."
+- **On camera I am:** calm, clear, teacher-like, short sentences; never hype.
+- **Words I actually use:** chart, candle, support, resistance, breakout, retest, volume, the level, confirmed, practise.
+- **Words I would never say out loud:** "to the moon", "guaranteed", "get rich", "financial freedom", "game-changer", "unlock".
+- **Do I swear:** no
+- **Emoji in captions:** never
+- **Face on camera:** faceless (animated charts)
+- **Voiceover or to-camera:** AI voiceover (Kokoro af_heart)
+- **Pace:** about 165 wpm
+
+## My positions
+
+- Show a signal working: what it says, what the price then did, and why; once, briefly, that it does not work every time.
+- Waiting for confirmation beats chasing a spike.
+- One real chart a day, the same for everyone: beat it, then find out what it was.
+
+## Always
+
+- "Practice money only. Not investment advice." in every caption.
+- British spelling (practise, colour).

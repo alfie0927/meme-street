@@ -92,7 +92,7 @@ class HouseBotsMixin:
                 p.hb["next"] = self.now + random.uniform(5, 600)
                 p.email_verified = True                    # (nothing is sent: the address check never applies to a bot)
 
-    def _house_tick(self):
+    def _house_tick(self, daily_only=False):
         if not self._house_on():
             return
         if not getattr(self, "_house_made", False):
@@ -105,7 +105,7 @@ class HouseBotsMixin:
             if self.now >= hb["next"]:
                 hb["next"] = self.now + hb["look"] * random.uniform(0.6, 1.4)
                 try:
-                    self._house_look(p)
+                    self._house_look(p, daily_only)
                 except Exception:                          # a bot must never stop the game
                     hb["next"] = self.now + HOUR
 
@@ -121,7 +121,7 @@ class HouseBotsMixin:
         start, length = hb["hours"]
         return (int(self.now // HOUR) - start) % 24 < length
 
-    def _house_look(self, p):
+    def _house_look(self, p, daily_only=False):
         hb = p.hb
         if not self._house_awake(p):
             hb["next"] = self.now + HOUR
@@ -133,7 +133,8 @@ class HouseBotsMixin:
         if hb["dat"] is not None and self.now >= hb["dat"]:
             hb["dat"] = None
             self._house_daily_start(p)
-        self._house_market(p)
+        if not daily_only:                                 # (memestreet.net is just the Daily since 2026-11-18: no market)
+            self._house_market(p)
 
     # ------------------------------------------------------------------ the market
     def _house_candles(self, tk):

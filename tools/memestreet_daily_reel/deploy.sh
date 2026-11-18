@@ -6,6 +6,9 @@
 # pipeline lock (up to 6 hours), so it lands between two reels; deploy_apply.sh keeps the old files, runs the
 # self-checks and puts the old files back if one fails. The result is in logs/deploy.log on the server.
 set -euo pipefail
+# RETIRED 2026-11-18: the reels are the Daily's now and run from memestreet_game/reels (the owner: "build them into the
+# memestreet_game folder ... make sure it runs off that pipeline"). Deploying this old copy would put the retired formats back.
+echo "This folder is retired: deploy the reels with memestreet_game/reels/deploy.sh" >&2; exit 1
 cd "$(dirname "$0")"
 HOST=${REEL_HOST:-root@65.109.233.145}; D=/root/reel-deploy/$(date -u +%Y%m%dT%H%M%S); B=$(mktemp -d)
 { git ls-files -co --exclude-standard src lab/silent.py auto_reel.sh make_reel.sh queue_post.sh rerender.sh news_watch.sh deploy_apply.sh \

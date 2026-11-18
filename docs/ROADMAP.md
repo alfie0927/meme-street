@@ -1,5 +1,24 @@
 # Meme Street roadmap
 
+> **18 November 2026: memestreet.net is the Daily and nothing else.** The owner: "route the daily to memestreet.net. that's
+> ALL there should be. the rest of memestreet is being retired. keep making reels but they need to be related to the daily,
+> so less educational. i want to build memestreet daily but that's alll i want to build right now. the admin dashboard
+> should just be about the daily, with multiple tabs". The game is one **real** US stock a day (2016 to 2021,
+> public-domain prices), with its name revealed at the end; no account is needed for a streak. It is built as RD1 to RD5
+> below. Everything else in this file (the market, lessons, shop, passes, SEO pages) is **retired**: its code is kept but
+> unserved (`MS_FULL_SITE=1` brings it back), and nothing on those tracks is worked on. Rules 3 and 11 now read, for the
+> Daily: the charts are real and the reveal names the real stock; nothing else changes (practice money, no advice).
+> The project's home is `memestreet_game/` (its README maps every file).
+>
+> | # | What | Where | Status |
+> |---|---|---|---|
+> | RD1 | memestreet.net serves only the Daily; other pages redirect to /, other API 410, the market stands still | `game/pages.py` `DAILY_ONLY`, `game/server.py`, `engine.daily_tick` | Built 18 Nov |
+> | RD2 | Real charts: 366 for the game, revealed at the end; 186 others for the reels | `content/daily_real.json`, `tools/daily_bank.py`, `daily.real_chart` | Built 18 Nov |
+> | RD3 | Streaks without an account (by browser id), carried into an account on sign-up or log-in; members' freeze, history, archive replays | `game/daily.py`, `web/daily.html` | Built 18 Nov |
+> | RD4 | The Daily-only admin page: today, days, players, streaks, coming back, stocks, sources and sharing, sign-ups | `web/admin_daily.html`, `daily_admin` | Built 18 Nov |
+> | RD5 | Reels about the Daily only: Yesterday's stock, Guess the stock, Beat the chart, the recap; the serial and the cards stop | `memestreet_game/reels/` (`DAILY_SLOTS`) | Built 18 Nov |
+> | RD6 | Next: read a week of the admin tabs (where players come from, who comes back), then decide what to build | | Owner, from 25 Nov |
+
 **Goal:** an informational game where people **learn to trade, or just trade for fun**, on a realistic, fictional
 stock market. **Technical analysis is the core** (charts that behave like real charts, and the tools to read them);
 news and the economy are background. Everyone starts with **100,000 MB** (since 2026-11-15; 1,000 before); MB are a game currency with no cash value,

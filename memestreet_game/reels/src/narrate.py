@@ -1,0 +1,331 @@
+"""Voice an auto reel (spec.json from make_spec.py) and time everything on screen to the words.
+
+Every scene's line is spoken with the Meme Street voice; the scenes follow each other with a short breath (GAP), never
+a silent wait. A question scene keeps THINK seconds for the viewer, filled by a ticking countdown on screen and in the
+sound. Each cue ("say": a phrase of the line) gets the time that phrase is spoken, and every word keeps its time for
+the burned-in captions.
+Output: work/<slot>/timeline.json (+ vo/*.wav, sfx/*.wav).   Usage: python3 src/narrate.py work/<slot>
+"""
+import difflib, glob, hashlib, json, os, re, shutil, sys
+import numpy as np
+import soundfile as sf
+from kokoro_onnx import Kokoro
+from voice import MODEL, NUM, trim, dur, words, norm_words
+from pronounce import say_as, digits
+
+BEAT = {"enter": (0, "pop"), "move": (0, None), "hit": (.6, "boom"), "fall": (.5, "thud"), "launch": (0, "whoosh"), "emit": (0, None),
+        "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None), "fling": (0, "whoosh"), "crack": (0, "pop")}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
+EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow", "fling", "crack")
+
+
+def beats(sc, vs, at, vo, sfx):
+    """Time a scene's storyboard beats on their words (t), note each impact (ti), and add the verb's sound: a hit or a
+    fall sounds at the impact, the rest as they start; coins chime; a count ticks. Returns the impact times."""
+    out = []
+    for b in sc.get("beats", []):
+        b["t"] = round((vs + at(b["say"]) if b.get("say") else vs + 0.3) + float(b.get("after", 0)), 3)   # (a shot staggers its moves: "after")
+        d, s = BEAT.get(b.get("do"), (0, None)); b["ti"] = round(b["t"] + d, 3)
+        if b.get("do") == "emit": s = "chime" if b.get("what") == "coins" else "pop"
+        if b.get("do") == "count":
+            for k in range(min(6, int((re.findall(r"\d+", str(b.get("text", ""))) or ["0"])[0]) or 1)): vo.append([sfx("tick"), round(b["t"] + .15 * k, 3)])
+        elif s: vo.append([sfx(s), b["ti"] if b["do"] in ("hit", "fall") else b["t"]])
+        if b.get("do") in EVENTS: out.append(b["ti"])
+    for a in sc.get("actors") or []:                       # (a label shows when its words are said, else on its prop's first beat: never before; the owner, 2026-11-08)
+        if a.get("label"):
+            own = [b["t"] for b in sc.get("beats", []) if b.get("who") == a.get("id") and b.get("t") is not None]
+            a["lt"] = round(vs + at(a["label"]), 3) if a["label"].lower().strip() in sc["vo"].lower() else min(own, default=round(vs + 0.2, 3))
+    P = sc.get("props") or []                             # (a layout's own events are impacts too: the storm's strikes, the candles' burst)
+    if sc.get("layout") == "storm": out += [p["t"] for p in P[1:] if p.get("t") is not None]
+    return out
+
+
+GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6   # (TAIL 1.6: the sign-off holds a moment, the owner 2026-11-07)        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
+SR = 24000
+
+def tone(path, freqs, length, vol=0.25):
+    """A short synthesised sound: a tick, or a two-note chime for a reveal."""
+    t = np.arange(int(length * SR)) / SR
+    a = sum(np.sin(2 * np.pi * f * t) for f in freqs) / len(freqs) * np.exp(-t * (40 if length < .1 else 7)) * vol
+    sf.write(path, a.astype(np.float32), SR)
+
+# How real narrators pace a Short (measured 2026-11-06 on 16 top Shorts from TradingLab, JeaFx, Casual Finance, Qxir,
+# Sticky Academy, Stickman Invests, Brad Goh and Tom Crown, with the same word timing as below): about 3.9 words a second
+# while talking, a pause of about 0.28 s after a comma and 0.36 s after a sentence, and no pause inside a phrase.
+WPS, HUMAN = 3.9, {"comma": 0.28, "sentence": 0.36}
+# The silence put in to get there: the voice trails off before it is silent, so a pause is heard about 0.2 s longer
+# than the silence inserted (calibrated 2026-11-06 with the same measure: 0.08 s at a full stop is heard as 0.25 s,
+# 0.16 s as 0.41 s; a comma is never heard under about 0.33 s).
+PAUSE = {",": 0.2, ";": 0.2, ":": 0.2, ".": 0.32, "!": 0.32, "?": 0.32}      # (a full stop under a comma's pause was heard as a comma: HUMAN)
+INSIDE = 0.08                                            # (longest pause kept between words with no punctuation)
+
+def talk_rate(W):
+    """Words a second while talking (pauses over 0.25 s left out), as measured on the human Shorts."""
+    if len(W) < 3: return None
+    t = sum(e - s for _, s, e in W) + sum(g for g in (b[1] - a[2] for a, b in zip(W, W[1:])) if 0 < g < 0.25)
+    return len(W) / t if t > 0 else None
+
+def pace(a, tw, sr=SR, k=1.0):
+    """Put human pauses into a line. The voice already stops at its punctuation, so the line's N longest silences are its
+    N commas and full stops (in order): each becomes the pause its mark asks for (PAUSE), and every other silence is cut
+    to INSIDE. Word timings are not used: Whisper writes 'sixty-nine' as '69,' and shifts them, which put a comma pause
+    one word early ('near | sixty-nine') and left the real one in (a double pause). k shortens every mark's pause (the story
+    serial's quick narrator: spec "voice_pauses")."""
+    f = int(0.01 * sr); n = len(a) // f
+    rms = np.sqrt(np.mean(a[:n * f].reshape(n, f) ** 2, axis=1)); quiet = rms < max(rms.max() * 0.03, 0.01)   # (0.01 = -40 dBFS, the critic's own measure of silence: a breathy 0.2 s gap it would call a pause is cut to INSIDE too, 2026-11-09)
+    runs, s = [], None                                   # interior silences, in 10 ms frames
+    for j in range(n + 1):
+        if j < n and quiet[j]:
+            s = j if s is None else s
+        elif s is not None:
+            if s > 0 and j < n: runs.append((s, j))
+            s = None
+    # each mark takes the silence near where it falls in the line (by letters), the longer the better: the N longest
+    # silences anywhere put a comma's pause inside a phrase when the voice ran through the comma (the owner, round 7:
+    # "a weird pause before '36'", "before 'bounce'")
+    L = [len(w) + 1 for w in tw]; tot = max(1, sum(L)); dur = n * 0.01; tol = max(.6, .12 * dur)
+    cand, want, last, cum = [r for r in runs if r[1] - r[0] >= 3], {}, -1, 0   # (30 ms+: the voice dips at a mark even when it barely stops)
+    for w, l in zip(tw[:-1], L):
+        cum += l
+        if (m := w.rstrip("\"')")[-1:]) not in PAUSE: continue
+        te = cum / tot * dur
+        near = [r for r in cand if r[0] > last and abs((r[0] + r[1]) * .005 - te) <= tol]
+        if near:
+            r = min(near, key=lambda r: abs((r[0] + r[1]) * .005 - te) / tol - (r[1] - r[0]) / 20); want[r] = PAUSE[m] * k; last = r[0]
+    out, pos = [], 0
+    for r in runs:
+        z = want.get(r, min((r[1] - r[0]) * 0.01, INSIDE))
+        out += [a[pos:r[0] * f], np.zeros(int(z * sr), a.dtype)]; pos = r[1] * f
+    out.append(a[pos:])
+    return np.concatenate(out)
+
+def demo():
+    t = np.arange(int(0.3 * SR)) / SR; v = (0.5 * np.sin(2 * np.pi * 200 * t)).astype(np.float32); z = lambda d: np.zeros(int(d * SR), np.float32)
+    a = np.concatenate([v, z(0.2), v, z(0.5), v, z(0.15), v])         # "one | two, three four": the 0.5 s silence is the comma
+    o = pace(a, ["one", "two,", "three", "four"])   # (the 0.15 s silence is cut to INSIDE)
+    assert abs(len(o) - (4 * len(v) + int((INSIDE * 2 + PAUSE[","]) * SR))) < SR * 0.03, len(o) / SR
+    w = align(["warning,", "or", "trouble"], [("warning", 0.0, 0.5), ("trouble", 1.4, 1.8)], 2.0)
+    assert abs(w[1][0] - 1.1) < 1e-6, w                                   # 'or' is said just before 'trouble', after the pause
+
+def heard_ok(line, W):
+    """Did the voice say the line? The recognised words must cover most of the written ones (a garbled or skipped
+    passage fails the reel instead of posting)."""
+    sp = lambda x: re.sub(r"\d", lambda m: NUM[m.group()], "".join(norm_words(x)))   # (letters only, digits spelt: Whisper writes "A, one to one" as "a1 to 1")
+    want, got = sp(say_as(line)), sp(" ".join(w[0] for w in W))
+    if not want: return True
+    if not got: return False                               # (no recognised words: the captions could not be timed)
+    m = sum(b.size for b in difflib.SequenceMatcher(None, want, got, autojunk=False).get_matching_blocks())
+    return m / len(want) >= 0.6
+
+def key(w):
+    return re.sub(r"[^a-z0-9']", "", w.lower())
+
+def follow(words, tw, wt, d):
+    """The time each of `words` (on-screen text) is said: matched in order to the spoken line, the rest spread between."""
+    keys, out, kw = [key(w) for w in tw], [], [key(w) for w in words]
+    j = next((q for q in range(len(keys) - len(kw) + 1) if keys[q:q + len(kw)] == kw), 0)   # (said as one phrase, the words land there: "can hit the stock" is the line's last "can", not its first; the critic, 2026-11-12)
+    for w in words:
+        k = next((q for q in range(j, len(keys)) if keys[q] == key(w) and key(w)), None)
+        out.append(wt[k][0] if k is not None else None)
+        if k is not None: j = k + 1
+    known = [i for i, x in enumerate(out) if x is not None]
+    for i in range(len(out)):
+        if out[i] is None:
+            lo = max([q for q in known if q < i], default=None); hi = min([q for q in known if q > i], default=None)
+            a = out[lo] if lo is not None else 0.0; b = out[hi] if hi is not None else d * 0.8
+            n0 = lo if lo is not None else -1; n1 = hi if hi is not None else len(out)
+            out[i] = a + (b - a) * (i - n0) / (n1 - n0)
+    return out
+
+def align(tw, W, d):
+    """Match the written words to the recognised ones (difflib), so every written word gets the time it is really
+    said; a word the recogniser heard differently ("230" for "two thirty") takes its place between its neighbours."""
+    key = lambda w: re.sub(r"[^a-z0-9']", "", w.lower())
+    out = [None] * len(tw)
+    if W:
+        sm = difflib.SequenceMatcher(None, [key(w) for w in tw], [w[0] for w in W], autojunk=False)
+        for a, b, n in sm.get_matching_blocks():
+            for q in range(n):
+                out[a + q] = (W[b + q][1], W[b + q][2])
+    known = [k for k, x in enumerate(out) if x]
+    if not known:
+        return [(d * k / len(tw), d * (k + 1) / len(tw)) for k in range(len(tw))]
+    for k in range(len(tw)):
+        if out[k]: continue
+        lo = max([j for j in known if j < k], default=None); hi = min([j for j in known if j > k], default=None)
+        t0 = out[lo][1] if lo is not None else 0.0; t1 = out[hi][0] if hi is not None else d
+        a = lo if lo is not None else -1; b = hi if hi is not None else len(tw)
+        if lo is not None and tw[lo].rstrip("\"')")[-1:] in PAUSE:          # (after a comma the pause comes first: the missed words
+            t0 = max(t0, t1 - 0.3 * (b - a - 1))                           #  are said at the end of the gap, not the start)
+        f0, f1 = (k - a - 1) / (b - a - 1), (k - a) / (b - a - 1)
+        out[k] = (t0 + (t1 - t0) * f0, t0 + (t1 - t0) * f1)
+    return out
+
+def live_daily():
+    """Today's Daily Chart for the end card: its number and the best return so far (the game's own numbers)."""
+    import urllib.request
+    try:
+        req = urllib.request.Request(os.environ.get("MS_BASE_LOCAL", "http://127.0.0.1:8000") + "/api/daily",
+                                     headers={"X-Visitor": "reelendcard0000000001"})
+        d = json.loads(urllib.request.urlopen(req, timeout=10).read())
+        board = d.get("board") or []
+        return {"number": d.get("number"), "best": max((b.get("ret") for b in board if b.get("ret") is not None), default=None)}
+    except Exception:
+        return None
+
+EL_VOICE = os.environ.get("ELEVEN_VOICE", "EXAVITQu4vr4xnSDxMaL")   # (Sarah: the ElevenLabs voice closest to Kokoro's af_heart)
+EL_MODEL = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
+EL_SPEED = float(os.environ.get("ELEVEN_SPEED", "1.12"))   # (1.1 read at 3.62 words a second; the human target is 3.9)
+
+
+def el_line(text, speed=None):
+    """One line read by ElevenLabs (ELEVEN_API_KEY in config.env), as float samples at SR."""
+    import urllib.request
+    body = {"text": text, "model_id": EL_MODEL, "voice_settings": {"stability": 0.72, "similarity_boost": 0.75, "style": 0.0,   # (steadier: no drift in pace)
+                                                                   "use_speaker_boost": True, "speed": speed or EL_SPEED}}
+    req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{EL_VOICE}?output_format=pcm_{SR}", data=json.dumps(body).encode(),
+                                 headers={"xi-api-key": os.environ["ELEVEN_API_KEY"].strip(), "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return np.frombuffer(r.read(), np.int16).astype(np.float32) / 32768
+
+
+FILM_FPS = 30
+
+
+def film(sc, work):
+    """The scene's shot as frames (work/footage/<clip>/f00001.jpg...) at FILM_FPS, slowed to fill the scene (never below
+    0.6x; past that the last frame holds). No clip (no key, over the cap, refused): a film scene becomes big text."""
+    import footage, subprocess
+    d = sc["t1"] - sc["t0"]
+    clip = footage.shot(sc["shot"], d, os.path.join(work, "footage"))
+    if not clip:
+        sc.pop("shot", None)
+        if sc["kind"] == "film": sc.update(kind="big", text=sc.get("head") or "")
+        return
+    n = int(d * FILM_FPS) + 2
+    out = clip[:-4]
+    if len(glob.glob(os.path.join(out, "f*.jpg"))) < n:
+        cd = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", clip],
+                                  capture_output=True, text=True).stdout or 5)
+        slow = min(1 / 0.6, max(1.0, d / cd))
+        os.makedirs(out, exist_ok=True)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", clip, "-vf", f"setpts={slow:.4f}*PTS,fps={FILM_FPS},eq=brightness=-0.03:contrast=1.06:saturation=0.9,"   # (graded to the house look)
+                        "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920", "-q:v", "3",
+                        "-frames:v", str(n), os.path.join(out, "f%05d.jpg")], check=True)
+    sc["film"] = {"dir": os.path.abspath(out), "n": len(glob.glob(os.path.join(out, "f*.jpg"))), "fps": FILM_FPS}
+
+
+def el_enough(S):
+    """ElevenLabs reads the whole reel or none of it: when the plan's characters left would not cover this reel (with room
+    for retakes), Kokoro reads all of it, so a reel is never in two voices."""
+    key = os.environ.get("ELEVEN_API_KEY", "").strip()
+    if not key or os.environ.get("REEL_VOICE") == "kokoro": return False   # (the owner's choice, 2026-11-07: Kokoro, with its pronunciation fixes)
+    need = 1.3 * sum(len(say_as(sc["vo"].strip())) for sc in S["scenes"])
+    try:
+        import urllib.request
+        d = json.loads(urllib.request.urlopen(urllib.request.Request("https://api.elevenlabs.io/v1/user/subscription",
+                                                                     headers={"xi-api-key": key}), timeout=20).read())
+        left = d["character_limit"] - d["character_count"]
+    except Exception:
+        return True                                        # (no answer: try ElevenLabs; a failed line still falls back)
+    if left < need: print(f"ElevenLabs has {left} characters left, this reel needs about {need:.0f}: Kokoro reads it all", flush=True)
+    return left >= need
+
+
+def main(work):
+    S = json.load(open(os.path.join(work, "spec.json")))
+    el_all = el_enough(S)
+    K = Kokoro(os.path.join(MODEL, "kokoro-v1.0.onnx"), os.path.join(MODEL, "voices-v1.0.bin"))
+    for d in ("vo", "sfx"):
+        os.makedirs(os.path.join(work, d), exist_ok=True)
+    A = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets")
+    if not os.path.exists(os.path.join(A, "sfx_thud.wav")):
+        import sounds; sounds.main()                           # (the house sounds, made once: sounds.py)
+    tick, chime, pop, whoosh = (os.path.join(A, f"sfx_{x}.wav") for x in ("tick", "chime", "pop", "whoosh"))
+    t, vo, impacts = LEAD, [], []
+    for i, sc in enumerate(S["scenes"]):
+        clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
+        voice, pitch = S.get("voice") or "af_heart", float(S.get("voice_pitch") or 1)   # (a reel may bring its own Kokoro voice: the story serial, story_reel.py)
+        speed = float(S.get("voice_speed") or os.environ.get("VOICE_SPEED", "1.0"))
+        el = el_all and not S.get("voice")
+        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS, "one-speed", "placed-pauses", "quiet-40db"] + ([voice, pitch, S.get("voice_pauses")] if S.get("voice") else []) + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
+        a = None
+        if os.path.exists(h + ".json"):                        # (a line the last cut already voiced: a remake redoes only what changed)
+            shutil.copy(h + ".wav", clip); W = [tuple(w) for w in json.load(open(h + ".json"))]
+        elif el:                                               # ElevenLabs: a human read, its own pauses and pace (no re-pacing)
+            try:
+                a = trim(el_line(say_as(sc["vo"].strip())), SR)
+            except Exception as e:                             # (out of characters, network: Kokoro reads this line)
+                print(f"scene {i}: ElevenLabs failed ({str(e)[:160]}); Kokoro reads it", flush=True)
+        if a is not None:
+            sf.write(clip, a, SR); W = words(clip); r = talk_rate(W)
+            if r and abs(r / WPS - 1) > 0.2:                   # (only a clear outlier: a retake at another speed changes the pace between lines)                  # (a dense line came out rushed, a light one slow: one retake at the
+                try:                                           #  speed that lands it on the human pace)
+                    sp = round(min(1.2, EL_SPEED + .08, max(EL_SPEED - .08, EL_SPEED * WPS / r)), 2)   # (near the house speed, so lines match; 1.2 is ElevenLabs' top)
+                    a = trim(el_line(say_as(sc["vo"].strip()), sp), SR); sf.write(clip, a, SR); W = words(clip)
+                except Exception as e:
+                    print(f"scene {i}: ElevenLabs retake failed ({str(e)[:120]}); the first take stays", flush=True)
+            os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
+        elif not os.path.exists(h + ".json"):
+            # one take per line at ONE speed for every line of every reel (the owner, 2026-11-08: re-voicing each line at its own
+            # speed made the voice slow down and speed up; Kokoro at 1.0 averages 3.9 words a second, the human pace, measured)
+            a = trim(K.create(say_as(sc["vo"].strip()), voice=voice, speed=speed / pitch, lang="en-us")[0], SR)
+            if pitch != 1:                                 # (a younger voice: read slower, played faster, so the pace is still `speed`)
+                a = np.interp(np.arange(0, len(a) - 1, pitch), np.arange(len(a)), a).astype(np.float32)
+            sf.write(clip, pace(a, tw, k=float(S.get("voice_pauses") or 1)), SR)   # the pauses a person makes, at the commas and full stops
+            W = words(clip)
+            os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
+        d = dur(clip)
+        if not heard_ok(sc["vo"], W):
+            raise SystemExit(f"scene {i}: the voice does not match the line (garbled or skipped): {sc['vo'][:80]}")
+        wt = align(tw, W, d)                                   # each written word's own (start, end) in the clip
+
+        def at(phrase):
+            """When `phrase` starts being spoken (seconds into the clip); the scene start if it is not in the line."""
+            ch = sc["vo"].lower().find(phrase.lower().strip())
+            if ch < 0: return 0.0
+            return wt[min(len(sc["vo"][:ch].split()), len(wt) - 1)][0]
+
+        sc["t0"] = round(t, 3); vs = t + (0.12 if i else 0.05)
+        pv = S["scenes"][i - 1] if i else {}
+        same = i and ((sc.get("chart") is not None and pv.get("chart") == sc["chart"]) or (sc["kind"] == "free" == pv.get("kind") and sc.get("chart") is None is pv.get("chart")))   # (the screen stays: the same chart, or one free world after another; reel.html keep())
+        if not i: vo.append([pop, 0.0])                        # a sound on the very first frame (docs/ROADMAP.md A2): the pop is over by 0.09 s and the voice starts at 0.15
+        if i and not same: vo.append([whoosh, round(max(0, t - 0.24), 3)])   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
+        sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
+        vo.append([clip, round(vs, 3)])
+        cap = digits(tw)                                       # the captions: the written words, numbers in digits ('two oh three' 203),
+        sc["text_words"] = [c for c, _, _ in cap]              # each from when it starts being said
+        sc["wt"] = [[round(vs + wt[a][0], 3), round(vs + wt[b][1], 3)] for _, a, b in cap]
+        sc["vt"] = [round(vs + x[0], 3) for x in wt]          # (when each written word starts: the 3D story's shots are timed on them, number words too; world3d.js)
+        if sc.get("text") and (sc["kind"] in ("big", "free") or sc.get("chart") is None):   # big words (and a free scene's punch) appear as they are said
+            sc["text_t"] = [round(vs + x, 3) for x in follow(sc["text"].split(), tw, wt, d)]
+        if sc.get("options"):                                  # each option appears as it is read out
+            sc["opt_t"] = [round(vs + x, 3) for x in follow([o.split()[0] for o in sc["options"]], tw, wt, d)]
+        for p in sc.get("props", []):                         # a story scene's props pop in on their words
+            p["t"] = round(vs + at(p["say"]) if p.get("say") else vs + 0.2, 3); vo.append([pop, p["t"]])
+        for c in sc.get("cues", []):
+            c["t"] = round(vs + at(c.get("say", "")), 3)
+            if c.get("do") in ("mark", "bubble", "item", "line", "arrow", "fx"): vo.append([pop, c["t"]])   # (fx: a director scene's own effect is heard too)
+        for x in sc.get("opt_t", []): vo.append([pop, x])
+        impacts += beats(sc, vs, at, vo, lambda x: os.path.join(A, f"sfx_{x}.wav"))   # (storyboard beats: timed, sounded, their impacts kept for the critic)
+        t = vs + d
+        if sc["kind"] == "question":                          # the viewer's moment: a ticking countdown, not silence
+            think = float(sc.get("think", THINK)); sc["think_t"] = [round(t + 0.15, 3), round(t + 0.15 + think, 3)]
+            for k in range(int(think / 0.4) + 1):
+                vo.append([tick, round(t + 0.15 + k * 0.4, 3)])
+            t += 0.15 + think
+            vo.append([chime, round(t, 3)])
+        if sc.get("hold"):                                     # (a Reference card: the screen keeps after the line while the cells land; make_spec.py CARD)
+            sc["hold_t"] = [round(t, 3), round(t + float(sc["hold"]), 3)]; t += float(sc["hold"])
+        t += GAP if i < len(S["scenes"]) - 1 or sc["kind"] != "outro" else TAIL   # (the hold is the sign-off's: a reel with no outro, a loop, replays at once)
+        sc["t1"] = round(t, 3)
+        if sc.get("layout") == "candles": impacts.append(round(sc["t1"] - .55, 3))   # (the candles' burst is an impact too)
+    for sc in S["scenes"]:                                     # realistic video shots (footage.py), fitted to their scenes
+        if sc.get("shot"):
+            film(sc, work)
+    S["T"] = round(t, 2); S["vo"] = vo; S["num"] = None; S["impacts"] = sorted(impacts)
+    S["daily"] = live_daily()
+    json.dump(S, open(os.path.join(work, "timeline.json"), "w"))
+    print(f"narration: {len(S['scenes'])} scenes, {S['T']:.1f}s")
+
+if __name__ == "__main__":
+    main(sys.argv[1])

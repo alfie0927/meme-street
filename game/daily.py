@@ -1,5 +1,19 @@
-"""The Daily Chart: a two-minute trading game on one stock with no name, the same chart for everyone that day, with a
-board of the day's returns.
+"""The Daily Chart, called Meme Street on the page: a two-minute trading game on one real stock whose name stays
+hidden until the end, the same chart for everyone that day, with a board of the day's returns. Since 2026-11-18 it is
+the whole of memestreet.net (the owner: "route the daily to memestreet.net. that's ALL there should be").
+
+* **A real chart** (the owner: "make it so it takes REAL charts and shows the stock name at the end of the 2 minutes"):
+  180 trading days of a real US stock (2016 to 2021), one day a candle, from `content/daily_real.json`
+  (`tools/daily_bank.py` builds it from public-domain prices). The day picks one by the save's salt (`real_chart`), so
+  nobody can tell which comes next, and a year passes before one repeats. While it plays the prices are rebased so
+  the last lead-in close is 100 and the candles carry no dates; once the game is over the result names the stock, its
+  dates, its real prices and what happened in those months (`real`). Without the bank the model's chart below is used.
+* **Streaks without an account** (the owner: "implementing streaks (without signing up), extra stuff for signing up"):
+  a visitor's games count under their browser's id (`v:<id>`): stats, streak and history, carried into the account
+  when they sign up or log in (`_daily_merge`). **Members** also get their name on the board, the same streak on
+  every device, a **streak freeze** (`FREEZE_EVERY` games earn one, at most `FREEZES`; a single missed day uses one
+  instead of ending the streak), their **history** (`daily_history`) and the **archive** of past charts to replay
+  (`daily_archive`, `daily_past`).
 
 * **The chart** of the day is made once, by the game's own price model (`market_model.py`: trends in legs, ranges and
   breakouts, support and resistance, chart patterns, volatility clustering) driving one made-up stock, with the engine's
@@ -29,7 +43,9 @@ Paper money only: nothing here touches MB, the ledger or the market.
 """
 import datetime
 import hashlib
+import json
 import math
+import os
 import random
 import secrets
 import types
@@ -59,6 +75,101 @@ CLOSE_RAMP = 30             # the last seconds of a game, where volume builds as
 LEVELS_SHOWN = 6             # levels drawn on the finished chart
 SQUARES = 8                  # the result grid: one square per 15 seconds of the two minutes
 EPOCH_DAY = (datetime.date(2026, 10, 24) - datetime.date(1970, 1, 1)).days    # Daily #1
+FREEZES, FREEZE_EVERY = 2, 7  # a member holds at most two streak freezes and earns one every seven games
+HIST_KEEP, ARCH_KEEP = 400, 400   # days of history a player keeps, past charts the archive keeps
+EVENTS = ("share", "picture", "challenge", "signup_open", "archive_play", "help")   # what the page reports (daily_event)
+REAL_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "content", "daily_real.json")
+_bank = {}
+
+
+def real_bank(path=REAL_FILE):
+    """The real charts (tools/daily_bank.py), read once; [] when the file is missing or unreadable."""
+    if path not in _bank:
+        try:
+            with open(path, encoding="utf-8") as f:
+                b = json.load(f)
+            _bank[path] = b["charts"] if b.get("history") == HISTORY and b.get("live") == LIVE else []
+        except (OSError, ValueError, KeyError, AttributeError):
+            _bank[path] = []
+    return _bank[path]
+
+
+def real_levels(cs, n=LEVELS_SHOWN, k=3):
+    """Support and resistance read from a real chart's own swings: a swing high or low (the extreme of `k` candles either
+    side), grouped with others within two candles' usual move, kept when the price turned there twice or more; then every
+    test of it in the two minutes, labelled by what the candles did next (`_seen`: held, broke, fake break). The most
+    tested first, `n` at most, in the shape the old model chart's levels had."""
+    closes = [c[3] for c in cs]
+    rets = [math.log(b / a) for a, b in zip(closes, closes[1:]) if a > 0 and b > 0]
+    th = 2 * (sum(r * r for r in rets) / max(len(rets), 1)) ** 0.5
+    piv = []
+    for i in range(k, len(cs) - k):
+        near = cs[i - k:i + k + 1]
+        if cs[i][1] >= max(c[1] for c in near):
+            piv.append((i, cs[i][1]))
+        if cs[i][2] <= min(c[2] for c in near):
+            piv.append((i, cs[i][2]))
+    groups = []
+    for i, price in sorted(piv, key=lambda x: x[1]):
+        g = next((g for g in groups if abs(math.log(price / g["price"])) < th), None)
+        if g is None:
+            groups.append({"price": price, "pts": [i]})
+        else:
+            g["pts"].append(i)
+            g["price"] += (price - g["price"]) / len(g["pts"])
+    out = []
+    for g in groups:
+        if len(g["pts"]) < 2:
+            continue
+        lv, tests, away = g["price"], [], True
+        for j in range(max(min(g["pts"]) + 1, HISTORY), len(cs) - 1):
+            if abs(math.log(closes[j] / lv)) > 1.5 * th:                     # (a new test only after the price has left the level)
+                away = True
+            if away and cs[j][2] <= lv * (1 + th / 2) and cs[j][1] >= lv * (1 - th / 2):
+                side = 1 if closes[j - 1] > lv else -1                       # (from above: a test of support)
+                seen = _seen(closes, j, lv, side, th)
+                if seen:
+                    tests.append([j, seen])
+                    away = False
+        if tests:
+            out.append({"price": round(lv, 2), "kind": "support" if closes[tests[0][0] - 1] > lv else "resistance", "tests": tests})
+    out.sort(key=lambda g: (-len(g["tests"]), g["tests"][0][0]))
+    return out[:n]
+
+
+def rebased(x, i):
+    """Bank chart `x` (number `i`) as the game shows it: prices rebased so the last lead-in close is 100, volume
+    relative to the chart's median; `real` holds what the end of the game reveals (`k` turns a shown price back)."""
+    cs = x["c"]
+    k = cs[HISTORY - 1][3] / 100.0
+    vols = sorted(c[4] for c in cs)
+    vm = max(vols[len(vols) // 2], 1)
+    candles = [[round(o / k, 2), round(h / k, 2), round(lo / k, 2), round(c / k, 2), int(v / vm * 1000)] for o, h, lo, c, v in cs]
+    return {"candles": candles,
+            "levels": real_levels(candles),
+            "real": {"i": i, "ticker": x["t"], "name": x["n"], "tf": x.get("tf", "1 day"), "from": x["d"][0], "start": x["d"][1], "end": x["d"][2], "k": k,
+                     "first": cs[HISTORY - 1][3], "last": cs[-1][3], "events": x.get("e", [])}}
+
+
+def real_chart(salt, day, resets=0, bank=None):
+    """The day's real chart, or None without a bank: the bank in an order only the salt knows, one chart a day, so a
+    year goes by before one repeats; an admin reset takes one from the far side of the year."""
+    bank = real_bank() if bank is None else bank
+    if not bank:
+        return None
+    order = sorted(range(len(bank)), key=lambda i: hashlib.sha256(f"{salt}:real:{i}".encode()).digest())
+    i = order[(day - EPOCH_DAY + (len(bank) // 2 + resets if resets else 0)) % len(bank)]
+    return rebased(bank[i], i)
+
+
+def is_visitor(key):
+    return str(key or "").startswith("v:")
+
+
+def clean_ref(ref):
+    """A tracking link's name as the server keeps it (letters, digits, - and _), or None."""
+    ref = str(ref or "").strip().lower()[:40]
+    return ref if ref and all(c.isalnum() or c in "-_" for c in ref) else None
 
 
 def make_chart(seed):
@@ -167,10 +278,17 @@ class DailyMixin:
                 board = self._daily_board(d, final=True)
                 d["past"] = ([{"day": d["day"], "players": len(board), "top": board[:3]}] + d["past"])[:7]
             if d["day"] is not None and d.get("chart"):
-                d["log"] = ([self._daily_summary(d)] + d.get("log", []))[:90]      # (the admin page's day by day)
+                d["log"] = ([self._daily_summary(d)] + d.get("log", []))[:400]     # (the admin page's day by day)
+                if d["chart"].get("real"):                                      # (the archive: a past day's chart, replayable)
+                    d["arch"] = ([{"day": d["day"], "number": self._dnum(d), "real": d["chart"]["real"],
+                                   "hold": d["chart"]["candles"][-1][3] / d["chart"]["candles"][HISTORY - 1][3] - 1}]
+                                 + d.get("arch", []))[:ARCH_KEEP]
             seed = int(hashlib.sha256(f"{d['salt']}:{day}".encode()).hexdigest()[:15], 16)
-            d.update(day=day, chart=make_chart(seed), plays={}, visits={}, resets=0)
+            d.update(day=day, chart=real_chart(d["salt"], day) or make_chart(seed), plays={}, visits={}, resets=0, ev={})
         d.setdefault("visits", {})
+        d.setdefault("stats", {})
+        d.setdefault("hist", {})
+        d.setdefault("ev", {})
         return d
 
     def _dplays(self, p):
@@ -180,18 +298,53 @@ class DailyMixin:
         return d["visits"] if getattr(p, "visitor", False) else d["plays"]
 
     def daily_claim(self, p, visitor):
-        """A visitor who has just made an account brings today's game with them: it goes on the board and starts the
-        account's streak (2026-11-01)."""
+        """A visitor who has just made an account, or logged in, brings what they played without one: today's game
+        goes on the board (unless the account has played today), and their stats, streak and history join the
+        account's (`_daily_merge`; 2026-11-01, 2026-11-18)."""
         d = self._dchart()
-        play = d["visits"].pop("v:" + str(visitor or ""), None)
+        vkey = "v:" + str(visitor or "")
+        play = d["visits"].get(vkey)
+        if play is not None and play.get("done") is not True:
+            self._daily_finish(play)
+        self._daily_merge(d, vkey, p.token)
+        play = d["visits"].pop(vkey, None)
         if play is None or p.token in d["plays"]:
             return False
         play.update(name=p.name, token=p.token, claimed=True)
         play.pop("visitor", None)
         d["plays"][p.token] = play
-        if play.get("done"):
-            self._daily_record(play)
         return True
+
+    @staticmethod
+    def _daily_merge(d, vkey, token):
+        """A visitor's stats and history moved into an account's. A day both played counts once (the account's game
+        stands); the streak is the longest that still runs on the joint days; freezes are a member's only."""
+        S, H = d.setdefault("stats", {}), d.setdefault("hist", {})
+        vs, vh = S.pop(vkey, None), H.pop(vkey, None) or []
+        if vs is None:
+            return
+        mine, ah = S.get(token), H.get(token, [])
+        days = {h[0] for h in ah}
+        dup = [h for h in vh if h[0] in days]
+        H[token] = sorted(ah + [h for h in vh if h[0] not in days])[-HIST_KEEP:]
+        if not mine:
+            S[token] = dict(vs, freezes=1)
+            return
+        mine["played"] += vs["played"] - len(dup)
+        mine["sum"] += vs["sum"] - sum(h[1] for h in dup)
+        mine["beat"] += vs["beat"] - sum(1 for h in dup if h[1] > h[2] + 1e-9)
+        mine["best"] = max(x for x in (mine["best"], vs["best"]) if x is not None) if (mine["best"] is not None or vs["best"] is not None) else None
+        mine["first"] = min(mine.get("first", vs.get("first", 0)), vs.get("first", mine.get("first", 0)))
+        run, last = 0, None                                        # (the run of days in a row that ends on the latest day played)
+        for day in sorted({h[0] for h in H[token]}, reverse=True):
+            if last is not None and day != last - 1:
+                break
+            run, last = run + 1, day
+        if (vs["last"] or -1) > (mine["last"] or -1):
+            mine["streak"], mine["last"] = max(vs["streak"], run), vs["last"]
+        elif vs["last"] == mine["last"]:
+            mine["streak"] = max(mine["streak"], vs["streak"], run)
+        mine["max_streak"] = max(mine["max_streak"], vs["max_streak"], mine["streak"])
 
     def _daily_finish(self, play, final=False):
         """Ends a game whose two minutes are up (or every game, at the end of the day): what is held is valued at the
@@ -206,28 +359,60 @@ class DailyMixin:
         self._daily_record(play)
 
     def _daily_record(self, play):
-        """A finished game counts towards its player's stats, once."""
+        """A finished game counts towards its player's stats and history, once: an account's, or a visitor's under
+        their browser's id (since 2026-11-18). A member who missed exactly one day spends a streak freeze on it and the
+        streak goes on; every FREEZE_EVERY games earn a freeze, FREEZES at most."""
         d, token = self.daily_game, play.get("token")
         if not token:
             return
+        member = not is_visitor(token)
         st = d.setdefault("stats", {}).setdefault(token, {"played": 0, "streak": 0, "max_streak": 0, "last": None,
-                                                          "sum": 0.0, "best": None, "beat": 0})
+                                                          "sum": 0.0, "best": None, "beat": 0, "first": d["day"]})
         if st["last"] == d["day"]:
             return
+        st.setdefault("first", d["day"])
+        if member:
+            st.setdefault("freezes", 1)
         cs = d["chart"]["candles"]
-        st["streak"] = st["streak"] + 1 if st["last"] == d["day"] - 1 else 1
+        hold = cs[-1][3] / cs[HISTORY - 1][3] - 1
+        if st["last"] == d["day"] - 1:
+            st["streak"] += 1
+        elif member and st["last"] == d["day"] - 2 and st["streak"] and st.get("freezes", 0) > 0:
+            st["freezes"] -= 1                                            # (a missed day, covered)
+            st["froze"] = st.get("froze", 0) + 1
+            st["streak"] += 1
+        else:
+            st["streak"] = 1
         st["max_streak"] = max(st["max_streak"], st["streak"])
         st["last"], st["played"], st["sum"] = d["day"], st["played"] + 1, st["sum"] + play["ret"]
         st["best"] = play["ret"] if st["best"] is None else max(st["best"], play["ret"])
-        st["beat"] += play["ret"] > cs[-1][3] / cs[HISTORY - 1][3] - 1 + 1e-9
+        st["beat"] += play["ret"] > hold + 1e-9
+        if member and st["played"] % FREEZE_EVERY == 0:
+            st["freezes"] = min(FREEZES, st.get("freezes", 0) + 1)
+        real = d["chart"].get("real") or {}
+        h = d.setdefault("hist", {}).setdefault(token, [])
+        h.append([d["day"], round(play["ret"], 6), round(hold, 6), real.get("ticker"), len(play["trades"])])
+        del h[:-HIST_KEEP]
+
+    def _daily_alive(self, st, member):
+        """Whether a streak still runs today: played yesterday or today, or (a member) missed one day with a freeze
+        in hand, which the next game will spend."""
+        day = self.daily_game["day"]
+        if st["last"] is None:
+            return False
+        return st["last"] >= day - 1 or (member and st["last"] == day - 2 and st.get("freezes", 0) > 0)
 
     def _daily_stats(self, p):
         st = (self.daily_game.get("stats") or {}).get(p.token)
+        member = not getattr(p, "visitor", False)
         if not st:
-            return {"played": 0, "streak": 0, "max_streak": 0, "avg": None, "best": None, "beat": 0}
-        alive = st["last"] is not None and st["last"] >= self.daily_game["day"] - 1     # (a day missed ends the streak)
+            return {"played": 0, "streak": 0, "max_streak": 0, "avg": None, "best": None, "beat": 0,
+                    "freezes": 1 if member else 0, "needs_freeze": False}
+        alive = self._daily_alive(st, member)
         return {"played": st["played"], "streak": st["streak"] if alive else 0, "max_streak": st["max_streak"],
-                "avg": st["sum"] / st["played"] if st["played"] else None, "best": st["best"], "beat": st["beat"]}
+                "avg": st["sum"] / st["played"] if st["played"] else None, "best": st["best"], "beat": st["beat"],
+                "freezes": st.get("freezes", 1) if member else 0,
+                "needs_freeze": bool(alive and st["last"] == self.daily_game["day"] - 2)}
 
     @staticmethod
     def _daily_best(cs):
@@ -274,7 +459,8 @@ class DailyMixin:
         for play in d["plays"].values():
             self._daily_finish(play, final)
         done = sorted((x for x in d["plays"].values() if x.get("done")), key=lambda x: (-x["ret"], x["end"]))
-        return [{"name": x["name"], "ret": round(x["ret"], 6), "trades": len(x["trades"])}
+        bots = {b.token for b in self.house_bots()} if hasattr(self, "house_bots") else set()
+        return [dict({"name": x["name"], "ret": round(x["ret"], 6), "trades": len(x["trades"])}, **({"house": True} if x.get("token") in bots else {}))
                 for x in done]
 
     def _daily_summary(self, d):
@@ -285,14 +471,23 @@ class DailyMixin:
         hold = cs[-1][3] / cs[HISTORY - 1][3] - 1
         over = lambda x: x.get("done") or self.now - x["t0"] >= LIVE
         people = [x for x in d["plays"].values() if x.get("token") not in bots]
-        visits = list(d.get("visits", {}).values())
+        visits = [x for k, x in d.get("visits", {}).items() if not self._daily_robot(k)]
         claimed = [x for x in people if x.get("claimed")]
         done = [x for x in people if x.get("done")]
         rets = sorted(x["ret"] for x in done)
         for x in visits:
             self._daily_finish(x)                                          # (a visitor's game is finished like any other; it records nothing)
         every = rets + [x["ret"] for x in visits if x.get("done")]
-        return {"day": d["day"], "number": self._dnum(d), "people": len(people), "finished": len(done),
+        stats = d.get("stats") or {}
+        firsts = [stats.get(x.get("token") or "", {}).get("first") for x in people + visits]
+        refs = {}
+        for x in people + visits:
+            if x.get("ref"):
+                refs[x["ref"]] = refs.get(x["ref"], 0) + 1
+        return {"day": d["day"], "number": self._dnum(d), "stock": (d["chart"].get("real") or {}).get("ticker"),
+                "new": sum(1 for f in firsts if f == d["day"]), "returning": sum(1 for f in firsts if f is not None and f < d["day"]),
+                "refs": refs, "ev": dict(d.get("ev") or {}),
+                "people": len(people), "finished": len(done),
                 "bots": len(d["plays"]) - len(people), "visitors": len(visits) + len(claimed),
                 "visitors_finished": sum(1 for x in visits if over(x)) + sum(1 for x in claimed if over(x)),
                 "signed_up": len(claimed), "hold": hold,
@@ -300,6 +495,11 @@ class DailyMixin:
                 "best": rets[-1] if rets else None, "worst": rets[0] if rets else None,
                 "beat": sum(1 for r in rets if r > hold + 1e-9), "sat_out": sum(1 for x in done if not x["trades"]),
                 "trades": sum(len(x["trades"]) for x in done) / len(done) if done else None}
+
+    @staticmethod
+    def _daily_robot(key):
+        """A visitor id the reel pipeline plays and reads under (src/fetch.py, narrate.py): never counted as a person."""
+        return str(key).startswith(("v:reelbot", "v:reelendcard"))
 
     def _dnum(self, d):
         """The chart's number: #1 on the epoch day (EPOCH_DAY, or the day an admin restarted the numbering)."""
@@ -314,27 +514,68 @@ class DailyMixin:
         d["log"] = ([dict(self._daily_summary(d), replaced=True)] + d.get("log", []))[:90]
         d["resets"] = d.get("resets", 0) + 1
         seed = int(hashlib.sha256(f"{d['salt']}:{d['day']}:{d['resets']}".encode()).hexdigest()[:15], 16)
-        d.update(chart=make_chart(seed), plays={}, visits={})
+        d.update(chart=real_chart(d["salt"], d["day"], d["resets"]) or make_chart(seed), plays={}, visits={})
         if restart:                                                        # (the new chart is Daily Chart #1, no winners before it)
             d["epoch"], d["past"] = d["day"], []
-        return True, f"Daily Chart #{self._dnum(d)} is a new chart now: today's board starts again"
+        return True, f"Meme Street #{self._dnum(d)} is a new chart now: today's board starts again"
 
     def daily_admin(self):
-        """The admin page's Daily tab: today so far, the days before, and the players who keep coming back."""
+        """Everything the Daily-only admin page shows (web/admin.html, 2026-11-18): today, the days before, the players
+        (members and visitors apart, house traders and the reel pipeline left out), streaks, coming back (by the day a
+        player first played), the stocks, where players came from, sharing and the way to an account."""
         d = self._dchart()
         self._daily_board(d)                                               # (games whose two minutes are up are finished)
+        for x in d.get("visits", {}).values():
+            self._daily_finish(x)
         bots = {b.token for b in self.house_bots()}
-        stats = {t: s for t, s in (d.get("stats") or {}).items() if t not in bots and t in self.by_token}
-        alive = lambda s: s["last"] is not None and s["last"] >= d["day"] - 1
-        streaks = sorted(((self.by_token[t].name, s["streak"], s["max_streak"], s["played"]) for t, s in stats.items() if alive(s) and s["streak"] > 1),
-                         key=lambda x: (-x[1], -x[3]))[:15]
-        return {"today": self._daily_summary(d), "days": d.get("log", [])[:30], "streaks": streaks,
-                "all_time": {"players": len(stats), "games": sum(s["played"] for s in stats.values()),
-                             "returning": sum(1 for s in stats.values() if s["played"] >= 2),
-                             "regulars": sum(1 for s in stats.values() if s["played"] >= 5),
-                             "on_streak": sum(1 for s in stats.values() if alive(s) and s["streak"] > 1),
-                             "best_streak": max((s["max_streak"] for s in stats.values()), default=0)},
-                "next": (d["day"] + 1) * DAY_SECONDS, "log_since": d["log"][-1]["day"] if d.get("log") else d["day"]}
+        stats = {t: s for t, s in (d.get("stats") or {}).items() if t not in bots and not self._daily_robot(t)
+                 and (is_visitor(t) or t in self.by_token)}
+        hist = {t: {h[0] for h in d.get("hist", {}).get(t, [])} for t in stats}
+        member = lambda t: not is_visitor(t)
+        alive = lambda t, s: self._daily_alive(s, member(t))
+        name = lambda t: self.by_token[t].name if member(t) else "visitor " + t[2:8]
+        def group(pick):
+            S = {t: s for t, s in stats.items() if pick(t)}
+            return {"players": len(S), "games": sum(s["played"] for s in S.values()),
+                    "returning": sum(1 for s in S.values() if s["played"] >= 2), "regulars": sum(1 for s in S.values() if s["played"] >= 5),
+                    "on_streak": sum(1 for t, s in S.items() if alive(t, s) and s["streak"] > 1),
+                    "best_streak": max((s["max_streak"] for s in S.values()), default=0),
+                    "avg_return": (sum(s["sum"] for s in S.values()) / max(1, sum(s["played"] for s in S.values()))) if S else None,
+                    "freezes_used": sum(s.get("froze", 0) for s in S.values())}
+        lengths = {}
+        for t, s in stats.items():
+            if alive(t, s) and s["streak"]:
+                b = "1" if s["streak"] == 1 else "2-3" if s["streak"] <= 3 else "4-7" if s["streak"] <= 7 else "8-30" if s["streak"] <= 30 else "31+"
+                lengths[b] = lengths.get(b, 0) + 1
+        cohorts = {}                                                         # (by first day: how many came back)
+        for t, s in stats.items():
+            f = s.get("first")
+            if f is None or f < d["day"] - 30:
+                continue
+            c = cohorts.setdefault(f, {"day": f, "number": f - d.get("epoch", EPOCH_DAY) + 1, "new": 0, "members": 0, "d1": 0, "d7": 0, "again": 0})
+            c["new"] += 1
+            c["members"] += member(t)
+            days = hist.get(t, set())
+            c["d1"] += (f + 1) in days
+            c["d7"] += any(f < x <= f + 7 for x in days)
+            c["again"] += s["played"] >= 2
+        log = d.get("log", [])
+        stocks = [{"number": x.get("number"), "day": x["day"], "stock": x.get("stock"), "hold": x.get("hold"), "avg": x.get("avg_all", x.get("avg")),
+                   "median": x.get("median"), "beat": x.get("beat"), "finished": (x.get("finished") or 0) + (x.get("visitors_finished") or 0)}
+                  for x in log if x.get("stock")]
+        refs = {}
+        for x in [self._daily_summary(d)] + log[:30]:
+            for k, v in (x.get("refs") or {}).items():
+                refs[k] = refs.get(k, 0) + v
+        top = lambda key, n=15: sorted(((name(t), s["streak"] if key == "streak" else s[key], s["max_streak"], s["played"], member(t))
+                                        for t, s in stats.items() if (key != "streak" or (alive(t, s) and s["streak"] > 1))),
+                                       key=lambda x: (-x[1], -x[3]))[:n]
+        return {"today": self._daily_summary(d), "days": log[:90], "streaks": top("streak"), "most_played": top("played"),
+                "all_time": group(lambda t: True), "members": group(member), "visitors": group(is_visitor),
+                "streak_lengths": lengths, "cohorts": sorted(cohorts.values(), key=lambda c: -c["day"]), "stocks": stocks,
+                "refs": sorted(refs.items(), key=lambda kv: -kv[1]), "chart": {k: v for k, v in (d["chart"].get("real") or {}).items()},
+                "bank": len(real_bank()), "archive": len(d.get("arch", [])),
+                "next": (d["day"] + 1) * DAY_SECONDS, "log_since": log[-1]["day"] if log else d["day"]}
 
     def _daily_shown(self, play):
         """How many candles the player has seen: the lead-in, and one more each second."""
@@ -369,19 +610,27 @@ class DailyMixin:
             out["grid"] = self._daily_grid(play, cs)
             out["levels"] = d["chart"].get("levels", [])                 # (only once the game is over: they tell the future)
             out["best"] = self._daily_best(cs)                          # what you could have done (TA-D10)
+            if d["chart"].get("real"):
+                out["real"] = {k: v for k, v in d["chart"]["real"].items() if k != "i"}   # (the stock's name, dates, real prices: only now)
         return out
 
     def daily_view(self, p):
         d = self._dchart()
         board = self._daily_board(d)
         play = self._dplays(p).get(p.token)
+        if play is not None:
+            self._daily_finish(play)                                       # (a visitor's game too, before its stats are read)
         out = {"visitor": bool(getattr(p, "visitor", False)), "day": d["day"], "number": self._dnum(d), "live": LIVE, "history": HISTORY, "cash": START_CASH,
                "chips": CHIPS, "stats": self._daily_stats(p),
                "board": board[:BOARD], "players": len(board), "past": d["past"], "guest": bool(getattr(p, "guest", False)),
                "status": "new" if play is None else "done" if play.get("done") or self.now - play["t0"] >= LIVE else "running",
-               "next": (d["day"] + 1) * DAY_SECONDS, "remind": bool(getattr(p, "remind", False))}
+               "next": (d["day"] + 1) * DAY_SECONDS, "remind": bool(getattr(p, "remind", False)), "real": bool(d["chart"].get("real")),
+               "people": sum(1 for x in board if not x.get("house")), "house": sum(1 for x in board if x.get("house")),
+               "tomorrow": self._daily_tomorrow(d)}
         if play is not None:
             out["game"] = self._daily_state(play)
+        if not out["visitor"] and not out["guest"]:                         # (the account panel: who is signed in)
+            out["me"] = {"name": p.name, "email": getattr(p, "email", None), "verified": bool(getattr(p, "email_verified", False))}
         return out
 
     # ---- the reminder email (TA-D9, growth plan 2026-11-10): opt-in, a confirmed address only, one a day when the new
@@ -417,27 +666,87 @@ class DailyMixin:
             p.remind_day, left = today, left - 1
             streak = self._daily_stats(p).get("streak") or 0
             link = f"{site}/api/unsub?t={p.unsub}"
-            body = (f"Daily Chart #{num} is live: two minutes on today's mystery chart, the same one for everyone.\n"
+            body = (f"Meme Street #{num} is live: two minutes on today's mystery stock, a real chart, the same one for everyone. Its name shows at the end.\n"
                     + (f"Your streak: {streak} day{'s' if streak != 1 else ''}. Play today to keep it.\n" if streak else "")
                     + f"\nPlay: {site}/daily?ref=mail_daily\n\n"
                     f"You get this because you asked for it on Meme Street. Stop it with one click: {link}\n"
                     "Meme Street Game · memestreet.game@gmail.com · practice money only, no cash value\n")
-            out.append((p.email, f"Daily Chart #{num} is live", body, link))
+            out.append((p.email, f"Meme Street #{num} is live", body, link))
         return out
 
-    def daily_start(self, p):
+    def daily_start(self, p, ref=None):
         if getattr(p, "guest", False):
             return {"error": "Create an account to play"}
         plays = self._dplays(p)
         if p.token in plays:
-            return {"error": "You have played today's chart: a new one comes at midnight (UTC)"}
+            return {"error": "You have played today's stock: a new one comes at midnight (UTC)"}
         if getattr(p, "visitor", False):
             if len(plays) >= 50000:                                        # (a ceiling on what visitors can make the save hold)
                 return {"error": "Create a free account to play"}
-            plays[p.token] = {"name": "You", "visitor": True, "t0": self.now, "cash": START_CASH, "start": START_CASH, "shares": 0.0, "trades": []}
+            plays[p.token] = {"name": "You", "visitor": True, "token": p.token, "t0": self.now, "cash": START_CASH, "start": START_CASH, "shares": 0.0, "trades": []}
         else:
             plays[p.token] = {"name": p.name, "token": p.token, "t0": self.now, "cash": START_CASH, "start": START_CASH, "shares": 0.0, "trades": []}
+        if clean_ref(ref):
+            plays[p.token]["ref"] = clean_ref(ref)
         return self._daily_state(plays[p.token])
+
+    def _daily_tomorrow(self, d):
+        """Tomorrow's timeframe (never its stock): the teaser on today's result. Worked out once a day."""
+        if d.get("next_tf", [None])[0] != d["day"]:
+            nxt = real_chart(d["salt"], d["day"] + 1)
+            d["next_tf"] = [d["day"], nxt["real"]["tf"] if nxt else None]
+        return {"tf": d["next_tf"][1]}
+
+    def daily_event(self, p, kind):
+        """The page reports a share, a story picture, a challenge link, the sign-up box opened, an archive replay or the
+        help: counted for the day (the admin page's Sharing tab), nothing about who."""
+        if kind not in EVENTS:
+            return {"ok": False}
+        ev = self._dchart()["ev"]
+        ev[kind] = ev.get(kind, 0) + 1
+        return {"ok": True}
+
+    def daily_history(self, p):
+        """A member's every game (the history panel): day number, date, the stock, their return and the stock's."""
+        d = self._dchart()
+        if getattr(p, "visitor", False):
+            return {"error": "Make a free account to keep your history", "need_account": True}
+        names = {a["day"]: a["real"] for a in d.get("arch", [])}
+        if d["chart"].get("real"):
+            names[d["day"]] = d["chart"]["real"]
+        rows = []
+        for day, ret, hold, ticker, *rest in reversed(d.get("hist", {}).get(p.token, [])):
+            r = names.get(day) or {}
+            rows.append({"day": day, "number": day - d.get("epoch", EPOCH_DAY) + 1, "ret": ret, "hold": hold,
+                         "ticker": ticker, "name": r.get("name") if r.get("ticker") == ticker else None, "trades": rest[0] if rest else None})
+        return {"rows": rows, "stats": self._daily_stats(p)}
+
+    def daily_archive(self, p):
+        """The past charts a member can replay (not today's): number, date, the stock and what it did."""
+        d = self._dchart()
+        if getattr(p, "visitor", False):
+            return {"error": "Make a free account to open the archive", "need_account": True}
+        mine = {h[0]: h[1] for h in d.get("hist", {}).get(p.token, [])}
+        return {"days": [{"day": a["day"], "number": a["number"], "ticker": a["real"]["ticker"], "name": a["real"]["name"],
+                          "start": a["real"]["start"], "end": a["real"]["end"], "hold": a["hold"], "mine": mine.get(a["day"])}
+                         for a in d.get("arch", []) if a["day"] < d["day"]]}
+
+    def daily_past(self, p, number):
+        """A past day's whole chart and its reveal, for a member's practice replay (unranked; played in the page)."""
+        d = self._dchart()
+        if getattr(p, "visitor", False):
+            return {"error": "Make a free account to open the archive", "need_account": True}
+        try:
+            number = int(number)
+        except (TypeError, ValueError):
+            return {"error": "No such day"}
+        a = next((a for a in d.get("arch", []) if a["number"] == number and a["day"] < d["day"]), None)
+        bank = real_bank()
+        if a is None or not 0 <= a["real"].get("i", -1) < len(bank) or bank[a["real"]["i"]]["t"] != a["real"]["ticker"]:
+            return {"error": "That day's chart is not in the archive"}
+        ch = rebased(bank[a["real"]["i"]], a["real"]["i"])
+        return {"number": number, "day": a["day"], "candles": ch["candles"], "history": HISTORY, "live": LIVE, "cash": START_CASH,
+                "real": {k: v for k, v in ch["real"].items() if k != "i"}}
 
     def daily_poll(self, p, since=0):
         play = self._dplays(p).get(p.token)

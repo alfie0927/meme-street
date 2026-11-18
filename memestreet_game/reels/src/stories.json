@@ -1,0 +1,108 @@
+{
+ "title": "Money On Your Chest",
+ "note": "The story serial (src/story_reel.py next): one part a day, in order. Part 1 is the owner's story (2026-11-14); parts 2 to 8 were written on their word, 'create the story yourself part 2, 3, 4, etc... post them one a day'. Every company, person and stock in it is made up. 'posted' marks a part that went out by hand; state/story.json on the server keeps the rest. Parts 9 to 15 (the second week: Lila, a lucky trader sold as a teacher) were added 2026-11-17 on the owner's 'do it all', after the two 3D parts came out as the account's two biggest reels. To carry on after the last part: take 'last' off it, give it a cliffhanger, and add parts.",
+ "cast": {
+  "the narrator (I)": "grey-blue shirt #8a96ab, dark blue trousers #2e3a52, brown hair #6b4426, skin #f1c27d. An average trader: 12,480 on his chest before the crash, 0 after it, then a small number that climbs slowly.",
+  "Timmy": "green shirt #43b05c, blue trousers #3a4a6b, red hair #d6402f under a cap with a brim, skin #f6d0a8. 212 on his chest, with a small gold '#1' badge while he is number one in town.",
+  "Mr Gold": "the richest man in town: gold shirt #f2b632, dark trousers #1f2433, black hair #1b1b1b, black sunglasses, skin #e8b88a. 1,000,000 on his chest in part 1, one billion after Moon Noodle. He has a gold plane and a gold sports car.",
+  "Maya": "the narrator's neighbour, a trader like him: pink shirt #e0457b, purple trousers #3a2f55, long dark hair #2b1a10, skin #c98b5e.",
+  "the old neighbour": "teal shirt #4fb3c9, brown trousers #55452f, grey hair #c9c9c9, skin #f3cfa6.",
+  "the market sheriff": "navy shirt with a gold star badge, a wide brown hat, a calm face. First seen in part 7.",
+  "the town": "toy-block sky blue and grass green, a road with a yellow line, block houses and trees; chest labels white with bold black numbers; gold for the rich, red for crashes and for numbers below zero, a dark red sky at each cliffhanger.",
+  "Lila": "a trader our age who turned five hundred into ten million on one stock in a month: white shirt with a gold lemon #f5e663, black trousers #1f1f1f, long blonde hair #e8c872, skin #f1c27d, a pink sports car. 10,000,000 on her chest when she arrives (part 8), 14,000,000 on day one of the bet, then red (minus two million, minus three million), then 0."
+ },
+ "parts": [
+  {
+   "part": 1,
+   "posted": "2026-11-14",
+   "lesson": "Everyone sees a loss, and an average trader with a plan does about as well as holding the index.",
+   "story": "In this town, your money is printed on your chest by your trades: it climbs when you win, and when you lose, everyone watches it drop. Timmy lost everything on one stock, so now he is broke and holds out his hands to strangers for money. Some made fortunes, so they buy sports cars and fly round the world. I'm just an average trader with 12,480 on my chest, no better than holding the S&P 500. So I practise on Meme Street, where news moves made-up companies: I do the lessons and take every trade with a plan.",
+   "cliffhanger": "Then this morning, every number in town crashed to zero. Every one except Timmy's, which said number one. And he was standing at my door, smiling, holding something I'd never..."
+  },
+  {
+   "part": 2,
+   "lesson": "Never put all your money into one stock, and a plan only works if you keep it while everyone else is buying.",
+   "story": "In my town your money is printed on your chest, and this morning every number hit zero except Timmy's. He was at my door with a battered notebook. Last night the whole town put everything into one stock, Moon Noodle, because Mr Gold, the richest man in town, said it could only go up. I broke my own plan and bought it too. By morning it was worth nothing. Timmy never bought: he lost everything that way once, so now he practises on Meme Street and writes every trade down. His chest said 212, and that made him number one in town.",
+   "cliffhanger": "Then he turned to the last page: everyone who sold Moon Noodle last night, right before it crashed. There was only one name on it, and when I read it..."
+  },
+  {
+   "part": 3,
+   "lesson": "A pump and dump: someone talks a stock up so that he can sell it to you. Before you buy, ask who is selling, and why.",
+   "story": "In my town your money is printed on your chest, and the one man who sold Moon Noodle before it crashed was Mr Gold. He told the whole town to buy while he sold us every share he had, and that trick is called a pump and dump. We ran to the airport, but his gold plane was a dot in the sky, and his chest said one billion. Timmy said anger would not refill my chest, but a plan would. His first rule: before you buy, ask who is selling it to you, and why. We practised it on Meme Street, where news moves the prices, not one man shouting.",
+   "cliffhanger": "Three weeks later a shadow crossed the town. The gold plane was back, Mr Gold had a brand new stock, and the whole town lined up to buy it. And first in line was Timmy..."
+  },
+  {
+   "part": 4,
+   "lesson": "A price that flies with no news behind it is hype. Check the reason before you buy, and never chase what has already gone up.",
+   "story": "In my town your money is printed on your chest, and the man who emptied every chest was back, selling a new stock called Turbo Hamster. Timmy was first in line, but not to buy. He asked one question, loud: if it is going to the moon, why are you selling it? Then he held up the chart. Turbo Hamster was already up nine hundred percent in a week, with no news at all. On Meme Street news moves prices, so I knew a price that flies on nothing is only hype. Half the line walked away. The other half borrowed money to buy more.",
+   "cliffhanger": "Then Mr Gold whispered in Timmy's ear, and Timmy's chest jumped from 212 to one million. He looked at me, said nothing, and walked onto the gold plane. And the door..."
+  },
+  {
+   "part": 5,
+   "lesson": "Position size: never risk more than a small slice of your money on one trade, so one bad trade cannot take you out. Missing a gamble is not a loss.",
+   "story": "In my town your money is printed on your chest, and my only friend had just taken one million from Mr Gold and flown away. Turbo Hamster kept climbing. My neighbours' numbers doubled every day, and they laughed at the 95 on my chest. Every night I wanted to throw it all in. Instead I opened the notebook Timmy left on my doorstep. Rule two: never risk more than a small slice on one trade, so one bad trade cannot take you out. I practised it on Meme Street's Daily Chart until it was boring, and boring was the point.",
+   "cliffhanger": "Then an old photo fell out of the last page. Two young men in gold shirts, shaking hands in front of a gold plane. One was Mr Gold. And the other one was..."
+  },
+  {
+   "part": 6,
+   "lesson": "A stop-loss: decide where you get out before you get in. And borrowed money can lose you more than you have.",
+   "story": "In my town your money is printed on your chest, and I had just found an old photo of Timmy shaking hands with Mr Gold. They were partners once, and the stock Timmy lost everything on was Mr Gold's first trick, played on him. Then Turbo Hamster began to wobble. Rule three in the notebook: decide where you get out before you get in. That is a stop-loss, and I had set a hundred of them on Meme Street. I showed my neighbour Maya, and she set one. That night Turbo Hamster crashed. Maya's stop sold early and kept most of her money, but the neighbours who had borrowed fell below zero, in red.",
+   "cliffhanger": "Then the gold plane landed in the middle of our street. The door opened and Timmy walked out, alone. His chest did not say one million any more. It said..."
+  },
+  {
+   "part": 7,
+   "lesson": "Write every trade down: the record shows what really happened. And tricking people into buying so that you can sell to them is against the rules of a market.",
+   "story": "In my town your money is printed on your chest, and Timmy had just stepped off Mr Gold's plane with zero on his. He never kept the million. He took it to get on board, because Mr Gold keeps a notebook too: every pump, every dump, and every name he sold to. Timmy carried it straight to the market sheriff, because tricking people into buying so you can sell to them is against the rules. The sheriff locked Mr Gold's billion with a padlock, and the town cheered. It is why Timmy made me write down every trade on Meme Street: the record tells the truth.",
+   "cliffhanger": "Then Mr Gold laughed and pointed at Timmy. 'Ask your hero whose idea the very first pump was,' he said. The whole town turned, and Timmy looked at the ground and said..."
+  },
+  {
+   "part": 8,
+   "lesson": "You do not need to be number one: spread your money, keep each trade small, know your exit and ask who is selling.",
+   "story": "In my town your money is printed on your chest, and Mr Gold had just told everyone that the first pump was Timmy's idea. Timmy said it was true. Years ago he thought of it, Mr Gold used it on him, and it cost him everything. Every coin he collected in the street since then went back to someone that trick had hurt. The sheriff shared out Mr Gold's billion, and every chest in town climbed back. Mine said 12,480 again: still average. But now I spread my money, keep each trade small, know my exit and ask who is selling, and I still practise on Meme Street every day. Because average and still standing beats number one for a morning.",
+   "cliffhanger": "Then the big screen in the square lit up with a face none of us knew. A girl called Lila, ten million on her chest, and under it three words: I CAN TEACH YOU."
+  },
+  {
+   "part": 9,
+   "lesson": "Survivorship bias: the screen only shows the winners. For every trader a method made rich, a hundred tried the same thing and lost, and nobody puts them on a screen.",
+   "story": "In my town your money is printed on your chest, and a girl called Lila was on the big screen with ten million on hers. A month ago she had five hundred. She put all of it into one stock, Rocket Lemonade, and it went up two hundred times. Now she was selling her secret, a thousand a seat, and the queue went round the square. Timmy asked the one question nobody asked: how many people bought the same stock on the same day and lost? Nobody puts them on a screen. On Meme Street I checked a hundred traders who went all in on one stock. Ninety-one were poorer. Lila was one of the nine.",
+   "cliffhanger": "Then Lila stepped off the stage, walked through the crowd to me, and pointed at my chest. 'Twelve thousand against my ten million. One month. The whole town watches.' And my name was already on the screen..."
+  },
+  {
+   "part": 10,
+   "lesson": "One trade, one week, proves nothing: luck and skill look the same in a week. An edge only shows over many small trades, so judge a trader by a hundred trades, not one.",
+   "story": "In my town your money is printed on your chest, and mine was on the big screen next to Lila's: 12,480 against ten million, one month. On day one she borrowed ten million more and put all of it into Rocket Lemonade. By lunch her chest said fourteen million. I took three small trades with my plan, and mine said 12,520. The town laughed, and half of them borrowed to copy her. Timmy wrote one line in my notebook: a week proves nothing. On Meme Street I had made four hundred trades with the same rules, and the record said small and steady wins; one lucky day says nothing at all.",
+   "cliffhanger": "On day three a bell rang across the town. Rocket Lemonade was halted: no buying, no selling. Every chest that had copied her froze mid-number. Except mine, which was still ticking..."
+  },
+  {
+   "part": 11,
+   "lesson": "A halt or a gap jumps straight past your stop-loss: you cannot sell at a price nobody is trading. The one protection that always works is size, a position small enough that the worst gap cannot take you out.",
+   "story": "In my town your money is printed on your chest, and the stock half the town had copied was frozen. A halt means the market stops trading a stock, usually because news is coming, and nobody can sell until it opens again. When it did, Rocket Lemonade opened sixty percent lower. Every stop-loss in town was set at ten percent, and every one of them sold at sixty. Lila's chest went from fourteen million to red: minus two million, because the borrowed money still had to be paid back. Mine said 12,560, because the trade that gapped was one small slice of it. Then Lila said the words that break traders: it will come back, buy more.",
+   "cliffhanger": "She sold her pink sports car on the spot and put every coin into more Rocket Lemonade. Then she turned to my neighbour Maya, who was holding out everything she had, and..."
+  },
+  {
+   "part": 12,
+   "lesson": "Averaging down into a losing trade is the same bad decision made twice, and lending your money to someone's trade is making their trade. Cut a loss; never feed it.",
+   "story": "In my town your money is printed on your chest, and Maya had just lent Lila everything she had, nine thousand, to buy more of a falling stock. Buying more of a loser so that the first mistake looks smaller is called averaging down, and the market does not care what you paid. Rocket Lemonade fell by half again. Lila's chest said minus three million; Maya's said zero. Timmy sat on the park bench with her and said the line I wrote down: lend money to a trade, and you have made the trade. My chest said 12,610: small trades, a stop on each, nothing lent, nothing borrowed.",
+   "cliffhanger": "By midnight Lila had sold every share at the bottom. Then everyone she had cost money had the same idea at once: bet against Rocket Lemonade. And on the screen, a gold hand was buying every share they sold..."
+  },
+  {
+   "part": 13,
+   "lesson": "Shorting: you borrow shares, sell them, and hope to buy them back cheaper. If the price rises there is no ceiling on your loss, and when every short runs for the exit at once the price jumps: a short squeeze.",
+   "story": "In my town your money is printed on your chest, and the whole town had shorted Rocket Lemonade. Shorting means you borrow shares, sell them, and hope to buy them back cheaper; if the price rises instead, there is no floor under your loss. The gold hand buying every share was Mr Gold. He bought until there were none left to buy, the price tripled in an hour, and every short ran for the exit at once, pushing it higher still: a short squeeze. Half the chests in town went red. Mr Gold's went from zero to a hundred million. Mine said 12,700, because on Meme Street I had learned that a short the size of your house is a house you can lose.",
+   "cliffhanger": "Then the gold plane landed in the square, and Mr Gold walked down the steps holding a gold shirt. He held it out, not to Timmy this time. To Lila..."
+  },
+  {
+   "part": 14,
+   "lesson": "A free tip is paid for by someone. Before you act on it, ask who pays the person giving it, and who is selling when you buy.",
+   "story": "In my town your money is printed on your chest, and Mr Gold had just offered Lila a gold shirt. He had made her. The tip that turned her five hundred into ten million came from him, her face on the screen was his idea, and every seat she sold filled a queue that bought his shares. She never knew. A free tip is paid for by someone, and that someone is on the other side of your trade. The sheriff could not touch him this time: buying what a crowd is shorting is allowed. The town looked at Lila. Lila looked at the shirt. My chest said 12,910, one day before the bet ended.",
+   "cliffhanger": "And Lila reached out and took it. Then she turned it inside out, and a folded page fell out of the pocket, covered in Mr Gold's handwriting..."
+  },
+  {
+   "part": 15,
+   "last": true,
+   "lesson": "You cannot stop the market's Mr Golds. You can stop being their customer: spread your money, keep each trade small, know your exit before you enter, ask who is selling, and write every trade down.",
+   "story": "In my town your money is printed on your chest, and the page from the gold shirt was Mr Gold's list: every share he had sold through Lila's students, with a date and a name. Tipping someone so that a crowd buys what you are selling is a pump and dump with a friendlier face, and this time the sheriff padlocked the hundred million and the plane. Lila gave back every seat she had sold and started Meme Street at lesson one. The bet ended with her at zero and me at 12,950. Still average. But in a town that lost everything twice, average and still standing is a kind of number one.",
+   "cliffhanger": "Every town has a Mr Gold. Ours has a notebook now, and a girl on the park bench reading it out loud."
+  }
+ ]
+}

@@ -7,6 +7,7 @@ import re
 from decimal import ROUND_HALF_UP, Decimal
 from urllib.parse import quote
 
+from fastapi import Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 
 import lessonpages
@@ -15,6 +16,21 @@ import paths
 from netutil import TICKER_RENAMES
 from social import clean_chat
 
+# memestreet.net is just the Daily since 2026-11-18 (the owner: "route the daily to memestreet.net. that's ALL there should
+# be. the rest of memestreet is being retired"). The rest of the code stays, unserved: MS_FULL_SITE=1 serves it again
+# (the test suite does, for the retired parts it still checks).
+DAILY_ONLY = os.environ.get("MS_FULL_SITE") != "1"
+GAME_TITLE = "Meme Street: the daily stock chart game"
+GAME_TEXT = ("One real stock chart a day, the same for everyone. Two minutes to buy, sell or short as it prints, then its "
+             "name is revealed. No account needed: keep a streak, share your result, beat your friends. Like Wordle, for stocks.")
+# What the page shows before its script runs (a crawler, a slow phone): the same words the game opens with.
+GAME_SHOWN = ('<main id="main"><div class="hero"><h1 class="tag">One real stock.<br>Two minutes to trade it.<br>Its name at the end.</h1>'
+              '<p>Every day there is one new chart from a real US stock, the same for everyone. The candles print one '
+              'a second for two minutes: buy, sell or short as they come, then see the stock\'s name, your place and '
+              'how everyone else did. No account needed. A new stock at midnight UTC.</p>'
+              '<noscript><p>Turn on JavaScript to play.</p></noscript></div></main>')
+KEEP = {"/", "/daily", "/embed/daily", "/play", "/yt", "/admin", "/privacy", "/terms", "/robots.txt", "/sitemap.xml",
+        "/manifest.json", "/favicon.ico", "/llms.txt", "/ws", "/gateway/health"}   # (what memestreet.net still serves)
 BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
                "icon-512.png", "apple-touch-icon.png"}   # (the small icons: browser tabs, phones and search results)
 DAILY_TEXT = ("A daily stock market game, no account needed: one new chart a day, the same for everyone. Two minutes to buy, sell and "
@@ -63,12 +79,50 @@ def vs_title(vs):
     r = Decimal(int(m[2]) / 10000 * 100).quantize(Decimal("0.1"), ROUND_HALF_UP)   # (as pc() in index.html: 0.25 is +0.3%)
     ret = ("+" if r > 0 else "-" if r < 0 else "") + f"{abs(r)}%"
     n = int(m[3])
-    return f"{name} got {ret} on Daily Chart #{n}. Can you beat it?" if name else f"Can you beat {ret} on Daily Chart #{n}?"
+    game = "Meme Street" if DAILY_ONLY else "Daily Chart"
+    return f"{name} got {ret} on {game} #{n}. Can you beat it?" if name else f"Can you beat {ret} on {game} #{n}?"
 
 
 def add_pages(app):
     """The pages are in web/ and the logo in brand/ (paths.py)."""
     web = paths.WEB
+
+    @app.middleware("http")
+    async def retired_pages(request: Request, call_next):
+        """With DAILY_ONLY, a page of the retired site is sent to the Daily for good (301), its query dropped."""
+        path = request.url.path.rstrip("/") or "/"
+        if (DAILY_ONLY and path not in KEEP and not path.startswith(("/api/", "/brand/", "/js/", "/internal/"))
+                and path != f"/{INDEXNOW_KEY}.txt"):
+            return RedirectResponse("/", status_code=301)
+        return await call_next(request)
+
+    game_cache = {}
+
+    def game_page(vs=""):
+        """The Daily as memestreet.net shows it (web/daily.html), with its title, description and preview; a challenge
+        link (`vs`) gets its own preview title. The address search engines are given is always /."""
+        f = os.path.join(web, "daily.html")
+        key = os.path.getmtime(f)
+        if game_cache.get("key") != key:
+            data = {"@context": "https://schema.org", "@type": "WebApplication", "name": "Meme Street", "url": site + "/",
+                    "applicationCategory": "GameApplication", "operatingSystem": "Any", "description": GAME_TEXT,
+                    "image": site + "/brand/memestreet_logo_peaks.png", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
+            s = open(f, encoding="utf-8").read()
+            t, d = html.escape(GAME_TITLE), html.escape(GAME_TEXT)
+            head = (f'<title>{t}</title><meta name="description" content="{d}"><link rel="canonical" href="{site}/">'
+                    f'<meta property="og:title" content="{t}"><meta property="og:description" content="{d}">'
+                    f'<meta property="og:url" content="{site}/"><meta property="og:image" content="{site}/brand/memestreet_logo_peaks.png">'
+                    f'<meta name="twitter:card" content="summary_large_image">'
+                    f'<script type="application/ld+json">{json.dumps(data)}</script>')
+            s = s.replace("<!--HEAD-->", head, 1).replace('<main id="main"></main>', GAME_SHOWN, 1)
+            game_cache.update(key=key, page=s)
+        s = game_cache["page"]
+        t = vs_title(vs)
+        if t:
+            tag, url = '<meta property="og:title" content="%s">', '<meta property="og:url" content="%s">'
+            s = s.replace(tag % html.escape(GAME_TITLE), tag % html.escape(t), 1)
+            s = s.replace(url % (site + "/"), url % html.escape(site + "/?vs=" + quote(vs, safe="")), 1)
+        return HTMLResponse(s, headers={"Cache-Control": "no-store"})
 
     def page():
         return FileResponse(os.path.join(web, "index.html"), headers={"Cache-Control": "no-store"})
@@ -140,7 +194,7 @@ def add_pages(app):
     lessons = lessonpages.Lessons(site)
     # (pages with their own content; not /learn or /leaders, which are the game's page and empty without JavaScript,
     # nor /terms and /privacy, which are noindex)
-    public = ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH, lessonpages.SL_PATH, lessonpages.DD_PATH, lessonpages.EX_PATH, lessonpages.CG_PATH] + lessons.paths() + vspages.paths()
+    public = ["/"] if DAILY_ONLY else ["/daily", "/", "/about", "/bots/guide", lessonpages.CALC_PATH, lessonpages.RR_PATH, lessonpages.SL_PATH, lessonpages.DD_PATH, lessonpages.EX_PATH, lessonpages.CG_PATH] + lessons.paths() + vspages.paths()
 
     @app.get("/robots.txt")
     async def robots():
@@ -170,6 +224,12 @@ def add_pages(app):
         + [f"\n## Compare\n\n{vspages.HUB_DESC} [All comparisons]({site}/vs)\n"]
         + [f"- [{v['h1']}]({site}/vs/{s}): {v['desc']}" for s, v in vspages.VS.items()]) + "\n"
 
+    if DAILY_ONLY:
+        llms = (f"# Meme Street\n\n> {GAME_TEXT}\n\n## Play\n\n- [Today's stock]({site}/): one real US stock chart a day "
+                "(daily prices from 2016 to 2021, the name hidden until the end), two minutes, practice money only. No account is "
+                "needed; an account keeps the streak on every device, a weekly streak freeze, the history of every game and "
+                "the archive of past charts. Nothing on the site is investment advice.\n")
+
     @app.get("/llms.txt")
     async def llms_txt():
         """The site in plain words for AI search engines (llmstxt.org; roadmap B12)."""
@@ -197,35 +257,39 @@ def add_pages(app):
 
     @app.get("/admin")
     async def admin_page():
+        if DAILY_ONLY:                                     # (the Daily's own dashboard, 2026-11-18)
+            return FileResponse(os.path.join(web, "admin_daily.html"), headers={"Cache-Control": "no-store"})
         """The page is public but shows nothing until the admin key is entered; the data endpoints check the key."""
         return FileResponse(os.path.join(web, "admin.html"), headers={"Cache-Control": "no-store"})
 
     @app.get("/")
-    async def index():
+    async def index(vs: str = ""):
+        if DAILY_ONLY:
+            return game_page(vs)
         return page_as("/", "Meme Street: a stock market game with play money", HOME_TEXT, "", HOME_BODY)
 
     @app.get("/daily")
     async def daily(vs: str = ""):
-        return daily_page(vs)
+        return game_page(vs) if DAILY_ONLY else daily_page(vs)
 
     @app.get("/embed/daily")
     async def embed_daily():
         """The Daily Chart inside another site's frame (itch.io, a blog, a class page; roadmap B11). The same page as
         /daily, so search engines still see one address (the canonical link). The page's script reads the address and
         opens every link in a new tab; deploy/Caddyfile lets this one address be framed, and only by the hosts it names."""
-        return daily_page()
+        return game_page() if DAILY_ONLY else daily_page()
 
     @app.get("/play")
     async def play():
         """The short address the reels say: today's Daily Chart, tagged as coming from a reel (growth plan, 2026-11-10).
         Not in the sitemap: it only forwards."""
-        return RedirectResponse("/daily?ref=reel", status_code=307)
+        return RedirectResponse("/?ref=reel" if DAILY_ONLY else "/daily?ref=reel", status_code=307)
 
     @app.get("/yt")
     async def from_youtube():
         """The address in the YouTube channel and under each Short (2026-11-13): today's Daily Chart, tagged as
         coming from YouTube, so the admin page counts the clicks. Not in the sitemap: it only forwards."""
-        return RedirectResponse("/daily?ref=yt", status_code=307)
+        return RedirectResponse("/?ref=yt" if DAILY_ONLY else "/daily?ref=yt", status_code=307)
 
     @app.get("/lessons")
     async def lessons_hub():

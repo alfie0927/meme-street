@@ -16,7 +16,7 @@ from accounts import DUMMY_RECORD, Limiter, canonical_email, hash_password, mask
 from mailer import Mailer
 from payments import Payments
 from netutil import caller_address
-from pages import add_pages
+from pages import DAILY_ONLY, add_pages
 from wsconn import Conn
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -64,12 +64,14 @@ def tick_step(n, tokens):
     the players that have a page open, here or on a gateway. Returns the part every player gets (serialised once,
     however many players are online), each player's own part, and any notices."""
     t0 = time.perf_counter()
-    engine.tick()
+    engine.daily_tick() if DAILY_ONLY else engine.tick()          # (just the Daily: the market stands still, 2026-11-18)
     saved = 0.0
     if n % 30 == 0:
         s0 = time.perf_counter()
         engine.save(full=False)
         saved = (time.perf_counter() - s0) * 1000
+    if DAILY_ONLY:                                                   # (no market page is open anywhere: nothing to push)
+        return "{}", {}, {}, (time.perf_counter() - t0) * 1000, saved
     base = dumps(engine.build_wire())
     mes, notes = {}, {}
     for tok in tokens:
@@ -472,6 +474,8 @@ async def login(j: Register, request: Request):
         return JSONResponse({"error": "Wrong name or password"}, status_code=401)
     limits.clear(name_key)
     p = engine.by_token.get(token)
+    if j.visitor and engine.settings.get("daily_chart"):          # (what this browser played without signing in: 2026-11-18)
+        await run(engine.daily_claim, p, j.visitor)
     session = await run(engine.new_session, p, ip)
     return {"token": session, "name": p.name}
 
@@ -1449,6 +1453,23 @@ async def set_public(b: Flag, x_token: str = Header("")):
     return res if isinstance(res, JSONResponse) else acted(res)
 
 
+# ------------------------------------------------------------------------------------------ just the Daily
+# What memestreet.net still answers since the rest of it was retired (the owner, 2026-11-18: "route the daily to
+# memestreet.net. that's ALL there should be"): the Daily, signing up and in, the account's email and password, the
+# reminder's unsubscribe link, the payment provider's webhook (a late refund still lands) and the admin API.
+DAILY_API = ("/api/daily", "/api/auth_mode", "/api/register", "/api/login", "/api/logout", "/api/account/", "/api/admin/",
+             "/api/health", "/api/unsub", "/api/shop/stripe/webhook")
+
+
+@app.middleware("http")
+async def just_the_daily(request: Request, call_next):
+    """With DAILY_ONLY, every other /api/ address answers 410 (gone); the pages are pages.py's to redirect."""
+    path = request.url.path
+    if DAILY_ONLY and path.startswith("/api/") and not path.startswith(DAILY_API):
+        return JSONResponse({"error": "Meme Street is the Daily now: memestreet.net"}, status_code=410)
+    return await call_next(request)
+
+
 # ------------------------------------------------------------------------------------------ admin
 @app.middleware("http")
 async def guard_admin(request: Request, call_next):
@@ -1726,14 +1747,46 @@ async def daily_view(x_token: str = Header(""), x_visitor: str = Header("")):
     return await daily_player(x_token, x_visitor, "daily", engine.daily_view, interval=0.2)
 
 
+class DailyStart(BaseModel):
+    ref: str = ""             # the tracking link the page was first opened by (?ref=), counted on the admin page
+
+
+class DailyEvent(BaseModel):
+    kind: str
+
+
 @app.post("/api/daily/start", dependencies=[Depends(daily_on)])
-async def daily_start(request: Request, x_token: str = Header(""), x_visitor: str = Header("")):
-    if not x_token:                                    # visitors: a few games a day from one address, so a new browser id is no free retry
-        ip, now = client_ip(request), time.time()
-        if limits.count(("daily-visit", ip), 86400, now) >= int(engine.settings.get("daily_visits_per_ip", 3)):
-            return {"error": "Create a free account to play today's chart", "need_account": True}   # (daily.js explains why)
+async def daily_start(request: Request, b: DailyStart | None = None, x_token: str = Header(""), x_visitor: str = Header("")):
+    if not x_token:                                    # visitors: some games a day from one address, so a new browser id is no free retry
+        ip, now = client_ip(request), time.time()      # (20 since 2026-11-18: the Daily is the site, and a school or a phone network shares one address)
+        if limits.count(("daily-visit", ip), 86400, now) >= int(engine.settings.get("daily_visits_per_ip", 20)):
+            return {"error": "Create a free account to play today's chart", "need_account": True}
         limits.add(("daily-visit", ip), now)
-    return await daily_player(x_token, x_visitor, "daily_start", engine.daily_start, interval=1.0)
+    return await daily_player(x_token, x_visitor, "daily_start", engine.daily_start, (b.ref if b else "")[:40], interval=1.0)
+
+
+@app.post("/api/daily/event", dependencies=[Depends(daily_on)])
+async def daily_event(b: DailyEvent, x_token: str = Header(""), x_visitor: str = Header("")):
+    """A share, a story picture, a challenge link, the sign-up box opened, an archive replay or the help: counted."""
+    return await daily_player(x_token, x_visitor, "daily_event", engine.daily_event, b.kind[:20], interval=0.5)
+
+
+@app.get("/api/daily/history", dependencies=[Depends(daily_on)])
+async def daily_history(x_token: str = Header(""), x_visitor: str = Header("")):
+    """A member's every game (visitors are asked to make an account)."""
+    return await daily_player(x_token, x_visitor, "daily_history", engine.daily_history, interval=0.5)
+
+
+@app.get("/api/daily/archive", dependencies=[Depends(daily_on)])
+async def daily_archive(x_token: str = Header(""), x_visitor: str = Header("")):
+    """The past days a member can replay."""
+    return await daily_player(x_token, x_visitor, "daily_archive", engine.daily_archive, interval=0.5)
+
+
+@app.get("/api/daily/past/{number}", dependencies=[Depends(daily_on)])
+async def daily_past(number: int, x_token: str = Header(""), x_visitor: str = Header("")):
+    """A past day's whole chart and its reveal, for a member's practice replay."""
+    return await daily_player(x_token, x_visitor, "daily_past", engine.daily_past, number, interval=0.5)
 
 
 @app.get("/api/daily/state", dependencies=[Depends(daily_on)])

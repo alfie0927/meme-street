@@ -1,0 +1,7 @@
+[Unit]
+Description=Read the news feeds every 20 minutes (a reel only for a really big story)
+[Timer]
+OnCalendar=*:07/20
+Persistent=false
+[Install]
+WantedBy=timers.target

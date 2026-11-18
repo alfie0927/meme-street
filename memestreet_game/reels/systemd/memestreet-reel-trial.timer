@@ -1,0 +1,9 @@
+[Unit]
+Description=Start the next Trial Reels pair as soon as the last is made (back to back)
+
+[Timer]
+OnCalendar=*-*-* *:00/10:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

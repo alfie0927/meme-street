@@ -17,6 +17,10 @@ sys.path.insert(0, GAME)
 sys.path.insert(1, os.path.join(ROOT, "tools"))        # (launch.py and share.py are tested too)
 os.chdir(ROOT)
 
+# The full site's tests run the retired parts on purpose: memestreet.net serves only the Daily (pages.DAILY_ONLY) unless
+# MS_FULL_SITE=1, which this suite sets for itself and every server it starts; the Daily-only tests clear it (test_daily_only.py).
+os.environ.setdefault("MS_FULL_SITE", "1")
+
 import engine  # noqa: E402
 import pages  # noqa: E402
 

@@ -251,13 +251,20 @@ class GameTests(unittest.TestCase):
             e.now += daily.DAY_SECONDS
         self.assertEqual(e.daily_view(p)["stats"]["streak"], 3)           # (yesterday counts: today is still to play)
         self.assertEqual(e.daily_view(p)["number"], first["number"] + 3)
-        e.now += daily.DAY_SECONDS                                          # a day missed
+        e.now += daily.DAY_SECONDS                                          # a day missed: a member's freeze covers it (2026-11-18)
         st = e.daily_view(p)["stats"]
-        self.assertEqual((st["streak"], st["max_streak"], st["played"]), (0, 3, 3))
+        self.assertEqual((st["streak"], st["max_streak"], st["played"], st["freezes"], st["needs_freeze"]), (3, 3, 3, 1, True))
         e.daily_start(p)
         e.now += daily.LIVE + 1
         st = e.daily_view(p)["stats"]
-        self.assertEqual((st["streak"], st["max_streak"], st["played"]), (1, 3, 4))
+        self.assertEqual((st["streak"], st["max_streak"], st["played"], st["freezes"]), (4, 4, 4, 0))
+        e.now += 2 * daily.DAY_SECONDS                                      # another missed day, no freeze left
+        st = e.daily_view(p)["stats"]
+        self.assertEqual((st["streak"], st["max_streak"]), (0, 4))
+        e.daily_start(p)
+        e.now += daily.LIVE + 1
+        st = e.daily_view(p)["stats"]
+        self.assertEqual((st["streak"], st["max_streak"], st["played"]), (1, 4, 5))
         self.assertIsNotNone(st["avg"])
         self.assertLessEqual(st["beat"], st["played"])
 
@@ -423,7 +430,7 @@ class VisitorTests(unittest.TestCase):
         out = e.daily_admin()
         self.assertEqual(out["days"][0]["people"], 2)
         self.assertEqual(out["today"]["people"], 0)
-        self.assertEqual(out["all_time"]["players"], 2)
+        self.assertEqual((out["all_time"]["players"], out["members"]["players"], out["visitors"]["players"]), (3, 2, 1))   # (visitors count since 2026-11-18)
 
 
 class ServerTests(unittest.TestCase):

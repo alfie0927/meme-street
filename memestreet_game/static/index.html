@@ -1,0 +1,268 @@
+<!doctype html>
+<!-- Meme Street: the daily stock chart game. One real stock a day, the same for everyone; two minutes to trade it;
+     its name at the end. A static page: no server, no account. The day's chart is charts/<k>.json (build_charts.py);
+     stats, streak and today's game live in this browser's localStorage. The trading rules are those of Meme Street's
+     Daily Chart (game/daily.py in the main repo): trades at the last close, no fees, shorts up to the account's worth. -->
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Meme Street: the daily stock chart game</title>
+<meta name="description" content="One real stock chart a day, the same for everyone. Two minutes to trade it. Its name at the end.">
+<meta property="og:title" content="Meme Street: the daily stock chart game">
+<meta property="og:description" content="One real stock chart a day. Two minutes to trade it. Its name at the end.">
+<meta name="theme-color" content="#0b0d10">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0d10'/%3E%3Cpath d='M9 5v22M23 5v22' stroke='%233ad07a' stroke-width='2'/%3E%3Crect x='6' y='9' width='6' height='12' fill='%233ad07a'/%3E%3Cpath d='M16 3v26' stroke='%23f25c54' stroke-width='2'/%3E%3Crect x='13' y='12' width='6' height='10' fill='%23f25c54'/%3E%3Crect x='20' y='7' width='6' height='9' fill='%233ad07a'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#0b0d10;--card:#13171c;--card2:#181d23;--line:#252c34;--txt:#e6edf3;--mut:#8b98a5;--acc:#4cc3cc;--up:#3ad07a;--dn:#f25c54;--flat:#39424b}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 14px;touch-action:manipulation}
+button:hover{border-color:#3a4550}button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
+header{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;max-width:560px;margin:0 auto;padding:10px 16px;border-bottom:1px solid var(--line)}
+header h1{margin:0;text-align:center;font-size:22px;letter-spacing:.14em;font-weight:800}
+header h1 span{color:var(--acc)}
+.ic{width:40px;height:40px;padding:0;border-radius:50%;font-weight:700;display:grid;place-items:center}
+main{max-width:560px;margin:0 auto;padding:14px 16px 40px}
+.sub{text-align:center;color:var(--mut);font-size:13px;margin:0 0 12px}
+.hero{text-align:center;padding:26px 0 8px}
+.hero .tag{font-size:24px;font-weight:800;line-height:1.25;margin:0 0 10px}
+.hero p{color:var(--mut);margin:0 0 20px}.hero p.tag{color:var(--txt)}
+.go{background:var(--acc);border-color:var(--acc);color:#021012;font-weight:800;font-size:18px;padding:14px 38px;border-radius:999px}
+.go:hover{filter:brightness(1.08);border-color:var(--acc)}
+.top{display:flex;justify-content:space-between;align-items:flex-end;margin:4px 0 8px}
+.timer{font:800 34px/1 ui-monospace,Consolas,Menlo,monospace;font-variant-numeric:tabular-nums}.timer.low{color:var(--dn)}
+.pnl{text-align:right}.pnl .ret{font:800 26px/1 ui-monospace,Consolas,Menlo,monospace}.pnl .eq{color:var(--mut);font-size:13px}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px}
+.pos{margin:10px 0;color:var(--mut);font-size:14px;text-align:center;min-height:21px}.pos b{color:var(--txt)}
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 10px}
+.sizes button{padding:9px 0;font-weight:700}.sizes button.on{border-color:var(--acc);color:var(--acc);background:#4cc3cc14}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btns button{padding:18px 0;font-size:20px;font-weight:800;border-radius:12px;display:flex;justify-content:center;align-items:baseline;gap:8px}
+.btns small{font-size:11px;opacity:.6;font-weight:600}
+.buy{background:#3ad07a1f;border-color:#3ad07a66;color:var(--up)}.sell{background:#f25c541f;border-color:#f25c5466;color:var(--dn)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 14px;text-align:center}
+.kick{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.name{font-size:30px;font-weight:800;margin:4px 0 2px;line-height:1.15}.name span{font-size:16px;color:var(--mut);font-weight:700;margin-left:6px}
+.when{color:var(--mut);font-size:14px}
+.real{margin-top:8px;font-size:17px;font-variant-numeric:tabular-nums}
+.ev{margin:10px 0 0;font-size:14px;color:#c9d4dd}
+.big{font:800 52px/1.05 ui-monospace,Consolas,Menlo,monospace;margin:6px 0 2px}
+.vs{margin:8px 0 0}
+.grid{display:flex;justify-content:center;gap:6px;margin:14px 0 4px}
+.grid i{width:30px;height:30px;border-radius:5px;display:block}
+.grid i.u{background:var(--up)}.grid i.d{background:var(--dn)}.grid i.f{background:var(--flat)}
+.grid.anim i{animation:flip .45s both}@keyframes flip{from{transform:rotateX(90deg)}to{transform:none}}
+.best{color:var(--mut);font-size:14px;margin:10px 0 0}
+.stat{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:14px 0 0}
+.stat strong{display:block;font-size:clamp(15px,4.4vw,22px);white-space:nowrap;font-variant-numeric:tabular-nums}.stat small{color:var(--mut);font-size:11px;line-height:1.2;display:block}
+.row{display:flex;gap:10px;justify-content:center;margin:16px 0 0;flex-wrap:wrap}
+.next{color:var(--mut);margin:14px 0 0;font-size:14px}.next b{color:var(--txt);font-variant-numeric:tabular-nums}
+.dist{margin:12px 0 0;text-align:left}
+.drow{display:grid;grid-template-columns:96px 1fr;gap:8px;align-items:center;font-size:12px;margin:3px 0;color:var(--mut)}
+.drow i{display:block;background:var(--flat);color:var(--txt);font-style:normal;font-weight:700;text-align:right;padding:2px 6px;border-radius:3px;min-width:22px}
+.drow.me i{background:var(--acc);color:#021012}
+#pop{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+#pop>div{background:var(--card2);border:1px solid var(--line);border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow:auto;padding:22px;position:relative}
+#pop h2{margin:0 0 12px;font-size:20px}
+#pop ul{padding-left:20px;margin:0}#pop li{margin:0 0 8px}
+.x{position:absolute;top:10px;right:10px;width:36px;height:36px;padding:0;border:0;background:none;font-size:24px;color:var(--mut)}
+.small{color:var(--mut);font-size:12.5px;margin:14px 0 0}
+#toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:var(--txt);color:var(--bg);font-weight:700;padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:10}
+#toast.on{opacity:1}
+@media(max-width:420px){.name{font-size:25px}.big{font-size:44px}.grid i{width:26px;height:26px}.btns button{padding:16px 0}}
+@media(prefers-reduced-motion:reduce){.grid.anim i{animation:none}}
+</style></head><body>
+<header><button class="ic" id="help-btn" aria-label="How to play">?</button><h1>MEME <span>STREET</span></h1><button class="ic" id="stats-btn" aria-label="Your stats"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 16V9M7 16V4M12 16V7M17 16V1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" transform="translate(-.5 0)"/></svg></button></header>
+<main id="main"><p class="sub">Loading today's stock…</p></main>
+<div id="pop" role="dialog" aria-modal="true"></div><div id="toast" role="status"></div>
+<script>
+'use strict';
+const HISTORY=60,LIVE=120,START=10000,SIZES=[.25,.5,.75,1],SQUARES=8,EPOCH=Date.UTC(2026,10,18);   // (#1 is 18 November 2026)
+const BANDS=[[-Infinity,-.25,'−25% or less'],[-.25,-.1,'−25 to −10%'],[-.1,-.05,'−10 to −5%'],[-.05,0,'−5 to 0%'],[0,.05,'0 to +5%'],[.05,.1,'+5 to +10%'],[.1,.25,'+10 to +25%'],[.25,Infinity,'+25% or more']];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const pc=x=>{const r=Math.round(x*1000)/10;return(r>0?'+':r<0?'−':'')+Math.abs(r).toFixed(1)+'%'};
+const cls=x=>x>0.0005?'up':x<-0.0005?'dn':'';
+const num=(v,d=2)=>Number(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const money=v=>'$'+num(v);
+const fmtDate=s=>new Date(s+'T00:00:00Z').toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+const clock=s=>{s=Math.ceil(Math.max(0,s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const hms=ms=>{let s=Math.max(0,Math.floor(ms/1000));return[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(x=>String(x).padStart(2,'0')).join(':')};
+const dayNumber=()=>{const n=new Date();return Math.round((Date.UTC(n.getFullYear(),n.getMonth(),n.getDate())-EPOCH)/864e5)+1};
+const toMidnight=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()+1)-n};
+const PHONE=matchMedia('(pointer:coarse)').matches;
+
+let DAY=dayNumber(),C=null,REV=null,G=null,size=store.get('ms-size',.5),tick=null,drawn='';
+// G, today's game: {day, t0 (ms), cash, shares, trades: [[candle, kind, price, shares]], done, equity, ret}
+
+const elapsed=()=>G?(Date.now()-G.t0)/1000:0;
+const shown=()=>!G?HISTORY:G.done?C.length:HISTORY+Math.max(0,Math.min(LIVE,Math.floor(elapsed())));
+const reveal=()=>{try{return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(REV),c=>c.charCodeAt(0))))}catch(e){return null}};
+const hold=()=>C[C.length-1][3]/C[HISTORY-1][3]-1;
+const save=()=>store.set('ms-game',G);
+
+async function boot(){
+ try{
+  const meta=await (await fetch('charts/meta.json')).json();
+  const k=((DAY-1)%meta.n+meta.n)%meta.n,c=await (await fetch(`charts/${k}.json`)).json();
+  if(meta.history!==HISTORY||meta.live!==LIVE||c.c.length!==HISTORY+LIVE)throw new Error('chart');
+  C=c.c;REV=c.r;
+ }catch(e){$('main').innerHTML=`<div class="hero"><p class="tag">Today's stock didn't load</p><p>Check your connection and refresh the page.</p></div>`;return}
+ const g=store.get('ms-game',null);G=g&&g.day===DAY?g:null;
+ if(G&&!G.done){if(elapsed()>=LIVE)finish(false);else run()}
+ draw();
+ if(!store.get('ms-helped',false)&&!G){store.set('ms-helped',true);help()}
+ setInterval(()=>{const el=document.querySelectorAll('.cd');el.forEach(e=>e.textContent=hms(toMidnight()));if(dayNumber()!==DAY&&(!G||G.done))location.reload()},1000);
+}
+
+function start(){
+ if(G)return;
+ G={day:DAY,t0:Date.now(),cash:START,shares:0,trades:[],done:false};save();run();draw();
+}
+function run(){if(!tick)tick=setInterval(()=>{if(elapsed()>=LIVE)finish(true);else draw()},200)}
+
+function trade(side){
+ if(!G||G.done)return;
+ if(elapsed()>=LIVE){finish(true);return}
+ const n=shown(),price=C[n-1][3],held=G.shares,pct=size;let sh,kind;
+ if(side==='buy'&&held<-1e-12){sh=-held*pct;G.shares+=sh;G.cash-=sh*price;kind='cover'}
+ else if(side==='buy'){const spend=G.cash*pct;if(spend<0.01){toast('No cash left to buy with');return}sh=spend/price;G.cash-=spend;G.shares+=sh;kind='buy'}
+ else if(held>1e-12){sh=held*pct;G.shares-=sh;G.cash+=sh*price;kind='sell'}
+ else{const room=Math.max(0,G.cash+held*price-(-held)*price);if(room*pct<0.01){toast('You are already short as much as you can be');return}sh=room*pct/price;G.shares-=sh;G.cash+=sh*price;kind='short'}
+ if(Math.abs(G.shares)*price<1e-9)G.shares=0;
+ G.trades.push([n-1,kind,price,sh]);save();
+ toast({buy:'Bought',sell:'Sold',short:'Shorted',cover:'Covered'}[kind]+' at '+num(price));draw();
+}
+
+function finish(fresh){
+ clearInterval(tick);tick=null;
+ const last=C[C.length-1][3];
+ G.equity=Math.max(0,G.cash+G.shares*last);G.ret=G.equity/START-1;G.done=true;G.fresh=!!fresh;save();
+ record();draw();
+}
+
+function record(){   // a finished game counts towards the stats once
+ const st=stats();if(st.last===DAY)return;
+ st.streak=st.last===DAY-1?st.streak+1:1;st.max=Math.max(st.max,st.streak);st.last=DAY;st.played++;st.sum+=G.ret;
+ st.best=st.best===null?G.ret:Math.max(st.best,G.ret);st.beat+=G.ret>hold()+1e-9?1:0;
+ st.bands[BANDS.findIndex(([lo,hi])=>G.ret>=lo&&G.ret<hi)]++;store.set('ms-stats',st);
+}
+function stats(){const s=store.get('ms-stats',null);return s&&s.bands?s:{played:0,streak:0,max:0,last:null,sum:0,best:null,beat:0,bands:BANDS.map(()=>0)}}
+const streakNow=st=>st.last!==null&&st.last>=DAY-1?st.streak:0;
+
+function grid(){   // one square per 15 seconds: did the account's worth rise, fall or stay flat over it
+ const tr=[...G.trades].sort((a,b)=>a[0]-b[0]),step=LIVE/SQUARES,worth=[];let cash=START,sh=0,j=0;
+ for(let k=0;k<=SQUARES;k++){const i=HISTORY-1+k*step;
+  while(j<tr.length&&tr[j][0]<=i){const[,kind,price,n]=tr[j],d=kind==='buy'||kind==='cover'?n:-n;sh+=d;cash-=d*price;j++}
+  worth.push(Math.max(0,cash+sh*C[i][3]))}
+ return worth.slice(1).map((b,k)=>{const a=worth[k];return Math.abs(b-a)<=0.0005*Math.max(a,1)?0:b>a?1:-1});
+}
+function bestTrade(){   // the best single trade the two minutes offered, long or short
+ const cl=C.slice(HISTORY-1).map(c=>c[3]);let lo=0,hi=0,b={side:'long',ret:0,from:0,to:0};
+ for(let j=1;j<cl.length;j++){const up=cl[j]/cl[lo]-1,dn=cl[hi]/cl[j]-1;
+  if(up>b.ret)b={side:'long',ret:up,from:lo,to:j};if(dn>b.ret)b={side:'short',ret:dn,from:hi,to:j};
+  if(cl[j]<cl[lo])lo=j;if(cl[j]>cl[hi])hi=j}
+ return b;
+}
+
+function svg(){
+ const n=shown(),cs=C.slice(0,n),total=HISTORY+LIVE,W=600,H=PHONE?330:300,R=58,top=8,volH=H*.13,ph=H-volH-14;
+ const rv=G&&G.done?reveal():null,k=rv?rv.k:1,tr=G?G.trades:[];
+ const lo=Math.min(...cs.map(c=>c[2])),hi=Math.max(...cs.map(c=>c[1])),pad=(hi-lo||hi*.01)*.08,a=lo-pad,b=hi+pad;
+ const y=v=>top+(b-v)/(b-a)*ph,sw=(W-R)/total,bw=Math.max(1,sw*.7),vx=Math.max(...cs.map(c=>c[4]),1),lastY=y(cs[cs.length-1][3]),sx=(HISTORY-.5)*sw;
+ const lab=v=>(rv?'$':'')+num(v*k,v*k<1?4:2);
+ let h=`<rect x="0" y="0" width="${sx.toFixed(1)}" height="${H}" fill="#ffffff06"/><line x1="${sx.toFixed(1)}" x2="${sx.toFixed(1)}" y1="0" y2="${H}" stroke="#ffffff22" stroke-dasharray="3 4"/>`;
+ h+=`<text x="6" y="${H-4}" fill="var(--mut)" font-size="11">${rv?esc(fmtDate(rv.from)):'before'}</text><text x="${(sx+6).toFixed(1)}" y="${H-4}" fill="var(--mut)" font-size="11">${rv?esc(fmtDate(rv.start)):'the two minutes'}</text>`;
+ for(let q=0;q<4;q++){const v=a+(b-a)*(q+.5)/4;h+=`<line x1="0" x2="${W-R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#ffffff0c"/>`+(Math.abs(y(v)-lastY)<16?'':`<text x="${W-R+5}" y="${(y(v)+4).toFixed(0)}" fill="var(--mut)" font-size="11">${lab(v)}</text>`)}
+ cs.forEach((c,i)=>{const x=i*sw+sw/2,col=c[3]>=c[0]?'var(--up)':'var(--dn)';
+  h+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${y(c[1]).toFixed(1)}" y2="${y(c[2]).toFixed(1)}" stroke="${col}"/><rect x="${(x-bw/2).toFixed(1)}" y="${y(Math.max(c[0],c[3])).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,Math.abs(y(c[0])-y(c[3]))).toFixed(1)}" fill="${col}"/><rect x="${(x-bw/2).toFixed(1)}" y="${(H-16-c[4]/vx*volH).toFixed(1)}" width="${bw.toFixed(1)}" height="${(c[4]/vx*volH).toFixed(1)}" fill="${col}" opacity=".28"/>`});
+ for(const t of tr){if(t[0]>=n)continue;const x=t[0]*sw+sw/2,up=t[1]==='buy'||t[1]==='cover',c=cs[t[0]],yy=up?y(c[2])+12:y(c[1])-12;
+  h+=`<path d="M${x.toFixed(1)} ${(up?yy-7:yy+7).toFixed(1)} l-5 ${up?9:-9} h10 z" fill="${up?'var(--up)':'var(--dn)'}" stroke="#0b0d10" stroke-width=".8"/>`}
+ h+=`<line x1="0" x2="${W-R}" y1="${lastY.toFixed(1)}" y2="${lastY.toFixed(1)}" stroke="var(--acc)" stroke-dasharray="2 3"/><rect x="${W-R+1}" y="${(lastY-10).toFixed(0)}" width="${R-1}" height="20" rx="3" fill="var(--acc)"/><text x="${W-R+5}" y="${(lastY+4).toFixed(0)}" fill="#021012" font-size="11.5" font-weight="700">${lab(cs[cs.length-1][3])}</text>`;
+ return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="display:block" role="img" aria-label="Today's chart">${h}</svg>`;
+}
+
+function statRow(st){
+ return `<div class="stat">${[['Played',st.played],['Average',st.played?`<span class="${cls(st.sum/st.played)}">${pc(st.sum/st.played)}</span>`:'–'],['Beat the stock',st.played?Math.round(st.beat/st.played*100)+'%':'–'],['Streak',streakNow(st)],['Best streak',st.max]].map(([l,v])=>`<div><strong>${v}</strong><small>${l}</small></div>`).join('')}</div>`}
+function dist(st,mine){
+ const most=Math.max(...st.bands,1),me=mine===null?-1:BANDS.findIndex(([lo,hi])=>mine>=lo&&mine<hi);
+ return `<div class="dist">${BANDS.map(([,,l],i)=>`<div class="drow${i===me?' me':''}"><span>${l}</span><div><i style="width:${Math.max(7,st.bands[i]/most*100).toFixed(1)}%">${st.bands[i]}</i></div></div>`).join('')}</div>`}
+
+function result(){
+ const rv=reveal(),h=hold(),st=stats(),b=bestTrade(),gr=grid(),anim=G.fresh;
+ const said=!G.trades.length?'you sat it out.':G.ret>h+1e-9?'you beat it.':'it beat you.';
+ return `<div class="card">${rv?`<div class="kick">The stock was</div><div class="name">${esc(rv.name)}<span>${esc(rv.ticker)}</span></div>
+  <div class="when">${esc(fmtDate(rv.start))} to ${esc(fmtDate(rv.end))}</div>
+  <div class="real">$${num(rv.first,rv.first<1?4:2)} → $${num(rv.last,rv.last<1?4:2)} <b class="${cls(h)}">${pc(h)}</b></div>
+  ${rv.events&&rv.events.length?`<p class="ev">Those months held ${esc(rv.events.join(', and '))}.</p>`:''}`:''}</div>
+ <div class="card"><div class="kick">Meme Street #${DAY}</div><div class="big ${cls(G.ret)}">${pc(G.ret)}</div><div class="mut">${money(G.equity)} from ${money(START)}</div>
+  <div class="vs">The stock did <b class="${cls(h)}">${pc(h)}</b>: ${said}</div>
+  <div class="grid${anim?' anim':''}">${gr.map((v,i)=>`<i class="${v>0?'u':v<0?'d':'f'}" style="animation-delay:${i*.09}s"></i>`).join('')}</div>
+  ${b.ret>0.0005?`<p class="best">The best single trade: <b>${b.side==='long'?'buy':'short'}</b> at second ${b.from}, <b>${b.side==='long'?'sell':'cover'}</b> at second ${b.to}, for <b class="up">${pc(b.ret)}</b>.</p>`:''}
+  ${statRow(st)}
+  <div class="row"><button class="go" id="share">Share</button></div>
+  <p class="next">Next stock in <b class="cd">${hms(toMidnight())}</b></p></div>
+ <div class="chart">${svg()}</div>`;
+}
+
+function draw(){
+ const m=$('main');
+ if(!G){if(drawn!=='new'){drawn='new';const st=stats(),s=streakNow(st);
+  m.innerHTML=`<p class="sub">#${DAY} · ${esc(new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}))}</p>
+  <div class="hero"><p class="tag">One real stock.<br>Two minutes to trade it.<br>Its name at the end.</p>
+  <p>The same chart for everyone today, from real prices.${s?` Your streak: <b style="color:var(--txt)">${s}</b>.`:''}</p>
+  <button class="go" id="play">Play</button><p class="small">One go a day · ${money(START)} of practice money · <a href="#" id="how" style="color:var(--acc)">how to play</a></p></div>
+  <div class="chart" style="margin-top:22px;opacity:.55">${svg()}</div>`}return}
+ if(!G.done){
+  if(drawn!=='run'){drawn='run';m.innerHTML=`<div class="top"><div class="timer" id="timer"></div><div class="pnl"><div class="ret" id="ret"></div><div class="eq" id="eq"></div></div></div>
+   <div class="chart" id="chart"></div><div class="pos" id="pos"></div>
+   <div class="sizes" role="group" aria-label="Size">${SIZES.map((p,i)=>`<button data-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
+   <div class="btns"><button class="buy" data-side="buy"><span id="lb">Buy</span><small>B</small></button><button class="sell" data-side="sell"><span id="ls">Sell</span><small>S</small></button></div>`}
+  const n=shown(),price=C[n-1][3],eq=G.cash+G.shares*price,ret=eq/START-1,sh=G.shares,left=LIVE-elapsed();
+  $('timer').textContent=clock(left);$('timer').classList.toggle('low',left<=15);
+  $('ret').innerHTML=`<span class="${cls(ret)}">${pc(ret)}</span>`;$('eq').textContent=money(eq);
+  const s=svg();if(s!==$('chart')._s){$('chart').innerHTML=s;$('chart')._s=s}
+  $('pos').innerHTML=sh>0?`<b class="up">Long</b> · ${money(sh*price)} in the stock`:sh<0?`<b class="dn">Short</b> · ${money(-sh*price)} borrowed and sold`:'<b>In cash</b> · pick a size, then Buy or Sell';
+  $('lb').textContent=sh<0?'Cover':'Buy';$('ls').textContent=sh>0?'Sell':'Short';
+  document.querySelectorAll('[data-size]').forEach(b=>b.classList.toggle('on',Number(b.dataset.size)===size));return}
+ if(drawn!=='done'){drawn='done';m.innerHTML=result();if(G.fresh){G.fresh=false;save()}}
+}
+
+function shareText(){
+ const st=stats(),s=streakNow(st);
+ return `Meme Street #${DAY} ${G.ret>=0?'📈':'📉'}\n${pc(G.ret)} · the stock ${pc(hold())}\n${grid().map(v=>v>0?'🟩':v<0?'🟥':'⬜').join('')}${s>1?'\n🔥 '+s+' days':''}\n${location.origin}${location.pathname}`}
+async function share(){
+ const text=shareText();
+ if(PHONE&&navigator.share){try{await navigator.share({text});return}catch(e){if(e.name==='AbortError')return}}
+ try{await navigator.clipboard.writeText(text);toast('Copied: paste it anywhere')}catch(e){toast('Could not copy')}}
+
+function pop(html,label){const p=$('pop');p.innerHTML=`<div aria-label="${label}"><button class="x" data-close aria-label="Close">×</button>${html}</div>`;p.style.display='flex'}
+function help(){pop(`<h2>How to play</h2><ul>
+ <li><b>One real stock a day</b>, the same for everyone. A new one at midnight.</li>
+ <li>Press <b>Play</b>: you see its last 60 trading days, then the next 120 days print <b>one a second</b>. Two minutes.</li>
+ <li>Pick a size, then <b>Buy</b> or <b>Sell</b> at the latest price, as often as you like. No fees.</li>
+ <li><b>Sell with nothing held and you short</b>: you win if it falls. Buy covers the short.</li>
+ <li>At the end everything is valued at the last price. Your <b>return</b> is your score. Try to beat the stock.</li>
+ <li>Then the <b>name, the dates and the real prices</b> are revealed.</li></ul>
+ <p class="small">On a keyboard: <b>B</b> buy, <b>S</b> sell, <b>1</b> to <b>4</b> the size.</p>
+ <p class="small">Real daily prices of US stocks from 2016 to 2021 (split-adjusted; OpenML dataset 43497, public domain), shown from 100 while you play so the price gives nothing away. Practice money only: nothing here is advice or a real trade.</p>`,'How to play')}
+function statsPop(){const st=stats();pop(`<h2>Your stats</h2>${statRow(st)}<p class="small" style="margin-top:12px">Best return: ${st.best===null?'–':pc(st.best)}. A streak counts days in a row: miss a day and it starts again.</p>
+ <h2 style="margin-top:18px;font-size:16px">Your returns</h2>${dist(st,G&&G.done?G.ret:null)}<p class="next" style="text-align:center">Next stock in <b class="cd">${hms(toMidnight())}</b></p>`,'Your stats')}
+let toastT=null;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1400)}
+
+document.addEventListener('click',e=>{const t=e.target;
+ if(t.closest('[data-close]')||t.id==='pop'){$('pop').style.display='none';return}
+ if(t.closest('#help-btn')||t.closest('#how')){e.preventDefault();help();return}
+ if(t.closest('#stats-btn')){statsPop();return}
+ if(t.closest('#play')){start();return}
+ if(t.closest('#share')){share();return}
+ const s=t.closest('[data-size]');if(s){size=Number(s.dataset.size);store.set('ms-size',size);draw();return}
+ const b=t.closest('[data-side]');if(b)trade(b.dataset.side)});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){$('pop').style.display='none';return}
+ if(!G||G.done||e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key.toLowerCase();
+ if(k==='b'){e.preventDefault();trade('buy')}else if(k==='s'){e.preventDefault();trade('sell')}
+ else if(k.length===1&&'1234'.includes(k)){size=SIZES[Number(k)-1];store.set('ms-size',size);draw()}});
+boot();
+</script></body></html>

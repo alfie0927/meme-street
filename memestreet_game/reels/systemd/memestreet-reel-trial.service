@@ -1,0 +1,15 @@
+[Unit]
+Description=Meme Street: the daily Trial Reels pair (the current reel against version 2, same facts)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/opt/memestreet-daily-reel/trial_pair.sh
+TimeoutStartSec=infinity
+Nice=19
+IOSchedulingClass=idle
+CPUQuota=100%
+MemoryMax=2G
+MemoryHigh=1700M
+OOMScoreAdjust=800

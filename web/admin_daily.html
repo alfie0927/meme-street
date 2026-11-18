@@ -1,0 +1,108 @@
+<!doctype html>
+<!-- The admin page of memestreet.net since 2026-11-18, when the site became just the Daily (the owner: "the admin dashboard
+     should just be about the daily, with multiple tabs on different statistics about the daily"). Everything comes from
+     GET /api/admin/daily (game/daily.py daily_admin), refreshed every 30 seconds; the admin key stays in this tab only. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meme Street Daily: admin</title><meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<style>
+:root{--bg:#08090b;--panel:#0d1013;--panel2:#12161a;--line:#262d33;--line2:#1a1f24;--txt:#dce3e8;--mut:#7d8a93;--up:#3ad07a;--dn:#f25c54;--acc:#4cc3cc;--warn:#e8b84a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,Menlo,monospace}
+.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}.warn{color:var(--warn)}
+button,input{font:inherit;color:var(--txt);background:#161b20;border:1px solid var(--line);border-radius:4px;padding:6px 11px}
+button{cursor:pointer}button:hover{background:#1f262c}button.primary{background:var(--acc);border-color:var(--acc);color:#021012;font-weight:700}
+button.danger{border-color:#f25c5466;color:var(--dn)}
+#login{max-width:380px;margin:12vh auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px}#login input,#login button{width:100%;margin-top:12px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar1{display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap}.bar1 b{font-size:15px}.sp{flex:1}
+#tabs{display:flex;gap:2px;padding:0 14px;overflow-x:auto}
+#tabs button{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--mut);padding:9px 12px;white-space:nowrap}
+#tabs button.on{color:var(--txt);border-bottom-color:var(--acc)}
+main{max-width:1200px;margin:0 auto;padding:18px 20px 40px}.page{display:none}.page.on{display:block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}.kpi small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.kpi strong{display:block;font-size:21px;margin-top:3px;font-variant-numeric:tabular-nums}.kpi em{display:block;font-style:normal;color:var(--mut);font-size:11.5px;margin-top:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:16px;overflow-x:auto}
+.panel h2{font-size:13.5px;margin:0 0 12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line2);white-space:nowrap}
+td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:11.5px;text-transform:uppercase;cursor:pointer}
+.bars{display:flex;align-items:flex-end;gap:3px;height:140px;margin-top:6px}.bars div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:9.5px;color:var(--mut);min-width:0}
+.bars i{display:block;width:100%;border-radius:2px 2px 0 0;min-height:1px}.bars span{margin-top:3px;white-space:nowrap;overflow:hidden;max-width:100%}
+.note{color:var(--mut);font-size:12px;margin:8px 0 0}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--mut);margin:0 4px 4px 0}
+</style></head><body>
+<div id="login"><b style="font-size:16px">Meme Street Daily: admin</b><p class="mut">The admin key opens it.</p><input id="key" type="password" placeholder="Admin key" autocomplete="current-password"><button class="primary" id="go">Open</button><p id="err" class="dn"></p></div>
+<div id="app" style="display:none">
+<div class="top"><div class="bar1"><b>Meme Street Daily</b><span class="mut" id="stamp"></span><span class="sp"></span><a href="/" target="_blank" style="color:var(--acc)">Open the game</a><button id="out">Lock</button></div>
+<div id="tabs"></div></div>
+<main id="pages"></main></div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pc=x=>x===null||x===undefined?'–':(x>0?'+':x<0?'−':'')+Math.abs(x*100).toFixed(1)+'%';
+const share=(a,b)=>b?Math.round(a/b*100)+'%':'–';
+const cls=x=>x>0.0005?'up':x<-0.0005?'dn':'';
+const date=day=>new Date(day*864e5).toLocaleDateString(undefined,{day:'numeric',month:'short',timeZone:'UTC'});
+const TABS=[['today','Today'],['days','Day by day'],['players','Players'],['streaks','Streaks'],['retention','Coming back'],['stocks','Stocks'],['sources','Sources and sharing'],['signups','Sign-ups']];
+let key=null,timer=null,A=null,tab='today';try{key=sessionStorage.admin_key||null}catch(e){}
+async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:Object.assign({'X-Admin-Key':key},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined});
+ if(r.status===403)throw new Error('That is not the admin key');if(r.status===429)throw new Error((await r.json()).error);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+const kpi=(label,val,sub)=>`<div class="kpi"><small>${label}</small><strong>${val}</strong>${sub?`<em>${sub}</em>`:''}</div>`;
+const table=(head,rows)=>`<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td class="mut" colspan="${head.length}">Nothing yet</td></tr>`}</tbody></table>`;
+function bars(items,color){const max=Math.max(1,...items.map(x=>x[1]));return `<div class="bars">${items.map(([l,v])=>`<div title="${esc(l)}: ${v}"><small>${v||''}</small><i style="height:${(v/max*110).toFixed(0)}px;background:${color||'var(--acc)'}"></i><span>${esc(l)}</span></div>`).join('')}</div>`}
+const players=x=>(x.finished||0)+(x.visitors_finished||0);
+
+const PAGES={
+ today(){const t=A.today,c=A.chart||{};const evs=Object.entries(t.ev||{});const refs=Object.entries(t.refs||{}).sort((a,b)=>b[1]-a[1]);
+  return `<div class="kpis">${kpi('Players today',t.people+t.visitors,`${t.people} members · ${t.visitors} visitors`)}${kpi('Finished',t.finished+t.visitors_finished)}
+   ${kpi('New players',t.new??'–',`${t.returning??'–'} came back`)}${kpi('Signed up from a game',t.signed_up)}${kpi('Shares',(t.ev||{}).share||0,`${(t.ev||{}).picture||0} story pictures`)}
+   ${kpi('House traders',t.bots,'on the board, never counted as players')}</div>
+  <div class="grid2"><div class="panel"><h2>Today's stock: #${t.number}</h2>${c.ticker?`<p><b>${esc(c.name)}</b> (${esc(c.ticker)}) · ${esc(c.start)} to ${esc(c.end)}<br>Real: $${c.first} to $${c.last} · the stock did <b class="${cls(t.hold)}">${pc(t.hold)}</b>${c.events&&c.events.length?'<br><span class="mut">'+esc(c.events.join('; '))+'</span>':''}</p>`:'<p class="mut">A model chart (no bank on this server)</p>'}
+   <button class="danger" id="reset">A new chart for today</button><p class="note">Only when today's chart came out wrong: today's board starts again, finished games keep their place in the stats.</p></div>
+  <div class="panel"><h2>How the games went</h2>${table(['','Members','Everyone'],[['Average',`<span class="${cls(t.avg)}">${pc(t.avg)}</span>`,`<span class="${cls(t.avg_all)}">${pc(t.avg_all)}</span>`],['Median',pc(t.median),''],['Best',pc(t.best),''],['Worst',pc(t.worst),''],['Beat the stock',`${t.beat} of ${t.finished}`,''],['Sat it out',t.sat_out,''],['Trades a game',t.trades===null?'–':t.trades.toFixed(1),'']])}</div></div>
+  <div class="grid2"><div class="panel"><h2>Where today's players came from</h2>${table(['Link (?ref=)','Players'],refs.map(([k,v])=>[esc(k),v]))}</div>
+  <div class="panel"><h2>What they did on the page</h2>${table(['Event','Count'],evs.map(([k,v])=>[esc(k.replace('_',' ')),v]))}</div></div>
+  <p class="note">The bank holds ${A.bank} real charts; ${A.archive} past days are in the archive. Next chart at ${new Date(A.next*1000).toUTCString().slice(17,22)} UTC.</p>`},
+ days(){const d=A.days.slice(0,60);
+  return `<div class="panel"><h2>Players a day (members and visitors who finished)</h2>${bars(d.slice().reverse().map(x=>['#'+x.number,players(x)]))}</div>
+  <div class="panel">${table(['#','Date','Stock','Members','Visitors','New','Back','Signed up','Avg (all)','Median','Stock did','Beat','Shares'],
+   d.map(x=>[x.number,date(x.day),esc(x.stock||'model'),x.finished,x.visitors_finished,x.new??'–',x.returning??'–',x.signed_up,`<span class="${cls(x.avg_all)}">${pc(x.avg_all)}</span>`,pc(x.median),`<span class="${cls(x.hold)}">${pc(x.hold)}</span>`,x.finished?share(x.beat,x.finished):'–',(x.ev||{}).share||0]))}</div>`},
+ players(){const g=(t,x)=>`<div class="panel"><h2>${t}</h2><div class="kpis">${kpi('Players',x.players)}${kpi('Games',x.games)}${kpi('Played twice or more',x.returning,share(x.returning,x.players))}${kpi('Five or more',x.regulars,share(x.regulars,x.players))}${kpi('On a streak now',x.on_streak)}${kpi('Best streak',x.best_streak)}${kpi('Average return',pc(x.avg_return))}${t==='Members'?kpi('Freezes used',x.freezes_used):''}</div></div>`;
+  return g('Everyone',A.all_time)+`<div class="grid2">${g('Members',A.members)}${g('Visitors (no account)',A.visitors)}</div>
+  <div class="panel"><h2>Played the most</h2>${table(['Player','Games','Best streak'],A.most_played.map(x=>[esc(x[0])+(x[4]?'':' <span class="chip">visitor</span>'),x[1],x[2]]))}</div>`},
+ streaks(){const order=['1','2-3','4-7','8-30','31+'],L=A.streak_lengths||{};
+  return `<div class="panel"><h2>Streaks running now, by length (days)</h2>${bars(order.map(k=>[k,L[k]||0]),'#ffb020')}</div>
+  <div class="panel"><h2>The longest streaks running</h2>${table(['Player','Streak','Best streak','Games'],A.streaks.map(x=>[esc(x[0])+(x[4]?'':' <span class="chip">visitor</span>'),x[1],x[2],x[3]]))}
+  <p class="note">A member's streak survives one missed day for each streak freeze they hold (one to start, one more every 7 games, 2 at most).</p></div>`},
+ retention(){return `<div class="panel"><h2>By the day a player first played (the last 30 days)</h2>${table(['First day','#','New players','Members now','Next day','Within 7 days','Ever again'],
+  A.cohorts.map(c=>[date(c.day),c.number,c.new,c.members,`${c.d1} (${share(c.d1,c.new)})`,`${c.d7} (${share(c.d7,c.new)})`,`${c.again} (${share(c.again,c.new)})`]))}
+  <p class="note">A player is a member or a visitor's browser. "Next day" and "within 7 days" count from the history each player keeps since 18 November 2026.</p></div>`},
+ stocks(){return `<div class="panel"><h2>Every real stock so far</h2>${table(['#','Date','Stock','Stock did','Players','Average','Median','Beat the stock'],
+  A.stocks.map(x=>[x.number,date(x.day),esc(x.stock),`<span class="${cls(x.hold)}">${pc(x.hold)}</span>`,x.finished,`<span class="${cls(x.avg)}">${pc(x.avg)}</span>`,pc(x.median),x.beat??'–']))}
+  <p class="note">"Beat the stock" counts members only; "Average" counts everyone who finished.</p></div>`},
+ sources(){const d=A.days.slice(0,30),kinds=['share','picture','challenge','signup_open','archive_play','help'];
+  return `<div class="grid2"><div class="panel"><h2>Where players came from (the last 30 days)</h2>${table(['Link (?ref=)','Players'],A.refs.map(([k,v])=>[esc(k),v]))}<p class="note">reel = /play in a reel caption · yt = YouTube · ig_bio = the Instagram bio · a share link carries the sharer's name in ?vs=, not here.</p></div>
+  <div class="panel"><h2>Shares a day</h2>${bars(d.slice().reverse().map(x=>['#'+x.number,(x.ev||{}).share||0]),'var(--up)')}</div></div>
+  <div class="panel"><h2>What players did on the page, day by day</h2>${table(['#','Date',...kinds.map(k=>k.replace('_',' '))],d.map(x=>[x.number,date(x.day),...kinds.map(k=>(x.ev||{})[k]||0)]))}</div>`},
+ signups(){const d=A.days.slice(0,30);
+  return `<div class="panel"><h2>From a visitor's game to an account (the last 30 days)</h2>${table(['#','Date','Visitors','Finished','Saw the account box','Signed up','Of finishers'],
+   d.map(x=>[x.number,date(x.day),x.visitors,x.visitors_finished,(x.ev||{}).signup_open||0,x.signed_up,share(x.signed_up,x.visitors_finished)]))}
+  <p class="note">"Saw the account box" counts every opening of it (after a result, from the header, from the stats), so it can be more than the visitors.</p></div>`},
+};
+function render(){
+ $('tabs').innerHTML=TABS.map(([k,l])=>`<button data-tab="${k}" class="${k===tab?'on':''}">${l}</button>`).join('');
+ $('pages').innerHTML=`<div class="page on">${PAGES[tab]()}</div>`;
+ $('stamp').textContent='updated '+new Date().toLocaleTimeString()}
+async function refresh(){try{A=await api('/api/admin/daily');render()}catch(e){lock(e.message)}}
+function open_(){$('login').style.display='none';$('app').style.display='block';refresh();clearInterval(timer);timer=setInterval(refresh,30000)}
+function lock(msg){clearInterval(timer);try{sessionStorage.removeItem('admin_key')}catch(e){}key=null;$('app').style.display='none';$('login').style.display='block';$('err').textContent=msg||''}
+document.addEventListener('click',async e=>{const t=e.target;
+ const b=t.closest('[data-tab]');if(b){tab=b.dataset.tab;render();return}
+ if(t.id==='reset'){if(prompt('Type NEW to put a new chart up for today. Today’s board starts again.')!=='NEW')return;try{const r=await api('/api/admin/daily/reset',{confirm:'NEW'});alert(r.msg||r.error||'Done');refresh()}catch(err){alert(err.message)}}
+ if(t.id==='out')lock('')});
+$('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};$('key').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
+if(key)open_();
+</script></body></html>
