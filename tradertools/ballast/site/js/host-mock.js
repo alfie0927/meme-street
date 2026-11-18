@@ -3,6 +3,7 @@
 // tests/test_tradertools.py, which drives it through window.__mock. It never talks to cTrader and places nothing real.
 export const kind = "mock";
 export const UNITS_PER_VOLUME = 1;
+export const VOLUME_CHECKED = true;
 
 const ASSETS = { 1: "USD", 2: "EUR", 3: "GBP", 4: "JPY", 5: "XAU", 6: "BTC", 7: "US500" };
 const SYMBOLS = [
@@ -20,10 +21,10 @@ const iso = (ms) => new Date(ms).toISOString();
 
 const state = {
   login: 5550123, balance: 10000, equity: 9960, currency: "USD", accountType: "hedged", sent: [], listeners: [], execs: [],
-  answer: null, failDeals: false,
+  answer: null, failDeals: false, failPositions: false, orders: [],
   positions: [
-    { positionId: 11, symbolId: 1, symbolName: "EURUSD", side: "buy", volume: 20000, entryPrice: 1.1015, stopLoss: 1.0990, takeProfit: 1.1065, netPnl: -34 },
-    { positionId: 12, symbolId: 5, symbolName: "XAUUSD", side: "sell", volume: 2, entryPrice: 2397, stopLoss: null, takeProfit: null, netPnl: -6 },
+    { positionId: 11, symbolId: 1, symbolName: "EURUSD", side: "buy", volume: 20000, entryPrice: 1.1015, stopLoss: 1.0990, takeProfit: 1.1065, netPnl: -34, openTimestamp: iso(now - 2 * 3600000) },
+    { positionId: 12, symbolId: 5, symbolName: "XAUUSD", side: "sell", volume: 2, entryPrice: 2397, stopLoss: null, takeProfit: null, netPnl: -6, openTimestamp: iso(now - 3600000) },
   ],
   deals: [
     { dealId: 101, symbolName: "EURUSD", openingDirection: "buy", openingTime: iso(now - 3 * 86400000), closingTime: iso(now - 3 * 86400000 + 3600000), netProfit: 152, label: "BLST r=75.00 id=mock0001" },
@@ -63,8 +64,10 @@ export async function assets(ids) {
 }
 
 export function quotes(symbolIds, onQuote) {
-  const t = setTimeout(() => symbolIds.forEach((id) => QUOTES[id] && onQuote({ symbolId: id, bid: QUOTES[id][0], ask: QUOTES[id][1] })), 0);
-  return () => clearTimeout(t);
+  const send = () => symbolIds.forEach((id) => QUOTES[id] && onQuote({ symbolId: id, bid: QUOTES[id][0], ask: QUOTES[id][1] }));
+  const t = setTimeout(send, 0);
+  const every = setInterval(send, 5000);                       // (a live feed ticks: the panel distrusts a silent one)
+  return () => { clearTimeout(t); clearInterval(every); };
 }
 
 export function onExecution(cb) {
@@ -73,7 +76,12 @@ export function onExecution(cb) {
 }
 
 export async function positions() {
+  if (state.failPositions) throw new Error("MOCK_POSITIONS");
   return state.positions.map((p) => ({ ...p }));
+}
+
+export async function pendingOrders() {
+  return state.orders.map((o) => ({ ...o }));
 }
 
 export async function deals(fromMs, toMs) {

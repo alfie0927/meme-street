@@ -1,65 +1,87 @@
 # Ballast: how to use it
 
-Ballast is a risk toolkit inside cTrader. It works out how big a trade should be for the risk you choose, places it
-with its stop attached, keeps you inside your loss limits, and records how your trades went. It gives no signals and
-no advice: every trade is your choice. Try it on a demo account first.
+Ballast is a risk toolkit inside cTrader. It works out the position size for the risk you choose, places the trade
+with its stop attached, sizes new trades to fit the loss limits you enter, and records your results. It gives no
+signals and no advice: every trade is your choice. Try it on a demo account first.
+
+**Ballast Free** has the Ticket (sizing, costs, ATR stops), Exposure and Sessions; it does not place orders.
+**Ballast** adds the Place button, Limits and the Journal.
 
 ## Open it
 
 In cTrader, Ballast appears where you installed it: in the symbol panel beside the chart, as a tab in Trade Watch,
-as its own window, or (on a phone) from a symbol's Overview. It opens on the symbol you are looking at.
+as its own window, or (on a phone) from a symbol's Overview. It opens on the symbol you are looking at; type another
+name in the symbol box to change it. Numbers follow your device's format (1,250.50 or 1.250,50).
 
 ## Ticket: size a trade
 
 1. **Buy or Sell**, and the **order**: Market (now), Limit (a better price than now) or Stop (a breakout price).
    Limit and Stop ask for the entry price.
 2. **Stop**: where you will be proved wrong. In pips from the entry (a pip is the usual small step: 0.0001 on most
-   currency pairs, 0.01 on yen pairs), as a price, or as a multiple of ATR, the market's average move per bar on the
-   chart period you choose under Costs.
+   currency pairs, 0.01 on yen pairs; indices and crypto use points), as a price, or as a multiple of ATR, the
+   market's average move per bar on the chart period you choose.
 3. **Target** (optional): a multiple of your risk ("2" means twice what you risk), or a price.
-4. **Risk**: a percent of your balance (1% is common), or an amount of money.
-5. Under **Costs**, enter your broker's commission once: per lot each side, or per million USD each side. It is in
-   cTrader's symbol information or your account's terms. Ballast counts it twice, for opening and closing.
+4. **Risk**: a percent of your balance, or an amount of money. The 0.5%, 1% and 2% buttons fill it in.
+5. **Costs**: choose how your broker charges commission (per lot each side, per million USD each side, or a percent
+   of the trade's value each side) and enter the figure once; it is in cTrader's symbol information or your account's
+   terms. Choose "none" if you pay none. Until you choose, the ticket reminds you that commission is not counted.
 
-The result shows the size in lots, what you lose if the stop is hit (price and commission), and the reward to risk.
-Ballast always rounds down; if even the smallest allowed size would lose more than your risk, it says so and does
-not size the trade.
+The result shows the size in lots, the stop as a price, what you lose if the stop is hit (price and commission), what
+one pip is worth, and the reward to risk with the win rate it needs to break even. When the symbol's currency is not
+your account's, the rate used is shown. Ballast always rounds down; if even the smallest allowed size would lose more
+than your risk, it says so and does not size the trade.
 
-6. **Review order** shows everything once more. **Place order** sends it, once; a double tap does not send two.
-   Change anything and the review closes, so you always place what you reviewed.
+6. **Review order** (or Enter) shows everything once more, in place of the form. The button names the trade, for
+   example **Buy 0.50 lots EURUSD**; it sends the order once, and a double tap does not send two. **Back** returns to
+   the form; **New trade** starts the next one.
 
-Ballast refuses a stop that is less than a pip beyond the price the trade would close at (it would be hit at once),
-spread-betting accounts (they trade in stakes per point), and a netting account that already holds the symbol (a new
-order would change that position).
+Ballast checks everything again at the moment you press the button: if the price, your limits or your account changed
+since the review, it says so and sends nothing. It also refuses:
+- a stop less than a pip beyond the price the trade would close at (for a limit or stop order, allowing for today's
+  spread when it fills), because it would be hit at once;
+- spread-betting accounts (they trade in stakes per point);
+- a netting account that already holds the symbol or has an order on it (a new order would change that position);
+- a price that has not updated for two minutes.
 
-## Limits: stay inside your loss limits
+## Limits: size new trades to your loss limits
 
-For anyone with a daily or total loss limit, especially a funded ("prop firm") account.
+For anyone with a daily or total loss limit, especially a funded ("prop firm") account. Settings are kept for each
+trading account on this device.
 
-- **Daily loss limit** and **Total loss limit**: in money, or as a percent of the starting balance.
-- **Starting balance**: the account's size when it began (a funded account's size).
+- **Daily loss limit** and **Total loss limit**: as a percent of the starting balance, or in money.
+- **Starting balance**: the account's size when it began (a funded account's size). A percent limit needs it.
 - **Daily loss counts from**: your firm's rule, either the day's opening balance or the higher of the opening
-  balance and equity. (For the second, keep Ballast open over your firm's day change so it sees the opening equity.)
-- **Total loss counts from**: the starting balance, or the highest balance or equity reached (trailing).
-- **The day starts at**: your firm's reset time and time zone (for example 00:00 Prague).
-- **Open trades**: "count them at their stops" (safer) treats every open trade as if its stop were hit.
+  balance and equity. For the second, Ballast uses the opening balance when nothing was open as the day began;
+  otherwise it needs the opening equity, which it records if it is open when the day starts, or which you type in.
+- **Total loss counts from**: the starting balance (static), or the highest balance or equity reached (trailing).
+  For a trailing limit, type your firm's current lowest allowed equity, and again when it changes: Ballast cannot see
+  a peak reached while it was closed.
+- **The day starts at**: your firm's reset time and time zone (for example 00:00 Prague). Ballast shows when that is
+  in your own time.
+- **Open trades**: "count them at their stops" (the default, and the careful choice) treats every open position and
+  pending order as if its stop were hit.
+- **Exact figures from your firm**: when your firm's dashboard shows today's lowest allowed equity, or today's opening
+  equity, type it here and Ballast uses it instead of its own sum. Today's figures clear when the day resets.
 
-Ballast then shows how much of each limit is used, cuts every new trade so a stop-out cannot break either limit,
-and stops placing orders when one is reached. If the account's history cannot be read, it blocks orders until it
-can, rather than guess. Firms' rules differ and change: read yours and match it here. Ballast protects its own
-orders: trades placed elsewhere in cTrader are counted, but not blocked.
+Ballast then shows what you have lost so far, what you would have lost if every open stop were hit, and the most a new
+trade may lose. Each new trade is cut to fit, and at a limit Ballast places no orders until it resets. When it cannot
+check the figures (the history, positions or orders did not load, the balance is stale, an open trade cannot be valued,
+a pending order has no stop), it blocks orders and says why, rather than guess.
+
+Firms' rules differ and change: read yours and match it here. Ballast protects its own orders: trades placed
+elsewhere in cTrader are counted, but not blocked. A stop is not a guaranteed price, so a gap can still pass a limit.
 
 ## Exposure
 
-Every open position, what it loses at its stop in your money and as a share of your balance, and the total.
-Positions without a stop are marked: their loss has no limit.
+Every open position and pending order, what it loses at its stop in your money and as a share of your balance, and
+the total. Positions without a stop are marked: their loss has no limit.
 
 ## Journal
 
 Every trade placed from Ballast, once it closes, in **R**: its result divided by the money it risked. +2 R made
-twice the risk; -1 R lost what was planned. Average R above zero over many trades means the way you trade has made
-money so far. A small number of trades proves little: wait for 30 or more. Download the journal as a spreadsheet
-with **Download as CSV**.
+twice the risk; -1 R lost what was planned. The journal shows win rate, average R, profit factor and the longest
+losing run, overall and by symbol. A small number of trades says little: wait for 30 or more. **Download as CSV**
+opens in any spreadsheet.
 
 ## Sessions
 

@@ -45,6 +45,17 @@ export function buildOrder(input) {
   }
   const size = sizeTrade(input);
   if (!size.ok) return size;
+  if (orderType !== "market") {
+    // A pending order fills when the price reaches its entry; the stop is then watched on the other side of today's
+    // spread (a buy's on the bid), so it must clear entry minus the spread (plus for a sell) by a pip, or it fires at once.
+    const spread = quote.ask - quote.bid;
+    const edge = side === "buy" ? entry - spread : entry + spread;
+    const gap = side === "buy" ? edge - stop : stop - edge;
+    if (gap < pip - 1e-12) {
+      const min = roundPrice(side === "buy" ? edge - pip : edge + pip, symbol.digits);
+      return { ...fail("stop", `The stop is too close: with today's spread it must be ${side === "buy" ? "at or below" : "at or above"} ${min}, or it would be hit as soon as the order fills.`, "stopTooClosePending"), min };
+    }
+  }
   if (target != null && target !== "") {
     if (!(target > 0)) return fail("target", "The target price is not valid.", "targetInvalid");
     if (side === "buy" ? !(target > entry) : !(target < entry)) {

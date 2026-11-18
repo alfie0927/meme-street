@@ -286,6 +286,7 @@ Code and manual: `tradertools/ballast/` (README, USER_GUIDE, LISTING); how it wo
 | What | Who | State |
 |---|---|---|
 | Ballast built overnight: the five tools, every finding of an independent maths audit fixed (commission, the rate at the stop, stops inside the spread, the limits' room, equity-based limits, failing closed, partial closes, netting accounts), 48 maths tests and 4 browser tests, the brand, the store image and screenshots, the listing, the guides | Me | **Done 18 Nov** (branch `tradertools/toolkit`) |
+| Ballast 1.2 the same night: a review by buyer personas (prop traders, beginners, phone users, non-English number formats) and a second independent audit (fuzzing), every finding fixed: limits that fail closed on every unreadable figure, firms' exact figures, pending orders and orders just sent counted, a pending stop against the spread, stale prices, percent commission, the phone layout, every sentence in one table for translation; 60 maths tests and 5 browser tests. Placing stays switched off (`VOLUME_CHECKED`) until the probe confirms the volume unit | Me | **Done 18 Nov** |
 | A cTrader ID, a demo account, the phone app; whether cTrader's own order ticket already sizes by risk percent (if it does, the paid value shrinks to the limits and the log, and we decide before building more) | You | Open |
 | Seller registration and the identity check (photo ID, selfie, proof of address); a UK debit card for payouts | You | Open |
 | Hosting on Cloudflare Pages (free; README "Hosting") | You | Open |
@@ -295,7 +296,7 @@ If the probe fails on both Web and the phone, the fallback is a desktop-only plu
 
 ### Stage 1, 25 November to 21 December: build and list
 
-Fit the probe's answers (`UNITS_PER_VOLUME`, the journal's label), delete the probe, build the two plugins and put
+Fit the probe's answers (`UNITS_PER_VOLUME` and then `VOLUME_CHECKED = true`, the commission booking, the journal's label), delete the probe, build the two plugins and put
 the paid one's id into `PAID_IDS`, the listing (`tradertools/ballast/LISTING.md`); your 15-minute demo checklist on 2 and 9 December
 (README); submit by 15 December (review takes 1 to 3 working days); listed by 21 December, 8 January at the latest.
 

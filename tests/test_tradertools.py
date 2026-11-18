@@ -161,6 +161,38 @@ class BallastPage(unittest.TestCase):
             check("a netting account that already holds the symbol is refused", await wait_for(pg, f"{RESULT}.includes('netting account')&&{RESULT}"), lambda t: "already hold EURUSD" in (t or ""))
         self.run_page(go, 9362)
 
+    def test_pending_orders_sent_orders_and_load_failures_count(self):
+        async def go(pg, check):
+            await pg.goto(self.base + "/index.html?mock=1&symbol=EURUSD", 2)
+            await wait_for(pg, "document.getElementById('acct').textContent.includes('Demo')")
+            await set_value(pg, "stop", "20")
+            await set_value(pg, "lim-day-mode", "money")
+            for k, v in (("lim-start", "10000"), ("lim-day", "120")):
+                await set_value(pg, k, v)
+            await wait_for(pg, "document.getElementById('limits-out').textContent.includes('at most 60.40 USD')")
+            # a buy limit of 10,000 EURUSD at 1.09500 with its stop at 1.09300 can lose 20.00 more: room 40.40
+            await pg.js("window.__mock.orders.push({orderId:7,symbolId:1,symbolName:'EURUSD',side:'buy',type:'limit',volume:10000,"
+                        "entryPrice:1.095,stopLoss:1.093});window.__mock.execs.forEach(f=>f())")
+            check("a pending order's loss at its stop takes room", await wait_for(pg, "document.getElementById('limits-out').textContent.includes('at most 40.40 USD')"), True)
+            check("and Exposure lists it", await pg.js("document.getElementById('exposure-out').textContent"),
+                  lambda t: "pending" in (t or "") and "20.00 USD if it fills" in (t or ""))
+            await pg.js("window.__mock.orders[0].stopLoss=null;window.__mock.execs.forEach(f=>f())")
+            check("a pending order with no stop blocks orders", await wait_for(pg, f"{RESULT}.includes('cannot be checked')&&document.getElementById('limits-out').textContent"),
+                  lambda t: "pending order has no stop" in (t or ""))
+            await pg.js("window.__mock.orders=[];window.__mock.failPositions=true;window.__mock.execs.forEach(f=>f())")
+            check("open positions that did not load block orders", await wait_for(pg, "document.getElementById('limits-out').textContent.includes('did not load')&&" + RESULT),
+                  lambda t: "Nothing is placed" in (t or ""))
+            await pg.js("window.__mock.failPositions=false;window.__mock.execs.forEach(f=>f())")
+            check("and orders resume once they load", await wait_for(pg, f"({BIG})==='0.30 lots'&&{BIG}"), "0.30 lots")
+            await real_click(pg, "#review")
+            await wait_for(pg, "!document.getElementById('reviewbox').hidden")
+            await real_click(pg, "#place")
+            await wait_for(pg, "document.getElementById('place-msg').textContent.startsWith('Sent')")
+            # 0.30 lots over 20 pips is 60.00: held against the room until the account shows the new position
+            check("an order just sent is held against the room", await wait_for(pg, "document.getElementById('limits-out').textContent.includes('is held')&&document.getElementById('limits-out').textContent"),
+                  lambda t: "at most 0.40 USD" in (t or "") and "60.00 USD of that is held" in (t or ""))
+        self.run_page(go, 9365)
+
     def test_exposure_journal_and_sessions(self):
         async def go(pg, check):
             await pg.goto(self.base + "/index.html?mock=1&symbol=EURUSD", 2)

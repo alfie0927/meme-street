@@ -75,8 +75,12 @@ test("A percentage limit with no starting balance blocks, never falls back to no
 test("The total limit counts equity; trailing uses the highest of every floor it knows", () => {
   const st = limitState({ ...base, balance: 95000, equity: 93500, totalLimit: 10000, initial: 100000, totalMode: "static" });
   assert.deepEqual([st.total.loss, st.room, st.total.refCode, st.total.uncertain], [6500, 3500, "initial", null]);
+  // trailing with no floor from the firm: this device may have missed the peak, so orders wait for the firm's figure
   const tr = limitState({ ...base, balance: 104000, equity: 103000, totalLimit: 5000, initial: 100000, totalMode: "trailing", peak: 106000 });
-  assert.deepEqual([tr.total.loss, tr.total.uncertain], [3000, "devicePeak"]);
+  assert.deepEqual([tr.total.error, tr.known], ["needFloor", false]);
+  // the floor typed (100,500) is below what this device saw (106,000 - 5,000): the device's peak binds, flagged as unsure
+  const dp = limitState({ ...base, balance: 104000, equity: 103000, totalLimit: 5000, initial: 100000, totalMode: "trailing", peak: 106000, totalFloor: 100500 });
+  assert.deepEqual([dp.total.loss, dp.total.refCode, dp.total.uncertain, dp.known], [3000, "trailing", "devicePeak", true]);
   // the firm's dashboard says the floor is 102,000 (its peak was 107,000, higher than this device saw)
   const fl = limitState({ ...base, balance: 104000, equity: 103000, totalLimit: 5000, initial: 100000, totalMode: "trailing", peak: 106000, totalFloor: 102000 });
   assert.deepEqual([fl.total.loss, fl.room, fl.total.refCode, fl.total.uncertain], [4000, 1000, "floor", null]);
@@ -96,4 +100,26 @@ test("Lights", () => {
   assert.equal(light(79, 100), "green");
   assert.equal(light(80, 100), "amber");
   assert.equal(light(100, 100), "red");
+});
+
+test("Daylight saving: the day starts at the first of a repeated hour, or when the clocks jump past a missing one", () => {
+  const at = (iso) => Date.parse(iso);
+  assert.equal(dayStart(at("2025-10-26T00:30:00Z"), 2, "Europe/Prague"), at("2025-10-26T00:00:00Z"));
+  assert.equal(dayStart(at("2025-10-26T00:30:00Z"), 1, "Europe/London"), at("2025-10-26T00:00:00Z"));
+  assert.equal(dayStart(at("2025-03-09T06:30:00Z"), 2, "America/New_York"), at("2025-03-08T07:00:00Z"));
+  assert.equal(dayStart(at("2025-03-09T07:30:00Z"), 2, "America/New_York"), at("2025-03-09T07:00:00Z"));
+});
+
+test("Higher-of rule: with nothing open as the day began, the opening equity is the opening balance", () => {
+  const s = limitState({ ...base, rule: "higher", dayLimit: 500, openAtDayStart: false });
+  assert.deepEqual([s.known, s.day.refCode, s.day.ref], [true, "higher", s.day.ref]);
+  assert.equal(limitState({ ...base, rule: "higher", dayLimit: 500 }).day.error, "needSodEquity");
+  assert.equal(limitState({ ...base, rule: "higher", dayLimit: 500, openAtDayStart: true }).day.error, "needSodEquity");
+});
+
+test("A limit typed but unreadable, and open risk that cannot be counted, block orders", () => {
+  assert.deepEqual([limitState({ ...base, dayLimit: NaN, dayError: "badNumber" }).day.error], ["badNumber"]);
+  const b = limitState({ ...base, dayLimit: 500, blockers: ["positions"] });
+  assert.deepEqual([b.known, b.room, b.blockers], [false, null, ["positions"]]);
+  assert.equal(limitState({ ...base, blockers: ["positions"] }).known, true);   // (no limit set: nothing to protect)
 });

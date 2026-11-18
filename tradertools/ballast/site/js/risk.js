@@ -107,23 +107,24 @@ export function conversionPath(symbols, from, to, prefer = null) {
   const edges = [];
   for (const s of symbols || []) {
     if (s.baseAssetId == null || s.quoteAssetId == null || s.baseAssetId === s.quoteAssetId) continue;
-    edges.push({ a: s.baseAssetId, b: s.quoteAssetId, symbolId: s.id, invert: false });
-    edges.push({ a: s.quoteAssetId, b: s.baseAssetId, symbolId: s.id, invert: true });
+    const pair = { base: s.baseAssetId, quote: s.quoteAssetId };
+    edges.push({ a: s.baseAssetId, b: s.quoteAssetId, step: { symbolId: s.id, invert: false, ...pair } });
+    edges.push({ a: s.quoteAssetId, b: s.baseAssetId, step: { symbolId: s.id, invert: true, ...pair } });
   }
   const direct = edges.find((e) => e.a === from && e.b === to);
-  if (direct) return [{ symbolId: direct.symbolId, invert: direct.invert }];
+  if (direct) return [direct.step];
   const firsts = edges.filter((e) => e.a === from).sort((x, y) => (y.b === prefer) - (x.b === prefer));
   for (const e1 of firsts) {
     const e2 = edges.find((e) => e.a === e1.b && e.b === to);
-    if (e2) return [{ symbolId: e1.symbolId, invert: e1.invert }, { symbolId: e2.symbolId, invert: e2.invert }];
+    if (e2) return [e1.step, e2.step];
   }
   return null;
 }
 
 /**
  * The rate along a path, on the conservative side: ask when multiplying, 1/bid when dividing.
- * quotes: { [symbolId]: { bid, ask } }. `at`: { symbolId, price } for the traded symbol at the stop: a leg on that
- * symbol is also valued at the stop price and the worse value is used.
+ * quotes: { [symbolId]: { bid, ask } }. `at`: { symbolId, base, quote, price } for the traded symbol at the stop: a leg
+ * on that symbol, or on another listing of the same pair, is also valued at the stop price and the worse value is used.
  * Returns { ok: true, rate } or { ok: false, missing: [symbolId...] }.
  */
 export function conversionRate(path, quotes, at = null) {
@@ -137,7 +138,8 @@ export function conversionRate(path, quotes, at = null) {
       missing.push(step.symbolId);
       continue;
     }
-    if (at && at.symbolId === step.symbolId && finitePositive(at.price)) {
+    const same = at && (at.symbolId === step.symbolId || (at.base != null && at.base === step.base && at.quote === step.quote));
+    if (same && finitePositive(at.price)) {                   // (also a second listing of the same pair, e.g. EURUSD.raw)
       price = step.invert ? Math.min(price, at.price) : Math.max(price, at.price);
     }
     rate = step.invert ? rate / price : rate * price;
@@ -261,12 +263,14 @@ export function rewardRisk(entry, stop, target) {
   return { rr, breakEvenWinRate: 1 / (1 + rr) };
 }
 
-/** The loss at the stop of an open position, in the account's money (no commission: it is already paid or known). */
+/** The loss at the stop of an open position, in the account's money, with the closing commission; null without a stop. */
 export function positionRisk(p, rate, unitsPerVolume = 1) {
   if (!finitePositive(p.stopLoss)) return null;
   const units = p.volume * unitsPerVolume;
   const loss = (p.side === "buy" ? p.entryPrice - p.stopLoss : p.stopLoss - p.entryPrice) * units * rate;
-  return Math.max(0, loss);                 // (a stop past the entry locks in a profit: no risk left)
+  // (a stop past the entry locks in a profit: no price risk left. The closing side's commission is still to pay:
+  //  `commission` is what the position has been charged so far, in account money, counted once more.)
+  return Math.max(0, loss) + Math.abs(Number.isFinite(p.commission) ? p.commission : 0);
 }
 
 /** Average true range of bars [{ high, low, close }] over `n` bars (Wilder's smoothing), or null. */

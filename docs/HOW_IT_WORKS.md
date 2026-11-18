@@ -2140,7 +2140,7 @@ Advance time with `advance(e, seconds)` (whole one-second ticks) or move the clo
 
 ---
 
-**Trader tools (2026-11-18).** `tests/test_tradertools.py` serves `tradertools/ballast/site` from a small local web server and drives Ballast against its stand-in for cTrader (`?mock=1`) in headless Edge or Chrome: the size (1% of 10,000 over 20 pips is 0.50 lots; 0.48 with 3.50 a lot of commission), the review, one order per real click (a script's `click()` sends nothing, a double tap sends one) with the stop trigger and the trade's id in the label, a stop inside the spread refused, settings kept per account, the limits' room cutting the size and a reached limit blocking it, an unreadable history blocking it (fail closed), a netting account refused, Exposure, Journal and Sessions, and the free edition without a Place button. The maths has its own 48 tests: `cd tradertools/ballast && node --test test/*.test.js` (CI's `tradertools` job).
+**Trader tools (2026-11-18).** `tests/test_tradertools.py` serves `tradertools/ballast/site` from a small local web server and drives Ballast against its stand-in for cTrader (`?mock=1`) in headless Edge or Chrome: the size (1% of 10,000 over 20 pips is 0.50 lots; 0.48 with 3.50 a lot of commission), the review, one order per real click (a script's `click()` sends nothing, a double tap sends one) with the stop trigger and the trade's id in the label, a stop inside the spread refused, settings kept per account, the limits' room cutting the size and a reached limit blocking it, an unreadable history blocking it (fail closed), a netting account refused; a pending order taking room, a pending order without a stop and positions that did not load blocking orders, an order just sent held against the room; Exposure, Journal and Sessions, and the free edition without a Place button. The maths has its own 60 tests: `cd tradertools/ballast && node --test test/*.test.js` (CI's `tradertools` job).
 
 ## 17. Latest economy-check results
 
@@ -2444,26 +2444,47 @@ RiskDesk), a mark of a small boat on a waterline with its ballast keel below, de
   maximum. The loss is converted from the quote currency into the account's money through at most two symbols
   (`conversionPath`, a direct pair first, USD preferred in the middle), every price on the side that makes the loss
   larger, and a leg on the traded symbol itself valued at the stop as well as now (the worse used), because a loss is
-  converted when the stop is hit. Commission is entered once (per lot each side, or per million USD each side) and
-  charged twice; the platform's conversion fee (`pnlConversionFeeRate`) is added when the quote currency is not the
-  account's. A market order's stop must sit at least a pip beyond the price it is triggered on (the bid for a buy,
-  the ask for a sell); every order carries `stopLossTriggerMethod: "trade"`; market orders carry stop and target as
-  pips from the fill, pending orders as prices rounded to the symbol. Spread-betting accounts, prediction-market
-  symbols and a netting account that already holds the symbol are refused. The label `BLST r=<planned risk>
-  id=<trade id>` lets the journal read R back. The review freezes the order; any edit closes it; Place acts only on a
-  real click, re-checks the limits at that moment, and sends once (`createPlacer`: no second send while one is in
-  flight, never a retry; no answer in 10 s says "check your positions").
-- **Limits** (`limits.js` `limitState`, `dayStart`). Daily loss = the day's reference (the opening balance, which is
-  the balance minus the net of deals closed since the day began, or the higher of that and the opening equity when
-  the panel saw the day begin) minus equity; total loss = the starting balance (static) or the highest balance or
-  equity seen (trailing) minus equity. "Count open trades at their stops" (the default) uses the lower of equity and
-  balance minus every open position's loss at its stop, so a new trade can never add up to a breach. Limits in money
-  or as a percent of the starting balance; the day starts at a chosen hour in a chosen IANA time zone (default
-  Prague), right across daylight saving. The room left (snapped to 0 under half a cent) cuts the ticket's budget;
-  none left blocks it; an incomplete history (`history.js` `readDeals`: one-week windows, split when the platform
-  says there is more) makes the limits unknown and blocks orders (fail closed).
-- **Exposure**: each open position's loss at its stop in the account's money and as a share of the balance
-  (`positionRisk`, converted like the ticket), the total, positions without a stop marked as unlimited.
+  converted when the stop is hit (matched by the pair's assets, so a second listing such as EURUSD.raw counts too).
+  Commission is entered once (per lot each side, per million USD each side, or a percent of value each side; "not
+  set" until chosen, with a reminder) and charged twice; the platform's conversion fee (`pnlConversionFeeRate`) is
+  added when the quote currency is not the account's. A market order's stop must sit at least a pip beyond the price
+  it is triggered on (the bid for a buy, the ask for a sell); a pending order's stop must clear its entry less (buy) or
+  plus (sell) today's spread by a pip, since that is the trigger price when it fills. Every order carries
+  `stopLossTriggerMethod: "trade"`; market orders carry stop and target as pips from the fill, pending orders as
+  prices rounded to the symbol. Spread-betting accounts, prediction-market symbols, a netting account with a position
+  or order on the symbol (or whose lists did not load), and a price older than two minutes are refused. The label
+  `BLST r=<planned risk> id=<trade id>` lets the journal read R back; a new id after every send, refused or not. The
+  review replaces the form and freezes the order; any edit closes it; Place acts only on a real click, rebuilds the
+  order at that moment and refuses on any difference in the market, the limits or the account, and sends once
+  (`createPlacer`: no second send while one is in flight, never a retry; no answer in 10 s says "check your
+  positions"). Every refusal has a key, and its sentence is in `i18n.js` (English; another language is one table).
+- **Limits** (`limits.js` `limitState`, `dayStart`). Daily loss = the day's reference minus equity. The reference is
+  the opening balance (the balance minus the net of deals closed since the day began), or for the "higher of" rule
+  the higher of that and the opening equity: recorded if the panel was open in the day's first 15 minutes, typed by
+  the trader, or equal to the opening balance when nothing was open as the day began (no position opened before the
+  day start, no deal closed today that opened before it). Total loss = the floor plus the limit, minus equity: the
+  floor is the highest of the starting balance less the limit, the firm's floor if typed, and for a trailing limit
+  the highest balance or equity this device has seen less the limit. A trailing limit needs the firm's floor typed
+  (the device cannot see a peak reached while it was closed). "Exact figures from your firm" (today's lowest allowed
+  equity, today's opening equity) replace Ballast's sums and clear at the day change. Each part reports the real loss
+  and the worst case: "count open trades at their stops" (the default) takes equity less every open position's loss
+  from the current price to its stop (with one more side of commission) and every pending order's loss from its
+  entry to its stop. The room left is the smallest limit less its worst case (snapped to 0 under half a cent), less
+  what orders just sent risk (held until a read started 10 s after the send has seen the account). Limits are in
+  money or as a percent of the starting balance; the day starts at a chosen hour in a chosen IANA time zone (default
+  Prague), right across daylight saving (a repeated hour counts from its first time, a skipped one from the jump).
+  **Fail closed:** with a limit set, orders are blocked and the reason shown whenever the figures cannot be trusted:
+  a % limit without a starting balance, a limit that is not a number, the history (`history.js` `readDeals`, the last
+  50 hours each refresh) incomplete, the positions or pending orders not loaded, the account older than 90 s, an open
+  trade that cannot be valued, a pending order without a stop, the "higher of" rule without an opening equity, a
+  trailing limit without the firm's floor. A position without a stop is counted at today's price and flagged.
+- **Refreshing** (`app.js` `refreshAll`): the account, positions, pending orders and deals are read together every
+  30 s, after every execution event and after a send; only the latest read is kept. The 35-day history for the
+  journal is read every 5 minutes or after a fill. A quote older than two minutes is not used, and a quiet price
+  stream is opened again.
+- **Exposure**: each open position's loss at its stop from the current price and from its entry, in the account's
+  money and as a share of the balance (`positionRisk`, converted like the ticket, with the closing commission), each
+  pending order's loss if it fills and its stop is hit, the total, and positions without a stop marked as unlimited.
 - **Journal** (`journal.js`): the closed deals with Ballast's label, grouped by trade id (a position closed in parts
   is one trade), each in R; win rate, average R, average win and loss in R, profit factor, net, best and worst, the
   longest losing run; by symbol; the last 50; CSV download.
@@ -2471,24 +2492,33 @@ RiskDesk), a mark of a small boat on a waterline with its ballast keel below, de
   inside the forex week (Sunday 17:00 to Friday 17:00 New York); open or closed and when that changes; the
   London-New York overlap named.
 - **Settings** are kept per trading account (`localStorage` key `ballast.v1.<login>`), the open tab per browser.
-- **Editions.** `site/index.html` (full) and `site/trial/index.html` (Ballast Free: `data-edition="trial"`, no Place
-  button). `PAID_IDS` in `app.js` names the Store plugin's id (cTrader passes `?id=`); empty until the Store assigns one.
+- **Editions.** `site/index.html` (full) and `site/trial/index.html` (Ballast Free: `data-edition="trial"`: the
+  Ticket's sizing, Exposure and Sessions; no Place button, Limits or Journal, each showing what the full version
+  adds). `PAID_IDS` in `app.js` names the Store plugin's id (cTrader passes `?id=`); empty until the Store assigns one.
+- **Layout.** Dark and light themes (`?theme=`), a phone layout (labels above the fields under 440 px, 44 px controls
+  on touch screens), numbers in the reader's own format (`parseNumber` reads either decimal mark; an ambiguous
+  "1,250" follows the device).
 - **cTrader's side.** `host.js` is the only file that talks to cTrader, through `site/vendor/ctrader-sdk.js` (the
   SDK's v2 packages bundled into one file, because a plugin may load files only from its own address;
   `vendor-build.sh` rebuilds it; licences in `site/vendor/LICENSES.txt`). The help pages still describe the older v0
-  API; the code follows the package. Not yet seen on a real account (the probe, `site/probe.html`): the unit of
-  `volume` (`UNITS_PER_VOLUME`), v2 on every app, the label kept on closing deals, storage, chart bars, the plugin
-  id. `host-mock.js` offers the same functions over a 10,000 USD demo account with two open positions and three
+  API; the code follows the package (positions and pending orders carry no label; deals do). Not yet seen on a real
+  account (the probe, `site/probe.html`): the unit of `volume` (`UNITS_PER_VOLUME`; **`VOLUME_CHECKED` stays false,
+  and the panel shows no Place button, until the probe confirms it**), whether a position's `commission` is one side
+  or both and when the opening side leaves the balance, v2 on every app, the label kept on closing deals, storage,
+  chart bars, the plugin id. `host-mock.js` offers the same functions over a 10,000 USD demo account with two open positions and three
   closed trades, for `?mock=1`, screenshots and the browser test.
 - **Security and privacy.** `site/_headers` (Cloudflare Pages) sets `connect-src 'none'` and allows scripts and styles
   from the site only: Ballast cannot send data anywhere. No signals, no advice (UK FCA PERG 8.30).
 - **Hosting.** Cloudflare Pages on the free plan, set up by the owner; nothing on the game's server.
-- **Tests.** `node --test test/*.test.js` (48: worked examples for EURUSD in USD, GBP and EUR accounts, USDJPY and
+- **Tests.** `node --test test/*.test.js` (60: worked examples for EURUSD in USD, GBP and EUR accounts, USDJPY and
   EURJPY, an index, gold, bitcoin, commission per lot and per million, the conversion fee, the rate at the stop, the
   limits' room, steps that are not powers of ten, number parsing in both decimal conventions, the limits the way
   FTMO and FundedNext count, time zones across daylight saving, the journal's grouping, the sessions, the history
-  reader, the order builder and the one-send placer) and `tests/test_tradertools.py` (§16). Two independent audits
-  checked the maths; the first one's twelve findings are fixed and tested.
+  reader, the order builder and the one-send placer, a pending stop against the spread, a second listing of a pair,
+  CSV formula cells) and `tests/test_tradertools.py` (§16; 5 tests: sizing, review and one send; limits cutting and
+  blocking; pending orders, orders just sent and load failures; exposure, journal and sessions; the free edition).
+  Two independent audits checked the maths (the second fuzzed `sizeTrade` 303,000 times without a loss over budget);
+  their findings are fixed and tested, except the two that wait for the probe.
 
 ## Keeping the docs current
 

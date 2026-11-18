@@ -23,12 +23,15 @@ export function tzOffset(ms, timeZone) {
   return asUtc - Math.floor(ms / 1000) * 1000;
 }
 
-/** The UTC instant of a local wall-clock time in `timeZone`. */
+/**
+ * The UTC instant of a local wall-clock time in `timeZone`. A time that happens twice (clocks going back) is its first
+ * time; a time that never happens (clocks going forward) is the moment the clocks jump past it.
+ */
 export function zonedTime(y, m, d, hour, timeZone) {
   const guess = Date.UTC(y, m, d, hour);
-  let t = guess - tzOffset(guess, timeZone);
-  t = guess - tzOffset(t, timeZone);                          // (once more: right across a daylight-saving change)
-  return t;
+  const c = [guess - tzOffset(guess - DAY / 2, timeZone), guess - tzOffset(guess + DAY / 2, timeZone)];
+  const fits = c.filter((x) => x + tzOffset(x, timeZone) === guess);
+  return fits.length ? Math.min(...fits) : Math.max(...c);
 }
 
 /** The start of the trading day: the latest `hour`:00 in `timeZone` that is not later than `nowMs`. */
@@ -62,14 +65,17 @@ export function closedSince(deals, fromMs) {
  *   balance, equity, worstEquity (equity if every open stop were hit; optional, never above equity),
  *   deals (closed deals covering at least the day), dayFrom (ms), dealsOk (the deals could be read in full),
  *   dayLimit, totalLimit: money, or null when not set, or NaN when set but not computable (a % with no starting balance),
+ *   dayError, totalError: the error to show for a NaN limit (default "needStart"; "badNumber" when it could not be read),
  *   rule: "balance" | "higher" (of the day's opening balance and equity), sodEquity (the day's opening equity, if seen
- *   or entered), dayFloor (the lowest equity the firm allows today, from its dashboard, if entered: exact),
+ *   or entered), openAtDayStart (false when no position was open as the day began: the opening equity is then the
+ *   opening balance; true or unknown otherwise), dayFloor (the lowest equity the firm allows today, from its dashboard, if entered: exact),
  *   initial (the starting balance), totalMode: "static" | "trailing", peak (the highest balance or equity this device
- *   has seen), totalFloor (the lowest equity the firm allows overall, from its dashboard, if entered) }
+ *   has seen), totalFloor (the lowest equity the firm allows overall, from its dashboard, if entered),
+ *   blockers: reasons the open risk cannot be counted (e.g. "positions" did not load): with a limit set, they block }
  * returns { day, total, room, known } where day and total are null (not set) or
  *   { loss (now), worst (if every stop is hit), limit, used, light, ref, refCode, uncertain, error }
  *   refCode: "sodBalance" | "higher" | "floor" | "initial" | "trailing"; error (blocks orders): "needStart" |
- *   "history" | "needSodEquity"; uncertain (shown, does not block): "devicePeak".
+ *   "history" | "needSodEquity" | "needFloor" | "badNumber"; uncertain (shown, does not block): "devicePeak".
  *   room: the most a new trade may lose (from the worst case), or null when no limit is set.
  */
 export function limitState(input) {
@@ -85,20 +91,22 @@ export function limitState(input) {
   const bad = (limit, error) => ({ loss: null, worst: null, limit, used: null, light: "unknown", ref: null, refCode: null, uncertain: null, error });
 
   if (dayLimit != null) {
-    if (!finitePositive(dayLimit)) out.day = bad(dayLimit, "needStart");
+    if (!finitePositive(dayLimit)) out.day = bad(dayLimit, input.dayError || "needStart");
     else if (Number.isFinite(input.dayFloor)) out.day = make(dayLimit, input.dayFloor + dayLimit, "floor");
     else if (!dealsOk) out.day = bad(dayLimit, "history");
     else {
       const sodBalance = balance - closedSince(deals, dayFrom).net;   // (deposits and withdrawals during the day are not seen)
       if (rule === "higher") {
-        out.day = Number.isFinite(sodEquity) ? make(dayLimit, Math.max(sodBalance, sodEquity), "higher") : bad(dayLimit, "needSodEquity");
+        const sodEq = Number.isFinite(sodEquity) ? sodEquity : input.openAtDayStart === false ? sodBalance : NaN;
+        out.day = Number.isFinite(sodEq) ? make(dayLimit, Math.max(sodBalance, sodEq), "higher") : bad(dayLimit, "needSodEquity");
       } else {
         out.day = make(dayLimit, sodBalance, "sodBalance");
       }
     }
   }
   if (totalLimit != null) {
-    if (!finitePositive(totalLimit)) out.total = bad(totalLimit, "needStart");
+    if (!finitePositive(totalLimit)) out.total = bad(totalLimit, input.totalError || "needStart");
+    else if (totalMode === "trailing" && !Number.isFinite(input.totalFloor)) out.total = bad(totalLimit, "needFloor");
     else {
       const floors = [];
       if (Number.isFinite(input.totalFloor)) floors.push(input.totalFloor);
@@ -109,12 +117,13 @@ export function limitState(input) {
         const floor = Math.max(...floors);                        // (every one is a floor the firm enforces: the highest binds)
         const code = Number.isFinite(input.totalFloor) && floor === input.totalFloor ? "floor" : totalMode === "trailing" ? "trailing" : "initial";
         out.total = make(totalLimit, floor + totalLimit, code,
-                         { uncertain: totalMode === "trailing" && !Number.isFinite(input.totalFloor) ? "devicePeak" : null });
+                         { uncertain: code === "trailing" ? "devicePeak" : null });   // (this device's peak is above the floor typed)
       }
     }
   }
   const parts = [out.day, out.total].filter(Boolean);
-  if (parts.some((x) => x.error)) out.known = false;
+  out.blockers = parts.length ? (input.blockers || []) : [];
+  if (parts.some((x) => x.error) || out.blockers.length) out.known = false;
   const rooms = parts.filter((x) => !x.error).map((x) => x.limit - x.worst);
   if (parts.length && out.known) {
     const r = Math.min(...rooms);

@@ -35,11 +35,11 @@ export function tradeLog(deals) {
     const t = by.get(key) || { id: key, symbol: d.symbolName, side: d.openingDirection, closed: d.closingTime, net: 0, risk: lab.risk, parts: 0 };
     t.net += d.netProfit;
     t.parts += 1;
-    if (d.closingTime > t.closed) t.closed = d.closingTime;
+    if (Date.parse(d.closingTime) > Date.parse(t.closed)) t.closed = d.closingTime;
     by.set(key, t);
   }
   const out = [...by.values()].map((t) => ({ ...t, net: Math.round(t.net * 100) / 100, r: t.risk > 0 ? t.net / t.risk : null }));
-  return out.sort((a, b) => (a.closed < b.closed ? 1 : a.closed > b.closed ? -1 : 0));
+  return out.sort((a, b) => Date.parse(b.closed) - Date.parse(a.closed));   // (by time: ".5Z" and "Z" do not sort as text)
 }
 
 /** Statistics over trades: the numbers that say whether a way of trading is working. */
@@ -77,7 +77,12 @@ export function bySymbol(trades) {
 
 /** The journal as CSV text (one row a trade), for a spreadsheet. */
 export function toCSV(trades) {
-  const q = (v) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+  const q = (v) => {
+    let x = String(v);
+    // (text a spreadsheet would run as a formula gets a leading quote; a plain number such as -5.00 stays a number)
+    if (/^[=+\-@\t\r]/.test(x) && !/^[-+]?\d+(\.\d+)?$/.test(x)) x = "'" + x;
+    return /[",\n\r]/.test(x) ? `"${x.replace(/"/g, '""')}"` : x;
+  };
   const rows = [["closed", "symbol", "side", "net", "planned_risk", "r", "parts"]];
   for (const t of trades) rows.push([t.closed, t.symbol, t.side, money(t.net), money(t.risk), t.r === null ? "" : t.r.toFixed(3), t.parts]);
   return rows.map((r) => r.map(q).join(",")).join("\n") + "\n";

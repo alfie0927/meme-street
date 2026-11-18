@@ -15,6 +15,8 @@ const BTC = { digits: 2, pipPosition: 0, lotSize: 1, minVolume: 0.01, maxVolume:
 const near = (a, b, tol = 1e-6) => assert.ok(Math.abs(a - b) <= tol, `${a} is not ${b}`);
 const base = { balance: 10000, riskMode: "percent", risk: 1, side: "buy", entry: 1.1, stop: 1.098, rate: 1, symbol: FX };
 
+const hops = (p) => p && p.map(({ symbolId, invert }) => ({ symbolId, invert }));
+
 test("EURUSD in a USD account: 1% of 10,000 over 20 pips is 0.50 lots, exactly on the boundary", () => {
   const r = sizeTrade(base);
   assert.equal(r.volume, 50000);
@@ -26,7 +28,7 @@ test("EURUSD in a USD account: 1% of 10,000 over 20 pips is 0.50 lots, exactly o
 
 test("EURUSD in a GBP account: 25 pips with GBPUSD bid 1.2500 is 0.25 lots", () => {
   const path = conversionPath([{ id: 7, baseAssetId: 2, quoteAssetId: 1 }], 1, 2);
-  assert.deepEqual(path, [{ symbolId: 7, invert: true }]);
+  assert.deepEqual(hops(path), [{ symbolId: 7, invert: true }]);
   const { rate } = conversionRate(path, { 7: { bid: 1.25, ask: 1.2502 } });
   const r = sizeTrade({ ...base, balance: 5000, stop: 1.0975, rate });
   assert.equal(r.lots, 0.25);
@@ -188,9 +190,9 @@ test("Conversion paths: direct first, USD preferred in the middle, the worse pri
   const syms = [{ id: 1, baseAssetId: 10, quoteAssetId: 20 }, { id: 2, baseAssetId: 30, quoteAssetId: 20 },
                 { id: 3, baseAssetId: 10, quoteAssetId: 40 }, { id: 4, baseAssetId: 30, quoteAssetId: 40 }];
   assert.deepEqual(conversionPath(syms, 10, 10), []);
-  assert.deepEqual(conversionPath(syms, 20, 10), [{ symbolId: 1, invert: true }]);
-  assert.deepEqual(conversionPath(syms, 10, 30, 40), [{ symbolId: 3, invert: false }, { symbolId: 4, invert: true }]);
-  assert.deepEqual(conversionPath(syms, 10, 30, 20), [{ symbolId: 1, invert: false }, { symbolId: 2, invert: true }]);
+  assert.deepEqual(hops(conversionPath(syms, 20, 10)), [{ symbolId: 1, invert: true }]);
+  assert.deepEqual(hops(conversionPath(syms, 10, 30, 40)), [{ symbolId: 3, invert: false }, { symbolId: 4, invert: true }]);
+  assert.deepEqual(hops(conversionPath(syms, 10, 30, 20)), [{ symbolId: 1, invert: false }, { symbolId: 2, invert: true }]);
   assert.equal(conversionPath(syms, 10, 99), null);
   const q = { 1: { bid: 1.99, ask: 2 }, 2: { bid: 4, ask: 4.01 } };
   near(conversionRate(conversionPath(syms, 10, 30, 20), q).rate, 0.5);
@@ -241,4 +243,17 @@ test("ATR, Wilder's smoothing", () => {
   assert.equal(atr(bars.slice(0, 10), 14), null);
   const gap = [{ high: 10, low: 9, close: 10 }, { high: 15, low: 14, close: 14.5 }];
   near(atr(gap, 1), 5);                                    // the gap from 10 to 15 counts
+});
+
+test("A second listing of the traded pair (EURUSD and EURUSD.raw) is still valued at the stop (second audit M1)", () => {
+  const syms = [{ id: 1, baseAssetId: 2, quoteAssetId: 1 }, { id: 50, baseAssetId: 2, quoteAssetId: 1 }];
+  const path = conversionPath(syms, 1, 2);                     // USD -> EUR, through id 1
+  const r = conversionRate(path, { 1: { bid: 1.09998, ask: 1.1 } }, { symbolId: 50, base: 2, quote: 1, price: 1.06 }).rate;
+  near(r, 1 / 1.06);                                           // buy EURUSD.raw 1.10 -> 1.06 in a EUR account
+  near(conversionRate(path, { 1: { bid: 1.09998, ask: 1.1 } }, { symbolId: 50, base: 4, quote: 1, price: 1.06 }).rate, 1 / 1.09998);
+});
+
+test("An open position's risk includes the closing side's commission (second audit M3)", () => {
+  near(positionRisk({ side: "buy", entryPrice: 1.1, stopLoss: 1.098, volume: 1000000, commission: -35 }, 1), 2035);
+  near(positionRisk({ side: "buy", entryPrice: 1.1, stopLoss: 1.105, volume: 1000, commission: -3.5 }, 1), 3.5);
 });

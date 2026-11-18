@@ -3,7 +3,7 @@
 // the same functions over fixed data for local work and the browser test.
 import {
   accountInfo, asset, availablePeriods, cancelOrder, createClientAdapter, dealHistory, firstValueFrom, handshake,
-  newOrder, positions as positionsReq, subscribeExecutions, subscribeQuotes, symbolById, symbolByName, symbols,
+  newOrder, pendingOrders as pendingOrdersReq, positions as positionsReq, subscribeExecutions, subscribeQuotes, symbolById, symbolByName, symbols,
   trendbars,
 } from "../vendor/ctrader-sdk.js";
 import { readDeals } from "./history.js";
@@ -12,8 +12,10 @@ let adapter = null;
 const call = (fn, payload) => firstValueFrom(fn(adapter, payload, { timeoutMs: 10000 }));
 
 export const kind = "ctrader";
-// ponytail: set from the demo-account probe (README "Probe"); 1 if the API counts volume in units of the base asset.
+// Set from the demo-account probe (README "Probe"): 1 if the API counts volume in units of the base asset. Until
+// VOLUME_CHECKED is true the panel sizes trades but does not place them: a wrong unit would scale every order.
 export const UNITS_PER_VOLUME = 1;
+export const VOLUME_CHECKED = false;
 
 /** Connects to the cTrader window this page runs in. Returns what the host says about itself. */
 export async function connect() {
@@ -59,10 +61,11 @@ export async function assets(ids) {
   return (await call(asset, { assetId: ids })).assets || [];
 }
 
-/** Live quotes: calls onQuote({ symbolId, bid, ask }); either side may be missing from one event. Returns a stop function. */
-export function quotes(symbolIds, onQuote) {
+/** Live quotes: calls onQuote({ symbolId, bid, ask }); either side may be missing from one event; onError if the stream
+ *  fails. Returns a stop function. */
+export function quotes(symbolIds, onQuote, onError = () => {}) {
   if (!symbolIds.length) return () => {};
-  const sub = subscribeQuotes(adapter, { symbolIds }).subscribe({ next: onQuote, error: () => {} });
+  const sub = subscribeQuotes(adapter, { symbolIds }).subscribe({ next: onQuote, error: onError, complete: onError });
   return () => sub.unsubscribe();
 }
 
@@ -75,6 +78,11 @@ export function onExecution(cb) {
 /** Open positions: [{ positionId, symbolId, symbolName, side, volume, entryPrice, stopLoss, takeProfit, netPnl }]. */
 export async function positions() {
   return (await call(positionsReq, null)).positions || [];
+}
+
+/** Pending orders: [{ orderId, symbolId, symbolName, side, type, volume, entryPrice, stopLoss, takeProfit }]. */
+export async function pendingOrders() {
+  return (await call(pendingOrdersReq, null)).pendingOrders || [];
 }
 
 /** Closed deals between two times (ms), read in full: { deals, complete }. */

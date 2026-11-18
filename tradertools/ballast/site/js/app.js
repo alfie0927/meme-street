@@ -13,7 +13,7 @@ import {
 import { fxWeekOpen, sessionState, span } from "./sessions.js";
 import { buildOrder, createPlacer } from "./ticket.js";
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 // The paid plugin's id in the cTrader Store (the `id` query parameter). Empty until the Store gives one; then only
 // that id may place orders from this page. ponytail: a determined copier can get round it; there is no server.
 const PAID_IDS = [];
@@ -23,7 +23,8 @@ const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const edition = document.body.dataset.edition === "trial" ? "trial" : "full";
 const full = edition === "full";
-const canPlace = full && (PAID_IDS.length === 0 || PAID_IDS.includes(params.get("id")));
+let canPlace = full && (PAID_IDS.length === 0 || PAID_IDS.includes(params.get("id")));   // (and the host's volume unit: start())
+const STALE_MS = 120000;                                    // (a price older than this is not trusted)
 document.documentElement.dataset.theme = params.get("theme") === "light" ? "light" : "dark";
 document.documentElement.lang = setLanguage(params.get("lang"));
 applyStatic();
@@ -52,8 +53,10 @@ function save() {
 }
 
 const st = { host: null, acct: null, sym: null, list: [], assetId: {}, assetName: {}, depositAsset: null, usdAsset: null,
-             quotes: {}, quoteKey: "", stopQuotes: () => {}, details: {}, positions: [], deals: [], dealsComplete: false,
-             built: null, frozen: null, limits: null, atr: null, tradeId: newTradeId(), side: "buy", painting: false, sent: false };
+             quotes: {}, quoteKey: "", stopQuotes: () => {}, details: {}, positions: [], orders: [], positionsOk: false,
+             ordersOk: false, acctAt: 0, gen: 0, inflight: [], dayDeals: [], dayDealsOk: false, deals: [], dealsComplete: false,
+             journalAt: 0, journalDirty: true, built: null, frozen: null, limits: null, atr: null, tradeId: newTradeId(),
+             side: "buy", painting: false, sent: false };
 
 // ---- numbers: one format, the reader's own ---------------------------------------------------------------------------
 const nf = (x, d) => (Number.isFinite(x) ? x.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d }) : "-");
@@ -86,6 +89,8 @@ function why(r) {
   if (r.key === "stopTooClose") return t("e.stopTooClose", { unit1: unit(st.sym, true), side: st.side === "buy" ? "bid" : "ask" });
   if (r.key === "netted") return t("e.netted", { symbol: st.sym ? st.sym.name : "" });
   if (r.key === "noRate") return t("e.noRate", { cur: cur() });
+  if (r.key === "noQuote" && st.sym && st.quotes[st.sym.symbolId]) return t("e.stale");
+  if (r.key === "stopTooClosePending") return t("e.stopTooClosePending", { where: t("e.where." + st.side), min: price(r.min) });
   return r.key ? t("e." + r.key) : r.message;
 }
 
@@ -101,11 +106,6 @@ async function start() {
   for (let h = 0; h < 24; h++) $("lim-hour").add(new Option(String(h).padStart(2, "0") + ":00", String(h)));
   for (const [v, text] of TZS) $("lim-tz").add(new Option(text, v));
   showTab(load(KEY).tab || "ticket");
-  if (!canPlace) {
-    $("place").hidden = true;
-    $("review-note").hidden = false;
-    $("review-note").textContent = t(full ? "v.notPaid" : "v.trial");
-  }
   if (!full) {
     $("limits-form").hidden = true;
     $("limits-out").textContent = t("f.limits");
@@ -117,10 +117,18 @@ async function start() {
     st.host = params.has("mock") ? await import("./host-mock.js") : await import("./host.js");
     await st.host.connect();
     st.acct = await st.host.account();
+    st.acctAt = Date.now();
   } catch (e) {
     $("acct").textContent = t("h.notConnected");
     banner(t("e.notConnected", { why: e && e.message ? ` (${e.message})` : "" }));
     return;
+  }
+  const unchecked = canPlace && st.host.VOLUME_CHECKED !== true;   // (the probe has not confirmed the volume unit yet)
+  if (unchecked) canPlace = false;
+  if (!canPlace) {
+    $("place").hidden = true;
+    $("review-note").hidden = false;
+    $("review-note").textContent = t(unchecked ? "v.unchecked" : full ? "v.notPaid" : "v.trial");
   }
   cfgKey = `${KEY}.${st.acct.login}`;
   cfg = load(cfgKey);
@@ -144,7 +152,7 @@ async function start() {
   await loadSymbol(params.get("symbol") || cfg.symbol || "EURUSD");
   await refreshAll();
   let pending = null;
-  st.host.onExecution(() => { clearTimeout(pending); pending = setTimeout(refreshAll, 800); });
+  st.host.onExecution(() => { st.journalDirty = true; clearTimeout(pending); pending = setTimeout(refreshAll, 800); });
   setInterval(refreshAll, 30000);                           // (reading only: nothing is ever sent on a timer)
   setInterval(renderSessions, 30000);
 }
@@ -154,22 +162,44 @@ function showAccount() {
   $("acct").textContent = `${t(a.environment === "demo" ? "h.demo" : "h.live")} · ${money(a.balance)}`;
 }
 
+/**
+ * Reads the account, open positions, pending orders and the deals, all at once. Only the latest call's figures are
+ * kept; a part that fails is marked, and the limits then block orders rather than count on old figures.
+ */
 async function refreshAll() {
   if (!st.host) return;
-  try { st.acct = await st.host.account(); showAccount(); } catch { /* keep the last figures */ }
-  try { st.positions = await st.host.positions(); } catch { /* keep */ }
+  const gen = ++st.gen;
   const now = Date.now();
-  try {
-    const r = await st.host.deals(now - 35 * 86400000, now);
-    st.deals = r.deals;
-    st.dealsComplete = r.complete;
-  } catch {
-    st.dealsComplete = false;
+  const journal = st.journalDirty || now - st.journalAt > 300000;     // (35 days of history: every 5 minutes, or after a fill)
+  const [a, ps, os, dd, jd] = await Promise.allSettled([
+    st.host.account(), st.host.positions(), st.host.pendingOrders(),
+    st.host.deals(now - 50 * 3600000, now),                   // (covers any day start: the limits need today only)
+    journal ? st.host.deals(now - 35 * 86400000, now) : null,
+  ]);
+  if (gen !== st.gen) return;                                  // (a later refresh started: its figures are newer)
+  if (a.status === "fulfilled") { st.acct = a.value; st.acctAt = now; showAccount(); }
+  st.positionsOk = ps.status === "fulfilled";
+  if (st.positionsOk) st.positions = ps.value;
+  st.ordersOk = os.status === "fulfilled";
+  if (st.ordersOk) st.orders = os.value;
+  st.dayDealsOk = dd.status === "fulfilled" && dd.value.complete;
+  if (dd.status === "fulfilled") st.dayDeals = dd.value.deals;
+  if (journal) {
+    if (jd.status === "fulfilled") {
+      st.deals = jd.value.deals;
+      st.dealsComplete = jd.value.complete;
+      st.journalAt = now;
+      st.journalDirty = false;
+    } else st.dealsComplete = false;
   }
-  const missing = [...new Set(st.positions.map((p) => p.symbolId))].filter((id) => !st.details[id]);
+  // An order sent is held against the room until a read started well after it shows the position or order it made.
+  if (st.positionsOk && st.ordersOk) st.inflight = st.inflight.filter((x) => x.at > now - 10000);
+  const missing = [...new Set([...st.positions, ...st.orders].map((p) => p.symbolId))].filter((id) => !st.details[id]);
   if (missing.length) {
     try { for (const d of await st.host.symbolsById(missing)) st.details[d.symbolId] = d; } catch { /* exposure shows "no price yet" */ }
   }
+  // A price stream that has gone quiet is opened again (a closed market is quiet too: that costs nothing).
+  if (st.quoteKey.split(",").some((id) => id && !(now - (st.quotes[id] || {}).at < STALE_MS))) st.quoteKey = "";
   subscribe();
   paint();
 }
@@ -186,7 +216,7 @@ function subscribe() {
     if ($("comm-mode").value === "million") for (const p of [...(pathOf(d.quoteAssetId, st.usdAsset) || []), ...(pathOf(st.usdAsset) || [])]) ids.add(p.symbolId);
   };
   add(st.sym);
-  for (const p of st.positions) add(st.details[p.symbolId]);
+  for (const p of [...st.positions, ...st.orders]) add(st.details[p.symbolId]);
   const key = [...ids].sort((a, b) => a - b).join(",");
   if (key === st.quoteKey) return;
   st.quoteKey = key;
@@ -195,19 +225,28 @@ function subscribe() {
     const o = st.quotes[q.symbolId] || (st.quotes[q.symbolId] = {});
     if (q.bid != null) o.bid = q.bid;                        // (an event may carry one side only)
     if (q.ask != null) o.ask = q.ask;
+    o.at = Date.now();
     if (st.sym && q.symbolId === st.sym.symbolId) $("px").textContent = `${price(o.bid)} / ${price(o.ask)}`;
     if (!st.painting) {
       st.painting = true;
       requestAnimationFrame(() => { st.painting = false; paint(); });
     }
-  });
+  }, () => { st.quoteKey = ""; });                             // (the stream failed: the next refresh opens it again)
+}
+
+/** The quotes young enough to trust. */
+function fresh() {
+  const now = Date.now();
+  const out = {};
+  for (const [id, q] of Object.entries(st.quotes)) if (now - q.at < STALE_MS) out[id] = q;
+  return out;
 }
 
 /** Quote currency -> account money for symbol `d`, conservative, valued at `stop` too when the symbol is a leg. */
 function rateFor(d, stop) {
   const path = pathOf(d.quoteAssetId);
   if (!path) return NaN;
-  const r = conversionRate(path, st.quotes, Number.isFinite(stop) ? { symbolId: d.symbolId, price: stop } : null);
+  const r = conversionRate(path, fresh(), Number.isFinite(stop) ? { symbolId: d.symbolId, base: d.baseAssetId, quote: d.quoteAssetId, price: stop } : null);
   return r.ok ? r.rate : NaN;
 }
 
@@ -245,7 +284,8 @@ async function loadAtr() {
 function ticketInputs() {
   const s = st.sym;
   const orderType = $("otype").value;
-  const quote = s ? st.quotes[s.symbolId] : null;
+  const q = fresh();
+  const quote = s ? q[s.symbolId] : null;
   const entry = orderType === "market" ? marketEntry(st.side, quote) : num($("entry").value);
   let stop = num($("stop").value);
   const u = $("stop-unit").value;
@@ -262,8 +302,8 @@ function ticketInputs() {
   if (s && cm !== "unset" && cm !== "none") {
     const value = num($("comm").value);
     const lotUnits = s.lotSize * (s.unitsPerVolume || 1);
-    const toUsd = s.quoteAssetId === st.usdAsset ? 1 : (() => { const r = conversionRate(pathOf(s.quoteAssetId, st.usdAsset), st.quotes); return r.ok ? r.rate : NaN; })();
-    const usdToDep = st.usdAsset === st.depositAsset ? 1 : (() => { const r = conversionRate(pathOf(st.usdAsset), st.quotes); return r.ok ? r.rate : NaN; })();
+    const toUsd = s.quoteAssetId === st.usdAsset ? 1 : (() => { const r = conversionRate(pathOf(s.quoteAssetId, st.usdAsset), q); return r.ok ? r.rate : NaN; })();
+    const usdToDep = st.usdAsset === st.depositAsset ? 1 : (() => { const r = conversionRate(pathOf(st.usdAsset), q); return r.ok ? r.rate : NaN; })();
     commission = Number.isFinite(value)
       ? commissionPerUnit({ mode: cm, value }, { lotUnits, usdPerUnit: entry * toUsd, usdToDeposit: usdToDep, depositPerUnit: entry * rate })
       : NaN;
@@ -275,7 +315,9 @@ function ticketInputs() {
     feeRate: s && s.quoteAssetId !== st.depositAsset ? s.feeRate || 0 : 0,
     room: full && L && L.room != null ? L.room : null, limitsKnown: full && L ? L.known : true,
     accountType: st.acct && st.acct.accountType,
-    positionOnSymbol: !!(s && st.positions.some((p) => p.symbolId === s.symbolId)), tradeId: st.tradeId,
+    // (netting: a position or a pending order on the symbol would merge with the new order; unread lists count as one)
+    positionOnSymbol: !st.positionsOk || !st.ordersOk || !!(s && [...st.positions, ...st.orders].some((p) => p.symbolId === s.symbolId)),
+    tradeId: st.tradeId,
   };
 }
 
@@ -336,39 +378,65 @@ function renderTicket() {
 }
 
 // ---- limits -------------------------------------------------------------------------------------------------------------
+/**
+ * What the open positions and pending orders can still lose at their stops, in account money. fromNow: from the current
+ * price (what the limits use, since equity already holds the loss so far); fromEntry: from each entry. A position
+ * without a stop is counted (noStop); one that cannot be valued (no details, price or conversion) is `unknown`; a
+ * pending order adds its whole loss at the stop, and one without a stop has no limit (pendingNoStop).
+ */
 function openRisk() {
+  const q = fresh();
   let fromEntry = 0;
   let fromNow = 0;
   let noStop = 0;
   let unknown = 0;
+  let pending = 0;
+  let pendingNoStop = 0;
   const rows = st.positions.map((p) => {
     const d = st.details[p.symbolId];
     const rate = d ? rateFor(d, p.stopLoss) : NaN;
     const u = d ? d.unitsPerVolume || 1 : 1;
     const risk = d && Number.isFinite(rate) ? positionRisk(p, rate, u) : undefined;
-    const q = st.quotes[p.symbolId];
-    const exitNow = q ? (p.side === "buy" ? q.bid : q.ask) : NaN;
-    const now = risk == null || !Number.isFinite(exitNow) ? risk : positionRisk({ ...p, entryPrice: exitNow }, rate, u);
+    const exitNow = q[p.symbolId] ? (p.side === "buy" ? q[p.symbolId].bid : q[p.symbolId].ask) : NaN;
+    let now = risk;
+    if (risk != null) {
+      if (Number.isFinite(exitNow)) now = positionRisk({ ...p, entryPrice: exitNow }, rate, u);
+      else if (Number.isFinite(p.netPnl)) now = Math.max(0, p.netPnl + risk);   // (no price: the platform's own result so far)
+      else now = undefined;
+    }
     if (risk === null) noStop += 1;
-    else if (risk === undefined) unknown += 1;
+    else if (now === undefined) unknown += 1;
     else {
       fromEntry += risk;
-      fromNow += Number.isFinite(now) ? now : risk;
+      fromNow += now;
     }
     return { p, d, risk, now };
   });
-  return { rows, fromEntry, fromNow, noStop, unknown };
+  const orderRows = st.orders.map((o) => {
+    const d = st.details[o.symbolId];
+    const rate = d && Number.isFinite(o.entryPrice) ? rateFor(d, o.stopLoss) : NaN;
+    const risk = Number.isFinite(rate) ? positionRisk({ ...o, commission: 0 }, rate, d.unitsPerVolume || 1) : undefined;
+    if (risk === null) pendingNoStop += 1;
+    else if (risk === undefined) unknown += 1;
+    else pending += risk;                                     // ponytail: no commission (an order has paid none yet); small
+    return { o, d, risk };
+  });
+  return { rows, orderRows, fromEntry, fromNow, noStop, unknown, pending, pendingNoStop };
 }
 
 function computeLimits() {
   const a = st.acct;
   if (!a || !full) return null;
   const startBal = num($("lim-start").value);
-  const asMoney = (id, modeId) => {
+  const asMoney = (id, modeId) => {                         // { v: money | null (not set) | NaN, err }
+    if (!$(id).value.trim()) return { v: null };
     const v = num($(id).value);
-    if (!Number.isFinite(v)) return null;                   // (empty: no limit)
-    return $(modeId).value === "pct" ? (Number.isFinite(startBal) && startBal > 0 ? (startBal * v) / 100 : NaN) : v;
+    if (!(v > 0)) return { v: NaN, err: "badNumber" };
+    if ($(modeId).value !== "pct") return { v };
+    return Number.isFinite(startBal) && startBal > 0 ? { v: (startBal * v) / 100 } : { v: NaN, err: "needStart" };
   };
+  const dayLim = asMoney("lim-day", "lim-day-mode");
+  const totLim = asMoney("lim-total", "lim-total-mode");
   const now = Date.now();
   const tz = $("lim-tz").value || "UTC";
   const dayFrom = dayStart(now, Number($("lim-hour").value) || 0, tz);
@@ -382,14 +450,29 @@ function computeLimits() {
   const peak = Math.max(cfg.peak || 0, a.balance, equity);
   if (peak !== cfg.peak) { cfg.peak = peak; save(); }
   const exp = openRisk();
-  const worstEquity = $("lim-open").value === "stops" ? equity - exp.fromNow : equity;
+  const stops = $("lim-open").value === "stops";
+  const blockers = [];
+  if (!st.positionsOk) blockers.push("positions");
+  if (stops && !st.ordersOk) blockers.push("orders");
+  if (now - st.acctAt > 90000) blockers.push("account");
+  if (stops && exp.unknown) blockers.push("openUnknown");
+  if (stops && exp.pendingNoStop) blockers.push("pendingNoStop");
+  const worstEquity = stops ? equity - exp.fromNow - exp.pending : equity;
+  // Was anything open as the day began? (a position opened before, or a deal closed today that opened before)
+  const before = (iso) => !(Date.parse(iso) >= dayFrom);   // (no time: counted as before, the careful side)
+  const openAtDayStart = st.positionsOk && st.dayDealsOk
+    ? st.positions.some((p) => before(p.openTimestamp)) || st.dayDeals.some((d) => d.closingTime && !before(d.closingTime) && before(d.openingTime))
+    : undefined;
   const sodTyped = num($("lim-sodeq").value);
-  const s = limitState({ balance: a.balance, equity, worstEquity, deals: st.deals, dayFrom, dealsOk: st.dealsComplete,
+  const s = limitState({ balance: a.balance, equity, worstEquity, deals: st.dayDeals, dayFrom, dealsOk: st.dayDealsOk,
                          rule: $("lim-rule").value, sodEquity: Number.isFinite(sodTyped) ? sodTyped : cfg.sod.equity,
-                         dayFloor: num($("lim-dayfloor").value), dayLimit: asMoney("lim-day", "lim-day-mode"),
-                         totalLimit: asMoney("lim-total", "lim-total-mode"), initial: startBal, totalMode: $("lim-trail").value,
-                         peak, totalFloor: num($("lim-totalfloor").value) });
-  s.openNoStop = $("lim-open").value === "stops" ? exp.noStop + exp.unknown : 0;
+                         openAtDayStart, dayFloor: num($("lim-dayfloor").value), dayLimit: dayLim.v, dayError: dayLim.err,
+                         totalLimit: totLim.v, totalError: totLim.err, initial: startBal, totalMode: $("lim-trail").value,
+                         peak, totalFloor: num($("lim-totalfloor").value), blockers });
+  s.held = st.inflight.reduce((x, o) => x + o.risk, 0);      // (orders just sent, not yet seen in the account)
+  if (s.room != null && s.held) s.room = Math.max(0, s.room - s.held);
+  s.openNoStop = stops ? exp.noStop : 0;
+  s.unknown = exp.unknown;
   s.dayFrom = dayFrom;
   s.tz = tz;
   return s;
@@ -409,6 +492,7 @@ function renderLimits() {
   const lightAll = lights.includes("unknown") ? "unknown" : lights.includes("red") ? "red" : lights.includes("amber") ? "amber" : "green";
   $("light-tab").hidden = false;
   $("light-tab").className = "dot " + lightAll;
+  for (const b of s.blockers || []) box.append(el("p", "bad", t("l.block." + b, { n: s.unknown, cur: cur() })));
   for (const [name, x] of [["l.today", s.day], ["l.total", s.total]]) {
     if (!x) continue;
     box.append(el("h3", null, t(name)));
@@ -428,6 +512,7 @@ function renderLimits() {
   if (s.room != null) {
     const reached = [s.day, s.total].some((x) => x && !x.error && x.light === "red");
     box.append(el("p", s.room > 0 ? null : "bad", s.room > 0 ? t("l.room", { room: money(s.room) }) : t(reached ? "l.reached" : "l.full")));
+    if (s.held) box.append(el("p", "mut small", t("l.held", { held: money(s.held) })));
   }
   if (s.day) {
     const local = new Date(s.dayFrom).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -441,7 +526,7 @@ function renderLimits() {
 function renderExposure() {
   const box = $("exposure-out");
   box.textContent = "";
-  if (!st.positions.length) {
+  if (!st.positions.length && !st.orders.length) {
     box.append(el("p", "mut", t("x2.none")));
     return;
   }
@@ -460,10 +545,23 @@ function renderExposure() {
     row.append(left, right);
     box.append(row);
   }
+  for (const { o, d, risk } of exp.orderRows) {
+    const row = el("div", "row");
+    const left = el("div");
+    const lots = d ? nf(o.volume / d.lotSize, lotDecimals(d)) : String(o.volume);
+    left.append(el("b", null, `${o.symbolName} ${t(o.side === "buy" ? "v.buy" : "v.sell")} · ${t("x2.pendingTag")}`),
+                el("div", "mut small", t("x2.line", { lots, entry: price(o.entryPrice, d), stop: o.stopLoss ? price(o.stopLoss, d) : t("v.none") })));
+    const right = el("div", "num");
+    if (risk === null) right.append(el("span", "bad", t("x2.noStop")));
+    else if (risk === undefined) right.append(el("span", "mut", t("x2.noPrice")));
+    else right.append(el("b", null, t("x2.pendingRisk", { risk: money(risk) })));
+    row.append(left, right);
+    box.append(row);
+  }
   box.append(el("h3", null, t("l.total")));
-  box.append(el("div", null, t("x2.total", { total: money(exp.fromNow), pct: nf((exp.fromNow / bal) * 100, 2) })));
-  if (exp.noStop) box.append(el("p", "bad", t("x2.totalNoStop", { n: exp.noStop })));
-  else box.append(el("div", "mut small", t("x2.after", { bal: money(bal - exp.fromEntry) })));
+  box.append(el("div", null, t("x2.total", { total: money(exp.fromNow + exp.pending), pct: nf(((exp.fromNow + exp.pending) / bal) * 100, 2) })));
+  if (exp.noStop || exp.pendingNoStop) box.append(el("p", "bad", t("x2.totalNoStop", { n: exp.noStop + exp.pendingNoStop })));
+  else box.append(el("div", "mut small", t("x2.after", { bal: money(bal - exp.fromEntry - exp.pending) })));
 }
 
 // ---- journal ------------------------------------------------------------------------------------------------------------
@@ -586,7 +684,7 @@ function refusal(res) {
 async function place(ev) {
   if (!ev.isTrusted || !canPlace || !st.frozen || st.sent) return;   // (a real click only)
   const now = buildOrder(ticketInputs());                           // (the limits and the account, checked again now)
-  if (!now.ok && ["limit", "limits", "netted", "account", "quote", "symbol"].includes(now.code)) {
+  if (!now.ok) {                                                    // (anything the market or account changed: refused)
     $("place-msg").textContent = why(now);
     return;
   }
@@ -597,11 +695,15 @@ async function place(ev) {
   $("place").disabled = true;
   $("place-msg").textContent = t("v.sending");
   const res = await placer.place(st.frozen.request);
+  if (res.ok || res.code === "timeout") {                          // (a timeout may still have placed it: held either way)
+    st.inflight.push({ risk: st.frozen.review.riskMoney, at: Date.now() });
+    setTimeout(refreshAll, 12000);
+  }
+  if (res.code !== "busy") st.tradeId = newTradeId();             // (a second attempt is its own trade in the journal)
   if (res.ok) {
     st.sent = true;
     $("place-msg").textContent = t("v.sent", { id: res.answer && res.answer.orderId != null ? "#" + res.answer.orderId : "" });
     $("again").hidden = false;
-    st.tradeId = newTradeId();                                     // (the next trade gets its own id)
     setTimeout(refreshAll, 1500);
   } else {
     $("place-msg").textContent = refusal(res);

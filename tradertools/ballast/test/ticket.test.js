@@ -72,3 +72,17 @@ test("A refusal and a silence are reported plainly, and the order is not sent ag
   assert.match(t.message, /Check your positions/);
   assert.equal(calls, 1);
 });
+
+test("A pending order's stop must clear the spread at the fill, or it fires at once (second audit C1)", () => {
+  // quote 1.09998 / 1.10000: a buy limit at 1.09900 fills when the ask is there, with the bid at 1.09898
+  const lim = { ...base, orderType: "limit", entry: 1.099, target: null };
+  assert.equal(buildOrder({ ...lim, stop: 1.09899 }).key, "stopTooClosePending");
+  assert.equal(buildOrder({ ...lim, stop: 1.09889 }).key, "stopTooClosePending");
+  const ok = buildOrder({ ...lim, stop: 1.09888 });
+  assert.equal(ok.ok, true);                                   // exactly 1 pip below 1.09898
+  assert.equal(buildOrder({ ...lim, stop: 1.09899 }).min, 1.09888);
+  // a sell stop at 1.09900 fills on the bid, with the ask at 1.09902: the stop must be at 1.09912 or above
+  const sst = { ...base, side: "sell", orderType: "stop", entry: 1.099, target: null };
+  assert.equal(buildOrder({ ...sst, stop: 1.09911 }).key, "stopTooClosePending");
+  assert.equal(buildOrder({ ...sst, stop: 1.09912 }).ok, true);
+});

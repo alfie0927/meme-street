@@ -30,8 +30,8 @@ signals and no advice.
 | `site/_headers` | The security policy on Cloudflare Pages: no network connections at all, so Ballast cannot send data anywhere |
 | `site/probe.html`, `site/js/probe.js` | The one-off platform check on a demo account. **Delete before the listing goes live** |
 | `listing/` | The 300 x 300 store image and four 840-px screenshots |
-| `test/` | `node --test`: 48 tests with worked examples |
-| `../../tests/test_tradertools.py` | The panel in a real browser (4 tests) |
+| `test/` | `node --test`: 60 tests with worked examples |
+| `../../tests/test_tradertools.py` | The panel in a real browser (5 tests) |
 
 ## Run it on this computer
 
@@ -48,7 +48,7 @@ open positions (one without a stop) and three closed trades; symbols `EURUSD`, `
 
 ```
 cd tradertools/ballast && node --test test/*.test.js     # the maths, under a second
-cd tests && python -m unittest test_tradertools           # the panel in Edge or Chrome, about 20 s
+cd tests && python -m unittest test_tradertools           # the panel in Edge or Chrome, about 40 s
 ```
 
 CI runs both (the `tradertools` job, and `test_tradertools` inside the test parts).
@@ -72,9 +72,15 @@ order's label, storage, chart bars, and the plugin `id`.
 6. Do 3 and 4 again in the phone app.
 7. Copy the "Results to send back" box (from both) and paste it to me.
 
-What it decides: `UNITS_PER_VOLUME` in `host.js` (from `position.volume` against `quantity` and `lotSize`); whether
-the journal's R works (the label on the closing deal); whether the ATR stop works (chart bars). If orders fail on
-both Web and the phone, the fallback is a desktop-only plugin in C#.
+What it decides (I read the results and make the changes):
+- `UNITS_PER_VOLUME` in `host.js`, from `position.volume` against `quantity` and `lotSize`. Then `VOLUME_CHECKED`
+  becomes `true`. **Until it is, the panel sizes trades but has no Place button** ("switched off until the volume
+  unit is confirmed"): a wrong unit would multiply every order, so it stays off rather than guessed.
+- Whether a position's `commission` is one side or both, and whether the opening commission leaves the balance at the
+  open (compare the balance before and after test 1). Ballast counts one more side at the close either way (the
+  careful side); if the opening side leaves the balance at the open, today's opening balance must add it back.
+- Whether the journal's R works (the label on the closing deal) and whether the ATR stop works (chart bars).
+- If orders fail on both Web and the phone, the fallback is a desktop-only plugin in C#.
 
 ## Hosting (you, once, about 20 minutes, free)
 
@@ -125,5 +131,10 @@ same on the phone.
   load, a timer or the address; the limits are checked again at the click.
 - Sizes round down; rates are taken on the side that makes the loss larger, at the stop as well as now; commission and
   the conversion fee are in; a size that would lose more than chosen is refused.
-- With limits set, an incomplete history blocks orders (fail closed).
+- With limits set, orders are blocked (fail closed) whenever the figures cannot be trusted: the history, the open
+  positions or the pending orders did not load; the balance is over 90 seconds old; an open trade cannot be valued; a
+  pending order has no stop; a % limit has no starting balance; a trailing limit has no floor from the firm; the
+  "higher of" rule has no opening equity while something was open as the day began. Pending orders count at their
+  stops, and an order just sent is held against the room until the account shows it.
+- A price that has not updated for two minutes is not used.
 - It sends no data anywhere and keeps settings on the device, per account.

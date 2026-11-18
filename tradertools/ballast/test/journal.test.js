@@ -51,3 +51,18 @@ test("By symbol, and as CSV", () => {
   assert.equal(csv.split("\n")[0], "closed,symbol,side,net,planned_risk,r,parts");
   assert.ok(csv.includes("2026-11-18T11:00:00Z,XAUUSD,sell,-50.00,50.00,-1.000,1"));
 });
+
+test("CSV: text that a spreadsheet would run as a formula is neutralised; numbers stay numbers (second audit m7)", () => {
+  const csv = toCSV([{ id: "x", symbol: "=HYPERLINK(\"http://a\")", side: "buy", closed: "2026-01-01T00:00:00Z", net: -5, risk: 10, r: -0.5, parts: 1 }]);
+  const row = csv.split("\n")[1];
+  assert.ok(row.includes(`"'=HYPERLINK(""http://a"")"`), row);
+  assert.ok(row.split(",").includes("-5.00"), row);         // (a negative number is not mistaken for a formula)
+});
+
+test("Trades sort by time, not by text (second audit m8)", () => {
+  const deals = [
+    { dealId: 1, symbolName: "A", openingDirection: "buy", closingTime: "2026-01-01T10:00:00.500Z", netProfit: 1, label: "BLST r=1 id=aaaa0001" },
+    { dealId: 2, symbolName: "B", openingDirection: "buy", closingTime: "2026-01-01T10:00:00Z", netProfit: 1, label: "BLST r=1 id=aaaa0002" },
+  ];
+  assert.deepEqual(tradeLog(deals).map((t) => t.symbol), ["A", "B"]);
+});
