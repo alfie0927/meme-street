@@ -103,6 +103,8 @@ def demo():
     a = np.concatenate([v, z(0.2), v, z(0.5), v, z(0.15), v])         # "one | two, three four": the 0.5 s silence is the comma
     o = pace(a, ["one", "two,", "three", "four"])   # (the 0.15 s silence is cut to INSIDE)
     assert abs(len(o) - (4 * len(v) + int((INSIDE * 2 + PAUSE[","]) * SR))) < SR * 0.03, len(o) / SR
+    assert heard_ok("Three hundred. Two fifty. Two hundred.", [("300.", 0, .5), ("250.", .6, 1), ("200.", 1.1, 1.5)])
+    assert heard_ok("Twenty. Ten. Five.", [("20.", 0, .4), ("10.", .5, .8), ("5.", .9, 1.2)]) and not heard_ok("Twenty. Ten. Five.", [("hello", 0, .4)])
     w = align(["warning,", "or", "trouble"], [("warning", 0.0, 0.5), ("trouble", 1.4, 1.8)], 2.0)
     assert abs(w[1][0] - 1.1) < 1e-6, w                                   # 'or' is said just before 'trouble', after the pause
 
@@ -110,7 +112,8 @@ def heard_ok(line, W):
     """Did the voice say the line? The recognised words must cover most of the written ones (a garbled or skipped
     passage fails the reel instead of posting)."""
     sp = lambda x: re.sub(r"\d", lambda m: NUM[m.group()], "".join(norm_words(x)))   # (letters only, digits spelt: Whisper writes "A, one to one" as "a1 to 1")
-    want, got = sp(say_as(line)), sp(" ".join(w[0] for w in W))
+    dg = lambda x: " ".join(t[0] for t in digits(x.split()))   # (both sides as digits: Whisper writes "Three hundred. Two fifty." as "300. 250.", 2026-11-19)
+    want, got = sp(dg(say_as(line))), sp(dg(" ".join(w[0] for w in W)))
     if not want: return True
     if not got: return False                               # (no recognised words: the captions could not be timed)
     m = sum(b.size for b in difflib.SequenceMatcher(None, want, got, autojunk=False).get_matching_blocks())

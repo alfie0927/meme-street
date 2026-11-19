@@ -56,10 +56,11 @@ M.CATEGORIES[EXPLAIN] = (
 for _c in (STORY, EXPLAIN):
     M.LENGTH[_c] = (100, 145, True)
     M.KINDS[_c] = []
-VIDEO_NOTE = (" CINEMATIC SHOTS (open-higgsfield's models through footage.py): facts.video.available is true, so open on ONE "
-              "\"film\" scene (the story's world in one striking moving shot: a trading floor at night, a rocket on a pad, a crowd "
-              "with phones lit; no real people, no logos, no text) and use at most one more later; every other scene is your own "
-              "animation over the chart.")
+VIDEO_NOTE = (" CINEMATIC SHOTS (open-higgsfield's models through footage.py): facts.video.available is true, so scene 1 (the "
+              "second hook, right after your animated scene 0) is ONE \"film\" scene: the story's world in one striking moving shot (a "
+              "trading floor at night, a rocket on a pad, a crowd with phones lit; no real people, no logos, no text), with its "
+              "\"head\" and \"shot\"; use at most one more later. Scene 0 stays your own free scene with its punch text (the checks "
+              "refuse a film scene 0), and every other scene is your own animation over the chart.")   # (2026-11-19: "open on ONE film scene" fought the scene-0 rule, so no story ever had a shot)
 
 
 def bank():
@@ -98,6 +99,7 @@ def research(x, kind):
 
 
 def video_ok():
+    if os.path.exists(os.path.join(ROOT, "state", "video_off")): return False   # (the owner, 2026-11-19: "don't use actual higgsfield": no AI shots while this file is there)
     import footage
     return bool(footage.cred()) and footage.remaining() >= 2 * footage.cost(5)
 

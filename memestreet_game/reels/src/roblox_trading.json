@@ -141,7 +141,7 @@
    "kind": "free",
    "text": "hand freezes forever",
    "hot": "freezes",
-   "vo": "And when it hits zero, your trading hand freezes forever.",
+   "vo": "When it hits zero, your trading hand freezes forever.",
    "shots": [
     {
      "place": "street",
@@ -153,7 +153,7 @@
         0,
         0
        ],
-       "do": "type",
+       "do": "show",
        "hold": "phone",
        "chest": [
         12000,
@@ -225,7 +225,7 @@
     },
     {
      "say": "grandmas hide",
-     "place": "home",
+     "place": "room",
      "cam": "mid:grandma",
      "actors": [
       {
@@ -234,7 +234,7 @@
         0,
         0
        ],
-       "do": "carry",
+       "do": "show",
        "hold": "money",
        "face": "smug",
        "chest": 1000000
@@ -247,7 +247,7 @@
    "kind": "free",
    "text": "for emergencies only",
    "hot": "emergencies",
-   "vo": "The mailman only buys things on sale, because a sale only costs half. And gambling? Gambling is for emergencies only.",
+   "vo": "The mailman only buys things on sale, because half price is half the damage. And gambling? Gambling is for emergencies only.",
    "shots": [
     {
      "place": "shop",
@@ -385,7 +385,7 @@
         2.2,
         -2.2
        ],
-       "do": "type",
+       "do": "point",
        "face": "laugh",
        "chest": [
         600000,
@@ -396,7 +396,7 @@
     },
     {
      "say": "my tenth birthday",
-     "place": "home",
+     "place": "room",
      "cam": "two:mom,narrator",
      "actors": [
       {
@@ -433,7 +433,7 @@
    "vo": "I only had three hundred dollars left.",
    "shots": [
     {
-     "place": "home",
+     "place": "room",
      "cam": "close:narrator",
      "actors": [
       {
@@ -463,9 +463,9 @@
   },
   {
    "kind": "free",
-   "text": "Kids call me",
-   "hot": "Kids",
-   "vo": "Ever since then, I've lived on three hundred dollars. Kids call me Broke Boy, and at recess everyone shows off their numbers, while I just sit there and watch.",
+   "text": "Broke Boy",
+   "hot": "Broke",
+   "vo": "Ever since then, I've lived on three hundred dollars. Kids started calling me Broke Boy, the poorest kid in town.",
    "shots": [
     {
      "place": "park",
@@ -484,7 +484,42 @@
      ]
     },
     {
-     "say": "Kids call me",
+     "say": "Kids started calling",
+     "place": "park",
+     "cam": "wide",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        -1
+       ],
+       "do": "sit",
+       "face": "sad",
+       "chest": 300
+      }
+     ],
+     "crowd": {
+      "n": 5,
+      "form": "row",
+      "at": [
+       0,
+       1.2
+      ],
+      "look": "narrator",
+      "do": "laugh",
+      "face": "laugh"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "sit there and watch",
+   "hot": "watch",
+   "vo": "At recess everyone shows off their numbers, while I just sit there and watch.",
+   "shots": [
+    {
      "place": "park",
      "cam": "wide",
      "actors": [
@@ -512,7 +547,7 @@
      }
     },
     {
-     "say": "sit there and watch",
+     "say": "sit there",
      "place": "park",
      "cam": "close:narrator",
      "actors": [
@@ -534,7 +569,7 @@
    "kind": "free",
    "text": "practice money doesn't count",
    "hot": "practice",
-   "vo": "The only thing I could still do for fun was practise. Every night in my room, I traded with fake money on Meme Street, because practice money doesn't count.",
+   "vo": "The only fun left was practice. Every night in my room, I traded fake money on Meme Street, because practice money doesn't count.",
    "shots": [
     {
      "place": "room",
@@ -568,7 +603,7 @@
         2.2,
         -2.2
        ],
-       "do": "type",
+       "do": "point",
        "face": "grin",
        "chest": 300
       }
@@ -603,16 +638,16 @@
   },
   {
    "kind": "free",
-   "text": "fund started falling",
+   "text": "savings started falling",
    "hot": "falling",
-   "vo": "Until one afternoon, the town's savings fund started falling, faster and faster.",
+   "vo": "Until one afternoon, the town's savings started falling, faster and faster.",
    "shots": [
     {
      "place": "square",
      "cam": "screen",
      "sky": "sunset",
      "screen": {
-      "title": "TOWN FUND",
+      "title": "TOWN SAVINGS",
       "chart": "crash",
       "pct": "-38%"
      },
@@ -641,7 +676,6 @@
        ],
        "do": "shock",
        "face": "shock",
-       "hold": "chart",
        "chest": [
         1000000,
         620000
@@ -672,7 +706,7 @@
         0,
         0
        ],
-       "do": "beg",
+       "do": "shock",
        "face": "cry",
        "chest": 620000
       }
@@ -765,7 +799,7 @@
    "kind": "free",
    "text": "blinking red",
    "hot": "red",
-   "vo": "I traded. My chest started blinking red. Three hundred, two fifty, two hundred.",
+   "vo": "I traded. My chest started blinking red.",
    "shots": [
     {
      "place": "bank",
@@ -777,10 +811,10 @@
         0,
         0
        ],
-       "do": "type",
-       "hold": "phone",
+       "do": "show",
        "face": "angry",
-       "chest": 300
+       "chest": 300,
+       "hold": "phone"
       }
      ]
     },
@@ -795,12 +829,9 @@
         0,
         0
        ],
-       "do": "type",
+       "do": "shock",
        "face": "shock",
-       "chest": [
-        300,
-        200
-       ]
+       "chest": 300
       }
      ],
      "fx": [
@@ -813,9 +844,9 @@
   },
   {
    "kind": "free",
-   "text": "two, one, zero",
-   "hot": "zero",
-   "vo": "My hands were shaking. One fifty, one hundred, twenty, ten, five, three, two, one, zero.",
+   "text": "Three hundred",
+   "hot": "hundred",
+   "vo": "Three hundred. Two fifty. Two hundred.",
    "shots": [
     {
      "place": "bank",
@@ -829,10 +860,24 @@
        ],
        "do": "shock",
        "face": "shock",
-       "chest": [
-        200,
-        20
-       ]
+       "chest": 300
+      }
+     ]
+    },
+    {
+     "say": "Two fifty",
+     "place": "bank",
+     "cam": "low:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "shock",
+       "chest": 250
       }
      ],
      "fx": [
@@ -842,7 +887,70 @@
      ]
     },
     {
-     "say": "ten, five",
+     "say": "Two hundred",
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": 200
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "hands were shaking",
+   "hot": "shaking",
+   "vo": "My hands were shaking. One fifty. One hundred.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "flat",
+       "chest": 200
+      }
+     ]
+    },
+    {
+     "say": "One fifty",
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "shock",
+       "chest": 150
+      }
+     ],
+     "fx": [
+      {
+       "do": "redflash"
+      }
+     ]
+    },
+    {
+     "say": "One hundred",
      "place": "bank",
      "cam": "low:narrator",
      "actors": [
@@ -854,18 +962,158 @@
        ],
        "do": "shock",
        "face": "cry",
-       "chest": [
-        20,
+       "chest": 100
+      }
+     ],
+     "fx": [
+      {
+       "do": "shake"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Twenty ten five",
+   "hot": "Twenty",
+   "vo": "Twenty. Ten. Five.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
         0
-       ]
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": 20
       }
      ],
      "fx": [
       {
        "do": "redflash"
-      },
+      }
+     ]
+    },
+    {
+     "say": "Ten",
+     "place": "bank",
+     "cam": "low:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": 10
+      }
+     ],
+     "fx": [
       {
        "do": "shake"
+      }
+     ]
+    },
+    {
+     "say": "Five",
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": 5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Two one zero",
+   "hot": "zero",
+   "vo": "Three. Two. One. Zero.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "low:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": 3
+      }
+     ]
+    },
+    {
+     "say": "Two",
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": 2
+      }
+     ],
+     "fx": [
+      {
+       "do": "shake"
+      }
+     ]
+    },
+    {
+     "say": "One",
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": 1,
+       "say": "Zero",
+       "then": {
+        "chest": 0,
+        "do": "fall"
+       }
+      }
+     ],
+     "fx": [
+      {
+       "do": "redflash",
+       "say": "Zero"
+      },
+      {
+       "do": "shake",
+       "say": "Zero"
       }
      ]
     }
@@ -927,7 +1175,7 @@
    "kind": "free",
    "text": "only counts real money",
    "hot": "real",
-   "vo": "And that's when I realised something. The counter only counts real money.",
+   "vo": "That's when I realised something. The counter only counts real money.",
    "shots": [
     {
      "place": "bank",
@@ -965,8 +1213,7 @@
         0
        ],
        "look": "banker",
-       "do": "show",
-       "hold": "chart",
+       "do": "point",
        "face": "grin",
        "chest": 0
       },
@@ -984,26 +1231,26 @@
      ]
     },
     {
+     "say": "the level",
+     "place": "square",
+     "cam": "screen",
+     "screen": {
+      "title": "TOWN SAVINGS",
+      "chart": "bounce",
+      "level": 0.24
+     }
+    },
+    {
      "say": "Buy here",
      "place": "square",
      "cam": "screen",
      "screen": {
-      "title": "TOWN FUND",
-      "chart": "wobble",
-      "pct": "-38%"
-     },
-     "actors": [
-      {
-       "who": "narrator",
-       "at": [
-        2.2,
-        -1.5
-       ],
-       "look": "screen",
-       "do": "point",
-       "chest": 0
-      }
-     ]
+      "title": "TOWN SAVINGS",
+      "chart": "bounce",
+      "level": 0.24,
+      "buy": true,
+      "stop": 0.13
+     }
     }
    ]
   },
@@ -1011,16 +1258,17 @@
    "kind": "free",
    "text": "climbed all the way",
    "hot": "climbed",
-   "vo": "The fund hit my level, bounced, and climbed all the way back, while the whole town watched with their mouths open.",
+   "vo": "It dropped right to my level, bounced, and climbed all the way back, while the whole town watched with their mouths open.",
    "shots": [
     {
      "place": "square",
      "cam": "screen",
      "sky": "gold",
      "screen": {
-      "title": "TOWN FUND",
-      "chart": "rocket",
-      "pct": "+41%"
+      "title": "TOWN SAVINGS",
+      "chart": "rebound",
+      "pct": "+41%",
+      "level": 0.24
      },
      "crowd": {
       "n": 6,
@@ -1115,12 +1363,6 @@
         "face": "laugh"
        }
       }
-     ],
-     "fx": [
-      {
-       "do": "confetti",
-       "say": "hugged me"
-      }
      ]
     }
    ]
@@ -1142,7 +1384,7 @@
         0,
         0
        ],
-       "do": "type",
+       "do": "show",
        "hold": "phone",
        "face": "grin",
        "chest": 1000000
@@ -1160,7 +1402,7 @@
         -1.4,
         0.4
        ],
-       "do": "type",
+       "do": "show",
        "hold": "phone",
        "face": "grin",
        "chest": 1000000
@@ -1171,7 +1413,7 @@
         1.4,
         0.4
        ],
-       "do": "type",
+       "do": "show",
        "hold": "phone",
        "face": "laugh",
        "chest": 1000000
@@ -1180,7 +1422,7 @@
     },
     {
      "say": "then the grandmas",
-     "place": "home",
+     "place": "room",
      "cam": "mid:grandma",
      "actors": [
       {
@@ -1189,7 +1431,7 @@
         0,
         0
        ],
-       "do": "type",
+       "do": "show",
        "hold": "phone",
        "face": "smug",
        "chest": 1000000
@@ -1227,7 +1469,7 @@
        0,
        -1.2
       ],
-      "do": "type"
+      "do": "cheer"
      }
     },
     {
@@ -1257,5 +1499,7 @@
     }
    ]
   }
- ]
+ ],
+ "remake_of": "10-42-35",
+ "headline": "Practice money never counts down"
 }

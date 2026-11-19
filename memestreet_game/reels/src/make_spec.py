@@ -1589,7 +1589,8 @@ def check(spec, facts, charts, category=None):
     free = bool(spec.get("scene_js"))                     # a director reel (every reel since 2026-11-09)
     nk = lambda w: re.sub(r"[^a-z0-9%$.]", "", str(w).lower())
     dev = spec.get("device") if isinstance(spec.get("device"), dict) else {}
-    if free and category != "Daily recap":                  # (the claim that stays on screen: the study of 2026-11-17)
+    remake = bool(spec.get("remake_of"))                 # (a remake of an exemplar the owner ordered, beat for beat: its length, its loop ending, its spoken count; RULEBOOK, 2026-11-19)
+    if free and category != "Daily recap" and not remake:   # (the claim that stays on screen: the study of 2026-11-17)
         hl = str(spec.get("headline") or "").strip(); hw = hl.split()
         if not 3 <= len(hw) <= 7: errs.append('"headline": the claim this reel proves, 3 to 7 words, drawn at the top from scene 1 to the end')
         elif nk(hl) in (nk(str(spec.get("title") or "")), nk(str((sc[0] if sc else {}).get("text") or ""))): errs.append("the headline is the claim the reel proves, in other words than the title and the hook")
@@ -1600,7 +1601,7 @@ def check(spec, facts, charts, category=None):
         elif not 5 <= hold <= 7: errs.append('"hold": 5 to 7 (seconds) on the one scene: the time the card keeps the screen while its cells land')
     elif any(s.get("hold") for s in sc): errs.append('"hold" belongs to the Reference card only: another format fills its time with spoken lines')
     for k, s in enumerate(sc):                             # (a countdown is a pause the viewer gets, never words said in one breath: the owner, 2026-11-19)
-        if re.search(r"\b(?:three|3)[,.!]?\s+(?:two|2)[,.!]?\s+(?:one|1)\b", str(s.get("vo", "")), re.I):
+        if not remake and re.search(r"\b(?:three|3)[,.!]?\s+(?:two|2)[,.!]?\s+(?:one|1)\b", str(s.get("vo", "")), re.I):
             errs.append(f'scene {k}: never speak a countdown ("three, two, one" in one breath was too fast): ask the question, then give the scene "think": 3 and draw the countdown across s.think_t, one number a second')
         if s.get("think") is not None:
             try: th = float(s["think"])
@@ -1647,6 +1648,7 @@ def check(spec, facts, charts, category=None):
         if BACKGROUND.search(nxt): errs.append(f"scene 1 opens on background ({nxt!r}): it is a second hook that raises the stake; what the company is or what a term means rides inside the action later")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (60, 110, True))
     if free and (category or spec.get("type")) not in LENGTH: hi_w = 260 if (category or spec.get("type")) in DEEP else 150   # (in depth: up to 260 words, the owner 2026-11-12)   # (35 to 60 s: the owner, 2026-11-11; was 40 to 120)
+    if remake: lo_w, hi_w, outro = 60, 460, False
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
     body = [s for s in sc if s.get("kind") != "outro"]
@@ -1715,7 +1717,7 @@ def check(spec, facts, charts, category=None):
             for f in ("to", "i", "from"):
                 if f in c and isinstance(ch, int) and 0 <= ch < len(charts) and not 0 <= c[f] < len(charts[ch]["candles"]):
                     errs.append(f"scene {k}: candle {c[f]} is outside chart {ch}")
-    errs += shown_check(sc, charts) + speech_check(sc)
+    errs += shown_check(sc, charts) + ([] if remake else speech_check(sc))   # (a remake keeps the exemplar's count, one number a sentence)
     # (no hook-score gate since 2026-11-07: on 48 finance Shorts it did not separate winners (41) from losers (43); the owner retired it)
     LQ = facts.get("questions") or []
     for k, s in enumerate(sc):                             # a quiz option's short label, one per option, at most 4 words (every reel since 2026-11-08: long options were cramped)
@@ -1766,7 +1768,7 @@ def check(spec, facts, charts, category=None):
             errs.append("only a reel about the Daily Chart mentions it: end with \"Join free at memestreet.net.\"")
         if strict and category != "Daily Chart explained" and (len(ov.split()) > 10 or "?" in ov):   # (docs/ROADMAP.md A5: the ending takes 2 seconds, not 6)
             errs.append("the outro is the sign-off, 10 words at most: one short echo of the hook if you like, then Join free at memestreet.net. (no promo sentence; the question to the viewer is asked in the hook or the middle)")
-    if category in ("Loop", CARD):                           # (docs/ROADMAP.md A4: a loop has no sign-off, so its caption carries the address; a Reference card the same)
+    if category in ("Loop", CARD) or remake:                 # (docs/ROADMAP.md A4: a loop has no sign-off, so its caption carries the address; a Reference card the same)
         what = "a loop" if category == "Loop" else "a Reference card"
         if any(x.get("kind") == "outro" for x in sc): errs.append(f"{what} has no outro scene: " + ("it ends where it began, so the replay is seamless" if category == "Loop" else "the card holds to the last frame"))
         if "memestreet.net" not in str(spec.get("caption", "")).lower(): errs.append(f"{what} never says the address: put memestreet.net in its caption")
@@ -2112,7 +2114,7 @@ def parse(raw, B, base=None):
             return {}, [f"not valid JSON: {e}"]
     if base is not None:
         spec = merge(base, spec)
-        for k in ("scene_js", "device", "tok"):
+        for k in ("scene_js", "device", "tok", "remake_of"):
             if k not in spec and base.get(k) is not None: spec[k] = base[k]
     if js: spec["scene_js"] = js.group(1).strip()
     town = []
@@ -2476,6 +2478,8 @@ if __name__ == "__main__":
         assert ONLY in (None, CARD) and len(set(LESSON_FORMATS[CARD])) >= 40 and "never a recent device's" in CATEGORIES[CARD]
         cd = check(dict(fr, scenes=[dict(fr["scenes"][0], vo="Higher or lower, three, two, one?"), fr["scenes"][1]]), {}, [], HILO)
         assert any("never speak a countdown" in e for e in cd), cd
+        rm = check(dict(fr, remake_of="x", headline="", scenes=[dict(fr["scenes"][0], vo="Higher or lower, three, two, one?")]), {}, [], HILO)
+        assert not any("countdown" in e or "headline" in e or "outro" in e for e in rm), rm   # (an ordered remake keeps its length, loop and count)
         assert any('"think"' in e for e in check(dict(fr, scenes=[dict(fr["scenes"][0], think=9), fr["scenes"][1]]), {}, [], HILO))
         _h = {}
         assert len({hook_pick(_h)["name"] for _ in range(26)}) == 26 and hook_pick(_h)["name"] == HOOKS[0]["name"]   # (the 26 in turn, round and round: the bug of 2026-11-17)
