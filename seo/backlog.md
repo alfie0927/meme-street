@@ -1,5 +1,12 @@
 # SEO backlog
 
+**2026-11-19: the site is the Daily only (see context.md). Items 4 to 13 below are retired with the pages they were for; do not rebuild them. Live backlog:**
+
+A. **Owner: Search Console and Bing Webmaster Tools** for memestreet.net (item 1 below) is still the first unlock.
+B. **Daily Chart queries** ("daily stock chart game", "stock wordle", "guess the stock chart"): the home page owns them. Needs a keyword map rebuild (Monthly, due 2026-12-07) and a look at Ticker League / Financhle / Read the Tape pages.
+C. **Share pages**: `?vs=` challenge links have their own og:title only; an og:image of the result would help social clicks (needs `game/pages.py`, allowed).
+D. **Routine prompt is stale**: it still describes a learn-to-trade game with signup and a 1,000 MB start. Owner to rewrite the inputs (product, conversion = a played Daily / returning player, competitors).
+
 Ordered by expected signups per hour of work. Each item: query → page → change.
 
 1. **Get indexed at all.** memestreet.net returns nothing in web search (2026-11-07). Owner: add the site to Google

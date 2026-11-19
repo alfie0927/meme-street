@@ -2,6 +2,14 @@
 
 Built 2026-11-07 from the code and the live site. Every fact has its source. If the product changes, the product is right.
 
+## CURRENT STATE (2026-11-19, read this first)
+Since 2026-11-18 memestreet.net serves **only the Daily Chart** (`game/pages.py` `DAILY_ONLY`; the owner: "that's ALL there should be").
+Live check 2026-11-19: `/` and `/daily` return 200; `/about`, `/lessons`, `/vs`, `/tools/*` and every other old URL 301 to `/`.
+`/sitemap.xml` lists only `/`. Allowed pages: `KEEP` in `game/pages.py`. Title "MemeStreet: The Daily Trading Game"; canonical `/`;
+WebApplication JSON-LD; server-rendered h1 and intro. Everything below about lessons, tools, /about, prices and the 100,000 MB start
+describes the retired site (still in the code, served only with `MS_FULL_SITE=1`). The product is now free, no account needed, one real
+US stock chart a day, two minutes to trade it, streak and share. Competitors that now matter: Ticker League, Financhle, Read the Tape, Wordle-style games.
+
 ## What it is
 A fictional stock market that runs around the clock, for learning to trade without real money. Everyone starts with
 **100,000 MB** (memebucks), practice money with no cash value that is never paid out.
