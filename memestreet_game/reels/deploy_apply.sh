@@ -4,6 +4,9 @@
 #   deploy_apply.sh <folder holding new.tgz>
 # The old files are kept in <folder>/before.tgz and put back if a self-check fails. The result goes to logs/deploy.log.
 D=$1; cd /opt/memestreet-daily-reel || exit 1
+for n in "$(dirname "$D")"/*/; do n=${n%/}   # (a newer bundle waits too: it holds this one's files, and this one landing last would undo it; 2026-11-19)
+  [[ "$(basename "$n")" > "$(basename "$D")" ]] && [ -f "$n/new.tgz" ] && { echo "=== skipped $D: $(basename "$n") is newer and holds it"; exit 0; }
+done
 scripts_ok() { for f in ./*.sh; do bash -n "$f" || return 1; done; }
 tar tzf "$D/new.tgz" > "$D/files.txt"
 tar czf "$D/before.tgz" --ignore-failed-read -T "$D/files.txt" 2>/dev/null
