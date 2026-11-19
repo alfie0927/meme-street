@@ -277,25 +277,46 @@ def lock():
     f = open(os.path.join(ROOT, "queue", ".auto.lock"), "a"); fcntl.flock(f, fcntl.LOCK_EX); return f
 
 
-def make(pack, names=(), slot=None, category=CATEGORY, what=WHAT):
+def queue_out(out, slot, headline, auto=None):
+    """An approved cut in `out` into the queue: in `slot` as that slot's auto reel (its old folder kept in queue-originals), or,
+    with no slot, under the time now, so it posts at the next queue run. -> the queue folder's name."""
+    auto = bool(slot) if auto is None else auto
+    slot = slot or datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H%M")
+    stage, dest = os.path.join(ROOT, "queue", ".staging", slot), os.path.join(ROOT, "queue", slot)
+    os.makedirs(stage, exist_ok=True)
+    for f in ("reel.mp4", "caption.txt", "cover.jpg", "approved.json"): subprocess.run(["cp", os.path.join(out, f), stage], check=True)
+    if os.path.isdir(dest):
+        old = os.path.join(ROOT, "queue-originals", slot)
+        subprocess.run(["rm", "-rf", old], check=True); os.makedirs(os.path.dirname(old), exist_ok=True); os.rename(dest, old)
+    if auto: open(os.path.join(stage, ".auto"), "w").close()
+    open(os.path.join(stage, ".news"), "w").write(headline or "")
+    os.rename(stage, dest); say("queued", slot, "-", headline)
+    return slot
+
+
+def make(pack, names=(), slot=None, category=CATEGORY, what=WHAT, charts=None, extra=None, video=False, post_now=False):
     """Write, check, voice, render, review and queue the reel for a sound fact pack. -> the queue slot, or None (held). With
-    `slot` (auto_reel.sh's market reel) it goes in that slot as the slot's auto reel, under the lock auto_reel.sh already holds."""
+    `slot` (auto_reel.sh's market or story reel) it goes in that slot as the slot's auto reel, under the lock auto_reel.sh
+    already holds; without, it posts at once. `charts` and `extra` facts go to the writer (a story's real chart: stock_story.py);
+    `video` lets it open on Higgsfield shots (footage.py, under its monthly cap)."""
     sys.path.insert(0, HERE)
     import make_spec as M
     M.CATEGORIES.setdefault(category, what)
     hist = json.load(open(M.HISTORY)) if os.path.exists(M.HISTORY) else {}
     notes = os.path.join(ROOT, "exemplar", "NOTES.md")
     facts = {"news": pack, "meme_street": M.GAME_FACTS, "recent_devices": [d for d in hist.get("devices", []) if isinstance(d, dict)][-30:],
-             "video": {"available": False}, "hook_shots_used_lately": []}
+             "video": {"available": bool(video)}, "hook_shots_used_lately": []}
+    facts.update(extra or {})
     ask = {"category": category, "what_this_reel_is": what, "facts": facts, "recent_titles_to_avoid": hist.get("titles", [])[-20:],
            "exemplar_notes": open(notes, encoding="utf-8").read() if os.path.exists(notes) else "",
            "what_works_now": {"note": "Openings that beat their account's usual views. Use the SHAPE, never the words.", "examples": M.VIRAL_EVIDENCE}}
     at = slot or datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H%M")
-    B = {"slot": at, "category": category, "system": M.system_prompt(category), "ask": ask, "charts": []}
-    tag = "auto-" if slot else "news-"                     # (a slot's reel is an auto reel: the ledger finds its script there)
+    B = {"slot": at, "category": category, "system": M.system_prompt(category), "ask": ask, "charts": list(charts or [])}
+    tag = "auto-" if slot or post_now else "news-"         # (a slot's reel, or a story posted now, is an auto reel: the ledger finds its script there)
     work, out = os.path.join(ROOT, "work", tag + at), os.path.join(ROOT, "out", tag + at)
     say("waiting for the reel being made, then writing:", pack.get("headline"))
     held = lambda why: (say("HELD, nothing posts:", why), None)[1]
+    if video: os.environ["HF_VIDEO"] = "1"                 # (the narration makes the shots: footage.py, the cap still holds)
     import contextlib
     with (contextlib.nullcontext() if slot else lock()):
         spec = M.write(B, work=work)
@@ -317,23 +338,7 @@ def make(pack, names=(), slot=None, category=CATEGORY, what=WHAT):
         bad = fact_check(pack, M.GAME_FACTS, json.load(open(os.path.join(work, "spec.json"), encoding="utf-8")))   # (the critic's rewrite is checked too)
         if bad: return held("the fact check failed after the critic's rewrite: " + "; ".join(bad)[:400])
     if os.environ.get("NEWS_DRY") == "1": return held("a dry run (NEWS_DRY=1): approved and left in " + out)
-    if slot:                                               # (the slot's auto reel, as auto_reel.sh queues one: the slot's old folder kept)
-        stage, dest = os.path.join(ROOT, "queue", ".staging", slot), os.path.join(ROOT, "queue", slot)
-        os.makedirs(stage, exist_ok=True)
-        for f in ("reel.mp4", "caption.txt", "cover.jpg", "approved.json"): subprocess.run(["cp", os.path.join(out, f), stage], check=True)
-        if os.path.isdir(dest):
-            old = os.path.join(ROOT, "queue-originals", slot)
-            subprocess.run(["rm", "-rf", old], check=True); os.makedirs(os.path.dirname(old), exist_ok=True); os.rename(dest, old)
-        open(os.path.join(stage, ".auto"), "w").close(); open(os.path.join(stage, ".news"), "w").write(pack.get("headline", ""))
-        os.rename(stage, dest); say("queued", slot, "-", pack.get("headline"))
-        return slot
-    slot = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H%M")             # (it posts now: the queue takes any folder whose time has come)
-    stage, dest = os.path.join(ROOT, "queue", ".staging", slot), os.path.join(ROOT, "queue", slot)
-    os.makedirs(stage, exist_ok=True)
-    for f in ("reel.mp4", "caption.txt", "cover.jpg", "approved.json"): subprocess.run(["cp", os.path.join(out, f), stage], check=True)
-    open(os.path.join(stage, ".news"), "w").write(pack.get("headline", ""))
-    os.rename(stage, dest); say("queued", slot, "-", pack.get("headline"))
-    return slot
+    return queue_out(out, slot, pack.get("headline", ""), auto=bool(slot or post_now))
 
 
 def run(story, c=None, st=None):

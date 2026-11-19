@@ -39,7 +39,7 @@ def beats(sc, vs, at, vo, sfx):
     return out
 
 
-GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6   # (TAIL 1.6: the sign-off holds a moment, the owner 2026-11-07)        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
+GAP, LEAD, TAIL, THINK = 0.38, 0.1, 1.6, 3.0   # (2026-11-19: a breath before the cut, 0.24 felt like a cut-off; a countdown gets 3 s, 1.6 was too fast)   # (TAIL 1.6: the sign-off holds a moment, the owner 2026-11-07)        # (seconds: between scenes = heard as a sentence pause, before the first, after the last, quiz thinking time)
 SR = 24000
 
 def tone(path, freqs, length, vol=0.25):
@@ -177,11 +177,17 @@ EL_MODEL = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
 EL_SPEED = float(os.environ.get("ELEVEN_SPEED", "1.12"))   # (1.1 read at 3.62 words a second; the human target is 3.9)
 
 
-def el_line(text, speed=None):
-    """One line read by ElevenLabs (ELEVEN_API_KEY in config.env), as float samples at SR."""
+EL_STYLE = {"stability": 0.6, "similarity_boost": 0.8, "style": 0.2}   # (2026-11-19: a touch more life than 0.72 / 0.75 / 0.0; the pace rule still holds)
+
+
+def el_line(text, speed=None, before="", after=""):
+    """One line read by ElevenLabs (ELEVEN_API_KEY in config.env), as float samples at SR. `before` and `after` are the lines
+    around it (the API's previous_text and next_text): the voice then reads it as part of the reel, so a line no longer ends
+    like a recording that stops, and the next one does not start cold (2026-11-19)."""
     import urllib.request
-    body = {"text": text, "model_id": EL_MODEL, "voice_settings": {"stability": 0.72, "similarity_boost": 0.75, "style": 0.0,   # (steadier: no drift in pace)
-                                                                   "use_speaker_boost": True, "speed": speed or EL_SPEED}}
+    body = {"text": text, "model_id": EL_MODEL, "voice_settings": dict(EL_STYLE, use_speaker_boost=True, speed=speed or EL_SPEED)}
+    if before: body["previous_text"] = before[-600:]
+    if after: body["next_text"] = after[:600]
     req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{EL_VOICE}?output_format=pcm_{SR}", data=json.dumps(body).encode(),
                                  headers={"xi-api-key": os.environ["ELEVEN_API_KEY"].strip(), "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=120) as r:
@@ -247,13 +253,14 @@ def main(work):
         voice, pitch = S.get("voice") or "af_heart", float(S.get("voice_pitch") or 1)   # (a reel may bring its own Kokoro voice: the story serial, story_reel.py)
         speed = float(S.get("voice_speed") or os.environ.get("VOICE_SPEED", "1.0"))
         el = el_all and not S.get("voice")
-        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS, "one-speed", "placed-pauses", "quiet-40db"] + ([voice, pitch, S.get("voice_pauses")] if S.get("voice") else []) + ([EL_VOICE, EL_MODEL, EL_SPEED] if el else [])).encode()).hexdigest()[:16])
+        around = (" ".join(x["vo"] for x in S["scenes"][max(0, i - 2):i]), " ".join(x["vo"] for x in S["scenes"][i + 1:i + 3]))   # (the lines either side)
+        h = os.path.join(work, "vo", "cache", hashlib.sha1(json.dumps([sc["vo"], speed, PAUSE, INSIDE, WPS, "one-speed", "placed-pauses", "quiet-40db", "tail-150"] + ([voice, pitch, S.get("voice_pauses")] if S.get("voice") else []) + ([EL_VOICE, EL_MODEL, EL_SPEED, EL_STYLE, around] if el else [])).encode()).hexdigest()[:16])
         a = None
         if os.path.exists(h + ".json"):                        # (a line the last cut already voiced: a remake redoes only what changed)
             shutil.copy(h + ".wav", clip); W = [tuple(w) for w in json.load(open(h + ".json"))]
         elif el:                                               # ElevenLabs: a human read, its own pauses and pace (no re-pacing)
             try:
-                a = trim(el_line(say_as(sc["vo"].strip())), SR)
+                a = trim(el_line(say_as(sc["vo"].strip()), None, say_as(around[0]), say_as(around[1])), SR)
             except Exception as e:                             # (out of characters, network: Kokoro reads this line)
                 print(f"scene {i}: ElevenLabs failed ({str(e)[:160]}); Kokoro reads it", flush=True)
         if a is not None:
@@ -261,7 +268,7 @@ def main(work):
             if r and abs(r / WPS - 1) > 0.2:                   # (only a clear outlier: a retake at another speed changes the pace between lines)                  # (a dense line came out rushed, a light one slow: one retake at the
                 try:                                           #  speed that lands it on the human pace)
                     sp = round(min(1.2, EL_SPEED + .08, max(EL_SPEED - .08, EL_SPEED * WPS / r)), 2)   # (near the house speed, so lines match; 1.2 is ElevenLabs' top)
-                    a = trim(el_line(say_as(sc["vo"].strip()), sp), SR); sf.write(clip, a, SR); W = words(clip)
+                    a = trim(el_line(say_as(sc["vo"].strip()), sp, say_as(around[0]), say_as(around[1])), SR); sf.write(clip, a, SR); W = words(clip)
                 except Exception as e:
                     print(f"scene {i}: ElevenLabs retake failed ({str(e)[:120]}); the first take stays", flush=True)
             os.makedirs(os.path.dirname(h), exist_ok=True); shutil.copy(clip, h + ".wav"); json.dump(W, open(h + ".json", "w"))
@@ -289,7 +296,7 @@ def main(work):
         pv = S["scenes"][i - 1] if i else {}
         same = i and ((sc.get("chart") is not None and pv.get("chart") == sc["chart"]) or (sc["kind"] == "free" == pv.get("kind") and sc.get("chart") is None is pv.get("chart")))   # (the screen stays: the same chart, or one free world after another; reel.html keep())
         if not i: vo.append([pop, 0.0])                        # a sound on the very first frame (docs/ROADMAP.md A2): the pop is over by 0.09 s and the voice starts at 0.15
-        if i and not same: vo.append([whoosh, round(max(0, t - 0.24), 3)])   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
+        if i and not same: vo.append([whoosh, round(max(0, t - GAP + 0.14), 3)])   # (the whoosh after a breath, never on the line's last syllable: 2026-11-19)   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
         cap = digits(tw)                                       # the captions: the written words, numbers in digits ('two oh three' 203),
@@ -308,7 +315,7 @@ def main(work):
         for x in sc.get("opt_t", []): vo.append([pop, x])
         impacts += beats(sc, vs, at, vo, lambda x: os.path.join(A, f"sfx_{x}.wav"))   # (storyboard beats: timed, sounded, their impacts kept for the critic)
         t = vs + d
-        if sc["kind"] == "question":                          # the viewer's moment: a ticking countdown, not silence
+        if sc["kind"] == "question" or sc.get("think"):       # the viewer's moment: a ticking countdown, not silence (any scene may ask for it: "think")
             think = float(sc.get("think", THINK)); sc["think_t"] = [round(t + 0.15, 3), round(t + 0.15 + think, 3)]
             for k in range(int(think / 0.4) + 1):
                 vo.append([tick, round(t + 0.15 + k * 0.4, 3)])

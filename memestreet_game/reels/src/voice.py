@@ -22,7 +22,7 @@ MAX_PREROLL = 0.8                                                 # voice starts
 
 def trim(a, sr, db=-45):
     thr = 10 ** (db / 20); idx = np.where(np.abs(a) > thr)[0]
-    return a if not len(idx) else a[max(0, idx[0] - int(.02 * sr)): idx[-1] + int(.06 * sr)]
+    return a if not len(idx) else a[max(0, idx[0] - int(.02 * sr)): idx[-1] + int(.15 * sr)]   # (a word's soft tail kept: 60 ms clipped endings, 2026-11-19)
 
 def dur(p):
     return float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", p],

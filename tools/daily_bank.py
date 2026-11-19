@@ -31,6 +31,38 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "content", "daily_real.json")
 REEL_OUT = os.path.join(ROOT, "memestreet_game", "reels", "src", "daily_reel_charts.json")   # (the Daily's reel pipeline, 2026-11-18)
 REEL_N = 300
+STORY_OUT = os.path.join(ROOT, "memestreet_game", "reels", "src", "daily_story_charts.json")
+# The crazy stories of real stocks (the owner, 2026-11-19: "you can tell crazy stories of crazy stocks etc, to make people
+# engaged"): each is a stock, the day its story peaks, a one-line seed the researcher starts from (src/stock_story.py) and the
+# idea an explainer reel teaches through it. Never a story about deaths, a disaster, health or an election (news_reel.EXCLUDE).
+STORIES = [
+    ("GME", "2021-01-27", "GameStop's short squeeze in January 2021, when retail traders on Reddit sent the stock from under 20 dollars to over 300 in weeks", "a short squeeze"),
+    ("AMC", "2021-01-27", "AMC Entertainment's meme-stock rally in January 2021, while the cinema chain was fighting to avoid bankruptcy", "a meme stock"),
+    ("KOSS", "2021-01-27", "Koss, a small headphone maker whose stock jumped more than 1,000 percent in a few days of January 2021", "a meme stock"),
+    ("BB", "2021-01-27", "BlackBerry's meme rally in January 2021, years after its phones disappeared from shops", "a meme stock"),
+    ("KODK", "2020-07-29", "Kodak's stock jump in July 2020 after a planned 765 million dollar US government loan to make drug ingredients, which was later put on hold", "a news spike"),
+    ("NKLA", "2020-06-09", "Nikola's surge in June 2020 to a value above Ford's after listing through a SPAC, before it had sold a single truck", "a SPAC"),
+    ("TSLA", "2020-08-31", "Tesla's 2020 run and its five-for-one stock split in August 2020", "a stock split"),
+    ("TLRY", "2018-09-19", "Tilray's cannabis-stock frenzy in September 2018, when the shares briefly traded near 300 dollars in one day", "a bubble"),
+    ("FB", "2018-07-26", "Facebook's record one-day loss of about 120 billion dollars in market value on 26 July 2018 after its earnings", "an earnings gap"),
+    ("OSTK", "2020-08-01", "Overstock's 2020 rally of more than 1,000 percent, from under 3 dollars to over 100", "momentum"),
+    ("NIO", "2020-07-01", "NIO's 2020 comeback from near-bankruptcy to a stock market darling", "a turnaround"),
+    ("SPCE", "2020-02-20", "Virgin Galactic's rally in early 2020, when retail traders piled into the space-tourism stock", "hype"),
+    ("PLUG", "2020-12-01", "Plug Power's 2020 hydrogen rally", "a theme rally"),
+    ("MARA", "2021-01-08", "Marathon's surge as bitcoin topped 40,000 dollars in January 2021", "a crypto proxy"),
+    ("RIOT", "2017-12-19", "Riot Blockchain's 2017 surge after a small biotech company renamed itself for the blockchain craze", "a name-change hype"),
+    ("AMD", "2016-07-22", "AMD's 2016 comeback from under 2 dollars a share", "a turnaround"),
+    ("NVDA", "2018-11-16", "Nvidia's late-2018 slump as the crypto-mining boom ended and unsold graphics chips piled up", "boom and bust"),
+    ("OXY", "2020-04-20", "Oil stocks in April 2020, the month US oil futures went below zero", "negative oil prices"),
+    ("WFC", "2016-09-08", "Wells Fargo's fake-accounts scandal in September 2016", "a scandal"),
+    ("SNAP", "2017-03-02", "Snap's stock market debut in March 2017 and the slide that followed", "an IPO"),
+    ("UBER", "2019-05-10", "Uber's stock market debut in May 2019, one of the biggest ever, and its fall", "an IPO"),
+    ("BYND", "2019-07-26", "Beyond Meat's 2019 debut, when the shares rose more than 700 percent above the IPO price", "an IPO pop"),
+    ("GE", "2018-06-19", "General Electric being dropped from the Dow Jones index in June 2018 after more than a hundred years", "an index exit"),
+    ("CCL", "2020-03-16", "Carnival's share collapse in March 2020 when the cruise industry shut down", "a crash"),
+    ("MSTR", "2020-12-01", "MicroStrategy using its company cash to buy bitcoin in 2020", "a bitcoin treasury"),
+    ("PTON", "2020-09-11", "Peloton's 2020 boom as people bought exercise bikes for home", "a boom"),
+]
 HISTORY, LIVE = 60, 120
 SPAN = HISTORY + LIVE
 N, PER_TICKER, MIN_RANGE, COVID_SHARE, STEP = 366, 4, 1.25, 0.15, 5
@@ -190,12 +222,34 @@ def apart(cands, got):
     return [x for x in cands if all(x["w"][-1][6] < a or b < x["w"][0][0] for a, b in taken.get(x["t"], []))]
 
 
+def stories(by):
+    """The story charts: about 100 trading days before each story's day and 40 after (fewer when the data ends), real prices."""
+    out = []
+    for t, day, seed, idea in STORIES:
+        rows = sorted(by.get(t, []))
+        k = next((i for i, r in enumerate(rows) if r[0] >= day), None)
+        if k is None:
+            print("story without data:", t, day); continue
+        w = rows[max(0, k - 100):k + 40]
+        if len(w) < 60:
+            print("story too short:", t, day, len(w)); continue
+        p = lambda v: round(v, 2 if v >= 10 else 4)
+        out.append({"t": t, "n": NAMES[t], "day": day, "seed": seed, "idea": idea, "d": [w[0][0], w[-1][0]],
+                    "peak": next(i for i, r in enumerate(w) if r[0] >= day),
+                    "c": [[p(r[1]), p(r[2]), p(r[3]), p(r[4]), int(r[5])] for r in w]})
+    with open(STORY_OUT, "w", encoding="utf-8") as f:
+        json.dump({"source": "OpenML dataset 43497 (CC0: Public Domain), daily split-adjusted prices. Built by tools/daily_bank.py.",
+                   "for": "the reels' crazy stock stories and explainers (src/stock_story.py)", "charts": out}, f, separators=(",", ":"))
+    print(f"{len(out)} story charts -> {STORY_OUT}")
+
+
 def build(path):
     import pyarrow as pa
     import pyarrow.compute as pc
     import pyarrow.parquet as pq
     T = pq.read_table(path, columns=["datetime", "open_price", "high_price", "low_price", "close_price", "volume", "symbol"])
     T = T.filter(pc.is_in(T.column("symbol"), value_set=pa.array(sorted(NAMES))))
+    assert all(t in NAMES for t, *_ in STORIES)
     by = {}
     for r in T.to_pylist():
         by.setdefault(r["symbol"], []).append((r["datetime"][:10], r["open_price"], r["high_price"], r["low_price"], r["close_price"], r["volume"] or 0))
@@ -206,6 +260,7 @@ def build(path):
     write(got, OUT, "the game")
     reel = pick(apart(cands, got), REEL_N, must=False)
     write(reel, REEL_OUT, "the reels")
+    stories(by)
     for g, f in ((got, OUT), (reel, REEL_OUT)):
         print({tf: sum(x.get("tf") == tf for x in g) for tf in TFS})
         print(f"{len(g)} charts from {len({x['t'] for x in g})} stocks, {sum(x['a'] <= COVID <= x['b'] for x in g)} over the "

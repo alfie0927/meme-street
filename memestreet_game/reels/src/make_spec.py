@@ -52,7 +52,12 @@ CATEGORIES = {
                       "(a short countdown), then the reveal and why. One or two charts.",
     "Myth or fact": "A viral reel: three common trading beliefs, each called myth or fact with one line of why, ending on "
                     "the most surprising one. Cards and big text, one real chart to prove the last point.",
-    "Daily recap": "Tonight's Daily Chart recap, the same chart every player had today: what the stock did, the realistic "
+    "Daily recap": "Tonight's Meme Street recap (since 2026-11-19 a real stock, and the recap NAMES it: the owner, 'explain what the stock "
+                   "was, between what time, sometimes even explain the reason for price increases/decreases in the news, what levels held'): "
+                   "facts.the_stock is the stock, what one candle was and the dates the two minutes covered, in real dollars; "
+                   "facts.levels_it_tested are the support and resistance it tested and how each test went (held, broke, fake break: show "
+                   "them on the chart at their candles); when facts.news is there, the reason for the big move, told only as it says, each "
+                   "claim with its status and outlet. The reveal of the name comes after the hook, as a payoff. The same chart every player had today: what the stock did, the realistic "
                    "trades a careful reader could have taken (only those in the facts, at their candles), today's best "
                    "player's return, and the invitation to play tomorrow's chart. Open on the decision the viewer would have faced at the day's hardest candle (would you have held here?), never on how many people played or on the chart's number. Its own device like every director reel "
                    "(the day's chart may be the star): the day revealed in order, the trades marked at their candles, a HUD "
@@ -948,6 +953,7 @@ GAME_FACTS = [
     "No account needed: a streak, stats and a result of coloured squares to share. A free account keeps the streak on every device, "
     "with a weekly streak freeze, a history and an archive of past days.",
     "The charts are real daily prices of US stocks from 2016 to 2021. Practice money only: nothing is advice or a real trade.",
+    "A new stock goes up every day at midnight UTC, so 'today's stock is live' means today's game is open to play (its chart is a past one).",
 ]
 DAILY_END = (" FUN FIRST: this is a game, not a lesson; no lesson is named and no rule is taught; the voice is a player, not a teacher. "
              "Every number, name, date and event comes from the facts, said as written; never invent a cause, a headline or a quote: "
@@ -1106,7 +1112,27 @@ def gather(category, rng, history, company=None):
                  "trades": [{"dir": t["dir"], "entry_candle": t["entry"], "exit_candle": t["exit"], "return_pct": round(t["r"] * 100, 2),
                              "why": f"{t['ev']['outcome']} at {t['ev']['price']}"} for t in A["trades"]],
                  "plan_total_pct": round(A["total"] * 100, 2), "plan_beat_holding": bool(A["total"] >= A["hold"]),
-                 "best_player_pct": None if A["best_player"] is None else round(A["best_player"] * 100, 2)}   # (how many played is left out: a small number is no advertisement, and it counted the house bots; roadmap RL8, 2026-11-12)
+                 "best_player_pct": None if A["best_player"] is None else round(A["best_player"] * 100, 2)}
+        g = d.get("game") or {}
+        rv = g.get("real")
+        if rv:                                             # (a real stock since 2026-11-19: the recap names it, its timeframe, its levels)
+            k = rv.get("k") or 1
+            facts["the_stock"] = {"name": rv["name"], "ticker": rv["ticker"], "candle_is": {"1 day": "one trading day", "2 days": "two trading days",
+                                  "1 week": "one week"}.get(rv.get("tf"), rv.get("tf")), "two_minutes_ran_from": rv["start"], "to": rv["end"],
+                                  "chart_starts": rv["from"], "real_first_close": rv["first"], "real_last_close": rv["last"],
+                                  "events_in_those_months": rv.get("events", []), "note": "the game showed prices from 100; real dollars are price x " + str(round(k, 4))}
+            facts["levels_it_tested"] = [{"kind": l["kind"], "real_price": round(l["price"] * k, 2),
+                                          "tests": [{"candle": t[0], "outcome": t[1]} for t in l["tests"]]} for l in (g.get("levels") or [])]
+            big = abs(A["hold"]) >= 0.2 or max((abs(C[j][3] / C[j - 1][3] - 1) for j in range(H, len(C))), default=0) >= 0.08
+            if big and os.environ.get("RECAP_NEWS", "1") == "1":   # (sometimes, the owner said: when it really moved, the reason from the news)
+                try:
+                    import news_reel as N
+                    pack = N.research(f"Why {rv['name']} ({rv['ticker']}) shares moved as they did between {rv['start']} and {rv['end']}: "
+                                      f"the news behind its biggest rises and falls in that period")
+                    if not N.sound(pack):
+                        facts["news"] = dict(pack, facts=[f for f in pack["facts"] if f.get("status") != "alleged"])
+                except Exception as e:
+                    print("recap: no news reason today:", str(e)[:200])   # (how many played is left out: a small number is no advertisement, and it counted the house bots; roadmap RL8, 2026-11-12)
         charts.append({"candles": C, "label": f"Meme Street #{A['number']}", "upto": len(C) - 1, "end": len(C) - 1, "win": [0, len(C) - 1], "live_from": H})   # (reel.html shades the lead-in and draws a dotted line where the game began)
         facts["charts"] = [chart_summary(0, charts[0])]
         return facts, charts
@@ -1255,7 +1281,8 @@ Scene kinds (each has "vo": the spoken line, plain words, max 26 words, contract
 <<SHOTS>>
  {"kind":"free","vo":"...","text":"the punch caption: 2 to 5 words of the line, in order","hot":"the one word of the text shown in the hot colour","chart":N or null,"show":candle index shown at the start (optional),
    "cues":[chart cues as above (with a chart they draw themselves under your scene), and {"say":"exact phrase from vo","do":"fx","name":"<a name your scene function reads>", ...any fields you need}],
-   "hold":seconds (a Reference card only: the screen keeps after the line while the cells land)}
+   "hold":seconds (a Reference card only: the screen keeps after the line while the cells land),
+   "think":seconds (2 to 4, usually 3: a countdown for the viewer after the line, the voice silent and a tick each second; draw the countdown yourself across s.think_t = [start, end]; never speak "three, two, one")}
    (a director reel's own scene: your scene function draws its world, HUD and effects, and a punch headline over the transcript captions; no "head": the HUD takes the title's place)
  {"kind":"outro","text":"max 6 words","vo":"one ask, ending with memestreet.net"}
 Top level, next to "scenes": "device": {"metaphor": "what the picture is, one line", "opening": "the first second", "palette": "the two or three colours", "hud": "what the HUD shows and how it changes"},
@@ -1572,6 +1599,13 @@ def check(spec, facts, charts, category=None):
         if len(sc) != 1 or sc[0].get("kind") != "free": errs.append("a Reference card is ONE free scene and nothing else: the hook line, then the hold while the card fills")
         elif not 5 <= hold <= 7: errs.append('"hold": 5 to 7 (seconds) on the one scene: the time the card keeps the screen while its cells land')
     elif any(s.get("hold") for s in sc): errs.append('"hold" belongs to the Reference card only: another format fills its time with spoken lines')
+    for k, s in enumerate(sc):                             # (a countdown is a pause the viewer gets, never words said in one breath: the owner, 2026-11-19)
+        if re.search(r"\b(?:three|3)[,.!]?\s+(?:two|2)[,.!]?\s+(?:one|1)\b", str(s.get("vo", "")), re.I):
+            errs.append(f'scene {k}: never speak a countdown ("three, two, one" in one breath was too fast): ask the question, then give the scene "think": 3 and draw the countdown across s.think_t, one number a second')
+        if s.get("think") is not None:
+            try: th = float(s["think"])
+            except (TypeError, ValueError): th = 0
+            if not 2 <= th <= 4: errs.append(f'scene {k}: "think" is the viewer\'s silent countdown, 2 to 4 seconds')
     if category == ONE_OFF:                                # (a one-off states its format, and it is a new one)
         o = spec.get("one_off") if isinstance(spec.get("one_off"), dict) else {}; nm = str(o.get("name") or "").strip()
         taken = {c.lower() for c in facts.get("formats_we_make", [])} | {str(m.get("name") or "").lower() for m in facts.get("one_offs_so_far", [])}
@@ -2440,6 +2474,9 @@ if __name__ == "__main__":
         assert any("no outro scene" in e for e in es) and any("put memestreet.net in its caption" in e for e in es), es
         assert ROTATION["1300"].count("Loop") == 2 and "Hard truth" in ROTATION["1200"] and LENGTH["Loop"][2] is False and "Loop" in CATEGORIES and "Loop" in KINDS
         assert ONLY in (None, CARD) and len(set(LESSON_FORMATS[CARD])) >= 40 and "never a recent device's" in CATEGORIES[CARD]
+        cd = check(dict(fr, scenes=[dict(fr["scenes"][0], vo="Higher or lower, three, two, one?"), fr["scenes"][1]]), {}, [], HILO)
+        assert any("never speak a countdown" in e for e in cd), cd
+        assert any('"think"' in e for e in check(dict(fr, scenes=[dict(fr["scenes"][0], think=9), fr["scenes"][1]]), {}, [], HILO))
         _h = {}
         assert len({hook_pick(_h)["name"] for _ in range(26)}) == 26 and hook_pick(_h)["name"] == HOOKS[0]["name"]   # (the 26 in turn, round and round: the bug of 2026-11-17)
         assert set(DAILY_SLOTS.values()) == set(DAILY_FORMATS) and all(c in CATEGORIES and "FUN FIRST" in CATEGORIES[c] for c in DAILY_FORMATS)   # the Daily's reels (2026-11-18)
@@ -2502,4 +2539,13 @@ if __name__ == "__main__":
     else:                                                # <slot> <work>: brief, write, save
         B = brief(a[0], cat, rem)
         if rules_file(B["category"]): B = v2_brief(B, rules_file(B["category"]))
-        save(write(B, work=a[1]), B, a[1])
+        spec = write(B, work=a[1])
+        pack = B["ask"]["facts"].get("news")
+        if pack:                                         # (a reason from the news: checked like a news reel's, one fix: 2026-11-19)
+            import news_reel as N
+            bad = N.fact_check(pack, GAME_FACTS, spec)
+            if bad:
+                spec = write(B, msgs=[{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": json.dumps(spec)},
+                                      {"role": "user", "content": "A fact check found these. Fix every one, change nothing else, reply with the whole JSON and the js block: " + "; ".join(bad)}], work=a[1])
+                if N.fact_check(pack, GAME_FACTS, spec): raise SystemExit("the fact check failed twice: the next run writes it again")
+        save(spec, B, a[1])

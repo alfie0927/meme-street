@@ -12,6 +12,7 @@ HOST=${REEL_HOST:-root@65.109.233.145}; D=/root/reel-deploy/$(date -u +%Y%m%dT%H
     systemd README.md swipe.md RULEBOOK.md voice.md
   [ -f exemplar/NOTES.md ] && echo exemplar/NOTES.md; } \
   | grep -v -E '\.(wav|png|jpg|mp4|mp3|pyc)$|/dry/' | sort -u > "$B/files.txt"   # (the notes are named by hand: .gitignore hides exemplar/, so git never listed them and they never travelled, 2026-11-15)
+if grep -l "$(printf '\r')" $(grep -E '\.sh$' "$B/files.txt") 2>/dev/null; then echo "these scripts have Windows line endings: the server cannot run them (memestreet_game/reels/.gitattributes)" >&2; exit 1; fi
 tar czf "$B/new.tgz" -T "$B/files.txt"
 ssh -o BatchMode=yes "$HOST" "mkdir -p $D" < /dev/null
 scp -q -o BatchMode=yes "$B/new.tgz" deploy_apply.sh "$HOST:$D/"

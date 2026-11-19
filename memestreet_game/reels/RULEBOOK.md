@@ -12,6 +12,13 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   as the facts give them. Never today's Daily stock, never a hint of it. No real person is named. What happened in those months is
   only what facts.reveal.events says; nothing is invented about why a stock moved.
 - The address is memestreet.net ("Today's stock is live. Play it at memestreet.net."). The caption's last line: "Practice money only. Not investment advice."
+- 2026-11-19, the owner: crazy true stock stories and stock explainers (researched, every claim with its status, fact-checked), and
+  sometimes the story told in the 3D toy-block town ("Crazy stock story 3D" is a 3D exception like the serial). Stories and explainers
+  may open on Higgsfield cinematic shots (the owner asked for open-higgsfield's look): no real people, no logos, no text in a shot.
+- The 23:30 recap names the day's stock, what a candle was, the dates, the levels it tested and, when it moved a lot, the reason from
+  the news as the researcher found it (the owner, 2026-11-19).
+- Never speak a countdown ("three, two, one" in one breath was too fast): a scene asks, then "think" gives the viewer 3 silent seconds
+  with a tick each second while the picture counts down (the owner, 2026-11-19).
 
 ## Style
 - (superseded 2026-11-09, see "Director reels") One consistent 2D house style across the page: near-black background,

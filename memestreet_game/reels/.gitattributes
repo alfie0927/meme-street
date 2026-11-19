@@ -1,0 +1,7 @@
+# The reel pipeline runs on Linux: every text file keeps Unix line endings in every checkout (a Windows checkout gave
+# deploy_apply.sh CRLF and the server refused it, 2026-11-19).
+* text=auto eol=lf
+*.wav binary
+*.png binary
+*.jpg binary
+*.mp4 binary

@@ -11,8 +11,11 @@ import datetime, hashlib, json, os, sys, tempfile, time, urllib.error, urllib.re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://api.higgsfield.ai"
-IMAGE = os.environ.get("HF_IMAGE_MODEL", "/higgsfield-ai/soul/standard")
-VIDEO = os.environ.get("HF_VIDEO_MODEL", "/kling-video/v2.5-turbo/pro/image-to-video")
+# The models open-higgsfield (github.com/wide-trace/open-higgsfield, read 2026-11-19) maps for the same platform: Soul 2 for the
+# still, Kling 3.0 Turbo to move it (9:16, 1080p, 3 to 15 s). The older pair stays the fallback when a newer path is refused.
+IMAGE = os.environ.get("HF_IMAGE_MODEL", "/higgsfield-ai/soul/v2/standard")
+VIDEO = os.environ.get("HF_VIDEO_MODEL", "/kling-video/v3.0-turbo/image-to-video")
+FALLBACK = ("/higgsfield-ai/soul/standard", "/kling-video/v2.5-turbo/pro/image-to-video")
 CAP = float(os.environ.get("HF_MONTHLY_CAP", "60"))                       # (US dollars a month)
 PRICE = {"image": float(os.environ.get("HF_PRICE_IMAGE", "0.03")), "video_s": float(os.environ.get("HF_PRICE_VIDEO_S", "0.08"))}
 SPEND = os.path.join(ROOT, "state", "footage_spend.json")
@@ -96,11 +99,19 @@ def shot(desc, seconds, out_dir):
     os.makedirs(out_dir, exist_ok=True)
     for d in (desc, desc + ", calm and family friendly"):          # (a refusal gets one gentler try; failed requests are free)
         try:
-            im = run(IMAGE, {"prompt": d + STYLE, "aspect_ratio": "9:16", "resolution": "1080p"})
+            try:
+                im = run(IMAGE, {"prompt": d + STYLE, "aspect_ratio": "9:16", "resolution": "1080p"})
+            except urllib.error.HTTPError as e:              # (a newer path refused: the older model, once)
+                if e.code not in (400, 404, 422): raise
+                print(f"footage: {IMAGE} refused ({e.code}), the older image model"); im = run(FALLBACK[0], {"prompt": d + STYLE, "aspect_ratio": "9:16", "resolution": "1080p"})
             if im.get("status") != "completed":
                 print(f"footage: still {im.get('status')}: {im.get('error') or ''}"); continue
             charge(PRICE["image"])
-            v = run(VIDEO, {"prompt": d + MOTION, "image_url": im["images"][0]["url"], "duration": seconds, "negative_prompt": NEG})
+            try:
+                v = run(VIDEO, {"prompt": d + MOTION, "image_url": im["images"][0]["url"], "duration": seconds, "resolution": "1080p"})
+            except urllib.error.HTTPError as e:
+                if e.code not in (400, 404, 422): raise
+                print(f"footage: {VIDEO} refused ({e.code}), the older video model"); v = run(FALLBACK[1], {"prompt": d + MOTION, "image_url": im["images"][0]["url"], "duration": seconds, "negative_prompt": NEG})
             if v.get("status") != "completed":
                 print(f"footage: video {v.get('status')}: {v.get('error') or ''}"); continue
             charge(PRICE["video_s"] * seconds)

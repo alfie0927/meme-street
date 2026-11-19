@@ -44,12 +44,22 @@ Five a day, every one about the Daily:
 |---|---|---|
 | 03:00 | Yesterday's stock | The Daily that ended at midnight, replayed: how players did, the best trade, then the name. When last night's chart wasn't a real one, a Beat the chart reel takes the slot. |
 | 09:00, and 21:00 at weekends | Guess the stock | A real stretch from the reel bank plays out. Three names to pick from, then the reveal. |
-| 13:00 | Beat the chart | Two traders worked out by code race the real stock, then the best trade and the reveal. |
-| 18:00 | Higher or lower | A game show: the chart freezes three times, the viewer calls the next move, then the reveal. |
+| 13:00 | Crazy stock story | A famous true moment (GameStop's squeeze, Kodak's loan spike, Tilray's frenzy...), researched and fact-checked, told over its real chart. One day in flat animation with Higgsfield cinematic shots, the next in the 3D toy-block town, until the numbers pick a winner (`src/stock_story.py decide`). If it can't be made, a Beat the chart reel takes the slot. |
+| 18:00 | Stock explainer | One idea (a short squeeze, a SPAC, an earnings gap...) explained through one of those true stories, with Higgsfield shots. If it can't be made, a Higher or lower reel takes the slot. |
 | 21:00 on weekdays | Market today | The day's biggest market story after the US close, researched across three outlets and fact-checked twice. If no story passes, a game reel takes the slot. |
-| after 23:00 | Daily recap | Tonight's chart and how a careful plan did. It never names the stock, because the day isn't over everywhere. |
+| after 23:00 | Daily recap | Tonight's chart, revealed: the stock, what a candle was and the dates, the levels it tested and how each held, and when it moved a lot, the reason from the news, fact-checked. |
 
-None of them names or hints at today's stock. Deploy from Git Bash:
+None of them names or hints at today's stock before the recap.
+
+The voice is ElevenLabs. Each line is read knowing the lines either side (so a sentence ends like a sentence), with a breath
+after it before the cut, and a countdown is a real three-second pause with a tick each second, never spoken.
+
+Two tools the owner asked for were reviewed on 2026-11-19 before use. **open-higgsfield** (github.com/wide-trace/open-higgsfield,
+a web front end for the Higgsfield platform) is clean; the pipeline already spoke to that platform (`src/footage.py`), so it now
+uses the newer models open-higgsfield maps (Soul 2 for the still, Kling 3.0 Turbo to move it, 1080x1920), with the old pair as a
+fallback, under the $60 monthly cap in `footage.py` (`HF_MONTHLY_CAP`). **voicestudio** (github.com/debpalash/voicestudio,
+AGPL-3.0, local text-to-speech) is clean too (its telemetry is opt-in; its pipe-to-shell installer was not run), but its engines
+need far more memory than the reel server has (2 cores, 3 GB); running it means a bigger server, the owner's call. Deploy from Git Bash:
 
 ```
 memestreet_game/reels/deploy.sh

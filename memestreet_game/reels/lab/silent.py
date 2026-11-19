@@ -9,7 +9,7 @@ import json, os, re, sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 from pronounce import digits
 
-GAP, LEAD, TAIL, THINK = 0.24, 0.1, 1.6, 1.6            # (as narrate.py)
+GAP, LEAD, TAIL, THINK = 0.38, 0.1, 1.6, 3.0            # (as narrate.py)
 BEAT = {"enter": (0, "pop"), "move": (0, None), "hit": (.6, "boom"), "fall": (.5, "thud"), "launch": (0, "whoosh"), "emit": (0, None),
         "grow": (0, "pop"), "burst": (0, "boom"), "tint": (0, None), "count": (0, None), "fling": (0, "whoosh"), "crack": (0, "pop")}   # (a storyboard verb: seconds to its impact, its sound; as reel.html BEAT)
 EVENTS = ("hit", "fall", "launch", "burst", "emit", "grow", "fling", "crack")
@@ -78,7 +78,7 @@ def main(work):
         for c in sc.get("cues", []): c["t"] = round(vs + at(sc["vo"], wt, c.get("say", "")), 3)
         impacts += beats(sc, vs, lambda ph: at(sc["vo"], wt, ph), [], None)
         t = vs + d
-        if sc["kind"] == "question":
+        if sc["kind"] == "question" or sc.get("think"):
             think = float(sc.get("think", THINK)); sc["think_t"] = [round(t + 0.15, 3), round(t + 0.15 + think, 3)]; t += 0.15 + think
         if sc.get("hold"):                                     # (a Reference card: the screen keeps after the line while the cells land; make_spec.py CARD)
             sc["hold_t"] = [round(t, 3), round(t + float(sc["hold"]), 3)]; t += float(sc["hold"])
