@@ -454,7 +454,7 @@ function draw(t) {
       CONF.count = 90; CONF.instanceMatrix.needsUpdate = true; if (CONF.instanceColor) CONF.instanceColor.needsUpdate = true;
     }
   }
-  const photo = q.look === 'photo'; cv.style.filter = photo ? 'sepia(.85) saturate(.85) contrast(1.05)' : ''; ov.style.border = photo ? '44px solid #f6f1e5' : ''; ov.style.borderBottomWidth = photo ? '110px' : ''; ov.style.background = fl > 0 ? `rgba(${flc},${fl.toFixed(3)})` : '';
+  const photo = q.look === 'photo'; cv.style.filter = photo ? 'sepia(.4) contrast(1.05)' : '';   /* (a light tint: at .85 red-haired Timmy came out brown and grey, and the critic took him for the narrator: part 2) */ ov.style.border = photo ? '44px solid #f6f1e5' : ''; ov.style.borderBottomWidth = photo ? '110px' : ''; ov.style.background = fl > 0 ? `rgba(${flc},${fl.toFixed(3)})` : '';
   const c = camAt(S, t); cam.fov = c.f; cam.position.copy(c.p); cam.lookAt(c.g); cam.updateProjectionMatrix();
   if (S.plane && S.plane.mode === 'away') {   // (the plane as a dot in the sky: always in the upper part of this shot's frame, flying away)
     const d = new T3.Vector3().subVectors(c.g, c.p).normalize(), e = Math.asin(d.y) + .66 * c.f / 2 * PI / 180, hl = Math.hypot(d.x, d.z) || 1, k = cl((t - S.plane.t) / Math.max(.6, S.t1 - S.plane.t)), sd = 170 * Math.tan(.64 * Math.atan(Math.tan(c.f / 2 * PI / 180) * .5625)) * (1 + .1 * k);   // (to the right of whoever fills the middle of the frame)
