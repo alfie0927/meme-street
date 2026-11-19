@@ -75,7 +75,7 @@
        "chest": 1000000
       },
       {
-       "who": "grandma",
+       "who": "old neighbour",
        "at": [
         0.2,
         1.6
@@ -225,11 +225,11 @@
     },
     {
      "say": "grandmas hide",
-     "place": "room",
-     "cam": "mid:grandma",
+     "place": "shop",
+     "cam": "mid:old neighbour",
      "actors": [
       {
-       "who": "grandma",
+       "who": "old neighbour",
        "at": [
         0,
         0
@@ -269,10 +269,10 @@
     {
      "say": "And gambling",
      "place": "street",
-     "cam": "close:grandma",
+     "cam": "close:old neighbour",
      "actors": [
       {
-       "who": "grandma",
+       "who": "old neighbour",
        "at": [
         0,
         0
@@ -408,7 +408,6 @@
        "look": "narrator",
        "do": "shock",
        "face": "shock",
-       "emote": "!",
        "chest": 1000000
       },
       {
@@ -774,7 +773,7 @@
     },
     {
      "say": "ran to the bank",
-     "place": "street",
+     "place": "bank",
      "cam": "wide",
      "actors": [
       {
@@ -1224,7 +1223,7 @@
         0
        ],
        "look": "narrator",
-       "do": "think",
+       "do": "nod",
        "face": "flat",
        "chest": 620000
       }
@@ -1422,11 +1421,11 @@
     },
     {
      "say": "then the grandmas",
-     "place": "room",
-     "cam": "mid:grandma",
+     "place": "shop",
+     "cam": "mid:old neighbour",
      "actors": [
       {
-       "who": "grandma",
+       "who": "old neighbour",
        "at": [
         0,
         0

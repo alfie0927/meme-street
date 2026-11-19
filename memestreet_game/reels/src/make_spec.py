@@ -2214,7 +2214,7 @@ def dry_run(spec, B, work):
         if r.returncode:
             o = (r.stderr or "") + (r.stdout or ""); m = re.search(r"DRY: (.*)", o, re.S)
             return ["the scene function failed the dry run: " + (m.group(1) if m else o[-600:]).strip()]
-    lo, hi = SECONDS.get(B["category"], (0, 60)); T = json.load(open(os.path.join(d, "timeline.json"), encoding="utf-8")).get("T", 0)   # (docs/ROADMAP.md A3: the length in seconds as well as in words)
+    lo, hi = (0, 150) if spec.get("remake_of") else SECONDS.get(B["category"], (0, 60)); T = json.load(open(os.path.join(d, "timeline.json"), encoding="utf-8")).get("T", 0)   # (docs/ROADMAP.md A3: the length in seconds as well as in words)
     return [] if lo <= T <= hi else [f"at the voice's pace this reel runs {T:.0f} seconds; a {B['category']} runs {lo:g} to {hi:g}: " + ("cut lines" if T > hi else "add a beat")]
 
 
