@@ -381,7 +381,8 @@ def market_today(slot):
         say("market today not made:", "; ".join(errs)); st.setdefault("made", []).append(dict(rec, why="; ".join(errs)[:300])); keep(st); return None
     left = [f["claim"] for f in pack["facts"] if f["status"] == "alleged"]
     pack = dict(pack, facts=[f for f in pack["facts"] if f["status"] != "alleged"], left_out_as_unproven=left)
-    out = make(pack, c["names"], slot=slot, category=TODAY, what=WHAT_TODAY)
+    import stock_story as SS, make_spec as M; v = SS.video_ok()          # (a Higgsfield shot in the market reel too: the owner, 2026-11-19)
+    out = make(pack, c["names"], slot=slot, category=TODAY, what=WHAT_TODAY + (M.FILM_NOTE if v else ""), video=v)
     st = load(); st.setdefault("made", []).append(dict(rec, posted=bool(out), day=stamp()[:10], kind="market today")); keep(st)
     return out
 

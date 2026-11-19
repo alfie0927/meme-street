@@ -99,7 +99,7 @@ def research(x, kind):
 
 
 def video_ok():
-    if os.path.exists(os.path.join(ROOT, "state", "video_off")): return False   # (the owner, 2026-11-19: "don't use actual higgsfield": no AI shots while this file is there)
+    if os.path.exists(M.VIDEO_OFF): return False   # (the owner, 2026-11-19: "don't use actual higgsfield": no AI shots while this file is there)
     import footage
     return bool(footage.cred()) and footage.remaining() >= 2 * footage.cost(5)
 

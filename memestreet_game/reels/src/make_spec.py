@@ -495,6 +495,12 @@ CATEGORIES["Loop"] = ("SHORT LOOP (a test, the owner 2026-11-11): 7 to 12 second
                       "why' runs into the hook), and your device ends in the pose it began in. The address is never spoken: the caption "
                       "carries memestreet.net. A chart is optional.")
 KINDS["Loop"] = KINDS["Hard truth"]; LENGTH["Loop"] = (16, 30, False); ROTATION["1300"] += ["Loop", "Loop"]; ROTATION["1200"] += ["Hard truth"]
+FILM_NOTE = (" CINEMATIC SHOT (Higgsfield, through footage.py; the owner, 2026-11-19: 'everything should be in higgsfield'): "
+             "facts.video.available is true, so scene 1, right after your animated scene 0, is ONE \"film\" scene "
+             "({\"kind\": \"film\", \"head\": max 5 words, \"vo\", \"shot\": 15 to 50 words}): one striking moving shot of this reel's "
+             "world that fits its line (a trading floor at night, a wall of tickers, a crowd with phones lit, a rocket on a pad); no "
+             "real people, no logos, no text and never a chart in the shot (the chart is yours to draw). Every other scene is your own animation.")
+VIDEO_OFF = os.path.join(ROOT, "state", "video_off")          # (while this file exists, no reel gets a Higgsfield shot)
 SECONDS = {"Loop": (6, 12.5)}   # a format's length in seconds at the voice's pace, checked by the dry run (every other format: at most 60, the owner 2026-11-11)
 SECONDS.update({c: (0, 105) for c in DEEP})   # (the in-depth formats may run to 100 seconds: the owner, 2026-11-12)
 
@@ -2061,7 +2067,9 @@ def brief(slot, category=None, remake=None):
     system = system_prompt(category)
     import footage                                       # (video only with a Higgsfield key and money left under the monthly cap)
     need = 3 * footage.cost(10) if category == "Stock story" else footage.cost(5)
-    facts["video"] = {"available": os.environ.get("HF_VIDEO") == "1" and bool(footage.cred()) and footage.remaining() >= need}   # (off: the neon 3D is the style)
+    facts["video"] = {"available": os.environ.get("HF_VIDEO", "1") == "1" and not os.path.exists(VIDEO_OFF) and category != "Blocky story"
+                               and bool(footage.cred()) and footage.remaining() >= need}
+    if facts["video"]["available"]: system += FILM_NOTE
     facts["subjects_of_recent_reels"] = {"note": "What the last reels were about, oldest first. This reel is about its own facts: do not "
                                                  "drift back to these. Support, resistance or 'a level' is the subject only when this "
                                                  "reel's own chart facts are about a level (the owner, 2026-11-12: too many reels "
