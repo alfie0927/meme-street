@@ -30,7 +30,7 @@ GAME_SHOWN = ('<main id="main"><div class="hero"><h1 class="tag">One real stock.
               '<noscript><p>Turn on JavaScript to play.</p></noscript></div></main>')
 KEEP = {"/", "/daily", "/embed/daily", "/play", "/yt", "/admin", "/privacy", "/terms", "/robots.txt", "/sitemap.xml",
         "/manifest.json", "/favicon.ico", "/llms.txt", "/ws", "/gateway/health"}   # (what memestreet.net still serves)
-BRAND_FILES = {"memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
+BRAND_FILES = {"jetbrains-mono.woff2", "memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
                "icon-512.png", "apple-touch-icon.png"}   # (the small icons: browser tabs, phones and search results)
 DAILY_TEXT = ("A daily stock market game, no account needed: one new chart a day, the same for everyone. Two minutes to buy, sell and "
               "short as the candles print, then see how your return ranks against every other player. Like Wordle, "
@@ -181,7 +181,8 @@ def add_pages(app):
             return JSONResponse({"error": "not found"}, status_code=404)
         path = os.path.join(paths.BRAND, name)
         if os.path.exists(path):
-            return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"})
+            return FileResponse(path, headers={"Cache-Control": "public, max-age=86400"},
+                                media_type="font/woff2" if name.endswith(".woff2") else None)
         return JSONResponse({"error": "not found"}, status_code=404)
 
     @app.get("/favicon.ico")
