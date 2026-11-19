@@ -28,11 +28,6 @@ a{text-underline-offset:3px}
    a faint candle feed along the bottom that keeps printing, and price-zone notes in the margins like Krillion's depths */
 #bgc{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;transition:opacity .6s}
 body.trading #bgc{opacity:.35}
-#zones{position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none;display:none}
-#zones p{position:absolute;margin:0;width:210px;font-size:12px;line-height:1.4;color:#8c9aa7;opacity:.5;white-space:nowrap}
-#zones p.l{right:calc(50% + 372px);text-align:right}#zones p.r{left:calc(50% + 372px)}
-#zones p i{font-style:normal;color:var(--amb);opacity:.8}
-@media(min-width:1180px){#zones{display:block}}
 .bgfx b{position:absolute;inset:0;background-image:linear-gradient(#ffffff07 1px,transparent 1px),linear-gradient(90deg,#ffffff07 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(ellipse at 50% 15%,#000 20%,transparent 70%)}
 body.final .bgfx i:nth-child(1){background:var(--dn);opacity:.14}
 @keyframes drift{to{transform:translate(12vmax,9vmax) scale(1.15)}}
@@ -157,11 +152,57 @@ footer{max-width:720px;margin:0 auto;padding:14px 16px 34px;text-align:center;co
 #fx{position:fixed;inset:0;pointer-events:none;z-index:7}
 @media(max-width:520px){.quote{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:420px){.beat{font-size:14px}header{grid-template-columns:84px 1fr 84px}header h1{font-size:15px;letter-spacing:.14em}.ic{width:34px;height:34px}.name{font-size:26px}.big{font-size:46px}.grid i{width:26px;height:26px}.btns button{padding:18px 0}.tring{width:66px;height:66px}#utc{display:none}.card{padding:22px 16px}}
+/* the terminal pass (the owner, 2026-11-19: "feel less AI, more like a trading terminal"): docked panels with title bars,
+   square corners, flat fills, no glows or gradients, left-aligned text, the keys as words */
+header{grid-template-columns:auto 1fr;padding-top:9px}
+header h1{text-align:left;font-size:15px;letter-spacing:.2em}
+.hsub{margin-left:12px;padding-left:12px;border-left:1px solid var(--line2);color:var(--mut);font-weight:500;letter-spacing:0;font-size:13px}
+.keys{display:flex;gap:6px;justify-content:flex-end}
+.keys button{padding:6px 11px;border-radius:3px;background:transparent;border-color:var(--line2);font-size:13px;color:var(--txt)}
+.keys button:hover{background:#ffffff08}
+.card,.chart,.quote,.stat,.yday,.back,.chal,.streak,.tf,.chip,#pop>div,.flip .f,.flip .b,input,.tabs button,.sizes button,.btns button,.alt,.go{border-radius:3px}
+.card{background:#0f161d;box-shadow:none}
+.chart{background:#0d141a;box-shadow:none}
+.flip .f{background:#0f161d}.flip .b{background:#0f161d;border-color:var(--line2)}
+.tmr,.mile,.pitch{background:#0f161d}
+.tmr{justify-content:space-between;border-color:var(--line)}
+.tmr .clock{font:700 clamp(24px,6vw,34px)/1 var(--mono);color:var(--amb);font-variant-numeric:tabular-nums;white-space:nowrap}
+.go{background:var(--acc);box-shadow:none;font-weight:700;padding:15px 30px}
+.go:hover{background:#68d4dc;box-shadow:none}
+.alt{background:transparent;border-color:var(--line2);color:var(--txt);font-weight:600}
+.alt:hover{border-color:var(--acc);color:var(--acc)}
+.buy{background:#3fcf8e12}.sell{background:#f2555a12}
+.streak{background:transparent;border-color:#f5a52455}
+.chip{background:transparent;border:0;padding:0;color:var(--mut);font-size:13px}
+.hero{text-align:left;padding:10px 0 4px}
+.tag{font-size:clamp(26px,5.4vw,38px);margin:10px 0 14px;letter-spacing:-.03em}
+.hero p{margin:0 0 26px;max-width:600px}
+.hero .small{margin:16px 0 0}
+.quote{margin:0 0 26px;max-width:none}
+.yday{margin:36px 0 0;max-width:none}
+.chal{margin:0 0 20px;max-width:none}
+/* a section is a panel: its title is the panel's title bar */
+h3{margin:30px 0 0;padding:9px 14px;background:#131c25;border:1px solid var(--line);border-bottom:0;border-radius:3px 3px 0 0;font:600 13px/1.2 var(--mono);color:var(--txt)}
+h3::before,h3::after{display:none}
+h3 .mut{margin-left:auto}
+h3+.card{border-radius:0 0 3px 3px;margin-top:0}
+#pop h3{background:none;border:0;padding:0;margin:24px 0 10px}
+/* the rails: docked either side of the page on a wide screen */
+.rail{display:none;position:fixed;top:104px;width:236px;background:#0f161dee;border:1px solid var(--line);border-radius:3px;font-size:13px;transition:opacity .4s;z-index:2}
+.rail.l{right:calc(50% + 380px)}.rail.r{left:calc(50% + 380px)}
+.rt{padding:9px 12px;background:#131c25;border-bottom:1px solid var(--line);font-weight:600}
+.rr{display:flex;gap:10px;align-items:baseline;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #1e2a3599}
+.rr:last-of-type{border-bottom:0}.rr .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rr b{font-variant-numeric:tabular-nums}.rr.nx b{color:var(--amb)}
+.rn{margin:0;padding:8px 12px;border-top:1px solid var(--line);color:var(--mut);font-size:12px}
+body.trading .rail{opacity:.4}
+@media(min-width:1290px){.rail{display:block}}
+@media(max-width:420px){.hsub{display:none}.keys button{padding:6px 8px;font-size:12px}header h1{font-size:13px;letter-spacing:.14em}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
-<div class="bgfx" aria-hidden="true"><b></b></div><canvas id="bgc" aria-hidden="true"></canvas><div id="zones" aria-hidden="true"></div>
-<header><div class="hl"><button class="ic" id="help-btn" aria-label="How to play">?</button></div><h1 id="home" title="Today's stock">MEME <b>STREET</b></h1>
-<div class="hr"><button class="ic" id="stats-btn" aria-label="Your stats"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 16V9M7 16V4M12 16V7M17 16V1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" transform="translate(-.5 0)"/></svg></button><button class="ic" id="acct-btn" aria-label="Your account"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6" r="3.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 16.5c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div><div id="sbar" aria-hidden="true"><span class="sl"><i></i>Today</span><div class="tape" id="tape"></div><span id="utc"></span></div></header>
+<div class="bgfx" aria-hidden="true"><b></b></div><canvas id="bgc" aria-hidden="true"></canvas>
+<header><h1 id="home" title="Today's stock">MEME <b>STREET</b><span class="hsub">Daily</span></h1><nav class="keys" aria-label="Menu"><button id="help-btn">Help</button><button id="stats-btn">Stats</button><button id="acct-btn">Account</button></nav><div id="sbar" aria-hidden="true"><span class="sl"><i></i>Today</span><div class="tape" id="tape"></div><span id="utc"></span></div></header>
+<aside class="rail l" id="railL" aria-label="Recent days"></aside><aside class="rail r" id="railR" aria-label="Your desk"></aside>
 <main id="main"></main>
 <footer>Practice money only. Not advice, not real trades.<br><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:memestreet.game@gmail.com">Contact</a></footer>
 <div id="ov" aria-hidden="true"></div><canvas id="fx" aria-hidden="true"></canvas><div id="pop" role="dialog" aria-modal="true"></div><div id="toast" role="status"></div>
@@ -218,7 +259,7 @@ function ringSvg(frac,col,size){const r=size/2-5,c=2*Math.PI*r;return `<svg view
 async function load(){
  const d=await api('/api/daily');
  if(!d||d.error||d.slow){if(!D)$('main').innerHTML=`<div class="hero view"><p class="tag">Couldn't load today's stock</p><p>${esc(d&&d.error||'Give it a second and try again.')}</p><button class="go" onclick="location.reload()">Try again</button></div>`;return}
- D=d;G=d.game?Object.assign({},d.game):null;drawn='';sbar();
+ D=d;G=d.game?Object.assign({},d.game):null;drawn='';sbar();rails();
  if(d.status==='running'&&G&&!G.done){wasRunning=true;run()}
  draw();
  }
@@ -328,7 +369,7 @@ function levelsList(lv,k){
 function squares(gr,anim){return `<div class="grid${anim?' anim':''}">${gr.map((v,i)=>`<i class="${v>0?'u':v<0?'d':'f'}" style="animation-delay:${1.2+i*.09}s"></i>`).join('')}</div>`}
 function bestLine(b,history){return b&&b.ret>0.0005?`<p class="best">Best possible trade: <b>${b.side==='long'?'buy':'short'}</b> at ${clock(b.from-(history-1))}, <b>${b.side==='long'?'sell':'cover'}</b> at ${clock(b.to-(history-1))}, for <b class="up">${pc(b.ret)}</b>.</p>`:''}
 function tomorrow(){const t=D.tomorrow&&D.tomorrow.tf,left=D.next-Date.now()/1000;
- return `<div class="card tmr st"><div class="ring" id="tring">${ringSvg(1-left/86400,'#f5a524',64)}</div><div><h2>Tomorrow${t?`: one candle = ${esc(TFW[t]||t)}`:'\'s stock'}</h2><p>New stock in <b class="cd" style="color:var(--txt)">${hms(left)}</b>.${D.stats&&D.stats.streak?` Play it to make your streak ${D.stats.streak+1} days.`:''}</p></div></div>`}
+ return `<div class="card tmr st"><div><h2>Next stock${t?`: one candle = ${esc(TFW[t]||t)}`:''}</h2><p>${D.stats&&D.stats.streak?`Play it to make your streak ${D.stats.streak+1} days.`:'A new one at midnight UTC.'}</p></div><b class="cd clock">${hms(left)}</b></div>`}
 function back(st){const left=D.next-Date.now()/1000;
  return `<div class="back"><div><b>You've played today:</b> <span class="${cls(G.ret)}">${pc(G.ret)}</span>${G.rank?`, ${place(G.rank)} of ${G.of}`:''}.</div><div>Next stock in <b class="cd">${hms(left)}</b></div></div>`}
 function milestone(st){const m=MILESTONES.includes(st.streak)&&lsGet('ms_mile',0)!==st.streak?st.streak:0;if(!m)return '';lsSet('ms_mile',m);
@@ -339,16 +380,16 @@ function pitch(){   // (after everything else on the result, not in the middle o
 const installBtn=()=>installEv?`<button class="alt" id="install">Add to home screen</button>`:'';
 
 function draw(){
- const m=$('main');document.body.classList.toggle('trading',!!(P||(D&&D.status==='running'&&G&&!G.done)));setTimeout(zones,50);if(!D||P)return;
+ const m=$('main');document.body.classList.toggle('trading',!!(P||(D&&D.status==='running'&&G&&!G.done)));if(!D||P)return;
  const st=D.stats,status=D.status==='running'&&G&&G.done?'done':D.status;
  if(status==='new'){if(drawn==='new')return;drawn='new';const v=vsFor(D);
-  m.innerHTML=`<div class="view"><div style="text-align:center" class="st"><span class="chip">Daily #${D.number}, ${esc(dayDate(D.day))}</span></div>
-  <div class="hero"><h1 class="tag">${D.real?'<span>One real stock.</span><span>Two minutes.</span><span>Guess it. Beat it.</span>':'<span>One mystery chart.</span><span>Two minutes.</span><span>Beat everyone.</span>'}</h1>
+  m.innerHTML=`<div class="view"><div class="st"><span class="chip">Daily #${D.number}, ${esc(dayDate(D.day))}</span></div>
+  <div class="hero"><h1 class="tag">Trade today's mystery ${D.real?'stock':'chart'}.</h1>
   <div class="st">${streakChip(st)}</div>
   ${v?`<div class="chal st"><b>${vsName(v)}</b> got <b class="${cls(v.ret)}">${pc(v.ret)}</b> on today's stock. Beat it.</div>`:''}
-  <p class="st">Same chart for everyone${D.real?', straight from real prices. You find out which stock it was at the end':''}. <b style="color:var(--txt)">${esc(playersLine())}</b>.</p>
+  <p class="st">${D.real?'120 candles from a real US stock print one a second':'120 candles print one a second'}. Buy or short as they come, then find out what it was. Same chart for everyone. <b style="color:var(--txt)">${esc(playersLine())}</b>.</p>
   <div class="quote st"><div><small>Ticker</small><b>???</b></div><div><small>Clock</small><b>2:00</b></div><div><small>Cash</small><b>$${num(D.cash,0)}</b></div><div><small>Players</small><b>${players()}</b></div></div>
-  <div class="st"><button class="go pulse" id="play">▶ Play</button></div><p class="small st">One go a day. <button class="lnk" id="how">How to play</button></p></div>
+  <div class="st"><button class="go" id="play">Play today's stock</button></div><p class="small st">One go a day. <button class="lnk" id="how">How to play</button></p></div>
   ${yesterday()}${board()}</div>`;return}
  if(status==='running'&&G&&G.candles&&G.candles.length){
   if(drawn!=='run'){drawn='run';m.innerHTML=`<div class="view">${runShell(`Daily #${D.number}`)}</div>`}
@@ -532,11 +573,12 @@ function bgLoop(t){
   bgDraw()}else BG.t=0;
  requestAnimationFrame(bgLoop)}
 function bgStart(){BG.seed=(Math.floor(Date.now()/864e5)*2654435761)>>>0;for(let i=0;i<260;i++)bgCandle();bgDraw();if(!CALM)requestAnimationFrame(bgLoop);addEventListener('resize',bgDraw)}
-// the notes in the margins, like the depths down Krillion's page: one every so often, as far down as the page goes
-const ZONES=['── the opening bell','volume picks up here ──','── resistance, probably','everyone piles in here ──','── the top (nobody rings a bell)','stop losses live here ──','── the dip they said to buy','support held here last time ──','── margin call territory','diamond hands only below ──','── the bagholders\' basement','the bottom (probably) ──'];
-function zones(){const z=$('zones');if(!z||innerWidth<1180)return;const hgt=document.body.scrollHeight,gap=430;let h='';
- for(let k=0,y=300;y<hgt-260&&k<ZONES.length;k++,y+=gap){const t=ZONES[k],l=t.startsWith('──');h+=`<p class="${l?'r':'l'}" style="top:${y}px">${esc(t).replace('──','<i>──</i>')}</p>`}
- if(z._h!==h){z._h=h;z.innerHTML=h;z.style.height=hgt+'px'}}
+function rails(){
+ const L=$('railL'),R=$('railR');if(!L||!R||!D)return;const st=D.stats||{};
+ const day=d=>new Date(d*864e5).toLocaleDateString(undefined,{day:'numeric',month:'short',timeZone:'UTC'});
+ L.innerHTML=`<div class="rt">Recent days</div>`+((D.past||[]).length?D.past.map(p=>{const w=p.top&&p.top[0];return `<div class="rr"><span class="mut">${day(p.day)}</span><span class="nm">${w?esc(w.name):'–'}</span><b class="${w?cls(w.ret):''}">${w?pc(w.ret):''}</b></div>`}).join('')+'<p class="rn">Each day\'s winner and their return.</p>':'<p class="rn">Past days show here from tomorrow.</p>');
+ R.innerHTML=`<div class="rt">Your desk</div>`+[['Streak',`${st.streak||0} day${st.streak===1?'':'s'}`],['Best streak',st.max_streak||0],['Played',st.played||0],['Average',st.avg==null?'–':`<span class="${cls(st.avg)}">${pc(st.avg)}</span>`],['Best return',st.best==null?'–':`<span class="${cls(st.best)}">${pc(st.best)}</span>`],['Beat the stock',st.played?Math.round(st.beat/st.played*100)+'%':'–']].map(([k,v])=>`<div class="rr"><span class="mut">${k}</span><b>${v}</b></div>`).join('')
+  +`<div class="rr nx"><span class="mut">Next stock</span><b class="cd">${hms(D.next-Date.now()/1000)}</b></div>`}
 let toastT=null;function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),ms||1600)}
 
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e});
@@ -568,7 +610,7 @@ document.addEventListener('keydown',e=>{
  if(!live||e.ctrlKey||e.metaKey||e.altKey||/INPUT|TEXTAREA/.test(e.target.tagName))return;const k=e.key.toLowerCase();
  if(k==='b'){e.preventDefault();trade('buy',document.querySelector('[data-side=buy]'))}else if(k==='s'){e.preventDefault();trade('sell',document.querySelector('[data-side=sell]'))}
  else if(k.length===1&&'1234'.includes(k)){size=SIZES[Number(k)-1];lsSet('ms_daily_size',size);if(P)pfill();else draw()}});
-setInterval(()=>{const u=$('utc');if(u)u.textContent=new Date().toISOString().slice(11,19)+' UTC';if(!D)return;const left=D.next-Date.now()/1000;document.querySelectorAll('.cd').forEach(e=>e.textContent=hms(left));const tr=document.querySelector('.tmr #tring');if(tr)tr.innerHTML=ringSvg(1-left/86400,'#f5a524',64);if(left<=0&&!P&&!(G&&!G.done)){D=null;load()}},1000);
+setInterval(()=>{const u=$('utc');if(u)u.textContent=new Date().toISOString().slice(11,19)+' UTC';if(!D)return;const left=D.next-Date.now()/1000;document.querySelectorAll('.cd').forEach(e=>e.textContent=hms(left));if(left<=0&&!P&&!(G&&!G.done)){D=null;load()}},1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&D&&!P&&D.status!=='running')load()});
 bgStart();load();
 </script></body></html>
