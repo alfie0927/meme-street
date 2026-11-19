@@ -272,3 +272,8 @@ without review. A complaint puts it back to watched. Status: every format watche
 - 2026-11-14 (evening): "on the thumbnail put 'PART 1'": a part's cover is its opening shot with PART N in big yellow letters and the story's title under it. "post this to youtube too": every part goes to YouTube as well as Instagram.
 - 2026-11-19, the owner: "everything should be in higgsfield". Every reel's scene 1 is one Higgsfield film shot of its world (no
   real people, no logos, no text, never the chart); stories and explainers may add one more. The 3D town reels have none.
+- 2026-11-19, the owner: "all reels should pass ... the critic should just check for any visual errors such as overlapping,
+  audio errors such as fast countdowns or voice cutting out early. the reel should fix these and then post", and "the
+  story/hook pipeline from your study of thousands of reels is enough to know how to write a proper story with an engaging
+  hook". The critic blocks only visual and audio faults; story, hook, content and style are the writer's (the niche study's
+  formula) and only notes. After one fix round the reel posts.

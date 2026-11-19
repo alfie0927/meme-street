@@ -172,42 +172,22 @@ def pack(work, out, rd, only=None, refs=True):
 SYSTEM = """You are the last safety check before a Meme Street Instagram Reel posts (since 2026-11-18 a free daily
 game: one real US stock chart a day, two minutes to trade it with practice money, its name revealed at the end;
 memestreet.net). Reels name real stocks of past days and real stretches of 2016 to 2021; never today's stock. The owner decides what good looks like: their rulebook is below, and they give
-feedback after reels post. Your job is narrow: stop a reel that would embarrass the page. Flag only BLOCKERS:
-1. A fact that is wrong: a number, price, move or claim that contradicts the chart on screen or the facts.
-2. Voice and screen disagree: the voice says something the screen contradicts, or the story depends on something the
-   screen never shows (e.g. "price fell to 58" while the tag reads 64; a quiz question the chart cannot answer; a storyboard
-   beat the report lists that the frames never show; an acted story scene whose actors are not
-   the things the voice names, so a viewer with the sound off could not say what it shows, e.g. blank bars for "three charts";
-   the voice naming a line the chart never draws, e.g. "the orange line" with no orange line; the voice describing the
-   price moving, "each step lower than the one before", while those candles are already all on screen) (the owner, round 7).
-3. A broken frame: text on text, text cut off, an empty stage for over 2 seconds, a garbled or unreadable scene; a tag on
-   top of another prop, a cloud or another tag; story props drawn over a chart; a tilted or flying candle, chart card or
-   question card; a tag shown before its words are said, or one that vanishes and comes back (the owner, 2026-11-08).
-   A frame clearly less polished than the owner's reference frames (cluttered, cramped, props touching, uneven sizes,
-   harsh glow) is a broken frame too. Anything drawn over anything else is a BLOCKER, never a note (the owner, 2026-11-16:
-   "creative animation with no overlaps or anything"): a figure walking across or standing on another figure, a figure or a
-   tag over a prop, a prop over a prop, a tag or a label cut off at the frame's edge.
-4. A word the listener hears wrongly (the transcript of the final mix against the script; a number written as digits,
-   or a homophone, is not a mispronunciation; nor is Whisper's phonetic spelling of a rare trading term that the voice
-   lexicon covers, e.g. 'Marubazu' for marubozu or 'dojee' for doji: a one-letter spelling drift with the same sounds), or a garbled stretch of voice, or a pause inside a phrase where the script
-   has no comma or full stop (the owner, round 7: "a weird pause before 'bounce'"). The voice is Kokoro at ONE fixed speed for
-   every line by construction (the owner, 2026-11-08), so words-per-second differing between lines (a short big line reads
-   denser than a long one) is NOT a speed change and never a blocker; only a garbled stretch or a pause inside a phrase is.
-5. A clear break of an owner's rule (the rulebook below), visible in this cut. Among them (the owner, round 7): a reel that
-   teaches a signal but never shows it working (the price after it going the way it says, then why), or that doubts the
-   signal more than once ("only a clue", "never a promise"); a quiz answer with a line for every option where one arrow
-   would do; "a hair below" for "slightly below".
-A director reel (report.json has a "device": one visual metaphor, a HUD, a palette and mood of its own, drawn by the
-writer's own scene function) is meant to look unlike the house template and unlike other reels: its own colours, bold
-fast motion, a world that changes every few seconds, 3 to 5 word punch headlines with one word in colour over the
-word-by-word captions of everything said (a scene's punch is left out on purpose when the caption line under it says
-the same words, so a scene with captions and no punch is not a fault) (the owner,
-2026-11-09). None of that is a fault. Its blockers are the five above, plus: a device that stops making sense (the
-metaphor contradicts the lesson), text the viewer cannot read, the HUD not changing when the voice says it does.
-Its first seconds are built this way on purpose (the reach plan, 2026-11-11): the hook stands whole and large at the top
-from the first frame, and the brand row, the format label and the progress bar stay hidden until scene 1. That is not a
-fault. One more blocker for a director reel: an opening that is only a chart, a list or a title card, with no character
-or object acting in it (the Daily recap may open on its chart).
+feedback after reels post. Your job is narrow (the owner, 2026-11-19: "the critic should just check for any visual errors
+such as overlapping, audio errors such as fast countdowns or voice cutting out early. the reel should fix these and then
+post"). Flag only these BLOCKERS:
+1. VISUAL: anything drawn over anything else (text on text; a tag, label, bubble or prop over a figure, a prop, a chart or
+   another tag; a figure over a figure); text, a tag or a figure cut off at the frame's edge; text too small or too faint to
+   read; an empty or frozen screen for over 2 seconds; a broken frame (a missing scene, a garbled or half-drawn scene, a
+   tilted or flying card).
+2. AUDIO: a countdown too fast (numbers spoken in one breath, or drawn faster than one a second); the voice cutting out
+   early (a word clipped at the end of a line or at a cut); a garbled, skipped or doubled stretch of voice; a long dead
+   silence where a line should be; a word the listener hears as a different word (the transcript of the final mix against
+   the script; a number written as digits, a homophone, or Whisper's spelling of a rare trading term is not one). The voice
+   runs at ONE fixed speed by construction, so words-per-second differing between lines is never a blocker.
+Everything else is a NOTE, never a blocker: facts, the story, the content, how well a beat lands, style, polish, taste,
+the format, the rulebook's content rules. (The facts of real-company stories are checked separately before you see the
+reel.) A director reel is meant to look unlike the house template and unlike other reels; its first seconds hold the hook
+large at the top with the brand row hidden until scene 1 on purpose: none of that is a fault.
 Anything else, however much you would change it, is a "note" (logged for the owner, never blocking). Do not invent
 problems; judge only what this round's images and report.json show; numbers come only from report.json.
 
@@ -366,6 +346,18 @@ def run(cmd, **env):
         raise SystemExit([l for l in o.strip().splitlines() if l.strip() and not l.startswith((" ", "Traceback"))][-1:] or [" ".join(cmd) + " failed"])
 
 
+def post_anyway(out, rnd, rev, why):
+    """The reel had its fix: it posts as it is (the owner, 2026-11-19: "all reels should pass ... fix these and then post").
+    Only a reel with no finished cut cannot."""
+    if not os.path.exists(os.path.join(out, "reel.mp4")):
+        raise SystemExit(f"{why}; there is no finished cut, so nothing is posted")
+    json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"), "posted_as_it_is": why,
+               "open": [x.get("what") for x in rev.get("issues", []) if x.get("severity") == "blocker"],
+               "at": datetime.datetime.now(datetime.UTC).isoformat()}, open(os.path.join(out, "approved.json"), "w"))
+    print(f"posted as it is after round {rnd}: {why}", flush=True)
+    return rnd
+
+
 def loop(work, out):
     """Voice, render, review, rewrite... as many rounds as it takes, until he approves. Each rewrite touches only the
     scenes his checked notes name; only their lines are voiced again and only their frames go in the next pack."""
@@ -406,7 +398,7 @@ def loop(work, out):
             remember(TODO, [{"what": "HELD: " + (rev.get("verdict") or ""), "owner": "renderer", "where": slot, "fix": "fix the template",
                              "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
             json.dump(rev, open(os.path.join(work, f"review-{rnd}.json"), "w"), indent=1)
-            raise SystemExit(f"held after round {rnd}: the template, not the script, keeps it below the bar ({rev.get('verdict', '')[:200]}); nothing is posted")
+            return post_anyway(out, rnd, rev, "the template, not the script, has the open faults (on the to-do list)")
         hit = {int(k) for x in rev.get("issues", []) if x.get("severity") in ("blocker", "major") and x.get("owner", "script") != "renderer"
                for k in re.findall(r"scene (\d+)", x.get("where", ""))}
         streak = {k: streak.get(k, 0) + 1 for k in hit}         # (a scene faulted 2 rounds running needs a new approach, not a tweak)
@@ -439,7 +431,7 @@ def loop(work, out):
                                                          #  are tweaks; a reel not good enough by round 6, or no longer improving, is held)
             remember(TODO, [{"what": f"HELD after {rnd} rounds{' (no longer improving)' if rev.get('plateau') else ''}: " + (rev.get("verdict") or ""), "owner": "renderer", "where": slot,
                              "fix": "find why it cannot pass", "evidence": [x.get("what") for x in rev.get("issues", [])]}], slot, "what")
-            raise SystemExit(f"held after {rnd} rounds: not good enough to post ({(rev.get('verdict') or '')[:200]}); nothing is posted")
+            return post_anyway(out, rnd, rev, f"it had its fix round ({(rev.get('verdict') or '')[:160]})")
         prev = [x for x in rev["issues"] if x.get("owner", "script") != "renderer" and x.get("where") != "automatic check"]
         for n in (1, 2):                                   # (two goes at the rewrite, then the reel is held: never an endless loop on the plan, 2026-11-09)
             try:
@@ -447,7 +439,7 @@ def loop(work, out):
             except SystemExit as e:   # (the rewrite did not pass its checks in five tries: it tries once more)
                 print(f"rewrite after round {rnd} did not pass its checks ({e.code}); " + ("trying again in a minute" if n == 1 else "held"), flush=True)
                 if n == 2:
-                    raise SystemExit(f"held after round {rnd}: the rewrite could not pass its checks twice; nothing is posted")
+                    return post_anyway(out, rnd, rev, "the rewrite could not pass its checks twice, so the last cut posts")
                 time.sleep(60)
 
 
@@ -486,6 +478,11 @@ def demo():
     assert gate({"scores": dict(S8, visuals=6), "issues": []})["approved"]                           # (scores are for the log)
     assert not gate({"scores": S8, "issues": [{"severity": "blocker", "owner": "renderer"}]})["approved"]  # (a blocker stops it)
     assert gate({"scores": S8, "issues": [{"severity": "note"}]})["approved"]                          # (notes never block)
+    o = tempfile.mkdtemp()                                                                               # (after its fix a reel posts; with no cut it cannot)
+    try: post_anyway(o, 2, {}, "x"); raise AssertionError("posted without a cut")
+    except SystemExit: pass
+    open(os.path.join(o, "reel.mp4"), "wb").write(b"x"); assert post_anyway(o, 2, {"issues": [{"severity": "blocker", "what": "w"}]}, "x") == 2
+    assert json.load(open(os.path.join(o, "approved.json")))["open"] == ["w"]
     print("verify ok")
 
 
