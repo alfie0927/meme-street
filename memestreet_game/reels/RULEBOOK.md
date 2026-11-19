@@ -17,6 +17,10 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   may open on Higgsfield cinematic shots (the owner asked for open-higgsfield's look): no real people, no logos, no text in a shot.
 - The 23:30 recap names the day's stock, what a candle was, the dates, the levels it tested and, when it moved a lot, the reason from
   the news as the researcher found it (the owner, 2026-11-19).
+- 2026-11-19, the owner: "One Million Dollars" (src/roblox_trading.json) remakes the blocky one-million-steps story reel beat for
+  beat about trading ("EXACTLY the same but the story is about trading"): it may run as long as that reel (up to 2 minutes, over the
+  60-second ceiling), it ends by looping into its first line with no sign-off scene (the caption carries memestreet.net), and its
+  narrator counts the chest down out loud, as the original does. Judge it on everything else as usual.
 - Never speak a countdown ("three, two, one" in one breath was too fast): a scene asks, then "think" gives the viewer 3 silent seconds
   with a tick each second while the picture counts down (the owner, 2026-11-19).
 

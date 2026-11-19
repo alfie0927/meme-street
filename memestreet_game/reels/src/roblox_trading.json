@@ -1,0 +1,1261 @@
+{
+ "title": "One Million Dollars",
+ "type": "Blocky story",
+ "hooks": [
+  "In this town, everyone only gets one million dollars to trade with in their entire life.",
+  "In this town, the money you lose counts down on your chest, and at zero your trading hand freezes forever.",
+  "In this town, nobody wastes a single dollar, except me."
+ ],
+ "device": {
+  "metaphor": "a toy-block town where everyone's lifetime trading money glows on a label on their chest",
+  "opening": "a chest counter races up to 1,000,000 as coins rain",
+  "palette": "sky blue, grass green, red for every loss",
+  "hud": "none: the chest labels are the only numbers"
+ },
+ "caption": "In this town, you only get $1,000,000 to trade with in your whole life. Would you have saved the fund?\nWhat would you do with yours?\nA made-up town and a made-up story, made like the blocky story reels you love.\nMeme Street is the daily game for practice: one real stock chart a day, two minutes to trade it with practice money, its name revealed at the end.\nPlay free at memestreet.net\nPractice money only. Not investment advice.\n#MemeStreet #StockMarket #TradingGame #DayTrading",
+ "scenes": [
+  {
+   "kind": "free",
+   "text": "One million dollars",
+   "hot": "million",
+   "vo": "In this town, everyone only gets one million dollars to trade with in their entire life.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "close:Max",
+     "actors": [
+      {
+       "who": "Max",
+       "at": [
+        0,
+        0
+       ],
+       "do": "cheer",
+       "face": "grin",
+       "chest": [
+        0,
+        1000000
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "coins"
+      }
+     ]
+    },
+    {
+     "say": "trade with",
+     "place": "street",
+     "cam": "wide",
+     "move": "in",
+     "actors": [
+      {
+       "who": "Max",
+       "at": [
+        -2.6,
+        0.6
+       ],
+       "to": [
+        1.4,
+        0.6
+       ],
+       "chest": 1000000
+      },
+      {
+       "who": "Lola",
+       "at": [
+        2.8,
+        -0.6
+       ],
+       "to": [
+        -1.2,
+        -0.6
+       ],
+       "chest": 1000000
+      },
+      {
+       "who": "grandma",
+       "at": [
+        0.2,
+        1.6
+       ],
+       "do": "wave",
+       "chest": 1000000
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "counts down every dollar",
+   "hot": "dollar",
+   "vo": "You see, there's a glowing number on your chest that counts down every dollar you lose.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "close:Lola",
+     "actors": [
+      {
+       "who": "Lola",
+       "at": [
+        0,
+        0
+       ],
+       "do": "talk",
+       "face": "smile",
+       "chest": 1000000
+      }
+     ]
+    },
+    {
+     "say": "every dollar",
+     "place": "square",
+     "cam": "screen",
+     "screen": {
+      "title": "LOLA'S TRADE",
+      "chart": "down",
+      "pct": "-4%"
+     },
+     "actors": [
+      {
+       "who": "Lola",
+       "at": [
+        2.2,
+        -1.5
+       ],
+       "look": "screen",
+       "do": "shock",
+       "face": "shock",
+       "chest": [
+        1000000,
+        960000
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "hand freezes forever",
+   "hot": "freezes",
+   "vo": "And when it hits zero, your trading hand freezes forever.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "mid:Gus",
+     "actors": [
+      {
+       "who": "Gus",
+       "at": [
+        0,
+        0
+       ],
+       "do": "type",
+       "hold": "phone",
+       "chest": [
+        12000,
+        0
+       ],
+       "say": "zero",
+       "then": {
+        "do": "shock",
+        "face": "shock",
+        "emote": "!"
+       }
+      }
+     ],
+     "fx": [
+      {
+       "do": "redflash",
+       "say": "zero"
+      },
+      {
+       "do": "shake",
+       "say": "zero"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "nobody here wastes",
+   "hot": "wastes",
+   "vo": "So nobody here wastes a single dollar. Kids trade baseball cards instead of stocks, and grandmas hide their money under the mattress.",
+   "shots": [
+    {
+     "place": "park",
+     "cam": "wide",
+     "actors": [
+      {
+       "who": "kid",
+       "at": [
+        -1.4,
+        0.4
+       ],
+       "hold": "paper",
+       "do": "show",
+       "face": "grin",
+       "chest": 1000000
+      },
+      {
+       "who": "kid b",
+       "at": [
+        1.4,
+        0.4
+       ],
+       "hold": "paper",
+       "do": "show",
+       "face": "smile",
+       "chest": 1000000
+      }
+     ],
+     "crowd": {
+      "n": 3,
+      "form": "cluster",
+      "at": [
+       0,
+       -1.2
+      ],
+      "do": "talk"
+     }
+    },
+    {
+     "say": "grandmas hide",
+     "place": "home",
+     "cam": "mid:grandma",
+     "actors": [
+      {
+       "who": "grandma",
+       "at": [
+        0,
+        0
+       ],
+       "do": "carry",
+       "hold": "money",
+       "face": "smug",
+       "chest": 1000000
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "for emergencies only",
+   "hot": "emergencies",
+   "vo": "The mailman only buys things on sale, because a sale only costs half. And gambling? Gambling is for emergencies only.",
+   "shots": [
+    {
+     "place": "shop",
+     "cam": "mid:mailman",
+     "actors": [
+      {
+       "who": "mailman",
+       "at": [
+        0,
+        0
+       ],
+       "do": "show",
+       "hold": "coin",
+       "face": "smug",
+       "chest": 999990
+      }
+     ]
+    },
+    {
+     "say": "And gambling",
+     "place": "street",
+     "cam": "close:grandma",
+     "actors": [
+      {
+       "who": "grandma",
+       "at": [
+        0,
+        0
+       ],
+       "do": "angry",
+       "face": "angry",
+       "emote": "!",
+       "chest": 1000000
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "nobody could stop me",
+   "hot": "stop",
+   "vo": "But when I was little, nobody could stop me. I bought every hot tip, every rocket, every stock my friends shouted about.",
+   "shots": [
+    {
+     "place": "street",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        -2,
+        0
+       ],
+       "to": [
+        2,
+        0
+       ],
+       "do": "run",
+       "face": "grin",
+       "chest": [
+        1000000,
+        800000
+       ]
+      }
+     ]
+    },
+    {
+     "say": "every hot tip",
+     "place": "square",
+     "cam": "screen",
+     "screen": {
+      "title": "HOT TIP",
+      "chart": "rocket",
+      "pct": "+300%"
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -1.5
+       ],
+       "look": "screen",
+       "do": "cheer",
+       "face": "grin",
+       "chest": [
+        800000,
+        600000
+       ]
+      }
+     ]
+    },
+    {
+     "say": "my friends shouted",
+     "place": "street",
+     "cam": "wide",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0.6
+       ],
+       "do": "cheer",
+       "chest": 600000
+      }
+     ],
+     "crowd": {
+      "n": 5,
+      "form": "cluster",
+      "at": [
+       0,
+       -0.8
+      ],
+      "do": "cheer",
+      "face": "laugh"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "grabbed my wrist",
+   "hot": "wrist",
+   "vo": "I traded just because it was fun. Then on my tenth birthday, my mom grabbed my wrist and screamed.",
+   "shots": [
+    {
+     "place": "room",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -2.2
+       ],
+       "do": "type",
+       "face": "laugh",
+       "chest": [
+        600000,
+        5000
+       ]
+      }
+     ]
+    },
+    {
+     "say": "my tenth birthday",
+     "place": "home",
+     "cam": "two:mom,narrator",
+     "actors": [
+      {
+       "who": "mom",
+       "at": [
+        -0.8,
+        0
+       ],
+       "look": "narrator",
+       "do": "shock",
+       "face": "shock",
+       "emote": "!",
+       "chest": 1000000
+      },
+      {
+       "who": "narrator",
+       "at": [
+        0.9,
+        0
+       ],
+       "look": "mom",
+       "do": "idle",
+       "face": "flat",
+       "chest": 5000
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "three hundred dollars left",
+   "hot": "hundred",
+   "vo": "I only had three hundred dollars left.",
+   "shots": [
+    {
+     "place": "home",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "shock",
+       "chest": [
+        5000,
+        300
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "redflash"
+      },
+      {
+       "do": "shake"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Kids call me",
+   "hot": "Kids",
+   "vo": "Ever since then, I've lived on three hundred dollars. Kids call me Broke Boy, and at recess everyone shows off their numbers, while I just sit there and watch.",
+   "shots": [
+    {
+     "place": "park",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "sit",
+       "face": "sad",
+       "chest": 300
+      }
+     ]
+    },
+    {
+     "say": "Kids call me",
+     "place": "park",
+     "cam": "wide",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        -1
+       ],
+       "do": "sit",
+       "face": "sad",
+       "chest": 300
+      }
+     ],
+     "crowd": {
+      "n": 5,
+      "form": "row",
+      "at": [
+       0,
+       1.2
+      ],
+      "look": "narrator",
+      "do": "laugh",
+      "face": "laugh"
+     }
+    },
+    {
+     "say": "sit there and watch",
+     "place": "park",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        -1
+       ],
+       "do": "sit",
+       "face": "sad",
+       "chest": 300
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "practice money doesn't count",
+   "hot": "practice",
+   "vo": "The only thing I could still do for fun was practise. Every night in my room, I traded with fake money on Meme Street, because practice money doesn't count.",
+   "shots": [
+    {
+     "place": "room",
+     "cam": "screen",
+     "sky": "night",
+     "screen": {
+      "title": "MEME STREET",
+      "chart": "candles",
+      "pct": "+12%"
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -2.2
+       ],
+       "do": "present",
+       "chest": 300
+      }
+     ]
+    },
+    {
+     "say": "practice money",
+     "place": "room",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -2.2
+       ],
+       "do": "type",
+       "face": "grin",
+       "chest": 300
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "read a chart",
+   "hot": "chart",
+   "vo": "I got so good, I could read a chart in my sleep.",
+   "shots": [
+    {
+     "place": "room",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -2.2
+       ],
+       "do": "think",
+       "face": "smug",
+       "emote": "zzz",
+       "chest": 300
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "fund started falling",
+   "hot": "falling",
+   "vo": "Until one afternoon, the town's savings fund started falling, faster and faster.",
+   "shots": [
+    {
+     "place": "square",
+     "cam": "screen",
+     "sky": "sunset",
+     "screen": {
+      "title": "TOWN FUND",
+      "chart": "crash",
+      "pct": "-38%"
+     },
+     "crowd": {
+      "n": 6,
+      "form": "row",
+      "at": [
+       2.4,
+       -2.6
+      ],
+      "look": "screen",
+      "do": "shock",
+      "face": "shock"
+     }
+    },
+    {
+     "say": "faster and faster",
+     "place": "bank",
+     "cam": "mid:banker",
+     "actors": [
+      {
+       "who": "banker",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "shock",
+       "hold": "chart",
+       "chest": [
+        1000000,
+        620000
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "shake"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "everybody just froze",
+   "hot": "froze",
+   "vo": "Every family's money was in it, and at the bottom was zero. The banker begged someone to save it, but everybody just froze.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "close:banker",
+     "actors": [
+      {
+       "who": "banker",
+       "at": [
+        0,
+        0
+       ],
+       "do": "beg",
+       "face": "cry",
+       "chest": 620000
+      }
+     ]
+    },
+    {
+     "say": "everybody just froze",
+     "place": "street",
+     "cam": "wide",
+     "sky": "red",
+     "actors": [
+      {
+       "who": "mom",
+       "at": [
+        0,
+        0.8
+       ],
+       "do": "idle",
+       "face": "flat",
+       "chest": 1000000
+      }
+     ],
+     "crowd": {
+      "n": 8,
+      "form": "row",
+      "at": [
+       0,
+       -0.6
+      ],
+      "do": "idle",
+      "face": "flat"
+     }
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "I ran to the bank",
+   "hot": "ran",
+   "vo": "Nobody wanted to risk their million. So I jumped up, and I ran to the bank.",
+   "shots": [
+    {
+     "place": "park",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "sit",
+       "face": "flat",
+       "chest": 300,
+       "say": "jumped up",
+       "then": {
+        "do": "run",
+        "to": [
+         4,
+         0
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "say": "ran to the bank",
+     "place": "street",
+     "cam": "wide",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        -3,
+        0.4
+       ],
+       "to": [
+        3,
+        0.4
+       ],
+       "do": "run",
+       "face": "angry",
+       "chest": 300
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "blinking red",
+   "hot": "red",
+   "vo": "I traded. My chest started blinking red. Three hundred, two fifty, two hundred.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "type",
+       "hold": "phone",
+       "face": "angry",
+       "chest": 300
+      }
+     ]
+    },
+    {
+     "say": "blinking red",
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "type",
+       "face": "shock",
+       "chest": [
+        300,
+        200
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "redflash"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "two, one, zero",
+   "hot": "zero",
+   "vo": "My hands were shaking. One fifty, one hundred, twenty, ten, five, three, two, one, zero.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "shock",
+       "chest": [
+        200,
+        20
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "shake"
+      }
+     ]
+    },
+    {
+     "say": "ten, five",
+     "place": "bank",
+     "cam": "low:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "shock",
+       "face": "cry",
+       "chest": [
+        20,
+        0
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "redflash"
+      },
+      {
+       "do": "shake"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "never trade again",
+   "hot": "never",
+   "vo": "My hands went cold, then heavy, and then they froze. I could never trade again.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "close:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "sad",
+       "face": "cry",
+       "chest": 0
+      }
+     ]
+    },
+    {
+     "say": "never trade again",
+     "place": "bank",
+     "cam": "wide",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "fall",
+       "face": "cry",
+       "chest": 0
+      },
+      {
+       "who": "banker",
+       "at": [
+        2.4,
+        -0.6
+       ],
+       "look": "narrator",
+       "do": "shock",
+       "face": "shock",
+       "chest": 620000
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "only counts real money",
+   "hot": "real",
+   "vo": "And that's when I realised something. The counter only counts real money.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "mid:narrator",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        0
+       ],
+       "do": "think",
+       "face": "flat",
+       "emote": "!",
+       "chest": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "Buy here",
+   "hot": "Buy",
+   "vo": "So I grabbed the banker's chart and showed him the level where it always bounced. Buy here, I said, and put your stop right under it.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "two:narrator,banker",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        -0.8,
+        0
+       ],
+       "look": "banker",
+       "do": "show",
+       "hold": "chart",
+       "face": "grin",
+       "chest": 0
+      },
+      {
+       "who": "banker",
+       "at": [
+        0.9,
+        0
+       ],
+       "look": "narrator",
+       "do": "think",
+       "face": "flat",
+       "chest": 620000
+      }
+     ]
+    },
+    {
+     "say": "Buy here",
+     "place": "square",
+     "cam": "screen",
+     "screen": {
+      "title": "TOWN FUND",
+      "chart": "wobble",
+      "pct": "-38%"
+     },
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        2.2,
+        -1.5
+       ],
+       "look": "screen",
+       "do": "point",
+       "chest": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "climbed all the way",
+   "hot": "climbed",
+   "vo": "The fund hit my level, bounced, and climbed all the way back, while the whole town watched with their mouths open.",
+   "shots": [
+    {
+     "place": "square",
+     "cam": "screen",
+     "sky": "gold",
+     "screen": {
+      "title": "TOWN FUND",
+      "chart": "rocket",
+      "pct": "+41%"
+     },
+     "crowd": {
+      "n": 6,
+      "form": "row",
+      "at": [
+       2.4,
+       -2.6
+      ],
+      "look": "screen",
+      "do": "cheer"
+     }
+    },
+    {
+     "say": "whole town watched",
+     "place": "street",
+     "cam": "wide",
+     "crowd": {
+      "n": 9,
+      "form": "row",
+      "at": [
+       0,
+       -0.4
+      ],
+      "do": "shock",
+      "face": "shock"
+     },
+     "actors": [
+      {
+       "who": "banker",
+       "at": [
+        0,
+        1
+       ],
+       "do": "cheer",
+       "face": "grin",
+       "chest": [
+        620000,
+        1000000
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "confetti"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "hugged me so hard",
+   "hot": "hugged",
+   "vo": "My mom ran into the bank and hugged me so hard, I almost fell over.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "two:mom,narrator",
+     "actors": [
+      {
+       "who": "mom",
+       "at": [
+        -3,
+        0
+       ],
+       "to": [
+        -0.7,
+        0
+       ],
+       "do": "run",
+       "face": "cry",
+       "chest": 1000000,
+       "say": "hugged me",
+       "then": {
+        "do": "cheer",
+        "face": "laugh"
+       }
+      },
+      {
+       "who": "narrator",
+       "at": [
+        0.8,
+        0
+       ],
+       "look": "mom",
+       "do": "idle",
+       "face": "smile",
+       "chest": 0,
+       "say": "hugged me",
+       "then": {
+        "do": "cheer",
+        "face": "laugh"
+       }
+      }
+     ],
+     "fx": [
+      {
+       "do": "confetti",
+       "say": "hugged me"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "everything changed",
+   "hot": "changed",
+   "vo": "After that, everything changed. The next morning the banker was practising, then the kids at school, then the grandmas.",
+   "shots": [
+    {
+     "place": "bank",
+     "cam": "mid:banker",
+     "sky": "gold",
+     "actors": [
+      {
+       "who": "banker",
+       "at": [
+        0,
+        0
+       ],
+       "do": "type",
+       "hold": "phone",
+       "face": "grin",
+       "chest": 1000000
+      }
+     ]
+    },
+    {
+     "say": "the kids at school",
+     "place": "park",
+     "cam": "wide",
+     "actors": [
+      {
+       "who": "kid",
+       "at": [
+        -1.4,
+        0.4
+       ],
+       "do": "type",
+       "hold": "phone",
+       "face": "grin",
+       "chest": 1000000
+      },
+      {
+       "who": "kid b",
+       "at": [
+        1.4,
+        0.4
+       ],
+       "do": "type",
+       "hold": "phone",
+       "face": "laugh",
+       "chest": 1000000
+      }
+     ]
+    },
+    {
+     "say": "then the grandmas",
+     "place": "home",
+     "cam": "mid:grandma",
+     "actors": [
+      {
+       "who": "grandma",
+       "at": [
+        0,
+        0
+       ],
+       "do": "type",
+       "hold": "phone",
+       "face": "smug",
+       "chest": 1000000
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "kind": "free",
+   "text": "the whole town practises",
+   "hot": "practises",
+   "vo": "Now the whole town practises first. In this town, everyone only gets one million dollars to trade with in their entire",
+   "shots": [
+    {
+     "place": "square",
+     "cam": "wide",
+     "sky": "day",
+     "actors": [
+      {
+       "who": "narrator",
+       "at": [
+        0,
+        1
+       ],
+       "do": "cheer",
+       "face": "grin",
+       "chest": 0
+      }
+     ],
+     "crowd": {
+      "n": 10,
+      "form": "scatter",
+      "at": [
+       0,
+       -1.2
+      ],
+      "do": "type"
+     }
+    },
+    {
+     "say": "In this town",
+     "place": "street",
+     "cam": "close:Max",
+     "actors": [
+      {
+       "who": "Max",
+       "at": [
+        0,
+        0
+       ],
+       "do": "cheer",
+       "face": "grin",
+       "chest": [
+        0,
+        1000000
+       ]
+      }
+     ],
+     "fx": [
+      {
+       "do": "coins"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
