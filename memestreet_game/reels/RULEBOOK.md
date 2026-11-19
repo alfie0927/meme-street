@@ -288,3 +288,7 @@ without review. A complaint puts it back to watched. Status: every format watche
   line names is DRAWN as it is said (the coffee, the rocket, the empty wallet, the crowd), never just written; the camera
   and the characters keep moving; a cut lands on a beat of the story. Keep doing what the best reels on this account did
   (the learned rules from Instagram's numbers come with every brief).
+- 2026-11-19 late, the owner: "the stories can also be like a crazy stock story, what happened to the stock, why did it
+  happen, explain the whole history behind it, it should be like a history reel". The 13:00 Crazy stock story is a HISTORY
+  REEL told by stick figures: the hook, who the company is and how it began, the road to the moment, the moment, why it
+  happened (each cause with its source), what came after. 60 to 90 seconds.

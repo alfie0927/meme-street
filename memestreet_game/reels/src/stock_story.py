@@ -41,12 +41,16 @@ FACT_RULES = (" ONLY what facts.news says may be said, shown or put in the capti
               "not told. Prices and percentages on screen come from facts.chart (real dollars, closes) or facts.news. Name the company; "
               "name only the people in facts.news.people. No advice on the stock today, no prediction, no view on guilt.")
 M.CATEGORIES[STORY] = (
-    "NEW, A CRAZY TRUE STOCK STORY (the owner, 2026-11-19): facts.news is the researched story of a real stock and chart 0 is its "
-    "real price chart in dollars (facts.chart: the story's day is candle facts.chart.story_candle). Tell it like a thriller: the "
-    "hook is the craziest true number or moment, said in the first sentence over the chart's wildest candle (or the opening "
-    "cinematic shot); then what happened, in order, one beat a line, each beat shown (the chart revealed up to that day on its "
-    "words, a counter racing, your device's characters acting it); the turn; how it ended (the chart's last candles); then one "
-    "line linking it to Meme Street's daily game (only what facts.meme_street says)." + FACT_RULES + SKILLS)
+    "A HISTORY REEL OF ONE CRAZY STOCK (the owner, 2026-11-19: \"what happened to the stock, why did it happen, explain the whole "
+    "history behind it, it should be like a history reel\"): facts.news is the researched history of a real stock and chart 0 is "
+    "its real price chart in dollars (facts.chart: the story's day is candle facts.chart.story_candle). Told as a STICK-FIGURE STORY "
+    "with many short scenes, a new picture every 2 to 3 seconds, the thing each line names drawn as it is said. The arc, in order: "
+    "(1) the hook: the craziest true number or moment, in the first sentence, over the chart's wildest candle; (2) who this company "
+    "is and where it came from (what it makes, how it began, drawn: the shop, the product, the people only as facts.news names them); "
+    "(3) the road to the moment (the years before, the good and the bad, the chart revealed up to each beat on its words); (4) the "
+    "moment itself, beat by beat; (5) WHY it happened: each cause from facts.news, shown as the thing it was (the Reddit crowd, the "
+    "short sellers, the loan, the hype), with its status; (6) what came after and where it ended (the chart's last candles); "
+    "(7) one line linking it to Meme Street's daily game (only what facts.meme_street says)." + FACT_RULES + SKILLS)
 M.CATEGORIES[EXPLAIN] = (
     "NEW, A STOCK EXPLAINER (the owner, 2026-11-19): explain facts.idea (for example a short squeeze) through the real story in "
     "facts.news and its real chart (chart 0, dollars; facts.chart). The hook is the idea as a dare or a crazy true number ('This is "
@@ -56,6 +60,7 @@ M.CATEGORIES[EXPLAIN] = (
 for _c in (STORY, EXPLAIN):
     M.LENGTH[_c] = (100, 145, True)
     M.KINDS[_c] = []
+M.LENGTH[STORY] = (150, 240, True); M.SECONDS[STORY] = (0, 100)   # (a history needs room: about 60 to 90 seconds, 2026-11-19)
 VIDEO_NOTE = (" CINEMATIC SHOTS (open-higgsfield's models through footage.py): facts.video.available is true, so scene 1 (the "
               "second hook, right after your animated scene 0) is ONE \"film\" scene: the story's world in one striking moving shot (a "
               "trading floor at night, a rocket on a pad, a crowd with phones lit; no real people, no logos, no text), with its "
@@ -89,7 +94,9 @@ def chart_of(x):
 
 
 def research(x, kind):
-    seed = x["seed"] + (f". Explain {x['idea']} through it." if kind == "explainer" else "")
+    seed = x["seed"] + (f". Explain {x['idea']} through it." if kind == "explainer" else
+                        ". The whole history: how the company began and what it does, the road to this moment, what happened day "
+                        "by day, why it happened (each cause with its source), and what happened after, up to where it ended.")
     pack = N.research(seed)
     errs = N.sound(pack)
     if errs:
@@ -211,7 +218,7 @@ def make(kind, slot=None, style=None):
     hist = json.load(open(M.HISTORY)) if os.path.exists(M.HISTORY) else {}
     x = pick(hist)
     json.dump(hist, open(M.HISTORY, "w"))                  # (the pick is kept: a story that fails is not tried again at once)
-    style = style or style_for(slot or time.strftime("%Y-%m-%dT%H%M", time.gmtime()), kind)
+    style = style or "2d"   # (the owner, 2026-11-19 late: "i like the stick man stuff": the 2D/3D trial is paused, style_for() kept for later)
     N.say(f"{kind} ({style}): {x['n']} {x['day']} - researching")
     pack, errs = research(x, kind)
     if not pack:
