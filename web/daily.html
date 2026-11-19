@@ -17,13 +17,22 @@
 @font-face{font-family:"JBM";src:url(/brand/jetbrains-mono.woff2) format("woff2");font-weight:100 800;font-display:swap}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--txt);font:14.5px/1.6 var(--mono);font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
-body{min-height:100vh;overflow-x:hidden;caret-color:var(--acc);scrollbar-color:#2a3540 var(--bg)}
+body{position:relative;background:transparent;min-height:100vh;overflow-x:hidden;caret-color:var(--acc);scrollbar-color:#2a3540 var(--bg)}
 ::selection{background:#4cc3cc4d;color:var(--txt)}
 a{text-underline-offset:3px}
 /* the background: a faint terminal grid and two slow, dim glows */
 .bgfx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .bgfx i{position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(90px);opacity:.07;animation:drift 26s ease-in-out infinite alternate}
 .bgfx i:nth-child(1){background:var(--acc);left:-25vmax;top:-30vmax}.bgfx i:nth-child(2){background:var(--acc2);right:-30vmax;bottom:-35vmax;animation-duration:32s;animation-direction:alternate-reverse}
+/* the market behind the page (the owner, 2026-11-19: "a 'stock' background similar to how Krillion has a background"):
+   a faint candle feed along the bottom that keeps printing, and price-zone notes in the margins like Krillion's depths */
+#bgc{position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;transition:opacity .6s}
+body.trading #bgc{opacity:.35}
+#zones{position:absolute;left:0;right:0;top:0;z-index:-1;pointer-events:none;display:none}
+#zones p{position:absolute;margin:0;width:210px;font-size:12px;line-height:1.4;color:#8c9aa7;opacity:.5;white-space:nowrap}
+#zones p.l{right:calc(50% + 372px);text-align:right}#zones p.r{left:calc(50% + 372px)}
+#zones p i{font-style:normal;color:var(--amb);opacity:.8}
+@media(min-width:1180px){#zones{display:block}}
 .bgfx b{position:absolute;inset:0;background-image:linear-gradient(#ffffff07 1px,transparent 1px),linear-gradient(90deg,#ffffff07 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(ellipse at 50% 15%,#000 20%,transparent 70%)}
 body.final .bgfx i:nth-child(1){background:var(--dn);opacity:.14}
 @keyframes drift{to{transform:translate(12vmax,9vmax) scale(1.15)}}
@@ -150,7 +159,7 @@ footer{max-width:720px;margin:0 auto;padding:14px 16px 34px;text-align:center;co
 @media(max-width:420px){.beat{font-size:14px}header{grid-template-columns:84px 1fr 84px}header h1{font-size:15px;letter-spacing:.14em}.ic{width:34px;height:34px}.name{font-size:26px}.big{font-size:46px}.grid i{width:26px;height:26px}.btns button{padding:18px 0}.tring{width:66px;height:66px}#utc{display:none}.card{padding:22px 16px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
-<div class="bgfx" aria-hidden="true"><b></b></div>
+<div class="bgfx" aria-hidden="true"><b></b></div><canvas id="bgc" aria-hidden="true"></canvas><div id="zones" aria-hidden="true"></div>
 <header><div class="hl"><button class="ic" id="help-btn" aria-label="How to play">?</button></div><h1 id="home" title="Today's stock">MEME <b>STREET</b></h1>
 <div class="hr"><button class="ic" id="stats-btn" aria-label="Your stats"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 16V9M7 16V4M12 16V7M17 16V1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" transform="translate(-.5 0)"/></svg></button><button class="ic" id="acct-btn" aria-label="Your account"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6" r="3.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 16.5c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div><div id="sbar" aria-hidden="true"><span class="sl"><i></i>Today</span><div class="tape" id="tape"></div><span id="utc"></span></div></header>
 <main id="main"></main>
@@ -330,7 +339,7 @@ function pitch(){   // (after everything else on the result, not in the middle o
 const installBtn=()=>installEv?`<button class="alt" id="install">Add to home screen</button>`:'';
 
 function draw(){
- const m=$('main');if(!D||P)return;
+ const m=$('main');document.body.classList.toggle('trading',!!(P||(D&&D.status==='running'&&G&&!G.done)));setTimeout(zones,50);if(!D||P)return;
  const st=D.stats,status=D.status==='running'&&G&&G.done?'done':D.status;
  if(status==='new'){if(drawn==='new')return;drawn='new';const v=vsFor(D);
   m.innerHTML=`<div class="view"><div style="text-align:center" class="st"><span class="chip">Daily #${D.number}, ${esc(dayDate(D.day))}</span></div>
@@ -380,7 +389,7 @@ async function replay(n){
  const r=await api('/api/daily/past/'+n);if(r.error){toast(r.error);return}
  closePop();stop();event('archive_play');await overlay(['3','2','1'],380);
  P={number:r.number,candles:r.candles,history:r.history,live:r.live,real:r.real,levels:r.levels||[],start:r.cash,cash:r.cash,shares:0,trades:[],t0:Date.now(),done:false};lastN=0;shownRet=0;
- $('main').innerHTML=`<div class="view">${runShell(`Archive #${r.number} · practice`)}</div>`;window.scrollTo(0,0);
+ document.body.classList.add('trading');$('main').innerHTML=`<div class="view">${runShell(`Archive #${r.number} · practice`)}</div>`;window.scrollTo(0,0);
  tick=setInterval(()=>{if(!P)return;if(pel()>=P.live)pfinish();else pfill()},200);pfill()}
 const pel=()=>(Date.now()-P.t0)/1000,pshown=()=>P.done?P.candles.length:P.history+Math.max(0,Math.min(P.live,Math.floor(pel())));
 function pfill(){const n=pshown();fillRun(P.candles.slice(0,n),P.history+P.live,P.history,P.trades,P.cash,P.shares,P.candles[n-1][3],P.live-pel(),P.start,P.live)}
@@ -494,6 +503,40 @@ function sbar(){
  const base=[`<span>Daily #${D.number}: <b>${players()}</b> played</span>`].concat(D.board.length?D.board.slice(0,12).map(x=>`<span>${esc(x.name)} <b class="${cls(x.ret)}">${pc(x.ret)}</b></span>`):['<span>No results yet. Be the first.</span>']);
  let items=base;while(items.length<8)items=items.concat(base);const html=items.join('');
  if(e._h!==html){e._h=html;e.innerHTML=`<div style="animation-duration:${items.length*3.5}s">${html}${html}</div>`}}
+// ---- the market behind the page: a candle feed that prints a new candle every couple of seconds and scrolls left, a
+// moving average through it and the last price blinking at its edge. It is scenery, with no prices on it; it dims while
+// you trade, stops while the tab is hidden, and stands still for anyone who asks for less motion
+const BG={c:[],off:0,t:0,seed:0};
+function bgRand(){BG.seed=(BG.seed*1664525+1013904223)>>>0;return BG.seed/4294967296}
+function bgCandle(){const p=BG.c.length?BG.c[BG.c.length-1][3]:100;
+ if(!BG.trend||bgRand()<.06)BG.trend=(bgRand()-.5)*.9;   // (a new leg now and then, so it trends and ranges like a market)
+ const o=p,cl=Math.max(20,o+BG.trend+(bgRand()-.5)*3.2),h=Math.max(o,cl)+bgRand()*1.6,l=Math.min(o,cl)-bgRand()*1.6;BG.c.push([o,h,l,cl])}
+function bgDraw(){
+ const cv=$('bgc');if(!cv)return;const dpr=Math.min(2,devicePixelRatio||1),w=innerWidth,h=innerHeight;
+ if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+ const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);
+ const step=PHONE?9:12,n=Math.ceil(w/step)+3;while(BG.c.length<n)bgCandle();
+ const cs=BG.c.slice(-n),lo=Math.min(...cs.map(c=>c[2])),hi=Math.max(...cs.map(c=>c[1])),top=h*.5,bot=h*.94,Y=v=>bot-(v-lo)/(hi-lo||1)*(bot-top);
+ const X=i=>w-(n-1-i)*step-BG.off-step;
+ cs.forEach((c,i)=>{const up=c[3]>=c[0],xx=X(i);x.globalAlpha=.13;x.fillStyle=x.strokeStyle=up?'#3fcf8e':'#f2555a';
+  x.beginPath();x.moveTo(xx+step*.35,Y(c[1]));x.lineTo(xx+step*.35,Y(c[2]));x.lineWidth=1;x.stroke();
+  x.fillRect(xx,Y(Math.max(c[0],c[3])),step*.7,Math.max(1,Math.abs(Y(c[0])-Y(c[3]))))});
+ x.globalAlpha=.22;x.strokeStyle='#4cc3cc';x.lineWidth=1.5;x.beginPath();
+ cs.forEach((c,i)=>{if(i<9)return;const a=cs.slice(i-9,i+1).reduce((s,k)=>s+k[3],0)/10;i===9?x.moveTo(X(i)+step*.35,Y(a)):x.lineTo(X(i)+step*.35,Y(a))});x.stroke();
+ const ly=Y(cs[cs.length-1][3]);x.globalAlpha=.16+.08*Math.sin(BG.t/400);x.strokeStyle='#f5a524';x.setLineDash([3,5]);x.beginPath();x.moveTo(0,ly);x.lineTo(w,ly);x.stroke();x.setLineDash([]);
+ const fade=x.createLinearGradient(0,top-40,0,top+h*.2);fade.addColorStop(0,'#0b1117');fade.addColorStop(1,'#0b111700');x.globalAlpha=1;x.fillStyle=fade;x.fillRect(0,top-41,w,h*.2+42)}
+function bgLoop(t){
+ if(!document.hidden){const dt=Math.min(100,t-(BG.t||t));BG.t=t;BG.off+=dt*(PHONE?.006:.008);
+  const step=PHONE?9:12;while(BG.off>=step){BG.off-=step;bgCandle();if(BG.c.length>400)BG.c.splice(0,200)}
+  const last=BG.c[BG.c.length-1];if(last){const d=(bgRand()-.5)*.5;last[3]=Math.max(20,last[3]+d);last[1]=Math.max(last[1],last[3]);last[2]=Math.min(last[2],last[3])}   // (the newest candle is still forming)
+  bgDraw()}else BG.t=0;
+ requestAnimationFrame(bgLoop)}
+function bgStart(){BG.seed=(Math.floor(Date.now()/864e5)*2654435761)>>>0;for(let i=0;i<260;i++)bgCandle();bgDraw();if(!CALM)requestAnimationFrame(bgLoop);addEventListener('resize',bgDraw)}
+// the notes in the margins, like the depths down Krillion's page: one every so often, as far down as the page goes
+const ZONES=['── the opening bell','volume picks up here ──','── resistance, probably','everyone piles in here ──','── the top (nobody rings a bell)','stop losses live here ──','── the dip they said to buy','support held here last time ──','── margin call territory','diamond hands only below ──','── the bagholders\' basement','the bottom (probably) ──'];
+function zones(){const z=$('zones');if(!z||innerWidth<1180)return;const hgt=document.body.scrollHeight,gap=430;let h='';
+ for(let k=0,y=300;y<hgt-260&&k<ZONES.length;k++,y+=gap){const t=ZONES[k],l=t.startsWith('──');h+=`<p class="${l?'r':'l'}" style="top:${y}px">${esc(t).replace('──','<i>──</i>')}</p>`}
+ if(z._h!==h){z._h=h;z.innerHTML=h;z.style.height=hgt+'px'}}
 let toastT=null;function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),ms||1600)}
 
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e});
@@ -527,5 +570,5 @@ document.addEventListener('keydown',e=>{
  else if(k.length===1&&'1234'.includes(k)){size=SIZES[Number(k)-1];lsSet('ms_daily_size',size);if(P)pfill();else draw()}});
 setInterval(()=>{const u=$('utc');if(u)u.textContent=new Date().toISOString().slice(11,19)+' UTC';if(!D)return;const left=D.next-Date.now()/1000;document.querySelectorAll('.cd').forEach(e=>e.textContent=hms(left));const tr=document.querySelector('.tmr #tring');if(tr)tr.innerHTML=ringSvg(1-left/86400,'#f5a524',64);if(left<=0&&!P&&!(G&&!G.done)){D=null;load()}},1000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&D&&!P&&D.status!=='running')load()});
-load();
+bgStart();load();
 </script></body></html>
