@@ -13,7 +13,7 @@
 <meta name="theme-color" content="#07090c">
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="192x192" href="/brand/icon-192.png"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png"><link rel="manifest" href="/manifest.json">
 <style>
-:root{--bg:#05070a;--card:#0a0e13;--card2:#0d1218;--line:#1a222b;--line2:#2a3541;--txt:#e6edf3;--mut:#7f8d9a;--acc:#4cc3cc;--acc2:#f5a524;--amb:#f5a524;--up:#3fcf8e;--dn:#f2555a;--flat:#2a333d;--ice:#8fd3ff;--mono:"JBM",ui-monospace,"SF Mono",Menlo,Consolas,monospace;--ease:cubic-bezier(.2,.8,.2,1)}
+:root{--bg:#0b1117;--card:#111a22;--card2:#15202a;--line:#1e2a35;--line2:#2c3a47;--txt:#e6edf3;--mut:#8c9aa7;--acc:#4cc3cc;--acc2:#f5a524;--amb:#f5a524;--up:#3fcf8e;--dn:#f2555a;--flat:#2a333d;--ice:#8fd3ff;--mono:"JBM",ui-monospace,"SF Mono",Menlo,Consolas,monospace;--ease:cubic-bezier(.2,.8,.2,1)}
 @font-face{font-family:"JBM";src:url(/brand/jetbrains-mono.woff2) format("woff2");font-weight:100 800;font-display:swap}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--txt);font:14.5px/1.6 var(--mono);font-variant-numeric:tabular-nums;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
@@ -34,45 +34,44 @@ button:hover{border-color:#3d4a57}button:active{transform:scale(.96)}button:focu
 input{width:100%;background:#070a0e;border:1px solid var(--line2);border-radius:6px;padding:12px;margin:0 0 12px;transition:border-color .2s}input:focus{border-color:var(--acc)}
 .up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut)}
 /* the header: the name, the buttons, and under them the status bar (today's board as a ticker tape, the UTC clock) */
-header{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:96px 1fr 96px;align-items:center;padding:10px max(16px,calc(50% - 344px)) 0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:#05070ad9;border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:96px 1fr 96px;align-items:center;padding:10px max(16px,calc(50% - 344px)) 0;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:#0b1117e6;border-bottom:1px solid var(--line)}
 header h1{margin:0;text-align:center;font:800 18px/1 var(--mono);letter-spacing:.26em;white-space:nowrap;cursor:pointer;color:var(--txt)}header h1 b{color:var(--acc);font-weight:800}
 @keyframes shine{from{background-position:100% 0}to{background-position:-200% 0}}
 .hl,.hr{display:flex;gap:6px}.hr{justify-content:flex-end}
 .ic{width:38px;height:38px;padding:0;border-radius:6px;font-weight:800;display:grid;place-items:center;background:#ffffff06}
-#sbar{grid-column:1/-1;display:flex;align-items:center;gap:14px;margin-top:10px;padding:7px 0;border-top:1px solid var(--line);font:600 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mut);white-space:nowrap;overflow:hidden}
+#sbar{grid-column:1/-1;display:flex;align-items:center;gap:14px;margin-top:10px;padding:8px 0;border-top:1px solid var(--line);font:500 12px/1 var(--mono);color:var(--mut);white-space:nowrap;overflow:hidden}
 #sbar .sl{color:var(--amb)}#sbar .sl i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--up);margin-right:7px;vertical-align:1px;animation:blink 2s ease-in-out infinite}@keyframes blink{50%{opacity:.25}}
 .tape{flex:1;min-width:0;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent)}
 .tape>div{display:inline-flex;animation:tape 40s linear infinite}.tape span{padding-right:30px}.tape b{font-weight:700}
 @keyframes tape{to{transform:translateX(-50%)}}
 #utc{color:var(--txt);font-variant-numeric:tabular-nums}
 main{max-width:720px;margin:0 auto;padding:30px 16px 40px}
-.view{animation:enter .45s var(--ease) both}@keyframes enter{from{opacity:0;transform:translateY(14px)}}
-.st{animation:enter .55s var(--ease) both}.st:nth-child(2){animation-delay:.06s}.st:nth-child(3){animation-delay:.12s}.st:nth-child(4){animation-delay:.18s}.st:nth-child(5){animation-delay:.24s}.st:nth-child(6){animation-delay:.3s}.st:nth-child(7){animation-delay:.36s}
-.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:4px;background:#ffb02010;border:1px solid #ffb0203d;color:var(--amb);font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.view{animation:fadein .3s var(--ease) both}@keyframes enter{from{opacity:0;transform:translateY(14px)}}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:4px;background:#ffb02010;border:1px solid #ffb0203d;color:var(--amb);font:600 12px/1 var(--mono);}
 .hero{text-align:center;padding:26px 0 8px}
 .tag{font-size:clamp(27px,6.8vw,42px);font-weight:800;line-height:1.12;margin:0 0 22px;letter-spacing:-.035em;text-wrap:balance}
 .tag span{display:block;animation:enter .6s var(--ease) both}.tag span:nth-child(2){animation-delay:.12s}.tag span:nth-child(3){animation-delay:.24s;color:var(--acc)}
 .hero p{color:var(--mut);margin:0 auto 30px;max-width:500px;font-size:16px}
 .quote{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:0 auto 36px;max-width:560px;text-align:left}
 .quote div{background:var(--card);padding:13px 14px}
-.quote small{display:block;font:600 10px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:9px}
+.quote small{display:block;font:500 12px/1 var(--mono);color:var(--mut);margin-bottom:9px}
 .quote b{font:700 16px/1 var(--mono);font-variant-numeric:tabular-nums}
-.spark{height:110px;margin:48px -16px 8px;opacity:.85}
+.yday{margin:44px auto 0;max-width:500px;padding:14px 18px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--mut);text-align:left;font-size:14px}.yday b{color:var(--txt)}
 .streak{display:inline-flex;align-items:center;gap:8px;margin:0 0 22px;padding:7px 14px;border-radius:6px;background:#ffb02012;border:1px solid #ffb02050;color:#ffd27a;font-weight:800}
 .flame{display:inline-block;color:#ffb347;animation:flick 1.4s ease-in-out infinite;transform-origin:50% 90%}@keyframes flick{50%{transform:scale(1.15) rotate(-4deg)}}
 .chal{margin:0 auto 22px;max-width:500px;padding:12px 14px;border-radius:8px;background:#4cc3cc12;border:1px solid #4cc3cc50}
-.go{position:relative;background:linear-gradient(135deg,var(--acc),#62d6c0);border:0;color:#021012;font:800 17px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:18px 48px;border-radius:8px;box-shadow:0 8px 30px #4cc3cc33}
+.go{position:relative;background:linear-gradient(135deg,var(--acc),#62d6c0);border:0;color:#021012;font:800 17px/1 var(--mono);padding:18px 48px;border-radius:8px;box-shadow:0 8px 30px #4cc3cc33}
 .go:hover{box-shadow:0 10px 40px #4cc3cc5c}
 .go.pulse::after{content:"";position:absolute;inset:-4px;border-radius:10px;border:2px solid var(--acc);animation:ring 1.8s var(--ease) infinite}@keyframes ring{from{opacity:.8;transform:scale(1)}to{opacity:0;transform:scale(1.15)}}
-.alt{background:#ffffff05;border-color:#4cc3cc55;color:var(--acc);font:700 13px/1.2 var(--mono);letter-spacing:.05em;text-transform:uppercase;border-radius:6px;padding:12px 18px}
+.alt{background:#ffffff05;border-color:#4cc3cc55;color:var(--acc);font:700 13px/1.2 var(--mono);border-radius:6px;padding:12px 18px}
 /* the run */
 .top{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;gap:14px}
 .tring{position:relative;width:76px;height:76px;flex:none}.tring svg{transform:rotate(-90deg)}
 .tring .t{position:absolute;inset:0;display:grid;place-items:center;font:900 20px/1 var(--mono);font-variant-numeric:tabular-nums}
 .tring.low .t{color:var(--dn)}.tring.low{animation:beat 1s ease-in-out infinite}@keyframes beat{50%{transform:scale(1.06)}}
-.label{color:var(--amb);font:600 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px}
+.label{color:var(--amb);font:600 13px/1.3 var(--mono);margin-bottom:4px}
 .pnl{text-align:right}.pnl .ret{font:900 30px/1 var(--mono);transition:color .3s}.pnl .eq{color:var(--mut);font:13px var(--mono);margin-top:4px}
-.chart{position:relative;background:#080b0f;border:1px solid var(--line);border-radius:8px;padding:6px;overflow:hidden}
+.chart{position:relative;background:#0d151c;border:1px solid var(--line);border-radius:8px;padding:6px;overflow:hidden}
 .chart .nc{transform-box:fill-box;transform-origin:50% 100%;animation:grow .4s var(--ease)}@keyframes grow{from{transform:scaleY(0);opacity:0}}
 .chart .pop{transform-box:fill-box;transform-origin:center;animation:popin .45s var(--ease)}@keyframes popin{from{transform:scale(0)}60%{transform:scale(1.4)}}
 .chart .lv{animation:fadein 1s var(--ease) both}@keyframes fadein{from{opacity:0}}
@@ -80,18 +79,18 @@ main{max-width:720px;margin:0 auto;padding:30px 16px 40px}
 .sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 10px}
 .sizes button{padding:11px 0;font:700 14px/1 var(--mono);background:#ffffff05}.sizes button.on{border-color:var(--acc);color:var(--acc);background:#4cc3cc14;box-shadow:inset 0 0 0 1px var(--acc)}
 .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btns button{position:relative;overflow:hidden;padding:20px 0;font:900 20px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;border-radius:8px;display:flex;justify-content:center;align-items:baseline;gap:8px}
+.btns button{position:relative;overflow:hidden;padding:20px 0;font:900 20px/1 var(--mono);border-radius:8px;display:flex;justify-content:center;align-items:baseline;gap:8px}
 .btns small{font-size:11px;opacity:.55;font-weight:700}
 .buy{background:linear-gradient(180deg,#3fcf8e26,#3fcf8e10);border-color:#3fcf8e70;color:var(--up)}.sell{background:linear-gradient(180deg,#f2555a26,#f2555a10);border-color:#f2555a70;color:var(--dn)}
 .btns button .rip{position:absolute;border-radius:50%;background:currentColor;opacity:.3;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}@keyframes rip{to{transform:scale(4);opacity:0}}
 /* the overlays: the countdown before Play, "time's up" at the end */
-#ov{position:fixed;inset:0;z-index:8;display:none;place-items:center;pointer-events:none;background:#05070a99}
+#ov{position:fixed;inset:0;z-index:8;display:none;place-items:center;pointer-events:none;background:#0b111799}
 #ov b{font:800 clamp(90px,30vw,180px)/1 var(--mono);color:var(--acc);animation:zoom .8s var(--ease) both}
 #ov b.word{font-size:clamp(44px,13vw,80px)}
 @keyframes zoom{from{transform:scale(2.2);opacity:0}25%{opacity:1}to{transform:scale(.9);opacity:0}}
 /* the result */
 .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:26px 22px;margin:0 0 20px;text-align:center}
-.kick{color:var(--mut);font:600 11px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.14em}
+.kick{color:var(--mut);font:500 13px/1.3 var(--mono);}
 .flip{perspective:900px;margin:0 0 20px}.flip>div{position:relative;transform-style:preserve-3d;transition:transform .9s var(--ease);min-height:150px}
 .flip.open>div{transform:rotateY(180deg)}
 .flip .f,.flip .b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:8px;padding:22px;display:flex;flex-direction:column;justify-content:center;text-align:center}
@@ -108,23 +107,24 @@ main{max-width:720px;margin:0 auto;padding:30px 16px 40px}
 .grid.anim i{animation:flipsq .5s var(--ease) both}@keyframes flipsq{from{transform:rotateX(90deg)}}
 .best{color:var(--mut);font-size:14px;margin:14px 0 0}
 .stat{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:22px 0 0;text-align:center}
-.stat>div{background:#080b0f;padding:15px 4px 13px}
-.stat strong{display:block;font:700 clamp(15px,4.4vw,21px)/1.1 var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums;margin-bottom:7px}.stat small{color:var(--mut);font:600 9.5px/1.25 var(--mono);letter-spacing:.07em;text-transform:uppercase;display:block}
+.stat>div{background:#0d151c;padding:15px 4px 13px}
+.stat strong{display:block;font:700 clamp(15px,4.4vw,21px)/1.1 var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums;margin-bottom:7px}.stat small{color:var(--mut);font:500 11px/1.25 var(--mono);display:block}
 .row{display:flex;gap:12px;justify-content:center;margin:22px 0 0;flex-wrap:wrap}
 .next{color:var(--mut);margin:16px 0 0;font-size:14px}.next b{color:var(--txt);font-family:var(--mono);font-variant-numeric:tabular-nums}
+.back{display:flex;justify-content:space-between;gap:10px 18px;flex-wrap:wrap;margin:0 0 20px;padding:14px 18px;border-radius:8px;background:#4cc3cc12;border:1px solid #4cc3cc40;font-size:14px}.back .cd{font-variant-numeric:tabular-nums}
 .tmr{display:flex;align-items:center;gap:16px;text-align:left;background:linear-gradient(120deg,#f5a52414,#4cc3cc0c);border-color:#f5a52440}
 .tmr .ring{flex:none;width:64px;height:64px}.tmr h2{margin:0 0 4px;font-size:17px}.tmr p{margin:0;color:var(--mut);font-size:14px}.tmr .cd{font-family:var(--mono)}
 .mile{border-color:#ffb02060;background:linear-gradient(120deg,#ffb0201a,#ff6a2010)}.mile b{font-size:28px}
 .ice{color:var(--ice)}
 /* a section title, like a terminal panel's: small, amber, a rule running out to the right */
-h3{display:flex;align-items:center;gap:10px;font:700 11.5px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.14em;color:var(--amb);margin:36px 0 14px}
+h3{display:flex;align-items:center;gap:10px;font:700 14px/1.2 var(--mono);color:var(--amb);margin:36px 0 14px}
 h3::before{content:"";flex:none;width:6px;height:6px;background:var(--amb)}h3::after{content:"";flex:1;height:1px;background:var(--line)}
-h3 .mut{text-transform:none;letter-spacing:0;font-weight:400}
+h3 .mut{font-weight:400}
 .lvls{text-align:left;font-size:14px;padding:8px 20px}.lvls div{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.lvls div:last-of-type{border:0}
 .lvls i{flex:none;width:10px;height:10px;border-radius:50%}.lvls .px{font-family:var(--mono);font-variant-numeric:tabular-nums;margin-left:auto;color:var(--txt)}
 .lvls .key{margin:4px 0 8px;padding-top:12px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px;display:flex;gap:16px;flex-wrap:wrap}
 .curve svg{display:block;width:100%;height:auto;overflow:visible}
-.beat{font:600 12.5px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--acc);margin:6px 0 0;text-align:left}
+.beat{font:700 15px/1.4 var(--mono);color:var(--acc);margin:6px 0 0;text-align:left}
 .dsum{color:var(--mut);font:12px var(--mono);margin:14px 0 0;text-align:left}
 table{width:100%;border-collapse:collapse;font-size:14px}td{padding:11px 6px;border-bottom:1px solid var(--line)}td.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:0}tr.me td{background:#4cc3cc12}.rk{width:34px;color:var(--mut);font-weight:800}.rk.m0{color:#f5c84c}.rk.m1{color:#c9d3dc}.rk.m2{color:#d8955b}
@@ -138,7 +138,7 @@ tr:last-child td{border-bottom:0}tr.me td{background:#4cc3cc12}.rk{width:34px;co
 .x{position:absolute;top:14px;right:14px;width:36px;height:36px;padding:0;border:0;background:none;font-size:24px;color:var(--mut)}
 .tabs{display:flex;gap:6px;margin:0 0 16px}.tabs button{flex:1;padding:10px}.tabs button.on{border-color:var(--acc);color:var(--acc)}
 .err{color:var(--dn);font-size:13px;min-height:18px;margin:0 0 6px}.okmsg{color:var(--up);font-size:13px;margin:0 0 6px}
-.small{color:var(--mut);font-size:13px;margin:18px 0 0}.hero .small{margin:22px 0 0}#pop .stat{margin-top:4px}
+.small{color:var(--mut);font-size:13px;margin:18px 0 0}.hero .small{margin:22px auto 0}#pop .stat{margin-top:4px}
 .lnk{background:none;border:0;padding:0;color:var(--acc);text-decoration:underline;font-size:inherit}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .fld{font-size:12px;color:var(--mut);display:block;margin:0 0 5px}
@@ -147,12 +147,12 @@ footer{max-width:720px;margin:0 auto;padding:14px 16px 34px;text-align:center;co
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:7}
 @media(max-width:520px){.quote{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:420px){.beat{font-size:11px;letter-spacing:.1em}header{grid-template-columns:84px 1fr 84px}header h1{font-size:15px;letter-spacing:.14em}.ic{width:34px;height:34px}.name{font-size:26px}.big{font-size:46px}.grid i{width:26px;height:26px}.btns button{padding:18px 0}.tring{width:66px;height:66px}#utc{display:none}.card{padding:22px 16px}}
+@media(max-width:420px){.beat{font-size:14px}header{grid-template-columns:84px 1fr 84px}header h1{font-size:15px;letter-spacing:.14em}.ic{width:34px;height:34px}.name{font-size:26px}.big{font-size:46px}.grid i{width:26px;height:26px}.btns button{padding:18px 0}.tring{width:66px;height:66px}#utc{display:none}.card{padding:22px 16px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
-<div class="bgfx" aria-hidden="true"><i></i><i></i><b></b></div>
+<div class="bgfx" aria-hidden="true"><b></b></div>
 <header><div class="hl"><button class="ic" id="help-btn" aria-label="How to play">?</button></div><h1 id="home" title="Today's stock">MEME <b>STREET</b></h1>
-<div class="hr"><button class="ic" id="stats-btn" aria-label="Your stats"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 16V9M7 16V4M12 16V7M17 16V1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" transform="translate(-.5 0)"/></svg></button><button class="ic" id="acct-btn" aria-label="Your account"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6" r="3.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 16.5c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div><div id="sbar" aria-hidden="true"><span class="sl"><i></i>Daily</span><div class="tape" id="tape"></div><span id="utc"></span></div></header>
+<div class="hr"><button class="ic" id="stats-btn" aria-label="Your stats"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 16V9M7 16V4M12 16V7M17 16V1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" transform="translate(-.5 0)"/></svg></button><button class="ic" id="acct-btn" aria-label="Your account"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6" r="3.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2.5 16.5c.8-3.4 3.4-5 6.5-5s5.7 1.6 6.5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div><div id="sbar" aria-hidden="true"><span class="sl"><i></i>Today</span><div class="tape" id="tape"></div><span id="utc"></span></div></header>
 <main id="main"></main>
 <footer>Practice money only. Not advice, not real trades.<br><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="mailto:memestreet.game@gmail.com">Contact</a></footer>
 <div id="ov" aria-hidden="true"></div><canvas id="fx" aria-hidden="true"></canvas><div id="pop" role="dialog" aria-modal="true"></div><div id="toast" role="status"></div>
@@ -204,12 +204,6 @@ function countTo(el,to,fmt,ms){if(!el)return;if(CALM){el.textContent=fmt(to);ret
 function confetti(){if(CALM)return;const c=$('fx'),x=c.getContext('2d');c.width=innerWidth*devicePixelRatio;c.height=innerHeight*devicePixelRatio;x.scale(devicePixelRatio,devicePixelRatio);
  const cols=['#4cc3cc','#3ad07a','#ffb020','#f5a524','#ffffff'],ps=Array.from({length:140},()=>({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.35,vx:(Math.random()-.5)*13,vy:-Math.random()*13-4,s:4+Math.random()*6,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[Math.floor(Math.random()*cols.length)]}));
  const t0=performance.now();const step=t=>{x.clearRect(0,0,innerWidth,innerHeight);for(const p of ps){p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()}if(t-t0<3200)requestAnimationFrame(step);else x.clearRect(0,0,innerWidth,innerHeight)};requestAnimationFrame(step)}
-let sparkT=null;
-function spark(){   // (the start screen's line: a random walk that never stops, so the page is never still)
- const el=$('spark');if(!el||CALM)return;const W=600,H=90;let pts=[],v=50;for(let i=0;i<80;i++){v+=(Math.random()-.48)*5;v=Math.max(10,Math.min(80,v));pts.push(v)}
- clearInterval(sparkT);sparkT=setInterval(()=>{if(!$('spark')){clearInterval(sparkT);return}v=pts[pts.length-1]+(Math.random()-.48)*5;pts.push(Math.max(10,Math.min(80,v)));pts.shift();
-  const d=pts.map((p,i)=>`${i?'L':'M'}${(i*W/79).toFixed(1)} ${(H-p).toFixed(1)}`).join('');
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none"><defs><linearGradient id="sg" x1="0" x2="1"><stop offset="0" stop-color="#4cc3cc" stop-opacity="0"/><stop offset=".5" stop-color="#4cc3cc"/><stop offset="1" stop-color="#f5a524"/></linearGradient><linearGradient id="sf" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#4cc3cc" stop-opacity=".25"/><stop offset="1" stop-color="#4cc3cc" stop-opacity="0"/></linearGradient></defs><path d="${d}L${W} ${H}L0 ${H}Z" fill="url(#sf)"/><path d="${d}" fill="none" stroke="url(#sg)" stroke-width="2.5"/><circle cx="${W}" cy="${(H-pts[79]).toFixed(1)}" r="4" fill="#f5a524"/></svg>`},140)}
 function ringSvg(frac,col,size){const r=size/2-5,c=2*Math.PI*r;return `<svg viewBox="0 0 ${size} ${size}" width="100%" height="100%"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#ffffff14" stroke-width="5"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c*(1-Math.max(0,Math.min(1,frac)))).toFixed(1)}" style="transition:stroke-dashoffset .25s linear"/></svg>`}
 
 async function load(){
@@ -218,11 +212,10 @@ async function load(){
  D=d;G=d.game?Object.assign({},d.game):null;drawn='';sbar();
  if(d.status==='running'&&G&&!G.done){wasRunning=true;run()}
  draw();
- if(!lsGet('ms_helped',false)&&d.status==='new'&&!d.stats.played){lsSet('ms_helped',true);help()}
-}
+ }
 async function start(){
  const b=$('play');if(b)b.disabled=true;
- await overlay(['3','2','1','GO'],520);
+ await overlay(['3','2','1'],380);
  const r=await api('/api/daily/start',{ref:myRef()});
  if(r.need_account){if(b)b.disabled=false;toast('Free plays from this network are used up today. Make a free account to keep going.',4500);account('register');return}
  if(r.error||r.slow){if(b)b.disabled=false;toast(r.error||'Busy: try again');load();return}
@@ -234,7 +227,7 @@ async function pull(){
  if(!r||r.error||r.slow)return;merge(r);
  if(r.done){stop();finale()}}
 function merge(r){G=Object.assign(G||{},r,{candles:(G&&G.candles||[]).slice(0,r.from).concat(r.candles)});if(!r.done)endAt=performance.now()+r.left*1000}
-async function finale(){document.body.classList.add('final');await overlay(["TIME'S UP"],900);document.body.classList.remove('final');load()}
+async function finale(){document.body.classList.add('final');await overlay(["Time's up"],750);document.body.classList.remove('final');load()}
 async function trade(side,btn){
  if(P){ptrade(side,btn);return}
  if(!G||G.done)return;ripple(btn);buzz(18);
@@ -251,7 +244,7 @@ function svg(cs,total,history,trades,k,levels,animate){
  const y=v=>top+(b-v)/(b-a)*ph,sw=(W-R)/total,bw=Math.max(1,sw*.7),vx=Math.max(...cs.map(c=>c[4]),1),lastY=y(cs[cs.length-1][3]),sx=(history-.5)*sw;
  const lab=v=>(rv?'$':'')+num(v*k,v*k<1?4:2);
  let h=`<defs><linearGradient id="ld" x1="0" x2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".02"/><stop offset="1" stop-color="#ffffff" stop-opacity=".07"/></linearGradient></defs><rect x="0" y="0" width="${sx.toFixed(1)}" height="${H}" fill="url(#ld)"/><line x1="${sx.toFixed(1)}" x2="${sx.toFixed(1)}" y1="0" y2="${H}" stroke="#ffffff26" stroke-dasharray="3 4"/>`;
- for(let q=0;q<4;q++){const v=a+(b-a)*(q+.5)/4;h+=`<line x1="0" x2="${W-R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#ffffff0c"/>`+(lv.length||Math.abs(y(v)-lastY)<16?'':`<text x="${W-R+6}" y="${(y(v)+4).toFixed(0)}" fill="var(--mut)" font-size="11">${lab(v)}</text>`)}
+ for(let q=0;q<4;q++){const v=a+(b-a)*(q+.5)/4;h+=`<line x1="0" x2="${W-R}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="#ffffff0c"/>`+(lv.length||Math.abs(y(v)-lastY)<16?'':`<text x="${W-R+6}" y="${(y(v)+4).toFixed(0)}" fill="var(--mut)" font-size="${FS}">${lab(v)}</text>`)}
  const tags=[];
  lv.forEach((l,n)=>{const yy=y(l.price),col=LVC[l.tests[l.tests.length-1][1]],xa=Math.max(0,(l.tests[0][0]-3)*sw),xb=Math.min(W-R,(l.tests[l.tests.length-1][0]+4)*sw);
   h+=`<g class="lv" style="animation-delay:${.3+n*.15}s"><line x1="${xb.toFixed(1)}" x2="${W-R}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}" stroke="${col}" stroke-dasharray="1 4" opacity=".5"/><line x1="${xa.toFixed(1)}" x2="${xb.toFixed(1)}" y1="${yy.toFixed(1)}" y2="${yy.toFixed(1)}" stroke="${col}" stroke-width="2" stroke-linecap="round" opacity=".75"/>`
@@ -285,7 +278,7 @@ function hist(dist,mine,who='players',pct=null){
  const s=[...dist].sort((a,b)=>a-b),mean=s.reduce((a,b)=>a+b,0)/n,sd=Math.sqrt(s.reduce((a,r)=>a+(r-mean)**2,0)/n);
  const bw=Math.max(.03,1.3*1.06*(sd||.03)*Math.pow(n,-.2));
  let lo=Math.min(s[0],mine??s[0])-2.5*bw,hi=Math.max(s[n-1],mine??s[n-1])+2.5*bw;lo=Math.max(lo,-1.02);   // (nobody can lose more than everything)
- const W=440,H=132,T=10,B=104,X=r=>(r-lo)/(hi-lo)*W,k=r=>s.reduce((a,v)=>a+Math.exp(-(((r-v)/bw)**2)/2),0);
+ const W=PHONE?330:440,H=132,T=10,B=104,X=r=>(r-lo)/(hi-lo)*W,k=r=>s.reduce((a,v)=>a+Math.exp(-(((r-v)/bw)**2)/2),0);
  const xs=Array.from({length:161},(_,i)=>lo+(hi-lo)*i/160),ys=xs.map(k),top=Math.max(...ys),Y=v=>B-v/top*(B-T);
  const d=xs.map((r,i)=>`${i?'L':'M'}${X(r).toFixed(1)} ${Y(ys[i]).toFixed(1)}`).join(''),area=`${d}L${W} ${B}L0 ${B}Z`,id='kc'+Math.random().toString(36).slice(2,7);
  const step=[.01,.02,.05,.1,.2,.25,.5,1].find(v=>(hi-lo)/v<=6)||1,mx=mine===null?null:X(mine);
@@ -302,12 +295,14 @@ function hist(dist,mine,who='players',pct=null){
  const below=mine===null?0:s.filter(r=>r<mine-1e-9).length,share=Math.round((pct===null?below/Math.max(1,n-1):pct)*100);
  const line=mine===null?'':n>1?(who==='players'?`Better than ${share}% of today's players`:`Today beat ${share}% of your games`):(who==='players'?'The first to finish today':'');
  return `<div class="curve"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Everyone's returns as a curve${line?'; '+line:''}">${h}</svg>${line?`<p class="beat">${line}</p>`:''}</div>
-  <p class="dsum">Average ${pc(mean)} · median ${pc(s[Math.floor(n/2)])} · best <span class="${cls(s[n-1])}">${pc(s[n-1])}</span> · ${n} played</p>`}
+  <p class="dsum">${n} played. Average ${pc(mean)}, median ${pc(s[Math.floor(n/2)])}, best <span class="${cls(s[n-1])}">${pc(s[n-1])}</span>.</p>`}
+function yesterday(){const p=D.past&&D.past[0],w=p&&p.top&&p.top[0];if(!w)return '';
+ return `<p class="yday">Yesterday <b>${esc(w.name)}</b> won with <b class="${cls(w.ret)}">${pc(w.ret)}</b>, out of ${p.players} players.</p>`}
 const players=()=>(D.people||0)+(D.house||0);   // (house traders count as players: the owner, 2026-11-19)
 const playersLine=()=>!players()?'Be the first today':`${players()} player${players()===1?'':'s'} today`;
 function board(){
  if(!D.board.length)return '';const me=D.me&&D.me.name;
- return `<h3 class="st">Today's best <span class="mut" style="font-weight:400">· ${esc(playersLine())}</span></h3><div class="card st" style="padding:4px 14px;text-align:left"><table><tbody>${D.board.slice(0,10).map((x,i)=>`<tr class="${x.name===me?'me':''}"><td class="rk${i<3?' m'+i:''}">${i+1}</td><td>${esc(x.name)}</td><td class="r mut">${x.trades} trade${x.trades===1?'':'s'}</td><td class="r ${cls(x.ret)}"><b>${pc(x.ret)}</b></td></tr>`).join('')}</tbody></table></div>`}
+ return `<h3 class="st">Today's best <span class="mut">${esc(playersLine())}</span></h3><div class="card st" style="padding:4px 14px;text-align:left"><table><tbody>${D.board.slice(0,10).map((x,i)=>`<tr class="${x.name===me?'me':''}"><td class="rk${i<3?' m'+i:''}">${i+1}</td><td>${esc(x.name)}</td><td class="r mut">${x.trades} trade${x.trades===1?'':'s'}</td><td class="r ${cls(x.ret)}"><b>${pc(x.ret)}</b></td></tr>`).join('')}</tbody></table></div>`}
 function reveal(rv,h){
  if(!rv)return '';
  return `<div class="flip st" id="flip"><div><div class="f"><div class="kick">The stock was</div><b>?</b></div><div class="b"><div class="kick">The stock was</div><div class="name">${esc(rv.name)}<span>${esc(rv.ticker)}</span></div>
@@ -324,46 +319,45 @@ function levelsList(lv,k){
 function squares(gr,anim){return `<div class="grid${anim?' anim':''}">${gr.map((v,i)=>`<i class="${v>0?'u':v<0?'d':'f'}" style="animation-delay:${1.2+i*.09}s"></i>`).join('')}</div>`}
 function bestLine(b,history){return b&&b.ret>0.0005?`<p class="best">Best possible trade: <b>${b.side==='long'?'buy':'short'}</b> at ${clock(b.from-(history-1))}, <b>${b.side==='long'?'sell':'cover'}</b> at ${clock(b.to-(history-1))}, for <b class="up">${pc(b.ret)}</b>.</p>`:''}
 function tomorrow(){const t=D.tomorrow&&D.tomorrow.tf,left=D.next-Date.now()/1000;
- return `<div class="card tmr st"><div class="ring" id="tring">${ringSvg(1-left/86400,'#f5a524',64)}</div><div><h2>Tomorrow${t?`: one candle = ${esc(TFW[t]||t)}`:'\'s stock'}</h2><p>New stock in <b class="cd" style="color:var(--txt)">${hms(left)}</b>. Don't break the streak.</p></div></div>`}
+ return `<div class="card tmr st"><div class="ring" id="tring">${ringSvg(1-left/86400,'#f5a524',64)}</div><div><h2>Tomorrow${t?`: one candle = ${esc(TFW[t]||t)}`:'\'s stock'}</h2><p>New stock in <b class="cd" style="color:var(--txt)">${hms(left)}</b>.${D.stats&&D.stats.streak?` Play it to make your streak ${D.stats.streak+1} days.`:''}</p></div></div>`}
+function back(st){const left=D.next-Date.now()/1000;
+ return `<div class="back"><div><b>You've played today:</b> <span class="${cls(G.ret)}">${pc(G.ret)}</span>${G.rank?`, ${place(G.rank)} of ${G.of}`:''}.</div><div>Next stock in <b class="cd">${hms(left)}</b></div></div>`}
 function milestone(st){const m=MILESTONES.includes(st.streak)&&lsGet('ms_mile',0)!==st.streak?st.streak:0;if(!m)return '';lsSet('ms_mile',m);
  return `<div class="card mile st"><b>${m} days in a row</b><p class="mut" style="margin:6px 0 0">${m>=30?'A month straight. Legend.':m>=7?'A full week. Most people never get here.':'Three in a row. That\'s how habits start.'}</p></div>`}
-function pitch(){
- return `<div class="card pitch st"><h2>Keep your streak everywhere</h2><p class="mut" style="margin:0 0 12px">Right now it only lives in this browser. A free account gets you:</p><ul>
-  <li><b>Your name on the board</b></li><li><b>Streak freezes</b>, so one missed day doesn't kill it</li>
-  <li><b>Your history</b>, every stock you've played</li><li><b>Replays</b> of past days</li>
-  <li>An email when the new stock drops (if you want one)</li></ul>
-  <div class="row" style="justify-content:flex-start;margin:0"><button class="go" data-acct="register" style="font-size:16px;padding:13px 28px">Create a free account</button><button class="alt" data-acct="login">Log in</button></div></div>`}
+function pitch(){   // (after everything else on the result, not in the middle of it: the result comes first)
+ return `<div class="card pitch st"><h2>Keep your streak on any device</h2><p class="mut" style="margin:0 0 18px">It's saved in this browser for now. A free account adds your name to the board, a streak freeze each week, and replays of past days.</p>
+  <div class="row" style="justify-content:flex-start;margin:0"><button class="go" data-acct="register" style="font-size:15px;padding:14px 26px">Create a free account</button><button class="alt" data-acct="login">Log in</button></div></div>`}
 const installBtn=()=>installEv?`<button class="alt" id="install">Add to home screen</button>`:'';
 
 function draw(){
  const m=$('main');if(!D||P)return;
  const st=D.stats,status=D.status==='running'&&G&&G.done?'done':D.status;
  if(status==='new'){if(drawn==='new')return;drawn='new';const v=vsFor(D);
-  m.innerHTML=`<div class="view"><div style="text-align:center" class="st"><span class="chip">#${D.number} · ${esc(dayDate(D.day))}</span></div>
+  m.innerHTML=`<div class="view"><div style="text-align:center" class="st"><span class="chip">Daily #${D.number}, ${esc(dayDate(D.day))}</span></div>
   <div class="hero"><h1 class="tag">${D.real?'<span>One real stock.</span><span>Two minutes.</span><span>Guess it. Beat it.</span>':'<span>One mystery chart.</span><span>Two minutes.</span><span>Beat everyone.</span>'}</h1>
   <div class="st">${streakChip(st)}</div>
   ${v?`<div class="chal st"><b>${vsName(v)}</b> got <b class="${cls(v.ret)}">${pc(v.ret)}</b> on today's stock. Beat it.</div>`:''}
   <p class="st">Same chart for everyone${D.real?', straight from real prices. You find out which stock it was at the end':''}. <b style="color:var(--txt)">${esc(playersLine())}</b>.</p>
   <div class="quote st"><div><small>Ticker</small><b>???</b></div><div><small>Clock</small><b>2:00</b></div><div><small>Cash</small><b>$${num(D.cash,0)}</b></div><div><small>Players</small><b>${players()}</b></div></div>
-  <div class="st"><button class="go pulse" id="play">▶ Play</button></div><p class="small st">One go a day · <button class="lnk" id="how">how to play</button></p></div>
-  <div class="spark st" id="spark"></div>${board()}</div>`;spark();return}
+  <div class="st"><button class="go pulse" id="play">▶ Play</button></div><p class="small st">One go a day. <button class="lnk" id="how">How to play</button></p></div>
+  ${yesterday()}${board()}</div>`;return}
  if(status==='running'&&G&&G.candles&&G.candles.length){
-  if(drawn!=='run'){drawn='run';m.innerHTML=`<div class="view">${runShell(`Meme Street #${D.number}`)}</div>`}
+  if(drawn!=='run'){drawn='run';m.innerHTML=`<div class="view">${runShell(`Daily #${D.number}`)}</div>`}
   fillRun(G.candles,G.history+G.live,G.history,G.trades,G.cash,G.shares,G.price,(endAt-performance.now())/1000,D.cash,G.live);return}
  if(status==='done'&&G&&G.done){
   if(drawn==='done')return;drawn='done';const fresh=lsGet('ms_daily_seen',null)!==D.day;lsSet('ms_daily_seen',D.day);
   const others=(G.of||1)-1,better=others>0&&G.rank?(G.of-G.rank)/others:null,v=vsFor(D),beat=G.ret>G.hold+1e-9&&G.trades.length;
-  const said=!G.trades.length?'you sat it out.':beat?'you beat it.':'it beat you.';
-  m.innerHTML=`<div class="view">${reveal(G.real,G.hold)}<div class="card st"><div class="kick">Meme Street #${D.number} · your return</div><div class="big ${cls(G.ret)}" id="bigret">${pc(fresh?0:G.ret)}</div>
-   <div class="place">${G.rank?`<b>${place(G.rank)}</b> of ${G.of}${D.visitor?' (unranked)':''}`:''}${better===null?'':better>0?` · ahead of ${Math.round(better*100)}% of players`:''}</div>
+  const said=!G.trades.length?'you sat this one out.':beat?'you beat it.':'it did better this time.';
+  m.innerHTML=`<div class="view">${fresh?'':back(st)}${reveal(G.real,G.hold)}<div class="card st"><div class="kick">Your return on Daily #${D.number}</div><div class="big ${cls(G.ret)}" id="bigret">${pc(fresh?0:G.ret)}</div>
+   <div class="place">${G.rank?`<b>${place(G.rank)}</b> of ${G.of}${D.visitor?' (unranked)':''}`:''}</div>
    <div class="vs">The stock did <b class="${cls(G.hold)}">${pc(G.hold)}</b>: ${said}</div>
    ${v?`<div class="vs">${vsName(v)} got <b class="${cls(v.ret)}">${pc(v.ret)}</b>: ${G.ret>v.ret+1e-9?'you beat them.':G.ret<v.ret-1e-9?'they beat you this time.':'a tie.'}</div>`:''}
    ${squares(G.grid||[],fresh)}${bestLine(G.best,G.history)}${streakChip(st)}${statRow(st)}
    <div class="row"><button class="go" id="share">Share</button><button class="alt" id="pic">Story picture</button>${installBtn()}</div>
    ${D.visitor?'':`<div class="row" style="margin-top:10px"><button class="alt" id="remind">${D.remind?'Daily email is on: turn off':'Email me when the next stock is out'}</button></div>`}</div>
-   ${milestone(st)}${tomorrow()}${D.visitor?pitch():''}
+   ${milestone(st)}${tomorrow()}
    <div class="chart st">${svg(G.candles,G.history+G.live,G.history,G.trades,G.real&&G.real.k,G.levels)}</div>${levelsList(G.levels,G.real&&G.real.k)}
-   <h3 class="st">How everyone did</h3><div class="card st">${hist(G.dist||[],G.ret,'players',better)}</div>${board()}</div>`;
+   <h3 class="st">How everyone did</h3><div class="card st">${hist(G.dist||[],G.ret,'players',better)}</div>${board()}${D.visitor?pitch():''}</div>`;
   flipOpen();
   if(fresh){countTo($('bigret'),G.ret,pc,1400);if(beat||(better!==null&&better>=.9))setTimeout(confetti,900);if(D.visitor)event('signup_open')}}
 }
@@ -377,14 +371,14 @@ function fillRun(cs,total,history,trades,cash,shares,price,left,start,live){
  $('timer').textContent=clock(left);$('tring').classList.toggle('low',left<=10);$('tsvg').innerHTML=ringSvg(left/live,left<=10?'#f25c54':'#4cc3cc',76);
  shownRet+=(ret-shownRet)*.35;$('ret').innerHTML=`<span class="${cls(shownRet)}">${pc(Math.abs(ret-shownRet)<.0002?ret:shownRet)}</span>`;$('eq').textContent='$'+num(eq);
  const key=cs.length+':'+trades.length;if(key!==$('chart')._k){const grew=cs.length>lastN||trades.length!==$('chart')._t;$('chart').innerHTML=svg(cs,total,history,trades,0,null,grew&&!!$('chart')._k);$('chart')._k=key;$('chart')._t=trades.length;lastN=cs.length}
- $('pos').innerHTML=shares>0?`<b class="up">● Long</b> $${num(shares*price,0)}`:shares<0?`<b class="dn">● Short</b> $${num(-shares*price,0)}`:'<b>○ In cash</b> · pick a size, then trade';
+ $('pos').innerHTML=shares>0?`<b class="up">● Long</b> $${num(shares*price,0)}`:shares<0?`<b class="dn">● Short</b> $${num(-shares*price,0)}`:'Buy if you think it goes up. Short if you think it falls.';
  $('lb').textContent=shares<0?'Cover':'Buy';$('ls').textContent=shares>0?'Sell':'Short';
  document.querySelectorAll('[data-size]').forEach(b=>b.classList.toggle('on',Number(b.dataset.size)===size))}
 
 // ---- an archive replay: a past day's whole chart, played here with the same rules, unranked
 async function replay(n){
  const r=await api('/api/daily/past/'+n);if(r.error){toast(r.error);return}
- closePop();stop();event('archive_play');await overlay(['3','2','1','GO'],420);
+ closePop();stop();event('archive_play');await overlay(['3','2','1'],380);
  P={number:r.number,candles:r.candles,history:r.history,live:r.live,real:r.real,levels:r.levels||[],start:r.cash,cash:r.cash,shares:0,trades:[],t0:Date.now(),done:false};lastN=0;shownRet=0;
  $('main').innerHTML=`<div class="view">${runShell(`Archive #${r.number} · practice`)}</div>`;window.scrollTo(0,0);
  tick=setInterval(()=>{if(!P)return;if(pel()>=P.live)pfinish();else pfill()},200);pfill()}
@@ -398,8 +392,8 @@ function ptrade(side,btn){   // (game/daily.py daily_trade, line for line)
  else{const room=Math.max(0,P.cash+held*price-(-held)*price);if(room*pct<0.01){toast('You are already short as much as you can be');return}sh=room*pct/price;P.shares-=sh;P.cash+=sh*price;kind='short'}
  if(Math.abs(P.shares)*price<1e-9)P.shares=0;P.trades.push([n-1,kind,price,sh]);toast({buy:'Bought',sell:'Sold',short:'Shorted',cover:'Covered'}[kind]+' at '+num(price),1100);pfill()}
 async function pfinish(){
- clearInterval(tick);tick=null;P.done=true;await overlay(["TIME'S UP"],800);const cs=P.candles,last=cs[cs.length-1][3],eq=Math.max(0,P.cash+P.shares*last),ret=eq/P.start-1,h=last/cs[P.history-1][3]-1;
- $('main').innerHTML=`<div class="view">${reveal(P.real,h)}<div class="card st"><div class="kick">Archive #${P.number} · practice</div><div class="big ${cls(ret)}">${pc(ret)}</div>
+ clearInterval(tick);tick=null;P.done=true;await overlay(["Time's up"],750);const cs=P.candles,last=cs[cs.length-1][3],eq=Math.max(0,P.cash+P.shares*last),ret=eq/P.start-1,h=last/cs[P.history-1][3]-1;
+ $('main').innerHTML=`<div class="view">${reveal(P.real,h)}<div class="card st"><div class="kick">Archive #${P.number}, for practice</div><div class="big ${cls(ret)}">${pc(ret)}</div>
   <div class="vs">The stock did <b class="${cls(h)}">${pc(h)}</b>: ${!P.trades.length?'you sat it out.':ret>h+1e-9?'you beat it.':'it beat you.'}</div>
   <div class="row"><button class="go" id="back">Back to today</button><button class="alt" data-open="archive">Another day</button></div></div>
   <div class="chart st">${svg(cs,cs.length,P.history,P.trades,P.real&&P.real.k,P.levels)}</div>${levelsList(P.levels,P.real&&P.real.k)}</div>`;flipOpen();if(ret>h+1e-9&&P.trades.length)setTimeout(confetti,800)}
@@ -497,7 +491,7 @@ async function archivePop(){
  pop(`<h2>The archive</h2><p class="mut" style="margin:0 0 14px">Replay any past day. Just practice, not ranked.</p>${r.days.length?`<table><tbody>${r.days.map(x=>`<tr><td class="mut">#${x.number}</td><td>${esc(x.name)}<br><small class="mut">${esc(fmtDate(x.start))}</small></td><td class="r">${x.mine===null||x.mine===undefined?'':`<span class="${cls(x.mine)}">${pc(x.mine)}</span>`}</td><td class="r"><button class="alt" data-replay="${x.number}" style="padding:6px 14px">Play</button></td></tr>`).join('')}</tbody></table>`:'<p class="mut">Past days show up here from tomorrow.</p>'}`,'The archive')}
 function sbar(){
  const e=$('tape');if(!e||!D)return;
- const base=[`<span>#${D.number} · <b>${players()}</b> playing</span>`].concat(D.board.length?D.board.slice(0,12).map(x=>`<span>${esc(x.name)} <b class="${cls(x.ret)}">${pc(x.ret)}</b></span>`):['<span>No results yet · be the first</span>']);
+ const base=[`<span>Daily #${D.number}: <b>${players()}</b> played</span>`].concat(D.board.length?D.board.slice(0,12).map(x=>`<span>${esc(x.name)} <b class="${cls(x.ret)}">${pc(x.ret)}</b></span>`):['<span>No results yet. Be the first.</span>']);
  let items=base;while(items.length<8)items=items.concat(base);const html=items.join('');
  if(e._h!==html){e._h=html;e.innerHTML=`<div style="animation-duration:${items.length*3.5}s">${html}${html}</div>`}}
 let toastT=null;function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),ms||1600)}
