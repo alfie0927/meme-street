@@ -20,14 +20,13 @@ from social import clean_chat
 # be. the rest of memestreet is being retired"). The rest of the code stays, unserved: MS_FULL_SITE=1 serves it again
 # (the test suite does, for the retired parts it still checks).
 DAILY_ONLY = os.environ.get("MS_FULL_SITE") != "1"
-GAME_TITLE = "Meme Street: the daily stock chart game"
+GAME_TITLE = "MemeStreet: The Daily Trading Game"   # (the owner's words, 2026-11-19)
 GAME_TEXT = ("One real stock chart a day, the same for everyone. Two minutes to buy, sell or short as it prints, then its "
              "name is revealed. No account needed: keep a streak, share your result, beat your friends. Like Wordle, for stocks.")
 # What the page shows before its script runs (a crawler, a slow phone): the same words the game opens with.
-GAME_SHOWN = ('<main id="main"><div class="hero"><h1 class="tag">One real stock.<br>Two minutes to trade it.<br>Its name at the end.</h1>'
-              '<p>Every day there is one new chart from a real US stock, the same for everyone. The candles print one '
-              'a second for two minutes: buy, sell or short as they come, then see the stock\'s name, your place and '
-              'how everyone else did. No account needed. A new stock at midnight UTC.</p>'
+GAME_SHOWN = ('<main id="main"><div class="hero"><h1 class="tag">One real stock.<br>Two minutes.<br>Guess it. Beat it.</h1>'
+              '<p>A new chart from a real US stock every day, the same for everyone. Candles print one a second for two '
+              'minutes. Buy, sell or short, then find out the stock, your rank and how everyone did. No account needed.</p>'
               '<noscript><p>Turn on JavaScript to play.</p></noscript></div></main>')
 KEEP = {"/", "/daily", "/embed/daily", "/play", "/yt", "/admin", "/privacy", "/terms", "/robots.txt", "/sitemap.xml",
         "/manifest.json", "/favicon.ico", "/llms.txt", "/ws", "/gateway/health"}   # (what memestreet.net still serves)
