@@ -11,7 +11,7 @@ cd "$(dirname "$0")"; set -a; . ./config.env; set +a
 export PATH="$HOME/.local/bin:$PATH"                 # (Claude Code, the script writer on the plan)
 mkdir -p logs queue queue-originals
 [ -f queue/.daily-pending ] && { echo "the Daily is due: this run waits for the next timer"; exit 0; }   # (make_reel.sh, the owner 2026-11-10)
-: # retired 2026-11-18 (the reels are the Daily's now; the serial's parts point to retired lessons): python3 src/story_reel.py next >> logs/story.log 2>&1 || true   # (the day's part of the story serial, once a day from 10:00 UTC: the owner, 2026-11-14,
+python3 src/story_reel.py next >> logs/story.log 2>&1 || true   # (back 2026-11-19, the owner: "keep making part 5-8 of the roblox story"; its link is the Daily now)   # (the day's part of the story serial, once a day from 10:00 UTC: the owner, 2026-11-14,
                                                                  #  "post them one a day". It takes the pipeline lock itself, so it runs before ours; it does nothing unless a part is due)
 exec 8>queue/.auto.lock; flock 8                   # (one reel at a time: the critic has no round limit, so the next run waits)
 [ -n "$(find state/format_scores.json -mmin -720 2>/dev/null)" ] || python3 src/format_scores.py >> logs/formats.log 2>&1 || true   # (twice a day: Instagram's numbers per format; make_spec.py drops the worst and repeats the best; its failure never stops a reel)

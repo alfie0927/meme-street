@@ -81,8 +81,9 @@ WHAT = ("A STORY REEL IN PARTS (the owner, 2026-11-14), made like the viral bloc
         "sentence, never contradict it), and facts.story.cast gives every returning character's colours and numbers: draw them exactly "
         "so, in the same town, palette and chest labels in every part (the device is the series' own: the same on purpose). "
         "facts.story.lesson is the one trading idea this part teaches: the story says it once, in plain words. The link to Meme "
-        "Street is one line, where the story places it (only what facts.meme_street says: made-up companies, news that moves prices, "
-        "100,000 memebucks of practice money with no cash value, the lessons and the Daily Chart); 'better' means a plan and practice, "
+        "Street is one line, where the story places it (only what facts.meme_street says: since 2026-11-18 Meme Street is a free daily "
+        "game, one real stock chart a day, two minutes to trade it with practice money, the stock named at the end; no memebucks, "
+        "no lessons any more); 'better' means a plan and practice, "
         "never a promise of money or of beating the market. Then facts.story.cliffhanger, as the last story line before the sign-off: "
         "a MAJOR cliffhanger, something shocking happens on screen (a number crashes, the door bursts open, the sky turns red: \"sky\": \"red\" with \"sky_say\") and "
         "the line breaks off unresolved. The sign-off scene names the next part: 'Part 3 drops soon. Join free at memestreet.net.' "
@@ -95,7 +96,7 @@ WHAT = ("A STORY REEL IN PARTS (the owner, 2026-11-14), made like the viral bloc
         "125 characters); 'Part N' (add 'of M' only if facts.story.of is given); the story in two or three short lines that give "
         "away nothing of the ending; a line on Meme Street with 'practice money with no cash value'; 'Follow for part N+1.' unless "
         "it is the final part; 'Practise at memestreet.net'; "
-        "'Fictional market. Not investment advice.' (word for word: the checker wants it); 3 to 5 hashtags. The voice tells it like "
+        "'Practice money only. Not investment advice.' (word for word); 3 to 5 hashtags. The voice tells it like "
         "the exemplar's narrator, in flowing sentences of 10 to 20 words joined with and, so, but, because (the checker refuses "
         "an average under 10), while the pictures still cut every 2 seconds.") % {k: ", ".join(v) for k, v in W.VOC.items()}
 M.CATEGORIES.setdefault(CATEGORY, WHAT)
@@ -112,7 +113,7 @@ def brief(st, slot):
     hist = json.load(open(M.HISTORY)) if os.path.exists(M.HISTORY) else {}
     notes = os.path.join(ROOT, "exemplar", "NOTES.md")
     # (recent_devices stays empty: a serial keeps its own device, and the checker refuses one that is close to a recent reel's)
-    facts = {"story": st, "meme_street": M.SITE_FACTS, "recent_devices": [], "video": {"available": False}, "hook_shots_used_lately": [],
+    facts = {"story": st, "meme_street": M.GAME_FACTS, "recent_devices": [], "video": {"available": False}, "hook_shots_used_lately": [],
              "example": W.example()}                       # (part 1 as it was filmed: every later part is shot the same way)
     ask = {"category": CATEGORY, "what_this_reel_is": WHAT, "facts": facts, "recent_titles_to_avoid": hist.get("titles", [])[-20:],
            "exemplar_notes": open(notes, encoding="utf-8").read() if os.path.exists(notes) else ""}

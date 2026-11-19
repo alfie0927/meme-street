@@ -90,6 +90,8 @@ def shot(desc, seconds, out_dir):
     out = os.path.join(out_dir, key + ".mp4")
     if os.path.exists(out):
         return out
+    if os.path.exists(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "state", "video_off")):   # (the owner, 2026-11-19: "stop doing the higgsfield stuff")
+        print("footage: state/video_off is there, no video"); return None
     if os.environ.get("HF_VIDEO", "1") != "1":   # (on by default since 2026-11-19, the owner: "everything should be in higgsfield"; state/video_off or HF_VIDEO=0 turns it off)
         print("footage: video is off (HF_VIDEO=1 turns it on), no video"); return None
     if not cred():

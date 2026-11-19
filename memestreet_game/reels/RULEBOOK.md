@@ -277,3 +277,14 @@ without review. A complaint puts it back to watched. Status: every format watche
   story/hook pipeline from your study of thousands of reels is enough to know how to write a proper story with an engaging
   hook". The critic blocks only visual and audio faults; story, hook, content and style are the writer's (the niche study's
   formula) and only notes. After one fix round the reel posts.
+- 2026-11-19 late, the owner: "stop doing the higgsfield stuff ... i like the stick man stuff, but i want you to make them reels
+  more like stories". No Higgsfield shots (state/video_off is on; the line above about Higgsfield is retired). Every reel is a
+  short STORY told with the stick figures: one character the viewer can name (who they are in a few words), what they want,
+  the chart as what stands in their way, a turning point at a real candle, and a payoff that resolves it (they win, lose, or
+  learn, and the viewer sees why). The format's job (guess the stock, higher or lower, beat the chart, the recap) happens
+  inside that story, as the character's choices; the hook opens on the character already in trouble.
+- 2026-11-19 late, the owner: "i want MORE scenes, MORE animation, MORE cuts etc going through a story. with depictions of
+  things". Every reel: a new picture every 2 to 3 seconds (more, shorter scenes; one or two lines a scene); the thing each
+  line names is DRAWN as it is said (the coffee, the rocket, the empty wallet, the crowd), never just written; the camera
+  and the characters keep moving; a cut lands on a beat of the story. Keep doing what the best reels on this account did
+  (the learned rules from Instagram's numbers come with every brief).
