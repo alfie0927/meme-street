@@ -46,7 +46,15 @@ if [ "${SLOT:11:4}" = "2100" ] && [ "$(date -u -d "${SLOT:0:10}" +%u)" -le 5 ] &
 fi
 # A crazy true stock story at 13:00 and a stock explainer at 18:00 (the owner, 2026-11-19), researched and fact-checked
 # (src/stock_story.py); on a slot's first try only, and anything else and the same run makes a game reel.
-case "${SLOT:11:4}" in 1300) KIND=story ;; 1800) KIND=explainer ;; *) KIND= ;; esac
+# 13:00 is the day's complete "In this town" story first (src/town_story.py: the form of the genre's most-watched stories,
+# research/niche3d_2026-11-21.md); state/town_story_off turns it off. 18:00 takes turns between the crazy stock history and
+# the explainer, by the day of the year.
+if [ "${SLOT:11:4}" = 1300 ] && [ -z "${REEL_CATEGORY:-}" ] && [ -z "${RESUME:-}" ] && [ ! -f state/town_story_off ] && [ "$(cat "queue/$SLOT/.tries" 2>/dev/null || echo 1)" -le 1 ]; then
+  echo "=== in this town $SLOT  $(date -u '+%F %T UTC')" | tee -a logs/auto.log
+  if python3 src/town_story.py slot "$SLOT" >> logs/town.log 2>&1; then echo "=== queued $SLOT (in this town) $(date -u '+%T UTC')" | tee -a logs/auto.log; exit 0; fi
+  echo "the town story was not made for $SLOT (logs/town.log): a stock story instead" | tee -a logs/auto.log
+fi
+case "${SLOT:11:4}" in 1300) KIND=story ;; 1800) [ $(( 10#$(date -u -d "${SLOT:0:10}" +%j) % 2 )) -eq 0 ] && KIND=story || KIND=explainer ;; *) KIND= ;; esac
 if [ -n "$KIND" ] && [ -z "${REEL_CATEGORY:-}" ] && [ -z "${RESUME:-}" ] && [ ! -f state/stories_off ] && [ "$(cat "queue/$SLOT/.tries" 2>/dev/null || echo 1)" -le 1 ]; then
   echo "=== $KIND $SLOT  $(date -u '+%F %T UTC')" | tee -a logs/auto.log
   if python3 src/stock_story.py slot "$SLOT" "$KIND" >> logs/stories.log 2>&1; then echo "=== queued $SLOT ($KIND) $(date -u '+%T UTC')" | tee -a logs/auto.log; exit 0; fi

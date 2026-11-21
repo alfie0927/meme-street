@@ -2125,6 +2125,7 @@ def parse(raw, B, base=None):
         for k in ("scene_js", "device", "tok", "remake_of"):
             if k not in spec and base.get(k) is not None: spec[k] = base[k]
     if js: spec["scene_js"] = js.group(1).strip()
+    if B.get("form") and spec: spec.setdefault("remake_of", B["form"])   # (a brief built on an exemplar's form, e.g. town_story.py: its length, short sentences and no sign-off are checked as a remake's)
     town = []
     if B["category"] == "Blocky story" and spec:         # (the story serial is filmed in the 3D town: the scene function is the page's, the shots are checked; world.py)
         import world; spec["scene_js"] = world.JS; town = world.check(spec, B.get("charts"))

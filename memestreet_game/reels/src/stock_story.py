@@ -205,7 +205,7 @@ def make_3d(x, pack, slot, post_at, kind="story"):
     M.save(spec, B, work)
     json.dump(pack, open(os.path.join(work, "facts.json"), "w", encoding="utf-8"), indent=1)
     r = subprocess.run([sys.executable, os.path.join(HERE, "critic.py"), "loop", work, out], cwd=ROOT,
-                       env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "6000")))   # (a 3D render of 40 s took 39 minutes on the server, 2026-11-21)
+                       env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "6000"), REVIEW_FPS="24", AUTO_FPS="24"))   # (a 3D render of 40 s took 39 minutes on the server, 2026-11-21)
     if r.returncode or not os.path.exists(os.path.join(out, "approved.json")):
         N.say("3D story HELD: the critic did not approve it"); return None
     final = json.load(open(os.path.join(work, "spec.json"), encoding="utf-8"))

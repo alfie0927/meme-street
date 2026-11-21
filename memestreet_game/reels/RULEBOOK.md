@@ -296,3 +296,9 @@ without review. A complaint puts it back to watched. Status: every format watche
   Daily's game reels are filmed in the 3D toy-block town (the serial's look: townspeople, chest numbers, the square's big
   screen showing the REAL chart). The stick-figure lines above hold only for a reel that falls back to the flat look (Higher or
   lower, the market reel, the recap, or a slot whose town reel could not be made).
+- 2026-11-21, the owner's goal: "remake the entire structure of my reels and how they flow etc, to get 100k views per reel on
+  average". The study of the 3D story niche (research/niche3d_2026-11-21.md) found the form of the "In This Town" stories (the
+  owner's exemplar is one). The 13:00 reel is one complete story on that form: the rule as the first words ("In this town,
+  ..."), "You see,", gags with named neighbours, the narrator's odd place in the rule, one loved person, a crisis the rule
+  causes, the rule used as the tool, a twist that proves "what everyone says" wrong, a callback; no sign-off; a question on
+  screen at the end. Nothing deadly, no monsters, no trading words in the story.

@@ -71,7 +71,7 @@ def make(slot, category=None):
     spec.update({k: v for k, v in S.STYLE.items() if not k.startswith("voice")}, scene_js=W.JS, part=None, series="")   # (the town and its tune; the house voice)
     M.save(spec, B, work)
     r = subprocess.run([sys.executable, os.path.join(HERE, "critic.py"), "loop", work, out], cwd=ROOT,
-                       env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "6000")))   # (a 3D render of 40 s took 39 minutes on the server)
+                       env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "6000"), REVIEW_FPS="24", AUTO_FPS="24"))   # (a 3D render of 40 s took 39 minutes on the server)
     if r.returncode or not os.path.exists(os.path.join(out, "approved.json")):
         print("the town's reel was not finished: the flat reel is made", flush=True); return None
     p = os.path.join(work, "spec.json"); final = json.load(open(p, encoding="utf-8")); final["type"] = fmt + SUFFIX
