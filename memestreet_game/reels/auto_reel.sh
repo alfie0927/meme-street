@@ -52,6 +52,14 @@ if [ -n "$KIND" ] && [ -z "${REEL_CATEGORY:-}" ] && [ -z "${RESUME:-}" ] && [ ! 
   if python3 src/stock_story.py slot "$SLOT" "$KIND" >> logs/stories.log 2>&1; then echo "=== queued $SLOT ($KIND) $(date -u '+%T UTC')" | tee -a logs/auto.log; exit 0; fi
   echo "$KIND not made for $SLOT (logs/stories.log): a game reel instead" | tee -a logs/auto.log
 fi
+# The Daily's game reels are filmed in the 3D town first (the owner, 2026-11-21: "they should be more 3d animation style";
+# src/town_daily.py: the real chart on the square's screen); on a slot's first try only, and if it is not made the same run
+# makes the flat reel. state/town_off turns it off.
+if [ -z "${REEL_CATEGORY:-}" ] && [ -z "${RESUME:-}" ] && [ ! -f state/town_off ] && [ "$(cat "queue/$SLOT/.tries" 2>/dev/null || echo 1)" -le 1 ]; then
+  echo "=== town reel $SLOT  $(date -u '+%F %T UTC')" | tee -a logs/auto.log
+  if python3 src/town_daily.py slot "$SLOT" >> logs/town.log 2>&1; then echo "=== queued $SLOT (town) $(date -u '+%T UTC')" | tee -a logs/auto.log; exit 0; fi
+  echo "town reel not made for $SLOT (logs/town.log): the flat reel instead" | tee -a logs/auto.log
+fi
 W="work/auto-$SLOT"; O="out/auto-$SLOT"; export REEL_SLOT="$SLOT"   # (Yesterday's stock reads the Daily before this slot's day)
 [ -n "${RESUME:-}" ] && [ -f "$W/spec.json" ] || { RESUME=; rm -rf "$W" "$O"; }   # (RESUME=1: carry on with the script already written)
 args=(); [ -f "queue/$SLOT/remake.json" ] && args=(--remake "queue/$SLOT/remake.json")

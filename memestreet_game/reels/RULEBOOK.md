@@ -292,3 +292,7 @@ without review. A complaint puts it back to watched. Status: every format watche
   happen, explain the whole history behind it, it should be like a history reel". The 13:00 Crazy stock story is a HISTORY
   REEL told by stick figures: the hook, who the company is and how it began, the road to the moment, the moment, why it
   happened (each cause with its source), what came after. 60 to 90 seconds.
+- 2026-11-21, the owner: "i'm not a fan of these reels. they should be more 3d animation style". Stories, explainers and the
+  Daily's game reels are filmed in the 3D toy-block town (the serial's look: townspeople, chest numbers, the square's big
+  screen showing the REAL chart). The stick-figure lines above hold only for a reel that falls back to the flat look (Higher or
+  lower, the market reel, the recap, or a slot whose town reel could not be made).

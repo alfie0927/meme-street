@@ -381,12 +381,22 @@ function planeAt(S, t) {
 function carAt(S, t) { const c = S.car, P = S.P, k = io(cl((t - c.t) / Math.max(.5, S.t1 - c.t - .1))), p = [lerp(c.from[0], c.to[0], k), lerp(c.from[1], c.to[1], k)], w = P.w(p[0], p[1]), dx = c.to[0] - c.from[0], dz = c.to[1] - c.from[1]; return { x: w[0], z: w[1], ry: P.ry + (Math.hypot(dx, dz) > .1 ? Math.atan2(-dz, dx) : 0), roll: k * Math.hypot(dx, dz) / .35 }; }
 function screenPaint(tx, c, u, big) {
   const st = Math.round(cl(u) * 28); tx.paint(JSON.stringify(c) + st, (x, w, h) => {
-    const p = st / 28, mode = c.lines ? 'plan' : c.chart ? 'chart' : 'text'; x.textBaseline = 'middle';
+    const p = st / 28, mode = c.lines ? 'plan' : (c.chart || c.real != null) ? 'chart' : 'text'; x.textBaseline = 'middle';
     if (mode === 'plan') { x.fillStyle = '#7a4a2a'; x.fillRect(0, 0, w, h); x.fillStyle = '#2f6b4f'; x.fillRect(14, 14, w - 28, h - 28); x.fillStyle = '#fff'; x.textAlign = 'center'; fitText(x, String(c.title || 'MY PLAN').toUpperCase(), w - 80, 58); x.fillText(String(c.title || 'MY PLAN').toUpperCase(), w / 2, 62);
       const L = c.lines.slice(0, 3); L.forEach((s, k) => { const y = 142 + k * 84, on = p > (k + 1) / (L.length + 1); x.strokeStyle = '#fff'; x.lineWidth = 6; x.strokeRect(46, y - 24, 48, 48); if (on) { x.strokeStyle = '#7dffa8'; x.lineWidth = 9; x.beginPath(); x.moveTo(54, y); x.lineTo(68, y + 16); x.lineTo(92, y - 20); x.stroke(); } x.fillStyle = '#fff'; x.textAlign = 'left'; fitText(x, String(s), w - 170, 40); x.fillText(String(s), 122, y + 2); }); return; }
     x.fillStyle = '#0b0f13'; x.fillRect(0, 0, w, h);
     if (mode === 'text') { const L = String(c.text || c.title || '').split('|').slice(0, 3); x.textAlign = 'center'; L.forEach((s, k) => { x.fillStyle = k ? '#e6e9ec' : ({ red: '#f0585c', green: '#3dd68c', gold: '#ffd23f' }[c.tone] || '#ffd23f'); fitText(x, s.trim(), w - 70, L.length > 1 ? 86 : 120); x.fillText(s.trim(), w / 2, h / 2 + (k - (L.length - 1) / 2) * 104); }); return; }
     x.strokeStyle = '#1b222b'; x.lineWidth = 2; for (let k = 1; k < 5; k++) { x.beginPath(); x.moveTo(0, 90 + k * 52); x.lineTo(w, 90 + k * 52); x.stroke(); }
+    const RC = c.real != null ? ((R.charts || [])[c.real] || {}).candles : null;
+    if (RC && RC.length) {   // (the reel's REAL chart, R.charts[c.real]: the 45 candles up to "to" fill the board, those from "from" draw as the shot runs; "level" is a real price, "buy" and "sell" candle numbers: 2026-11-21)
+      const to = Math.min(RC.length - 1, c.to != null ? c.to : RC.length - 1), fr = Math.max(0, Math.min(to, c.from != null ? c.from : to)), a = Math.max(0, to - 44), upto = Math.round(fr + (to - fr) * cl(p * 1.2));
+      let lo = Infinity, hi = -Infinity; for (let k = a; k <= to; k++) { lo = Math.min(lo, RC[k][2]); hi = Math.max(hi, RC[k][1]); }
+      if (c.level != null) { lo = Math.min(lo, c.level); hi = Math.max(hi, c.level); }
+      const sp = (hi - lo) || 1, Y = v => h - 62 - (v - lo) / sp * (h - 168), cw = (w - 56) / (to - a + 1), X = k => 28 + (k - a + .5) * cw;
+      for (let k = a; k <= upto; k++) { const q = RC[k], up = q[3] >= q[0]; x.strokeStyle = x.fillStyle = up ? '#3dd68c' : '#f0585c'; x.lineWidth = Math.max(1.5, cw * .14); x.beginPath(); x.moveTo(X(k), Y(q[1])); x.lineTo(X(k), Y(q[2])); x.stroke(); x.fillRect(X(k) - cw * .36, Math.min(Y(q[0]), Y(q[3])), cw * .72, Math.max(2, Math.abs(Y(q[0]) - Y(q[3])))); }
+      if (c.level != null) { const ly = Y(c.level); x.setLineDash([18, 10]); x.strokeStyle = '#ffd23f'; x.lineWidth = 4; x.beginPath(); x.moveTo(14, ly); x.lineTo(w - 14, ly); x.stroke(); x.setLineDash([]); }
+      for (const [key, col, dir] of [['buy', '#3dd68c', 1], ['sell', '#f0585c', -1]]) { const k = c[key]; if (k == null || k < a || k > upto) continue; const q = RC[k], y0 = dir > 0 ? Y(q[2]) + 8 : Y(q[1]) - 8; x.fillStyle = col; x.beginPath(); x.moveTo(X(k), y0); x.lineTo(X(k) - 13, y0 + 22 * dir); x.lineTo(X(k) + 13, y0 + 22 * dir); x.fill(); }
+    } else {
     const F = { up: q => .18 + .62 * q, crash: q => (q < .62 ? .22 + .95 * q : Math.max(.03, .81 - (q - .62) * 3.4)), rocket: q => .07 + .9 * q * q * q, wobble: q => .5 + .22 * Math.sin(q * 9) + .16 * Math.sin(q * 23), flat: () => .5, down: q => .86 - .72 * q, candles: q => .38 + .2 * Math.sin(q * 7) + .22 * q,
       bounce: q => .24 + .5 * Math.abs(Math.sin(q * 7.5 + .6)) * (.75 + .25 * Math.sin(q * 3)), rebound: q => (q < .45 ? .7 - .46 * q / .45 + .05 * Math.sin(q * 30) : .24 + .68 * Math.pow((q - .45) / .55, 1.3)) }[c.chart] || (q => .4 + .3 * q);
     const N = 24, n = Math.ceil(N * cl(p * 1.3)), Y = v => h - 84 - cl(v, 0, 1) * (h - 190), f = k => F(k / N) + .05 * (hsh(k * 3.3) - .5);
@@ -398,8 +408,9 @@ function screenPaint(tx, c, u, big) {
       if (c.buy && p > .15) { const bx = w * .3; x.fillStyle = '#3dd68c'; x.beginPath(); x.moveTo(bx, ly + 18); x.lineTo(bx - 20, ly + 40); x.lineTo(bx + 20, ly + 40); x.fill(); x.textAlign = 'center'; fitText(x, 'BUY HERE', 240, 32); x.fillText('BUY HERE', bx, ly + 66); }
       if (c.stop != null && p > .55) { const sy = Math.max(Y(c.stop), ly + 50); x.strokeStyle = '#f0585c'; x.lineWidth = 6; x.beginPath(); x.moveTo(w * .55, sy); x.lineTo(w - 18, sy); x.stroke(); x.fillStyle = '#f0585c'; x.textAlign = 'right'; fitText(x, 'STOP', 160, 30); x.fillText('STOP', w - 24, sy + 28); }
     }
+    }
     x.textAlign = 'left'; x.fillStyle = '#fff'; const ti = String(c.title || '').toUpperCase(); fitText(x, ti, w - (c.pct ? 250 : 40), big ? 80 : 44); x.fillText(ti, 24, big ? 56 : 46);
-    if (c.pct && (p > .72 || !c.chart)) { x.textAlign = 'right';   // (the percentage lands once the chart has drawn what it says: the critic, 2026-11-14)
+    if (c.pct && (p > .72 || !(c.chart || c.real != null))) { x.textAlign = 'right';   // (the percentage lands once the chart has drawn what it says: the critic, 2026-11-14)
       x.fillStyle = /^-|^−/.test(c.pct) ? '#f0585c' : '#3dd68c'; fitText(x, String(c.pct), 210, 50); x.fillText(String(c.pct), w - 22, 46); }
     if (c.news && p > .22) { x.fillStyle = '#ffd23f'; x.fillRect(0, h - 66, w, 66); x.fillStyle = '#15171a'; x.textAlign = 'center'; fitText(x, String(c.news), w - 40, 40); x.fillText(String(c.news), w / 2, h - 32); }
   });

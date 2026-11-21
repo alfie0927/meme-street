@@ -2127,7 +2127,7 @@ def parse(raw, B, base=None):
     if js: spec["scene_js"] = js.group(1).strip()
     town = []
     if B["category"] == "Blocky story" and spec:         # (the story serial is filmed in the 3D town: the scene function is the page's, the shots are checked; world.py)
-        import world; spec["scene_js"] = world.JS; town = world.check(spec)
+        import world; spec["scene_js"] = world.JS; town = world.check(spec, B.get("charts"))
     pre = shots.expand_all(spec, WORLD_PROPS)            # (a shot becomes its polished storyboard; a free one is refused)
     return spec, pre + check(spec, B["ask"]["facts"], B["charts"], B["category"]) + town
 

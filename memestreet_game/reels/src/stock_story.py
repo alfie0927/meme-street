@@ -27,7 +27,7 @@ import news_reel as N
 BANK = os.path.join(HERE, "daily_story_charts.json")
 STYLE_FILE = os.path.join(ROOT, "state", "story_style.json")
 LEDGER = os.path.join(ROOT, "state", "reel_ledger.json")
-STORY, EXPLAIN, STORY3D = "Crazy stock story", "Stock explainer", "Crazy stock story 3D"
+STORY, EXPLAIN, STORY3D, EXPLAIN3D = "Crazy stock story", "Stock explainer", "Crazy stock story 3D", "Stock explainer 3D"
 MIN_EACH, WIN_BY, HOLD_SLACK = 5, 1.15, 3.0
 SKILLS = (" HOW IT IS BUILT (the virality and ig-reel skills, as this account's rules already apply them): frame 0 is already moving "
           "and shows something a stranger recognises (the wildest candle, the company's world, the number that makes no sense); the "
@@ -151,25 +151,29 @@ def decide(ledger=None, path=None, now=None):
 
 
 # ---------------------------------------------------------------------------------------------------- the 3D story
-def what_3d():
+def what_3d(kind="story"):
+    """The brief of a 3D story or explainer: the serial's shot grammar (story_reel.WHAT, already filled in) around a true story."""
     import story_reel as S
     w = S.WHAT
     grammar = w[w.index("THE LOOK"):w.index("THE STORY:")]
-    return ("A TRUE STOCK STORY IN THE BLOCKY TOWN (the owner, 2026-11-19: 'use sometimes the roblox esque animation to display "
-            "everything'): facts.news is the researched story of a real stock and facts.chart its real prices. The town acts it out, "
-            "told in the first person by a townsperson who watched it happen. The company is a building or a shop in the town with its "
-            "name on a screen; traders are townspeople whose chest numbers show the stock's price or their money as the story moves "
-            "(numbers only from facts.chart and facts.news); the big moments are crowds rushing in, a number crashing on a chest, the "
-            "sky turning red. " + grammar +
+    return ("A TRUE STOCK STORY IN THE BLOCKY TOWN (the owner, 2026-11-21: 'they should be more 3d animation style'): facts.news is "
+            "the researched story of a real stock and facts.chart its real prices. The town acts it out, told in the first person by "
+            "a townsperson who watched it happen. The company is a building or a shop in the town with its name on a screen; traders "
+            "are townspeople whose chest numbers show the stock's price or their money as the story moves (numbers only from "
+            "facts.chart and facts.news); the big moments are crowds rushing in, a number crashing on a chest, the sky turning red. "
+            + grammar +
+            ("THE STORY IS A HISTORY (the owner: 'what happened to the stock, why did it happen, explain the whole history behind "
+             "it'): the hook (the craziest true number), who the company is and how it began, the road to the moment, the moment, WHY "
+             "it happened (each cause acted as the thing it was), what came after. " if kind == "story" else
+             "THIS ONE EXPLAINS facts.idea through the story: the idea as a dare in the hook, how it works step by step (each step "
+             "acted by townspeople, one definition sentence at most), the real story as the proof, the one sign to watch for. ") +
             "THE STORY: every beat of facts.news, in order, one beat a scene, acted by the townspeople; the people in "
             "facts.news.people, and only they, are named, each a townsperson with one trademark feature; facts.story.cast gives the "
-            "regulars' colours. Then one line linking it to Meme Street's daily game (only what facts.meme_street says), and the sign-off "
-            "'Today's stock is live. Play it at memestreet.net.'" + FACT_RULES + " \"type\" is \"Blocky story\". The caption: the hook "
-            "under 125 characters, the story in short lines with each fact's status words, 'Play today's stock at memestreet.net', "
-            "'Sources: <outlets>. " + M.DISCLAIMER + "', 3 to 5 hashtags. The voice tells it in flowing sentences of 10 to 20 words, "
-            "while the pictures cut every 2 seconds.") % {k: ", ".join(v) for k, v in __import__("world").VOC.items()} \
-        if "%(poses)s" in grammar else (
-            "A TRUE STOCK STORY IN THE BLOCKY TOWN: " + grammar + " THE STORY: every beat of facts.news, in order." + FACT_RULES)
+            "regulars' colours. Then one line linking it to Meme Street's daily game (only what facts.meme_street says), and the "
+            "sign-off 'Today's stock is live. Play it at memestreet.net.'" + FACT_RULES + " \"type\" is \"Blocky story\". The caption: "
+            "the hook under 125 characters, the story in short lines with each fact's status words, 'Play today's stock at "
+            "memestreet.net', 'Sources: <outlets>. " + M.DISCLAIMER + "', 3 to 5 hashtags. The voice tells it in flowing sentences of "
+            "10 to 20 words, while the pictures cut every 2 seconds.")
 
 
 CAST = {"the narrator (I)": "grey-blue shirt #8a96ab, dark blue trousers #2e3a52, brown hair #6b4426, skin #f1c27d: a small trader who watched it all",
@@ -177,14 +181,14 @@ CAST = {"the narrator (I)": "grey-blue shirt #8a96ab, dark blue trousers #2e3a52
         "a young trader": "green hoodie #43b05c, cap, phone in hand: the crowd buying in"}
 
 
-def make_3d(x, pack, slot, post_at):
+def make_3d(x, pack, slot, post_at, kind="story"):
     """The 3D story: written in the town's grammar, fact-checked, voiced over the serial's tune, reviewed, queued. -> slot or None."""
     import story_reel as S, world as W
     facts_c, _ = chart_of(x)
     at = slot or datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H%M")
-    facts = {"news": pack, "chart": facts_c, "story": {"cast": CAST}, "meme_street": M.GAME_FACTS, "example": W.example(),
+    facts = {"news": pack, "chart": facts_c, "idea": x["idea"], "story": {"cast": CAST}, "meme_street": M.GAME_FACTS, "example": W.example(),
              "recent_devices": [], "video": {"available": False}, "hook_shots_used_lately": []}
-    what = what_3d()
+    what = what_3d(kind)
     ask = {"category": S.CATEGORY, "what_this_reel_is": what, "facts": facts, "recent_titles_to_avoid": []}
     B = {"slot": at, "category": S.CATEGORY, "system": M.system_prompt(S.CATEGORY), "ask": ask, "charts": []}
     work, out = os.path.join(ROOT, "work", "auto-" + at), os.path.join(ROOT, "out", "auto-" + at)
@@ -201,13 +205,13 @@ def make_3d(x, pack, slot, post_at):
     M.save(spec, B, work)
     json.dump(pack, open(os.path.join(work, "facts.json"), "w", encoding="utf-8"), indent=1)
     r = subprocess.run([sys.executable, os.path.join(HERE, "critic.py"), "loop", work, out], cwd=ROOT,
-                       env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "2700")))
+                       env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "6000")))   # (a 3D render of 40 s took 39 minutes on the server, 2026-11-21)
     if r.returncode or not os.path.exists(os.path.join(out, "approved.json")):
         N.say("3D story HELD: the critic did not approve it"); return None
     final = json.load(open(os.path.join(work, "spec.json"), encoding="utf-8"))
     if N.fact_check(pack, M.GAME_FACTS, final):
         N.say("3D story HELD: the fact check failed after the critic's rewrite"); return None
-    final["type"] = STORY3D                                # (the ledger tells the two looks apart by this)
+    final["type"] = STORY3D if kind == "story" else EXPLAIN3D   # (the ledger tells the looks apart by this)
     json.dump(final, open(os.path.join(work, "spec.json"), "w", encoding="utf-8"))
     return N.queue_out(out, post_at, pack.get("headline", ""))
 
@@ -218,13 +222,13 @@ def make(kind, slot=None, style=None):
     hist = json.load(open(M.HISTORY)) if os.path.exists(M.HISTORY) else {}
     x = pick(hist)
     json.dump(hist, open(M.HISTORY, "w"))                  # (the pick is kept: a story that fails is not tried again at once)
-    style = style or "2d"   # (the owner, 2026-11-19 late: "i like the stick man stuff": the 2D/3D trial is paused, style_for() kept for later)
+    style = style or "3d"   # (the owner, 2026-11-21: "they should be more 3d animation style"; the town's reels have a median of 1,160 views against about 120: state/reel_ledger.json)
     N.say(f"{kind} ({style}): {x['n']} {x['day']} - researching")
     pack, errs = research(x, kind)
     if not pack:
         N.say(f"{kind} not made: the research did not stand up: " + "; ".join(errs)[:300]); return None
     if style == "3d":
-        return make_3d(x, pack, slot, slot)
+        return make_3d(x, pack, slot, slot, kind)
     facts_c, ch = chart_of(x)
     video = video_ok()
     cat = STORY if kind == "story" else EXPLAIN

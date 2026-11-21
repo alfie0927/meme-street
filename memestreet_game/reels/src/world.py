@@ -29,9 +29,9 @@ def said(vo, phrase):
     return bool(P) and any(all(W[k + j].startswith(p) for j, p in enumerate(P)) for k in range(len(W) - len(P) + 1))
 
 
-def check(spec):
-    """What is wrong with the shots, in words the writer can fix."""
-    errs = []
+def check(spec, charts=None):
+    """What is wrong with the shots, in words the writer can fix. `charts`: the reel's real charts, for a screen's "real"."""
+    errs = []; charts = charts if charts is not None else (spec.get("charts") or [])
     for k, sc in enumerate(spec.get("scenes") or []):
         sh, vo = sc.get("shots"), sc.get("vo", "")
         if sc.get("kind") == "outro":
@@ -75,7 +75,16 @@ def check(spec):
                 if f.get("say") and not said(vo, f["say"]): bad(f"fx say {f['say']!r} is not in the line")
             s = q.get("screen")
             if s is not None:
-                if not isinstance(s, dict) or not (s.get("chart") or s.get("lines") or s.get("text") or s.get("title")): bad('screen is {"title", "chart"}, {"title", "lines"} or {"text"}')
+                if not isinstance(s, dict) or not (s.get("chart") or s.get("lines") or s.get("text") or s.get("title") or s.get("real") is not None): bad('screen is {"title", "chart"}, {"title", "lines"} or {"text"}')
+                elif s.get("real") is not None:            # (the reel's real chart on the screen)
+                    n = len((charts[s["real"]] or {}).get("candles") or []) if isinstance(s["real"], int) and not isinstance(s["real"], bool) and 0 <= s["real"] < len(charts) else 0
+                    whole = lambda v: isinstance(v, int) and not isinstance(v, bool)
+                    if not n: bad('"real" on a screen is the number of one of the charts of this reel (facts.charts), and this reel has ' + (f"{len(charts)}" if charts else "none"))
+                    elif not (whole(s.get("to")) and 0 <= s["to"] < n and (s.get("from") is None or (whole(s["from"]) and 0 <= s["from"] <= s["to"]))): bad(f'a real chart draws its candles "from" to "to": whole candle numbers, 0 to {n - 1}, from no later than to')
+                    elif any(s.get(k) is not None and not (whole(s[k]) and 0 <= s[k] <= s["to"]) for k in ("buy", "sell")): bad('"buy" and "sell" are candle numbers no later than "to"')
+                    elif s.get("level") is not None and not isinstance(s["level"], (int, float)): bad('"level" is a real price')
+                    elif s.get("chart"): bad('a screen shows "real" or a made-up "chart", not both')
+                    if q.get("place") not in ("room", "square"): bad("a real chart is shown on the screen of the square or of the room")
                 elif s.get("chart") and s["chart"] not in VOC["charts"]: bad(f"a screen's chart is one of {', '.join(VOC['charts'])}")
                 elif s.get("lines") and not (isinstance(s["lines"], list) and len(s["lines"]) <= 3 and all(len(str(x)) <= 22 for x in s["lines"])): bad("a screen's lines: at most 3, each 22 characters or fewer")
                 elif q.get("place") not in ("room", "square") and not any(a.get("hold") == "chart" or (a.get("then") or {}).get("hold") == "chart" for a in people): bad('only the room and the square have a screen; elsewhere someone holds it ("hold": "chart")')
@@ -123,6 +132,9 @@ if __name__ == "__main__" and sys.argv[1:] == ["demo"]:
     line = "Then every number in town crashed to zero."
     sc = lambda **q: {"scenes": [{"kind": "free", "vo": line, "shots": [dict({"place": "street", "cam": "close:Timmy", "actors": [{"who": "Timmy", "chest": 5}]}, **q)]}]}
     assert check(sc()) == []
+    rs = lambda **k: {"scenes": [{"kind": "free", "vo": "The price fell to the moon.", "shots": [{"place": "square", "cam": "screen", "screen": dict({"title": "T", "real": 0, "from": 2, "to": 5}, **k)}]}]}
+    C = [{"candles": [[1, 2, 1, 2, 0]] * 8}]
+    assert check(rs(), C) == [] and check(rs(buy=3, sell=5, level=1.5), C) == [] and check(rs()) and check(rs(to=8), C) and check(rs(buy=7), C) and check(rs(chart="up"), C)
     for q, word in (({"place": "moon"}, "place"), ({"cam": "close:Maya"}, "not among"), ({"cam": "screen"}, "screen"), ({"sky": "green"}, "sky"), ({"fx": ["bang"]}, "fx"),
                     ({"actors": [{"who": "Timmy", "do": "fly"}]}, "pose"), ({"actors": [{"who": "Timmy", "at": [40, 0]}]}, "metres"), ({"actors": [{"who": "Timmy", "say": "moon", "then": {"chest": 0}}]}, "not in the line"),
                     ({"actors": [{"who": "Timmy", "hold": "sword"}]}, "hold"), ({"place": "room", "cam": "screen", "screen": {"text": "A|B"}, "actors": [{"who": "Timmy", "at": [-1.4, -1.2]}]}, "covers its words"), ({"crowd": {"n": 40}}, "crowd"), ({"plane": "rocket"}, "plane"), ({"sky_say": "banana"}, "sky_say")):
