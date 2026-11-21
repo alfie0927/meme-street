@@ -349,7 +349,7 @@ def run(cmd, **env):
 def post_anyway(out, rnd, rev, why):
     """The reel had its fix: it posts as it is (the owner, 2026-11-19: "all reels should pass ... fix these and then post").
     Only a reel with no finished cut cannot."""
-    if not os.path.exists(os.path.join(out, "reel.mp4")):
+    if not all(os.path.exists(os.path.join(out, f)) for f in ("reel.mp4", "cover.jpg", "caption.txt")):   # (render.py copies the caption last: without it the cut is unfinished; 2026-11-21, a frozen 3D render left a partial one)
         raise SystemExit(f"{why}; there is no finished cut, so nothing is posted")
     json.dump({"round": rnd, "scores": rev.get("scores"), "verdict": rev.get("verdict"), "posted_as_it_is": why,
                "open": [x.get("what") for x in rev.get("issues", []) if x.get("severity") == "blocker"],
@@ -481,7 +481,10 @@ def demo():
     o = tempfile.mkdtemp()                                                                               # (after its fix a reel posts; with no cut it cannot)
     try: post_anyway(o, 2, {}, "x"); raise AssertionError("posted without a cut")
     except SystemExit: pass
-    open(os.path.join(o, "reel.mp4"), "wb").write(b"x"); assert post_anyway(o, 2, {"issues": [{"severity": "blocker", "what": "w"}]}, "x") == 2
+    for f in ("reel.mp4", "cover.jpg"): open(os.path.join(o, f), "wb").write(b"x")
+    try: post_anyway(o, 2, {}, "x"); raise AssertionError("posted an unfinished cut")
+    except SystemExit: pass
+    open(os.path.join(o, "caption.txt"), "w").write("c"); assert post_anyway(o, 2, {"issues": [{"severity": "blocker", "what": "w"}]}, "x") == 2
     assert json.load(open(os.path.join(o, "approved.json")))["open"] == ["w"]
     print("verify ok")
 

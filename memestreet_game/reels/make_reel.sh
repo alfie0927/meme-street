@@ -11,6 +11,7 @@ H=$(date -u +%-H); DATE="${1:-$( [ "$H" -ge 22 ] && date -u +%F || date -u -d ye
 W="work/$DATE"; O="out/$DATE"; mkdir -p data work out logs queue
 [ -f "$O/posted.json" ] && { echo "Daily $DATE already posted"; exit 0; }
 [ -f "data/$DATE.json" ] || [ "$DATE" = "$(date -u +%F)" ] || { echo "no data for $DATE and its chart is gone (the site serves only today's): skipped"; exit 0; }
+[ -f "data/$DATE.json" ] || python3 src/fetch.py "data/$DATE.json"   # (before the lock: the site serves only today's chart, and the 19 Nov recap was lost waiting for the lock past midnight)
 touch queue/.daily-pending; trap 'rm -f queue/.daily-pending' EXIT   # (auto_reel.sh waits while the Daily is due)
 exec 8>queue/.auto.lock; flock -w 5400 8 || { echo "Daily $DATE: the reel lock stayed busy 90 min; the next timer run retries" | tee -a "logs/$DATE.log"; exit 1; }
 {

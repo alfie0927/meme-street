@@ -158,7 +158,7 @@ def main(st, post=False, resume=None, ready=None):
         M.save(spec, B, work)
         json.dump(st, open(os.path.join(work, "story.json"), "w", encoding="utf-8"), indent=1)
         r = subprocess.run([sys.executable, os.path.join(HERE, "critic.py"), "loop", work, out], cwd=ROOT,
-                           env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "2700")))   # (a 3D render takes 10 to 20 minutes on the server, over the usual 15-minute limit for a step)
+                           env=dict(os.environ, STEP_TIMEOUT=os.environ.get("STORY_STEP_TIMEOUT", "6000")))   # (a 3D render takes 10 to 20 minutes on the server, over the usual 15-minute limit for a step)
     if r.returncode or not os.path.exists(os.path.join(out, "approved.json")):
         print("HELD: the critic did not approve it; the cut is in", out); return 1
     if not post:
