@@ -7,7 +7,8 @@ studio in order of views. What its top third does is the form below: one physica
 the narrator's odd place in the rule, one loved person, a crisis the rule causes, the rule used as the tool, a twist that proves
 "what everyone says" wrong, and a callback. About 100 seconds, short sentences, no sign-off (the caption carries the address).
 
-  python3 src/town_story.py slot <YYYY-MM-DDTHHMM>    write, voice, render, review and queue the day's story (exit 1 when not made)
+  python3 src/town_story.py slot <YYYY-MM-DDTHHMM> [script.json]   write (or take a script already written), voice, render, review
+                                                                   and queue the day's story (exit 1 when not made)
   python3 src/town_story.py demo                     the self-check: no Claude, no voice
 """
 import json, os, subprocess, sys
@@ -140,14 +141,16 @@ def errors(spec):
     return errs
 
 
-def make(slot):
-    """The day's story: written (its form checked, one fix), voiced, rendered at 24 frames, reviewed, queued in its slot. -> the slot, or None."""
+def make(slot, ready=None):
+    """The day's story: written (its form checked, one fix) or, with `ready`, a script already written and read; voiced, rendered at
+    24 frames, reviewed, queued in its slot. -> the slot, or None."""
     import news_reel as N
     B, i = brief(slot)
     work, out = os.path.join(ROOT, "work", "auto-" + slot), os.path.join(ROOT, "out", "auto-" + slot)
     subprocess.run(["rm", "-rf", work, out], check=True)
-    spec = M.write(B, work=work)
-    bad = errors(spec)
+    spec = json.load(open(ready, encoding="utf-8")) if ready else M.write(B, work=work)
+    bad = errors(spec) + (W.check(spec) if ready else [])
+    if bad and ready: print("the ready-made script:", "; ".join(bad), flush=True); return None
     if bad:
         print("the form sent it back:", "; ".join(bad), flush=True)
         spec = M.write(B, msgs=[{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": json.dumps(spec)},
@@ -187,5 +190,5 @@ def demo():
 if __name__ == "__main__":
     a = sys.argv[1:] or ["demo"]
     if a[0] == "demo": demo()
-    elif a[0] == "slot" and len(a) > 1: sys.exit(0 if make(a[1]) else 1)
+    elif a[0] == "slot" and len(a) > 1: sys.exit(0 if make(a[1], a[2] if len(a) > 2 else None) else 1)
     else: raise SystemExit(__doc__)
