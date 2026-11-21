@@ -42,12 +42,15 @@ Five a day, every one about the Daily:
 
 | Slot (UTC) | Format | What it is |
 |---|---|---|
+| 10:00 | Money On Your Chest | The serial, one part a day, in the 3D town (`src/story_reel.py`, `src/stories.json`). |
 | 03:00 | Yesterday's stock | The Daily that ended at midnight, replayed: how players did, the best trade, then the name. When last night's chart wasn't a real one, a Beat the chart reel takes the slot. |
 | 09:00, and 21:00 at weekends | Guess the stock | A real stretch from the reel bank plays out. Three names to pick from, then the reveal. |
-| 13:00 | Crazy stock story | A famous true moment (GameStop's squeeze, Kodak's loan spike, Tilray's frenzy...), researched and fact-checked, told over its real chart. One day in flat animation with Higgsfield cinematic shots, the next in the 3D toy-block town, until the numbers pick a winner (`src/stock_story.py decide`). If it can't be made, a Beat the chart reel takes the slot. |
-| 18:00 | Stock explainer | One idea (a short squeeze, a SPAC, an earnings gap...) explained through one of those true stories, with Higgsfield shots. If it can't be made, a Higher or lower reel takes the slot. |
+| 13:00 | In this town | One complete story a day in the 3D toy-block town, on the form of the "In This Town" stories (`reels/research/niche3d_2026-11-21.md`): a rule ("In this town, money shrinks when you're scared"), neighbours coping, one loved person, a crisis, a twist that carries one trading idea as a truth about people, a question on screen at the end. About 95 seconds, no sign-off (`src/town_story.py`). If it can't be made: a crazy stock story, then a game reel. |
+| 18:00 | Crazy stock history / Stock explainer | They take turns by the day: the whole history of one famous stock moment, or one idea explained through such a story; researched, fact-checked, acted out in the 3D town (`src/stock_story.py`). If it can't be made: a game reel. |
 | 21:00 on weekdays | Market today | The day's biggest market story after the US close, researched across three outlets and fact-checked twice. If no story passes, a game reel takes the slot. |
 | after 23:00 | Daily recap | Tonight's chart, revealed: the stock, what a candle was and the dates, the levels it tested and how each held, and when it moved a lot, the reason from the news, fact-checked. |
+
+Since 2026-11-21 the game reels (Yesterday's stock, Guess the stock, Beat the chart) are filmed in the 3D town first, the real chart on the square's big screen (`src/town_daily.py`); the flat stick-figure reel is made only when the town's one fails. Higher or lower, Market today and the recap are still flat. No AI video (Higgsfield was tried for one reel on 2026-11-19 and stopped).
 
 None of them names or hints at today's stock before the recap.
 
