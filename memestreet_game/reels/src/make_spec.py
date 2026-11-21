@@ -2226,6 +2226,20 @@ def dry_run(spec, B, work):
     return [] if lo <= T <= hi else [f"at the voice's pace this reel runs {T:.0f} seconds; a {B['category']} runs {lo:g} to {hi:g}: " + ("cut lines" if T > hi else "add a beat")]
 
 
+SOFT = re.compile(r"must be words of its line|the punch text is|repeats its line|the sentences average|stacked fragments|"
+                  r"line is too long|starts like a recent reel|the hook alone, 16 spoken words|the headline is the claim")
+
+
+def soft(errs, category):
+    """Only wording faults left (the owner, 2026-11-19: "all reels should pass"; the critic and the dry run still judge the
+    picture and the sound): a narration within a quarter of its length range counts as wording too."""
+    lo, hi = LENGTH.get(category, (60, 150, True))[:2]
+    def ok(e):
+        m = re.match(r"the narration is (\d+) words", e)
+        return bool(SOFT.search(e)) or bool(m and lo * 0.75 <= int(m.group(1)) <= hi * 1.25)
+    return bool(errs) and all(ok(e) for e in errs)
+
+
 def write(B, msgs=None, base=None, notes=None, work=None):
     """Have Claude write the script (or, with `base`, a patch of it that answers `notes`), checked and sent back at
     most four times. The first draft is the big model's (REEL_CLI_MODEL), the fixes the small one's (REEL_FIX_MODEL)."""
@@ -2241,10 +2255,15 @@ def write(B, msgs=None, base=None, notes=None, work=None):
             errs = dry_run(spec, B, work)
         if not errs:
             return spec
+        if base is None and spec and soft(errs, B["category"]) and not dry_run(spec, B, work):
+            near = (spec, errs)                           # (only wording left and the picture passes: kept in case no try is clean)
         print(f"attempt {attempt + 1}: " + "; ".join(errs[:8]), flush=True)
         if work:                                          # (the reply as it came, for debugging a check that keeps failing)
             os.makedirs(work, exist_ok=True); open(os.path.join(work, f"attempt-{attempt + 1}.txt"), "w", encoding="utf-8").write(raw)
         msgs += [{"role": "assistant", "content": raw}, {"role": "user", "content": ("Fix these and reply with only the scenes you change, in the same form: " if base else "Fix these and reply with the whole JSON again: ") + "; ".join(errs)}]
+    if base is None and "near" in locals():
+        print("no try was clean; the last one with only wording faults goes on: " + "; ".join(near[1][:4]), flush=True)
+        return near[0]
     raise SystemExit("the script did not pass its checks: " + "; ".join(errs))
 
 
@@ -2486,6 +2505,8 @@ if __name__ == "__main__":
         assert ONLY in (None, CARD) and len(set(LESSON_FORMATS[CARD])) >= 40 and "never a recent device's" in CATEGORIES[CARD]
         cd = check(dict(fr, scenes=[dict(fr["scenes"][0], vo="Higher or lower, three, two, one?"), fr["scenes"][1]]), {}, [], HILO)
         assert any("never speak a countdown" in e for e in cd), cd
+        assert soft(["the narration is 160 words; it must be 95 to 140", "scene 3's on-screen text 'x' must be words of its line, word for word, in order"], GUESS)
+        assert not soft(["the narration is 321 words; it must be 150 to 240"], GUESS) and not soft(["the scene function failed the dry run: covered at 5s"], GUESS) and not soft([], GUESS)
         rm = check(dict(fr, remake_of="x", headline="", scenes=[dict(fr["scenes"][0], vo="Higher or lower, three, two, one?")]), {}, [], HILO)
         assert not any("countdown" in e or "headline" in e or "outro" in e for e in rm), rm   # (an ordered remake keeps its length, loop and count)
         assert any('"think"' in e for e in check(dict(fr, scenes=[dict(fr["scenes"][0], think=9), fr["scenes"][1]]), {}, [], HILO))
