@@ -43,7 +43,10 @@ SEEDS = ["In this town, your money is a plant: it only grows when nobody is look
          "In this town, luck is a coin you are born with, and you can only flip it once.",
          "In this town, every shop has one price in the morning and another at night, and nobody knows which is higher.",
          "In this town, coins melt if you squeeze them.",
-         "In this town, when one person runs to the bank, everybody's feet run too."]
+         "In this town, when one person runs to the bank, everybody's feet run too.",
+         "In this town, the scared ones sink into the ground, an inch for every worry.",
+         "In this town, wanting more makes your pockets heavier.",
+         "In this town, regret follows you around as a little grey cloud."]
 CAST = {"the narrator (I)": "a kid of the town, about ten: grey-blue shirt #8a96ab, dark blue trousers #2e3a52, brown hair #6b4426, skin #f1c27d",
         "the one they love": "a little brother or sister, a dad or a grandpa: one person, named, with one trademark thing (a red mitten, a helmet, a cap)",
         "the neighbours": "two to four named townspeople for the gags (Mr. and Mrs. somebody, the mailman, a dog), each with one look of their own"}
@@ -70,8 +73,10 @@ def what():
             "prices, shops and luck are the whole vocabulary. "
             "THE TEN BEATS, in this order: "
             "1. THE RULE, the very first words: 'In this town, <one physical rule in 4 to 8 words>.' ('In this town, running turns you "
-            "gold.' 'In this town, hugs run out.') Yours makes money, prices, luck or risk PHYSICAL: something a body or a thing visibly "
-            "does (a number on a chest, coins that melt, a piggy bank that spits). One rule only. facts.premise_seeds are examples of the "
+            "gold.' 'In this town, hugs run out.') Yours makes PHYSICAL one thing every trader knows in the gut, money, prices, luck, "
+            "risk, or the feelings round them (fear, greed, patience, envy, regret): something a body or a thing visibly does (a number on "
+            "a chest, coins that melt, a piggy bank that spits, the scared sinking into the ground). The genre's most-watched rules are "
+            "about family, the body and feelings, so lean there. One rule only. facts.premise_seeds are examples of the "
             "kind; invent your own, never one in facts.premises_used. "
             "2. 'You see, ...': how it works, in two or three sentences, with one exact number and one sound word (Clink. Ding. Boing. "
             "Whoosh.), and ONE thing 'everyone says' about the rule, said plainly here, that the ending will prove wrong. "
@@ -105,8 +110,8 @@ def what():
             "answerable in a word or with a loophole ('What would YOU do with your last one?'); the renderer adds COMMENT BELOW and stands it at the top of the frame over the last four seconds, so the story's last shots are wide or mid, never close: the sky above the heads is free. "
             "THE CAPTION: line 1 is the rule and a question that invites a loophole ('In this town, hugs run out. What would you do with "
             "your last one?'), under 125 characters; then 'A made-up town and a made-up story.'; then one line on Meme Street, only what "
-            "facts.meme_street says, with 'Play today's stock at memestreet.net'; then '" + M.DISCLAIMER + "'; 3 to 5 hashtags, the first "
-            "#MemeStreet.")
+            "facts.meme_street says, with 'Play today's stock at memestreet.net'; then '" + M.DISCLAIMER + "'; then these hashtags: #inthistown "
+            "#storytime #animation #3danimation #MemeStreet.")
 
 
 def brief(slot):
