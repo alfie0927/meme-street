@@ -101,7 +101,8 @@ def what():
             "'takes you'; nobody dies; the ending is happy and earned. Leave ONE loophole unanswered that a clever viewer will shout at "
             "the screen: under these stories the biggest comments are loopholes ('Bro just leave the town', 171,000 likes). "
             + grammar +
-            "FOR THIS FORMAT: 20 to 30 scenes, each one or two short sentences (26 words at most) with 1 to 3 shots, so the picture cuts "
+            "FOR THIS FORMAT: 20 to 30 scenes, each one or two short sentences (4 to 26 words: a sound word never stands as a scene's whole "
+            "line) with 1 to 3 shots, so the picture cuts "
             "about every 1.5 to 2 seconds and every sentence is acted out by the people it names, where it happens. The rule is SEEN "
             "working in scene 0 (a close shot: the number, the coin, the thing changing inside the first second, on the words that say "
             "so). The number on a chest, when the rule has one, is on every named actor in every shot. Sound words get an fx on their "
@@ -132,6 +133,8 @@ def errors(spec):
     if any(s.get("kind") == "outro" for s in sc): errs.append("no outro scene and no sign-off: the story's last line is the reel's last line")
     if "memestreet.net" in text.lower() or "meme street" in text.lower(): errs.append("the story never names Meme Street: the caption does")
     if not 16 <= len(sc) <= 34: errs.append(f"{len(sc)} scenes: 20 to 30, each one or two short sentences")
+    short = [k for k, x in enumerate(sc) if len(str(x.get("vo", "")).split()) < 4]
+    if short: errs.append(f"scene {short[0]}'s line is under 4 words: a sound word or a two-word beat rides inside a longer line (the voice is checked line by line)")
     ask = str(spec.get("ask") or "").strip()
     if not (3 <= len(ask.split()) <= 9 and ask.endswith("?")): errs.append('"ask": the closing question to the viewer, 4 to 8 words ending in a question mark')
     return errs
@@ -150,7 +153,7 @@ def make(slot):
         spec = M.write(B, msgs=[{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": json.dumps(spec)},
                                 {"role": "user", "content": "Fix these and reply with the whole JSON again: " + "; ".join(bad)}], work=work)
         if errors(spec): print("not made: the form failed twice:", "; ".join(errors(spec)), flush=True); return None
-    spec.update(S.STYLE, voice_speed=1.4, scene_js=W.JS, part=None, series="", remake_of=FORM)   # (the serial's voice, a little faster: the genre tells its stories at 4.4 words a second)
+    spec.update(S.STYLE, voice_speed=1.5, scene_js=W.JS, part=None, series="", remake_of=FORM)   # (the serial's voice, faster: the genre tells its stories at 4.4 words a second; at 1.5 ours runs 4.25 and every test line was heard right, 2026-11-21)
     M.save(spec, B, work)
     r = subprocess.run([sys.executable, os.path.join(HERE, "critic.py"), "loop", work, out], cwd=ROOT,
                        env=dict(os.environ, STEP_TIMEOUT=os.environ.get("TOWN_STEP_TIMEOUT", "9000"), REVIEW_FPS=FPS, AUTO_FPS=FPS))   # (about 2,300 frames at 2 s each)
