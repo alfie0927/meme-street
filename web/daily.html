@@ -395,7 +395,7 @@ function draw(){
   if(drawn!=='run'){drawn='run';m.innerHTML=`<div class="view">${runShell(`Daily #${D.number}`)}</div>`}
   fillRun(G.candles,G.history+G.live,G.history,G.trades,G.cash,G.shares,G.price,(endAt-performance.now())/1000,D.cash,G.live);return}
  if(status==='done'&&G&&G.done){
-  if(drawn==='done')return;drawn='done';const fresh=lsGet('ms_daily_seen',null)!==D.day;lsSet('ms_daily_seen',D.day);
+  if(drawn==='done')return;drawn='done';sbar();const fresh=lsGet('ms_daily_seen',null)!==D.day;lsSet('ms_daily_seen',D.day);
   const others=(G.of||1)-1,better=others>0&&G.rank?(G.of-G.rank)/others:null,v=vsFor(D),beat=G.ret>G.hold+1e-9&&G.trades.length;
   const said=!G.trades.length?'you sat this one out.':beat?'you beat it.':'it did better this time.';
   m.innerHTML=`<div class="view">${fresh?'':back(st)}${reveal(G.real,G.hold)}<div class="card st"><div class="kick">Your return on Daily #${D.number}</div><div class="big ${cls(G.ret)}" id="bigret">${pc(fresh?0:G.ret)}</div>
@@ -541,7 +541,7 @@ async function archivePop(){
  pop(`<h2>The archive</h2><p class="mut" style="margin:0 0 14px">Replay any past day. Just practice, not ranked.</p>${r.days.length?`<table><tbody>${r.days.map(x=>`<tr><td class="mut">#${x.number}</td><td>${esc(x.name)}<br><small class="mut">${esc(fmtDate(x.start))}</small></td><td class="r">${x.mine===null||x.mine===undefined?'':`<span class="${cls(x.mine)}">${pc(x.mine)}</span>`}</td><td class="r"><button class="alt" data-replay="${x.number}" style="padding:6px 14px">Play</button></td></tr>`).join('')}</tbody></table>`:'<p class="mut">Past days show up here from tomorrow.</p>'}`,'The archive')}
 function sbar(){
  const e=$('tape');if(!e||!D)return;
- const base=[`<span>Daily #${D.number}: <b>${players()}</b> played</span>`].concat(D.board.length?D.board.slice(0,12).map(x=>`<span>${esc(x.name)} <b class="${cls(x.ret)}">${pc(x.ret)}</b></span>`):['<span>No results yet. Be the first.</span>']);
+ const base=[`<span>Daily #${D.number}: <b>${players()}</b> played</span>`].concat(!(G&&G.done)?['<span>Results show after you play</span>']:D.board.length?D.board.slice(0,12).map(x=>`<span>${esc(x.name)} <b class="${cls(x.ret)}">${pc(x.ret)}</b></span>`):['<span>No results yet. Be the first.</span>']);
  let items=base;while(items.length<8)items=items.concat(base);const html=items.join('');
  if(e._h!==html){e._h=html;e.innerHTML=`<div style="animation-duration:${items.length*3.5}s">${html}${html}</div>`}}
 // ---- the market behind the page: a candle feed that prints a new candle every couple of seconds and scrolls left, a
