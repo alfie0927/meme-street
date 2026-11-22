@@ -1654,7 +1654,7 @@ def check(spec, facts, charts, category=None):
         if BACKGROUND.search(nxt): errs.append(f"scene 1 opens on background ({nxt!r}): it is a second hook that raises the stake; what the company is or what a term means rides inside the action later")
     lo_w, hi_w, outro = LENGTH.get(category or spec.get("type"), (60, 110, True))
     if free and (category or spec.get("type")) not in LENGTH: hi_w = 260 if (category or spec.get("type")) in DEEP else 150   # (in depth: up to 260 words, the owner 2026-11-12)   # (35 to 60 s: the owner, 2026-11-11; was 40 to 120)
-    if remake: lo_w, hi_w, outro = 60, 460, False
+    if remake: lo_w, hi_w, outro = LENGTH.get(str(spec.get("remake_of")), (60, 460, False))   # (a form may bring its own length: stock_story.py's 3D histories)
     if outro and (not sc or sc[-1].get("kind") != "outro"): errs.append("the last scene must be an outro")
     look = lambda s: ("chart", s.get("chart")) if s.get("chart") is not None and s.get("kind") != "stick" else (s.get("kind"), s.get("layout"))
     body = [s for s in sc if s.get("kind") != "outro"]
@@ -2510,6 +2510,7 @@ if __name__ == "__main__":
         assert not soft(["the narration is 321 words; it must be 150 to 240"], GUESS) and not soft(["the scene function failed the dry run: covered at 5s"], GUESS) and not soft([], GUESS)
         rm = check(dict(fr, remake_of="x", headline="", scenes=[dict(fr["scenes"][0], vo="Higher or lower, three, two, one?")]), {}, [], HILO)
         assert not any("countdown" in e or "headline" in e or "outro" in e for e in rm), rm   # (an ordered remake keeps its length, loop and count)
+        LENGTH["form-x"] = (500, 600, False); assert any("must be 500 to 600" in e for e in check(dict(fr, remake_of="form-x"), {}, [], HILO)); del LENGTH["form-x"]   # (a form's own length)
         assert any('"think"' in e for e in check(dict(fr, scenes=[dict(fr["scenes"][0], think=9), fr["scenes"][1]]), {}, [], HILO))
         _h = {}
         assert len({hook_pick(_h)["name"] for _ in range(26)}) == 26 and hook_pick(_h)["name"] == HOOKS[0]["name"]   # (the 26 in turn, round and round: the bug of 2026-11-17)

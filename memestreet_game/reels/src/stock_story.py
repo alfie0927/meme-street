@@ -61,6 +61,8 @@ for _c in (STORY, EXPLAIN):
     M.LENGTH[_c] = (100, 145, True)
     M.KINDS[_c] = []
 M.LENGTH[STORY] = (150, 240, True); M.SECONDS[STORY] = (0, 100)   # (a history needs room: about 60 to 90 seconds, 2026-11-19)
+FORM3D = {"story": "stock-3d-story", "explainer": "stock-3d-explainer"}   # (the town's stock reels are checked on their own length, not the serial's 90 to 140 words: 2026-11-22)
+M.LENGTH[FORM3D["story"]] = (160, 250, True); M.LENGTH[FORM3D["explainer"]] = (120, 190, True)
 VIDEO_NOTE = (" CINEMATIC SHOTS (open-higgsfield's models through footage.py): facts.video.available is true, so scene 1 (the "
               "second hook, right after your animated scene 0) is ONE \"film\" scene: the story's world in one striking moving shot (a "
               "trading floor at night, a rocket on a pad, a crowd with phones lit; no real people, no logos, no text), with its "
@@ -167,6 +169,7 @@ def what_3d(kind="story"):
              "it happened (each cause acted as the thing it was), what came after. " if kind == "story" else
              "THIS ONE EXPLAINS facts.idea through the story: the idea as a dare in the hook, how it works step by step (each step "
              "acted by townspeople, one definition sentence at most), the real story as the proof, the one sign to watch for. ") +
+            "LENGTH: %d to %d spoken words in all, the sign-off included. " % M.LENGTH[FORM3D[kind]][:2] +
             "THE STORY: every beat of facts.news, in order, one beat a scene, acted by the townspeople; the people in "
             "facts.news.people, and only they, are named, each a townsperson with one trademark feature; facts.story.cast gives the "
             "regulars' colours. Then one line linking it to Meme Street's daily game (only what facts.meme_street says), and the "
@@ -190,7 +193,7 @@ def make_3d(x, pack, slot, post_at, kind="story"):
              "recent_devices": [], "video": {"available": False}, "hook_shots_used_lately": []}
     what = what_3d(kind)
     ask = {"category": S.CATEGORY, "what_this_reel_is": what, "facts": facts, "recent_titles_to_avoid": []}
-    B = {"slot": at, "category": S.CATEGORY, "system": M.system_prompt(S.CATEGORY), "ask": ask, "charts": []}
+    B = {"slot": at, "category": S.CATEGORY, "form": FORM3D[kind], "system": M.system_prompt(S.CATEGORY), "ask": ask, "charts": []}
     work, out = os.path.join(ROOT, "work", "auto-" + at), os.path.join(ROOT, "out", "auto-" + at)
     spec = M.write(B, work=work)
     bad = N.fact_check(pack, M.GAME_FACTS, spec)
