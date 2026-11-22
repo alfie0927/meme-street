@@ -56,7 +56,9 @@ def _num(ws):
             close()
         cur = (cur or 0) + v; last = "t" if t else "u"
     close()
-    return "".join(out)
+    if len(out) == 2 and len(out[0]) >= 2 and len(out[1]) == 2 and out[0] not in ("19", "20"):
+        return ".".join(out)     # (a real price: 'seventy-five eighty-six' is 75.86, shown as 7586 on 2026-11-22; a year stays whole,
+    return "".join(out)          #  so a price of 19.xx or 20.xx said this way still reads as a year)
 
 
 def digits(words):
@@ -115,7 +117,9 @@ def demo():
                         ("two point four times the volume", "2.4 times the volume"), ("one idea, one candle", "one idea, one candle"),
                         ("at level one.", "at level 1."), ("the twenty-candle high", "the 20-candle high"),
                         ("three thirty-four, and", "334, and"), ("ninety-one now", "91 now"), ("a clue", "a clue"),
-                        ("one thousand two hundred shares", "1200 shares"), ("twenty three", "23"), ("seventy-four to fifty-one", "74 to 51")]:
+                        ("one thousand two hundred shares", "1200 shares"), ("twenty three", "23"), ("seventy-four to fifty-one", "74 to 51"),
+                        ("to seventy-five eighty-six, and", "to 75.86, and"), ("a hundred and eleven fifty-eight.", "111.58."),
+                        ("August twenty sixteen to July twenty seventeen", "August 2016 to July 2017"), ("in nineteen twenty-nine", "in 1929")]:
         assert cap(said) == shown, (said, cap(said), shown)
     assert digits("near sixty-nine, under".split())[1] == ("69,", 1, 1)
     assert cap("Trade E M B R free.") == "Trade EMBR free." and cap("A, or B") == "A, or B" and cap("RSI stays") == "RSI stays"

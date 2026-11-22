@@ -321,7 +321,7 @@ function prep(S) {
     }
   });
   turn(); const C = String(q.cam || 'wide').split(':'); S.ck = CAMS[C[0]] ? C[0] : 'wide'; S.tg = (CAMS[C[0]] ? C[1] || '' : C[0]).split(/[,>]/).map(x => x.trim()).filter(Boolean);
-  S.fx = (q.fx || []).map(f => (typeof f === 'string' ? { do: f } : f)).map(f => ({ do: f.do, t: when(S, f.say, Math.max(S.t0, 0)) }));
+  S.fx = (q.fx || []).map(f => (typeof f === 'string' ? { do: f } : f)).map(f => ({ do: f.do, t: Math.max(when(S, f.say, Math.max(S.t0, 0)), /flash/.test(f.do) ? .12 : 0) }));   // (a flash never on the reel's first frames: frame 0 of the 22 November game reel was a white wash)
   S.skyT = q.sky_say ? when(S, q.sky_say, null) : null;
   if (q.plane) { const p = typeof q.plane === 'string' ? { mode: q.plane } : q.plane; S.plane = { mode: p.mode || 'parked', at: p.at ? xz(p.at) : [0, -8], t: when(S, p.say, Math.max(S.t0, 0)) }; }
   if (q.car) { const c = q.car; S.car = { c: CARCOL[c.color] ? c.color : 'gold', from: xz(c.from || [-9, -3]), to: xz(c.to || c.from || [9, -3]), t: when(S, c.say, Math.max(S.t0, 0)), who: c.who ? nm(c.who) : null }; if (S.car.who && S.by[S.car.who]) S.by[S.car.who].in = 'car'; }
