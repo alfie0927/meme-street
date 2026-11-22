@@ -159,8 +159,10 @@ def what_3d(kind="story"):
     w = S.WHAT
     grammar = w[w.index("THE LOOK"):w.index("THE STORY:")]
     return ("A TRUE STOCK STORY IN THE BLOCKY TOWN (the owner, 2026-11-21: 'they should be more 3d animation style'): facts.news is "
-            "the researched story of a real stock and facts.chart its real prices. The town acts it out, told in the first person by "
-            "a townsperson who watched it happen. The company is a building or a shop in the town with its name on a screen; traders "
+            "the researched story of a real stock and facts.chart its real prices. The town acts it out and its narrator tells it. The "
+            "narrator is a storyteller, never a witness: no 'I watched', 'I was there', 'I bought' (the fact check refuses a claim "
+            "the facts cannot carry, and nobody in the town saw this happen). "
+            "The company is a building or a shop in the town with its name on a screen; traders "
             "are townspeople whose chest numbers show the stock's price or their money as the story moves (numbers only from "
             "facts.chart and facts.news); the big moments are crowds rushing in, a number crashing on a chest, the sky turning red. "
             + grammar +
@@ -168,7 +170,8 @@ def what_3d(kind="story"):
              "it'): the hook (the craziest true number), who the company is and how it began, the road to the moment, the moment, WHY "
              "it happened (each cause acted as the thing it was), what came after. " if kind == "story" else
              "THIS ONE EXPLAINS facts.idea through the story: the idea as a dare in the hook, how it works step by step (each step "
-             "acted by townspeople, one definition sentence at most), the real story as the proof, the one sign to watch for. ") +
+             "acted by townspeople, one definition sentence at most, saying what the idea means in general and nothing about this "
+             "company), the real story as the proof, the one sign to watch for. ") +
             "LENGTH: %d to %d spoken words in all, the sign-off included. " % M.LENGTH[FORM3D[kind]][:2] +
             "THE STORY: every beat of facts.news, in order, one beat a scene, acted by the townspeople; the people in "
             "facts.news.people, and only they, are named, each a townsperson with one trademark feature; facts.story.cast gives the "
@@ -192,17 +195,22 @@ def make_3d(x, pack, slot, post_at, kind="story"):
     facts = {"news": pack, "chart": facts_c, "idea": x["idea"], "story": {"cast": CAST}, "meme_street": M.GAME_FACTS, "example": W.example(),
              "recent_devices": [], "video": {"available": False}, "hook_shots_used_lately": []}
     what = what_3d(kind)
+    fpack = dict(pack, chart_prices=facts_c, for_the_checker=(   # (the check sees what the writer was given: 22 November's explainer was held for prices of our own chart)
+        "chart_prices are this stock's real daily closes from our own data: a price, date or percentage worked out from them is "
+        "supported. The town and its narrator are a made-up frame for telling a true story, which is fine; a claim that the narrator "
+        "saw it, was there or traded it is not." + (f" The reel explains the idea '{x['idea']}': one general sentence saying what "
+        "that idea means, claiming nothing about this company, is supported." if kind == "explainer" else "")))
     ask = {"category": S.CATEGORY, "what_this_reel_is": what, "facts": facts, "recent_titles_to_avoid": []}
     B = {"slot": at, "category": S.CATEGORY, "form": FORM3D[kind], "system": M.system_prompt(S.CATEGORY), "ask": ask, "charts": []}
     work, out = os.path.join(ROOT, "work", "auto-" + at), os.path.join(ROOT, "out", "auto-" + at)
     spec = M.write(B, work=work)
-    bad = N.fact_check(pack, M.GAME_FACTS, spec)
+    bad = N.fact_check(fpack, M.GAME_FACTS, spec)
     if bad:
         N.say("3D story: the fact check sent it back:", "; ".join(bad)[:400])
         draft = json.dumps(spec, indent=1)
         spec = M.write(B, msgs=[{"role": "user", "content": json.dumps(ask, indent=1)}, {"role": "assistant", "content": draft},
                                 {"role": "user", "content": "A fact check found these. Fix every one, change nothing else, reply with the whole JSON: " + "; ".join(bad)}], work=work)
-        if N.fact_check(pack, M.GAME_FACTS, spec):
+        if N.fact_check(fpack, M.GAME_FACTS, spec):
             N.say("3D story HELD: the fact check failed twice"); return None
     spec.update({k: v for k, v in S.STYLE.items() if not k.startswith("voice")}, scene_js=W.JS, part=None, series="")   # (the town and its tune; the house voice)
     M.save(spec, B, work)
@@ -212,7 +220,7 @@ def make_3d(x, pack, slot, post_at, kind="story"):
     if r.returncode or not os.path.exists(os.path.join(out, "approved.json")):
         N.say("3D story HELD: the critic did not approve it"); return None
     final = json.load(open(os.path.join(work, "spec.json"), encoding="utf-8"))
-    if N.fact_check(pack, M.GAME_FACTS, final):
+    if N.fact_check(fpack, M.GAME_FACTS, final):
         N.say("3D story HELD: the fact check failed after the critic's rewrite"); return None
     final["type"] = STORY3D if kind == "story" else EXPLAIN3D   # (the ledger tells the looks apart by this)
     json.dump(final, open(os.path.join(work, "spec.json"), "w", encoding="utf-8"))
