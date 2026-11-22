@@ -81,7 +81,7 @@ def main(work, out):
     R = json.load(open(os.path.join(work, "timeline.json")))
     if os.environ.get("DRY") == "1":
         fdir = os.path.join(work, "dry"); shutil.rmtree(fdir, ignore_errors=True)
-        faults = asyncio.run(dry(R, fdir))
+        faults = asyncio.run(dry(R, fdir, float(os.environ.get("DRY_FPS", "2"))))   # (a town reel samples 1 a second: make_spec.dry_run)
         if os.environ.get("DRY_KEEP") != "1": shutil.rmtree(fdir, ignore_errors=True)   # (DRY_KEEP=1: look at the frames)
         if faults: raise SystemExit("DRY: " + "; ".join(faults))
         print(f"dry run ok ({R['T']:.1f}s)"); return

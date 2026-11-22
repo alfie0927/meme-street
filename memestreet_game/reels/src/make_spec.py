@@ -2225,9 +2225,10 @@ def dry_run(spec, B, work):
     if not spec.get("scene_js"): return []
     d = os.path.join(work or os.path.join(ROOT, "work", "dry"), "dry"); shutil.rmtree(d, ignore_errors=True); os.makedirs(d, exist_ok=True)
     json.dump(finish(json.loads(json.dumps(spec)), B["charts"], B["category"], B["ask"]["facts"].get("questions") or []), open(os.path.join(d, "spec.json"), "w"))
-    env = dict(os.environ, DRY="1", PAGE="reel.html", **({"DRY_FRAME_MS": "4000"} if B["category"] == "Blocky story" else {}))   # (a 3D frame takes about half a second on the server)
+    town = B["category"] == "Blocky story"
+    env = dict(os.environ, DRY="1", PAGE="reel.html", **({"DRY_FRAME_MS": "4000", "DRY_FPS": "1"} if town else {}))   # (a 3D frame takes 2 s or more on the server: a 95-second town story at 2 a second ran past 20 minutes, 2026-11-22; world.check has read its shots already)
     for cmd in ([sys.executable, os.path.join(ROOT, "lab", "silent.py"), d], [sys.executable, os.path.join(HERE, "render.py"), d, "-"]):
-        r = subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=ROOT, timeout=1200)
+        r = subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=ROOT, timeout=3000 if town else 1200)
         if r.returncode:
             o = (r.stderr or "") + (r.stdout or ""); m = re.search(r"DRY: (.*)", o, re.S)
             return ["the scene function failed the dry run: " + (m.group(1) if m else o[-600:]).strip()]
