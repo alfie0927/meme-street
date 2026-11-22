@@ -30,7 +30,7 @@ WHAT = ("A STORY REEL IN PARTS (the owner, 2026-11-14), made like the viral bloc
         "town. The renderer builds the town and its people and films what your SHOTS say: for this format you write NO scene function "
         "and no svg, so send NO ```js block (ignore DIRECTOR REELS' scene function, HUD, punch and geometry rules; still send "
         "\"device\", the same in every part: the chest labels). Every scene but the outro carries \"shots\": 1 to 3 shots, a new one "
-        "about every 2 seconds; the first runs from the scene's first word, each later one cuts in on its \"say\" (two or three "
+        "about every 3 seconds; the first runs from the scene's first word, each later one cuts in on its \"say\" (two or three "
         "words of the line, exactly as written; number words are fine: \"hit zero\"). facts.example is part 1 as it was filmed: copy its form. "
         "A SHOT: {\"say\"?, \"place\", \"cam\", \"move\"?, \"sky\"?, \"sky_say\"?, \"actors\": [...], \"crowd\"?, \"screen\"?, \"car\"?, "
         "\"plane\"?, \"door\"?, \"fx\"?}. "
@@ -75,6 +75,12 @@ WHAT = ("A STORY REEL IN PARTS (the owner, 2026-11-14), made like the viral bloc
         "park bench. Never write the name of any real game. THE CAPTIONS are the renderer's: one big word at a time, low in the "
         "frame; give every free scene its 2 to 5 word \"text\" as usual (the renderer hides punch lines and the top hook in this "
         "format). The only words on screen are the chest numbers and what a screen shows. "
+        "THE PACE (the owner, 2026-11-22: nothing is rushed; measured on the reel he chose): the voice speaks like a person, "
+        "about 2.5 words a second with its pauses, so lines are few and plain; a new shot about every 3 seconds, mostly one shot "
+        "a sentence, the camera easing slowly (\"move\": in, out or rise; \"still\" on a face that reacts); a shot stays on "
+        "the thing its line names until the line is done. SUSPENSE: up to 4 scenes may carry \"beat\": 0.6 to 1.6 (seconds of "
+        "silence after the line while its last shot plays on, the music dropping to a pad): after the line that sets up the "
+        "danger, just before the twist, after the reveal; never two in a row, never on the first two scenes. "
         "THE STORY: facts.story.story is this part's story: tell every beat of it, in that order, in the narrator's voice "
         "('I'm just an average trader'), tightened to fit the word limit, every line acted out by the avatars, funny and fast. "
         "A SERIAL: facts.story.earlier_parts is what the viewers have already seen (never retell it beyond the story's own first "
@@ -98,14 +104,14 @@ WHAT = ("A STORY REEL IN PARTS (the owner, 2026-11-14), made like the viral bloc
         "it is the final part; 'Practise at memestreet.net'; "
         "'Practice money only. Not investment advice.' (word for word); 3 to 5 hashtags. The voice tells it like "
         "the exemplar's narrator, in flowing sentences of 10 to 20 words joined with and, so, but, because (the checker refuses "
-        "an average under 10), while the pictures still cut every 2 seconds.") % {k: ", ".join(v) for k, v in W.VOC.items()}
+        "an average under 10), unhurried, while the pictures cut about every 3 seconds.") % {k: ", ".join(v) for k, v in W.VOC.items()}
 M.CATEGORIES.setdefault(CATEGORY, WHAT)
 # (the serial's own sound and look, the same in every part; the owner, 2026-11-14: "music like the roblox videos ... change the voice so it
 #  matches too". Measured on the owner's exemplar 10-42-35: the narrator speaks 4.4 words a second with no pause over 0.3 s, at about
 #  225 Hz; the house voice is 3.4 to 3.9 words a second at 205 Hz. So: Kokoro's bright af_bella, read quicker and played 9% higher,
 #  its pauses cut to under half (measured on the server: 4.2 words a second at 225 to 230 Hz, every line still understood by the
 #  speech check), over the bouncy tune of sounds.story_music; one word of caption at a time)
-STYLE = {"one_word": True, "voice": "af_bella", "voice_speed": 1.3, "voice_pitch": 1.09, "voice_pauses": 0.45, "music": "story"}
+STYLE = {"one_word": True, "voice": "af_bella", "voice_speed": 1.1, "voice_pitch": 1.0, "voice_pauses": 1.8, "scene_gap": 0.75, "music": "score", "captions": "phrase"}   # (2026-11-22, the owner: "nothing is rushed": 4.2 words a second while talking and 2.5 overall, as the reel he chose; no pitch shift (a resampled voice sounds made); each reel its own score: sounds.score)
 M.LENGTH.setdefault(CATEGORY, (90, 140, True))        # (spoken words: the part's beats, the link and the cliffhanger; 60 s at most)
 
 

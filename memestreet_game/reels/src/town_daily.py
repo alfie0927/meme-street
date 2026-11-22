@@ -42,7 +42,7 @@ def what(fmt):
             "THE FORMAT (what is told and where each fact comes from; ignore what it says about cards, tags, a HUD, a price tag or a "
             "scene function: here the town's shots are the picture): " + M.CATEGORIES[fmt] +
             " TOLD AS A STORY, never a commentary: one player the viewer can name and what they want, the chart in their way, a turn "
-            "at a real candle, the payoff; a new shot about every 2 seconds, and the thing each line names is shown as it is said. "
+            "at a real candle, the payoff; a new shot about every 3 seconds, and the thing each line names is shown as it is said. "
             "\"type\" is \"Blocky story\". Every scene is of kind \"free\" but the outro, whose line is \"Today's stock is live. Play it "
             "at memestreet.net.\" The caption: line 1 is the hook as a question to the viewer, under 125 characters; two or three short "
             "lines that give away nothing before the reveal; 'Play today's stock at memestreet.net'; '" + M.DISCLAIMER + "'; 3 to 5 hashtags.")

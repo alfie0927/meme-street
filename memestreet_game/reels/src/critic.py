@@ -156,7 +156,8 @@ def pack(work, out, rd, only=None, refs=True):
               "human_narrator_reference": {"words_per_sec_talking": WPS, "pause_after_comma": HUMAN["comma"], "pause_after_sentence": HUMAN["sentence"],
                                            "source": "measured on 16 top finance Shorts narrated by people"},
               "whole_reel": {"words_per_sec_talking": round(sum(n for n, _ in wr) / max(1e-9, sum(n / r for n, r in wr)), 2),
-                             "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps)},
+                             "longest_silence_secs": round(max(gaps, default=0), 2), "silences_over_0.6s": sum(g > 0.6 for g in gaps),
+                             "designed_silences": [{"from": h[0], "to": h[1], "why": "a suspense beat: the shot plays on, the music drops to its pad"} for h in (x.get("hold_t") for x in R["scenes"]) if h and R.get("music") == "score"]},
               "references": references(rd, imgs, True, R.get("type") or ""),
               "script_vs_heard_differences": misheard,
               "motion": dict(motion(mp4, [x["t0"] for x in R["scenes"][1:]], impacts=R.get("impacts", [])), note="jumps: times a frame changes far more than its neighbours away from a scene cut or a storyboard impact (a snap or jerk); drift_secs: seconds where most of the frame keeps changing (a swimming picture). Both are visual faults; check the frames at those times."),
@@ -183,7 +184,10 @@ post"). Flag only these BLOCKERS:
    early (a word clipped at the end of a line or at a cut); a garbled, skipped or doubled stretch of voice; a long dead
    silence where a line should be; a word the listener hears as a different word (the transcript of the final mix against
    the script; a number written as digits, a homophone, or Whisper's spelling of a rare trading term is not one). The voice
-   runs at ONE fixed speed by construction, so words-per-second differing between lines is never a blocker.
+   runs at ONE fixed speed by construction, so words-per-second differing between lines is never a blocker. A town
+   reel's pauses are long on purpose (the owner, 2026-11-22: "nothing is rushed, there is time left between some scenes to
+   build suspense"): a breath of about 0.75 s between scenes and up to 1.6 s more at each "designed_silences" entry of
+   report.json are never a blocker; only a word clipped or a line missing is.
 Everything else is a NOTE, never a blocker: facts, the story, the content, how well a beat lands, style, polish, taste,
 the format, the rulebook's content rules. (The facts of real-company stories are checked separately before you see the
 reel.) A director reel is meant to look unlike the house template and unlike other reels; its first seconds hold the hook

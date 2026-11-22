@@ -80,9 +80,9 @@ def main(work):
         t = vs + d
         if sc["kind"] == "question" or sc.get("think"):
             think = float(sc.get("think", THINK)); sc["think_t"] = [round(t + 0.15, 3), round(t + 0.15 + think, 3)]; t += 0.15 + think
-        if sc.get("hold"):                                     # (a Reference card: the screen keeps after the line while the cells land; make_spec.py CARD)
-            sc["hold_t"] = [round(t, 3), round(t + float(sc["hold"]), 3)]; t += float(sc["hold"])
-        t += GAP if i < len(S["scenes"]) - 1 or sc["kind"] != "outro" else TAIL   # (the hold is the sign-off's: a reel with no outro, a loop, replays at once)
+        if sc.get("hold") or sc.get("beat"):                  # (a Reference card's hold, a town story's suspense beat: as narrate.py)
+            hs = float(sc.get("hold") or sc["beat"]); sc["hold_t"] = [round(t, 3), round(t + hs, 3)]; t += hs
+        t += float(S.get("scene_gap") or GAP) if i < len(S["scenes"]) - 1 or sc["kind"] != "outro" else TAIL   # (the hold is the sign-off's: a reel with no outro, a loop, replays at once)
         sc["t1"] = round(t, 3)
         if sc.get("layout") == "candles": impacts.append(round(sc["t1"] - .55, 3))   # (the candles' burst is an impact too)
     S["T"] = round(t, 2); S["vo"] = []; S["num"] = None; S.setdefault("daily", None); S["impacts"] = sorted(impacts)

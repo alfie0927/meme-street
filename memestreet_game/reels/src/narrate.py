@@ -86,7 +86,7 @@ def pace(a, tw, sr=SR, k=1.0):
     cand, want, last, cum = [r for r in runs if r[1] - r[0] >= 3], {}, -1, 0   # (30 ms+: the voice dips at a mark even when it barely stops)
     for w, l in zip(tw[:-1], L):
         cum += l
-        if (m := w.rstrip("\"')")[-1:]) not in PAUSE: continue
+        if (m := w.rstrip("\"')")[-1:]) not in PAUSE or w.lower().strip("\"'(") in ("mr.", "mrs.", "ms.", "dr.", "st.", "jr.", "vs."): continue   # (a title's full stop is no sentence: "Mrs. | Tibbs" got a 1.8 s pause, 2026-11-22)
         te = cum / tot * dur
         near = [r for r in cand if r[0] > last and abs((r[0] + r[1]) * .005 - te) <= tol]
         if near:
@@ -251,6 +251,7 @@ def main(work):
         import sounds; sounds.main()                           # (the house sounds, made once: sounds.py)
     tick, chime, pop, whoosh = (os.path.join(A, f"sfx_{x}.wav") for x in ("tick", "chime", "pop", "whoosh"))
     t, vo, impacts = LEAD, [], []
+    gap = float(S.get("scene_gap") or GAP)                  # (a reel may breathe longer between scenes: the town reels, 0.75 s like the reel the owner chose, 2026-11-22)
     for i, sc in enumerate(S["scenes"]):
         clip = os.path.join(work, "vo", f"s{i}.wav"); tw = sc["vo"].split()
         voice, pitch = S.get("voice") or "af_heart", float(S.get("voice_pitch") or 1)   # (a reel may bring its own Kokoro voice: the story serial, story_reel.py)
@@ -299,7 +300,7 @@ def main(work):
         pv = S["scenes"][i - 1] if i else {}
         same = i and ((sc.get("chart") is not None and pv.get("chart") == sc["chart"]) or (sc["kind"] == "free" == pv.get("kind") and sc.get("chart") is None is pv.get("chart")))   # (the screen stays: the same chart, or one free world after another; reel.html keep())
         if not i: vo.append([pop, 0.0])                        # a sound on the very first frame (docs/ROADMAP.md A2): the pop is over by 0.09 s and the voice starts at 0.15
-        if i and not same: vo.append([whoosh, round(max(0, t - GAP + 0.14), 3)])   # (the whoosh after a breath, never on the line's last syllable: 2026-11-19)   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
+        if i and not same: vo.append([whoosh, round(max(0, t - gap + 0.14), 3)])   # (the whoosh after a breath, never on the line's last syllable: 2026-11-19)   # a scene change sounds the same, in the gap: it ended over a scene's first word ('Ember' heard as 'Emerald'); none when the screen does not change (the owner, 2026-11-09)
         sc["vs"] = round(vs, 3); sc["ve"] = round(vs + d, 3)
         vo.append([clip, round(vs, 3)])
         cap = digits(tw)                                       # the captions: the written words, numbers in digits ('two oh three' 203),
@@ -324,9 +325,10 @@ def main(work):
                 vo.append([tick, round(t + 0.15 + k * 0.4, 3)])
             t += 0.15 + think
             vo.append([chime, round(t, 3)])
-        if sc.get("hold"):                                     # (a Reference card: the screen keeps after the line while the cells land; make_spec.py CARD)
-            sc["hold_t"] = [round(t, 3), round(t + float(sc["hold"]), 3)]; t += float(sc["hold"])
-        t += GAP if i < len(S["scenes"]) - 1 or sc["kind"] != "outro" else TAIL   # (the hold is the sign-off's: a reel with no outro, a loop, replays at once)
+        if sc.get("hold") or sc.get("beat"):                  # (a Reference card: the screen keeps after the line while the cells land; make_spec.py CARD)
+            hs = float(sc.get("hold") or sc["beat"])            # ("beat": a town story's suspense, silence while the shot plays on; the score drops to its pad: 2026-11-22)
+            sc["hold_t"] = [round(t, 3), round(t + hs, 3)]; t += hs
+        t += gap if i < len(S["scenes"]) - 1 or sc["kind"] != "outro" else TAIL   # (the hold is the sign-off's: a reel with no outro, a loop, replays at once)
         sc["t1"] = round(t, 3)
         if sc.get("layout") == "candles": impacts.append(round(sc["t1"] - .55, 3))   # (the candles' burst is an impact too)
     for sc in S["scenes"]:                                     # realistic video shots (footage.py), fitted to their scenes

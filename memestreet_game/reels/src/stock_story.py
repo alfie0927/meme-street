@@ -179,7 +179,7 @@ def what_3d(kind="story"):
             "sign-off 'Today's stock is live. Play it at memestreet.net.'" + FACT_RULES + " \"type\" is \"Blocky story\". The caption: "
             "the hook under 125 characters, the story in short lines with each fact's status words, 'Play today's stock at "
             "memestreet.net', 'Sources: <outlets>. " + M.DISCLAIMER + "', 3 to 5 hashtags. The voice tells it in flowing sentences of "
-            "10 to 20 words, while the pictures cut every 2 seconds.")
+            "10 to 20 words, unhurried, while the pictures cut about every 3 seconds.")
 
 
 CAST = {"the narrator (I)": "grey-blue shirt #8a96ab, dark blue trousers #2e3a52, brown hair #6b4426, skin #f1c27d: a small trader who watched it all",

@@ -1606,6 +1606,14 @@ def check(spec, facts, charts, category=None):
         if len(sc) != 1 or sc[0].get("kind") != "free": errs.append("a Reference card is ONE free scene and nothing else: the hook line, then the hold while the card fills")
         elif not 5 <= hold <= 7: errs.append('"hold": 5 to 7 (seconds) on the one scene: the time the card keeps the screen while its cells land')
     elif any(s.get("hold") for s in sc): errs.append('"hold" belongs to the Reference card only: another format fills its time with spoken lines')
+    bt = [k for k, s in enumerate(sc) if s.get("beat") is not None]     # (a town story's suspense: silence after the line, the shot playing on; 2026-11-22)
+    if bt and not all(s.get("shots") for s in sc if s.get("kind") != "outro"): errs.append('"beat" belongs to the town stories (scenes with "shots") only')
+    elif bt:
+        for k in bt:
+            try: ok = 0.6 <= float(sc[k]["beat"]) <= 1.6
+            except (TypeError, ValueError): ok = False
+            if not ok: errs.append(f'scene {k}: "beat" is 0.6 to 1.6 (seconds of silence after the line)')
+        if len(bt) > 4 or min(bt) < 2 or any(b - a == 1 for a, b in zip(bt, bt[1:])): errs.append('"beat": at most 4 a reel, none on the first two scenes, never two in a row')
     for k, s in enumerate(sc):                             # (a countdown is a pause the viewer gets, never words said in one breath: the owner, 2026-11-19)
         if not remake and re.search(r"\b(?:three|3)[,.!]?\s+(?:two|2)[,.!]?\s+(?:one|1)\b", str(s.get("vo", "")), re.I):
             errs.append(f'scene {k}: never speak a countdown ("three, two, one" in one breath was too fast): ask the question, then give the scene "think": 3 and draw the countdown across s.think_t, one number a second')

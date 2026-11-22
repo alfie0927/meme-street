@@ -38,7 +38,7 @@ def check(spec, charts=None):
             if sh: errs.append(f"scene {k}: the outro has no shots (the end card covers the town)")
             continue
         if not isinstance(sh, list) or not 1 <= len(sh) <= 3 or not all(isinstance(q, dict) for q in sh):
-            errs.append(f"scene {k}: give it \"shots\", a list of 1 to 3 shot objects (a new shot about every 2 seconds)"); continue
+            errs.append(f"scene {k}: give it \"shots\", a list of 1 to 3 shot objects (a new shot about every 3 seconds)"); continue
         for j, q in enumerate(sh):
             w = f"scene {k} shot {j}"; bad = lambda m: errs.append(f"{w}: {m}")
             if q.get("place") not in VOC["places"]: bad(f"place must be one of {', '.join(VOC['places'])}")

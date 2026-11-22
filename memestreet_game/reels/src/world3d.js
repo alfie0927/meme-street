@@ -353,8 +353,8 @@ function spot(S, name, t) {   // a camera target: an actor, or a thing
 }
 const CAMS = { close: { d: 4.7, h: 1.8, y: 1.5, f: 34, a: 13 }, mid: { d: 7.6, h: 1.9, y: 1, f: 36, a: 17 }, low: { d: 4.4, h: .5, y: 1.5, f: 42, a: 22 }, wide: { f: 50, a: 9 }, high: { f: 46, a: 24 }, two: { f: 36, a: 8 }, over: { f: 40, a: 0 } };
 function camAt(S, t) {
-  const P = S.P, q = S.s, C = CAMS[S.ck], u = cl((t - Math.max(S.t0, 0)) / (S.t1 - Math.max(S.t0, 0))), mv = q.move || 'in', side = S.i % 2 ? 1 : -1;
-  let zoom = mv === 'in' ? 1 - .09 * u : mv === 'out' ? 1 + .12 * u : 1; const a0 = (q.angle != null ? q.angle : P.inside && P.k !== 'room' ? 0 : side * C.a) * PI / 180 + (mv === 'orbit' ? .4 * (u - .5) : 0), dh = mv === 'rise' ? 2.4 * u : 0;
+  const P = S.P, q = S.s, C = CAMS[S.ck], u0 = cl((t - Math.max(S.t0, 0)) / (S.t1 - Math.max(S.t0, 0))), u = .5 * u0 + .5 * io(u0), mv = q.move || 'in', side = S.i % 2 ? 1 : -1;
+  let zoom = mv === 'in' ? 1 - .09 * u : mv === 'out' ? 1 + .12 * u : 1; const a0 = (q.angle != null ? q.angle : P.inside && P.k !== 'room' ? 0 : side * C.a) * PI / 180 + (mv === 'orbit' ? .28 * (u - .5) : 0), dh = mv === 'rise' ? 2.4 * u : 0;
   for (const f of S.fx || []) if (f.do === 'zoom') zoom *= 1 - .17 * out(seg(t, f.t, f.t + .25));
   const T = S.tg.map(n => spot(S, n, t)).filter(Boolean), o = P.w(0, 0), pts = S.A.map(E => where(S, E, Math.max(S.t0, 0)));
   let g, d, h, y, phi = P.ry, a = a0;
@@ -458,7 +458,7 @@ function draw(t) {
   if (S.car) { const m = HERO[S.car.c] || (HERO[S.car.c] = car(CARCOL[S.car.c], true)), c = carAt(S, t); m.visible = true; m.position.set(c.x, .06, c.z); m.rotation.y = c.ry; }
   PLN.visible = !!S.plane; if (S.plane) { const m = planeAt(S, t); PLN.position.set(m.x, m.y, m.z); PLN.rotation.set(0, P.ry, m.pitch); PLN.scale.setScalar(m.sc); PLN.stairs.visible = m.stairs; }
   { const d = q.door || P.door || 'closed'; DOOR.rotation.y = 1.85 * (d === 'open' ? 1 : d === 'burst' ? back(seg(t, S.doorT, S.doorT + .28)) : 0); }
-  if (q.screen) { if (P.screen) screenPaint(P.screen, q.screen, u); screenPaint(HELD, q.screen, u, 1); } else if (P.screen) screenPaint(P.screen, { text: P.k === 'room' ? 'MEME STREET' : 'TOWN NEWS' }, 1);
+  if (q.screen) { if (P.screen) screenPaint(P.screen, q.screen, u); screenPaint(HELD, q.screen, u, 1); } else if (P.screen) screenPaint(P.screen, { text: P.k === 'room' ? 'MEME STREET' : '' }, 1);   // (the square's idle screen is blank: its 'TOWN NEWS' was cut to 'TOWN NE' behind two-shots, 2026-11-22)
   // confetti and coins, a flash, the old-photo look
   let fl = 0, flc = '255,255,255'; CONF.count = 0;
   for (const f of S.fx) {

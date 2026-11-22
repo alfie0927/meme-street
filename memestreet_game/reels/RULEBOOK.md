@@ -302,3 +302,11 @@ without review. A complaint puts it back to watched. Status: every format watche
   ..."), "You see,", gags with named neighbours, the narrator's odd place in the rule, one loved person, a crisis the rule
   causes, the rule used as the tool, a twist that proves "what everyone says" wrong, a callback; no sign-off; a question on
   screen at the end. Nothing deadly, no monsters, no trading words in the story.
+- 2026-11-22, the owner: "audio that fits, realistic, and the spacing between words is like how a human speaks. nothing is
+  rushed, there is time left between some scenes to build suspense etc. the music is more unique and rounded. the visuals also
+  flow nicely, the framing is perfect and nothing is rushed as well", with the reel he chose as the model (a "What if" 3D
+  explainer, 231,000 likes: 241 words in 96 s, 4.2 words a second while talking, a full stop heard as 0.8 s, a comma 0.4 s, a
+  new shot every 3.2 s). Every town reel now speaks at that pace (af_bella at 1.1, no pitch shift, pauses x1.8, 0.75 s between
+  scenes), cuts about every 3 seconds with the camera easing, may hold up to four suspense "beat"s of silence (the music drops
+  to its pad), has its own music written for its timeline (sounds.score: its own key, tempo, chords and motif, warm and in
+  stereo), and captions a phrase at a time with the spoken word lit. The town story is 200 to 270 words.

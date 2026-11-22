@@ -17,7 +17,7 @@ import make_spec as M, story_reel as S, world as W
 
 TYPE = "In this town"                                      # (the saved type: the ledger tells these from the serial's parts)
 FORM = "in-this-town"                                      # (make_spec.check reads a brief's form as a remake's: up to 460 words, no outro, short sentences)
-WORDS = (330, 420)
+WORDS = (200, 270)   # (about 95 seconds at a person's pace, 2.5 words a second: the reel the owner chose has 241 in 96 s, 2026-11-22)
 STATE = os.path.join(ROOT, "state", "town_stories.json")
 FPS = "24"                                                 # (a 3D frame takes about 2 s on the server: 24 a second instead of 30 is a fifth less to draw)
 IDEAS = [  # (the trading idea each twist carries, as a truth about people; the least lately used is next)
@@ -69,7 +69,7 @@ def what():
     grammar = w[w.index("THE LOOK"):w.index("THE STORY:")]
     return ("IN THIS TOWN: ONE COMPLETE STORY in the blocky town (the genre of the owner's exemplar; built the way that genre's most-watched "
             "stories are built: 114 scripts were studied). " + f"{WORDS[0]} to {WORDS[1]}" + " spoken words, about 95 seconds, in SHORT "
-            "sentences (7 words on average, many of 3 to 5), told in the first person by a kid of the town, warm and funny, fast. Never a "
+            "sentences (7 words on average, many of 3 to 5), told in the first person by a kid of the town, warm and funny, unhurried. Never a "
             "lesson, never a lecture, no trading words at all (no 'stock', 'trade', 'invest', 'stop-loss', 'portfolio'): money, coins, "
             "prices, shops and luck are the whole vocabulary. "
             "THE TEN BEATS, in this order: "
@@ -102,9 +102,9 @@ def what():
             "'takes you'; nobody dies; the ending is happy and earned. Leave ONE loophole unanswered that a clever viewer will shout at "
             "the screen: under these stories the biggest comments are loopholes ('Bro just leave the town', 171,000 likes). "
             + grammar +
-            "FOR THIS FORMAT: 20 to 30 scenes, each one or two short sentences (4 to 26 words: a sound word never stands as a scene's whole "
+            "FOR THIS FORMAT: 18 to 28 scenes, each one or two short sentences (4 to 22 words: a sound word never stands as a scene's whole "
             "line) with 1 to 3 shots, so the picture cuts "
-            "about every 1.5 to 2 seconds and every sentence is acted out by the people it names, where it happens. The rule is SEEN "
+            "about every 3 seconds and every sentence is acted out by the people it names, where it happens. The rule is SEEN "
             "working in scene 0 (a close shot: the number, the coin, the thing changing inside the first second, on the words that say "
             "so). The number on a chest, when the rule has one, is on every named actor in every shot. Sound words get an fx on their "
             "word. \"type\" is \"Blocky story\"; every scene is of kind \"free\". The title is the rule in 3 to 6 words. \"ask\" (a field beside "
@@ -133,7 +133,7 @@ def errors(spec):
     if not WORDS[0] - 30 <= n <= WORDS[1] + 30: errs.append(f"the story is {n} words; it must be {WORDS[0]} to {WORDS[1]}")
     if any(s.get("kind") == "outro" for s in sc): errs.append("no outro scene and no sign-off: the story's last line is the reel's last line")
     if "memestreet.net" in text.lower() or "meme street" in text.lower(): errs.append("the story never names Meme Street: the caption does")
-    if not 16 <= len(sc) <= 34: errs.append(f"{len(sc)} scenes: 20 to 30, each one or two short sentences")
+    if not 14 <= len(sc) <= 32: errs.append(f"{len(sc)} scenes: 18 to 28, each one or two short sentences")
     short = [k for k, x in enumerate(sc) if len(str(x.get("vo", "")).split()) < 4]
     if short: errs.append(f"scene {short[0]}'s line is under 4 words: a sound word or a two-word beat rides inside a longer line (the voice is checked line by line)")
     ask = str(spec.get("ask") or "").strip()
@@ -156,7 +156,7 @@ def make(slot, ready=None):
         spec = M.write(B, msgs=[{"role": "user", "content": json.dumps(B["ask"], indent=1)}, {"role": "assistant", "content": json.dumps(spec)},
                                 {"role": "user", "content": "Fix these and reply with the whole JSON again: " + "; ".join(bad)}], work=work)
         if errors(spec): print("not made: the form failed twice:", "; ".join(errors(spec)), flush=True); return None
-    spec.update(S.STYLE, voice_speed=1.5, scene_js=W.JS, part=None, series="", remake_of=FORM)   # (the serial's voice, faster: the genre tells its stories at 4.4 words a second; at 1.5 ours runs 4.25 and every test line was heard right, 2026-11-21)
+    spec.update(S.STYLE, scene_js=W.JS, part=None, series="", remake_of=FORM)   # (the serial's voice, faster: the genre tells its stories at 4.4 words a second; at 1.5 ours runs 4.25 and every test line was heard right, 2026-11-21)
     M.save(spec, B, work)
     r = subprocess.run([sys.executable, os.path.join(HERE, "critic.py"), "loop", work, out], cwd=ROOT,
                        env=dict(os.environ, STEP_TIMEOUT=os.environ.get("TOWN_STEP_TIMEOUT", "9000"), REVIEW_FPS=FPS, AUTO_FPS=FPS))   # (about 2,300 frames at 2 s each)
@@ -177,13 +177,17 @@ def demo():
     B, i = brief("2026-01-01T1300")
     assert B["form"] == FORM and B["category"] == S.CATEGORY and B["ask"]["facts"]["idea"] == i[1] and B["ask"]["facts"]["example"]
     sc = lambda vo, **k: dict({"kind": "free", "text": " ".join(vo.split()[:3]), "vo": vo, "shots": [{"place": "street", "cam": "close:narrator", "actors": [{"who": "narrator", "at": [0, 0], "chest": 5}]}]}, **k)
-    body = [sc("In this town, coins melt if you squeeze them."), sc("You see, the tighter you hold one, the faster it drips. Drip.")] + [sc("So everybody here carries their coins on open hands, even Mr. Pruitt the baker.") for _ in range(24)]
+    body = [sc("In this town, coins melt if you squeeze them."), sc("You see, the tighter you hold one, the faster it drips. Drip.")] + [sc("So everybody here carries their coins on open hands, even Mr. Pruitt the baker.") for _ in range(18)]
     good = {"title": "Coins Melt", "ask": "What would YOU do with yours?", "type": S.CATEGORY, "device": {"metaphor": "melting coins"}, "caption": "c memestreet.net", "scenes": body}
     assert errors(good) == [], errors(good)
     assert any("first words" in e for e in errors(dict(good, scenes=body[1:] + body[:1]))) and any("outro" in e for e in errors(dict(good, scenes=body + [{"kind": "outro", "vo": "x"}])))
-    assert any("words" in e for e in errors(dict(good, scenes=body[:17]))) and any('"ask"' in e for e in errors(dict(good, ask="Comment below")))
+    assert any("words" in e for e in errors(dict(good, scenes=body[:8]))) and any('"ask"' in e for e in errors(dict(good, ask="Comment below")))
     spec, errs = M.parse(json.dumps(good), B)                # (the brief's form reaches the checks: no outro, no headline, the length of a remake)
     assert spec.get("remake_of") == FORM and not any("outro" in e or "headline" in e or "narration is" in e or "sentences average" in e for e in errs), errs
+    bb = [dict(x) for x in body]; bb[5]["beat"] = 1.2; bb[9]["beat"] = 0.8      # (suspense beats: allowed apart, refused side by side or too long)
+    assert not any('"beat"' in e for e in M.parse(json.dumps(dict(good, scenes=bb)), B)[1])
+    bb[10]["beat"] = 1.0; bb[5]["beat"] = 3
+    e2 = M.parse(json.dumps(dict(good, scenes=bb)), B)[1]; assert any("never two in a row" in e for e in e2) and any("scene 5" in e and "0.6 to 1.6" in e for e in e2), e2
     print("ok")
 
 
