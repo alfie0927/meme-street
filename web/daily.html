@@ -390,7 +390,7 @@ function draw(){
   <p class="st">${D.real?'120 candles from a real US stock print one a second':'120 candles print one a second'}. Buy or short as they come, then find out what it was. Same chart for everyone. <b style="color:var(--txt)">${esc(playersLine())}</b>.</p>
   <div class="quote st"><div><small>Ticker</small><b>???</b></div><div><small>Clock</small><b>2:00</b></div><div><small>Cash</small><b>$${num(D.cash,0)}</b></div><div><small>Players</small><b>${players()}</b></div></div>
   <div class="st"><button class="go" id="play">Play today's stock</button></div><p class="small st">One go a day. <button class="lnk" id="how">How to play</button></p></div>
-  ${yesterday()}${board()}</div>`;return}
+  ${yesterday()}</div>`;return}
  if(status==='running'&&G&&G.candles&&G.candles.length){
   if(drawn!=='run'){drawn='run';m.innerHTML=`<div class="view">${runShell(`Daily #${D.number}`)}</div>`}
   fillRun(G.candles,G.history+G.live,G.history,G.trades,G.cash,G.shares,G.price,(endAt-performance.now())/1000,D.cash,G.live);return}
