@@ -53,8 +53,8 @@ CAST = {"the narrator (I)": "a kid of the town, about ten: grey-blue shirt #8a96
         "the neighbours": "two to four named townspeople for the gags (Mr. and Mrs. somebody, the mailman, a dog), each with one look of their own"}
 
 
-def state():
-    try: return json.load(open(STATE, encoding="utf-8"))
+def state(path=None):
+    try: return json.load(open(path or STATE, encoding="utf-8"))
     except (OSError, ValueError): return {"used": []}
 
 
@@ -141,10 +141,12 @@ def errors(spec):
     return errs
 
 
-def make(slot, ready=None):
+def make(slot, ready=None, F=None):
     """The day's story: written (its form checked, one fix) or, with `ready`, a script already written and read; voiced, rendered at
-    24 frames, reviewed, queued in its slot. -> the slot, or None."""
+    24 frames, reviewed, queued in its slot. -> the slot, or None. `F`: another town format's module with its own brief, errors,
+    TYPE, FORM and STATE (whatif.py); this one by default."""
     import news_reel as N
+    F = F or sys.modules[__name__]; brief, errors, TYPE, FORM, STATE = F.brief, F.errors, F.TYPE, F.FORM, F.STATE
     B, i = brief(slot)
     work, out = os.path.join(ROOT, "work", "auto-" + slot), os.path.join(ROOT, "out", "auto-" + slot)
     subprocess.run(["rm", "-rf", work, out], check=True)
@@ -164,7 +166,7 @@ def make(slot, ready=None):
         print("not made: the cut was not finished", flush=True); return None
     p = os.path.join(work, "spec.json"); final = json.load(open(p, encoding="utf-8")); final["type"] = TYPE
     json.dump(final, open(p, "w", encoding="utf-8"))
-    st = state(); st.setdefault("used", []).append({"slot": slot, "idea": i[0], "title": final.get("title"), "rule": str((final.get("scenes") or [{}])[0].get("vo", ""))[:120]})
+    st = state(STATE); st.setdefault("used", []).append({"slot": slot, "idea": i[0], "title": final.get("title"), "rule": str((final.get("scenes") or [{}])[0].get("vo", ""))[:120]})
     os.makedirs(os.path.dirname(STATE), exist_ok=True); json.dump(st, open(STATE, "w", encoding="utf-8"), indent=1)
     return N.queue_out(out, slot, final.get("title", ""))
 

@@ -310,3 +310,9 @@ without review. A complaint puts it back to watched. Status: every format watche
   scenes), cuts about every 3 seconds with the camera easing, may hold up to four suspense "beat"s of silence (the music drops
   to its pad), has its own music written for its timeline (sounds.score: its own key, tempo, chords and motif, warm and in
   stereo), and captions a phrase at a time with the spoken word lit. The town story is 200 to 270 words.
+- 2026-11-22, the owner: "i want to make reels gather hundreds of thousands of views following how other reels did e.g. reels
+  like this" (the "What if your reaction time was 10x faster?" reel). On an explainer day the 18:00 reel is a What if
+  (src/whatif.py): the premise as a question in the first words and at the top of the frame, at once a consequence with a
+  number, the baseline, four to six everyday vignettes small to absurd, "But there's a catch.", the downside with numbers, the
+  good news, a verdict question and a last line that lands on the first picture; the power stays in a badge at the top. Second
+  person, plain words, no statistics about people or companies.

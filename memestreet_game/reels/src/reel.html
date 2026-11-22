@@ -44,6 +44,7 @@ html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#080a0b
 <div class="opts" id="opts"></div>
 <div class="caps" id="caps"></div>
 <div id="ask" style="position:absolute;z-index:4;left:60px;right:60px;top:140px;text-align:center;font:900 58px/1.15 'Arial Black','DejaVu Sans',sans-serif;color:#fff;-webkit-text-stroke:10px #000;paint-order:stroke fill;opacity:0"></div>
+<div id="wiq" style="position:absolute;z-index:4;left:56px;right:56px;top:120px;text-align:center;font:900 64px/1.12 'Arial Black','DejaVu Sans',sans-serif;color:#fff;-webkit-text-stroke:11px #000;paint-order:stroke fill;text-transform:uppercase;opacity:0"></div><div id="wib" style="position:absolute;z-index:4;left:0;right:0;top:96px;text-align:center;opacity:0"><span style="display:inline-block;padding:10px 26px;border-radius:40px;background:rgba(10,14,20,.82);border:3px solid #ffd23f;color:#ffd23f;font:900 38px/1.1 'Arial Black','DejaVu Sans',sans-serif;letter-spacing:1px"></span></div>
 <div id="outro" style="position:absolute;z-index:2;inset:0;background:#080a0b;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:430px;box-sizing:border-box">
  <img id="oLogo" src="../assets/logo.png" style="width:240px;height:240px;border-radius:56px">
  <div id="oText" class="qa" style="margin-top:40px;font:700 64px/1.15 'Cascadia Mono',monospace;text-align:center;max-width:900px"></div>
@@ -538,6 +539,9 @@ function render(T){
  if(q&&q.options){const shown=s.kind==='question'?s:null;o.innerHTML=q.options.map((x,k)=>{const at=s.kind==='question'?(s.opt_t?s.opt_t[k]:((s.cues||[]).find(c=>c.do==='options')||{t:s.vs+.4}).t+k*.15):-1,a=at<0?1:back(seg(t,at,at+.35));
    let st2=`opacity:${cl(a)};transform:scale(${.85+.15*a})`;if(s.kind==='answer'){const ok=k===q.answer,u=out(seg(t,s.t0,s.t0+.35));st2+=ok?`;background:#123d2a;border-color:${G};color:#fff;transform:scale(${1+.06*Math.sin(Math.PI*cl(u))})`:`;opacity:${1-.6*u}`}
    return `<div class="opt" style="${st2}"><b style="flex:none;margin-right:12px;padding:4px 12px;border-radius:10px;background:${s.kind==='answer'&&k===q.answer?G:'#2a2f35'};color:${s.kind==='answer'&&k===q.answer?'#07121a':'#e6e9ec'}">${String.fromCharCode(65+k)}</b><span>${esc(x)}</span></div>`}).join('');o.querySelectorAll('.opt').forEach(e=>fit(e,104,q.options.length>3?26:30,16))}else o.innerHTML='';
+ {const q=document.getElementById('wiq'),bd=document.getElementById('wib');   // (a What if reel: the premise at the top over its first 4 s, then the power as a badge until the closing question: whatif.py, 2026-11-22)
+  if(R.premise){if(!q.firstChild)q.textContent=R.premise;const a=1-seg(t,3.7,4.1);q.style.opacity=a.toFixed(3);q.style.transform=`scale(${(.9+.1*back(seg(t,0,.35))).toFixed(3)})`}else q.style.opacity=0;
+  if(R.badge){const sp=bd.firstChild;if(!sp.textContent)sp.textContent=R.badge;bd.style.opacity=(seg(t,3.9,4.3)*(1-seg(t,R.T-4.5,R.T-4.2))).toFixed(3)}else bd.style.opacity=0}
  {const ak=document.getElementById('ask');   // (R.ask: a story's closing question, over its last four seconds: town_story.py)
   if(R.ask){const a=seg(t,R.T-4.2,R.T-3.9);ak.style.opacity=a.toFixed(3);ak.style.transform=`scale(${(.8+.2*back(a)).toFixed(3)})`;
    if(!ak.firstChild)ak.innerHTML=esc(R.ask)+'<div style="color:#ffd23f;font-size:54px;margin-top:10px">COMMENT BELOW</div>'}else ak.style.opacity=0}

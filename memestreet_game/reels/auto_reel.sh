@@ -54,6 +54,13 @@ if [ "${SLOT:11:4}" = 1300 ] && [ -z "${REEL_CATEGORY:-}" ] && [ -z "${RESUME:-}
   if python3 src/town_story.py slot "$SLOT" >> logs/town.log 2>&1; then echo "=== queued $SLOT (in this town) $(date -u '+%T UTC')" | tee -a logs/auto.log; exit 0; fi
   echo "the town story was not made for $SLOT (logs/town.log): a stock story instead" | tee -a logs/auto.log
 fi
+# 18:00 on an explainer day is a "What if" first (src/whatif.py: the form of the reel the owner chose as the model, 2026-11-22: one
+# hypothetical about the viewer and money, the catch, the loop); state/whatif_off turns it off, and anything else makes the explainer.
+if [ "${SLOT:11:4}" = 1800 ] && [ $(( 10#$(date -u -d "${SLOT:0:10}" +%j) % 2 )) -ne 0 ] && [ -z "${REEL_CATEGORY:-}" ] && [ -z "${RESUME:-}" ] && [ ! -f state/whatif_off ] && [ "$(cat "queue/$SLOT/.tries" 2>/dev/null || echo 1)" -le 1 ]; then
+  echo "=== what if $SLOT  $(date -u '+%F %T UTC')" | tee -a logs/auto.log
+  if python3 src/whatif.py slot "$SLOT" >> logs/town.log 2>&1; then echo "=== queued $SLOT (what if) $(date -u '+%T UTC')" | tee -a logs/auto.log; exit 0; fi
+  echo "the what if was not made for $SLOT (logs/town.log): the explainer instead" | tee -a logs/auto.log
+fi
 case "${SLOT:11:4}" in 1300) KIND=story ;; 1800) [ $(( 10#$(date -u -d "${SLOT:0:10}" +%j) % 2 )) -eq 0 ] && KIND=story || KIND=explainer ;; *) KIND= ;; esac
 if [ -n "$KIND" ] && [ -z "${REEL_CATEGORY:-}" ] && [ -z "${RESUME:-}" ] && [ ! -f state/stories_off ] && [ "$(cat "queue/$SLOT/.tries" 2>/dev/null || echo 1)" -le 1 ]; then
   echo "=== $KIND $SLOT  $(date -u '+%F %T UTC')" | tee -a logs/auto.log
