@@ -60,12 +60,16 @@ EL_SET = {"stability": .45, "similarity_boost": .8, "style": .3, "use_speaker_bo
 # artists on Jamendo, free to use with a credit (CC BY), found through Openverse (lab/music_search.py) and kept in
 # assets/music_cc/jamendo/ on the server with tracks.json (file, title, artist, licence, source); never in the repo. A reel takes
 # its own track (EXPLAINER_TRACK names one) and its caption credits it; synthesised music (sounds.tune) only if none is there.
-MUSIC_DIR = os.path.join(ROOT, "assets", "music_cc", "jamendo")
+MUSIC_DIR = os.path.join(ROOT, "assets", "music_cc", "genre")
+# Then, 2026-11-23 night: "i don't like this music... use the music that is typically used in these types of reels". A research
+# agent read the music labels on Segment Zero's and Zack D. Films' Shorts: paid Epidemic Sound tracks, mostly sneaky pizzicato
+# orchestral comedy, mystery pulses and cinematic builds. The free match: Steven O'Brien's cues (CC BY, not registered with
+# Content ID) and John Bartmann's "Jazzy Detective", in assets/music_cc/genre/ with tracks.json (each with its own "credit").
 CAP_LEAD = .06                                # a caption word shows this long before it is heard (a late word reads as lag)
 CAP_WORDS = 2                                 # words a caption at most (the owner's second model reel: one to three, big, changing often)
 CAP_MIN = .36                                  # seconds a caption stays at least (a shorter one joins its neighbour)
 MUSIC_DB = -18.0                              # the music's level against the voice (the model reel: 20 dB under; the first cuts: 14)
-FX_DB = {"whoosh": -20, "pop": -15, "thud": -13, "boom": -14, "ding": -15, "rise": -19}      # each effect's peak against the voice's
+FX_DB = {"whoosh": -13, "pop": -14, "thud": -12, "boom": -13, "ding": -14, "rise": -18}      # (the fourth model reel: effects you hear on every cut and every action)      # each effect's peak against the voice's
 GOLD = "#ffc83d"
 PAGE = "story3d.html"
 # How the browser draws: the reel server has no graphics card (software GL, 2 cores: two browsers, each half the frames, at 2/3
@@ -574,7 +578,7 @@ def captions(wt, spec, sp=None):
     for k, g in enumerate(groups):
         t1 = t0(groups[k + 1][0]) if k + 1 < len(groups) else g[-1][2] + .8
         if sp and k + 1 < len(groups) and groups[k + 1][0][3] != g[-1][3]: t1 = min(t1, shot_at(sp, groups[k + 1][0][3]))      # (a sentence's last words leave with its shot, not over the next one)
-        out.append({"t0": t0(g[0]), "t1": round(t1, 3), "words": [{"text": w[0], "t0": t0(w), "color": color(w[0])} for w in g]})
+        out.append({"t0": t0(g[0]), "t1": round(t1, 3), "words": [{"text": w[0], "t0": t0(w), "color": color(w[0]), "hot": bool(re.search(r"\d", w[0]) or color(w[0]) not in (None, GOLD) or (re.search(r"[.!?]$", w[0]) and len(re.sub(r"\W", "", w[0])) > 3))} for w in g]})
     return out
 
 
@@ -624,7 +628,10 @@ def timeline(spec, story, segs, wt, T):
     cast = {c["id"]: {k: c.get(k) for k in ("look", "color", "tag")} for c in spec["cast"]}; name = spec["brands"][0]["name"]
     day = str(story.get("day") or "Today's").upper(); norm = lambda x: re.sub(r"[^a-z0-9]", "", str(x).lower())
     said = [w[1] for w in wt if norm(name) and norm(w[0]).startswith(norm(name))]
-    return {"T": round(T, 3), "title": spec["title"], "tag": f"{day} MYSTERY CHART", "tag2": f"{day} CHART: {name.upper()}", "reveal": round(said[0] - CAP_LEAD, 3) if said else 0,
+    st = story.get("stock", {}); lo = min(story.get("chart") or [0]); P = story.get("chart") or [0]
+    choice = spec.get("choice") or {"a": f"Buy it at ${lo:.2f}", "b": "Stay away"}      # (the fifth model's ending: a choice to answer in the comments)
+    return {"T": round(T, 3), "title": spec["title"], "tag": f"{day} MYSTERY CHART", "ticker": st.get("ticker"), "choice": choice,
+            "where": f"Meme Street \u00B7 Daily #{story.get('number')}" if story.get("number") else "Meme Street", "when": f"{day} mystery chart", "tag2": f"{day} CHART: {name.upper()}", "reveal": round(said[0] - CAP_LEAD, 3) if said else 0,
             "brands": spec["brands"], "cast": cast, "scenes": direct(spec, segs, wt, T),
             "caps": captions(wt, spec, spans_of(segs)), "segs": segs, "words": wt, "prices": story.get("chart"),
             "dates": [story.get("stock", {}).get("start"), story.get("stock", {}).get("end")]}
@@ -778,7 +785,7 @@ def caption_text(spec, story):
     src = sorted({o for f in story.get("research", {}).get("facts", []) for o in (f.get("by") or [])})[:5]
     return (f"{spec['title']}\n\n{script}\n\n{story.get('day') or 'Today' + chr(39) + 's'} mystery chart was {st.get('name')} ({st.get('ticker')}), {st.get('start')} to {st.get('end')}. "
             f"A new one goes live every midnight UTC: memestreet.net\n" + ("Sources: " + ", ".join(src) + "\n" if src else "") +
-            ("Music: \"{title}\" by {artist} ({source}), {license}\n".format(**track(spec["title"])) if track(spec["title"]) else "") +
+            ((track(spec["title"]).get("credit") or "Music: \"{title}\" by {artist} ({source}), {license}".format(**track(spec["title"]))) + "\n" if track(spec["title"]) else "") +
             f"{DISCLAIMER}\n#stocks #investing #stockmarket #{re.sub(r'[^A-Za-z0-9]', '', str(st.get('ticker', '')))} #MemeStreet")
 
 
@@ -866,7 +873,7 @@ def day_story(date, data):
     pack = dict(pack, facts=[f for f in pack.get("facts", []) if f.get("status") != "alleged"])
     a, b = datetime.date.fromisoformat(rv["start"]), datetime.date.fromisoformat(rv["end"])
     when = lambda i: (a + (b - a) * (i / (len(P) - 1))).strftime("%b %Y")
-    return {"day": os.environ.get("EXPLAINER_DAY") or day_word(date if re.match(r"\d{4}-\d\d-\d\d", str(date)) else os.path.basename(data)),
+    return {"number": d.get("number"), "day": os.environ.get("EXPLAINER_DAY") or day_word(date if re.match(r"\d{4}-\d\d-\d\d", str(date)) else os.path.basename(data)),
             "stock": {"ticker": rv["ticker"], "name": rv["name"], "start": rv["start"], "end": rv["end"], "events_in_window": rv.get("events", [])},
             "window": {"first_price": f"${P[0]:.2f}", "last_price": f"${P[-1]:.2f}", "change_pct": f"{(P[-1] / P[0] - 1) * 100:.0f}%",
                        "high": {"price": f"${P[hi]:.2f}", "when": when(hi), "chart_point": round(hi / (len(P) - 1), 2)},

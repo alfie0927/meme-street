@@ -72,21 +72,53 @@ const K = {
 };
 
 // ------------------------------------------------------------ header and captions (fixed over every scene)
-function header(t, label) {      // the third model's mark: small, letter-spaced, top left
+function header(t, label) {      // the mark (third model); the series tag in the opening seconds and the price counter (fifth model, "The Bunker", 2026-11-23)
   c.save(); c.globalAlpha = .8; c.font = `600 26px Montserrat, ${F}`; c.letterSpacing = '4px'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 6;
   c.fillStyle = '#fff'; c.fillText('\u2205 MEME STREET', 64, 226); c.restore();
+  const end = (R.scenes || [])[R.scenes.length - 1] || {};
+  if (t < 3.4) {                                              // the opening tag: where and when, and the series badge
+    const a = clamp(t / .25) * clamp((3.4 - t) / .3); c.save(); c.globalAlpha = a; c.textAlign = 'left'; c.textBaseline = 'middle'; c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 8;
+    c.font = `800 34px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText(String(R.where || 'MEME STREET').toUpperCase(), 64, 118);
+    c.font = `700 24px Montserrat, ${F}`; c.fillStyle = GOLD; c.fillText(String(R.when || '').toUpperCase(), 64, 152); c.restore();
+  }
+  if (t >= 3.4 && t < end.t0) {                              // the price counter, once the opening tag has gone: the stock's real price at this point of the story
+    const P = R.prices || [], k = Math.round(clamp(priceAt(t)) * (P.length - 1)), v = P[k];
+    if (v != null) { const lab = t >= (R.reveal || 0) ? String(R.ticker || 'STOCK') : 'MYSTERY STOCK', up = v >= P[0];
+      c.save(); c.globalAlpha = clamp((t - 3.4) / .3); const w = 300, x = 540 - w / 2, y = 64; rr(x, y, w, 104, 16); c.fillStyle = 'rgba(12,10,20,.86)'; c.fill(); c.lineWidth = 4; c.strokeStyle = up ? GREEN : RED; c.stroke();
+      c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `800 20px Montserrat, ${F}`; c.letterSpacing = '4px'; c.fillStyle = up ? GREEN : RED; c.fillText(lab, 540, y + 26);
+      c.letterSpacing = '0px'; c.font = `800 48px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText('$' + v.toFixed(2), 540, y + 68); c.restore(); }
+  }
   reg('header', 0, 0, W, 250);
 }
-function captions(t) {             // as the third model: Montserrat, heavy, white with a dark edge and shadow, one or two words, mid-low
+function priceAt(t) {             // where in the window the story is at time t: the end of the last chart shown so far (the mystery chart counts as its start)
+  let u = 0;
+  for (const s of R.scenes || []) { if (s.t0 > t) break; for (const it of s.items) if (it.kind === 'chart') { const lt = clamp((t - it.t) / Math.max(.6, (s.t1 - it.t) * .8));
+    u = s === R.scenes[0] ? (it.from || 0) : (t >= it.t ? (it.from || 0) + ((it.to || 1) - (it.from || 0)) * ease(lt) : u); } }
+  return u;
+}
+function endCard(t) {             // the fifth model's ending: a choice for the viewer, to answer in the comments
+  const end = (R.scenes || [])[R.scenes.length - 1]; if (!end || t < end.t0 || !R.choice) return false;
+  const a = clamp((t - end.t0) / .3); c.save(); c.fillStyle = `rgba(8,8,14,${.94 * a})`; c.fillRect(0, 0, W, 1920); c.globalAlpha = a; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.font = `800 26px Montserrat, ${F}`; c.letterSpacing = '6px'; c.fillStyle = GOLD; c.fillText(String(R.choice.kicker || 'TODAY\'S CHART \u00B7 YOU DECIDE'), 540, 560); c.letterSpacing = '0px';
+  c.font = `800 92px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText('WHAT WOULD', 540, 660); c.fillText('YOU DO?', 540, 760);
+  [['A', R.choice.a, '#2f7cf6', 900], ['B', R.choice.b, '#d8343f', 1080]].forEach(([k, s, col, y], i) => { const p = clamp((t - end.t0 - .35 - i * .25) / .25); if (!p) return;
+    c.save(); c.globalAlpha = a * p; rr(170, y, 740, 120, 18); c.fillStyle = col; c.fill(); rr(200, y + 26, 68, 68, 12); c.fillStyle = '#fff'; c.fill();
+    c.fillStyle = col; c.font = `800 44px Montserrat, ${F}`; c.fillText(k, 234, y + 62); c.fillStyle = '#fff'; c.textAlign = 'left'; c.font = `800 40px Montserrat, ${F}`; c.fillText(String(s).toUpperCase(), 300, y + 62, 590); c.restore(); });
+  c.font = `700 34px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText('Comment A or B below', 540, 1270); c.fillStyle = GOLD; c.font = `800 44px Montserrat, ${F}`; c.fillText('\u2193', 540, 1330);
+  c.restore(); return true;
+}
+function captions(t) {             // as the third and fourth models: Montserrat, heavy, white with a dark edge and shadow, one or two words, mid-low; a word that lands in yellow
   const cap = (R.caps || []).find(q => t >= q.t0 && t < q.t1); if (!cap) return;
-  const s = cap.words.map(w => w.text).join(' '); let size = 70; c.font = `800 ${size}px Montserrat, ${F}`;
+  const s = cap.words.map(w => w.text).join(' '); let size = 72; c.font = `800 ${size}px Montserrat, ${F}`;
   while (c.measureText(s).width > 880 && size > 44) { size -= 2; c.font = `800 ${size}px Montserrat, ${F}`; }
-  const w = c.measureText(s).width, y = 1330;
-  c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.globalAlpha = clamp((t - cap.t0) / .04);
-  c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 12; c.shadowOffsetY = 3; c.lineWidth = size * .14; c.strokeStyle = '#141018'; c.strokeText(s, 540, y);
-  c.shadowColor = 'transparent'; c.fillStyle = '#ffffff'; c.fillText(s, 540, y); c.restore();
+  const sp = c.measureText(' ').width, ws = cap.words.map(w => c.measureText(w.text).width), w = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1), y = 1330;
+  c.save(); c.textAlign = 'left'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.globalAlpha = clamp((t - cap.t0) / .04);
+  let x = 540 - w / 2;
+  cap.words.forEach((q, i) => { c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 12; c.shadowOffsetY = 3; c.lineWidth = size * .14; c.strokeStyle = '#141018'; c.strokeText(q.text, x, y);
+    c.shadowColor = 'transparent'; c.fillStyle = q.hot ? '#ffd23f' : '#ffffff'; c.fillText(q.text, x, y); x += ws[i] + sp; });
+  c.restore();
   reg('caption', 540 - w / 2 - 10, y - size * .7, w + 20, size * 1.4);
 }
-window.S2 = {K, INK, GOLD, RED, GREEN, header, captions, pill, txt, blob, rr, circ, shade, brandColor, clamp, ease, back, reg,
+window.S2 = {K, INK, GOLD, RED, GREEN, header, captions, endCard, pill, txt, blob, rr, circ, shade, brandColor, clamp, ease, back, reg,
   boxes: () => BOX, reset: () => { BOX = []; }, ctx: x => { const o = c; c = x; return o; }};
 window.ready = Promise.all([document.fonts.load(`700 40px Fredoka`), document.fonts.load(`800 40px Montserrat`), document.fonts.load(`600 26px Montserrat`)]).then(() => document.fonts.ready).then(() => true);

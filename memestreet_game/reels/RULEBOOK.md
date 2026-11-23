@@ -70,6 +70,14 @@ also checked automatically (make_spec.py, render.py, narrate.py).
     (never pushed: the other voice slurred at 1.38x); drafts are read by the free voice, only the filmed cut by ElevenLabs.
   - The music is a real track by an independent artist (Jamendo, CC BY, credited in the caption), a different one by title;
     never synthesised (too "AI generated") and never Kevin MacLeod (heard everywhere).
+- The owner, 2026-11-23 night: "i don't like this music... use the music that is typically used in these types of reels", and two
+  more model reels to use too: instagram.com/reel/DgGTIW0ycZD (flat stick-figure cartoon: one or two words a caption with the word
+  that lands in yellow, whip-pan cuts with motion blur, sound effects on every cut and action) and instagram.com/reel/DgD9kbZv3AZ
+  ("The Bunker": a place-and-time tag with a series badge at the start, a live counter at the top, an A/B "WHAT WOULD YOU DO?"
+  card at the end, "Comment A or B below"). So: the music is the genre's (the channels it copies use sneaky pizzicato orchestral
+  comedy, mystery pulses and cinematic cues from a paid library; the free match is Steven O'Brien's cues, CC BY, not in Content ID,
+  credited as he asks); captions light the landing word in yellow; every cut is a whip pan; the reel opens with the Daily's tag,
+  shows the stock's real price in a counter at the top as the story moves, and ends on the A/B card.
 - The owner disliked the old look, stories and music; the voice may stay. Budget $0.
 - Every reel passes the simulated viewers (lab/audience.py) before it is queued: at least 9 of the 13 watch to the end (the owner's
   bar, 2026-11-22: as many as the best of the copied hits kept; "all 13" is a bar none of the hits passes).

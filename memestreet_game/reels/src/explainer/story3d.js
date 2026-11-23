@@ -15,7 +15,7 @@
 (function () {
 'use strict';
 const T3 = THREE, R = window.__R, S = window.S2, W = 1080, H = 1920, Q = window.__Q || 2 / 3, CW = Math.round(W * Q), CH = Math.round(H * Q);
-const GAP = 30, FOV = 45, FLY = .38;
+const GAP = 30, FOV = 45, FLY = .32;
 const BAND = [70, 262, 940, 236], ZONE = band => band ? [82, 524, 916, 736] : [82, 274, 916, 986];     // px: the words' band, the picture zone
 T3.ColorManagement.legacyMode = false;       // colours are written as on screen (sRGB) and lit in linear light
 const cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), lerp = (a, b, k) => a + (b - a) * k;
@@ -439,8 +439,10 @@ function render(t) {
   }
   for (const [tx, draw, it] of DYN) { if (!draw || (it && (it._k !== k && !(flying && it._k === k - 1) || t < it.t))) continue; const {x, c} = tx.userData; draw(x, c.width, c.height, Math.max(0, it ? t - it.t : t)); tx.needsUpdate = true; }
   bokeh.uniforms.focus.value = Math.hypot(v[0] - v[3], v[1] - v[4], v[2] - v[5]); comp.render();
+  window.__whip = flying ? Math.sin(Math.PI * cl((t - b) / FLY)) : 0;      // (the fourth model's whip pan: the cut smears sideways; drawn on the overlay below)
   // the flat layer: the words in their band, name tags, the header with the scene's date, the captions
   S.reset(); ox.clearRect(0, 0, W, H); const old = S.ctx(ox), sc = Sc[k];
+  if (window.__whip > .05) { ox.save(); for (let i = 1; i <= 9; i++) { ox.globalAlpha = .16 * window.__whip; ox.drawImage(cv, (i - 5) * 26 * window.__whip, 0, W, H); } ox.restore(); }
   const gr = ox.createLinearGradient(0, 1200, 0, H); gr.addColorStop(0, 'rgba(8,9,20,0)'); gr.addColorStop(.35, 'rgba(8,9,20,.42)'); gr.addColorStop(1, 'rgba(8,9,20,.72)'); ox.fillStyle = gr; ox.fillRect(0, 1200, W, H - 1200);
   if (!flying) {
     const mine = ITEMS.filter(p => p.k === k && !p.flat && t >= p.it.t), rects = mine.map(p => rectOf(boxOf(p.o)));
@@ -449,6 +451,7 @@ function render(t) {
         ox.save(); ox.globalAlpha = cl((t - p.it.t - .25) / .3); const rr = S.pill(p.tag, cx, r[1] - 48, 40, '#fff', '#14182b', Math.max(60, 2 * half - 50)); ox.lineWidth = 4; ox.strokeStyle = S.GOLD; S.rr(...rr, rr[3] / 2); ox.stroke(); ox.restore(); S.reg('tag:' + p.it.who, ...rr); } });
     for (const p of ITEMS) if (p.flat && p.k === k && t >= p.it.t) flat(p.it, t, sc);
   }
+  if (S.endCard(t)) { S.ctx(old); window.__flying = flying; return; }      // (the ending: the choice card, no captions over it)
   S.header(t, flying ? Sc[k - 1].label : sc.label); S.captions(t); S.ctx(old);
   window.__flying = flying;
 }
