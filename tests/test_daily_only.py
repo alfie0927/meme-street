@@ -45,7 +45,7 @@ class RealChartTests(unittest.TestCase):
         self.assertNotIn("ticker", json.dumps(v))
         st = e.daily_start(p)
         self.assertNotIn("real", st)
-        self.assertEqual(st["price"], 100.0)                                 # (rebased: the level gives nothing away)
+        self.assertEqual(st["price"], round(e._dchart()["chart"]["real"]["first"], 4))   # (the stock's real price, since 2026-11-23)
         e.now += 30
         self.assertNotIn("real", e.daily_poll(p))
         e.now += daily.LIVE

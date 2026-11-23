@@ -106,6 +106,10 @@ def add_pages(app):
             data = {"@context": "https://schema.org", "@type": "WebApplication", "name": "Meme Street", "url": site + "/",
                     "applicationCategory": "GameApplication", "operatingSystem": "Any", "description": GAME_TEXT,
                     "image": site + "/brand/memestreet_logo_peaks.png", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
+            data = {"@context": "https://schema.org", "@graph": [   # (the name and logo Google shows beside results, 2026-11-23)
+                {"@type": "WebSite", "name": "MemeStreet", "url": site + "/"},
+                {"@type": "Organization", "name": "MemeStreet", "url": site + "/", "logo": site + "/brand/icon-512.png"},
+                {k: v for k, v in data.items() if k != "@context"}]}
             s = open(f, encoding="utf-8").read()
             t, d = html.escape(GAME_TITLE), html.escape(GAME_TEXT)
             head = (f'<title>{t}</title><meta name="description" content="{d}"><link rel="canonical" href="{site}/">'

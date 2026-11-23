@@ -5,8 +5,8 @@ the whole of memestreet.net (the owner: "route the daily to memestreet.net. that
 * **A real chart** (the owner: "make it so it takes REAL charts and shows the stock name at the end of the 2 minutes"):
   180 trading days of a real US stock (2016 to 2021), one day a candle, from `content/daily_real.json`
   (`tools/daily_bank.py` builds it from public-domain prices). The day picks one by the save's salt (`real_chart`), so
-  nobody can tell which comes next, and a year passes before one repeats. While it plays the prices are rebased so
-  the last lead-in close is 100 and the candles carry no dates; once the game is over the result names the stock, its
+  nobody can tell which comes next, and a year passes before one repeats. While it plays the prices are the stock's
+  real ones (since 2026-11-23; before, rebased so the last lead-in close was 100) and the candles carry no dates; once the game is over the result names the stock, its
   dates, its real prices and what happened in those months (`real`). Without the bank the model's chart below is used.
 * **Streaks without an account** (the owner: "implementing streaks (without signing up), extra stuff for signing up"):
   a visitor's games count under their browser's id (`v:<id>`): stats, streak and history, carried into the account
@@ -132,19 +132,20 @@ def real_levels(cs, n=LEVELS_SHOWN, k=3):
                     tests.append([j, seen])
                     away = False
         if tests:
-            out.append({"price": round(lv, 2), "kind": "support" if closes[tests[0][0] - 1] > lv else "resistance", "tests": tests})
+            out.append({"price": round(lv, 4), "kind": "support" if closes[tests[0][0] - 1] > lv else "resistance", "tests": tests})
     out.sort(key=lambda g: (-len(g["tests"]), g["tests"][0][0]))
     return out[:n]
 
 
 def rebased(x, i):
-    """Bank chart `x` (number `i`) as the game shows it: prices rebased so the last lead-in close is 100, volume
-    relative to the chart's median; `real` holds what the end of the game reveals (`k` turns a shown price back)."""
+    """Bank chart `x` (number `i`) as the game shows it: the stock's real prices (since 2026-11-23, the owner; before,
+    rebased so the last lead-in close was 100), volume relative to the chart's median; `real` holds what the end of the
+    game reveals (`k`, now always 1, turns a shown price into the real one; kept for old archived days)."""
     cs = x["c"]
-    k = cs[HISTORY - 1][3] / 100.0
+    k = 1.0
     vols = sorted(c[4] for c in cs)
     vm = max(vols[len(vols) // 2], 1)
-    candles = [[round(o / k, 2), round(h / k, 2), round(lo / k, 2), round(c / k, 2), int(v / vm * 1000)] for o, h, lo, c, v in cs]
+    candles = [[round(o, 4), round(h, 4), round(lo, 4), round(c, 4), int(v / vm * 1000)] for o, h, lo, c, v in cs]
     return {"candles": candles,
             "levels": real_levels(candles),
             "real": {"i": i, "ticker": x["t"], "name": x["n"], "tf": x.get("tf", "1 day"), "from": x["d"][0], "start": x["d"][1], "end": x["d"][2], "k": k,
