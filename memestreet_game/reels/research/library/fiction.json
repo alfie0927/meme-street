@@ -1,0 +1,3056 @@
+{
+ "slice": "fiction",
+ "made": "2026-11-22",
+ "twin": "fiction.md",
+ "counts": {
+  "shorts_listed": 35062,
+  "shorts_ranked": 24569,
+  "channels_ranked": 644,
+  "ranked_100k_plus": 10324,
+  "ranked_1m_plus": 4560,
+  "ranked_5x_plus": 3468,
+  "watched": 26,
+  "stills_only": 18,
+  "word_timed_transcripts": 6
+ },
+ "limits": [
+  "Instagram shows likes, not views, without a login; no account median for Instagram",
+  "x is views over the channel's own median (newest 40 Shorts)",
+  "transcripts are YouTube's captions: wording as spoken, punctuation and figure shorthand YouTube's; times are word starts",
+  "the copy-spec style passed 5x in 8 of 55 Shorts across its two channels; its three money films got 0.7x, 0.2x, 0.2x",
+  "YouTube's bot check stopped two watch lists; kindness tales and Bloopo have one watched film each"
+ ],
+ "copy_spec": {
+  "style": "what_if_voiced",
+  "name": "What if your X was 10 times ...? (voiced 3D simulation, second person)",
+  "master": {
+   "creator": "Yastor (yastor200)",
+   "instagram": "https://www.instagram.com/reel/DeonnawBkxt/",
+   "instagram_likes": 231881,
+   "instagram_comments": 678,
+   "instagram_seconds": 96.4,
+   "posted": "2026-10-18",
+   "youtube": "https://www.youtube.com/shorts/RsHSS9HtUKA",
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/ig_yastor.jpg"
+  },
+  "record": {
+   "yastor_youtube": {
+    "shorts": 14,
+    "median": 5950,
+    "over_5x": 3
+   },
+   "alternate_outcomes": {
+    "shorts": 41,
+    "median": 28500,
+    "over_5x": 5
+   },
+   "yastor_tiktok": {
+    "posts": 9,
+    "median": 426,
+    "max": 1312
+   },
+   "money_in_this_form": [
+    {
+     "title": "What If Your Money Doubled Every Day?",
+     "x": 0.7
+    },
+    {
+     "title": "What IF YOU were the LUCKIEST person ALIVE for 60 SECONDS?",
+     "x": 0.2
+    },
+    {
+     "title": "What IF you got LOCKED in a BANK VAULT?",
+     "x": 0.2
+    }
+   ]
+  },
+  "winners": [
+   {
+    "key": "yastor_poland_inv",
+    "url": "https://www.youtube.com/shorts/D9rZlvk5ZkI",
+    "title": "Everything Poland invented just disappeared. 🇵🇱 #whatif #poland",
+    "views": 1476582,
+    "x": 235.3,
+    "seconds": 82.0,
+    "measures": {
+     "key": "yastor_poland_inv",
+     "x": 235.3,
+     "views": 1476582,
+     "seconds": 82.0,
+     "words": 206,
+     "sentences": 30,
+     "first_word": 0.0,
+     "last_word": 80.52,
+     "wps_all": 2.51,
+     "wps_talking": 3.11,
+     "pauses": 20,
+     "pause_s": 14.6,
+     "longest_pause": 1.8,
+     "median_sentence": 6.0,
+     "max_sentence": 17,
+     "short_le3": 5,
+     "questions": 4,
+     "numbered_sentences": 7,
+     "first_number_t": 6.0,
+     "hook_words": 14,
+     "hook_end": 6.0,
+     "s2": "Your bagel, first written record Krakow 1610.",
+     "turn_t": 55.52,
+     "turn_pct": 68,
+     "turn": "But the biggest one is in your hand.",
+     "last_t": 79.68,
+     "last": "So, I guess I'm next.",
+     "tail_after_last_word": 1.5,
+     "cuts": 6,
+     "cuts_per_10s": 0.7
+    },
+    "sentences": [
+     {
+      "i": 1,
+      "t": 0.0,
+      "words": 14,
+      "text": "Everything Poland invented just disappeared and you're about to lose more than you think."
+     },
+     {
+      "i": 2,
+      "t": 6.0,
+      "words": 7,
+      "text": "Your bagel, first written record Krakow 1610."
+     },
+     {
+      "i": 3,
+      "t": 9.84,
+      "words": 4,
+      "text": "Now it's just bread."
+     },
+     {
+      "i": 4,
+      "t": 11.96,
+      "words": 8,
+      "text": "Your vitamins, a Polish biochemist coined that word."
+     },
+     {
+      "i": 5,
+      "t": 15.16,
+      "words": 4,
+      "text": "Now they're just pills."
+     },
+     {
+      "i": 6,
+      "t": 17.36,
+      "words": 13,
+      "text": "Vodka, the word first appears in Polish court records in 1405 as medicine."
+     },
+     {
+      "i": 7,
+      "t": 22.72,
+      "words": 2,
+      "text": "Sorry Russia."
+     },
+     {
+      "i": 8,
+      "t": 23.96,
+      "words": 11,
+      "text": "Your makeup, Hollywood's makeup king Max Factor was born in Poland."
+     },
+     {
+      "i": 9,
+      "t": 28.52,
+      "words": 7,
+      "text": "The walkie-talkie, codesigned by a Polish engineer."
+     },
+     {
+      "i": 10,
+      "t": 31.6,
+      "words": 7,
+      "text": "Back to two cans and a string."
+     },
+     {
+      "i": 11,
+      "t": 33.52,
+      "words": 13,
+      "text": "Your vlog camera, the first handheld movie camera in wide use was Polish."
+     },
+     {
+      "i": 12,
+      "t": 38.16,
+      "words": 4,
+      "text": "Back on the tripod."
+     },
+     {
+      "i": 13,
+      "t": 39.56,
+      "words": 6,
+      "text": "The periodic table loses two elements."
+     },
+     {
+      "i": 14,
+      "t": 41.8,
+      "words": 6,
+      "text": "Polonium is literally named after Poland."
+     },
+     {
+      "i": 15,
+      "t": 45.0,
+      "words": 2,
+      "text": "The sun?"
+     },
+     {
+      "i": 16,
+      "t": 45.8,
+      "words": 6,
+      "text": "It goes around the Earth again."
+     },
+     {
+      "i": 17,
+      "t": 47.12,
+      "words": 3,
+      "text": "Copernicus was Polish."
+     },
+     {
+      "i": 18,
+      "t": 49.08,
+      "words": 7,
+      "text": "World War II drags on for years."
+     },
+     {
+      "i": 19,
+      "t": 51.28,
+      "words": 7,
+      "text": "Polish mathematicians cracked Enigma first in 1932."
+     },
+     {
+      "i": 20,
+      "t": 55.52,
+      "words": 8,
+      "text": "But the biggest one is in your hand."
+     },
+     {
+      "i": 21,
+      "t": 57.76,
+      "words": 17,
+      "text": "Most computer chips start as a crystal grown with a method a Polish chemist discovered in 1916."
+     },
+     {
+      "i": 22,
+      "t": 63.16,
+      "words": 12,
+      "text": "Legend says he dipped his pen in molten tin instead of ink."
+     },
+     {
+      "i": 23,
+      "t": 66.64,
+      "words": 6,
+      "text": "No chips, no phones, no internet."
+     },
+     {
+      "i": 24,
+      "t": 69.64,
+      "words": 6,
+      "text": "So, how are you watching this?"
+     },
+     {
+      "i": 25,
+      "t": 72.24,
+      "words": 5,
+      "text": "You can bring one back."
+     },
+     {
+      "i": 26,
+      "t": 73.52,
+      "words": 2,
+      "text": "Only one."
+     },
+     {
+      "i": 27,
+      "t": 74.64,
+      "words": 2,
+      "text": "Which one?"
+     },
+     {
+      "i": 28,
+      "t": 75.84,
+      "words": 4,
+      "text": "Oh, and this voice?"
+     },
+     {
+      "i": 29,
+      "t": 77.36,
+      "words": 8,
+      "text": "Built by a company founded by two Poles."
+     },
+     {
+      "i": 30,
+      "t": 79.68,
+      "words": 5,
+      "text": "So, I guess I'm next."
+     }
+    ],
+    "beats": [
+     {
+      "beat": "1 Hook",
+      "sentences": "1",
+      "n_sentences": 1,
+      "start": 0.0,
+      "end": 6.0,
+      "at_pct": 0,
+      "words": 14,
+      "sentence_words": [
+       14
+      ],
+      "does": "the premise as a done fact, then a threat to the viewer",
+      "text": "Everything Poland invented just disappeared and you're about to lose more than you think."
+     },
+     {
+      "beat": "2 Items 1 to 3",
+      "sentences": "2-7",
+      "n_sentences": 6,
+      "start": 6.0,
+      "end": 24.0,
+      "at_pct": 7,
+      "words": 38,
+      "sentence_words": [
+       7,
+       4,
+       8,
+       4,
+       13,
+       2
+      ],
+      "does": "bagel, vitamins, vodka: the thing, its dated fact, what is left of it",
+      "text": "Your bagel, first written record Krakow 1610. Now it's just bread. Your vitamins, a Polish biochemist coined that word. Now they're just pills. Vodka, the word first appears in Polish court records in 1405 as medicine. Sorry Russia."
+     },
+     {
+      "beat": "3 Items 4 to 6",
+      "sentences": "8-12",
+      "n_sentences": 5,
+      "start": 23.96,
+      "end": 39.6,
+      "at_pct": 29,
+      "words": 42,
+      "sentence_words": [
+       11,
+       7,
+       7,
+       13,
+       4
+      ],
+      "does": "makeup, walkie-talkie, camera",
+      "text": "Your makeup, Hollywood's makeup king Max Factor was born in Poland. The walkie-talkie, codesigned by a Polish engineer. Back to two cans and a string. Your vlog camera, the first handheld movie camera in wide use was Polish. Back on the tripod."
+     },
+     {
+      "beat": "4 Items 7 to 9",
+      "sentences": "13-19",
+      "n_sentences": 7,
+      "start": 39.56,
+      "end": 55.5,
+      "at_pct": 48,
+      "words": 37,
+      "sentence_words": [
+       6,
+       6,
+       2,
+       6,
+       3,
+       7,
+       7
+      ],
+      "does": "two elements, the sun, the war: each bigger than the last",
+      "text": "The periodic table loses two elements. Polonium is literally named after Poland. The sun? It goes around the Earth again. Copernicus was Polish. World War II drags on for years. Polish mathematicians cracked Enigma first in 1932."
+     },
+     {
+      "beat": "5 The turn",
+      "sentences": "20",
+      "n_sentences": 1,
+      "start": 55.52,
+      "end": 57.8,
+      "at_pct": 68,
+      "words": 8,
+      "sentence_words": [
+       8
+      ],
+      "does": "'But the biggest one is in your hand.'",
+      "text": "But the biggest one is in your hand."
+     },
+     {
+      "beat": "6 The biggest one",
+      "sentences": "21-23",
+      "n_sentences": 3,
+      "start": 57.76,
+      "end": 69.6,
+      "at_pct": 70,
+      "words": 35,
+      "sentence_words": [
+       17,
+       12,
+       6
+      ],
+      "does": "the chip: the longest sentence of the film, then a story, then three losses",
+      "text": "Most computer chips start as a crystal grown with a method a Polish chemist discovered in 1916. Legend says he dipped his pen in molten tin instead of ink. No chips, no phones, no internet."
+     },
+     {
+      "beat": "7 Callback to the viewer",
+      "sentences": "24",
+      "n_sentences": 1,
+      "start": 69.64,
+      "end": 72.2,
+      "at_pct": 85,
+      "words": 6,
+      "sentence_words": [
+       6
+      ],
+      "does": "the viewer's own phone",
+      "text": "So, how are you watching this?"
+     },
+     {
+      "beat": "8 The question",
+      "sentences": "25-27",
+      "n_sentences": 3,
+      "start": 72.24,
+      "end": 75.8,
+      "at_pct": 88,
+      "words": 9,
+      "sentence_words": [
+       5,
+       2,
+       2
+      ],
+      "does": "a pick of one from the nine shown",
+      "text": "You can bring one back. Only one. Which one?"
+     },
+     {
+      "beat": "9 Tag",
+      "sentences": "28-30",
+      "n_sentences": 3,
+      "start": 75.84,
+      "end": 80.9,
+      "at_pct": 92,
+      "words": 17,
+      "sentence_words": [
+       4,
+       8,
+       5
+      ],
+      "does": "a joke after the question (the voice itself is next to go)",
+      "text": "Oh, and this voice? Built by a company founded by two Poles. So, I guess I'm next."
+     }
+    ]
+   },
+   {
+    "key": "yastor_poland_gone",
+    "url": "https://www.youtube.com/shorts/SiZDeEWhlMU",
+    "title": "What if Poland disappeared right now? 🇵🇱#whatif  #poland  #geography",
+    "views": 748592,
+    "x": 125.7,
+    "seconds": 68.0,
+    "measures": {
+     "key": "yastor_poland_gone",
+     "x": 125.7,
+     "views": 748592,
+     "seconds": 68.0,
+     "words": 161,
+     "sentences": 24,
+     "first_word": 0.0,
+     "last_word": 64.8,
+     "wps_all": 2.37,
+     "wps_talking": 3.06,
+     "pauses": 16,
+     "pause_s": 12.6,
+     "longest_pause": 1.4,
+     "median_sentence": 6.0,
+     "max_sentence": 14,
+     "short_le3": 5,
+     "questions": 3,
+     "numbered_sentences": 8,
+     "first_number_t": 10.56,
+     "hook_words": 6,
+     "hook_end": 3.52,
+     "s2": "The Baltic Sea pours in.",
+     "turn_t": 49.32,
+     "turn_pct": 73,
+     "turn": "But Poland is good at coming back.",
+     "last_t": 63.04,
+     "last": "So, which country should disappear next?",
+     "tail_after_last_word": 3.2,
+     "cuts": 9,
+     "cuts_per_10s": 1.3
+    },
+    "sentences": [
+     {
+      "i": 1,
+      "t": 0.0,
+      "words": 6,
+      "text": "What if Poland disappeared right now?"
+     },
+     {
+      "i": 2,
+      "t": 3.52,
+      "words": 5,
+      "text": "The Baltic Sea pours in."
+     },
+     {
+      "i": 3,
+      "t": 5.52,
+      "words": 2,
+      "text": "Congratulations, Czechia."
+     },
+     {
+      "i": 4,
+      "t": 7.04,
+      "words": 5,
+      "text": "You finally have a beach."
+     },
+     {
+      "i": 5,
+      "t": 8.64,
+      "words": 3,
+      "text": "Slovakia, you too."
+     },
+     {
+      "i": 6,
+      "t": 10.56,
+      "words": 4,
+      "text": "37 million people gone."
+     },
+     {
+      "i": 7,
+      "t": 13.64,
+      "words": 6,
+      "text": "And Europe is about to notice."
+     },
+     {
+      "i": 8,
+      "t": 15.96,
+      "words": 8,
+      "text": "Nearly a third of the EU's apples gone."
+     },
+     {
+      "i": 9,
+      "t": 19.36,
+      "words": 7,
+      "text": "And one in five of its chickens."
+     },
+     {
+      "i": 10,
+      "t": 21.72,
+      "words": 5,
+      "text": "Building a shelf this weekend?"
+     },
+     {
+      "i": 11,
+      "t": 23.16,
+      "words": 9,
+      "text": "One in five IKEA products is made in Poland."
+     },
+     {
+      "i": 12,
+      "t": 25.68,
+      "words": 10,
+      "text": "So are four in 10 of the EU's washing machines."
+     },
+     {
+      "i": 13,
+      "t": 28.76,
+      "words": 10,
+      "text": "And Czechia, about that new sea, you'll need a boat."
+     },
+     {
+      "i": 14,
+      "t": 32.16,
+      "words": 10,
+      "text": "Poland built more motorboats than any other country in Europe."
+     },
+     {
+      "i": 15,
+      "t": 35.56,
+      "words": 1,
+      "text": "Built."
+     },
+     {
+      "i": 16,
+      "t": 36.6,
+      "words": 10,
+      "text": "Gamers, The Witcher and Cyberpunk, over 100 million copies deleted."
+     },
+     {
+      "i": 17,
+      "t": 42.6,
+      "words": 14,
+      "text": "Every spring, one in six of the world's white storks flies home to Poland."
+     },
+     {
+      "i": 18,
+      "t": 46.72,
+      "words": 6,
+      "text": "This year, there's nowhere to land."
+     },
+     {
+      "i": 19,
+      "t": 49.32,
+      "words": 7,
+      "text": "But Poland is good at coming back."
+     },
+     {
+      "i": 20,
+      "t": 51.24,
+      "words": 11,
+      "text": "It brought the European bison back from the edge of extinction."
+     },
+     {
+      "i": 21,
+      "t": 54.52,
+      "words": 2,
+      "text": "And itself."
+     },
+     {
+      "i": 22,
+      "t": 55.84,
+      "words": 11,
+      "text": "In 1795, Poland was erased from the map for 123 years."
+     },
+     {
+      "i": 23,
+      "t": 61.32,
+      "words": 3,
+      "text": "It came back."
+     },
+     {
+      "i": 24,
+      "t": 63.04,
+      "words": 6,
+      "text": "So, which country should disappear next?"
+     }
+    ],
+    "beats": [
+     {
+      "beat": "1 Hook",
+      "sentences": "1",
+      "n_sentences": 1,
+      "start": 0.0,
+      "end": 3.5,
+      "at_pct": 0,
+      "words": 6,
+      "sentence_words": [
+       6
+      ],
+      "does": "the question",
+      "text": "What if Poland disappeared right now?"
+     },
+     {
+      "beat": "2 First result, with a joke",
+      "sentences": "2-5",
+      "n_sentences": 4,
+      "start": 3.52,
+      "end": 10.6,
+      "at_pct": 5,
+      "words": 15,
+      "sentence_words": [
+       5,
+       2,
+       5,
+       3
+      ],
+      "does": "the sea pours in; the neighbours get a beach",
+      "text": "The Baltic Sea pours in. Congratulations, Czechia. You finally have a beach. Slovakia, you too."
+     },
+     {
+      "beat": "3 The stake",
+      "sentences": "6-7",
+      "n_sentences": 2,
+      "start": 10.56,
+      "end": 16.0,
+      "at_pct": 16,
+      "words": 10,
+      "sentence_words": [
+       4,
+       6
+      ],
+      "does": "the head count, and a promise of more",
+      "text": "37 million people gone. And Europe is about to notice."
+     },
+     {
+      "beat": "4 Losses 1 to 4",
+      "sentences": "8-12",
+      "n_sentences": 5,
+      "start": 15.96,
+      "end": 28.8,
+      "at_pct": 23,
+      "words": 39,
+      "sentence_words": [
+       8,
+       7,
+       5,
+       9,
+       10
+      ],
+      "does": "apples, chickens, IKEA, washing machines: a fraction each",
+      "text": "Nearly a third of the EU's apples gone. And one in five of its chickens. Building a shelf this weekend? One in five IKEA products is made in Poland. So are four in 10 of the EU's washing machines."
+     },
+     {
+      "beat": "5 Losses 5 to 7",
+      "sentences": "13-18",
+      "n_sentences": 6,
+      "start": 28.76,
+      "end": 49.3,
+      "at_pct": 42,
+      "words": 51,
+      "sentence_words": [
+       10,
+       10,
+       1,
+       10,
+       14,
+       6
+      ],
+      "does": "boats (the beach joke again), games, storks",
+      "text": "And Czechia, about that new sea, you'll need a boat. Poland built more motorboats than any other country in Europe. Built. Gamers, The Witcher and Cyberpunk, over 100 million copies deleted. Every spring, one in six of the world's white storks flies home to Poland. This year, there's nowhere to land."
+     },
+     {
+      "beat": "6 The turn",
+      "sentences": "19",
+      "n_sentences": 1,
+      "start": 49.32,
+      "end": 51.2,
+      "at_pct": 73,
+      "words": 7,
+      "sentence_words": [
+       7
+      ],
+      "does": "'But Poland is good at coming back.'",
+      "text": "But Poland is good at coming back."
+     },
+     {
+      "beat": "7 The comeback",
+      "sentences": "20-23",
+      "n_sentences": 4,
+      "start": 51.24,
+      "end": 63.0,
+      "at_pct": 75,
+      "words": 27,
+      "sentence_words": [
+       11,
+       2,
+       11,
+       3
+      ],
+      "does": "the bison, then the country itself, with two dates",
+      "text": "It brought the European bison back from the edge of extinction. And itself. In 1795, Poland was erased from the map for 123 years. It came back."
+     },
+     {
+      "beat": "8 The question",
+      "sentences": "24",
+      "n_sentences": 1,
+      "start": 63.04,
+      "end": 65.2,
+      "at_pct": 93,
+      "words": 6,
+      "sentence_words": [
+       6
+      ],
+      "does": "a pick of the next country",
+      "text": "So, which country should disappear next?"
+     }
+    ]
+   },
+   {
+    "key": "yastor_reaction",
+    "url": "https://www.youtube.com/shorts/RsHSS9HtUKA",
+    "title": "What if your reaction time was 10x faster? ⚡#whatif #reactiontime #reflexes #science #simulation",
+    "views": 230486,
+    "x": 38.7,
+    "seconds": 96.0,
+    "measures": {
+     "key": "yastor_reaction",
+     "x": 38.7,
+     "views": 230486,
+     "seconds": 96.0,
+     "words": 237,
+     "sentences": 41,
+     "first_word": 0.0,
+     "last_word": 94.84,
+     "wps_all": 2.47,
+     "wps_talking": 3.19,
+     "pauses": 25,
+     "pause_s": 20.8,
+     "longest_pause": 1.8,
+     "median_sentence": 4,
+     "max_sentence": 13,
+     "short_le3": 18,
+     "questions": 13,
+     "numbered_sentences": 15,
+     "first_number_t": 0.0,
+     "hook_words": 9,
+     "hook_end": 3.2,
+     "s2": "Your phone would fall 3 mm.",
+     "turn_t": 59.32,
+     "turn_pct": 62,
+     "turn": "But, there's a catch.",
+     "last_t": 94.32,
+     "last": "Would you take it?",
+     "tail_after_last_word": 1.2,
+     "cuts": 27,
+     "cuts_per_10s": 2.8
+    },
+    "sentences": [
+     {
+      "i": 1,
+      "t": 0.0,
+      "words": 9,
+      "text": "What if your reaction time was 10 times faster?"
+     },
+     {
+      "i": 2,
+      "t": 3.2,
+      "words": 6,
+      "text": "Your phone would fall 3 mm."
+     },
+     {
+      "i": 3,
+      "t": 6.16,
+      "words": 12,
+      "text": "Right now, your brain needs a quarter of a second to react."
+     },
+     {
+      "i": 4,
+      "t": 9.84,
+      "words": 8,
+      "text": "By then, your phone has fallen 30 cm."
+     },
+     {
+      "i": 5,
+      "t": 13.08,
+      "words": 3,
+      "text": "10 times faster?"
+     },
+     {
+      "i": 6,
+      "t": 14.44,
+      "words": 3,
+      "text": "It barely moves."
+     },
+     {
+      "i": 7,
+      "t": 16.08,
+      "words": 1,
+      "text": "Toast?"
+     },
+     {
+      "i": 8,
+      "t": 17.04,
+      "words": 3,
+      "text": "Butter side up."
+     },
+     {
+      "i": 9,
+      "t": 18.28,
+      "words": 4,
+      "text": "Keys over the drain?"
+     },
+     {
+      "i": 10,
+      "t": 19.56,
+      "words": 1,
+      "text": "Caught."
+     },
+     {
+      "i": 11,
+      "t": 20.48,
+      "words": 6,
+      "text": "Red wine over a white carpet?"
+     },
+     {
+      "i": 12,
+      "t": 22.4,
+      "words": 3,
+      "text": "Not a drop."
+     },
+     {
+      "i": 13,
+      "t": 24.24,
+      "words": 7,
+      "text": "Catch a falling banknote and it's yours."
+     },
+     {
+      "i": 14,
+      "t": 26.76,
+      "words": 3,
+      "text": "Normally, that's impossible."
+     },
+     {
+      "i": 15,
+      "t": 28.68,
+      "words": 7,
+      "text": "It drops faster than you can react."
+     },
+     {
+      "i": 16,
+      "t": 30.84,
+      "words": 1,
+      "text": "You?"
+     },
+     {
+      "i": 17,
+      "t": 31.56,
+      "words": 2,
+      "text": "Free money."
+     },
+     {
+      "i": 18,
+      "t": 33.08,
+      "words": 10,
+      "text": "In online games, you react faster than your own internet."
+     },
+     {
+      "i": 19,
+      "t": 36.72,
+      "words": 3,
+      "text": "Blaming the lag?"
+     },
+     {
+      "i": 20,
+      "t": 37.88,
+      "words": 10,
+      "text": "For the first time ever, it really is the lag."
+     },
+     {
+      "i": 21,
+      "t": 41.76,
+      "words": 13,
+      "text": "At the Olympics, you'd have the fastest start in history and get disqualified."
+     },
+     {
+      "i": 22,
+      "t": 47.0,
+      "words": 13,
+      "text": "Any reaction under a tenth of a second counts as a false start."
+     },
+     {
+      "i": 23,
+      "t": 51.12,
+      "words": 13,
+      "text": "Flies dodge your slap because to them, your hand moves in slow motion."
+     },
+     {
+      "i": 24,
+      "t": 55.56,
+      "words": 6,
+      "text": "Now, you catch them with chopsticks."
+     },
+     {
+      "i": 25,
+      "t": 59.32,
+      "words": 4,
+      "text": "But, there's a catch."
+     },
+     {
+      "i": 26,
+      "t": 60.72,
+      "words": 13,
+      "text": "To react 10 times faster, your brain has to run 10 times faster."
+     },
+     {
+      "i": 27,
+      "t": 65.24,
+      "words": 12,
+      "text": "Now you see the world like a fly does, in slow motion."
+     },
+     {
+      "i": 28,
+      "t": 69.2,
+      "words": 7,
+      "text": "Movies run at 24 frames per second."
+     },
+     {
+      "i": 29,
+      "t": 71.96,
+      "words": 2,
+      "text": "For you?"
+     },
+     {
+      "i": 30,
+      "t": 72.76,
+      "words": 2,
+      "text": "A slideshow."
+     },
+     {
+      "i": 31,
+      "t": 74.2,
+      "words": 3,
+      "text": "A 1-minute microwave?"
+     },
+     {
+      "i": 32,
+      "t": 75.8,
+      "words": 2,
+      "text": "10 minutes."
+     },
+     {
+      "i": 33,
+      "t": 76.8,
+      "words": 3,
+      "text": "An 8-hour shift?"
+     },
+     {
+      "i": 34,
+      "t": 78.16,
+      "words": 1,
+      "text": "80."
+     },
+     {
+      "i": 35,
+      "t": 79.2,
+      "words": 3,
+      "text": "The good news?"
+     },
+     {
+      "i": 36,
+      "t": 80.12,
+      "words": 6,
+      "text": "Your weekend lasts almost 3 weeks."
+     },
+     {
+      "i": 37,
+      "t": 83.12,
+      "words": 2,
+      "text": "So, superpower?"
+     },
+     {
+      "i": 38,
+      "t": 85.0,
+      "words": 6,
+      "text": "You'd never drop your phone again."
+     },
+     {
+      "i": 39,
+      "t": 86.88,
+      "words": 10,
+      "text": "You'd just wait 10 times longer for it to load."
+     },
+     {
+      "i": 40,
+      "t": 89.8,
+      "words": 10,
+      "text": "And this video for you, it lasted over 15 minutes."
+     },
+     {
+      "i": 41,
+      "t": 94.32,
+      "words": 4,
+      "text": "Would you take it?"
+     }
+    ],
+    "beats": [
+     {
+      "beat": "1 Hook",
+      "sentences": "1",
+      "n_sentences": 1,
+      "start": 0.0,
+      "end": 3.2,
+      "at_pct": 0,
+      "words": 9,
+      "sentence_words": [
+       9
+      ],
+      "does": "the question; the event is already happening in the first frame",
+      "text": "What if your reaction time was 10 times faster?"
+     },
+     {
+      "beat": "2 First payoff",
+      "sentences": "2",
+      "n_sentences": 1,
+      "start": 3.2,
+      "end": 6.2,
+      "at_pct": 3,
+      "words": 6,
+      "sentence_words": [
+       6
+      ],
+      "does": "one concrete result, with a figure, on the object in the first frame",
+      "text": "Your phone would fall 3 mm."
+     },
+     {
+      "beat": "3 Normal against you",
+      "sentences": "3-6",
+      "n_sentences": 4,
+      "start": 6.16,
+      "end": 16.1,
+      "at_pct": 6,
+      "words": 26,
+      "sentence_words": [
+       12,
+       8,
+       3,
+       3
+      ],
+      "does": "the real figure for a normal person, then the same sum for you",
+      "text": "Right now, your brain needs a quarter of a second to react. By then, your phone has fallen 30 cm. 10 times faster? It barely moves."
+     },
+     {
+      "beat": "4 Three quick wins",
+      "sentences": "7-12",
+      "n_sentences": 6,
+      "start": 16.08,
+      "end": 24.2,
+      "at_pct": 17,
+      "words": 18,
+      "sentence_words": [
+       1,
+       3,
+       4,
+       1,
+       6,
+       3
+      ],
+      "does": "three everyday cases as question and answer, one shot each",
+      "text": "Toast? Butter side up. Keys over the drain? Caught. Red wine over a white carpet? Not a drop."
+     },
+     {
+      "beat": "5 The money win",
+      "sentences": "13-17",
+      "n_sentences": 5,
+      "start": 24.24,
+      "end": 33.1,
+      "at_pct": 25,
+      "words": 20,
+      "sentence_words": [
+       7,
+       3,
+       7,
+       1,
+       2
+      ],
+      "does": "a bet you now always win",
+      "text": "Catch a falling banknote and it's yours. Normally, that's impossible. It drops faster than you can react. You? Free money."
+     },
+     {
+      "beat": "6 Bigger: games",
+      "sentences": "18-20",
+      "n_sentences": 3,
+      "start": 33.08,
+      "end": 41.8,
+      "at_pct": 34,
+      "words": 23,
+      "sentence_words": [
+       10,
+       3,
+       10
+      ],
+      "does": "a joke the viewer already makes about themselves",
+      "text": "In online games, you react faster than your own internet. Blaming the lag? For the first time ever, it really is the lag."
+     },
+     {
+      "beat": "7 Bigger: the Olympics",
+      "sentences": "21-22",
+      "n_sentences": 2,
+      "start": 41.76,
+      "end": 51.1,
+      "at_pct": 44,
+      "words": 26,
+      "sentence_words": [
+       13,
+       13
+      ],
+      "does": "the biggest stage, and a real rule that turns the win into a loss",
+      "text": "At the Olympics, you'd have the fastest start in history and get disqualified. Any reaction under a tenth of a second counts as a false start."
+     },
+     {
+      "beat": "8 Bigger: flies",
+      "sentences": "23-24",
+      "n_sentences": 2,
+      "start": 51.12,
+      "end": 59.3,
+      "at_pct": 53,
+      "words": 19,
+      "sentence_words": [
+       13,
+       6
+      ],
+      "does": "plants the idea the turn needs (slow motion)",
+      "text": "Flies dodge your slap because to them, your hand moves in slow motion. Now, you catch them with chopsticks."
+     },
+     {
+      "beat": "9 The turn",
+      "sentences": "25",
+      "n_sentences": 1,
+      "start": 59.32,
+      "end": 60.7,
+      "at_pct": 62,
+      "words": 4,
+      "sentence_words": [
+       4
+      ],
+      "does": "four words, after the longest silence in the film",
+      "text": "But, there's a catch."
+     },
+     {
+      "beat": "10 The cost, explained",
+      "sentences": "26-27",
+      "n_sentences": 2,
+      "start": 60.72,
+      "end": 69.2,
+      "at_pct": 63,
+      "words": 25,
+      "sentence_words": [
+       13,
+       12
+      ],
+      "does": "the mechanism in two long sentences",
+      "text": "To react 10 times faster, your brain has to run 10 times faster. Now you see the world like a fly does, in slow motion."
+     },
+     {
+      "beat": "11 The cost, as a list",
+      "sentences": "28-36",
+      "n_sentences": 9,
+      "start": 69.2,
+      "end": 83.1,
+      "at_pct": 72,
+      "words": 29,
+      "sentence_words": [
+       7,
+       2,
+       2,
+       3,
+       2,
+       3,
+       1,
+       3,
+       6
+      ],
+      "does": "one fact, three question and answer pairs with figures, one consolation",
+      "text": "Movies run at 24 frames per second. For you? A slideshow. A 1-minute microwave? 10 minutes. An 8-hour shift? 80. The good news? Your weekend lasts almost 3 weeks."
+     },
+     {
+      "beat": "12 Verdict and callbacks",
+      "sentences": "37-40",
+      "n_sentences": 4,
+      "start": 83.12,
+      "end": 94.3,
+      "at_pct": 87,
+      "words": 28,
+      "sentence_words": [
+       2,
+       6,
+       10,
+       10
+      ],
+      "does": "back to the first object, then the film itself",
+      "text": "So, superpower? You'd never drop your phone again. You'd just wait 10 times longer for it to load. And this video for you, it lasted over 15 minutes."
+     },
+     {
+      "beat": "13 The question",
+      "sentences": "41",
+      "n_sentences": 1,
+      "start": 94.32,
+      "end": 95.2,
+      "at_pct": 98,
+      "words": 4,
+      "sentence_words": [
+       4
+      ],
+      "does": "a yes or no question; the picture is the first shot again",
+      "text": "Would you take it?"
+     }
+    ]
+   }
+  ],
+  "flops": [
+   {
+    "key": "yastor_money_double",
+    "url": "https://www.youtube.com/shorts/7CAmIdEt00A",
+    "title": "What If Your Money Doubled Every Day? 💸#money #whatif #animation",
+    "views": 3932,
+    "x": 0.7,
+    "seconds": 59.0,
+    "measures": {
+     "key": "yastor_money_double",
+     "x": 0.7,
+     "views": 3932,
+     "seconds": 59.0,
+     "words": 132,
+     "sentences": 19,
+     "first_word": 0.0,
+     "last_word": 56.08,
+     "wps_all": 2.24,
+     "wps_talking": 2.68,
+     "pauses": 11,
+     "pause_s": 7.2,
+     "longest_pause": 1.2,
+     "median_sentence": 5,
+     "max_sentence": 19,
+     "short_le3": 2,
+     "questions": 1,
+     "numbered_sentences": 11,
+     "first_number_t": 2.44,
+     "hook_words": 5,
+     "hook_end": 2.44,
+     "s2": "$1 today, doubled every day for a month.",
+     "turn_t": 39.76,
+     "turn_pct": 67,
+     "turn": "Day 48, you have more money than the whole planet makes in a year, and that's when it breaks.",
+     "last_t": 51.96,
+     "last": "So, $1 today or one single dollar that doubles every day?",
+     "tail_after_last_word": 2.9,
+     "cuts": 21,
+     "cuts_per_10s": 3.6
+    },
+    "sentences": [
+     {
+      "i": 1,
+      "t": 0.0,
+      "words": 5,
+      "text": "Someone offers you a deal."
+     },
+     {
+      "i": 2,
+      "t": 2.44,
+      "words": 8,
+      "text": "$1 today, doubled every day for a month."
+     },
+     {
+      "i": 3,
+      "t": 5.88,
+      "words": 3,
+      "text": "Most people laugh."
+     },
+     {
+      "i": 4,
+      "t": 7.32,
+      "words": 4,
+      "text": "That's a big mistake."
+     },
+     {
+      "i": 5,
+      "t": 9.64,
+      "words": 4,
+      "text": "1 2 4 8."
+     },
+     {
+      "i": 6,
+      "t": 11.32,
+      "words": 7,
+      "text": "A week in, you got 128 bucks."
+     },
+     {
+      "i": 7,
+      "t": 14.12,
+      "words": 5,
+      "text": "Your friends are not impressed."
+     },
+     {
+      "i": 8,
+      "t": 16.0,
+      "words": 5,
+      "text": "Week two, it's getting weird."
+     },
+     {
+      "i": 9,
+      "t": 18.48,
+      "words": 7,
+      "text": "You just paid cash for a car."
+     },
+     {
+      "i": 10,
+      "t": 21.4,
+      "words": 5,
+      "text": "Week three, you're a millionaire."
+     },
+     {
+      "i": 11,
+      "t": 23.48,
+      "words": 5,
+      "text": "Your phone won't stop ringing."
+     },
+     {
+      "i": 12,
+      "t": 25.76,
+      "words": 13,
+      "text": "Day 28, you buy the street you grew up on, all of it."
+     },
+     {
+      "i": 13,
+      "t": 30.0,
+      "words": 10,
+      "text": "Day 31, you're a billionaire from $1 in 1 month."
+     },
+     {
+      "i": 14,
+      "t": 35.36,
+      "words": 9,
+      "text": "Day 41, 1 trillion, you're richer than anyone alive."
+     },
+     {
+      "i": 15,
+      "t": 39.76,
+      "words": 19,
+      "text": "Day 48, you have more money than the whole planet makes in a year, and that's when it breaks."
+     },
+     {
+      "i": 16,
+      "t": 46.12,
+      "words": 2,
+      "text": "Prices explode."
+     },
+     {
+      "i": 17,
+      "t": 47.36,
+      "words": 5,
+      "text": "Coffee costs a million dollars."
+     },
+     {
+      "i": 18,
+      "t": 49.48,
+      "words": 5,
+      "text": "Your billions are just paper."
+     },
+     {
+      "i": 19,
+      "t": 51.96,
+      "words": 11,
+      "text": "So, $1 today or one single dollar that doubles every day?"
+     }
+    ],
+    "beats": null
+   },
+   {
+    "key": "yastor_lies",
+    "url": "https://www.youtube.com/shorts/NO6UqNBKqYc",
+    "title": "Every lie you tell now corrects itself. Instantly. #whatif #simulation #lies",
+    "views": 5469,
+    "x": 0.9,
+    "seconds": 64.0,
+    "measures": {
+     "key": "yastor_lies",
+     "x": 0.9,
+     "views": 5469,
+     "seconds": 64.0,
+     "words": 162,
+     "sentences": 31,
+     "first_word": 0.0,
+     "last_word": 63.0,
+     "wps_all": 2.53,
+     "wps_talking": 3.06,
+     "pauses": 13,
+     "pause_s": 10.3,
+     "longest_pause": 1.4,
+     "median_sentence": 4,
+     "max_sentence": 14,
+     "short_le3": 11,
+     "questions": 10,
+     "numbered_sentences": 4,
+     "first_number_t": 29.16,
+     "hook_words": 8,
+     "hook_end": 3.64,
+     "s2": "Poland?",
+     "turn_t": 41.52,
+     "turn_pct": 65,
+     "turn": "Then it gets weird.",
+     "last_t": 62.8,
+     "last": "One problem.",
+     "tail_after_last_word": 1.0,
+     "cuts": 27,
+     "cuts_per_10s": 4.2
+    },
+    "sentences": [
+     {
+      "i": 1,
+      "t": 0.0,
+      "words": 8,
+      "text": "Every lie you tell now corrects itself, instantly."
+     },
+     {
+      "i": 2,
+      "t": 3.64,
+      "words": 1,
+      "text": "Poland?"
+     },
+     {
+      "i": 3,
+      "t": 4.32,
+      "words": 2,
+      "text": "Nothing changes."
+     },
+     {
+      "i": 4,
+      "t": 5.36,
+      "words": 6,
+      "text": "We've been brutally honest for years."
+     },
+     {
+      "i": 5,
+      "t": 7.88,
+      "words": 9,
+      "text": "Your on my way text becomes still in bed."
+     },
+     {
+      "i": 6,
+      "t": 11.56,
+      "words": 2,
+      "text": "Among us?"
+     },
+     {
+      "i": 7,
+      "t": 12.4,
+      "words": 3,
+      "text": "I'm the imposter."
+     },
+     {
+      "i": 8,
+      "t": 13.52,
+      "words": 1,
+      "text": "Mafia?"
+     },
+     {
+      "i": 9,
+      "t": 14.36,
+      "words": 2,
+      "text": "Same problem."
+     },
+     {
+      "i": 10,
+      "t": 15.72,
+      "words": 2,
+      "text": "At school?"
+     },
+     {
+      "i": 11,
+      "t": 16.48,
+      "words": 5,
+      "text": "Did you do your homework?"
+     },
+     {
+      "i": 12,
+      "t": 17.72,
+      "words": 6,
+      "text": "No, I watched TikTok all night."
+     },
+     {
+      "i": 13,
+      "t": 20.36,
+      "words": 7,
+      "text": "That tiny I've read the terms box?"
+     },
+     {
+      "i": 14,
+      "t": 22.6,
+      "words": 12,
+      "text": "You can't tick it until you've actually read them, every single page."
+     },
+     {
+      "i": 15,
+      "t": 27.52,
+      "words": 4,
+      "text": "Dating profiles get shorter."
+     },
+     {
+      "i": 16,
+      "t": 29.16,
+      "words": 9,
+      "text": "So do the guys claiming they're 6 ft tall."
+     },
+     {
+      "i": 17,
+      "t": 31.68,
+      "words": 2,
+      "text": "Job interviews?"
+     },
+     {
+      "i": 18,
+      "t": 32.72,
+      "words": 8,
+      "text": "Where do you see yourself in 5 years?"
+     },
+     {
+      "i": 19,
+      "t": 34.68,
+      "words": 2,
+      "text": "Not here."
+     },
+     {
+      "i": 20,
+      "t": 36.16,
+      "words": 4,
+      "text": "Scam emails confess, too."
+     },
+     {
+      "i": 21,
+      "t": 37.84,
+      "words": 9,
+      "text": "Your account is locked becomes I want your password."
+     },
+     {
+      "i": 22,
+      "t": 41.52,
+      "words": 4,
+      "text": "Then it gets weird."
+     },
+     {
+      "i": 23,
+      "t": 43.12,
+      "words": 3,
+      "text": "Actors just vanish."
+     },
+     {
+      "i": 24,
+      "t": 45.08,
+      "words": 5,
+      "text": "Pretending was the whole job."
+     },
+     {
+      "i": 25,
+      "t": 47.2,
+      "words": 4,
+      "text": "But here's the twist."
+     },
+     {
+      "i": 26,
+      "t": 48.36,
+      "words": 14,
+      "text": "In one US survey, 5% of people accounted for almost half the reported lies."
+     },
+     {
+      "i": 27,
+      "t": 53.4,
+      "words": 4,
+      "text": "One person in 20."
+     },
+     {
+      "i": 28,
+      "t": 55.2,
+      "words": 6,
+      "text": "You're thinking of someone, aren't you?"
+     },
+     {
+      "i": 29,
+      "t": 57.48,
+      "words": 11,
+      "text": "If you could tell one last lie, what would it be?"
+     },
+     {
+      "i": 30,
+      "t": 60.48,
+      "words": 5,
+      "text": "He chooses, I'm not bluffing."
+     },
+     {
+      "i": 31,
+      "t": 62.8,
+      "words": 2,
+      "text": "One problem."
+     }
+    ],
+    "beats": null
+   },
+   {
+    "key": "yastor_over30",
+    "url": "https://www.youtube.com/shorts/nSp9HAfOTc4",
+    "title": "What if everyone over 30 vanished at once? 👋#whatif  #genz  #millennials  #simulation  #animation",
+    "views": 3229,
+    "x": 0.5,
+    "seconds": 75.0,
+    "measures": {
+     "key": "yastor_over30",
+     "x": 0.5,
+     "views": 3229,
+     "seconds": 75.0,
+     "words": 153,
+     "sentences": 33,
+     "first_word": 0.0,
+     "last_word": 72.92,
+     "wps_all": 2.04,
+     "wps_talking": 2.99,
+     "pauses": 24,
+     "pause_s": 22.2,
+     "longest_pause": 3.0,
+     "median_sentence": 4,
+     "max_sentence": 14,
+     "short_le3": 13,
+     "questions": 6,
+     "numbered_sentences": 8,
+     "first_number_t": 0.0,
+     "hook_words": 8,
+     "hook_end": 5.64,
+     "s2": "9:00 a.m.",
+     "turn_t": null,
+     "turn_pct": null,
+     "turn": "",
+     "last_t": 71.28,
+     "last": "So, would you still be here?",
+     "tail_after_last_word": 2.1,
+     "cuts": 19,
+     "cuts_per_10s": 2.5
+    },
+    "sentences": [
+     {
+      "i": 1,
+      "t": 0.0,
+      "words": 8,
+      "text": "What if everyone over 30 vanished at once?"
+     },
+     {
+      "i": 2,
+      "t": 5.64,
+      "words": 2,
+      "text": "9:00 a.m."
+     },
+     {
+      "i": 3,
+      "t": 6.8,
+      "words": 4,
+      "text": "4 billion people gone."
+     },
+     {
+      "i": 4,
+      "t": 9.52,
+      "words": 11,
+      "text": "Every plane in the sky is now flown by the co-pilot."
+     },
+     {
+      "i": 5,
+      "t": 12.68,
+      "words": 2,
+      "text": "He's 26."
+     },
+     {
+      "i": 6,
+      "t": 14.08,
+      "words": 1,
+      "text": "Relax."
+     },
+     {
+      "i": 7,
+      "t": 15.2,
+      "words": 3,
+      "text": "He can land."
+     },
+     {
+      "i": 8,
+      "t": 16.72,
+      "words": 8,
+      "text": "The oldest person on Earth is now 29."
+     },
+     {
+      "i": 9,
+      "t": 19.52,
+      "words": 4,
+      "text": "Overnight, she's everyone's grandma."
+     },
+     {
+      "i": 10,
+      "t": 22.88,
+      "words": 5,
+      "text": "America needs a new president."
+     },
+     {
+      "i": 11,
+      "t": 24.84,
+      "words": 5,
+      "text": "You have to be 35."
+     },
+     {
+      "i": 12,
+      "t": 26.76,
+      "words": 4,
+      "text": "Nobody is old enough."
+     },
+     {
+      "i": 13,
+      "t": 28.4,
+      "words": 3,
+      "text": "Same in Poland."
+     },
+     {
+      "i": 14,
+      "t": 30.16,
+      "words": 6,
+      "text": "Almost every billionaire is gone, too."
+     },
+     {
+      "i": 15,
+      "t": 32.6,
+      "words": 8,
+      "text": "So, the richest people on Earth are teenagers."
+     },
+     {
+      "i": 16,
+      "t": 36.24,
+      "words": 3,
+      "text": "And Elon Musk?"
+     },
+     {
+      "i": 17,
+      "t": 37.68,
+      "words": 1,
+      "text": "Gone."
+     },
+     {
+      "i": 18,
+      "t": 38.56,
+      "words": 6,
+      "text": "Midair in his new flying roadster."
+     },
+     {
+      "i": 19,
+      "t": 41.44,
+      "words": 7,
+      "text": "Nobody else knows how to fly it."
+     },
+     {
+      "i": 20,
+      "t": 43.28,
+      "words": 6,
+      "text": "So, it just keeps doing backflips."
+     },
+     {
+      "i": 21,
+      "t": 45.92,
+      "words": 2,
+      "text": "Your boss?"
+     },
+     {
+      "i": 22,
+      "t": 47.0,
+      "words": 1,
+      "text": "Gone."
+     },
+     {
+      "i": 23,
+      "t": 47.88,
+      "words": 5,
+      "text": "The intern is CEO now."
+     },
+     {
+      "i": 24,
+      "t": 49.88,
+      "words": 4,
+      "text": "First decision, 4-day weekend."
+     },
+     {
+      "i": 25,
+      "t": 53.0,
+      "words": 3,
+      "text": "And your dentist?"
+     },
+     {
+      "i": 26,
+      "t": 54.24,
+      "words": 1,
+      "text": "Gone."
+     },
+     {
+      "i": 27,
+      "t": 55.12,
+      "words": 1,
+      "text": "Mid-drill."
+     },
+     {
+      "i": 28,
+      "t": 56.36,
+      "words": 5,
+      "text": "Best day of your life."
+     },
+     {
+      "i": 29,
+      "t": 58.76,
+      "words": 14,
+      "text": "Out at sea, a cruise ship keeps sailing with only the DJ on board."
+     },
+     {
+      "i": 30,
+      "t": 64.32,
+      "words": 6,
+      "text": "11 years later, he turns 30."
+     },
+     {
+      "i": 31,
+      "t": 66.88,
+      "words": 3,
+      "text": "And the kids?"
+     },
+     {
+      "i": 32,
+      "t": 68.16,
+      "words": 5,
+      "text": "They think he ruined everything."
+     },
+     {
+      "i": 33,
+      "t": 71.28,
+      "words": 6,
+      "text": "So, would you still be here?"
+     }
+    ],
+    "beats": null
+   }
+  ],
+  "skeleton": [
+   {
+    "part": "hook",
+    "sentences": 1,
+    "words": [
+     6,
+     14
+    ],
+    "ends_by_s": [
+     3.2,
+     6.0
+    ],
+    "rule": "the question (or the premise as a done fact), present tense, names the subject and the size of the change; the event is under way in frame 1"
+   },
+   {
+    "part": "first result",
+    "sentences": 1,
+    "words": [
+     5,
+     7
+    ],
+    "starts_s": [
+     3.2,
+     6.0
+    ],
+    "rule": "a concrete result on the object in frame; a figure by 5 s in the master"
+   },
+   {
+    "part": "rising list",
+    "results": [
+     7,
+     9
+    ],
+    "words": [
+     115,
+     132
+    ],
+    "seconds": [
+     45,
+     55
+    ],
+    "rule": "each result 2 to 5 sentences and 4 to 9 s: the thing, a real figure or date or name, a punchline of 4 words or fewer; ordered from the hand to the world"
+   },
+   {
+    "part": "turn",
+    "sentences": 1,
+    "words": [
+     4,
+     8
+    ],
+    "at_pct_of_length": [
+     62,
+     73
+    ],
+    "rule": "starts with 'But'; after the longest silence (1.8 s) in two of three"
+   },
+   {
+    "part": "after the turn",
+    "words": [
+     27,
+     54
+    ],
+    "seconds": [
+     12,
+     23
+    ],
+    "rule": "the one thing that outweighs the list; opens with the longest sentences (11 to 17 words), then short again"
+   },
+   {
+    "part": "callback",
+    "rule": "the first object, the viewer's own phone, or the film itself"
+   },
+   {
+    "part": "question",
+    "words": [
+     4,
+     9
+    ],
+    "starts_before_end_s": [
+     1.7,
+     5.0
+    ],
+    "rule": "yes-or-no or a pick of one; begins 'So,' or 'Would you'; the last card repeats it with a down arrow; the master's last shot is its first"
+   }
+  ],
+  "sentences": {
+   "count": [
+    24,
+    41
+   ],
+   "median_words": [
+    4,
+    6
+   ],
+   "longest_words": [
+    13,
+    17
+   ],
+   "with_a_figure": {
+    "yastor_poland_inv": "7 of 30",
+    "yastor_poland_gone": "8 of 24",
+    "yastor_reaction": "15 of 41"
+   },
+   "master_questions": "13 of 41, each answered in 1 to 3 words",
+   "person_tense": "second person, present tense, nobody named"
+  },
+  "pace": {
+   "seconds": [
+    68,
+    96
+   ],
+   "words": [
+    161,
+    237
+   ],
+   "words_per_s_whole_film": [
+    2.37,
+    2.51
+   ],
+   "words_per_s_talking": [
+    3.06,
+    3.19
+   ],
+   "silences_0_9s_plus": [
+    16,
+    25
+   ],
+   "one_silence_every_s": [
+    3.8,
+    4.3
+   ],
+   "typical_gap_s": [
+    1.0,
+    1.4
+   ],
+   "longest_gap_s": [
+    1.4,
+    1.8
+   ],
+   "silence_share_of_film_pct": [
+    18,
+    22
+   ],
+   "hard_cuts": [
+    6,
+    27
+   ],
+   "music_after_last_word_s": [
+    1.2,
+    3.2
+   ],
+   "voice": "synthetic, male, level, dry; music under throughout"
+  },
+  "hook_patterns": [
+   "What if your [thing every viewer has] was [N] times [better]?",
+   "What if [a named thing] disappeared right now?",
+   "Everything [X] [made] just disappeared and you're about to lose more than you think."
+  ],
+  "hooks_verbatim": [
+   {
+    "text": "Everything Poland invented just disappeared and you're about to lose more than you think.",
+    "words": 14,
+    "sentence_2_at_s": 6.0,
+    "x": 235.3
+   },
+   {
+    "text": "What if Poland disappeared right now?",
+    "words": 6,
+    "sentence_2_at_s": 3.52,
+    "x": 125.7
+   },
+   {
+    "text": "What if your reaction time was 10 times faster?",
+    "words": 9,
+    "sentence_2_at_s": 3.2,
+    "x": 38.7
+   },
+   {
+    "text": "Someone offers you a deal.",
+    "words": 5,
+    "sentence_2_at_s": 2.44,
+    "x": 0.7
+   },
+   {
+    "text": "Every lie you tell now corrects itself, instantly.",
+    "words": 8,
+    "sentence_2_at_s": 3.64,
+    "x": 0.9
+   },
+   {
+    "text": "What if everyone over 30 vanished at once?",
+    "words": 8,
+    "sentence_2_at_s": 5.64,
+    "x": 0.5
+   }
+  ],
+  "ending_patterns": [
+   "[verdict as a 2-word question] + callback to the first object + callback to the film + 'Would you take it?'",
+   "'So, which [X] should [verb] next?'",
+   "'You can bring one back. Only one. Which one?' (+ a joke after the question)"
+  ],
+  "endings_verbatim": [
+   {
+    "text": "Which one? Oh, and this voice? Built by a company founded by two Poles. So, I guess I'm next.",
+    "last_sentence_at_s": 79.68,
+    "seconds": 82.0,
+    "x": 235.3
+   },
+   {
+    "text": "And itself. In 1795, Poland was erased from the map for 123 years. It came back. So, which country should disappear next?",
+    "last_sentence_at_s": 63.04,
+    "seconds": 68.0,
+    "x": 125.7
+   },
+   {
+    "text": "You'd never drop your phone again. You'd just wait 10 times longer for it to load. And this video for you, it lasted over 15 minutes. Would you take it?",
+    "last_sentence_at_s": 94.32,
+    "seconds": 96.0,
+    "x": 38.7
+   },
+   {
+    "text": "Prices explode. Coffee costs a million dollars. Your billions are just paper. So, $1 today or one single dollar that doubles every day?",
+    "last_sentence_at_s": 51.96,
+    "seconds": 59.0,
+    "x": 0.7
+   },
+   {
+    "text": "You're thinking of someone, aren't you? If you could tell one last lie, what would it be? He chooses, I'm not bluffing. One problem.",
+    "last_sentence_at_s": 62.8,
+    "seconds": 64.0,
+    "x": 0.9
+   },
+   {
+    "text": "11 years later, he turns 30. And the kids? They think he ruined everything. So, would you still be here?",
+    "last_sentence_at_s": 71.28,
+    "seconds": 75.0,
+    "x": 0.5
+   }
+  ],
+  "on_screen": {
+   "title_card": "the first 2 to 5 s; the hook in 3 or 4 lines of white capitals, top third, the key phrase in the one accent colour",
+   "counter": "a pill at the top from the moment the title goes to the end: a label and a live value (REACTION TIME x10 25 ms; POLISH INVENTIONS LEFT 11 with a bar that loses a segment per item)",
+   "captions": "the spoken words 2 or 3 at a time, about 70% down, white rounded bold with a dark edge, current word bright, the key word in capitals or the accent colour",
+   "labels": "figures on the things themselves (NORMAL 250 ms -> 30 cm / YOU 25 ms -> 3 mm; < 0.100 s = FALSE START)",
+   "source_line": "small grey type under each real figure, naming the source; invented parts are labelled 'Simulation: ...'",
+   "last_card": "the closing question with a down arrow; the master then returns to its first shot",
+   "look": "soft toy-like 3D, one 'you' in the same clothes in every scene, a new small set per claim, the thing talked about fills the frame, slow motion on the event"
+  },
+  "caption": {
+   "instagram_verbatim": "What if your reaction time was 10x faster? ⚡\nYour phone would fall 3 mm. Every banknote bet: yours.\nAt the Olympics? Disqualified.\nAnd every minute would feel like ten.\n\nWould you take it? 👇\n\nSimulation · reaction ≈ 0.25 s → 0.025 s · false start: World Athletics ( 0.100 s) · flies ≈ 250 flashes/s (BBC CrowdScience)\n\n#whatif #reactiontime #reflexes #science #simulation",
+   "pattern": [
+    "hook question + 1 emoji",
+    "3 results as fragments, the last one the cost",
+    "(blank)",
+    "closing question + pointing-down emoji",
+    "(blank)",
+    "'Simulation ·' + figures with sources",
+    "(blank)",
+    "5 hashtags: #whatif, 2 or 3 subject tags, #science #simulation"
+   ],
+   "youtube_titles": [
+    "Everything Poland invented just disappeared. 🇵🇱 #whatif #poland",
+    "What if Poland disappeared right now? 🇵🇱#whatif  #poland  #geography",
+    "What if your reaction time was 10x faster? ⚡#whatif #reactiontime #reflexes #science #simulation"
+   ]
+  },
+  "winners_vs_flops": {
+   "subject": [
+    "something every viewer owns or belongs to (their reflexes, their country)",
+    "an offer nobody gets, a rule for everyone, a mass vanishing"
+   ],
+   "claims": [
+    "real figures with a source on screen, the first within 11 s; in the master a normal beside each",
+    "invented gags; sums with no source; first figure at 29 s in one"
+   ],
+   "length": [
+    "68 to 96 s, 161 to 237 words",
+    "59 to 75 s, 132 to 162 words"
+   ],
+   "same_in_both": "look, counter, captions, turn at 62 to 73%, closing question"
+  },
+  "subject_change_notes": [
+   "the viewer's own money in everyday acts, not a deal, a jackpot or a vault",
+   "each result a real figure with its normal and its source",
+   "the turn is a cost the first half set up"
+  ]
+ },
+ "styles": [
+  {
+   "id": "what_if_voiced",
+   "name": "What if your X was 10 times ...? (voiced 3D simulation, second person)",
+   "copy_spec": true,
+   "watched": [
+    "yastor_poland_inv",
+    "yastor_poland_gone",
+    "yastor_reaction",
+    "yastor_money_double",
+    "yastor_lies",
+    "yastor_over30"
+   ],
+   "form": "A what-if question as the first words, then a rising list of results, each a figure shown on an object, a turn that starts with 'But' two thirds in, a closing question. Measured in full in the COPY SPEC.",
+   "numbers": "Yastor on YouTube: 14 Shorts, median 5,950, 3 over five times the median (235x, 126x, 39x), 11 between 3,200 and 20,000 views. The same reaction film on Instagram: 231,881 likes. On TikTok (an older look): 9 posts, 195 to 1,312 views.",
+   "money": "The one money film in this form that was watched got 0.7x (the doubling dollar). See the COPY SPEC before choosing a subject.",
+   "listed": []
+  },
+  {
+   "id": "what_if_silent",
+   "name": "What if you ...? as one silent journey with a racing counter (Alternate Outcomes Animations)",
+   "watched": [
+    "whatif_sOSvxzJPfEU",
+    "whatif_JBLQacUgIKM",
+    "whatif_O2iCpBZx4aA",
+    "whatifflop_WJVBt_yENZo",
+    "whatifflop_PllgxPy2CVQ"
+   ],
+   "form": "No voice, music only. The question sits small at the top for the first 2 to 4 s. One counter in the corner runs the whole film (DEPTH 5.00 cm to 12,742 km with SPEED x1 to x67,108,864; AIR RUNS OUT IN 2:12:57). One short caption per beat, the key word in yellow: 'The dog is concerned', 'That was the water pipe', 'You struck oil', 'The centre. You float.', 'Not China. The Indian Ocean.', 'The ocean followed you home'. The buried-alive film gives real figures ('The lid is under 1.4 m of fresh dirt', 'The dirt on the lid weighs 2.8 tonnes', 'The grave is 1.83 m deep. You are 1.78 m.') and ends on a joke ('Then a tsunami. From nowhere.'). Both hits end where they began.",
+   "numbers": "41 Shorts, median 28,500, 5 over five times the median. The two hits are one unbroken journey (4 and 15 hard cuts in 46 and 45 s); the two flops jump between rooms (19 and 23 cuts) and are both money settings (a jackpot, a bank vault).",
+   "money": "Both money films flopped at 0.2x. Two cases, so a warning and not a rule.",
+   "listed": []
+  },
+  {
+   "id": "parable_retold",
+   "name": "An old parable retold, then turned on the viewer (DuckModo)",
+   "watched": [
+    "parable_dh75MMd64m0"
+   ],
+   "form": "Voiced, flat 2D figures, almost no cuts (1 in 83 s). Opens on the act that looks bad, with no names: 'A starving young man reaches into a pot of rice and shoves a fistful into his mouth.' Then who saw it, the wrong judgment, the accused's own explanation, the teacher's quoted moral. At about 54 s (two thirds in) it turns to the viewer: 'That story was written down over 2,000 years ago, and we still do it every day.' Three modern cases as question and one-word verdict ('The coworker who leaves at 3:00? Lazy. Until you learn she's driving her mother to dialysis.'), a callback ('We see the hand go into the pot. We never see the soot.') and a closing question.",
+   "numbers": "DuckModo: 2,330 subscribers, 24 Shorts, median 12,500, 3 over five times (60x, 18x, 9x). Mohan Yagami: 6 of 21 over five times. Spiritual Stories: 6 of 24. Only the Confucius film was watched.",
+   "money": "Fits by nature (greed, price, patience are parable subjects), and it is the runner-up for copying: one watched film is too few for a copy spec.",
+   "listed": [
+    {
+     "title": "He Drinks Rainwater, but Throws the First Rain Away",
+     "channel": "DuckModo",
+     "views": 224000,
+     "x": 17.9,
+     "channel_median": 12500
+    },
+    {
+     "title": "How One Blacksmith Ended a 100-Year War Without Fi...",
+     "channel": "Mohan Yagami",
+     "views": 1200000,
+     "x": 80.0,
+     "channel_median": 15000
+    },
+    {
+     "title": "How a 10-Year-Old Solved 1 to 100 in Seconds | Gauss",
+     "channel": "Mohan Yagami",
+     "views": 796000,
+     "x": 53.1,
+     "channel_median": 15000
+    },
+    {
+     "title": "How Did One Dirty Cloth Change the Slowest Monk?",
+     "channel": "Spiritual Stories",
+     "views": 618000,
+     "x": 19.6,
+     "channel_median": 31500
+    }
+   ]
+  },
+  {
+   "id": "in_this_town",
+   "name": "In This Town (first person, one rule, one unease)",
+   "watched": [
+    "town_W2rJISUeBvc"
+   ],
+   "form": "The rule in sentence one ('In this town, every house has a number on the door.'), what it means, two neighbours as proof, 'It is never wrong', then the crack ('Our door says four. There are three of us'), a test by the narrator, an official who leaves fast, and an open ending on the same object ('It still said four.'). 190 words in 55 s (3.45 a second), 35 cuts. The form of the craftee and VoidCast stories is in niche3d_2026-11-21.md.",
+   "numbers": "Titles of this kind in the listings: 62 Shorts from 9 channels, 13 over five times their channel, none over a million views. Just Benny: 19 Shorts, median 19,000, none over five times.",
+   "money": "Already the daily town reel. Nothing in this listing argues for more of it.",
+   "listed": [
+    {
+     "title": "In This Town, Everything Needs a Password",
+     "channel": "Just Benny",
+     "views": 30000,
+     "x": 1.6,
+     "channel_median": 19000
+    },
+    {
+     "title": "Everybody In This Town Is an NPC. Except Me.",
+     "channel": "Just Benny",
+     "views": 28000,
+     "x": 1.5,
+     "channel_median": 19000
+    }
+   ]
+  },
+  {
+   "id": "dilemma",
+   "name": "Would you rather, worked out in front of you",
+   "watched": [
+    "dilemma_RGeSugY_fY0",
+    "dilemma_3SAigabJX_4"
+   ],
+   "form": "Prince Ea, a real person behind a table of real cash: the choice in the first 6 s ('would you rather have $1 million or one penny that doubled every day for 30 days'), what most people do, 'I'm going to tell you why you should take the penny', then the days on sticky notes (day 1, 2, 3, 8, 15, 16, 21, 27, 28, 30) to '$5.4 million'. 106 words in 44 s, no closing question. Factsphere's '$1 Million' title is an explainer over a real clip (a dam spillway), not a story.",
+   "numbers": "'$0.01 vs 1 Million': 48.4 million views, 317 times Prince Ea's median, 1.5 million likes. Titles with 'would you' or a dilemma: 341 Shorts from 123 channels, 13% over five times.",
+   "money": "The same subject as Yastor's 0.7x film, told as a choice with the sum done in front of the viewer. Top comment (15,000 likes): 'My damass thought I'll have 30 cent on the last day'. A live presenter, so not a 3D style to copy as it stands.",
+   "listed": [
+    {
+     "title": "Criminal life or a little child life?",
+     "channel": "Isaac Films",
+     "views": 8400000,
+     "x": 65.9,
+     "channel_median": 127500
+    },
+    {
+     "title": "Can you solve these Moral Dilemmas?",
+     "channel": "Sambucha",
+     "views": 10000000,
+     "x": 12.0,
+     "channel_median": 836000
+    }
+   ]
+  },
+  {
+   "id": "he_story",
+   "name": "He / She drama in blocky figures (Bloopo)",
+   "watched": [
+    "hestory_BFxg148OWYc"
+   ],
+   "form": "All dialogue, no narrator, 39 cuts in 52 s (one every 1.3 s), 176 words. A whole reversal in under a minute: the boss ('You're worthless ... Go to that rusty shed you live in'), the family with no milk, the find, the price ('Over 10 million dollars') at 32 s, and the mirror line at the end: 'I bought the cave. If you want to stay, I have a rusty shed you can live in.'",
+   "numbers": "3.1 million subscribers, 41 Shorts all over 100,000, median 2.3 million, best 4.3 times the median: a studio with an audience, steady, no outliers.",
+   "money": "Many of its titles are about money (a diamond, $50M left to him, a millionaire brother, secretly rich). It is a serial studio's look and cast, which a single style spec does not carry over.",
+   "listed": [
+    {
+     "title": "He Scammed The Entire Town!",
+     "channel": "Bloopo",
+     "views": 6600000,
+     "x": 2.9,
+     "channel_median": 2300000
+    },
+    {
+     "title": "He Was Left $50M Dollars!",
+     "channel": "Bloopo",
+     "views": 4000000,
+     "x": 1.7,
+     "channel_median": 2300000
+    },
+    {
+     "title": "His Brother Became A MILLIONAIRE!",
+     "channel": "Bloopo",
+     "views": 115000,
+     "x": 0.1,
+     "channel_median": 2300000
+    }
+   ]
+  },
+  {
+   "id": "kindness_staged",
+   "name": "Staged kindness and greed tales (photoreal scenes or AI pictures, no words)",
+   "watched": [
+    "kind_Pn1dTIbJMMU"
+   ],
+   "form": "Photoreal street scenes (acted or generated: the frames do not say which) or image-model pictures of golden objects, music only, 47 s and 7 cuts in the one watched. The title carries the story: 'He / She [did X]... [But / Then / Until] [Y]'. Nothing is said, so there is nothing to transcribe.",
+   "numbers": "The biggest raw numbers in the slice: 1,033 Shorts with kindness, greed, patience or karma in the title, 284 over a million views, 19% over five times their channel.",
+   "money": "No narration and no figures: outside what a voiced money reel can copy.",
+   "listed": [
+    {
+     "title": "She Was Poor... But Always Chose Kindness",
+     "channel": "Hana",
+     "views": 47000000,
+     "x": 61.2,
+     "channel_median": 767500
+    },
+    {
+     "title": "Choose Kindness... Not Greed!",
+     "channel": "JeniD",
+     "views": 18000000,
+     "x": 21.8,
+     "channel_median": 824500
+    },
+    {
+     "title": "The Golden lipstick story",
+     "channel": "Bakhtawar's Imaan Stories",
+     "views": 8800000,
+     "x": 231.6,
+     "channel_median": 38000
+    },
+    {
+     "title": "Be Kind Everywhere... No Matter Who You Are",
+     "channel": "Keli",
+     "views": 160000000,
+     "x": 256.6,
+     "channel_median": 623500
+    }
+   ]
+  },
+  {
+   "id": "two_lanes",
+   "name": "Two stick figures, two choices, one counter (StickTheory)",
+   "watched": [
+    "lanes_gexPg7zs5xM"
+   ],
+   "form": "No words, one shot of 20 s: two labelled figures (PERFECTIONIST, FINISHER) on black, one paints a single plank, the other finishes the fence. 'Lottery vs Saving' (stills only) has the labels HOPING and BUILDING and a day counter (DAY 54, DAY 216).",
+   "numbers": "667 subscribers, median 3,800, best 31,000. Its money film ('Lottery vs Saving') got 0.3x.",
+   "money": "Too small to copy from.",
+   "listed": [
+    {
+     "title": "Everyone's Fine... Until the Crowd Leaves",
+     "channel": "StickTheory",
+     "views": 31000,
+     "x": 8.2,
+     "channel_median": 3800
+    },
+    {
+     "title": "Lottery vs Saving: who wins?",
+     "channel": "StickTheory",
+     "views": 1000,
+     "x": 0.3,
+     "channel_median": 3800
+    }
+   ]
+  },
+  {
+   "id": "sketch_twist",
+   "name": "Absurd sketch with a twist or a loop",
+   "watched": [
+    "twist_xJHp3B5G0SA",
+    "dilemma_QrvdqPBKPWI",
+    "whatif_xOThCuhXeTM",
+    "twist_XH20XSTGR6s",
+    "twist_frGQgTOZvt4"
+   ],
+   "form": "Named comics with their own voice: Luka Big Pants (a fake 1990s game with choices that all give the same answer), It's Just Bits (a genie sketch of 34 s and 100 words that loops; top comment, 7,200 likes: 'Hollup, this loops'), Cyanide and Happiness (wordless), Low Budget Stories (a wojak montage to music, 170 s).",
+   "numbers": "7.7 million, 1.8 million, 1.2 million, 1.9 million and 4.6 million views.",
+   "money": "A comic's hand, not a form.",
+   "listed": []
+  },
+  {
+   "id": "timeline_compare",
+   "name": "Timeline and comparison what-ifs (WatchData)",
+   "watched": [
+    "whatif_mFbNPdaeqsE",
+    "whatifflop_xzxxx2Qn0IY",
+    "whatifflop_J46j_Yqq0q8"
+   ],
+   "form": "Wordless cards to music (WatchData), or a map that redraws itself (Mapper Maniac, Aeon Report: listed only). Yastor's two country films belong to this family by subject.",
+   "numbers": "WatchData: median 39,000; its what-if titles 0.4x to 13.6x. Mapper Maniac: median 740,500, 6 of 48 over five times.",
+   "money": "A country or a person as the subject, not a price.",
+   "listed": [
+    {
+     "title": "What if George Washington returned today?",
+     "channel": "Mapper Maniac",
+     "views": 16000000,
+     "x": 21.6,
+     "channel_median": 740500
+    },
+    {
+     "title": "What If You Sailed Straight South From India?",
+     "channel": "Aeon Report",
+     "views": 1100000,
+     "x": 23.2,
+     "channel_median": 47500
+    }
+   ]
+  }
+ ],
+ "families_by_title": [
+  {
+   "titles_with": "what if (any)",
+   "shorts": 344,
+   "channels": 48,
+   "pct_over_5x": 14.0,
+   "over_1m": 59
+  },
+  {
+   "titles_with": "what if you / your",
+   "shorts": 71,
+   "channels": 18,
+   "pct_over_5x": 11.3,
+   "over_1m": 10
+  },
+  {
+   "titles_with": "what if everyone / everything",
+   "shorts": 36,
+   "channels": 13,
+   "pct_over_5x": 11.1,
+   "over_1m": 3
+  },
+  {
+   "titles_with": "in this town / world",
+   "shorts": 62,
+   "channels": 9,
+   "pct_over_5x": 21.0,
+   "over_1m": 0
+  },
+  {
+   "titles_with": "would you / dilemma",
+   "shorts": 341,
+   "channels": 123,
+   "pct_over_5x": 13.2,
+   "over_1m": 59
+  },
+  {
+   "titles_with": "he / she as the first word",
+   "shorts": 1068,
+   "channels": 223,
+   "pct_over_5x": 16.9,
+   "over_1m": 201
+  },
+  {
+   "titles_with": "kindness / greed / karma",
+   "shorts": 1033,
+   "channels": 129,
+   "pct_over_5x": 18.8,
+   "over_1m": 284
+  },
+  {
+   "titles_with": "rich / poor / millionaire",
+   "shorts": 195,
+   "channels": 100,
+   "pct_over_5x": 25.1,
+   "over_1m": 54
+  },
+  {
+   "titles_with": "pov",
+   "shorts": 1481,
+   "channels": 82,
+   "pct_over_5x": 19.4,
+   "over_1m": 217
+  },
+  {
+   "titles_with": "part N / episode",
+   "shorts": 538,
+   "channels": 89,
+   "pct_over_5x": 13.8,
+   "over_1m": 86
+  },
+  {
+   "titles_with": "twist / ending",
+   "shorts": 1009,
+   "channels": 135,
+   "pct_over_5x": 18.5,
+   "over_1m": 290
+  },
+  {
+   "titles_with": "reddit / text story",
+   "shorts": 1399,
+   "channels": 65,
+   "pct_over_5x": 17.4,
+   "over_1m": 183
+  },
+  {
+   "titles_with": "money words",
+   "shorts": 583,
+   "channels": 218,
+   "pct_over_5x": 19.6,
+   "over_1m": 99
+  }
+ ],
+ "exemplars": [
+  {
+   "key": "dilemma_3SAigabJX_4",
+   "style": "dilemma",
+   "url": "https://www.youtube.com/shorts/3SAigabJX_4",
+   "channel": "Factsphere",
+   "title": "Would You Jump in for $1 Million Dollars? #shorts",
+   "views": 19460344,
+   "x": 1727.3,
+   "channel_median": 11000,
+   "seconds": 59.0,
+   "words": 188,
+   "words_per_s": 3.19,
+   "cuts": 10,
+   "cuts_per_10s": 1.7,
+   "likes": 804387,
+   "uploaded": "20230904",
+   "channel_subs": 167000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/dilemma_3SAigabJX_4.jpg",
+   "timed_8s": "0: would you jump in for one million dollars if I wanted to end my life sure I would go in this guy starts talking and then he reveals this massive hole | 8: right in front of him what's he planning well he's going down that hole let me explain you see this enormous hole is | 16: located close to a dam and it's part of what's called a Spillway the whole point of a Spillway is to keep things from going all Noah's Ark when there's heavy | 24: rain or snow melt they redirect water Downstream to prevent floods this one's in Spain and it's a whopping 100 meters | 32: deep that's over 300 feet and get this the opening on top is humorously called a glory hole no joke now this brave soul | 40: in the video did actually go down the hole but hold your horses he did it the smart way with a rope and all just to | 48: give you an idea of how colossal the spillway is from the inside here's what it looks like as for me you can keep your million dollars I'm not taking that | 56: Plunge"
+  },
+  {
+   "key": "dilemma_QrvdqPBKPWI",
+   "style": "sketch_twist",
+   "url": "https://www.youtube.com/shorts/QrvdqPBKPWI",
+   "channel": "Luka Big Pants",
+   "title": "farmer's dilemma",
+   "views": 1845502,
+   "x": 7.8,
+   "channel_median": 230000,
+   "seconds": 50.0,
+   "words": 129,
+   "words_per_s": 2.58,
+   "cuts": 0,
+   "cuts_per_10s": 0.0,
+   "likes": 172512,
+   "uploaded": "20231024",
+   "channel_subs": 537000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/dilemma_QrvdqPBKPWI.jpg",
+   "timed_8s": "0: oh God damn it get into the way liberal there's this goddamn liberal in | 8: front of my tractor and he refuses to move I've told him countless times to get the F off of my proper he excuse my | 16: friends but he just won't listen I'm tired do I run over this liberal or do I drive around him what do you | 24: think I don't know think about the gas prices yeah but then I'd have to back up and go | 32: around and yeah it all just kind of feels like a waste of time doesn't | 40: it I'm not going to do that no don't feel like it don't feel like I'm not going to do no nuh-uh nuh-uh don't feel like no I'm not going to do that"
+  },
+  {
+   "key": "dilemma_RGeSugY_fY0",
+   "style": "dilemma",
+   "url": "https://www.youtube.com/shorts/RGeSugY_fY0",
+   "channel": "Prince Ea",
+   "title": "$0.01 vs 1 Million 😮 😮",
+   "views": 48354970,
+   "x": 316.8,
+   "channel_median": 151500,
+   "seconds": 44.0,
+   "words": 106,
+   "words_per_s": 2.41,
+   "cuts": 9,
+   "cuts_per_10s": 2.0,
+   "likes": 1546256,
+   "uploaded": "20230612",
+   "channel_subs": 6650000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/dilemma_RGeSugY_fY0.jpg",
+   "timed_8s": "0: would you rather [Music] have $1 million or one penny that doubled every day for 30 days now most | 8: people they would take the Millie and run with it but I'm going to tell you why you should take the penny if you | 16: took the penny then on day one you'd have 1 cent on day two you'd have 2 cents day three you'd have 4 cents on day eight you would have $128 day 15 | 24: $163.8 day 16 $327 68 day 21 $1,485 76 day 27 $671 18864 day 28 you | 32: would have 1, 34277 28 and on day 30 you would have | 40: $5.4 million"
+  },
+  {
+   "key": "hestory_BFxg148OWYc",
+   "style": "he_story",
+   "url": "https://www.youtube.com/shorts/BF-g148OWYc",
+   "channel": "Bloopo",
+   "title": "Diamond Changed His Life! 🤑",
+   "views": 10447067,
+   "x": 4.3,
+   "channel_median": 2300000,
+   "seconds": 52.0,
+   "words": 176,
+   "words_per_s": 3.38,
+   "cuts": 39,
+   "cuts_per_10s": 7.5,
+   "likes": 140604,
+   "uploaded": "20260612",
+   "channel_subs": 3100000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/hestory_BFxg148OWYc.jpg",
+   "timed_8s": "0: It's going to snap. Earthquake! Everyone out, now! My arm. Huh? I can't let anyone see. | 8: &gt;&gt; Anyone find anything? &gt;&gt; No, sir. We had to leave. &gt;&gt; You're worthless. What do I pay you for? &gt;&gt; Sorry, boss. &gt;&gt; Go to that rusty shed you live in. Come | 16: back when you want to work. &gt;&gt; We have no food, no money. &gt;&gt; I know. &gt;&gt; The baby needs milk. &gt;&gt; This is all I have. &gt;&gt; That won't even buy bread. | 24: &gt;&gt; What's this [music] diamond worth? &gt;&gt; Oh my god! &gt;&gt; What is it? &gt;&gt; This is the most perfect diamond I've ever seen. | 32: &gt;&gt; What's it worth? &gt;&gt; Over 10 million dollars. [music] &gt;&gt; 10 million? &gt;&gt; You said you'd get baby food, and you bought a bag? | 40: &gt;&gt; I need to tell you something. &gt;&gt; Someone bought the cave? &gt;&gt; Could you please [music] leave my workers alone? &gt;&gt; You can't do this. | 48: &gt;&gt; I bought the cave. If you want to stay, I have a rusty shed you can live in."
+  },
+  {
+   "key": "kind_Pn1dTIbJMMU",
+   "style": "kindness_staged",
+   "url": "https://www.youtube.com/shorts/Pn1dTIbJMMU",
+   "channel": "GlowKind Tales",
+   "title": "He Had Nothing… But Gave Everything ❤️ #kindness",
+   "views": 32893630,
+   "x": 8.6,
+   "channel_median": 3700000,
+   "seconds": 47.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 7,
+   "cuts_per_10s": 1.5,
+   "likes": 210967,
+   "uploaded": "20261108",
+   "channel_subs": 129000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/kind_Pn1dTIbJMMU.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "lanes_gexPg7zs5xM",
+   "style": "two_lanes",
+   "url": "https://www.youtube.com/shorts/gexPg7zs5xM",
+   "channel": "StickTheory",
+   "title": "He painted one perfect plank. The other finished the fence. #shorts",
+   "views": 21204,
+   "x": 5.5,
+   "channel_median": 3800,
+   "seconds": 20.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 0,
+   "cuts_per_10s": 0.0,
+   "likes": 732,
+   "uploaded": "20261106",
+   "channel_subs": 667,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/lanes_gexPg7zs5xM.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "parable_dh75MMd64m0",
+   "style": "parable_retold",
+   "url": "https://www.youtube.com/shorts/dh75MMd64m0",
+   "channel": "DuckModo",
+   "title": "Confucius Saw His Best Student Eat First",
+   "views": 755838,
+   "x": 60.4,
+   "channel_median": 12500,
+   "seconds": 83.0,
+   "words": 267,
+   "words_per_s": 3.22,
+   "cuts": 1,
+   "cuts_per_10s": 0.1,
+   "likes": 31787,
+   "uploaded": "20261115",
+   "channel_subs": 2330,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/parable_dh75MMd64m0.jpg",
+   "timed_8s": "0: A starving young man reaches into a pot of rice and shoves [music] a fistful into his mouth. Across the yard, his teacher sees it all. The teacher is | 8: Confucius. For seven days, he and his students have been stranded [music] between two warring states living on weed soup. At last, his favorite | 16: student, Yan Hui, found a little rice and cooked it for everyone. And Confucius just watched him eat [music] first. Confucius says nothing. When the | 24: rice is ready, he says he dreamed of his late father, so the first bowl must [music] be offered to him untouched. Yan Hui bows his head. We can't, he says. It | 32: isn't clean anymore. While it was cooking, soot from the fire fell into the pot. Throwing away [music] food felt wrong while we're all starving, so I | 40: scooped out the dirty part and ate it myself. Confucius goes quiet. Then he turns to his students. I trusted my eyes | 48: and they lied. [music] I trusted my heart and it lied too. Remember this. Truly knowing a person is not easy. That story was written down over 2,000 | 56: years ago, and we still do it every day. We see one second of someone's life and write their whole story. The coworker | 64: who leaves at 3:00? Lazy. Until you learn she's driving her mother to dialysis. The friend who never texted back? Ignoring you. The neighbor who | 72: never waves? Rude. We see the hand go into the pot. We never see the soot. So the next time you're sure about someone, ask yourself, [music] what fell | 80: into their pot?"
+  },
+  {
+   "key": "town_W2rJISUeBvc",
+   "style": "in_this_town",
+   "url": "https://www.youtube.com/shorts/W2rJISUeBvc",
+   "channel": "Just Benny",
+   "title": "The Number on the Door 🚪",
+   "views": 57063,
+   "x": 2.9,
+   "channel_median": 19000,
+   "seconds": 55.0,
+   "words": 190,
+   "words_per_s": 3.45,
+   "cuts": 35,
+   "cuts_per_10s": 6.4,
+   "likes": 696,
+   "uploaded": "20261116",
+   "channel_subs": 850,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/town_W2rJISUeBvc.jpg",
+   "timed_8s": "0: In this town, every house has a number on the door. [music] It's not the address. It's how many people are inside. It changes by itself. When the Parkers had a baby, their four became a | 8: five. When Mr. Dale goes to work, his one becomes a zero. [music] People don't knock here. They just read the door. It is never wrong. Our door says four. | 16: There are three of us, me, mom, and dad. Mom says the sign is broken, but last night she set [music] four plates. She | 24: said it was an accident. Dad doesn't go in the basement anymore. He won't say why. So I tested it. [music] I stepped outside, three. I stepped back | 32: in, four. The sign works fine. On Monday, the town counter came. [music] He counted us, one, two, three. | 40: Then he looked at the door. He didn't write anything down. He just left fast. That night I heard the basement stairs, [music] slow, one at a time. So I asked | 48: to sleep at my friend's house. I walked to the end of the street and I looked back. It still said four."
+  },
+  {
+   "key": "twist_XH20XSTGR6s",
+   "style": "sketch_twist",
+   "url": "https://www.youtube.com/shorts/XH20XSTGR6s",
+   "channel": "ExplosmEntertainment",
+   "title": "Monkey Paw - Cyanide & Happiness Shorts",
+   "views": 1916680,
+   "x": 28.0,
+   "channel_median": 68500,
+   "seconds": 113.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 27,
+   "cuts_per_10s": 2.4,
+   "likes": 67922,
+   "uploaded": "20201231",
+   "channel_subs": 12900000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/twist_XH20XSTGR6s.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "twist_frGQgTOZvt4",
+   "style": "sketch_twist",
+   "url": "https://www.youtube.com/shorts/frGQgTOZvt4",
+   "channel": "Low Budget Stories",
+   "title": "Doomer's path to Happiness",
+   "views": 4646151,
+   "x": 273.3,
+   "channel_median": 17000,
+   "seconds": 170.0,
+   "words": 10,
+   "words_per_s": 0.06,
+   "cuts": 54,
+   "cuts_per_10s": 3.2,
+   "likes": 196030,
+   "uploaded": "20240728",
+   "channel_subs": 1270000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/twist_frGQgTOZvt4.jpg",
+   "timed_8s": "8: nah | 16: [Music] | 24: a | 32: [Music] | 56: oh [Music] | 88: oh [Music] | 120: he [Music]"
+  },
+  {
+   "key": "twist_xJHp3B5G0SA",
+   "style": "sketch_twist",
+   "url": "https://www.youtube.com/shorts/xJHp3B5G0SA",
+   "channel": "Luka Big Pants",
+   "title": "glimbo's gold",
+   "views": 7664395,
+   "x": 33.3,
+   "channel_median": 230000,
+   "seconds": 43.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 6,
+   "cuts_per_10s": 1.4,
+   "likes": 356428,
+   "uploaded": "20240213",
+   "channel_subs": 537000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/twist_xJHp3B5G0SA.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "whatif_JBLQacUgIKM",
+   "style": "what_if_silent",
+   "url": "https://www.youtube.com/shorts/JBLQacUgIKM",
+   "channel": "Alternate Outcomes Animations",
+   "title": "What IF you DUG 2X FASTER every 2 seconds?#whatif #physics #animation #simulation #Science",
+   "views": 1525599,
+   "x": 52.6,
+   "channel_median": 28500,
+   "seconds": 46.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 4,
+   "cuts_per_10s": 0.9,
+   "likes": 7036,
+   "uploaded": "20261028",
+   "channel_subs": 9170,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatif_JBLQacUgIKM.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "whatif_O2iCpBZx4aA",
+   "style": "what_if_silent",
+   "url": "https://www.youtube.com/shorts/O2iCpBZx4aA",
+   "channel": "Alternate Outcomes Animations",
+   "title": "What IF you SLEPT for 100 YEARS? #science #simulation #animation #whatif #physics",
+   "views": 192078,
+   "x": 6.7,
+   "channel_median": 28500,
+   "seconds": 52.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 12,
+   "cuts_per_10s": 2.3,
+   "likes": 1978,
+   "uploaded": "20261104",
+   "channel_subs": 9170,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatif_O2iCpBZx4aA.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "whatif_mFbNPdaeqsE",
+   "style": "timeline_compare",
+   "url": "https://www.youtube.com/shorts/mFbNPdaeqsE",
+   "channel": "WatchData",
+   "title": "Timeline: What If You Could Only Travel Back In Time?",
+   "views": 531089,
+   "x": 13.6,
+   "channel_median": 39000,
+   "seconds": 182.0,
+   "words": 43,
+   "words_per_s": 0.24,
+   "cuts": 0,
+   "cuts_per_10s": 0.0,
+   "likes": 5256,
+   "uploaded": "20230622",
+   "channel_subs": 1690000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatif_mFbNPdaeqsE.jpg",
+   "timed_8s": "0: [Music] | 8: thank you | 16: [Music] | 48: foreign [Music] | 72: foreign | 80: [Music] | 112: thank you | 120: [Music] | 160: thank you | 168: [Music] thank you for watching today's video If | 176: you enjoyed it then make sure to hit that like And subscribe button turn on those notifications and check out some of our other stuff"
+  },
+  {
+   "key": "whatif_sOSvxzJPfEU",
+   "style": "what_if_silent",
+   "url": "https://www.youtube.com/shorts/sOSvxzJPfEU",
+   "channel": "Alternate Outcomes Animations",
+   "title": "What if you woke up 6 feet underground? #simulation #whatif #physics #science #animation",
+   "views": 5692326,
+   "x": 196.5,
+   "channel_median": 28500,
+   "seconds": 45.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 15,
+   "cuts_per_10s": 3.3,
+   "likes": 27935,
+   "uploaded": "20261011",
+   "channel_subs": 9160,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatif_sOSvxzJPfEU.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "whatif_xOThCuhXeTM",
+   "style": "sketch_twist",
+   "url": "https://www.youtube.com/shorts/-OThCuhXeTM",
+   "channel": "It's Just Bits",
+   "title": "Why you never wish for perfect memory",
+   "views": 1177083,
+   "x": null,
+   "channel_median": null,
+   "seconds": 34.0,
+   "words": 100,
+   "words_per_s": 2.94,
+   "cuts": 15,
+   "cuts_per_10s": 4.4,
+   "likes": 51148,
+   "uploaded": "20250919",
+   "channel_subs": 340000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatif_xOThCuhXeTM.jpg",
+   "timed_8s": "0: You now have a perfect memory. Ah. Oh god, my traumas. I told you that was a bad wish. I I wish I had awful memory. Well, that one's not good either. Who | 8: are you? Where am I? See, bad wish. Who are you? Where am I? Guess I sent you a | 16: goldfish. Any chance I can get a wish out of you, though? &gt;&gt; Who are you? Okay, let me dial you up a tad. | 24: &gt;&gt; Ah, traumas. Traumas. All right, too far. Back down a little. Oh, hey man. How's it going? Perfect. You got one wish left."
+  },
+  {
+   "key": "whatifflop_J46j_Yqq0q8",
+   "style": "timeline_compare",
+   "url": "https://www.youtube.com/shorts/J46j_Yqq0q8",
+   "channel": "WatchData",
+   "title": "If There Were Only Two People Left On Earth",
+   "views": 14971,
+   "x": 0.4,
+   "channel_median": 39000,
+   "seconds": 48.0,
+   "words": 22,
+   "words_per_s": 0.46,
+   "cuts": 0,
+   "cuts_per_10s": 0.0,
+   "likes": 256,
+   "uploaded": "20250814",
+   "channel_subs": 1690000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatifflop_J46j_Yqq0q8.jpg",
+   "timed_8s": "0: this is what you would do if you were the only to people left on Earth [Music] | 40: full video on watch data"
+  },
+  {
+   "key": "whatifflop_PllgxPy2CVQ",
+   "style": "what_if_silent",
+   "url": "https://www.youtube.com/shorts/Pllg-Py2CVQ",
+   "channel": "Alternate Outcomes Animations",
+   "title": "What IF you got LOCKED in a BANK VAULT? #history #whatif #animation #simulation #science",
+   "views": 4378,
+   "x": 0.2,
+   "channel_median": 28500,
+   "seconds": 45.0,
+   "words": 7,
+   "words_per_s": 0.16,
+   "cuts": 19,
+   "cuts_per_10s": 4.2,
+   "likes": 45,
+   "uploaded": "20261102",
+   "channel_subs": 9170,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatifflop_PllgxPy2CVQ.jpg",
+   "timed_8s": "8: [bell] | 32: &gt;&gt; He's 23 | 40: and up here."
+  },
+  {
+   "key": "whatifflop_WJVBt_yENZo",
+   "style": "what_if_silent",
+   "url": "https://www.youtube.com/shorts/WJVBt_yENZo",
+   "channel": "Alternate Outcomes Animations",
+   "title": "What IF YOU were the LUCKIEST person ALIVE for 60 SECONDS? #science #whatif #animation #simulation",
+   "views": 4381,
+   "x": 0.2,
+   "channel_median": 28500,
+   "seconds": 64.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 23,
+   "cuts_per_10s": 3.6,
+   "likes": 47,
+   "uploaded": "20261114",
+   "channel_subs": 9170,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatifflop_WJVBt_yENZo.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "whatifflop_xzxxx2Qn0IY",
+   "style": "timeline_compare",
+   "url": "https://www.youtube.com/shorts/xz--x2Qn0IY",
+   "channel": "WatchData",
+   "title": "What If Everyone On Earth Suddenly Hated You",
+   "views": 21882,
+   "x": 0.5,
+   "channel_median": 39000,
+   "seconds": 48.0,
+   "words": 0,
+   "words_per_s": 0.0,
+   "cuts": 0,
+   "cuts_per_10s": 0.0,
+   "likes": 358,
+   "uploaded": "20250817",
+   "channel_subs": 1690000,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/whatifflop_xzxxx2Qn0IY.jpg",
+   "timed_8s": ""
+  },
+  {
+   "key": "yastor_lies",
+   "style": "what_if_voiced",
+   "url": "https://www.youtube.com/shorts/NO6UqNBKqYc",
+   "channel": "Yastor",
+   "title": "Every lie you tell now corrects itself. Instantly. #whatif #simulation #lies",
+   "views": 5469,
+   "x": 0.9,
+   "channel_median": 5950,
+   "seconds": 64.0,
+   "words": 170,
+   "words_per_s": 2.66,
+   "cuts": 27,
+   "cuts_per_10s": 4.2,
+   "likes": 99,
+   "uploaded": "20261014",
+   "channel_subs": 2760,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/yastor_lies.jpg",
+   "timed_8s": "0: Every lie you tell now corrects itself, instantly. Poland? Nothing changes. We've been brutally honest for years. Your on my way text becomes still in | 8: bed. Among us? I'm the imposter. [music] Mafia? Same problem. At school? Did you do your homework? No, | 16: I watched TikTok all night. That tiny [music] I've read the terms box? You can't tick it until you've actually read them, every single page. | 24: Dating profiles get shorter. So do the guys claiming they're 6 ft tall. Job interviews? [music] | 32: Where do you see yourself in 5 years? Not here. Scam emails confess, too. Your account is locked becomes [music] I want your | 40: password. Then it gets weird. Actors just vanish. Pretending was the whole job. But here's the twist. In one US survey, | 48: 5% of people accounted for [music] almost half the reported lies. One person in 20. You're thinking of someone, aren't you? | 56: &gt;&gt; [music] &gt;&gt; If you could tell one last lie, what would it be? He chooses, I'm not bluffing. One problem."
+  },
+  {
+   "key": "yastor_money_double",
+   "style": "what_if_voiced",
+   "url": "https://www.youtube.com/shorts/7CAmIdEt00A",
+   "channel": "Yastor",
+   "title": "What If Your Money Doubled Every Day? 💸#money #whatif #animation",
+   "views": 3932,
+   "x": 0.7,
+   "channel_median": 5950,
+   "seconds": 59.0,
+   "words": 137,
+   "words_per_s": 2.32,
+   "cuts": 21,
+   "cuts_per_10s": 3.6,
+   "likes": 82,
+   "uploaded": "20261009",
+   "channel_subs": 2760,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/yastor_money_double.jpg",
+   "timed_8s": "0: Someone offers you a deal. $1 today, doubled every day for a month. Most people laugh. That's a big mistake. 1 2 | 8: 4 8. A week in, you got 128 bucks. Your friends are not impressed. Week two, | 16: it's getting weird. You just paid cash for a car. Week three, you're a millionaire. Your phone [music] won't | 24: stop ringing. Day 28, you buy the street you grew up on, all of it. Day 31, [music] you're a billionaire from $1 in | 32: 1 month. Day 41, 1 trillion, [music] you're richer than anyone alive. Day 48, | 40: you have more money than the whole planet makes in a year, and that's [music] when it breaks. Prices explode. Coffee costs a million dollars. Your | 48: billions are just paper. So, $1 today [music] or one single dollar that doubles every day?"
+  },
+  {
+   "key": "yastor_over30",
+   "style": "what_if_voiced",
+   "url": "https://www.youtube.com/shorts/nSp9HAfOTc4",
+   "channel": "Yastor",
+   "title": "What if everyone over 30 vanished at once? 👋#whatif  #genz  #millennials  #simulation  #animation",
+   "views": 3229,
+   "x": 0.5,
+   "channel_median": 5950,
+   "seconds": 75.0,
+   "words": 157,
+   "words_per_s": 2.09,
+   "cuts": 19,
+   "cuts_per_10s": 2.5,
+   "likes": 79,
+   "uploaded": "20261020",
+   "channel_subs": 2760,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/yastor_over30.jpg",
+   "timed_8s": "0: What if everyone over 30 vanished at once? 9:00 a.m. 4 billion people gone. | 8: Every plane in the sky is now flown by the co-pilot. He's 26. Relax. He can land. | 16: The oldest person on Earth is now 29. Overnight, she's everyone's grandma. America needs a new president. You have | 24: to be 35. Nobody is old enough. Same in Poland. &gt;&gt; [music] &gt;&gt; Almost every billionaire is gone, too. | 32: So, the richest people on Earth are teenagers. And Elon Musk? Gone. Midair in his new | 40: flying roadster. Nobody else knows how to fly it. So, it just keeps doing backflips. Your boss? Gone. The intern is CEO now. | 48: First decision, 4-day weekend. And your dentist? Gone. Mid-drill. Best | 56: day of your life. Out at sea, a cruise ship keeps sailing with only the DJ on board. | 64: 11 years later, he turns 30. And the kids? They think he ruined everything. So, [music] | 72: would you still be here?"
+  },
+  {
+   "key": "yastor_poland_gone",
+   "style": "what_if_voiced",
+   "url": "https://www.youtube.com/shorts/SiZDeEWhlMU",
+   "channel": "Yastor",
+   "title": "What if Poland disappeared right now? 🇵🇱#whatif  #poland  #geography",
+   "views": 748592,
+   "x": 125.7,
+   "channel_median": 5950,
+   "seconds": 68.0,
+   "words": 171,
+   "words_per_s": 2.51,
+   "cuts": 9,
+   "cuts_per_10s": 1.3,
+   "likes": 18862,
+   "uploaded": "20261012",
+   "channel_subs": 2760,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/yastor_poland_gone.jpg",
+   "timed_8s": "0: What if Poland disappeared right now? The Baltic [music] Sea pours in. Congratulations, Czechia. You finally have a beach. Slovakia, you too. | 8: 37 million people gone. And Europe is about to notice. Nearly a third of the EU's apples gone. | 16: [music] And one in five of its chickens. Building a shelf this weekend? One in five IKEA products is made in Poland. So | 24: are four [music] in 10 of the EU's washing machines. And Czechia, about that new sea, you'll need a boat. Poland built more | 32: motorboats than any other [music] country in Europe. Built. Gamers, The Witcher and Cyberpunk, over 100 million | 40: copies deleted. Every spring, one in six of the world's white storks flies home to Poland. This year, there's nowhere to land. | 48: But Poland is good at coming back. It brought the European bison back from the edge [music] of extinction. And itself. In 1795, Poland was erased | 56: from the map &gt;&gt; [music] &gt;&gt; for 123 years. It came back. So, which country should disappear next? | 64: &gt;&gt; [music]"
+  },
+  {
+   "key": "yastor_poland_inv",
+   "style": "what_if_voiced",
+   "url": "https://www.youtube.com/shorts/D9rZlvk5ZkI",
+   "channel": "Yastor",
+   "title": "Everything Poland invented just disappeared. 🇵🇱 #whatif #poland",
+   "views": 1476582,
+   "x": 235.3,
+   "channel_median": 5950,
+   "seconds": 82.0,
+   "words": 210,
+   "words_per_s": 2.56,
+   "cuts": 6,
+   "cuts_per_10s": 0.7,
+   "likes": 46199,
+   "uploaded": "20261011",
+   "channel_subs": 2760,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/yastor_poland_inv.jpg",
+   "timed_8s": "0: Everything Poland invented just [music] disappeared and you're about to lose more than you think. Your bagel, first written record Krakow | 8: 1610. Now it's just bread. Your vitamins, a Polish biochemist coined that word. Now they're just pills. | 16: Vodka, the word first appears in Polish court records in 1405 as medicine. Sorry Russia. Your makeup, Hollywood's makeup | 24: king Max Factor was born in Poland. The walkie-talkie, codesigned by a Polish engineer. Back to two cans and a | 32: string. Your vlog camera, the first handheld movie camera in wide use was Polish. Back on the tripod. The periodic | 40: table loses two elements. Polonium is literally named after Poland. The sun? It goes around the Earth again. Copernicus was Polish. | 48: World War II drags on for years. &gt;&gt; [music] &gt;&gt; Polish mathematicians cracked Enigma first in 1932. But the biggest one is in your hand. | 56: Most computer chips start as a crystal grown with a method a Polish chemist discovered in 1916. Legend says he | 64: dipped his pen in molten tin instead of ink. No chips, no phones, no internet. So, how are you watching this? | 72: You can bring one back. Only one. Which one? Oh, and this voice? Built by a company founded by two Poles. So, I guess I'm | 80: next."
+  },
+  {
+   "key": "yastor_reaction",
+   "style": "what_if_voiced",
+   "url": "https://www.youtube.com/shorts/RsHSS9HtUKA",
+   "channel": "Yastor",
+   "title": "What if your reaction time was 10x faster? ⚡#whatif #reactiontime #reflexes #science #simulation",
+   "views": 230486,
+   "x": 38.7,
+   "channel_median": 5950,
+   "seconds": 96.0,
+   "words": 249,
+   "words_per_s": 2.59,
+   "cuts": 27,
+   "cuts_per_10s": 2.8,
+   "likes": 4148,
+   "uploaded": "20261016",
+   "channel_subs": 2760,
+   "sheet": "D:/reel-tmp/lib_fiction/sheets/yastor_reaction.jpg",
+   "timed_8s": "0: What if your reaction time was 10 times faster? Your phone would fall 3 mm. Right now, your brain needs a quarter of | 8: a second to react. By then, your phone has fallen 30 cm. [music] 10 times faster? It barely moves. | 16: Toast? Butter side up. Keys over the drain? Caught. Red wine over a white carpet? &gt;&gt; [music] &gt;&gt; Not a drop. | 24: Catch a falling banknote and it's yours. Normally, that's impossible. It drops faster than you can react. You? Free money. | 32: In online games, you react faster than your own internet. Blaming the lag? For the first time ever, it really [music] is the lag. | 40: At the Olympics, you'd have the fastest start in history and get disqualified. Any reaction under a tenth of a second | 48: counts as a false start. &gt;&gt; [music] &gt;&gt; Flies dodge your slap because to them, your hand moves in slow motion. Now, you | 56: catch them with chopsticks. But, there's a catch. To react 10 times faster, your brain has to run 10 times | 64: [music] faster. Now you see the world like a fly does, in slow motion. Movies run at 24 frames per second. For | 72: you? A slideshow. A 1-minute microwave? 10 minutes. An 8-hour shift? [music] 80. The good news? Your weekend lasts almost | 80: 3 weeks. So, [music] superpower? You'd never drop your phone again. You'd just wait 10 times longer | 88: for it to load. And this video for you, it lasted over [music] 15 minutes. Would you take it?"
+  }
+ ]
+}

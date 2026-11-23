@@ -349,6 +349,15 @@ then depth.
 
 ### RL and A. The reels
 
+- **RL-ONE (2026-11-22, the owner's ground-up remake; since the same evening ONE reel a day at 23:30 UTC on the day's Daily stock, `src/explainer/make.py daily`).** One style for every reel: the 3D story explainer
+  (`memestreet_game/reels/src/explainer/`, skill `memestreet-reel`; the 3D one-shot in `src/oneshot/` is retired). 22 Nov night: a 2D explainer copied from the owner's AMD vs Intel reference; 23 Nov 00:00: the same in 3D, posted
+  01:09 UTC (29 views, 59% gone in 3 s; the owner: "i still don't like it... make the reel better"); 23 Nov afternoon: remade as SHOTS (one or two subjects filling the frame in a bright set, a hook title, a headline that
+  stays, one story with a turn; `HOW_IT_WORKS.md`, "The reel as shots"), the GoPro remake sent to the owner; the same evening, on the owner's "better, but it can still be better": the mystery-chart opening and
+  reveal, toy figures with drawn faces (a second model reel), captions timed by letter, a quieter tune of the reel's own; then, on "this is way better ... the audio smoother ... flow like normal human speech ... then post it", the
+  voice in breaths at one speed with a person's pauses, and the reel POSTED 23 Nov 16:55 UTC (instagram.com/reel/DgF24MUDRkL, media 18133419304887578; the first 3D cut of 01:09 is still up). The format since 23 Nov evening (owner: "all daily reels should follow this format now"): the third model reel's style (2D drawn cut-out people in 3D sets, no words on the picture, Montserrat captions), an ElevenLabs narrator, credited Jamendo music. Deployed and the four timers (auto, make, queue, research) back on 23 Nov 19:00 UTC on the owner's word ("yes turn all back on"); the 49 old unposted reels moved to `queue-originals/held-at-restart-2026-11-23/` first (7 were approved and would have posted at once). The 23:30 reel posts only when the panel passes (9 of 13; the count is noise). Posting is paused until the first reels pass the
+  simulated viewers and the owner has seen one. Then: turn the four timers back on (`/root/reel-timers-paused-2026-11-22.txt`),
+  move the old unposted reels out of `queue/` first. Measure ten posted reels in the ledger against the old medians.
+
 | # | Change | State | Size |
 |---|---|---|---|
 | RL1 | One copy of the reel code (see A2 to A5, A8 to A10 below); the reel folder committed; the crowded level-line tags, also only in the repo, go with it. | Your yes 12 Nov. Committed 12 Nov; the server swap is queued between two reels. If Instagram refuses a post's container because of the AI label (A8), the poster asks once more without it (`container()` in `src/post_instagram.py`), so the label can never cost a slot | M |

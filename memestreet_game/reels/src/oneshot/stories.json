@@ -1,0 +1,1524 @@
+{
+ "made": "2026-11-22",
+ "stories": [
+  {
+   "id": "choe",
+   "title_idea": "How This Graffiti Artist Made $200 Million Painting an Office Wall",
+   "hook_label": "a graffiti artist",
+   "payoff_figure": "about $200 million (his Facebook shares at the 2012 listing)",
+   "odd_means": "took shares instead of cash for painting murals",
+   "bigger_party": "Facebook",
+   "year_and_place": "2005, Palo Alto, California",
+   "terms": "Paid for the murals in cash, about $60,000 by his own account, or the same value in Facebook stock",
+   "move": [
+    "Painted murals across the walls of Facebook's first office",
+    "Thought the whole idea of Facebook was pointless and ridiculous",
+    "Took the stock anyway"
+   ],
+   "payoff": "About $200 million when Facebook listed in 2012: a stake reported at 0.1% to 0.25% of the company",
+   "sting": "He has said he thought Facebook was pointless and ridiculous on the day he chose its shares over the cash.",
+   "set": "office",
+   "who_real": "David Choe (living; a public figure as an artist)",
+   "sources": [
+    "https://csmonitor.com/Technology/Horizons/2012/0203/Facebook-IPO-turns-graffiti-mural-into-a-200-million-payday",
+    "https://www.cbsnews.com/news/facebook-graffiti-artist-david-choe-from-homeless-to-millions",
+    "https://www.investmentnews.com/equities/how-a-graffiti-artist-tagged-facebook-for-a-200m-payday/41962",
+    "https://en.wikipedia.org/wiki/David_Choe"
+   ],
+   "confidence": "high",
+   "note": "The How Money Works reel says '4% of the company'; the New York Times figure is 0.1% to 0.25% (CBS), so never say 4%. The $60,000 is his own account of the offer, not a document. $200 million is the New York Times estimate at the listing, assuming he had sold nothing. He was hired by Sean Parker, then Facebook's president."
+  },
+  {
+   "id": "jcom",
+   "title_idea": "How This Jobless 27-Year-Old Made $17 Million From One Bank Typo",
+   "hook_label": "a 27-year-old with no job",
+   "payoff_figure": "more than 2 billion yen in one day (about $17 million at the time)",
+   "odd_means": "bought the shares a bank was selling by mistake",
+   "bigger_party": "Mizuho Securities and the Tokyo Stock Exchange",
+   "year_and_place": "8 December 2005, Tokyo (he lived in Chiba)",
+   "terms": "A Mizuho trader meant to sell 1 share of a newly listed company, J-Com, for 610,000 yen and typed 610,000 shares at 1 yen each",
+   "move": [
+    "Watched a brand-new share collapse to its daily floor within minutes of opening",
+    "Bought 7,100 J-Com shares for 3.44 billion yen",
+    "Sold 1,100 of them the same day",
+    "Was paid 912,000 yen a share for the other 6,000 when the bad order was settled in cash"
+   ],
+   "payoff": "More than 2 billion yen of profit, declared in his own filing to Japan's Ministry of Finance; the typo first cost Mizuho about 27 billion yen",
+   "sting": "The bank had offered 42 times more shares than the company had in existence.",
+   "set": "home",
+   "who_real": "Takashi Kotegawa, known online as BNF (living private person)",
+   "sources": [
+    "https://www.theglobeandmail.com/report-on-business/two-investors-reap-millions-from-bungled-j-com-trade-on-tokyo-exchange/article18255536/",
+    "https://mizuhogroup.com/binaries/content/assets/pdf/mizuhoglobal/news/2005/12/20051208.pdf",
+    "https://www.aljazeera.com/news/2005/12/9/224m-typo-shakes-tokyo-exchange",
+    "https://www.euromoney.com/article/b1321y48tqh9kv/japan-tse-sued-over-mizuho-keystroke-blunder"
+   ],
+   "confidence": "high",
+   "note": "His profit figure rests on one wire report (Bloomberg, carried by the Globe and Mail) citing his ministry filing; the error itself is in Mizuho's own notice. The dollar figure is my conversion at the rate Al Jazeera used that week (27 billion yen = $224 million). Arguable angle: he broke no rule, he bought what was offered."
+  },
+  {
+   "id": "thiel-roth",
+   "title_idea": "How This Man Turned a $2,000 Retirement Account Into $5 Billion (Tax Free)",
+   "hook_label": "this man, a founder of PayPal",
+   "payoff_figure": "$5 billion, tax free",
+   "odd_means": "put founder's shares priced at a tenth of a cent into a retirement account meant for the middle class",
+   "bigger_party": "the US taxman",
+   "year_and_place": "1999, Silicon Valley, California",
+   "terms": "A Roth retirement account took at most $2,000 a year in 1999, and whatever grows inside it is never taxed",
+   "move": [
+    "Opened a Roth account",
+    "Bought 1.7 million shares of his own unlisted company inside it at $0.001 each: $1,700",
+    "Kept the proceeds inside the account when eBay bought PayPal in 2002",
+    "Kept investing from inside it"
+   ],
+   "payoff": "$28.5 million by the end of 2002 and $5 billion by 2019, on which no tax is due if he waits until he is 59 and a half",
+   "sting": "It was legal: the rule caps what you pay in, not what it grows to, and the shares went in at a tenth of a cent each.",
+   "set": "office",
+   "who_real": "Peter Thiel (public figure)",
+   "sources": [
+    "https://www.propublica.org/article/lord-of-the-roths-how-tech-mogul-peter-thiel-turned-a-retirement-account-for-the-middle-class-into-a-5-billion-dollar-tax-free-piggy-bank",
+    "https://www.bloomberg.com/news/articles/2021-06-24/peter-thiel-has-amassed-5-billion-in-his-roth-ira-propublica",
+    "https://www.nbcnews.com/tech/tech-news/billionaire-investor-peter-thiel-has-5b-his-tax-free-retirement-n1272317"
+   ],
+   "confidence": "high",
+   "note": "All figures are ProPublica's (June 2021, from leaked tax records); the other outlets report ProPublica. He has not disputed them. The closest match to the 'completely legally and completely tax free' winner."
+  },
+  {
+   "id": "bitcoin-27",
+   "title_idea": "How This Student Forgot a $27 Purchase That Bought Him a Flat",
+   "hook_label": "a Norwegian student",
+   "payoff_figure": "about $886,000 from $27",
+   "odd_means": "bought bitcoin for a thesis on encryption and forgot he had it",
+   "bigger_party": "nobody: the market did it",
+   "year_and_place": "2009 to 2013, Oslo, Norway",
+   "terms": "150 Norwegian kroner, about $27, bought 5,000 bitcoins",
+   "move": [
+    "Bought 5,000 bitcoins for 150 kroner while writing a thesis on encryption",
+    "Forgot about them for four years",
+    "Saw bitcoin in the news in April 2013",
+    "Got back into his old wallet"
+   ],
+   "payoff": "About 5 million kroner, roughly $886,000: some 33,000 times his money in four years",
+   "sting": "He sold only a fifth of them, enough to buy a flat in Oslo, and kept the other 4,000.",
+   "set": "home",
+   "who_real": "Kristoffer Koch (living private person)",
+   "sources": [
+    "https://www.thelocal.no/20131029/student-buys-oslo-apartment-with-27-bitcoin-stash",
+    "https://www.scmp.com/news/world/article/1343834/norwegians-forgotten-us25-bitcoins-enough-buy-luxury-flat",
+    "https://www.ibtimes.co.uk/norwegian-kristoffer-koch-bitcoins-value-interest-appreciation-517998",
+    "https://www.irishexaminer.com/world/arid-20248036.html"
+   ],
+   "confidence": "high",
+   "note": "The 150 kroner is given as $24 to $27 depending on the exchange rate; $27 is the commonest. One outlet says 5,600 coins bought in January 2010; the rest say 5,000 in 2009. Do not state what 4,000 coins are worth today unless the price is read on the day."
+  },
+  {
+   "id": "roaring-kitty",
+   "title_idea": "How This Man in a Basement Turned $53,000 Into $48 Million",
+   "hook_label": "a 34-year-old filming from his basement",
+   "payoff_figure": "about $48 million at the peak, from $53,000",
+   "odd_means": "bought a video-game shop's shares that the big funds were betting against, and posted his account online",
+   "bigger_party": "the hedge funds betting against GameStop (Melvin Capital needed a $2.75 billion rescue)",
+   "year_and_place": "2019 to January 2021, Massachusetts",
+   "terms": "One $53,000 position in GameStop, opened in 2019",
+   "move": [
+    "Put $53,000 into GameStop",
+    "Posted screenshots of the account on Reddit",
+    "Talked the trade through on YouTube from his basement",
+    "Held on while the price exploded in January 2021"
+   ],
+   "payoff": "His posted account showed nearly $48 million at the peak: about 900 times the stake",
+   "sting": "He did not sell at the top: the account then fell almost $19 million, 39%, and he posted that too.",
+   "set": "home",
+   "who_real": "Keith Gill, 'Roaring Kitty' (public figure)",
+   "sources": [
+    "https://www.nbcboston.com/news/business/money-report/how-roaring-kittys-wealth-went-from-53000-to-nearly-300-million-and-could-one-day-top-1-billion/3388904/?amp=1",
+    "https://www.boston.com/news/national-news/2021/01/29/roaring-kitty-gamestop/",
+    "https://uk.news.yahoo.com/gamestop-champion-roaring-kitty-quiet-111235217.html",
+    "https://en.wikipedia.org/wiki/Keith_Gill"
+   ],
+   "confidence": "high",
+   "note": "The $48 million comes from his own screenshots, which the New York Times said it could not verify: say 'his account showed'. The stake is $53,000 in most reports, $50,000 or $54,000 in a few."
+  },
+  {
+   "id": "silna",
+   "title_idea": "How Two Brothers Made $800 Million From a Team That Does Not Exist",
+   "hook_label": "two brothers who owned a basketball team",
+   "payoff_figure": "about $800 million: some $300 million over 37 years, then a reported $500 million in 2014",
+   "odd_means": "agreed to shut their team down in return for a slice of TV money, for ever",
+   "bigger_party": "the NBA",
+   "year_and_place": "1976, St. Louis, USA",
+   "terms": "The NBA took four teams from a rival league and paid the others to fold: Kentucky took $3.3 million, the brothers asked for one-seventh of the four teams' TV money 'in perpetuity'",
+   "move": [
+    "Turned down a plain cash buyout",
+    "Signed for one-seventh of four teams' TV income with no end date",
+    "Folded the Spirits of St. Louis",
+    "Cashed a cheque every year as the TV deals grew"
+   ],
+   "payoff": "About $300 million by 2014, some $19 million of it in that one season, for a team that last played in 1976",
+   "sting": "The NBA spent years trying to get out of the deal and in 2014 paid a reported $500 million up front to end most of it.",
+   "set": "office",
+   "who_real": "Ozzie and Daniel Silna (Ozzie has since died; check before naming either)",
+   "sources": [
+    "https://www.espn.com/nba/story/_/id/10258313/former-aba-owners-get-millions-nba",
+    "https://www.nbcnews.com/business/business-news/deal-lifetime-brothers-dunk-huge-nba-dollars-without-team-n4536",
+    "https://www.si.com/nba/2014/01/07/nba-agreement-silna-brothers-spirits-of-st-louis-buyout-nba-tv-rights",
+    "https://www.wbur.org/onlyagame/2012/12/29/nba-aba-silnas"
+   ],
+   "confidence": "high",
+   "note": "Not a share or market story (a contract). The $500 million is the New York Times's figure, reported by ESPN; the NBA never confirmed the terms, so say 'a reported'. A 2012 radio piece puts the running total at $255 million."
+  },
+  {
+   "id": "janitor",
+   "title_idea": "How This Janitor Quietly Built an $8 Million Stock Portfolio",
+   "hook_label": "a petrol-pump attendant who became a shop janitor",
+   "payoff_figure": "$8 million",
+   "odd_means": "bought ordinary shares on a small wage and kept the paper certificates in a bank box",
+   "bigger_party": "Wall Street's professionals",
+   "year_and_place": "1945 to 2014, Brattleboro, Vermont",
+   "terms": "About 25 years' wages as a petrol-station attendant and mechanic, then a part-time janitor's pay at a J.C. Penney shop",
+   "move": [
+    "Read the Wall Street Journal every day",
+    "Bought shares in well-known companies",
+    "Stored the paper certificates in a safe deposit box",
+    "Almost never sold"
+   ],
+   "payoff": "An estate of about $8 million, most of it shares: the certificates made a pile five inches high",
+   "sting": "He left $4.8 million to the local hospital and $1.2 million to the library, the biggest gifts either had ever had.",
+   "set": "shop",
+   "who_real": "Ronald Read (died 2014)",
+   "sources": [
+    "https://www.nbcnews.com/news/us-news/vermont-ex-janitor-bequeaths-secret-millions-library-hospital-n301396",
+    "https://www.cnbc.com/amp/2016/08/29/janitor-secretly-amassed-an-8-million-fortune.html",
+    "https://time.com/3696980/attendant-8-dollar-million-bequest",
+    "https://en.wikipedia.org/wiki/Ronald_Read_(philanthropist)"
+   ],
+   "confidence": "high",
+   "note": "The fortune became known when his will was read in 2015: keep the reel on the shares and the gifts, not on the death."
+  },
+  {
+   "id": "selbee",
+   "title_idea": "How a Retired Couple Used Lottery Small Print to Make $7 Million",
+   "hook_label": "a retired couple who had run a corner shop",
+   "payoff_figure": "$7.75 million profit before tax, on about $26 million of winning tickets",
+   "odd_means": "did the sums on a lottery's small print and bought tickets by the hundred thousand",
+   "bigger_party": "the state lotteries of Michigan and Massachusetts",
+   "year_and_place": "2003 to 2012, Evart, Michigan, then Massachusetts",
+   "terms": "When nobody won the jackpot it 'rolled down' into the smaller prizes, so in those weeks a ticket was worth more than it cost",
+   "move": [
+    "Read the game's leaflet and saw the flaw in about three minutes",
+    "Lost $50 on a first $2,200 test",
+    "Set up a company and sold $500 shares in it to family and friends",
+    "Drove to Massachusetts and printed more than 300,000 tickets at two small shops each time the jackpot rolled down"
+   ],
+   "payoff": "About $26 million in winning tickets over nine years, $7.75 million of it profit before tax",
+   "sting": "The state investigated and found the game had harmed no one: it had brought Massachusetts nearly $120 million.",
+   "set": "shop",
+   "who_real": "Jerry and Marge Selbee",
+   "sources": [
+    "https://cbsnews.com/news/jerry-and-marge-selbee-how-a-retired-couple-won-millions-using-a-lottery-loophole-60-minutes",
+    "https://highline.huffingtonpost.com/articles/en/lotto-winners/",
+    "https://www.clickondetroit.com/lottery/michigan-couple-finds-lottery-loophole-wins-27-million-in-9-years"
+   ],
+   "confidence": "high",
+   "note": "A lottery, not a market, though the vehicle was a company selling $500 shares. CBS says 'over $26 million', HuffPost 'nearly $27 million': use 26. The same report found big bettors bent the rules on running ticket terminals while the lottery looked away; nothing illegal was found."
+  },
+  {
+   "id": "gopro-roommate",
+   "title_idea": "How This College Roommate Collected $229 Million on a Spoken Promise",
+   "hook_label": "a college roommate",
+   "payoff_figure": "$229 million in shares",
+   "odd_means": "held his friend to a promise made long before the company was worth anything",
+   "bigger_party": "GoPro's billionaire founder",
+   "year_and_place": "promise made in the early 2000s, paid in May 2015, California",
+   "terms": "The founder promised his roommate, the company's first employee, 10% of whatever he ever got from selling his own shares",
+   "move": [
+    "Joined his roommate's camera start-up as employee number one",
+    "Was given more than 6 million share options in 2011 to honour the promise",
+    "Paid $3.6 million to exercise them in May 2015"
+   ],
+   "payoff": "To cover it the founder handed 4.7 million of his own shares back to the company: $229 million at that day's price",
+   "sting": "It was only ever a spoken agreement between friends until it had to be written into GoPro's filing with the regulator before the listing.",
+   "set": "office",
+   "who_real": "Neil Dana (living private person); the founder is Nick Woodman",
+   "sources": [
+    "https://fortune.com/2015/05/14/gopro-ceo-woodman-promise/",
+    "https://www.businessinsider.in/10-years-ago-GoPro-billionaire-Nick-Woodman-made-a-promise-to-his-college-roommate-and-it-just-cost-him-229-million/articleshow/47273566.cms",
+    "https://en.wikipedia.org/wiki/Nick_Woodman"
+   ],
+   "confidence": "high",
+   "note": "$229 million is Bloomberg's valuation of the 4.7 million shares at the close that Monday. What he kept after selling is not public."
+  },
+  {
+   "id": "secretary-copy",
+   "title_idea": "How This Secretary Copied Her Boss's Share Orders Into a $9 Million Fortune",
+   "hook_label": "a legal secretary",
+   "payoff_figure": "more than $9 million",
+   "odd_means": "bought whatever shares her bosses bought, in smaller amounts",
+   "bigger_party": "the Wall Street lawyers she worked for",
+   "year_and_place": "67 years at one law firm, to 2016, New York City",
+   "terms": "A secretary's pay at one law firm for 67 years, in the days when secretaries placed the lawyers' own share orders",
+   "move": [
+    "Placed her boss's order to buy a share",
+    "Then bought the same share for herself, in a smaller amount",
+    "Told no one",
+    "Stayed at the same firm for 67 years"
+   ],
+   "payoff": "More than $9 million, found only when her niece went through her accounts",
+   "sting": "She left $8.2 million of it to send poor students to college, $6.24 million to one neighbourhood charity alone.",
+   "set": "office",
+   "who_real": "Sylvia Bloom (died 2016)",
+   "sources": [
+    "https://www.cbsnews.com/amp/newyork/news/legal-secretary-amasses-9-million-fortune-gives-most-of-it-to-students",
+    "https://www.nbcnewyork.com/news/local/legal-secretary-who-grew-a-9m-fortune-donates-most-of-it-to-students/134260/",
+    "https://forward.com/news/400551/sylvia-bloom-henry-street-settlement-hunter-college-millions-donated/",
+    "https://en.wikipedia.org/wiki/Sylvia_Bloom"
+   ],
+   "confidence": "high",
+   "note": "The copying is her niece's account (New York Times, 6 May 2018). Some commentators ask whether copying a lawyer's trades was proper; nothing was ever alleged against her. That question is the arguable angle, so state the fact and no more."
+  },
+  {
+   "id": "textbook-arbitrage",
+   "title_idea": "How This Student Beat a Giant Publisher With Cheap Textbooks and eBay",
+   "hook_label": "a student from Thailand",
+   "payoff_figure": "about $900,000 in sales, around $100,000 of it profit",
+   "odd_means": "had his family post him the cheap Asian editions of American textbooks and sold them online",
+   "bigger_party": "the publisher John Wiley & Sons",
+   "year_and_place": "sued in New York in 2008, won at the US Supreme Court on 19 March 2013",
+   "terms": "The same textbook cost far less in Asia than in America",
+   "move": [
+    "Asked relatives and friends in Thailand to buy the cheap editions",
+    "Had them posted to him in the United States",
+    "Sold more than 600 copies on sites such as eBay",
+    "Paid his relatives back and kept the difference"
+   ],
+   "payoff": "Court papers put his sales at about $900,000 and his profit at some $100,000",
+   "sting": "The publisher sued and a jury told him to pay $600,000, so he took it to the Supreme Court and won, six votes to three.",
+   "set": "home",
+   "who_real": "Supap Kirtsaeng (living private person)",
+   "sources": [
+    "https://courthousenews.com/ebay-users-copyright-fight-goes-to-high-court/",
+    "https://www.washingtontimes.com/news/2013/mar/19/court-backs-student-in-textbook-copyright-case/",
+    "https://fairuse.stanford.edu/case/kirtsaeng-v-john-wiley-sons-inc/",
+    "https://docs.justia.com/cases/federal/district-courts/new-york/nysdce/1:2008cv07834/332008/85/1.html"
+   ],
+   "confidence": "high",
+   "note": "A price gap between two markets, exploited legally: the court held that a lawfully made book may be resold wherever it was printed. Never say the books were pirated or fake."
+  },
+  {
+   "id": "burry",
+   "title_idea": "How This Doctor Made $100 Million Betting Against the Housing Market",
+   "hook_label": "a doctor who taught himself investing",
+   "payoff_figure": "$100 million for himself, and more than $700 million for his investors",
+   "odd_means": "read the mortgage paperwork nobody read and asked the banks to sell him insurance against it",
+   "bigger_party": "Wall Street's banks",
+   "year_and_place": "2005 to 2008, California",
+   "terms": "Insurance on mortgage bonds: he paid a premium every year and collected if the home loans went bad; the first deal, $60 million of cover from Deutsche Bank, was on 19 May 2005",
+   "move": [
+    "Read the loan-by-loan paperwork of mortgage bonds",
+    "Got the banks to write him insurance on the worst of them",
+    "Paid the premiums for two years while the bet looked wrong",
+    "Stopped his own investors taking their money out until it paid"
+   ],
+   "payoff": "About $100 million for him and more than $700 million for the investors who stayed: the fund made 489% after fees from 2000 to mid-2008",
+   "sting": "His own investors had demanded their money back just before it worked, and he had to lock it in to keep the trade alive.",
+   "set": "office",
+   "who_real": "Michael Burry (public figure)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Michael_Burry",
+    "https://en.wikipedia.org/wiki/Scion_Asset_Management",
+    "https://www.npr.org/2010/03/16/124690424/how-a-few-made-millions-betting-against-the-market",
+    "https://www.huffpost.com/entry/michael-burry-the-unlikel_n_482712",
+    "https://moneyweek.com/466835/466835-2"
+   ],
+   "confidence": "high",
+   "note": "The profit figures come from Michael Lewis's book The Big Short (2010) and are repeated by the rest; one summary gives $725 million for investors, so 'more than $700 million' is the safe wording."
+  },
+  {
+   "id": "pudding",
+   "title_idea": "How This Man Used 12,150 Cups of Pudding to Fly Free for Life",
+   "hook_label": "a civil engineer",
+   "payoff_figure": "1.25 million air miles for $3,140",
+   "odd_means": "bought 12,150 cups of chocolate pudding",
+   "bigger_party": "the food brand Healthy Choice and the airlines",
+   "year_and_place": "1999, Sacramento area, California",
+   "terms": "500 air miles for every 10 barcodes posted in, doubled for early entries; he found single cups of pudding, each with its own barcode, in a discount chain",
+   "move": [
+    "Found the pudding in a chain of discount shops",
+    "Drove round ten of them buying every case: 12,150 cups for $3,140",
+    "Had Salvation Army volunteers cut off the barcodes in return for the pudding",
+    "Posted the barcodes in"
+   ],
+   "payoff": "1.25 million miles, over a million of them in one American Airlines account: top-tier status for life",
+   "sting": "He still earns miles five times faster than he can spend them.",
+   "set": "shop",
+   "who_real": "David Phillips, 'the Pudding Guy' (living)",
+   "sources": [
+    "https://ucdavis.edu/news/engineer-finds-sweet-travel-deal-cups-pudding",
+    "https://en.wikipedia.org/wiki/David_Phillips_(entrepreneur)",
+    "https://www.npr.org/2000/01/29/1069750/frequent-flyer",
+    "https://gizmodo.com/how-an-engineer-earned-1-25-million-air-miles-by-buying-1339646546/1473240800"
+   ],
+   "confidence": "high",
+   "note": "A price loophole, not a share story. Totals differ slightly (1,215,000 to 1,253,000 miles; the $3,140 covered some other products too). Often repeated but NOT verified here: 25 cents a cup, an $815 tax deduction for the gift, the Y2K excuse. Leave those out or source them."
+  },
+  {
+   "id": "chelsea-one-pound",
+   "title_idea": "How This Man Bought a Football Club for 1 Pound and Sold It for Millions",
+   "hook_label": "a businessman",
+   "payoff_figure": "about \u00a317 million for a club that cost him \u00a31",
+   "odd_means": "bought a broke football club for a pound, debts and all",
+   "bigger_party": "the billionaire he sold it to, Roman Abramovich",
+   "year_and_place": "1982 to 2003, London",
+   "terms": "\u00a31 for Chelsea Football Club in 1982, plus debts of about \u00a31.5 million",
+   "move": [
+    "Paid \u00a31 for a club in the second division",
+    "Took on its debts",
+    "Ran it for 21 years",
+    "Sold it to a Russian billionaire in 2003 in a deal worth \u00a3140 million"
+   ],
+   "payoff": "His own shares brought him about \u00a317 million from a deal that valued the club at \u00a3140 million",
+   "sting": "He sold too early: the man he sold it to sold the club in 2022 for \u00a32.5 billion.",
+   "set": "office",
+   "who_real": "Ken Bates (died July 2026, aged 94; public figure)",
+   "sources": [
+    "https://wtop.com/sports/2026/07/former-chelsea-owner-ken-bates-who-bought-the-club-for-one-pound-dies-at-94/",
+    "https://africa.espn.com/football/story/_/id/49334182/ken-bates-outspoken-owner-chelsea-leeds-was-loved-loathed",
+    "https://en.wikipedia.org/wiki/Ken_Bates",
+    "https://www.skysports.com/football/news/11668/12620985/chelsea-takeover-todd-boehly-completes-4-25bn-takeover-as-roman-abramovich-era-ends"
+   ],
+   "confidence": "high",
+   "note": "His personal take is given as \u00a317 million or \u00a318 million (Wikipedia has both): say 'about \u00a317 million'. Debts taken on are \u00a31.5 million in most sources, \u00a32 million in one. The 2022 figure is \u00a32.5 billion for the club, \u00a34.25 billion with promised investment."
+  },
+  {
+   "id": "school-snap",
+   "title_idea": "How a High School Turned $15,000 Into $24 Million on One App",
+   "hook_label": "a Catholic high school",
+   "payoff_figure": "about $24 million from $15,000",
+   "odd_means": "put school money into an app a parent's children would not put down",
+   "bigger_party": "the venture capitalists who came in later and paid more",
+   "year_and_place": "2012 to March 2017, Mountain View, California",
+   "terms": "$15,000 from the school's fund in Snapchat's first funding round in 2012",
+   "move": [
+    "A parent who invested for a living saw his children glued to a new app",
+    "He invested and asked the school to put in $15,000 beside him",
+    "The school held for five years",
+    "It sold 1.4 million shares at the $17 listing price in March 2017"
+   ],
+   "payoff": "About $24 million for two-thirds of its shares: some 1,600 times the stake",
+   "sting": "It kept the other third, and the shares closed their first day at $24.48.",
+   "set": "office",
+   "who_real": "Saint Francis High School, Mountain View; the parent was Barry Eggers of Lightspeed Venture Partners",
+   "sources": [
+    "https://www.cnbc.com/2017/03/03/california-high-school-makes-millions-on-snap-ipo.html",
+    "https://fortune.com/2017/03/03/california-high-school-snap-snapchat-ipo/",
+    "https://qz.com/923281/saint-francis-high-school-in-mountain-view-california-turned-a-15000-snap-investment-into-a-multi-million-dollar-payday",
+    "https://www.kqed.org/news/11342616/why-a-mountain-view-school-raked-in-millions-from-snaps-ipo"
+   ],
+   "confidence": "high",
+   "note": "A small institution, not a person: lead with the parent or 'a school'. The school never gave its own total; $24 million is 1.4 million shares at $17. One headline said $50 million (ignore it)."
+  },
+  {
+   "id": "bezos-parents",
+   "title_idea": "How This Couple Turned Their Savings Into a Possible $30 Billion",
+   "hook_label": "a couple who backed their son's online bookshop",
+   "payoff_figure": "up to $30 billion (Bloomberg's best-case estimate in 2018)",
+   "odd_means": "put their savings into their son's start-up after he told them they would probably lose it",
+   "bigger_party": "the professional investors who came later",
+   "year_and_place": "1995, Seattle",
+   "terms": "$245,573 in 1995, with a warning from their son that there was a 70% chance they would never see it again",
+   "move": [
+    "Listened to their son's plan to sell books on the internet",
+    "Put in $245,573 anyway",
+    "Kept the shares through the 1997 listing"
+   ],
+   "payoff": "If they kept every share the stake was worth as much as $30 billion in 2018: a return of about 12,000,000%",
+   "sting": "Nobody outside the family knows how much they kept: their holding was last made public at the end of the 1990s.",
+   "set": "home",
+   "who_real": "Jackie and Mike Bezos (Jackie Bezos died in 2025)",
+   "sources": [
+    "https://www.bloomberg.com/news/articles/2018-07-31/a-hidden-amazon-fortune-bezos-parents-could-be-worth-billions",
+    "https://fortune.com/2018/07/31/jeff-bezos-family-investment-amazon/",
+    "https://www.bnnbloomberg.ca/a-hidden-amazon-fortune-bezos-parents-could-be-worth-billions-1.1116486"
+   ],
+   "confidence": "high",
+   "note": "An estimate, not a known fortune: always 'could be worth'. The $245,573 is from Amazon's own 1997 prospectus. They gave shares away to their foundation over the years."
+  },
+  {
+   "id": "yang-million",
+   "title_idea": "How This Warehouse Worker Carried Bonds by Train and Became China's First Millionaire Investor",
+   "hook_label": "a factory warehouse worker from Shanghai",
+   "payoff_figure": "1 million yuan in 1988 (about $156,000 at the rate one obituary used)",
+   "odd_means": "carried government bonds from city to city to sell where the price was higher",
+   "bigger_party": "China's state banks, which were not allowed to do it",
+   "year_and_place": "1988, Shanghai and Hefei, China",
+   "terms": "From 21 April 1988 seven cities let people trade government bonds, and the same bond had a different price in each; his first afternoon made 800 yuan, about a year's wages",
+   "move": [
+    "Quit his factory job",
+    "Bought bonds the first morning the Shanghai market opened and sold them that afternoon",
+    "Read the newspapers in the Shanghai Library to find each city's price",
+    "Bought bonds in Hefei and sold them in Shanghai the same day",
+    "Asked the police to guard him and his boxes of cash"
+   ],
+   "payoff": "His first million yuan, which gave him the nickname he kept for life: Yang Million",
+   "sting": "Afraid of being taken for a tax dodger, he walked into the tax office in 1989 to ask whether he owed anything.",
+   "set": "street",
+   "who_real": "Yang Huaiding, 'Yang Baiwan' (died June 2021)",
+   "sources": [
+    "https://yicaiglobal.com/news/yang-huaiding-china-first-stock-investor-dies-aged-71",
+    "https://www.inkl.com/news/yang-huaiding-obituary",
+    "https://www.inkl.com/news/pioneering-investor-dubbed-china-s-first-shareholder-dies"
+   ],
+   "confidence": "high",
+   "note": "One account ties the nickname to shares he bought in the early 1990s; the bond million of 1988 is the commoner version. A million yuan was a vast sum in 1988 China, far more than the dollar figure suggests."
+  },
+  {
+   "id": "voltaire",
+   "title_idea": "How a Writer and a Mathematician Outsmarted the French Government's Lottery",
+   "hook_label": "a writer and a mathematician at a dinner party",
+   "payoff_figure": "about 500,000 livres for the writer alone",
+   "odd_means": "bought the cheapest government bonds only for the lottery tickets that came with them",
+   "bigger_party": "the French government",
+   "year_and_place": "1729 to 1730, Paris",
+   "terms": "To prop up its bonds France ran a monthly lottery for bondholders only: a ticket cost one-thousandth of your bond's value, but every ticket had the same chance of the same prize",
+   "move": [
+    "Worked out that the smallest bonds gave the cheapest tickets",
+    "Formed a syndicate and bought up the small bonds",
+    "Bought the tickets month after month through a handful of notaries",
+    "Collected the prize again and again"
+   ],
+   "payoff": "The writer's share came to roughly half a million livres: enough never to need a rich patron again",
+   "sting": "The government took them to court and lost: they had broken no law, so they kept the money and the lottery was shut.",
+   "set": "cafe",
+   "who_real": "Voltaire and Charles Marie de La Condamine (historical; may be named)",
+   "sources": [
+    "https://www.smithsonianmag.com/smart-news/voltaire-enlightenment-philosopher-and-lottery-scammer-180967265/",
+    "https://www.damninteresting.com/the-enlightenment-guide-to-winning-the-lottery/",
+    "https://cases.som.yale.edu/voltaire-casanova-and-18th-century-lotteries"
+   ],
+   "confidence": "high",
+   "note": "Figures vary: 500,000 livres is the usual sum for Voltaire's share; one account gives 7.5 million for the whole syndicate. Smithsonian's headline says 'scammer' but the accounts agree nothing illegal was done."
+  },
+  {
+   "id": "winklevoss",
+   "title_idea": "How These Twins Lost to Facebook and Became Billionaires Anyway",
+   "hook_label": "twin brothers",
+   "payoff_figure": "a bitcoin holding reported at over $1 billion in December 2017, bought for $11 million",
+   "odd_means": "took shares instead of cash in a lawsuit settlement, then put the winnings into bitcoin",
+   "bigger_party": "Facebook",
+   "year_and_place": "2008 settlement and 2013 purchase, USA",
+   "terms": "A $65 million settlement: $20 million in cash and $45 million in Facebook shares, though their lawyers urged them to take it all in cash",
+   "move": [
+    "Sued over who had the idea for Facebook",
+    "Insisted on being paid mostly in Facebook shares",
+    "Put $11 million of the proceeds into bitcoin in 2013 at about $120 a coin",
+    "Held"
+   ],
+   "payoff": "By December 2017 the bitcoin alone was reported to be worth more than $1 billion",
+   "sting": "Before that, the $45 million of Facebook shares had already grown to a reported $200 million by the 2012 listing.",
+   "set": "office",
+   "who_real": "Cameron and Tyler Winklevoss (public figures)",
+   "sources": [
+    "https://fortune.com/2017/12/04/winklevoss-twins-bitcoin-billionaires/",
+    "https://www.nzherald.co.nz/business/how-the-winklevoss-twins-became-bitcoin-billionaires/GRRIGEIHV3P4TXRGNDT24SLB6Q",
+    "https://foxbusiness.com/lifestyle/who-are-the-winklevoss-twins",
+    "https://moneyweek.com/477995/winklevoss-the-curious-twins-who-bet-big-on-bitcoin"
+   ],
+   "confidence": "high",
+   "note": "'Billionaires' was a press estimate that depends on the day's bitcoin price; one outlet had to correct an earlier, premature claim. Entry price is $120 a coin in most reports, about $100 in one."
+  },
+  {
+   "id": "gamestop-kid",
+   "title_idea": "How This 10-Year-Old Beat Wall Street With a $60 Present",
+   "hook_label": "a 10-year-old",
+   "payoff_figure": "nearly $3,200 from $60",
+   "odd_means": "was given ten shares of a video-game shop as a present, framed",
+   "bigger_party": "the hedge funds betting against GameStop",
+   "year_and_place": "December 2019 to January 2021, San Antonio, Texas",
+   "terms": "Ten GameStop shares, bought by his mother for about $60",
+   "move": [
+    "Unwrapped a framed share certificate",
+    "Kept it for 13 months",
+    "Was asked by his mother: stay or sell?",
+    "Sold"
+   ],
+   "payoff": "Nearly $3,200: more than 50 times the gift",
+   "sting": "He put $2,200 into savings and kept $1,000 to invest again.",
+   "set": "home",
+   "who_real": "Jaydyn Carr, a child (his mother is Nina Carr)",
+   "sources": [
+    "https://m.washingtontimes.com/news/2021/jan/29/10-year-old-san-antonio-boy-cashes-in-on-gamestop-/",
+    "https://www.boston.com/news/national-news/2021/01/30/a-10-year-old-cashes-in-his-gamestop-shares",
+    "https://foxbusiness.com/markets/10-year-old-san-antonio-boy-cashes-in-on-gamestop-stocks"
+   ],
+   "confidence": "high",
+   "note": "A child: a label only, never the name or a likeness. The gift was for Kwanzaa. CNN says $2,000 went to savings, the Associated Press $2,200."
+  },
+  {
+   "id": "templeton",
+   "title_idea": "How This Man Bought Every Stock Under $1 and Quadrupled His Money",
+   "hook_label": "a young stockbroker",
+   "payoff_figure": "$40,000 from a borrowed $10,000",
+   "odd_means": "told his broker to buy 100 shares of every company selling for a dollar or less",
+   "bigger_party": "a stock market in a panic",
+   "year_and_place": "1939, New York",
+   "terms": "$10,000, borrowed, as war broke out in Europe",
+   "move": [
+    "Borrowed $10,000",
+    "Ordered 100 shares of every stock priced at $1 or under",
+    "Ended up owning 104 companies",
+    "Held for about four years"
+   ],
+   "payoff": "About $40,000 when he sold: four times the loan",
+   "sting": "Thirty-four of the companies were already bankrupt when he bought them, and only four ended up worthless.",
+   "set": "office",
+   "who_real": "John Templeton (died 2008; may be named)",
+   "sources": [
+    "https://www.nasdaq.com/articles/lessons-sir-john-templeton-2017-04-07",
+    "https://money.com/wisdom-from-an-investing-legend",
+    "https://en.wikipedia.org/wiki/John_Templeton",
+    "https://www.fool.com/investing/how-to-invest/famous-investors/john-templeton"
+   ],
+   "confidence": "high",
+   "note": "Details vary: 34 or 37 in bankruptcy, a loan of $10,000 or $10,400, lent by his old boss or 'a friend'."
+  },
+  {
+   "id": "soros",
+   "title_idea": "How This Man Made $1 Billion in a Day Betting Against the Pound",
+   "hook_label": "this man, a fund manager",
+   "payoff_figure": "about $1 billion in one day",
+   "odd_means": "sold pounds he had borrowed, betting the government could not hold its own currency up",
+   "bigger_party": "the Bank of England and the British government",
+   "year_and_place": "16 September 1992, London",
+   "terms": "Britain had promised to keep the pound above a fixed rate against the German mark and was spending its reserves to do it",
+   "move": [
+    "Built a bet against the pound worth almost $10 billion",
+    "Watched the government raise interest rates twice in one day to stop the selling",
+    "Kept selling",
+    "Bought the pounds back cheaper after Britain gave up that evening"
+   ],
+   "payoff": "About $1 billion of profit, while defending the pound cost the British Treasury an estimated \u00a33.3 billion",
+   "sting": "He was one seller among many, but he has been 'the man who broke the Bank of England' ever since.",
+   "set": "trading floor",
+   "who_real": "George Soros (public figure)",
+   "sources": [
+    "https://moneyweek.com/408262/16-september-1992-sterling-crashes-out-of-the-erm-on-black-wednesday",
+    "https://en.wikipedia.org/wiki/Black_Wednesday",
+    "https://www.npr.org/transcripts/1216966368",
+    "https://fortunly.com/articles/george-soros-and-the-bank-of-england"
+   ],
+   "confidence": "high",
+   "note": "The profit is an estimate: $1 billion in most accounts, $1.5 billion in some. The lower one is used."
+  },
+  {
+   "id": "horejsi",
+   "title_idea": "How a Welding-Supply Boss Turned $10,600 Into a Billion",
+   "hook_label": "the owner of a family welding-supply business in Kansas",
+   "payoff_figure": "more than $1 billion",
+   "odd_means": "spent the firm's spare cash on 40 shares of one company and kept buying",
+   "bigger_party": "the bigger rivals squeezing his business",
+   "year_and_place": "1980, Kansas",
+   "terms": "40 shares of Berkshire Hathaway at $265 each: $10,600",
+   "move": [
+    "Watched competitors move in on the family business",
+    "Put $10,600 of its cash into 40 Berkshire Hathaway shares",
+    "Bought more within weeks",
+    "Held for decades"
+   ],
+   "payoff": "The holding grew to 5,800 of the top-priced shares: a fortune of at least $1.1 billion by 2013",
+   "sting": "At one point he held more of those shares than Bill Gates.",
+   "set": "warehouse",
+   "who_real": "Stewart Horejsi (living; low-profile)",
+   "sources": [
+    "https://www.bloomberg.com/news/articles/2013-09-17/berkshire-billionaire-found-with-more-shares-than-gates/",
+    "https://www.carriermanagement.com/news/2013/09/23/113392.htm",
+    "https://www.benzinga.com/news/23/05/32193731/buying-berkshire-hathaway-stock-in-the-80s-turned-this-everyday-investor-into-a-billionaire",
+    "https://nairametrics.com/2021/07/05/how-stewart-horejsi-became-a-billionaire-from-one-investment"
+   ],
+   "confidence": "high",
+   "note": "Net worth: at least $1.1 billion (Bloomberg, 2013); later articles citing Forbes say $2.5 billion to $2.8 billion. He later sold 1,500 of the 5,800 shares."
+  },
+  {
+   "id": "livermore",
+   "title_idea": "How One Trader Made $100 Million From the 1929 Crash and Lost It",
+   "hook_label": "a lone trader",
+   "payoff_figure": "about $100 million in the 1929 crash",
+   "odd_means": "bet on prices falling and hid the size of the bet behind more than 100 brokers",
+   "bigger_party": "the whole American stock market",
+   "year_and_place": "1929, New York",
+   "terms": "By the spring of 1929 the bet was losing him more than $6 million on paper",
+   "move": [
+    "Sold shares he did not own, betting they would fall",
+    "Spread the orders over more than 100 brokers so nobody saw the size of it",
+    "Sat on a paper loss of over $6 million",
+    "Held until the market broke in October"
+   ],
+   "payoff": "Roughly $100 million when Wall Street crashed and almost everyone else was wiped out",
+   "sting": "Five years later he was bankrupt, with $84,000 to his name against debts of $2.5 million.",
+   "set": "trading floor",
+   "who_real": "Jesse Livermore (died 1940; may be named)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Jesse_Livermore",
+    "https://moneyweek.com/434022/the-worlds-greatest-investors-jesse-livermore",
+    "https://content.time.com/time/subscriber/article/0,33009,765047-2,00.html",
+    "https://cfi.co/banking/2014/02/jesse-lauriston-livermore-the-boy-plunger"
+   ],
+   "confidence": "high",
+   "note": "The $100 million is the biographers' figure, not an audited one. End on the 1934 bankruptcy; do not use how he died."
+  },
+  {
+   "id": "three-shares",
+   "title_idea": "How This Secretary Turned Three Shares Into $7 Million",
+   "hook_label": "a secretary",
+   "payoff_figure": "$7 million from $180",
+   "odd_means": "bought three shares of the company she worked for and never sold one",
+   "bigger_party": "everyone who traded in and out for 75 years",
+   "year_and_place": "1935, Lake Forest, Illinois",
+   "terms": "Three shares of Abbott at $60 each: $180",
+   "move": [
+    "Bought three shares in 1935",
+    "Put every dividend back into more shares",
+    "Sat through every share split for 75 years",
+    "Went on living in a small cottage"
+   ],
+   "payoff": "About $7 million by 2010, after 43 years as a secretary at the same company",
+   "sting": "Nobody knew until she left it all to her old college, the biggest gift it had ever had.",
+   "set": "office",
+   "who_real": "Grace Groner (died 2010)",
+   "sources": [
+    "https://lakeforest.edu/news/alumna-grace-groner-31-gives-7-million-to-lake-forest-college",
+    "https://www.nbcnews.com/news/amp/wbna35729174",
+    "https://www.cbsnews.com/news/frugal-centenarian-left-7m-to-alma-mater",
+    "https://www.philanthropy.com/news/former-secretary-leaves-7-million-to-her-illinois-alma-mater/"
+   ],
+   "confidence": "high",
+   "note": "Same shape as the janitor; do not run the two close together."
+  },
+  {
+   "id": "masseuse",
+   "title_idea": "How a Part-Time Masseuse Became a Millionaire by Asking for Share Options",
+   "hook_label": "a part-time masseuse",
+   "payoff_figure": "millions: she says 'multi-millionaire' and will not give the number",
+   "odd_means": "asked for share options on top of $450 a week",
+   "bigger_party": "Google",
+   "year_and_place": "1999, Mountain View, California",
+   "terms": "$450 a week, part-time, with options in a 40-person start-up that she thought might never be worth a penny",
+   "move": [
+    "Answered an advert for an in-house masseuse",
+    "Took the low pay with the options",
+    "Worked on the engineers' backs until the 2004 listing",
+    "Cashed most of the options and retired"
+   ],
+   "payoff": "Enough to retire on: in her own words a multi-multi-millionaire",
+   "sting": "She had only answered the advert on a whim, just divorced and living with her sister.",
+   "set": "office",
+   "who_real": "Bonnie Brown (living private person)",
+   "sources": [
+    "https://techcrunch.com/2007/11/12/newsflash-working-for-google-early-on-makes-you-rich/",
+    "https://www.deseret.com/2007/11/12/20053011/google-job-turned-into-gold/",
+    "https://www.massagetherapy.com/node/830",
+    "https://amp.newser.com/story/11493/google-masseuse-is-a-millionaire.html"
+   ],
+   "confidence": "high",
+   "note": "There is no exact figure and none must be invented: the story is from the New York Times, 12 November 2007. A trade magazine gives the pay as $45 an hour for ten hours a week, the same $450."
+  },
+  {
+   "id": "swoosh",
+   "title_idea": "How a Student Paid $35 for the Nike Logo Ended Up With 32,000 Shares",
+   "hook_label": "a design student",
+   "payoff_figure": "500 Nike shares, which have since split into 32,000",
+   "odd_means": "was paid $35 for the logo, then handed shares twelve years later",
+   "bigger_party": "Nike",
+   "year_and_place": "1971 for the logo, September 1983 for the shares, Portland, Oregon",
+   "terms": "$35 for 17.5 hours of work",
+   "move": [
+    "Drew a tick-shaped mark for a teacher's new shoe company",
+    "Billed $35",
+    "Twelve years on, was given a gold ring in the shape of the logo, with a diamond in it",
+    "And with it 500 shares"
+   ],
+   "payoff": "The 500 shares have split into 32,000",
+   "sting": "She says she has never cashed in one of the original 500.",
+   "set": "office",
+   "who_real": "Carolyn Davidson (living)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Carolyn_Davidson_(graphic_designer)",
+    "https://www.espn.com/espn/story/_/id/16286876/how-college-student-carolyn-davidson-created-nike-swoosh",
+    "https://www.retailbrew.com/stories/2022/09/09/logo-big-or-go-home-how-nike-got-its-swoosh-for-just-usd35",
+    "https://stockx.com/news/who-designed-the-nike-logo/"
+   ],
+   "confidence": "high",
+   "note": "Do not state a dollar value from memory: printed estimates run from $643,000 to $4 million depending on the date. Multiply 32,000 by the Nike price on the day. She has sold some of the split shares, only not the original 500."
+  },
+  {
+   "id": "uber-tweet",
+   "title_idea": "How One Reply to a Tweet Made This Man a Billionaire",
+   "hook_label": "a man who answered a tweet",
+   "payoff_figure": "about $1.4 billion",
+   "odd_means": "replied to a stranger's tweet with his email address",
+   "bigger_party": "Uber",
+   "year_and_place": "January 2010, USA",
+   "terms": "A founder tweeted that he wanted tips for a first hire at a start-up that had not launched",
+   "move": [
+    "Saw the tweet",
+    "Replied the next day: here's a tip, email me",
+    "Became employee number one on 1 March 2010",
+    "Kept his shares to the 2019 listing"
+   ],
+   "payoff": "About 2% of Uber at its listing: roughly $1.4 billion by Forbes's count",
+   "sting": "He was briefly made chief executive, then stepped aside for the man who had sent the tweet.",
+   "set": "home",
+   "who_real": "Ryan Graves (public figure); the tweet was Travis Kalanick's",
+   "sources": [
+    "https://foxbusiness.com/business-leaders/ubers-first-employee-billionaire-tweet",
+    "https://fortune.com/2015/06/03/uber-an-oral-history",
+    "https://www.aol.com/2015/06/24/how-a-tweet-turned-ubers-first-hire-into-a-billionaire"
+   ],
+   "confidence": "high",
+   "note": "Net worth is Forbes's running estimate ($1.4 billion and up, depending on the date)."
+  },
+  {
+   "id": "south-sea-bookseller",
+   "title_idea": "How a Bookseller Sold Out of History's Biggest Bubble at the Top",
+   "hook_label": "a London bookseller",
+   "payoff_figure": "\u00a3234,428, a profit of about \u00a3175,000",
+   "odd_means": "sold his shares in the South Sea Bubble before it burst",
+   "bigger_party": "the South Sea Company and the crowd buying its shares",
+   "year_and_place": "1720, London",
+   "terms": "He had bought sailors' unpaid wage tickets at a deep discount, and in 1711 the government swapped them for South Sea shares",
+   "move": [
+    "Bought seamen's pay tickets cheaply for decades",
+    "Had them turned into South Sea stock in 1711",
+    "Sold \u00a354,040 of stock as the price soared in 1720",
+    "Moved the money into government annuities"
+   ],
+   "payoff": "\u00a3234,428 for the lot: he multiplied his fortune about five times in a year",
+   "sting": "The next year he used it to found a hospital in London that still carries his name.",
+   "set": "shop",
+   "who_real": "Thomas Guy (died 1724; may be named), founder of Guy's Hospital",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Thomas_Guy",
+    "https://blog.nationalarchives.gov.uk/the-south-sea-bubble-of-1720",
+    "https://pmc.ncbi.nlm.nih.gov/articles/PMC3072263"
+   ],
+   "confidence": "high",
+   "note": "His selling price per share is given as \u00a3600 by one source and an average of \u00a3420 by another: use only the \u00a3234,428 total. Know before posting: the South Sea Company traded in enslaved people, and his statue has been contested for it."
+  },
+  {
+   "id": "bowie-bonds",
+   "title_idea": "How a Rock Star Sold Shares in His Own Songs for $55 Million",
+   "hook_label": "a rock star",
+   "payoff_figure": "$55 million up front",
+   "odd_means": "sold bonds backed by ten years of his own royalties",
+   "bigger_party": "Prudential, the insurer that bought every bond",
+   "year_and_place": "1997, New York",
+   "terms": "Ten-year bonds paying 7.9% a year, backed by the income from 25 albums",
+   "move": [
+    "Pledged ten years of income from 25 albums",
+    "Sold the whole issue to one insurance company",
+    "Took $55 million in cash at once"
+   ],
+   "payoff": "$55 million in hand, just before free music downloads arrived",
+   "sting": "By 2004 record sales had fallen so far that the bonds were cut to one notch above junk.",
+   "set": "office",
+   "who_real": "David Bowie (died 2016; may be named)",
+   "sources": [
+    "https://www.npr.org/sections/thetwo-way/2016/01/12/462815115/david-bowie-also-left-his-mark-on-wall-street",
+    "https://amp.cbc.ca/lite/story/1.3398375",
+    "https://money.com/david-bowie-bond-royalties-securitized/?amp=true",
+    "https://en.wikipedia.org/wiki/Celebrity_bond"
+   ],
+   "confidence": "high",
+   "note": "The bonds were repaid in full on time. 'Downgraded to junk' (NPR) is loose: the 2004 rating, Baa3, is the lowest grade above junk. The first rating is given as Aaa by some and A3 by the Los Angeles Times: leave it out."
+  },
+  {
+   "id": "gadfly",
+   "title_idea": "How This Woman Got Rich Heckling Bosses at Their Own Meetings",
+   "hook_label": "a woman who owned a few shares in everything",
+   "payoff_figure": "$600 a copy, two copies minimum, from the bosses of about 120 companies",
+   "odd_means": "heckled chief executives at their annual meetings, then sold them her newsletter",
+   "bigger_party": "America's biggest companies",
+   "year_and_place": "1965 to 2011, Washington and annual meetings across the USA",
+   "terms": "Owning even a few shares gave her the right to attend each company's annual meeting and take the microphone",
+   "move": [
+    "Bought small holdings in about 120 big companies",
+    "Turned up at their meetings in a Batman mask, an aluminium dress, a swimsuit",
+    "Questioned the chief executive from the floor",
+    "Sold the same executives her yearly newsletter"
+   ],
+   "payoff": "The newsletter reached $600 a copy with a two-copy minimum, and reportedly brought in $600,000 a year",
+   "sting": "Some of it stuck: companies including Macy's cut their directors' terms to one year, which she had demanded since 1988.",
+   "set": "office",
+   "who_real": "Evelyn Y. Davis (died 2018; may be named)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Evelyn_Y._Davis",
+    "https://www.cbsnews.com/news/evelyn-y-davis-shareholder-activist-and-ceo-foil-dead-at-89",
+    "https://www.americanbanker.com/articles/evelyn-davis-thorn-in-side-of-banks-and-other-firms-dies-at-89",
+    "https://www.cnbc.com/2018/11/05/shareholder-activist-evelyn-y-davis-dies-at-89.html"
+   ],
+   "confidence": "high",
+   "note": "The $600,000 a year has ONE source (People magazine, 1996, quoted by Wikipedia); she herself claimed $250,000 in 1990. Always say 'reportedly'. The price and the two-copy rule are two-sourced. Critics said bosses subscribed to buy her goodwill: that is the argument."
+  },
+  {
+   "id": "coupon-investor",
+   "title_idea": "How This Man Lives Almost Free on the Gifts Companies Send Shareholders",
+   "hook_label": "a retired board-game professional in Tokyo",
+   "payoff_figure": "a life paid for by vouchers: shares in over 1,000 companies, about 300 free cinema tickets a year",
+   "odd_means": "buys shares for the free gifts companies post to their shareholders",
+   "bigger_party": "Japan's listed companies",
+   "year_and_place": "since the 2008 crash, Tokyo",
+   "terms": "Many Japanese companies send their shareholders vouchers, called yutai: meals, cinema tickets, gym passes",
+   "move": [
+    "Lost about 200 million yen in the 2008 crash",
+    "Got by on the vouchers he already had",
+    "Spread his money over more than 1,000 companies for their gifts",
+    "Cycles across Tokyo all day to use them before they expire"
+   ],
+   "payoff": "Food, clothes, the gym and the cinema on vouchers: he says cash is for the rent and whatever vouchers will not cover",
+   "sting": "The bicycle he rides to use the vouchers was bought with vouchers.",
+   "set": "street",
+   "who_real": "Hiroto Kiritani (living; a television personality in Japan)",
+   "sources": [
+    "https://www.scmp.com/news/people-culture/article/3292249/god-freebies-japan-grandpa-uses-coupons-free-offers-instead-money-decade",
+    "https://www.japantimes.co.jp/news/2015/02/22/national/ramen-dividends-holders-of-some-firms-shares-fancy-yutai-gifts",
+    "https://gulfnews.com/world/offbeat/meet-hiroto-kiritani-a-japanese-millionaire-who-lives-on-coupons-1.500010207",
+    "https://www.asiae.co.kr/en/article/2025010409390675045"
+   ],
+   "confidence": "high",
+   "note": "His own account, and the numbers differ by outlet (holdings from 100 million to 600 million yen; 500 to over 1,000 companies; the voucher habit dated to the 1989 or the 2008 crash). Keep to 'over 1,000 companies' and give no yen total for his wealth."
+  },
+  {
+   "id": "horse-algorithm",
+   "title_idea": "How a Dropout With Three Computers Won Nearly $1 Billion on Horses",
+   "hook_label": "a college dropout with three computers",
+   "payoff_figure": "close to $1 billion",
+   "odd_means": "wrote a computer model that priced horses better than the crowd did",
+   "bigger_party": "the Hong Kong Jockey Club's betting pools",
+   "year_and_place": "from September 1985, Hong Kong",
+   "terms": "A $150,000 stake, of which $120,000 was gone by the end of the first season",
+   "move": [
+    "Flew to Hong Kong with three IBM computers",
+    "Fed years of race results into a model",
+    "Grew it to more than 120 factors for every horse",
+    "Bet wherever the crowd's odds were wrong"
+   ],
+   "payoff": "Close to a billion dollars over the years by his own count, shared with partners",
+   "sting": "In 2001 his bets won a jackpot of about $16 million and he never collected it, so it went to charity.",
+   "set": "office",
+   "who_real": "Bill Benter (living; public since a 2018 profile)",
+   "sources": [
+    "https://www.bloomberg.com/news/features/2018-05-03/the-gambler-who-cracked-the-horse-racing-code",
+    "https://www.guinnessworldrecords.com/news/2025/8/a-billion-dollars-off-the-ponies-how-a-statistician-became-the-most-profitable-gambler",
+    "https://www.newser.com/story/258817/the-secretive-gambling-nerd-whose-algorithm-won-1b.html"
+   ],
+   "confidence": "high",
+   "note": "A betting market, not shares, but it is a pricing story. 'Close to a billion' is his own estimate to Bloomberg Businessweek, the one primary source; the others repeat it."
+  },
+  {
+   "id": "windfall",
+   "title_idea": "How Eight Million Savers Were Handed Free Shares for Having a Bank Book",
+   "hook_label": "nearly eight million ordinary savers",
+   "payoff_figure": "free shares worth more than \u00a32,400 each on average: \u00a318.4 billion in all",
+   "odd_means": "had a savings account or a mortgage with a building society on the day it became a bank",
+   "bigger_party": "the Halifax, Britain's biggest building society",
+   "year_and_place": "2 June 1997, United Kingdom",
+   "terms": "A building society belongs to its savers and borrowers, so to join the stock market it had to pay them in shares",
+   "move": [
+    "Kept an account open",
+    "Voted for the change",
+    "Received free shares in the post",
+    "Watched them open at 774.5p"
+   ],
+   "payoff": "\u00a318.4 billion of shares given away in a morning: one British adult in six was richer by more than \u00a32,400 on average",
+   "sting": "People began opening accounts with \u00a3100 at other societies just to catch the next giveaway, and were named carpetbaggers.",
+   "set": "bank",
+   "who_real": "Halifax Building Society members (a group; no individual)",
+   "sources": [
+    "https://www.irishtimes.com/business/halifax-debut-dominates-market-with-18-4bn-share-distribution-1.78593",
+    "https://www.irishtimes.com/business/mutual-companies-are-a-good-bet-for-the-shrewd-speculator-1.1035249",
+    "https://www.scmp.com/article/183802/savers-line-share-bonanza",
+    "https://www.mortgagesolutions.co.uk/news/2001/12/04/building-societies-pledge-mutuality-despite-pressure-carpetbaggers/"
+   ],
+   "confidence": "high",
+   "note": "A group with no single person, so the weakest fit to 'this man' among the 40. Member count is 7.6 million in one report and 'nearly eight million' in another. The \u00a3100 carpetbagger tactic is documented for societies in general, not for a named Halifax saver."
+  },
+  {
+   "id": "buffett-neighbours",
+   "title_idea": "How a Professor and His Wife Turned $50,000 Into $750 Million",
+   "hook_label": "a chemistry professor and his wife",
+   "payoff_figure": "about $750 million",
+   "odd_means": "handed $25,000 each to a young family friend from Omaha and left it alone",
+   "bigger_party": "Wall Street's fund managers",
+   "year_and_place": "early 1960s, Brooklyn, New York",
+   "terms": "$25,000 each into a small investment partnership run by a family friend",
+   "move": [
+    "Gave the friend $25,000 each",
+    "Took shares in his company, Berkshire Hathaway, when the partnership closed",
+    "Never sold",
+    "Went on living quietly in Brooklyn"
+   ],
+   "payoff": "His shares fetched about $210 million in 1995 and hers were valued at about $578 million in 1998",
+   "sting": "The friend was Warren Buffett, and almost all of it went to universities and a hospital.",
+   "set": "home",
+   "who_real": "Donald and Mildred Othmer (died 1995 and 1998)",
+   "sources": [
+    "https://www.cbsnews.com/news/quiet-couple-has-800m-fortune",
+    "https://www.irishtimes.com/business/quiet-couple-bequeaths-millions-to-academia-1.174384",
+    "https://www.cnbc.com/2013/07/19/warren-buffett-sees-betrayal-as-hospital-drains-big-endowment.html"
+   ],
+   "confidence": "high",
+   "note": "Total reported as $750 million to $800 million; the lower is used. Start date is 1961 in most accounts, 'early 1970s' in one. The fortune became public at their deaths: keep the reel on the holding."
+  },
+  {
+   "id": "lifetime-pass",
+   "title_idea": "How This Man Has Flown 23 Million Miles on One $290,000 Ticket",
+   "hook_label": "a car-dealership consultant from New Jersey",
+   "payoff_figure": "23 million miles of flying for $290,000",
+   "odd_means": "bought a lifetime pass that an airline sold and came to regret",
+   "bigger_party": "United Airlines",
+   "year_and_place": "1990, USA",
+   "terms": "$290,000 for unlimited flights for life",
+   "move": [
+    "Paid $290,000 in 1990",
+    "Flew, and kept flying: 373 flights in 2019 alone",
+    "Collected frequent-flyer miles on every one"
+   ],
+   "payoff": "More than 23 million miles so far: he calls it the best investment of his life",
+   "sting": "In 2019 alone he flew 1.46 million miles on it.",
+   "set": "office",
+   "who_real": "Tom Stuker (living; has given many interviews)",
+   "sources": [
+    "https://www.yahoo.com/lifestyle/united-airlines-passenger-flown-23-194003519.html",
+    "https://kvia.com/lifestyle/2023/06/30/the-man-who-bought-a-lifetime-plane-pass-in-the-1990s-and-has-traveled-23-million-miles-since/",
+    "https://inkl.com/news/new-jersey-man-flies-23m-miles-with-lifetime-united-pass-like-a-sultan"
+   ],
+   "confidence": "high",
+   "note": "A mispriced product, not a share story. One local report gives $510,000 for the pass; the Washington Post and the rest say $290,000."
+  },
+  {
+   "id": "four-dollar-painting",
+   "title_idea": "How a $4 Flea-Market Painting Hid a $2.4 Million Piece of Paper",
+   "hook_label": "a man at a flea market",
+   "payoff_figure": "$2.42 million for $4",
+   "odd_means": "bought an ugly painting because he liked the frame",
+   "bigger_party": "the experts, who said $800,000 at most",
+   "year_and_place": "1989, Adamstown, Pennsylvania; sold in New York on 13 June 1991",
+   "terms": "$4 for a torn painting in an old frame",
+   "move": [
+    "Paid $4 for the frame",
+    "Took the painting out at home and found the frame could not be saved",
+    "Found a folded sheet hidden in the backing",
+    "Had it identified: a first printing of the Declaration of Independence, 4 July 1776"
+   ],
+   "payoff": "$2.42 million at auction: three times the experts' top estimate",
+   "sting": "He sold too early: the same sheet went for $8.14 million in 2000.",
+   "set": "shop",
+   "who_real": "never publicly identified",
+   "sources": [
+    "https://www.inquirer.com/philly/news/local/20090831_A_million-dollar_flea_market_find.html",
+    "https://www.snopes.com/luck/declare.asp",
+    "https://m.csmonitor.com/2000/0703/p1s5.html"
+   ],
+   "confidence": "high",
+   "note": "A price story (bought at $4, sold at $2.42 million), no shares. The number of surviving first printings is given as 24, 25 or 26: leave it out."
+  },
+  {
+   "id": "faberge",
+   "title_idea": "How a Scrap Dealer's Bad Deal Turned Out to Be a $33 Million Egg",
+   "hook_label": "a scrap-metal dealer",
+   "payoff_figure": "an egg valued at about $33 million, bought for about $14,000",
+   "odd_means": "bought a gold ornament to melt down and could not find anyone to take it",
+   "bigger_party": "the antiques trade, which had lost it for a century",
+   "year_and_place": "bought in the American Midwest; identified in London in 2014",
+   "terms": "About $14,000 at a flea market, hoping to make $500 on the gold",
+   "move": [
+    "Bought it for its weight in gold",
+    "Found no scrap buyer would pay what he had",
+    "Searched its markings online and found an article about lost eggs",
+    "Took it to a London dealer in Russian treasures"
+   ],
+   "payoff": "It was the Third Imperial Easter Egg, made by Faberge for the Russian empress in 1887: valued at about $33 million",
+   "sting": "Nobody would buy it as scrap, and that is the only reason it was never melted.",
+   "set": "shop",
+   "who_real": "anonymous (never named); the dealer was Wartski of London",
+   "sources": [
+    "https://www.cbsnews.com/news/scrap-dealer-finds-faberge-egg-at-midwest-flea-market",
+    "https://www.pbs.org/newshour/arts/flea-market-find-turns-original-faberge-worth-millions",
+    "https://www.nbcnews.com/news/amp/ncna57131"
+   ],
+   "confidence": "high",
+   "note": "$33 million is the dealer's valuation; the price the collector paid was never disclosed and one early report said $20 million. Say 'valued at', never 'sold for'."
+  },
+  {
+   "id": "pizza-domain",
+   "title_idea": "How This Man Turned a $20 Web Address Into $2.6 Million",
+   "hook_label": "a 43-year-old who registered a web address",
+   "payoff_figure": "$2.6 million for a $20 purchase",
+   "odd_means": "registered pizza.com in 1994 and kept paying the yearly fee",
+   "bigger_party": "the pizza chains that never bought it from him",
+   "year_and_place": "1994 to April 2008, USA",
+   "terms": "$20 a year to hold the address",
+   "move": [
+    "Registered pizza.com in 1994, hoping it would win his consulting firm a pizza client",
+    "Paid $20 a year to keep it",
+    "Heard that vodka.com had sold for $3 million",
+    "Put it up for a week-long online auction"
+   ],
+   "payoff": "The bidding opened at $100 and a week later stood at $2.6 million",
+   "sting": "The winner bid anonymously and has never been named.",
+   "set": "home",
+   "who_real": "Chris Clark (living private person)",
+   "sources": [
+    "https://gulfnews.com/world/americas/man-in-us-sells-pizza-domain-name-for-26m-1.96683",
+    "https://gizmodo.com/man-sells-pizza-com-domain-name-for-serious-dough-376492",
+    "https://www.techspot.com/news/29627-man-sells-pizzacom-domain-for-26-million.html"
+   ],
+   "confidence": "high",
+   "note": "Buying and selling, no shares. He paid about $280 in fees over the 14 years (14 x $20, my sum)."
+  },
+  {
+   "id": "pixel-page",
+   "title_idea": "How a Student Made $1 Million Selling Dots on a Web Page",
+   "hook_label": "a 21-year-old student",
+   "payoff_figure": "$1,037,100",
+   "odd_means": "sold a million pixels of one web page at a dollar each",
+   "bigger_party": "the advertising business",
+   "year_and_place": "August 2005 to January 2006, Wiltshire, England",
+   "terms": "$1 a pixel, sold in blocks of 100: $100 minimum",
+   "move": [
+    "Put up a page of a million blank pixels",
+    "Priced every one at $1",
+    "Let the newspapers do his advertising",
+    "Auctioned the last 1,000 on eBay"
+   ],
+   "payoff": "Every pixel sold in about five months: $1,037,100 in all",
+   "sting": "The last 1,000 pixels went for $38,100: 38 times the list price.",
+   "set": "home",
+   "who_real": "Alex Tew (living; now a known founder)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/The_Million_Dollar_Homepage",
+    "https://abcnews.go.com/Business/Technology/story?id=1498764",
+    "https://www.theregister.com/2006/01/12/million_pixels",
+    "https://www.cbsnews.com/news/pixel-perfect"
+   ],
+   "confidence": "high",
+   "note": "A pricing tactic, no shares. The figure is gross sales, before costs and tax."
+  },
+  {
+   "id": "blackjack-discount",
+   "title_idea": "How This Gambler Haggled the Rules and Took $15 Million Off Three Casinos",
+   "hook_label": "a blackjack player from Pennsylvania",
+   "payoff_figure": "about $15 million in six months",
+   "odd_means": "bargained before he sat down: 20% of his losses back",
+   "bigger_party": "the casinos of Atlantic City",
+   "year_and_place": "late 2010 to April 2011, Atlantic City, New Jersey",
+   "terms": "Casinos short of big players gave him 20% back on losses and rules that cut their edge to about a quarter of one percent",
+   "move": [
+    "Negotiated the discount and the rules with each casino",
+    "Played for very high stakes",
+    "Won $5.8 million in one 12-hour sitting"
+   ],
+   "payoff": "Nearly $6 million from the Tropicana, about $5 million from the Borgata and about $4 million from Caesars",
+   "sting": "He never counted a card: the casinos had bargained their own advantage away.",
+   "set": "office",
+   "who_real": "Don Johnson, the gambler (living)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Don_Johnson_(gambler)",
+    "https://theweek.com/articles/484244/gambler-who-took-atlantic-city-cleaners",
+    "https://whyy.org/articles/bensalem-man-wins-nearly-15-million-playing-blackjack",
+    "https://longform.org/posts/the-man-who-broke-atlantic-city"
+   ],
+   "confidence": "high",
+   "note": "RESERVE, not one of the 40: gambling, no market. A statistician writing in Chance magazine doubted the published rules alone explain the win."
+  },
+  {
+   "id": "bonilla",
+   "title_idea": "How This Baseball Player Turned $5.9 Million Into $29.8 Million by Waiting",
+   "hook_label": "a baseball player his team no longer wanted",
+   "payoff_figure": "$29.8 million in place of $5.9 million",
+   "odd_means": "agreed to wait eleven years for his money at 8% interest",
+   "bigger_party": "the New York Mets",
+   "year_and_place": "2000, New York",
+   "terms": "The team owed him $5.9 million and offered to pay it later, with 8% a year added",
+   "move": [
+    "Was released in January 2000",
+    "Swapped the $5.9 million for 25 yearly payments starting in 2011",
+    "Waited"
+   ],
+   "payoff": "$1,193,248.20 every 1 July from 2011 to 2035: $29.8 million",
+   "sting": "Fans now call 1 July by his name, and the club's new owner has talked of celebrating it at the stadium.",
+   "set": "office",
+   "who_real": "Bobby Bonilla (public figure)",
+   "sources": [
+    "https://www.cbssports.com/mlb/news/bobby-bonilla-day-why-mets-still-owe-former-all-star-1-19m-per-year-until-hes-72",
+    "https://abc7ny.com/post/bobby-bonilla-day-new-york-mets-pay-119m-every-july-1/16900713/"
+   ],
+   "confidence": "high",
+   "note": "RESERVE, not one of the 40: a pay deal, though the 8% rate is the whole story."
+  },
+  {
+   "id": "paperclip",
+   "title_idea": "How This Man Traded One Red Paperclip Up to a House",
+   "hook_label": "a Canadian blogger",
+   "payoff_figure": "a two-storey house",
+   "odd_means": "swapped a paperclip for something slightly better, fourteen times",
+   "bigger_party": "nobody: every swapper thought they had the better deal",
+   "year_and_place": "July 2005 to July 2006, Canada",
+   "terms": "One red paperclip, offered online for something bigger or better",
+   "move": [
+    "Posted the paperclip on Craigslist",
+    "Made 14 swaps in a year",
+    "Swapped the last item, a part in a film, with a small town for a farmhouse"
+   ],
+   "payoff": "Fourteen trades turned a paperclip into a house in Kipling, Saskatchewan",
+   "sting": "The town put up a giant red paperclip in its park, at the time the largest in the world.",
+   "set": "home",
+   "who_real": "Kyle MacDonald (living; wrote a book about it)",
+   "sources": [
+    "https://www.cbc.ca/1.573973",
+    "https://abcnews.go.com/Technology/story?id=2192233",
+    "https://en.wikipedia.org/wiki/One_red_paperclip"
+   ],
+   "confidence": "high",
+   "note": "RESERVE, not one of the 40: pure trading, but the payoff is a thing, not a sum."
+  },
+  {
+   "id": "google-twelve",
+   "title_idea": "How This Man Bought Google.com for $12",
+   "hook_label": "a former Google employee",
+   "payoff_figure": "$12,012.26, which he gave away",
+   "odd_means": "bought the address google.com when it showed up as for sale",
+   "bigger_party": "Google",
+   "year_and_place": "29 September 2015, USA",
+   "terms": "$12 on Google's own shop for web addresses",
+   "move": [
+    "Saw google.com listed as available",
+    "Paid $12 for it",
+    "Owned it for about a minute",
+    "Reported the hole to Google"
+   ],
+   "payoff": "Google paid him $6,006.13: the word Google written in numbers",
+   "sting": "When he gave the reward to charity, Google doubled it.",
+   "set": "home",
+   "who_real": "Sanmay Ved (living)",
+   "sources": [
+    "https://www.cnbc.com/2015/10/13/man-buys-google-domain-for-12-dollars-for-1-minute-gets-reward-gives-to-charity.html",
+    "https://money.cnn.com/2016/01/29/technology/google-domain-purchase",
+    "https://fortune.com/2016/01/29/google-domain-name/"
+   ],
+   "confidence": "high",
+   "note": "RESERVE, not one of the 40: fully sourced, small sum."
+  },
+  {
+   "id": "dancer",
+   "title_idea": "How a Dancer Made $2 Million in Shares by Telegram",
+   "hook_label": "a professional dancer on a world tour",
+   "payoff_figure": "$2 million, by his own book",
+   "odd_means": "sent his buy and sell orders by telegram from wherever he was dancing",
+   "bigger_party": "Wall Street",
+   "year_and_place": "1957 to 1959, on tour",
+   "terms": "A method of his own: buy a share when it breaks above its recent range",
+   "move": [
+    "Read the share prices by cable each day",
+    "Wired orders to his broker",
+    "Sold when a share fell out of its range"
+   ],
+   "payoff": "$2 million in about 18 months, he wrote; Time magazine gave him most of a page on 25 May 1959",
+   "sting": "His book sold so well that his method is still taught under his name.",
+   "set": "cafe",
+   "who_real": "Nicolas Darvas (died 1977)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Nicolas_Darvas",
+    "https://www.panmacmillan.com/authors/nicolas-darvas/how-i-made-2-million-in-the-stock-market/9780857194503"
+   ],
+   "confidence": "medium",
+   "note": "The $2 million rests on his own book; his starting money is given as $2,000, under $25,000 or $36,000. Not checked here: reports that New York's attorney general challenged the claims in 1960."
+  },
+  {
+   "id": "pool-contractor",
+   "title_idea": "How a Pool Builder Sold His Car and Made Millions in Shares",
+   "hook_label": "a swimming-pool contractor",
+   "payoff_figure": "$18 million from $10,775 (or $42 million, by another account)",
+   "odd_means": "sold his car to fund a share-trading account in the dot-com boom",
+   "bigger_party": "the stock market",
+   "year_and_place": "1997 to 2000, California",
+   "terms": "About $11,000 from selling his car",
+   "move": [
+    "Sold the car",
+    "Traded fast-rising technology shares full time",
+    "Sat through a 32% one-day fall in October 2000"
+   ],
+   "payoff": "Profiled by Fortune on 18 December 2000 under the headline 'My Stocks Are Up 10,000%!'",
+   "sting": "At one point in the crash that followed his account was down 75%.",
+   "set": "home",
+   "who_real": "Dan Zanger (living)",
+   "sources": [
+    "https://www.cmcmarkets.com/en-au/opto/world-record-breaking-trader-dan-zangers-tricks-of-the-trade",
+    "https://tradersunion.com/persons/dan-zanger/"
+   ],
+   "confidence": "medium",
+   "note": "The Fortune article could not be read; the sums ($18 million in 18 months, $42 million in 23 months) conflict across secondary sites."
+  },
+  {
+   "id": "turtles",
+   "title_idea": "How a Trader Turned Strangers From a Newspaper Advert Into Millionaires",
+   "hook_label": "a group of beginners hired through a newspaper advert",
+   "payoff_figure": "a claimed $175 million in five years",
+   "odd_means": "were taught one set of trading rules and given a rich man's money to trade",
+   "bigger_party": "the futures markets",
+   "year_and_place": "1983 and 1984, Chicago",
+   "terms": "Adverts in the Wall Street Journal, the New York Times and Barron's drew about 1,000 applicants for 23 places",
+   "move": [
+    "Answered the advert",
+    "Learned a fixed set of rules",
+    "Traded the founder's money by those rules"
+   ],
+   "payoff": "The two classes are said to have earned more than $175 million",
+   "sting": "It began as a bet between two partners over whether trading can be taught.",
+   "set": "trading floor",
+   "who_real": "the 'Turtles' of Richard Dennis and William Eckhardt",
+   "sources": [
+    "https://www.nasdaq.com/articles/the-turtle-trading-story-2010-08-17",
+    "https://www.huffpost.com/entry/the-turtle-traders_b_1807500",
+    "https://en.wikipedia.org/wiki/Richard_Dennis"
+   ],
+   "confidence": "medium",
+   "note": "The $175 million comes from one former trainee and is given over four years or five; Nasdaq calls the story a legend with few hard facts."
+  },
+  {
+   "id": "coke-town",
+   "title_idea": "How One Banker's Tip Filled a Small Town With Coca-Cola Millionaires",
+   "hook_label": "the people of a small farming town",
+   "payoff_figure": "at least 25 millionaires (legend says 67)",
+   "odd_means": "bought Coca-Cola shares because the local banker told them to, and never sold",
+   "bigger_party": "Wall Street, which had given up on the share",
+   "year_and_place": "1920s and 1930s, Quincy, Florida",
+   "terms": "The banker saw people spend their last coins on a Coke while the share sold for about the cash the company held",
+   "move": [
+    "Took the banker's advice",
+    "Bought Coca-Cola shares",
+    "Held them through the Depression",
+    "Passed them down"
+   ],
+   "payoff": "A town of a few thousand with dozens of Coca-Cola millionaires",
+   "sting": "Decades later about two-thirds of the local bank's trust assets were still in the one share.",
+   "set": "bank",
+   "who_real": "Pat Munroe of the Quincy State Bank, and his neighbours",
+   "sources": [
+    "https://www.floridamemory.com/items/show/324844",
+    "https://atlasobscura.com/places/the-town-of-cocacola-millionaires",
+    "https://www.wtxl.com/news/wtxl-road-trip-the-wealth-of-coca-cola-in-gadsden/article_5c86bc70-3574-11e5-a896-7bcb37037321.html"
+   ],
+   "confidence": "medium",
+   "note": "The count of millionaires is not established (25 in the state archive, 67 in the legend) and the trust-assets figure has one source."
+  },
+  {
+   "id": "collar",
+   "title_idea": "How This Billionaire Kept His Fortune Through the Dot-Com Crash",
+   "hook_label": "a man paid entirely in another company's shares",
+   "payoff_figure": "a fortune of about $1.4 billion kept whole",
+   "odd_means": "bought insurance against his own shares falling, paid for by giving up the gains above a ceiling",
+   "bigger_party": "everyone who held on in the dot-com crash",
+   "year_and_place": "1999, Dallas",
+   "terms": "Yahoo bought his company for $5.7 billion, all in Yahoo shares he could not sell at once",
+   "move": [
+    "Bought the right to sell at $85",
+    "Sold someone else the right to buy at $205",
+    "Waited"
+   ],
+   "payoff": "Yahoo's share price then fell by more than 90% and his stake held its value",
+   "sting": "He says he ended up with more than the sale first gave him.",
+   "set": "office",
+   "who_real": "Mark Cuban (public figure)",
+   "sources": [
+    "https://benzinga.com/startups/24/08/40423294/heres-how-mark-cuban-protected-his-1-4-billion-fortune-from-the-2000-dot-com-crash-one-of-the-top-10",
+    "https://www.interactivebrokers.com/campus/podcasts/three-trades-that-changed-everything/",
+    "https://finance.yahoo.com/news/did-mark-cuban-rich-scamming-080339777.html"
+   ],
+   "confidence": "medium",
+   "note": "All of it traces to his own interviews; the option prices (85 and 205) and Yahoo's high and low differ between retellings."
+  },
+  {
+   "id": "rapper-water",
+   "title_idea": "How a Rapper Took Shares in a Drink and Made a Fortune",
+   "hook_label": "a rapper",
+   "payoff_figure": "a reported $100 million",
+   "odd_means": "took a stake in the drinks company he advertised",
+   "bigger_party": "Coca-Cola, which bought the company",
+   "year_and_place": "sold on 25 May 2007, New York",
+   "terms": "A fee and a share of the company for fronting its vitamin drink",
+   "move": [
+    "Agreed to advertise the drink",
+    "Took part of his pay as shares",
+    "Held until the company was sold"
+   ],
+   "payoff": "Coca-Cola paid $4.1 billion in cash for the company on 25 May 2007",
+   "sting": "The company would never confirm how much of it he owned.",
+   "set": "shop",
+   "who_real": "Curtis Jackson, '50 Cent' (public figure)",
+   "sources": [
+    "https://www.sec.gov/Archives/edgar/data/0000021344/000110465907044380/a07-15592_1ex99d6.htm",
+    "https://www.xxlmag.com/did-50-cent-really-make-400-million-in-one-day/",
+    "https://en.wikipedia.org/wiki/Energy_Brands"
+   ],
+   "confidence": "medium",
+   "note": "Only the $4.1 billion sale is documented. His stake (5% to 10%) and payout ($100 million to a disputed $400 million) are unconfirmed, and he was reportedly paid a fee as well as shares."
+  },
+  {
+   "id": "one-dollar-coke",
+   "title_idea": "How Two Lawyers Bought the Right to Bottle Coca-Cola for $1",
+   "hook_label": "two small-town lawyers",
+   "payoff_figure": "the bottling rights for most of the United States",
+   "odd_means": "asked the owner for a right he thought was worthless",
+   "bigger_party": "the Coca-Cola Company",
+   "year_and_place": "21 July 1899, Chattanooga, Tennessee",
+   "terms": "$1 for the exclusive right to bottle Coca-Cola across most of the country, with no end date",
+   "move": [
+    "Asked for the bottling rights",
+    "Signed for $1",
+    "Sold local bottling licences to others across the country"
+   ],
+   "payoff": "By the 1950s about 1,100 bottling businesses traced back to that contract",
+   "sting": "The company spent from the 1920s to 1986 buying the rights back.",
+   "set": "office",
+   "who_real": "Benjamin Thomas and Joseph Whitehead (historical; may be named)",
+   "sources": [
+    "https://www.coca-colacompany.com/about-us/history/the-asa-candler-era",
+    "https://tennesseeencyclopedia.net/?p=595",
+    "https://en.wikipedia.org/wiki/Benjamin_Thomas_(industrialist)"
+   ],
+   "confidence": "medium",
+   "note": "No two-sourced figure for what the lawyers made, so the reel has no big number. 'He never collected the dollar' is an anecdote."
+  },
+  {
+   "id": "keynes",
+   "title_idea": "How an Economist Beat the Stock Market for 25 Years",
+   "hook_label": "a Cambridge economist",
+   "payoff_figure": "about 8 percentage points a year ahead of the market for 25 years",
+   "odd_means": "put his college's money into shares when colleges held land and bonds",
+   "bigger_party": "the City of London",
+   "year_and_place": "1921 to 1946, Cambridge",
+   "terms": "He ran the college's fund from 1921 until 1946",
+   "move": [
+    "Moved the fund into company shares",
+    "Tried timing the market in the 1920s and did badly",
+    "Switched to buying a few shares and holding them"
+   ],
+   "payoff": "His share portfolio beat the British market by an average of 8 points a year",
+   "sting": "In the fall of 1937 and 1938 he refused to sell, and resigned as chairman of an insurance company when its board would not follow him.",
+   "set": "office",
+   "who_real": "John Maynard Keynes (died 1946; may be named)",
+   "sources": [
+    "https://www.jbs.cam.ac.uk/2013/investing-in-2013-ask-john-maynard-keynes/",
+    "https://www.nber.org/papers/w20421.pdf",
+    "https://www.theglobeandmail.com/investing/markets/inside-the-market/article-how-keyness-active-investing-approach-managed-to-tower-over-the/"
+   ],
+   "confidence": "medium",
+   "note": "The gain is his college's, his own estate (about \u00a3400,000 in one report) is single-sourced, and 'he traded from his bed' is called a legend."
+  },
+  {
+   "id": "hoover-flights",
+   "title_idea": "How Shoppers Got Two Flights to America for the Price of a Vacuum Cleaner",
+   "hook_label": "a few hundred thousand British shoppers",
+   "payoff_figure": "two return flights for spending \u00a3100",
+   "odd_means": "bought the cheapest vacuum cleaner that qualified, for the flights",
+   "bigger_party": "Hoover",
+   "year_and_place": "August 1992 to 1993, United Kingdom",
+   "terms": "Spend \u00a3100 on a Hoover product and get two free return flights, to America from November 1992",
+   "move": [
+    "Bought a vacuum cleaner",
+    "Posted the form",
+    "Chased the company when the tickets did not come"
+   ],
+   "payoff": "The flights cost Hoover about \u00a350 million against some \u00a330 million of sales",
+   "sting": "Only about 220,000 of the roughly half a million who applied are thought ever to have flown.",
+   "set": "shop",
+   "who_real": "Hoover customers (a group)",
+   "sources": [
+    "https://en.wikipedia.org/wiki/Hoover_free_flights_promotion",
+    "https://thehustle.co/the-worst-sales-promotion-in-history",
+    "https://www.marketingweek.com/hoover-fails-to-shake-off-free-flights-horror/"
+   ],
+   "confidence": "medium",
+   "note": "Every number is an estimate (Hoover never published any) and most applicants did NOT come out ahead."
+  },
+  {
+   "id": "dollar-coins",
+   "title_idea": "How Frequent Flyers Bought Money With Credit Cards and Flew Free",
+   "hook_label": "a bunch of frequent flyers",
+   "payoff_figure": "free air miles on up to $696,000 of spending each",
+   "odd_means": "bought dollar coins from the government on credit cards and paid them straight into the bank",
+   "bigger_party": "the US Mint",
+   "year_and_place": "2008 to July 2011, USA",
+   "terms": "The Mint sold $1 coins at face value and posted them free, to get the coins into use",
+   "move": [
+    "Ordered boxes of coins on a card that pays air miles",
+    "Took delivery, post paid",
+    "Paid the coins into the bank",
+    "Cleared the card with the same money"
+   ],
+   "payoff": "The Mint's 20 biggest customers each bought between $219,000 and $696,000 of coins",
+   "sting": "The Mint called it an abuse of the system and stopped taking credit cards in 2011.",
+   "set": "bank",
+   "who_real": "unnamed; the Mint's figures",
+   "sources": [
+    "https://www.npr.org/sections/money/2011/07/13/137795995/how-frequent-fliers-exploit-a-government-program-to-get-free-trips",
+    "https://www.npr.org/sections/money/2011/07/22/138610663/dollar-coin-loophole-closes-for-frequent-fliers",
+    "https://foxbusiness.com/features/us-mint-closes-long-standing-credit-card-loophole"
+   ],
+   "confidence": "medium",
+   "note": "The buyers' figures come from one outlet (NPR) and no single person's gain is documented; a claim of 4 million miles has only a weak source."
+  },
+  {
+   "id": "walgreens-scoutmaster",
+   "title_idea": "How a $1,000 Share Purchase Became a 395-Acre Wildlife Sanctuary",
+   "hook_label": "a 98-year-old former scoutmaster",
+   "payoff_figure": "$2 million from $1,000",
+   "odd_means": "bought shares in a chemist's chain on a tip and held them for about 70 years",
+   "bigger_party": "nobody: he never sold",
+   "year_and_place": "bought about 1950, given away in 2017, Chicago",
+   "terms": "About $1,000 of Walgreens shares",
+   "move": [
+    "Bought $1,000 of shares",
+    "Held them for about seventy years",
+    "Gave the lot away while he was alive to see it"
+   ],
+   "payoff": "About $2 million, given to the Illinois Audubon Society for a wildlife sanctuary",
+   "sting": "The sanctuary it paid for carries his name.",
+   "set": "home",
+   "who_real": "Russ Gremel (died 2018)",
+   "sources": [
+    "https://m.washingtontimes.com/news/2017/jun/6/ex-scoutmaster-98-donates-2m-to-preserve-amboy-wet/",
+    "https://www.foxnews.com/us/chicago-man-98-turns-1000-in-stock-into-2-million-and-donates-it-all-to-wildlife",
+    "https://theweek.com/speedreads/704165/illinois-man-donates-stock-worth-2-million-wildlife-sanctuary"
+   ],
+   "confidence": "medium",
+   "note": "The year he bought is 1947 or 1953 depending on the report; the sanctuary is 395 or 400 acres. The sums are two-sourced."
+  },
+  {
+   "id": "bitcoin-bet",
+   "title_idea": "How a 12-Year-Old Won a Bet With His Parents Using Bitcoin",
+   "hook_label": "a 12-year-old",
+   "payoff_figure": "a million dollars by the age of 18",
+   "odd_means": "put a present from his grandmother into bitcoin",
+   "bigger_party": "his parents, who lost the bet",
+   "year_and_place": "May 2011 to June 2017, Idaho",
+   "terms": "$1,000 from his grandmother, with bitcoin at about $12",
+   "move": [
+    "Bought bitcoin with the $1,000",
+    "Bet his parents that a million by 18 would excuse him from university",
+    "Held"
+   ],
+   "payoff": "He passed a million dollars in June 2017, aged 18, when bitcoin crossed $2,700",
+   "sting": "His parents kept their word: he never went.",
+   "set": "home",
+   "who_real": "Erik Finman (living; now an adult)",
+   "sources": [
+    "https://www.ibtimes.co.uk/teenager-who-invested-bitcoin-aged-12-now-millionaire-1627178",
+    "https://siliconangle.com/2017/06/25/idaho-teen-becomes-bitcoin-millionaire-following-1000-initial-investment/",
+    "https://thenextweb.com/news/erik-finman-is-a-bitcoin-millionaire-now-what"
+   ],
+   "confidence": "medium",
+   "note": "His holdings are his own word and the reports differ ($1,000 or $1,245; 83 or about 100 coins at first, 446 by 2019)."
+  }
+ ]
+}

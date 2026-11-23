@@ -11,13 +11,21 @@ cd "$(dirname "$0")"; set -a; . ./config.env; set +a
 export PATH="$HOME/.local/bin:$PATH"                 # (Claude Code, the script writer on the plan)
 mkdir -p logs queue queue-originals
 [ -f queue/.daily-pending ] && { echo "the Daily is due: this run waits for the next timer"; exit 0; }   # (make_reel.sh, the owner 2026-11-10)
-python3 src/story_reel.py next >> logs/story.log 2>&1 || true   # (back 2026-11-19, the owner: "keep making part 5-8 of the roblox story"; its link is the Daily now)   # (the day's part of the story serial, once a day from 10:00 UTC: the owner, 2026-11-14,
+[ -n "${REEL_OLD:-}" ] && python3 src/story_reel.py next >> logs/story.log 2>&1 || true   # (back 2026-11-19, the owner: "keep making part 5-8 of the roblox story"; its link is the Daily now)   # (the day's part of the story serial, once a day from 10:00 UTC: the owner, 2026-11-14,
                                                                  #  "post them one a day". It takes the pipeline lock itself, so it runs before ours; it does nothing unless a part is due)
 exec 8>queue/.auto.lock; flock 8                   # (one reel at a time: the critic has no round limit, so the next run waits)
 [ -n "$(find state/format_scores.json -mmin -720 2>/dev/null)" ] || python3 src/format_scores.py >> logs/formats.log 2>&1 || true   # (twice a day: Instagram's numbers per format; make_spec.py drops the worst and repeats the best; its failure never stops a reel)
 [ -n "$(find state/reel_ledger.json -mmin -1440 2>/dev/null)" ] || python3 src/learn.py >> logs/learn.log 2>&1 || true   # (once a day: why the best and worst reels did as they did, into state/learned.md for the writer; its failure never stops a reel)
 [ -n "$(find state/own_reels.json -mmin -1440 2>/dev/null)" ] || python3 src/own_reels.py >> logs/own_reels.log 2>&1 || true   # (once a day: our own best and worst openings for the writer; its failure never stops a reel)
 : # off 2026-11-10, the owner: old-template trial winners must not reach the grid (director reels only) # python3 lab/winners.py >> logs/winners.log 2>&1 || echo "winners step failed (logs/winners.log)"   # (Trial Reels winners take the next slot of their format: the owner, 2026-11-08)
+# The owner, 2026-11-22: "only post ONCE a day (at 23:30) and the story should be about the stock that was picked for the daily on
+# that day". Unless REEL_OLD is set (the old formats, kept as code), every run makes that one reel: today's Daily stock, its story,
+# a flat 2D cartoon explainer, a new scene every sentence (src/explainer/make.py; the owner's reference, 2026-11-22), queued for <today>T2330 when 9 of the 13 simulated viewers watch to the end.
+# It does nothing once the day's reel is queued, and stops after three tries.
+if [ -z "${REEL_OLD:-}" ]; then
+  python3 src/explainer/make.py daily "$(date -u +%F)" >> logs/explainer.log 2>&1 && exit 0
+  echo "today's reel was not made (logs/explainer.log)"; exit 1
+fi
 SLOT="${1:-}"
 if [ -z "$SLOT" ]; then                              # (made ahead: the earliest slot in the next 36 hours that has no approved reel
   for d in "$(date -u +%F)" "$(date -u -d tomorrow +%F)" "$(date -u -d '2 days' +%F)"; do   #  yet, so posts go out on time)

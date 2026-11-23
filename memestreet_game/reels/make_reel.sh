@@ -6,6 +6,7 @@
 #   ./make_reel.sh [YYYY-MM-DD]     (default: today from 22:00 UTC, else yesterday)
 set -euo pipefail
 cd "$(dirname "$0")"; set -a; . ./config.env; set +a
+[ -n "${REEL_OLD:-}" ] || { echo "retired 2026-11-22: the one reel a day is src/explainer/make.py daily (auto_reel.sh, posted 23:30)"; exit 0; }
 export PATH="$HOME/.local/bin:$PATH"
 H=$(date -u +%-H); DATE="${1:-$( [ "$H" -ge 22 ] && date -u +%F || date -u -d yesterday +%F )}"
 W="work/$DATE"; O="out/$DATE"; mkdir -p data work out logs queue

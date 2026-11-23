@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- The one-shot 3D reel (oneshot.js). 1080x1920; the 3D is drawn smaller and scaled up (the blur hides it).
+     Layers, back to front: the 3D, the full-screen terminal (the laptop's screen once the camera dives into it), the figure
+     card, the character tags, the caption. Nothing but the caption may enter y 1430-1640 (oneshot.js keeps tags above it). -->
+<style>
+@font-face{font-family:'Montserrat';src:url('fonts/Montserrat.ttf') format('truetype');font-weight:100 900}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#1c2222}
+#gl{position:absolute;left:0;top:0;width:1080px;height:1920px;filter:saturate(.85) contrast(1.06)}
+#term{position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0}
+/* amber capitals in a black box: Montserrat 700 80px, #feb701, the box 49px bigger than the capitals all round, y 1458-1613 */
+#cap{position:absolute;left:50%;top:1458px;transform:translateX(-50%);display:none;padding:49px 49px;border-radius:6px;background:#000;
+  color:#feb701;font:700 80px/57px 'Montserrat',sans-serif;text-transform:uppercase;white-space:nowrap;letter-spacing:.5px;z-index:5}
+/* the figure card: green over red, a wave between them, figures white and glowing; the lower figure sits high in its half (clear of the caption) */
+#card{position:absolute;inset:0;display:none;flex-direction:column;z-index:3}
+#card .top,#card .bot{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+#card .bot{align-items:flex-start;padding-top:150px}
+#card .top{background:#20b41f;background-image:linear-gradient(rgba(255,255,255,.08) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.08) 2px,transparent 2px);background-size:90px 90px}
+#card .bot{background:#c8121a;background-image:linear-gradient(rgba(0,0,0,.08) 2px,transparent 2px),linear-gradient(90deg,rgba(0,0,0,.08) 2px,transparent 2px);background-size:90px 90px}
+#card .top::after{content:'';position:absolute;left:-5%;right:-5%;bottom:-60px;height:120px;background:#c8121a;border-radius:50% 50% 0 0/100% 100% 0 0;transform:rotate(-2deg)}
+#card b{position:relative;z-index:1;font:700 200px/1 'Montserrat',sans-serif;color:#fff;text-shadow:0 0 18px rgba(255,255,255,.9),0 0 50px rgba(255,255,255,.6),0 6px 0 rgba(0,0,0,.35);letter-spacing:-2px}
+/* a character's tag: who this is, white capitals on a dark pill with an amber edge, above the head */
+.tag{position:absolute;display:none;transform:translate(-50%,-100%);padding:14px 26px;border-radius:40px;background:rgba(8,10,12,.82);
+  border:3px solid #feb701;color:#fff;font:700 40px/1 'Montserrat',sans-serif;text-transform:uppercase;white-space:nowrap;z-index:4}
+</style></head>
+<body>
+<canvas id="gl"></canvas>
+<canvas id="term" width="1080" height="1920"></canvas>
+<div id="card"><div class="top"><b></b></div><div class="bot"><b></b></div></div>
+<div id="tags"></div>
+<div id="cap"></div>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/GLTFLoader.js"></script>
+<script src="vendor/SkeletonUtils.js"></script>
+<script src="vendor/CopyShader.js"></script>
+<script src="vendor/BokehShader.js"></script>
+<script src="vendor/EffectComposer.js"></script>
+<script src="vendor/MaskPass.js"></script>
+<script src="vendor/RenderPass.js"></script>
+<script src="vendor/ShaderPass.js"></script>
+<script src="vendor/BokehPass.js"></script>
+<script src="oneshot.js"></script>
+</body></html>

@@ -70,6 +70,119 @@ def thud(length=0.22):
     return (w / np.abs(w).max() * 0.4).astype(np.float32)
 
 
+def bed(T, title="", seed=None):
+    """The one-shot reel's music bed (src/oneshot, 2026-11-22), as the copied exemplars measure it: tonal, no beat at all,
+    energy at both ends (a deep sub under warm chords, a faint airy shimmer above), stereo. Slow chords of 4 to 6 s, its
+    own key and order per title. Returns (n, 2) float32 at SR, peak 0.7."""
+    import zlib
+    rng = np.random.default_rng(zlib.crc32(title.encode()) if seed is None else seed)
+    n = int(T * SR) + SR; t = np.arange(n) / SR; out = np.zeros((n, 2))
+    key = 38 + int(rng.integers(0, 7))                                   # (D2..G#2 roots: dark and warm)
+    prog = [[0, 3, 7, 10], [-4, 0, 3, 7], [-2, 2, 5, 9], [-5, -1, 2, 7], [-7, -3, 0, 5]]
+    order = [0] + list(rng.permutation(len(prog) - 1) + 1)
+    L = float(rng.uniform(4.2, 5.8)); k = 0; s = 0.0
+    mhz = lambda m: 440 * 2 ** ((m - 69) / 12)
+    while s < T + 1:
+        ch = prog[order[k % len(order)]]; a = int(s * SR); b = min(n, int((s + L + 1.2) * SR)); u = t[a:b] - s
+        envl = np.minimum(1, u / 1.4) * np.minimum(1, np.maximum(0, (L + 1.2 - u)) / 1.4)
+        for j, iv in enumerate(ch):                                        # the pad: two detuned voices a side, an octave up
+            f = mhz(key + 12 + iv)
+            for side, det in ((0, -.0035), (1, .0035)):
+                out[a:b, side] += .12 * envl * (np.sin(2 * np.pi * f * (1 + det) * u + j) + .35 * np.sin(4 * np.pi * f * (1 + det) * u))
+        out[a:b, :] += (.08 * envl * np.sin(2 * np.pi * mhz(key + ch[0]) * u))[:, None]      # the sub on the root (light: the exemplars' beds sit 25 to 48% under 200 Hz)
+        for side in (0, 1):                                                # the air: a high partial that breathes
+            f = mhz(key + 36 + ch[2 + side % 2]); out[a:b, side] += .06 * envl * np.sin(2 * np.pi * f * u) * (.6 + .4 * np.sin(2 * np.pi * .13 * u + side))
+        s += L; k += 1
+    for side in (0, 1):                                                    # soften: a gentle low-pass above ~2.5 kHz
+        F = np.fft.rfft(out[:, side]); fr = np.fft.rfftfreq(n, 1 / SR); F *= 1 / np.sqrt(1 + (fr / 5000) ** 4); out[:, side] = np.fft.irfft(F, n)
+    out[: int(.4 * SR)] *= np.linspace(0, 1, int(.4 * SR))[:, None]
+    out = out[: int(T * SR)]
+    return (out / (np.abs(out).max() + 1e-9) * .7).astype(np.float32)
+
+
+def rise(length=0.45):
+    """A figure rolling up: a soft tone that glides up an octave."""
+    n = int(length * SR); t = np.arange(n) / SR; f = 520 * 2 ** (t / length)
+    return (np.sin(2 * np.pi * np.cumsum(f) / SR) * np.sin(np.pi * t / length) ** 1.5 * 0.3).astype(np.float32)
+
+
+def ding():
+    """A figure landing, good news: two bells a fifth apart."""
+    return ((tone(1046.5, 0.55, 0.16) + 0.7 * tone(1568.0, 0.55, 0.13)) * 0.25).astype(np.float32)
+
+
+def tune(T, marks=(), title="", seed=None):
+    """The story reel's music (src/explainer). The owner, 2026-11-23: "i want the music to be better (and not as loud)". The bed
+    before was a slow low drone (73% of its energy between 120 and 500 Hz) mixed 14 dB under the voice; the music of the 3D reel
+    he chose as a model measures 22 / 45 / 31 / 3 % under 120, 120-500, 500-2k and over 2k Hz, with no hard beat, 20 dB under.
+    So: a light tune in a major key with its own key, tempo, chords and bell motif per title: a soft electric piano on the
+    chords, a mallet figure above it, a round bass, a brushed pulse. And it follows the story: marks = [(t0, t1, mood)], one a
+    shot: the first shot is piano and pad alone (the band comes in on the reveal), a blow (mood -1) drops to piano and pad on the
+    minor chord, a win (+1) adds the bells, and the last bars come home. -> stereo (n, 2) float32 at SR, peak 0.7. How loud it
+    sits is the mix's job (make.py sound()). Synthesised here, note by note."""
+    import hashlib
+    rng = np.random.default_rng(seed if seed is not None else int(hashlib.sha1(title.encode()).hexdigest()[:8], 16))
+    key = 55 + int(rng.integers(0, 6))                                   # G3..C4: the chords' root
+    prog = [[0, 7, 9, 5], [0, 9, 5, 7], [5, 0, 7, 9], [0, 5, 9, 7], [0, 4, 5, 7]][int(rng.integers(0, 5))]   # I V vi IV and its cousins
+    bpm = int(rng.integers(92, 105)); beat = 60 / bpm; bar = 4 * beat; n = int((T + 1.5) * SR)
+    tri = lambda d: [d, d + (3 if d % 12 in (2, 4, 9) else 4), d + 7]     # the triad on a degree of the major scale (ii, iii, vi are minor)
+    L = {k: np.zeros((n, 2)) for k in ("pad", "keys", "mallet", "bass", "drums", "bell")}
+
+    def put(stem, w, at, pan=0.0, vol=1.0):
+        s = int(max(0, at) * SR)
+        if s >= n: return
+        w = w[:n - s]; L[stem][s:s + len(w), 0] += vol * w * (1 - max(0, pan)); L[stem][s:s + len(w), 1] += vol * w * (1 + min(0, pan))
+
+    def tine(f, d):                                      # a soft electric piano: FM, bright for a moment, then round
+        t = np.arange(int(d * SR)) / SR; idx = 1.3 * np.exp(-t / 0.22) + 0.2
+        return np.sin(2 * np.pi * f * t + idx * np.sin(2 * np.pi * f * t)) * np.minimum(1, t / 0.004) * np.exp(-t / 0.9) * np.minimum(1, (d - t) / 0.08)
+
+    def warm(fs, d, cents):                              # the pad: sines and one soft overtone, a slow swell in and out
+        t = np.arange(int(d * SR)) / SR; w = np.zeros(len(t))
+        for j, f in enumerate(fs): f = f * 2 ** (cents / 1200); w += np.sin(2 * np.pi * f * t + j) + .25 * np.sin(4 * np.pi * f * t + 2 * j)
+        return w / len(fs) * np.minimum(1, t / 0.6) * np.minimum(1, (d - t) / 0.6)
+
+    def low(f, d):
+        t = np.arange(int(d * SR)) / SR
+        return (np.sin(2 * np.pi * f * t) + .3 * np.sin(4 * np.pi * f * t)) * np.minimum(1, t / 0.012) * np.exp(-t / 0.9) * np.minimum(1, (d - t) / 0.05)
+
+    def bell(f):
+        t = np.arange(int(0.7 * SR)) / SR
+        return (np.sin(2 * np.pi * f * t) + .3 * np.sin(2 * np.pi * 3 * f * t) * np.exp(-t / 0.05)) * np.minimum(1, t / 0.003) * np.exp(-t / 0.22)
+
+    k16 = int(.18 * SR); kick = np.sin(2 * np.pi * np.cumsum(68 - 24 * np.arange(k16) / k16) / SR) * env(k16, .003, .08)
+    brush = lambda d, r: np.convolve(rng.standard_normal(int(d * SR)), np.ones(5) / 5, "same") * env(int(d * SR), .002, r)
+    motif = [(k * .5 + (.5 if k in (2, 5) else 0), [0, 2, 1, 2, 4, 2][k] if rng.random() < .75 else int(rng.integers(0, 5))) for k in (0, 1, 2, 4, 5)]   # (beat, step of the pentatonic): the reel's own hook
+    penta = [0, 2, 4, 7, 9, 12]
+    mood = lambda t: next((m for a, b, m in marks if a <= t < b), 0)
+    intro = marks[0][1] if marks else bar; bars = int(T / bar) + 1
+    for b in range(bars):
+        t0 = b * bar; m = mood(t0 + bar / 2); first = t0 + bar / 2 < intro; last = b >= bars - 2
+        deg = 0 if last else 9 if m < 0 else prog[b % 4]; notes = [key + x for x in tri(deg)]; quiet = first or m < 0 or last
+        for c, pan in ((-5, -.4), (5, .4)): put("pad", warm([mhz(x + 12) for x in notes], bar + .5, c), t0 - .1, pan, .5)
+        for k, at in enumerate((0,) if (m < 0 or last) else (0, 2.5) if b % 2 else (0, 1.5, 3)):      # the chord on the piano
+            for j, x in enumerate(notes): put("keys", tine(mhz(x), 2.2 if quiet else 1.4), t0 + at * beat + .014 * j + float(rng.uniform(-.004, .004)), -.15, (.3 if not k else .22) * float(rng.uniform(.9, 1.05)))
+        if not (m < 0 or last):                                             # the mallet figure: the chord broken in quavers, an octave up
+            for e8 in range(8):
+                put("mallet", pluck(mhz(notes[[0, 2, 1, 2, 0, 2, 1, 2][e8]] + 12), 0.3, 0.6), t0 + e8 * beat / 2 + float(rng.uniform(-.004, .004)), .3 if e8 % 2 else -.3, (.5 if first else 1) * (.26 if e8 % 2 == 0 else .17))
+        if last and b == bars - 2:
+            for j, x in enumerate(notes + [notes[0] + 12]): put("mallet", pluck(mhz(x + 12), 0.5, 0.6), t0 + j * beat / 2, 0, .24)   # (home: the chord climbs once and rings)
+        if not first:
+            put("bass", low(mhz(key + deg - 24 + (12 if key + deg - 24 < 31 else 0)), (4 if quiet else 2) * beat), t0, 0, .5 if not quiet else .3)
+            if not quiet: put("bass", low(mhz(key + deg - 24 + (12 if key + deg - 24 < 31 else 0)), 1.5 * beat), t0 + 2.5 * beat, 0, .34)
+        if not quiet:
+            put("drums", kick, t0, 0, .4); put("drums", kick, t0 + 2 * beat, 0, .28)
+            for k in (1, 3): put("drums", brush(.12, .04), t0 + k * beat, .1, .2)
+            for e8 in range(8): put("drums", brush(.03, .008), t0 + e8 * beat / 2, .3, .1 if e8 % 2 else .055)
+        if m > 0 and not last:
+            for at, st in motif: put("bell", bell(mhz(key + 24 + penta[st % 6])), t0 + at * beat, .25, .2)
+    out = .6 * L["pad"] + L["keys"] + L["mallet"] + .62 * L["bass"] + L["drums"] + L["bell"]      # (balanced by measurement to the model reel's music: about 20 / 40 / 35 / 5 % across the four bands)
+    for side in (0, 1):                                                     # round the top: nothing harsh above ~6 kHz
+        F = np.fft.rfft(out[:, side]); fr = np.fft.rfftfreq(n, 1 / SR); F *= 1 / np.sqrt(1 + (fr / 6000) ** 4); out[:, side] = np.fft.irfft(F, n)
+    out = out[: int(T * SR)]; k = int(.9 * SR); out[-k:] *= np.linspace(1, 0, k)[:, None] ** 1.5; out[: int(.05 * SR)] *= np.linspace(0, 1, int(.05 * SR))[:, None]
+    return (out / (np.abs(out).max() + 1e-9) * .7).astype(np.float32)
+
+
 NOTE = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 hz = lambda n: 440 * 2 ** ((NOTE[n[0]] + 12 * (int(n[1:]) - 4) - 9) / 12)   # 'E5' -> its pitch
 
@@ -203,6 +316,13 @@ def demo():
         m = x[int(s * SR):int(e * SR)].mean(1); F = np.abs(np.fft.rfft(m)) ** 2; f = np.fft.rfftfreq(len(m), 1 / SR)
         return float(F[f < 150].sum())
     assert low(a, 10.3, 11.2) < 0.5 * low(score(20, [], "Coins Melt"), 10.3, 11.2)   # (under a beat the band drops out, the pad stays)
+    marks = [(0, 4, 0), (4, 8, 1), (8, 14, -1), (14, 20, 0)]; g, h = tune(20, marks, "The GoPro Comeback"), tune(20, marks, "Another Company")
+    assert g.shape == (20 * SR, 2) and np.abs(g).max() <= .71 and not np.allclose(g, h)          # (the story reel's tune: its own per title)
+    assert low(g, 9, 13) < 0.6 * low(g, 4.5, 8) and low(g, 0.3, 2) < 0.3 * low(g, 4.5, 8)        # (a blow and the first shot: no kick, little bass)
+    c, d = bed(12, "How This Man Made Money"), bed(12, "Another Title")      # (the one-shot reel's bed: stereo, its length, no beat)
+    assert c.shape == (12 * SR, 2) and np.abs(c).max() <= .71 and not np.allclose(c, d)
+    e = np.abs(c[SR:, 0]); blk = e[: len(e) // 2205 * 2205].reshape(-1, 2205).mean(1)   # (50 ms blocks: no pulse, the level glides)
+    assert blk.max() < 2.5 * np.median(blk)
     print("ok")
 
 

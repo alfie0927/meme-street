@@ -4,6 +4,80 @@ The owner's rules for every reel. They override every other instruction. New rul
 at the bottom with the date; the writer reads this file before every reel, and rules that can be checked by code are
 also checked automatically (make_spec.py, render.py, narrate.py).
 
+## One style for every reel (the owner, 2026-11-22: these lines win over every line below)
+- "the reels are horrible. completely remake everything from the ground up ... copy their styles, there should be NO
+  differences (except mine is one unique style for all reels)". Every reel is the story explainer (src/explainer/, the
+  memestreet-reel skill): since the same evening a flat 2D cartoon explainer copied from the owner's reference (an AMD vs Intel
+  story, src/explainer/REFERENCE.md), a new scene every sentence that SHOWS what is said. The 3D one-shot (src/oneshot/), the old
+  formats, the town, the serial and the cards are retired.
+- The owner on the 3D cut, 2026-11-22: "so many overlapping parts and the audio doesn't sound right sometimes (it should say 'dot
+  com' and gopro is pronounced GO-PRO not GPRO) ... shows every part of the story, e.g., shows the GO PRO as it's being made ...
+  it shouldn't just be people walking around an office, there should be different scenes for each new stock based on what they
+  do and the story told." So: show what the company makes and show it being made; every event its own props; props in grid
+  cells, never overlapping (the build measures every frame); the ticker is never said; a word said wrong goes in
+  src/explainer/say.json.
+- The owner, 2026-11-23, on the flat cut: "it should be 3d like the previous reel was, except it goes through all the events and
+  story like this current reel". The reel is drawn as low-poly 3D sets (src/explainer/story3d.js), one per sentence, the camera
+  trucking from set to set; the words and figures stay flat on top.
+- The owner, 2026-11-23, on that first 3D cut (29 views; 59% gone in the first 3 seconds; those who stayed watched 16 of its 101
+  seconds): "i still don't like it... make the reel better. also it's pronounced GO PRO (two words). remake it better. it's only
+  got 28 views". What was wrong is now the rule. Every sentence is a SHOT: one or two subjects at real size and the camera
+  placed so that they fill the frame, never small props standing in cells of an empty or dark set. The first frame is
+  someone USING the product, moving, under a contradiction in two big lines ("NO ADVENTURES / STOCK DOUBLED"), with a headline
+  that stays all reel (the first try opened on the product on a stand with its price: the simulated viewers left, "it looks
+  like school"); the real chart is on screen within six sentences. The script
+  is ONE story with a turn and a last line that stings, never a list of headlines, never "X reported" (the sources go in the
+  caption); at most 16 figures; a shot is at least 5 words. Captions are big and outlined. "GoPro" is two stressed words
+  (say.json: "Goh Proh"); a pronunciation is checked by the voice's phonemes (`make.py phonemes`), because a transcript reads
+  "GoPro" either way; "$4.80" is said "4 dollars 80".
+- The owner, 2026-11-23, on the remake: "better. but i think it can still be better. the caption timings can be better, i want
+  the music to be better (and not as loud), also at the beginning explain that this is today's mystery chart. also where else you
+  can make it better do that too", and a second model reel: "you can use this animation style too" (instagram.com/reel/DgFcR67I_M5,
+  a 3D animated story: toy figures with a big round head and a drawn face, saturated patterned sets, close restless shots,
+  captions of one to three words). So:
+  - The reel is the answer to the game. Its first sentence begins "Today's mystery chart on Meme Street" (a reel made a day late
+    says "Yesterday's", later the weekday) and never names the company; its shot is the chart itself, marked "???". The second
+    sentence is the reveal ("It was GoPro, the maker of action cameras."). The header reads "TODAY'S MYSTERY CHART" all reel, with
+    the company's name from the moment it is said. The last sentence is always "A new mystery chart goes live at midnight."
+  - Captions: one to three words at a time (five when the words come fast), on screen whole for at least half a second, each
+    word's time taken from its own letters as heard (figures and "GoPro.com" used to pop in on a guess), shown 0.06 s early;
+    the words not yet said are dimmed and each lights up as it is said.
+  - Music: a light tune of the reel's own (piano, mallets, a soft pulse; it drops out on bad news and comes home at the end), set
+    21 dB under the voice by measurement. The bed before was a low drone only 14 dB under. Effects sit 13 to 20 dB under.
+  - People are toy figures with drawn faces that show what they feel (calm, joy, smug, shock, sad) and blink. Only the style is
+    the model's: none of its characters, costumes or pictures is copied.
+- The owner, 2026-11-23, on the mystery-chart cut: "this is way better. make sure the audio is smoother though. it should flow
+  like normal human speech. remake with this, then post it". Keep what that cut was (the mystery opening and reveal, the toy
+  figures, the captions, the tune). The voice: spoken in breaths of three or four sentences that the voice reads in one go, all
+  at ONE speed (1.2: about 5 syllables a second while talking, as the owner's model narrators); its pauses stay where it put
+  them and get a person's length (0.28 to 0.42 s between sentences, 0.08 to 0.18 s at a comma, no stop over 0.1 s in
+  mid-phrase); every breath at one loudness; the mix at one gain. Never again: a clause spoken on its own, a speed per phrase,
+  the same pause every time. Posted that day at 16:55 UTC: instagram.com/reel/DgF24MUDRkL.
+- The owner, 2026-11-23, an hour after that post: "these should also upload to youtube as well". Every reel that goes on
+  Instagram goes on YouTube as a Short too. The queue already does it (queue_post.sh runs src/post_elsewhere.py after
+  post_instagram.py; YouTube is on, public); a reel posted BY HAND gets the same second step (it had been skipped twice).
+- The owner, 2026-11-23 evening, sending a third model reel (instagram.com/reel/DgF4yeEhDOA, "How Bats Almost Won WW2") and then,
+  on the first try: "you didn't copy the style of the reference reel at all... copy it. make some of the speech a bit slower,
+  sometimes words get slurred"; "use all the skills you have to make sure the voiceovers are as realistic as possible"; "make the
+  music more exciting, and creative (it's too AI generated and boring rn)"; then, on the result: "i like it. i just won't really
+  like the music. change the music up so it's more unique. all daily reels should follow this format now". THE FORMAT NOW:
+  - People are flat 2D drawn cut-outs standing in the 3D sets, facing the camera: big white heads, thick black outlines, huge
+    eyes, drawn expressions, stick legs (only the model's style; every character is drawn here).
+  - No words on the picture but the captions: no header, pill, progress bar, title, stamp or counter. A small letter-spaced
+    "MEME STREET" mark top left. Captions in heavy white Montserrat with a dark edge, one to three words, mid-low.
+  - Deep focus blur, a colour grade, a camera that drifts.
+  - The voice is ElevenLabs ("Liam", a young American narrator) on the Starter plan the account pays for, about 3 words a second
+    (never pushed: the other voice slurred at 1.38x); drafts are read by the free voice, only the filmed cut by ElevenLabs.
+  - The music is a real track by an independent artist (Jamendo, CC BY, credited in the caption), a different one by title;
+    never synthesised (too "AI generated") and never Kevin MacLeod (heard everywhere).
+- The owner disliked the old look, stories and music; the voice may stay. Budget $0.
+- Every reel passes the simulated viewers (lab/audience.py) before it is queued: at least 9 of the 13 watch to the end (the owner's
+  bar, 2026-11-22: as many as the best of the copied hits kept; "all 13" is a bar none of the hits passes).
+- ONE reel a day, posted at 23:30 UTC, about the day's Daily stock over the Daily's window: why it moved, what happened, the
+  characters (by role, tagged on screen), every claim from the researched sources (the owner, 2026-11-22).
+- Dynamic and creative: each sentence its own scene, its props popping in on their words; nothing overlaps.
+- Facts only from the research; a person named only as a public figure in it; no question, no moral, no call to action.
+
 ## Meme Street Daily (the owner, 2026-11-18: these lines win over every older one below)
 - memestreet.net is just the Daily now: one real US stock chart a day, two minutes to trade it, its name revealed at the end. Every
   reel is about the Daily ("keep making reels but they need to be related to the daily, so less educational"): fun first, a game

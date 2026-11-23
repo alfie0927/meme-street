@@ -1,0 +1,3288 @@
+{
+ "made": "2026-11-22",
+ "slice": "production: how the winning faceless story and explainer Shorts are made",
+ "counts": {
+  "youtube_search_listing": {
+   "searches": 80,
+   "shorts_in_search": 734,
+   "channels_tried": 170,
+   "channels_ranked": 100,
+   "shorts_ranked": 3442,
+   "over_1m": 374,
+   "over_100k": 957
+  },
+  "youtube_hashtag_listing": {
+   "hashtag_feeds": 58,
+   "shorts_in_feeds": 8117,
+   "channels_ranked": 166,
+   "shorts_ranked": 6607,
+   "over_1m": 935,
+   "over_100k": 2356
+  },
+  "tiktok_listing": {
+   "handles_tried": 75,
+   "accounts_listed": 30,
+   "videos_ranked": 1437,
+   "over_1m": 100,
+   "over_100k": 347
+  },
+  "videos_watched_as_frame_sheets": 35,
+  "videos_measured_precisely": 8,
+  "instagram": "not listed: it needs the owner's logged-in browser"
+ },
+ "styles": [
+  {
+   "id": "A",
+   "name": "3D scene, the thing itself shown",
+   "copy_spec": true,
+   "what": "A 3D animation of the event or the mechanism itself. The best case is one unbroken shot with a camera that never rests (Zack D. Films); the cheap case is low-poly people in a small set (MagnatesMedia's two biggest Shorts).",
+   "how_made": "Rendered 3D (the look of a game engine or Blender) with an edited voice and many effects. Zack D. Films is photoreal with animated people; MagnatesMedia is flat-shaded low-poly without faces.",
+   "channels": [
+    {
+     "channel": "Zack D. Films",
+     "shorts_listed": 40,
+     "median_views": 5050000,
+     "over_1m": 40,
+     "over_100k": 40,
+     "top_views": 17000000,
+     "top_x": 3.4,
+     "top_title": "Cutting A Watermelon With Dental Floss 😮"
+    },
+    {
+     "channel": "Terra Mystica",
+     "shorts_listed": 40,
+     "median_views": 4000000,
+     "over_1m": 36,
+     "over_100k": 40,
+     "top_views": 34000000,
+     "top_x": 8.5,
+     "top_title": "Raising an Woolly Mammoth 🐘      #mammoth #iceage #3d #facts #science #elephant #animation  #shorts"
+    },
+    {
+     "channel": "neo",
+     "shorts_listed": 15,
+     "median_views": 3700000,
+     "over_1m": 13,
+     "over_100k": 15,
+     "top_views": 28000000,
+     "top_x": 7.6,
+     "top_title": "What Happens to Plastic in the Ocean?"
+    },
+    {
+     "channel": "The Infographics Show",
+     "shorts_listed": 40,
+     "median_views": 301500,
+     "over_1m": 7,
+     "over_100k": 39,
+     "top_views": 3000000,
+     "top_x": 10.0,
+     "top_title": "What Happens When You Are Shot"
+    },
+    {
+     "channel": "MagnatesMedia",
+     "shorts_listed": 29,
+     "median_views": 68000,
+     "over_1m": 2,
+     "over_100k": 9,
+     "top_views": 4100000,
+     "top_x": 60.3,
+     "top_title": "MrBeast Explains The YouTube Algorithm In 46 Seconds"
+    },
+    {
+     "channel": "greenscreencut",
+     "shorts_listed": 14,
+     "median_views": 165000,
+     "over_1m": 3,
+     "over_100k": 9,
+     "top_views": 36000000,
+     "top_x": 218.2,
+     "top_title": "What is the gravity on the Moon, the Sun, Mars, and other planets in the solar system? #gravity"
+    }
+   ],
+   "our_stack": "Closest to what we have (world3d.js). The low-poly version is within reach; photoreal people are not.",
+   "watched": [
+    "VOI9-Gx2EaY",
+    "3501sPb6ZmM",
+    "A1zK48vHp3k",
+    "V15wrmD5VFs",
+    "95_6mV-xs9M",
+    "Evd-G7gmXB8",
+    "fE6TbXCJ8q4"
+   ]
+  },
+  {
+   "id": "B",
+   "name": "Flat 2D animation",
+   "copy_spec": true,
+   "what": "Drawn or vector pictures that act out each sentence: Kurzgesagt's flat vector people and plates, cartoon history, doodles, stick figures, painted maps, one diagram.",
+   "how_made": "Vector animation (After Effects or similar), hard cuts every 3 s, long holds between moves.",
+   "channels": [
+    {
+     "channel": "Kurzgesagt – In a Nutshell",
+     "shorts_listed": 40,
+     "median_views": 1300000,
+     "over_1m": 30,
+     "over_100k": 40,
+     "top_views": 5300000,
+     "top_x": 4.1,
+     "top_title": "The Deadliest Thing in Your Kitchen"
+    },
+    {
+     "channel": "Extra History",
+     "shorts_listed": 40,
+     "median_views": 1350000,
+     "over_1m": 29,
+     "over_100k": 40,
+     "top_views": 7100000,
+     "top_x": 5.3,
+     "top_title": "Banning Birthright Citizenship?!? | Recently Deleted Amendments"
+    },
+    {
+     "channel": "Knowledgia",
+     "shorts_listed": 39,
+     "median_views": 1800000,
+     "over_1m": 29,
+     "over_100k": 38,
+     "top_views": 11000000,
+     "top_x": 6.1,
+     "top_title": "Why wasn't Portugal Conquered by Spain? #shorts #japan #map"
+    },
+    {
+     "channel": "Casually Explained",
+     "shorts_listed": 28,
+     "median_views": 224000,
+     "over_1m": 9,
+     "over_100k": 18,
+     "top_views": 5300000,
+     "top_x": 23.7,
+     "top_title": "I’m sorry, I thought this was Latin America"
+    },
+    {
+     "channel": "The Armchair Historian",
+     "shorts_listed": 36,
+     "median_views": 215500,
+     "over_1m": 5,
+     "over_100k": 28,
+     "top_views": 2800000,
+     "top_x": 13.0,
+     "top_title": "Why did Soldiers Fight in Lines? | Animated Short"
+    },
+    {
+     "channel": "Newsthink",
+     "shorts_listed": 25,
+     "median_views": 112000,
+     "over_1m": 3,
+     "over_100k": 13,
+     "top_views": 16000000,
+     "top_x": 142.9,
+     "top_title": "How Starship Will Get Us to Mars"
+    },
+    {
+     "channel": "Improvement Pill",
+     "shorts_listed": 35,
+     "median_views": 65000,
+     "over_1m": 3,
+     "over_100k": 12,
+     "top_views": 3100000,
+     "top_x": 47.7,
+     "top_title": "3 Studying Tips You Haven't Heard Of"
+    },
+    {
+     "channel": "Simple History",
+     "shorts_listed": 40,
+     "median_views": 16000,
+     "over_1m": 0,
+     "over_100k": 7,
+     "top_views": 582000,
+     "top_x": 36.4,
+     "top_title": "Rifle with a built in bottle opener?"
+    }
+   ],
+   "our_stack": "Native to reel.html (a scene function draws SVG). The drawing quality is the work: Kurzgesagt's level, not our stick figures.",
+   "watched": [
+    "2cK8l5Yg5w8",
+    "VYhUa3WC4nU",
+    "Yp4Pn8k_U20",
+    "uVq2WFK9rjY",
+    "olbjFEt4flU",
+    "iFIqZNdKpi4",
+    "0tKT_m7rEWQ",
+    "O0WT8kqz31g",
+    "4nR718ryFnQ",
+    "qo3vtsJR7hU"
+   ]
+  },
+  {
+   "id": "C",
+   "name": "Footage documentary",
+   "copy_spec": true,
+   "what": "A narrator over stock, news and archive footage, a new shot every 1 to 2 s, key words or small captions. The form of the business-story channels themselves.",
+   "how_made": "An editor's timeline: found clips, a colour grade, a music bed as loud as the voice, glitch and zoom transitions.",
+   "channels": [
+    {
+     "channel": "How Money Works",
+     "shorts_listed": 40,
+     "median_views": 139500,
+     "over_1m": 11,
+     "over_100k": 23,
+     "top_views": 5400000,
+     "top_x": 38.7,
+     "top_title": "How This Vandal Made $200 Million by Spray Painting An Office Building - How Money Works #Shorts"
+    },
+    {
+     "channel": "Jake Tran",
+     "shorts_listed": 40,
+     "median_views": 49500,
+     "over_1m": 1,
+     "over_100k": 7,
+     "top_views": 1200000,
+     "top_x": 24.2,
+     "top_title": "Starbucks is RUTHLESS. 😳"
+    },
+    {
+     "channel": "Logically Answered",
+     "shorts_listed": 40,
+     "median_views": 15500,
+     "over_1m": 2,
+     "over_100k": 2,
+     "top_views": 8000000,
+     "top_x": 516.1,
+     "top_title": "GoPro Is Going Bankrupt?"
+    },
+    {
+     "channel": "BlueJay",
+     "shorts_listed": 23,
+     "median_views": 181000,
+     "over_1m": 1,
+     "over_100k": 19,
+     "top_views": 1700000,
+     "top_x": 9.4,
+     "top_title": "Disney World's Best Secret"
+    },
+    {
+     "channel": "BRIGHT SIDE",
+     "shorts_listed": 40,
+     "median_views": 34500,
+     "over_1m": 0,
+     "over_100k": 5,
+     "top_views": 307000,
+     "top_x": 8.9,
+     "top_title": "We Finally Know How They Built The Pyramids"
+    },
+    {
+     "channel": "Mysterious Media",
+     "shorts_listed": 41,
+     "median_views": 80500,
+     "over_1m": 3,
+     "over_100k": 16,
+     "top_views": 21000000,
+     "top_x": 260.9,
+     "top_title": "He Became a Millionaire Just by Grooming Horses"
+    },
+    {
+     "channel": "Archive Central",
+     "shorts_listed": 41,
+     "median_views": 30500,
+     "over_1m": 1,
+     "over_100k": 5,
+     "top_views": 21000000,
+     "top_x": 688.5,
+     "top_title": "Untold Story of Flex Paste Boat 😱 #shortsfeed #shorts #facts #boat #knowledge #wisdomstories"
+    },
+    {
+     "channel": "Shubham Rajput",
+     "shorts_listed": 40,
+     "median_views": 122000,
+     "over_1m": 11,
+     "over_100k": 21,
+     "top_views": 27000000,
+     "top_x": 221.3,
+     "top_title": "“How Raw Pressery Built a 500 Crore Brand… Then Lost It” #shorts"
+    }
+   ],
+   "our_stack": "We have no footage source (Higgsfield is off), and these channels use other people's clips.",
+   "watched": [
+    "psu6CcCLBOo",
+    "jJ0i4JxY-tE",
+    "0MUxT4jvjSM",
+    "_Xtq8WGl1ZY",
+    "760Bxd0eQSk",
+    "VLWXtXMDE5Q",
+    "Wvgkql9n_fs",
+    "u8CeECBN9is"
+   ]
+  },
+  {
+   "id": "D",
+   "name": "Post card over a clip",
+   "copy_spec": false,
+   "what": "Six to nine seconds: a fake social post (avatar, name, tick, a paragraph with coloured key words) above a found clip, looping.",
+   "how_made": "A template in a phone editor over someone else's clip.",
+   "channels": [
+    {
+     "channel": "History Paradox",
+     "shorts_listed": 41,
+     "median_views": 256500,
+     "over_1m": 9,
+     "over_100k": 30,
+     "top_views": 19000000,
+     "top_x": 74.1,
+     "top_title": "The Burning Attempt Was Stopped 😳"
+    },
+    {
+     "channel": "History Peek TV",
+     "shorts_listed": 41,
+     "median_views": 122500,
+     "over_1m": 7,
+     "over_100k": 24,
+     "top_views": 74000000,
+     "top_x": 604.1,
+     "top_title": "How is She SMILING After This?!  🤯🤯🤯 #shorts"
+    },
+    {
+     "channel": "PastInSeconds",
+     "shorts_listed": 41,
+     "median_views": 48500,
+     "over_1m": 2,
+     "over_100k": 9,
+     "top_views": 36000000,
+     "top_x": 742.3,
+     "top_title": "They’re Trained to Stand Perfectly Still Without Even Blinking"
+    },
+    {
+     "channel": "Daily Dose Of History Facts",
+     "shorts_listed": 42,
+     "median_views": 34500,
+     "over_1m": 3,
+     "over_100k": 11,
+     "top_views": 61000000,
+     "top_x": 1768.1,
+     "top_title": "The Snipers Watching Every World Cup Match"
+    },
+    {
+     "channel": "Zyen",
+     "shorts_listed": 41,
+     "median_views": 6950,
+     "over_1m": 1,
+     "over_100k": 1,
+     "top_views": 12000000,
+     "top_x": 1726.6,
+     "top_title": "Elon Musk vs Iron Man: Who Is Richer? 🤯💰 #Shorts"
+    },
+    {
+     "channel": "Hyper Startup Studio",
+     "shorts_listed": 41,
+     "median_views": 1400,
+     "over_1m": 1,
+     "over_100k": 1,
+     "top_views": 17000000,
+     "top_x": 12142.9,
+     "top_title": "One sentence almost killed the deal"
+    }
+   ],
+   "our_stack": "The card is trivial in HTML; the clip is somebody else's. A six-second loop is counted as a view again each time it replays, so its numbers are not comparable.",
+   "watched": [
+    "z-Oj1nao5xg",
+    "hBD4zXPWc90",
+    "R4pg7nmWCZY",
+    "JNsbgxS6Wjo",
+    "g6ATlDAyfjI",
+    "Iymz2DoTuQI"
+   ]
+  },
+  {
+   "id": "E",
+   "name": "AI-generated video",
+   "copy_spec": false,
+   "what": "Generated clips: a made-up 'found tape' history, a time-lapse that never happened, 3D-look explainers.",
+   "how_made": "A video model, then captions.",
+   "channels": [
+    {
+     "channel": "Stone Reborn",
+     "shorts_listed": 41,
+     "median_views": 7050,
+     "over_1m": 2,
+     "over_100k": 3,
+     "top_views": 27000000,
+     "top_x": 3829.8,
+     "top_title": "They Built Kailasa Temple in 30 Seconds 🏛️"
+    },
+    {
+     "channel": "Factify_iQ",
+     "shorts_listed": 41,
+     "median_views": 20000,
+     "over_1m": 1,
+     "over_100k": 2,
+     "top_views": 23000000,
+     "top_x": 1150.0,
+     "top_title": "Can We Straighten The Leaning Tower Of Pisa 🤔"
+    }
+   ],
+   "our_stack": "Needs a paid video model; the owner stopped Higgsfield on 2026-11-19.",
+   "watched": [
+    "tt_mrstory",
+    "J1nEqbdFT2A",
+    "hMxcXJ8plW4"
+   ]
+  }
+ ],
+ "tiktok_accounts_by_median": [
+  {
+   "handle": "jakefellman",
+   "videos": 60,
+   "median": 1750000
+  },
+  {
+   "handle": "mrstorytelling",
+   "videos": 60,
+   "median": 421250
+  },
+  {
+   "handle": "nutshellanimations",
+   "videos": 60,
+   "median": 373000
+  },
+  {
+   "handle": "neoexplains",
+   "videos": 25,
+   "median": 186800
+  },
+  {
+   "handle": "morningbrew",
+   "videos": 60,
+   "median": 95300
+  },
+  {
+   "handle": "financeunfolded",
+   "videos": 60,
+   "median": 71000
+  },
+  {
+   "handle": "casuallyexplained",
+   "videos": 55,
+   "median": 58900
+  },
+  {
+   "handle": "theinfographicsshow",
+   "videos": 60,
+   "median": 57950
+  },
+  {
+   "handle": "dodford",
+   "videos": 60,
+   "median": 45900
+  },
+  {
+   "handle": "newsthink",
+   "videos": 46,
+   "median": 24000
+  },
+  {
+   "handle": "asapscience",
+   "videos": 60,
+   "median": 22050
+  },
+  {
+   "handle": "greenscreencut",
+   "videos": 17,
+   "median": 21500
+  }
+ ],
+ "what_the_winners_share": {
+  "first_word_s": 0.0,
+  "words_per_s_talking": [
+   3.41,
+   3.75
+  ],
+  "words_per_s_overall": [
+   2.86,
+   3.32
+  ],
+  "pause_after_full_stop_s": "0.46 to 0.76 in six; 0.25 in Jake Tran's",
+  "pause_after_comma_s": [
+   0.26,
+   0.44
+  ],
+  "caption_lines": 1,
+  "caption_font_px": [
+   57,
+   80
+  ],
+  "caption_centre_y": "1504 to 1536 in five; 1390 in Jake Tran's; none in How Money Works'",
+  "caption_words": [
+   1,
+   4
+  ],
+  "caption_highlight": null,
+  "caption_animation": null,
+  "caption_appears_against_first_word_s": [
+   -0.11,
+   0.06
+  ],
+  "header_or_logo": null,
+  "end_card": "none in six of seven",
+  "steady_beat": "none found in seven",
+  "lufs": [
+   -17.2,
+   -10.0
+  ],
+  "fps": [
+   25,
+   30,
+   60
+  ]
+ },
+ "copy_spec": {
+  "A": {
+   "name": "3D scene in one shot (Zack D. Films)",
+   "exemplars": [
+    "VOI9-Gx2EaY",
+    "3501sPb6ZmM"
+   ],
+   "variant_exemplar": "A1zK48vHp3k",
+   "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 30
+   },
+   "cuts": {
+    "hard_cuts": 0,
+    "note": "one continuous camera move through one scene; the only break found is a 0.97 s camera whip"
+   },
+   "motion": {
+    "share_of_frames_still": 0,
+    "mean_pixel_change_per_frame_0_255": [
+     6.6,
+     14.6
+    ],
+    "clean_push_or_pull_pct_per_s": [
+     14,
+     20
+    ],
+    "clean_stretches": "4 of 70"
+   },
+   "frame0": "the subject mid-frame in a mid shot, already doing the thing; the first two words on the caption line; no title, logo or header",
+   "captions": {
+    "font_measured": "Tahoma Bold",
+    "font_px": 75,
+    "font_overlap": 0.9,
+    "closest_free_google_font": "Rubik",
+    "closest_free_weight": 600,
+    "closest_free_px": 77,
+    "closest_free_overlap": 0.79,
+    "case": "sentence case as spoken",
+    "punctuation_shown": false,
+    "fill": "#ffffff",
+    "outline_px": 2,
+    "outline_colour": "#000000",
+    "shadow": "hard, 2 px right and 2 px down, #000000",
+    "css": "font:700 75px Tahoma; color:#fff; -webkit-text-stroke:4px #000; paint-order:stroke fill; text-shadow:2px 2px 0 #000;",
+    "lines": 1,
+    "centre_x": 540,
+    "capital_top_y": 1470,
+    "baseline_y": 1526,
+    "descender_bottom_y": 1541,
+    "centre_y": 1505,
+    "words_per_group": [
+     1,
+     4
+    ],
+    "words_per_group_median": 3,
+    "widest_line_px": 790,
+    "changes_per_s": 0.9,
+    "hold_s_median": 0.8,
+    "appears_against_first_word_s": -0.01,
+    "highlight": null,
+    "animation": null
+   },
+   "voice": {
+    "first_word_s": 0.0,
+    "words_per_s_talking": [
+     3.42,
+     3.45
+    ],
+    "words_per_s_overall": [
+     2.88,
+     2.94
+    ],
+    "pause_after_full_stop_s": [
+     0.46,
+     0.52
+    ],
+    "pause_after_comma_s": [
+     0.26,
+     0.34
+    ],
+    "pitch_hz": [
+     152,
+     160
+    ]
+   },
+   "sound": {
+    "lufs": [
+     -10.3,
+     -10.0
+    ],
+    "true_peak_dbfs": [
+     0.3,
+     0.5
+    ],
+    "sound_between_words_under_voice_db": [
+     5,
+     10
+    ],
+    "share_of_gaps_with_a_hit": [
+     0.6,
+     0.75
+    ],
+    "steady_beat": false,
+    "bed": "tonal; not heard"
+   },
+   "outro": "the scene's end state; no end card, question or logo; the last word ends 0.85 to 0.9 s before the end",
+   "variant_low_poly": {
+    "look": "flat-shaded low-poly people without faces, a dim teal-grey shop with warm lamps, strong depth-of-field blur; one scene, a forward dolly reading as 21% a second",
+    "captions": {
+     "font": "Montserrat",
+     "weight": 700,
+     "font_px": 80,
+     "font_overlap": 0.81,
+     "case": "CAPITALS",
+     "punctuation_shown": true,
+     "fill": "#feb701",
+     "box": {
+      "colour": "#000000",
+      "padding_px": 49,
+      "corner_radius_px_by_eye": 6,
+      "top_y": 1458,
+      "bottom_y": 1613
+     },
+     "capital_top_y": 1507,
+     "centre_y": 1536,
+     "words_per_group": [
+      1,
+      3
+     ],
+     "words_per_group_median": 2,
+     "max_characters": 15,
+     "changes_per_s": 1.83,
+     "hold_s_median": 0.47,
+     "highlight": null,
+     "animation": null
+    },
+    "voice": {
+     "words_per_s_talking": 3.45,
+     "pause_after_full_stop_s": 0.7,
+     "pause_after_comma_s": 0.44,
+     "pitch_hz": 131
+    },
+    "sound": {
+     "lufs": -14.5,
+     "true_peak_dbfs": -3.6,
+     "sound_between_words_under_voice_db": [
+      6.2,
+      7.4
+     ]
+    }
+   }
+  },
+  "B": {
+   "name": "Flat vector animation (Kurzgesagt)",
+   "exemplars": [
+    "2cK8l5Yg5w8",
+    "VYhUa3WC4nU"
+   ],
+   "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 60
+   },
+   "cuts": {
+    "per_10s": [
+     1.9,
+     2.1
+    ],
+    "kind": "hard, one frame",
+    "shot_s_median": [
+     2.8,
+     3.0
+    ],
+    "first_cut_s": [
+     0.65,
+     2.07
+    ]
+   },
+   "motion": {
+    "share_of_frames_still": [
+     0.33,
+     0.4
+    ],
+    "longest_hold_s": [
+     1.05,
+     1.15
+    ],
+    "camera": "mostly none; a pull-out of 3.2 to 6.2% a second where there is one"
+   },
+   "frame0": "the title, which is the first spoken sentence word for word, in two centred lines at about y 290 to 520 over the subject; held about 2 s",
+   "captions": {
+    "font_measured": null,
+    "font_note": "a rounded geometric sans with a one-storey a; not among 84 candidates",
+    "stand_in_font": "Varela Round",
+    "stand_in_px": 57,
+    "stand_in_overlap": 0.56,
+    "case": "sentence case",
+    "punctuation_shown": true,
+    "fill": "#ffffff",
+    "outline_px": 4,
+    "outline_colour": "#000000",
+    "shadow": null,
+    "css": "color:#fff; -webkit-text-stroke:8px #000; paint-order:stroke fill;",
+    "lines": 1,
+    "centre_x": 540,
+    "letters_top_y": 1485,
+    "baseline_y": 1527,
+    "descender_bottom_y": 1539,
+    "centre_y": [
+     1506,
+     1510
+    ],
+    "words_per_group": [
+     1,
+     4
+    ],
+    "widest_line_px": 770,
+    "changes_per_s": [
+     0.67,
+     1.17
+    ],
+    "hold_s_median": [
+     0.67,
+     0.87
+    ],
+    "appears_against_first_word_s": [
+     -0.11,
+     0.06
+    ],
+    "highlight": null,
+    "animation": null
+   },
+   "voice": {
+    "first_word_s": 0.0,
+    "words_per_s_talking": [
+     3.41,
+     3.67
+    ],
+    "words_per_s_overall": [
+     2.86,
+     2.99
+    ],
+    "pause_after_full_stop_s": [
+     0.64,
+     0.73
+    ],
+    "pause_after_comma_s": [
+     0.3,
+     0.3
+    ],
+    "pitch_hz": [
+     119,
+     121
+    ]
+   },
+   "sound": {
+    "lufs": [
+     -12.8,
+     -12.2
+    ],
+    "true_peak_dbfs": [
+     -0.5,
+     0.1
+    ],
+    "sound_between_words_under_voice_db": [
+     9.5,
+     16.6
+    ],
+    "share_of_gaps_with_a_hit": [
+     0.64,
+     0.68
+    ],
+    "steady_beat": false,
+    "bed": "tonal; not heard"
+   },
+   "look": "flat vector shapes with soft gradients, saturated fills on deep violet (#230858, #2e055b); a tilted yellow label plate for every named thing",
+   "outro": "the answer as a picture, or the opening figure again; no end card or logo"
+  },
+  "C": {
+   "name": "Footage documentary (Jake Tran; How Money Works where it says so)",
+   "exemplars": [
+    "psu6CcCLBOo",
+    "jJ0i4JxY-tE"
+   ],
+   "canvas": {
+    "w": 1080,
+    "h": 1920,
+    "fps": 25
+   },
+   "cuts": {
+    "per_10s": 4.8,
+    "shot_s_median": 1.56,
+    "shot_s_p10_p90": [
+     0.4,
+     3.5
+    ],
+    "hard": 22,
+    "slice_transition_0_12s": 3,
+    "longer": 1,
+    "first_cut_s": 1.92,
+    "how_money_works": "cut figures are a floor: its early transitions are not scored by the counter"
+   },
+   "camera": {
+    "push_in_pct_per_s": [
+     2.1,
+     3.0
+    ],
+    "clean_stretches": "6 in, 4 out, 4 still of 14"
+   },
+   "frame0": "footage with no text; from 0.5 s the hook words arrive one or two at a time in a heavy condensed display face (not measured), each over about 0.12 s",
+   "captions": {
+    "font_measured": "Montserrat",
+    "weight": 700,
+    "font_px": 59,
+    "font_overlap": [
+     0.86,
+     0.87
+    ],
+    "case": "sentence case",
+    "punctuation_shown": true,
+    "fill": "#ffffff",
+    "outline_px": 0,
+    "shadow": "soft black all round, 8 to 18 px wide",
+    "css_estimate": "font:700 59px Montserrat; color:#fff; text-shadow:0 0 12px #000, 0 0 6px #000;",
+    "lines": [
+     1,
+     2
+    ],
+    "centre_x": 540,
+    "centre_y": 1390,
+    "single_line_letters_y": [
+     1363,
+     1407
+    ],
+    "line_pitch_px_by_eye": 75,
+    "words_per_group": [
+     2,
+     5
+    ],
+    "widest_line_px": 723,
+    "hold_s": [
+     1.0,
+     1.5
+    ],
+    "appears_against_first_word_s": 0.03,
+    "highlight": null,
+    "animation": null,
+    "how_money_works": "no running captions: name tags and one figure card"
+   },
+   "voice": {
+    "first_word_s": 0.0,
+    "jake_tran": {
+     "words_per_s_talking": 3.51,
+     "words_per_s_overall": 3.32,
+     "pause_after_full_stop_s": 0.25,
+     "pause_after_comma_s": 0.26,
+     "pitch_hz": 160
+    },
+    "how_money_works": {
+     "words_per_s_talking": 3.75,
+     "words_per_s_overall": 3.0,
+     "pause_after_full_stop_s": 0.76,
+     "pause_after_comma_s": 0.38,
+     "pitch_hz": 154
+    }
+   },
+   "sound": {
+    "jake_tran": {
+     "lufs": -16.3,
+     "true_peak_dbfs": 0.3,
+     "sound_between_words_under_voice_db": [
+      0.9,
+      1.6
+     ],
+     "bed_energy_share_under_200hz": 0.65,
+     "steady_beat": false
+    },
+    "how_money_works": {
+     "lufs": -17.2,
+     "sound_between_words_under_voice_db": 14.4
+    }
+   },
+   "grade": "Jake Tran: desaturated, crushed, pink-purple cast (#90797c, #b29eaa, #785957 over #161512); How Money Works: as found",
+   "outro": "Jake Tran: the last words lead into the first line over the first shot (a loop); How Money Works: its logo for about the last second"
+  }
+ },
+ "copy_spec_measured": {
+  "A": [
+   {
+    "key": "VOI9-Gx2EaY",
+    "url": "https://www.youtube.com/shorts/VOI9-Gx2EaY",
+    "channel": "Zack D. Films",
+    "title": "Cutting A Watermelon With Dental Floss 😮",
+    "views": 17000000,
+    "x_own_median": 3.4,
+    "channel_median": 5050000,
+    "source_px": [
+     1080,
+     1920
+    ],
+    "fps": 29.97,
+    "seconds": 35.69,
+    "cuts": {
+     "n": 0,
+     "per_10s": 0.0,
+     "soft_changes_per_10s": 0.28,
+     "shot_s_median": 35.64,
+     "shot_s_p10": 35.64,
+     "shot_s_p90": 35.64,
+     "first_cut_at_s": null,
+     "transition_kinds": {
+      "hard": 0,
+      "fast": 0,
+      "slow": 0
+     },
+     "transition_s_median": null,
+     "not_hard_transition_s": [],
+     "through_white": 0,
+     "through_black": 0,
+     "tr_sheet_rows": []
+    },
+    "motion": {
+     "mean_change_per_frame_median": 6.57,
+     "share_of_frames_still": 0.0,
+     "longest_still_s": 0.0
+    },
+    "camera": {
+     "shots_measured": 30,
+     "clean_fit": 3,
+     "static": 0,
+     "zoom_in": 0,
+     "zoom_out": 3,
+     "no_fit_moving_subject": 27,
+     "zoom_pct_per_s_median_of_moving": 19.3,
+     "zoom_pct_per_s_list": [
+      -20.0,
+      -14.5,
+      -19.3
+     ],
+     "pan_px_per_s_median": 81.5
+    },
+    "palette": [
+     [
+      "#703d27",
+      0.195
+     ],
+     [
+      "#d9b099",
+      0.133
+     ],
+     [
+      "#6b604e",
+      0.132
+     ],
+     [
+      "#969183",
+      0.126
+     ],
+     [
+      "#c3675b",
+      0.12
+     ],
+     [
+      "#311c16",
+      0.109
+     ],
+     [
+      "#493e34",
+      0.104
+     ],
+     [
+      "#bf3f3d",
+      0.082
+     ]
+    ],
+    "voice": {
+     "words": 105,
+     "words_per_s": 2.94,
+     "words_per_s_talking": 3.42,
+     "pause_after_full_stop_s": 0.46,
+     "n_full_stops": 5,
+     "pause_after_comma_s": 0.26,
+     "n_commas": 9,
+     "gap_between_other_words_s": 0.0,
+     "first_word_at_s": 0.0,
+     "last_word_ends_s": 34.84,
+     "longest_pause_s": 0.64,
+     "voice_f0_hz": 160
+    },
+    "first_words": "Cut the watermelon like this, then pull a piece of dental floss tight and start at the pointed tip. Slip the floss between the flesh and the peel, dragging it a",
+    "sound": {
+     "lufs_integrated": -10.0,
+     "lra": 2.2,
+     "true_peak_dbfs": 0.5,
+     "voice_level_db": -14.4,
+     "level_in_pauses_db": -19.5,
+     "pause_frames": 159,
+     "bed_under_voice_db": 5.0,
+     "before_first_word_db": null,
+     "after_last_word_db": -30.9,
+     "low_band_level_db": -15.9,
+     "tempo_bpm_est": null,
+     "tempo_strength": 0.05,
+     "gaps": {
+      "gaps": 10,
+      "gap_seconds": 3.16,
+      "voice_level_db": 41.7,
+      "bed_level_in_gaps_db": 35.8,
+      "bed_under_voice_db": 5.9,
+      "quietest_tenth_of_gaps_under_voice_db": 22.3,
+      "loudest_tenth_of_gaps_under_voice_db": -2.0,
+      "bed_energy_share": {
+       "under_200hz": 0.25,
+       "200_to_2000hz": 0.23,
+       "over_2000hz": 0.52
+      },
+      "voice_energy_share": {
+       "under_200hz": 0.35,
+       "200_to_2000hz": 0.47,
+       "over_2000hz": 0.18
+      },
+      "bed_flatness_median": 0.028,
+      "onsets_per_s_in_gaps": 2.22,
+      "gaps_with_an_onset": "6/10",
+      "onsets_per_s_whole_track": 3.7,
+      "tempo_low_band": [
+       178,
+       0.04
+      ],
+      "tempo_rest": [
+       173,
+       0.07
+      ]
+     }
+    },
+    "sheets": [
+     "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_caps.jpg",
+     "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_f0.jpg",
+     "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_io.jpg",
+     "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_strip.jpg"
+    ],
+    "captions": {
+     "band_y": [
+      1464,
+      1549
+     ],
+     "frames_with_text": "40/40",
+     "lines_mode": 1,
+     "lines_max": 1,
+     "line_centre_y_median": 1504.2,
+     "line_centre_y_pct": 78.3,
+     "text_width_px_median": 572.5,
+     "text_width_px_max": 1069,
+     "text_centre_x_median": 540.0,
+     "fill_hex": "#fffefd",
+     "highlight_hex_counts": {
+      "#dc3a57": 1,
+      "#dc3355": 1,
+      "#db3335": 1,
+      "#e1385d": 1,
+      "#ea4667": 1
+     },
+     "text_changes_per_s": 0.42,
+     "hold_s_median": 1.7,
+     "words_per_text_change": 7.6,
+     "pop_height_scale_by_frame_30fps": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "pop_samples": 4,
+     "caption_minus_word_start_s_median": -0.07,
+     "font_match": {
+      "sample_text": "Then move again",
+      "letters_px_w_h": [
+       639,
+       72
+      ],
+      "letters_top_y": 1470,
+      "letters_bottom_y": 1541,
+      "dark_edge_px": {
+       "left": 34.0,
+       "right": 4.0,
+       "above": 2.0,
+       "below": 4.0
+      },
+      "best": [
+       {
+        "score": 0.885,
+        "iou": 0.896,
+        "width_ratio": 0.987,
+        "font_px": 74,
+        "font": "tahomabd"
+       },
+       {
+        "score": 0.783,
+        "iou": 0.792,
+        "width_ratio": 0.989,
+        "font_px": 77,
+        "font": "Rubik 600"
+       },
+       {
+        "score": 0.782,
+        "iou": 0.867,
+        "width_ratio": 1.099,
+        "font_px": 74,
+        "font": "verdanab"
+       },
+       {
+        "score": 0.769,
+        "iou": 0.78,
+        "width_ratio": 0.986,
+        "font_px": 78,
+        "font": "arialbd"
+       }
+      ],
+      "best_free_google": {
+       "score": 0.783,
+       "iou": 0.792,
+       "width_ratio": 0.989,
+       "font_px": 77,
+       "font": "Rubik 600"
+      }
+     }
+    }
+   },
+   {
+    "key": "3501sPb6ZmM",
+    "url": "https://www.youtube.com/shorts/3501sPb6ZmM",
+    "channel": "Zack D. Films",
+    "title": "Woman Hangs Upside Down Seven Floors Up 😨",
+    "views": 14000000,
+    "x_own_median": 2.8,
+    "channel_median": 5050000,
+    "source_px": [
+     1080,
+     1920
+    ],
+    "fps": 29.97,
+    "seconds": 47.51,
+    "cuts": {
+     "n": 1,
+     "per_10s": 0.21,
+     "soft_changes_per_10s": 2.1,
+     "shot_s_median": 23.72,
+     "shot_s_p10": 23.69,
+     "shot_s_p90": 23.76,
+     "first_cut_at_s": 23.69,
+     "transition_kinds": {
+      "hard": 0,
+      "fast": 0,
+      "slow": 1
+     },
+     "transition_s_median": 0.968,
+     "not_hard_transition_s": [
+      0.97
+     ],
+     "through_white": 0,
+     "through_black": 0,
+     "tr_sheet_rows": [
+      "slow at 23.69s"
+     ]
+    },
+    "motion": {
+     "mean_change_per_frame_median": 14.58,
+     "share_of_frames_still": 0.0,
+     "longest_still_s": 0.0
+    },
+    "camera": {
+     "shots_measured": 40,
+     "clean_fit": 1,
+     "static": 0,
+     "zoom_in": 1,
+     "zoom_out": 0,
+     "no_fit_moving_subject": 39,
+     "zoom_pct_per_s_median_of_moving": 19.3,
+     "zoom_pct_per_s_list": [
+      19.3
+     ],
+     "pan_px_per_s_median": 63.8
+    },
+    "palette": [
+     [
+      "#7d6c61",
+      0.147
+     ],
+     [
+      "#d2cac5",
+      0.145
+     ],
+     [
+      "#ac9587",
+      0.145
+     ],
+     [
+      "#3e3c3b",
+      0.127
+     ],
+     [
+      "#a8b0b5",
+      0.124
+     ],
+     [
+      "#1e1817",
+      0.113
+     ],
+     [
+      "#684a3f",
+      0.112
+     ],
+     [
+      "#898b90",
+      0.086
+     ]
+    ],
+    "voice": {
+     "words": 137,
+     "words_per_s": 2.88,
+     "words_per_s_talking": 3.45,
+     "pause_after_full_stop_s": 0.52,
+     "n_full_stops": 5,
+     "pause_after_comma_s": 0.34,
+     "n_commas": 13,
+     "gap_between_other_words_s": 0.0,
+     "first_word_at_s": 0.0,
+     "last_word_ends_s": 46.6,
+     "longest_pause_s": 0.8,
+     "voice_f0_hz": 152
+    },
+    "first_words": "She fell from an eighth floor apartment but crashed into a laundry rack, leaving her hanging upside down high above the street. A neighbor two apartments over s",
+    "sound": {
+     "lufs_integrated": -10.3,
+     "lra": 2.0,
+     "true_peak_dbfs": 0.3,
+     "voice_level_db": -13.4,
+     "level_in_pauses_db": -23.6,
+     "pause_frames": 271,
+     "bed_under_voice_db": 10.2,
+     "before_first_word_db": null,
+     "after_last_word_db": -39.0,
+     "low_band_level_db": -14.9,
+     "tempo_bpm_est": null,
+     "tempo_strength": 0.07,
+     "gaps": {
+      "gaps": 16,
+      "gap_seconds": 5.22,
+      "voice_level_db": 42.7,
+      "bed_level_in_gaps_db": 32.5,
+      "bed_under_voice_db": 10.2,
+      "quietest_tenth_of_gaps_under_voice_db": 17.6,
+      "loudest_tenth_of_gaps_under_voice_db": 1.4,
+      "bed_energy_share": {
+       "under_200hz": 0.48,
+       "200_to_2000hz": 0.29,
+       "over_2000hz": 0.23
+      },
+      "voice_energy_share": {
+       "under_200hz": 0.45,
+       "200_to_2000hz": 0.46,
+       "over_2000hz": 0.09
+      },
+      "bed_flatness_median": 0.05,
+      "onsets_per_s_in_gaps": 3.26,
+      "gaps_with_an_onset": "12/16",
+      "onsets_per_s_whole_track": 3.6,
+      "tempo_low_band": [
+       96,
+       0.03
+      ],
+      "tempo_rest": [
+       65,
+       0.03
+      ]
+     }
+    },
+    "sheets": [
+     "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_caps.jpg",
+     "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_f0.jpg",
+     "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_io.jpg",
+     "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_strip.jpg",
+     "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_tr.jpg"
+    ],
+    "captions": {
+     "band_y": [
+      1464,
+      1546
+     ],
+     "frames_with_text": "40/40",
+     "lines_mode": 1,
+     "lines_max": 1,
+     "line_centre_y_median": 1505.5,
+     "line_centre_y_pct": 78.4,
+     "text_width_px_median": 586.0,
+     "text_width_px_max": 790,
+     "text_centre_x_median": 540.0,
+     "fill_hex": "#fffeff",
+     "highlight_hex_counts": {},
+     "text_changes_per_s": 0.91,
+     "hold_s_median": 0.8,
+     "words_per_text_change": 3.27,
+     "pop_height_scale_by_frame_30fps": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "pop_samples": 10,
+     "caption_minus_word_start_s_median": -0.01
+    }
+   },
+   {
+    "key": "A1zK48vHp3k",
+    "url": "https://www.youtube.com/shorts/A1zK48vHp3k",
+    "channel": "MagnatesMedia",
+    "title": "Funny Pricing Tactic 💸",
+    "views": 2000000,
+    "x_own_median": 29.4,
+    "channel_median": 68000,
+    "source_px": [
+     1080,
+     1920
+    ],
+    "fps": 30.0,
+    "seconds": 31.56,
+    "cuts": {
+     "n": 3,
+     "per_10s": 0.95,
+     "soft_changes_per_10s": 0.95,
+     "shot_s_median": 8.0,
+     "shot_s_p10": 0.37,
+     "shot_s_p90": 23.1,
+     "first_cut_at_s": 8.0,
+     "transition_kinds": {
+      "hard": 3,
+      "fast": 0,
+      "slow": 0
+     },
+     "transition_s_median": 0.067,
+     "not_hard_transition_s": [],
+     "through_white": 0,
+     "through_black": 0,
+     "tr_sheet_rows": [
+      "hard at 8.00s",
+      "hard at 8.03s"
+     ]
+    },
+    "motion": {
+     "mean_change_per_frame_median": 4.21,
+     "share_of_frames_still": 0.0,
+     "longest_still_s": 0.0
+    },
+    "camera": {
+     "shots_measured": 26,
+     "clean_fit": 11,
+     "static": 1,
+     "zoom_in": 9,
+     "zoom_out": 1,
+     "no_fit_moving_subject": 15,
+     "zoom_pct_per_s_median_of_moving": 21.3,
+     "zoom_pct_per_s_list": [
+      25.9,
+      10.3,
+      23.2,
+      24.2,
+      5.6,
+      24.2,
+      -11.6,
+      23.4,
+      19.4,
+      10.3,
+      0.0
+     ],
+     "pan_px_per_s_median": 80.8
+    },
+    "palette": [
+     [
+      "#36484d",
+      0.204
+     ],
+     [
+      "#292e30",
+      0.184
+     ],
+     [
+      "#a1ba7c",
+      0.116
+     ],
+     [
+      "#1e2a31",
+      0.115
+     ],
+     [
+      "#747b62",
+      0.104
+     ],
+     [
+      "#685040",
+      0.1
+     ],
+     [
+      "#0d0e10",
+      0.09
+     ],
+     [
+      "#61241c",
+      0.085
+     ]
+    ],
+    "voice": {
+     "words": 91,
+     "words_per_s": 2.88,
+     "words_per_s_talking": 3.45,
+     "pause_after_full_stop_s": 0.7,
+     "n_full_stops": 5,
+     "pause_after_comma_s": 0.44,
+     "n_commas": 3,
+     "gap_between_other_words_s": 0.0,
+     "first_word_at_s": 0.0,
+     "last_word_ends_s": 31.02,
+     "longest_pause_s": 0.8,
+     "voice_f0_hz": 131
+    },
+    "first_words": "A man walks into a shop and sees a curious offer. One milk bottle for $1 or 5 milk bottles for $7. The man realises the shopkeeper has clearly made a mistake wi",
+    "sound": {
+     "lufs_integrated": -14.5,
+     "lra": 2.0,
+     "true_peak_dbfs": -3.6,
+     "voice_level_db": -19.3,
+     "level_in_pauses_db": -26.7,
+     "pause_frames": 188,
+     "bed_under_voice_db": 7.4,
+     "before_first_word_db": null,
+     "after_last_word_db": -30.5,
+     "low_band_level_db": -19.2,
+     "tempo_bpm_est": null,
+     "tempo_strength": 0.06,
+     "gaps": {
+      "gaps": 8,
+      "gap_seconds": 3.66,
+      "voice_level_db": 37.0,
+      "bed_level_in_gaps_db": 30.8,
+      "bed_under_voice_db": 6.2,
+      "quietest_tenth_of_gaps_under_voice_db": 21.6,
+      "loudest_tenth_of_gaps_under_voice_db": -2.1,
+      "bed_energy_share": {
+       "under_200hz": 0.41,
+       "200_to_2000hz": 0.38,
+       "over_2000hz": 0.21
+      },
+      "voice_energy_share": {
+       "under_200hz": 0.4,
+       "200_to_2000hz": 0.51,
+       "over_2000hz": 0.09
+      },
+      "bed_flatness_median": 0.014,
+      "onsets_per_s_in_gaps": 1.64,
+      "gaps_with_an_onset": "5/8",
+      "onsets_per_s_whole_track": 3.74,
+      "tempo_low_band": [
+       75,
+       0.06
+      ],
+      "tempo_rest": [
+       57,
+       0.03
+      ]
+     }
+    },
+    "sheets": [
+     "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k.jpg",
+     "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_caps.jpg",
+     "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_f0.jpg",
+     "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_io.jpg",
+     "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_strip.jpg",
+     "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_tr.jpg"
+    ],
+    "captions": {
+     "band_y": [
+      1501,
+      1571
+     ],
+     "frames_with_text": "32/40",
+     "lines_mode": 1,
+     "lines_max": 1,
+     "line_centre_y_median": 1536.0,
+     "line_centre_y_pct": 80.0,
+     "text_width_px_median": 376.5,
+     "text_width_px_max": 734,
+     "text_centre_x_median": 541.0,
+     "fill_hex": null,
+     "highlight_hex_counts": {
+      "#feb701": 12,
+      "#feb700": 6,
+      "#ffb701": 5,
+      "#ffb702": 4,
+      "#feb702": 3
+     },
+     "text_changes_per_s": 1.83,
+     "hold_s_median": 0.47,
+     "words_per_text_change": 1.64,
+     "pop_height_scale_by_frame_30fps": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "pop_samples": 13,
+     "caption_minus_word_start_s_median": 0.01,
+     "font_match": {
+      "sample_text": "WITH THE PRICE,",
+      "letters_px_w_h": [
+       732,
+       69
+      ],
+      "letters_top_y": 1507,
+      "letters_bottom_y": 1575,
+      "dark_edge_px": {
+       "left": null,
+       "right": null,
+       "above": 49.0,
+       "below": null
+      },
+      "best": [
+       {
+        "score": 0.796,
+        "iou": 0.81,
+        "width_ratio": 0.982,
+        "font_px": 80,
+        "font": "Montserrat 700"
+       },
+       {
+        "score": 0.776,
+        "iou": 0.801,
+        "width_ratio": 0.969,
+        "font_px": 80,
+        "font": "Montserrat 600"
+       },
+       {
+        "score": 0.698,
+        "iou": 0.712,
+        "width_ratio": 0.98,
+        "font_px": 84,
+        "font": "WorkSans 700"
+       },
+       {
+        "score": 0.696,
+        "iou": 0.728,
+        "width_ratio": 0.956,
+        "font_px": 80,
+        "font": "Montserrat 500"
+       }
+      ],
+      "best_free_google": {
+       "score": 0.796,
+       "iou": 0.81,
+       "width_ratio": 0.982,
+       "font_px": 80,
+       "font": "Montserrat 700"
+      }
+     }
+    }
+   }
+  ],
+  "B": [
+   {
+    "key": "2cK8l5Yg5w8",
+    "url": "https://www.youtube.com/shorts/2cK8l5Yg5w8",
+    "channel": "Kurzgesagt – In a Nutshell",
+    "title": "The Deadliest Thing in Your Kitchen",
+    "views": 5300000,
+    "x_own_median": 4.1,
+    "channel_median": 1300000,
+    "source_px": [
+     1080,
+     1920
+    ],
+    "fps": 60.0,
+    "seconds": 67.2,
+    "cuts": {
+     "n": 13,
+     "per_10s": 1.93,
+     "soft_changes_per_10s": 0.15,
+     "shot_s_median": 3.0,
+     "shot_s_p10": 0.73,
+     "shot_s_p90": 9.68,
+     "first_cut_at_s": 0.65,
+     "transition_kinds": {
+      "hard": 13,
+      "fast": 0,
+      "slow": 0
+     },
+     "transition_s_median": 0.017,
+     "not_hard_transition_s": [],
+     "through_white": 0,
+     "through_black": 0,
+     "tr_sheet_rows": [
+      "hard at 0.65s",
+      "hard at 1.38s"
+     ]
+    },
+    "motion": {
+     "mean_change_per_frame_median": 0.45,
+     "share_of_frames_still": 0.399,
+     "longest_still_s": 1.15
+    },
+    "camera": {
+     "shots_measured": 57,
+     "clean_fit": 10,
+     "static": 0,
+     "zoom_in": 4,
+     "zoom_out": 6,
+     "no_fit_moving_subject": 47,
+     "zoom_pct_per_s_median_of_moving": 6.2,
+     "zoom_pct_per_s_list": [
+      -15.0,
+      -19.0,
+      2.8,
+      -1.0,
+      5.8,
+      6.6,
+      20.9,
+      -4.4,
+      -21.4,
+      -5.4
+     ],
+     "pan_px_per_s_median": 17.3
+    },
+    "palette": [
+     [
+      "#dd954e",
+      0.17
+     ],
+     [
+      "#00e4f0",
+      0.162
+     ],
+     [
+      "#2e055b",
+      0.147
+     ],
+     [
+      "#c750b4",
+      0.132
+     ],
+     [
+      "#253d9b",
+      0.127
+     ],
+     [
+      "#1a8bd0",
+      0.127
+     ],
+     [
+      "#a11b81",
+      0.07
+     ],
+     [
+      "#d3e38c",
+      0.065
+     ]
+    ],
+    "voice": {
+     "words": 201,
+     "words_per_s": 2.99,
+     "words_per_s_talking": 3.67,
+     "pause_after_full_stop_s": 0.64,
+     "n_full_stops": 15,
+     "pause_after_comma_s": 0.3,
+     "n_commas": 11,
+     "gap_between_other_words_s": 0.0,
+     "first_word_at_s": 0.0,
+     "last_word_ends_s": 66.0,
+     "longest_pause_s": 0.78,
+     "voice_f0_hz": 121
+    },
+    "first_words": "Something in your kitchen killed you. Sugar seems innocent at first, but it can be lethal. Around 500 teaspoons will turn you blue as it starves your blood of o",
+    "sound": {
+     "lufs_integrated": -12.8,
+     "lra": 1.9,
+     "true_peak_dbfs": -0.5,
+     "voice_level_db": -17.8,
+     "level_in_pauses_db": -34.4,
+     "pause_frames": 470,
+     "bed_under_voice_db": 16.6,
+     "before_first_word_db": null,
+     "after_last_word_db": -36.2,
+     "low_band_level_db": -20.4,
+     "tempo_bpm_est": null,
+     "tempo_strength": 0.04,
+     "gaps": {
+      "gaps": 22,
+      "gap_seconds": 9.12,
+      "voice_level_db": 38.2,
+      "bed_level_in_gaps_db": 21.6,
+      "bed_under_voice_db": 16.6,
+      "quietest_tenth_of_gaps_under_voice_db": 18.9,
+      "loudest_tenth_of_gaps_under_voice_db": -2.0,
+      "bed_energy_share": {
+       "under_200hz": 0.27,
+       "200_to_2000hz": 0.44,
+       "over_2000hz": 0.29
+      },
+      "voice_energy_share": {
+       "under_200hz": 0.23,
+       "200_to_2000hz": 0.57,
+       "over_2000hz": 0.2
+      },
+      "bed_flatness_median": 0.006,
+      "onsets_per_s_in_gaps": 1.97,
+      "gaps_with_an_onset": "14/22",
+      "onsets_per_s_whole_track": 4.07,
+      "tempo_low_band": [
+       67,
+       0.03
+      ],
+      "tempo_rest": [
+       129,
+       0.02
+      ]
+     }
+    },
+    "sheets": [
+     "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8.jpg",
+     "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_caps.jpg",
+     "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_f0.jpg",
+     "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_io.jpg",
+     "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_strip.jpg",
+     "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_tr.jpg"
+    ],
+    "captions": {
+     "band_y": [
+      1463,
+      1548
+     ],
+     "frames_with_text": "40/40",
+     "lines_mode": 1,
+     "lines_max": 1,
+     "line_centre_y_median": 1505.5,
+     "line_centre_y_pct": 78.4,
+     "text_width_px_median": 388.5,
+     "text_width_px_max": 761,
+     "text_centre_x_median": 539.0,
+     "fill_hex": "#fefcff",
+     "highlight_hex_counts": {
+      "#00e1f2": 3,
+      "#00ffe2": 3,
+      "#00d8fe": 3,
+      "#9847fe": 2,
+      "#00d1fe": 2
+     },
+     "text_changes_per_s": 1.17,
+     "hold_s_median": 0.67,
+     "words_per_text_change": 2.5,
+     "pop_height_scale_by_frame_30fps": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "pop_samples": 8,
+     "caption_minus_word_start_s_median": -0.11
+    }
+   },
+   {
+    "key": "VYhUa3WC4nU",
+    "url": "https://www.youtube.com/shorts/VYhUa3WC4nU",
+    "channel": "Kurzgesagt – In a Nutshell",
+    "title": "Why Being Poor Is Expensive",
+    "views": 3800000,
+    "x_own_median": 2.9,
+    "channel_median": 1300000,
+    "source_px": [
+     1080,
+     1920
+    ],
+    "fps": 60.0,
+    "seconds": 72.28,
+    "cuts": {
+     "n": 15,
+     "per_10s": 2.08,
+     "soft_changes_per_10s": 0.28,
+     "shot_s_median": 2.8,
+     "shot_s_p10": 1.98,
+     "shot_s_p90": 10.52,
+     "first_cut_at_s": 2.07,
+     "transition_kinds": {
+      "hard": 15,
+      "fast": 0,
+      "slow": 0
+     },
+     "transition_s_median": 0.017,
+     "not_hard_transition_s": [],
+     "through_white": 0,
+     "through_black": 0,
+     "tr_sheet_rows": [
+      "hard at 2.07s",
+      "hard at 4.17s"
+     ]
+    },
+    "motion": {
+     "mean_change_per_frame_median": 0.84,
+     "share_of_frames_still": 0.326,
+     "longest_still_s": 1.05
+    },
+    "camera": {
+     "shots_measured": 60,
+     "clean_fit": 8,
+     "static": 1,
+     "zoom_in": 1,
+     "zoom_out": 6,
+     "no_fit_moving_subject": 52,
+     "zoom_pct_per_s_median_of_moving": 3.2,
+     "zoom_pct_per_s_list": [
+      0.0,
+      -1.1,
+      -12.0,
+      -3.2,
+      -1.6,
+      -12.9,
+      -15.5,
+      0.8
+     ],
+     "pan_px_per_s_median": 78.6
+    },
+    "palette": [
+     [
+      "#7cb6db",
+      0.159
+     ],
+     [
+      "#ba2b26",
+      0.14
+     ],
+     [
+      "#1d72c1",
+      0.138
+     ],
+     [
+      "#230858",
+      0.137
+     ],
+     [
+      "#0c3788",
+      0.128
+     ],
+     [
+      "#e67442",
+      0.125
+     ],
+     [
+      "#fcc458",
+      0.094
+     ],
+     [
+      "#611d67",
+      0.08
+     ]
+    ],
+    "voice": {
+     "words": 207,
+     "words_per_s": 2.86,
+     "words_per_s_talking": 3.41,
+     "pause_after_full_stop_s": 0.73,
+     "n_full_stops": 12,
+     "pause_after_comma_s": 0.3,
+     "n_commas": 15,
+     "gap_between_other_words_s": 0.0,
+     "first_word_at_s": 0.0,
+     "last_word_ends_s": 71.62,
+     "longest_pause_s": 0.94,
+     "voice_f0_hz": 119
+    },
+    "first_words": "Being poor is expensive. Here's how the trap works. When you live paycheck to paycheck, one setback can snowball fast. When bills arrive before your salary, lat",
+    "sound": {
+     "lufs_integrated": -12.2,
+     "lra": 1.9,
+     "true_peak_dbfs": 0.1,
+     "voice_level_db": -16.2,
+     "level_in_pauses_db": -25.6,
+     "pause_frames": 471,
+     "bed_under_voice_db": 9.4,
+     "before_first_word_db": null,
+     "after_last_word_db": -29.4,
+     "low_band_level_db": -18.0,
+     "tempo_bpm_est": null,
+     "tempo_strength": 0.05,
+     "gaps": {
+      "gaps": 22,
+      "gap_seconds": 9.14,
+      "voice_level_db": 39.7,
+      "bed_level_in_gaps_db": 30.2,
+      "bed_under_voice_db": 9.5,
+      "quietest_tenth_of_gaps_under_voice_db": 22.1,
+      "loudest_tenth_of_gaps_under_voice_db": -1.3,
+      "bed_energy_share": {
+       "under_200hz": 0.3,
+       "200_to_2000hz": 0.5,
+       "over_2000hz": 0.2
+      },
+      "voice_energy_share": {
+       "under_200hz": 0.31,
+       "200_to_2000hz": 0.56,
+       "over_2000hz": 0.13
+      },
+      "bed_flatness_median": 0.023,
+      "onsets_per_s_in_gaps": 3.5,
+      "gaps_with_an_onset": "15/22",
+      "onsets_per_s_whole_track": 3.89,
+      "tempo_low_band": [
+       59,
+       0.06
+      ],
+      "tempo_rest": [
+       79,
+       0.04
+      ]
+     }
+    },
+    "sheets": [
+     "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_caps.jpg",
+     "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_f0.jpg",
+     "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_io.jpg",
+     "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_strip.jpg",
+     "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_tr.jpg"
+    ],
+    "captions": {
+     "band_y": [
+      1472,
+      1548
+     ],
+     "frames_with_text": "40/40",
+     "lines_mode": 1,
+     "lines_max": 1,
+     "line_centre_y_median": 1510.0,
+     "line_centre_y_pct": 78.6,
+     "text_width_px_median": 416.0,
+     "text_width_px_max": 770,
+     "text_centre_x_median": 540.2,
+     "fill_hex": "#f6f4f6",
+     "highlight_hex_counts": {
+      "#f35b37": 3,
+      "#f45b37": 2,
+      "#ff9916": 2,
+      "#fe9916": 2,
+      "#f25b37": 1
+     },
+     "text_changes_per_s": 0.67,
+     "hold_s_median": 0.87,
+     "words_per_text_change": 4.5,
+     "pop_height_scale_by_frame_30fps": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "pop_samples": 7,
+     "caption_minus_word_start_s_median": 0.06,
+     "font_match": {
+      "sample_text": "As tough as this is",
+      "letters_px_w_h": [
+       473,
+       55
+      ],
+      "letters_top_y": 1485,
+      "letters_bottom_y": 1539,
+      "dark_edge_px": {
+       "left": 4.0,
+       "right": 4.0,
+       "above": 4.0,
+       "below": 4.0
+      },
+      "best": [
+       {
+        "score": 0.54,
+        "iou": 0.555,
+        "width_ratio": 1.027,
+        "font_px": 57,
+        "font": "VarelaRound-Regular"
+       },
+       {
+        "score": 0.515,
+        "iou": 0.524,
+        "width_ratio": 0.983,
+        "font_px": 55,
+        "font": "segoeuib"
+       },
+       {
+        "score": 0.499,
+        "iou": 0.538,
+        "width_ratio": 0.928,
+        "font_px": 54,
+        "font": "Urbanist 800"
+       },
+       {
+        "score": 0.498,
+        "iou": 0.498,
+        "width_ratio": 1.0,
+        "font_px": 55,
+        "font": "PlusJakartaSans 800"
+       }
+      ],
+      "best_free_google": {
+       "score": 0.54,
+       "iou": 0.555,
+       "width_ratio": 1.027,
+       "font_px": 57,
+       "font": "VarelaRound-Regular"
+      }
+     }
+    }
+   }
+  ],
+  "C": [
+   {
+    "key": "psu6CcCLBOo",
+    "url": "https://www.youtube.com/shorts/psu6CcCLBOo",
+    "channel": "Jake Tran",
+    "title": "Starbucks is RUTHLESS. 😳",
+    "views": 1200000,
+    "x_own_median": 24.2,
+    "channel_median": 49500,
+    "source_px": [
+     1080,
+     1920
+    ],
+    "fps": 25.0,
+    "seconds": 54.27,
+    "cuts": {
+     "n": 26,
+     "per_10s": 4.79,
+     "soft_changes_per_10s": 5.34,
+     "shot_s_median": 1.56,
+     "shot_s_p10": 0.4,
+     "shot_s_p90": 3.48,
+     "first_cut_at_s": 1.92,
+     "transition_kinds": {
+      "hard": 22,
+      "fast": 3,
+      "slow": 1
+     },
+     "transition_s_median": 0.04,
+     "not_hard_transition_s": [
+      0.12,
+      0.12,
+      0.44,
+      0.12
+     ],
+     "through_white": 0,
+     "through_black": 3,
+     "tr_sheet_rows": [
+      "fast at 3.16s",
+      "fast at 3.28s",
+      "hard at 1.92s",
+      "hard at 3.00s"
+     ]
+    },
+    "motion": {
+     "mean_change_per_frame_median": 3.55,
+     "share_of_frames_still": 0.057,
+     "longest_still_s": 0.16
+    },
+    "camera": {
+     "shots_measured": 46,
+     "clean_fit": 14,
+     "static": 4,
+     "zoom_in": 6,
+     "zoom_out": 4,
+     "no_fit_moving_subject": 32,
+     "zoom_pct_per_s_median_of_moving": 2.9,
+     "zoom_pct_per_s_list": [
+      2.6,
+      0.0,
+      44.2,
+      0.0,
+      0.0,
+      2.5,
+      -17.7,
+      0.0,
+      3.0,
+      2.1,
+      -10.9,
+      -1.2,
+      2.9,
+      -6.7
+     ],
+     "pan_px_per_s_median": 61.5
+    },
+    "palette": [
+     [
+      "#90797c",
+      0.146
+     ],
+     [
+      "#261b1a",
+      0.145
+     ],
+     [
+      "#161512",
+      0.131
+     ],
+     [
+      "#b29eaa",
+      0.127
+     ],
+     [
+      "#785957",
+      0.12
+     ],
+     [
+      "#482522",
+      0.116
+     ],
+     [
+      "#494846",
+      0.116
+     ],
+     [
+      "#0a0606",
+      0.1
+     ]
+    ],
+    "voice": {
+     "words": 180,
+     "words_per_s": 3.32,
+     "words_per_s_talking": 3.51,
+     "pause_after_full_stop_s": 0.25,
+     "n_full_stops": 10,
+     "pause_after_comma_s": 0.26,
+     "n_commas": 6,
+     "gap_between_other_words_s": 0.0,
+     "first_word_at_s": 0.0,
+     "last_word_ends_s": 54.24,
+     "longest_pause_s": 0.54,
+     "voice_f0_hz": 160
+    },
+    "first_words": "You're going to be absolutely disgusted after you hear how evil Starbucks is. Starbucks needs billions of coffee beans a year to keep their empire running, so t",
+    "sound": {
+     "lufs_integrated": -16.3,
+     "lra": 2.8,
+     "true_peak_dbfs": 0.3,
+     "voice_level_db": -23.4,
+     "level_in_pauses_db": -25.0,
+     "pause_frames": 119,
+     "bed_under_voice_db": 1.6,
+     "before_first_word_db": null,
+     "after_last_word_db": null,
+     "low_band_level_db": -24.3,
+     "tempo_bpm_est": null,
+     "tempo_strength": 0.02,
+     "gaps": {
+      "gaps": 8,
+      "gap_seconds": 2.24,
+      "voice_level_db": 33.0,
+      "bed_level_in_gaps_db": 32.1,
+      "bed_under_voice_db": 0.9,
+      "quietest_tenth_of_gaps_under_voice_db": 13.8,
+      "loudest_tenth_of_gaps_under_voice_db": -6.4,
+      "bed_energy_share": {
+       "under_200hz": 0.65,
+       "200_to_2000hz": 0.04,
+       "over_2000hz": 0.3
+      },
+      "voice_energy_share": {
+       "under_200hz": 0.32,
+       "200_to_2000hz": 0.47,
+       "over_2000hz": 0.21
+      },
+      "bed_flatness_median": 0.014,
+      "onsets_per_s_in_gaps": 3.12,
+      "gaps_with_an_onset": "6/8",
+      "onsets_per_s_whole_track": 3.82,
+      "tempo_low_band": [
+       63,
+       0.06
+      ],
+      "tempo_rest": [
+       60,
+       0.04
+      ]
+     }
+    },
+    "sheets": [
+     "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo.jpg",
+     "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_caps.jpg",
+     "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_f0.jpg",
+     "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_io.jpg",
+     "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_strip.jpg",
+     "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_tr.jpg"
+    ],
+    "captions": {
+     "band_y": [
+      1327,
+      1450
+     ],
+     "frames_with_text": "39/40",
+     "lines_mode": 1,
+     "lines_max": 2,
+     "line_centre_y_median": 1390.5,
+     "line_centre_y_pct": 72.4,
+     "text_width_px_median": 535.0,
+     "text_width_px_max": 723,
+     "text_centre_x_median": 539.5,
+     "fill_hex": "#fffeff",
+     "highlight_hex_counts": {},
+     "text_changes_per_s": 0.58,
+     "hold_s_median": 1.5,
+     "words_per_text_change": 6.29,
+     "pop_height_scale_by_frame_30fps": [
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
+     ],
+     "pop_samples": 7,
+     "caption_minus_word_start_s_median": 0.03,
+     "font_match": {
+      "sample_text": "Starbucks needs",
+      "letters_px_w_h": [
+       519,
+       45
+      ],
+      "letters_top_y": 1363,
+      "letters_bottom_y": 1407,
+      "dark_edge_px": {
+       "left": 10.0,
+       "right": 19.5,
+       "above": 18.0,
+       "below": 13.5
+      },
+      "best": [
+       {
+        "score": 0.845,
+        "iou": 0.855,
+        "width_ratio": 0.988,
+        "font_px": 59,
+        "font": "Montserrat 700"
+       },
+       {
+        "score": 0.801,
+        "iou": 0.828,
+        "width_ratio": 0.967,
+        "font_px": 59,
+        "font": "Montserrat 600"
+       },
+       {
+        "score": 0.785,
+        "iou": 0.788,
+        "width_ratio": 1.004,
+        "font_px": 59,
+        "font": "Montserrat 800"
+       },
+       {
+        "score": 0.755,
+        "iou": 0.764,
+        "width_ratio": 1.012,
+        "font_px": 57,
+        "font": "verdanab"
+       }
+      ],
+      "best_free_google": {
+       "score": 0.845,
+       "iou": 0.855,
+       "width_ratio": 0.988,
+       "font_px": 59,
+       "font": "Montserrat 700"
+      }
+     }
+    }
+   },
+   {
+    "key": "jJ0i4JxY-tE",
+    "url": "https://www.youtube.com/shorts/jJ0i4JxY-tE",
+    "channel": "How Money Works",
+    "title": "How This Vandal Made $200 Million by Spray Painting An Office Building - How Money Works #Shorts",
+    "views": 5400000,
+    "x_own_median": 38.7,
+    "channel_median": 139500,
+    "source_px": [
+     608,
+     1080
+    ],
+    "fps": 25.0,
+    "seconds": 52.62,
+    "cuts": {
+     "n": 11,
+     "per_10s": 2.09,
+     "soft_changes_per_10s": 1.9,
+     "shot_s_median": 0.96,
+     "shot_s_p10": 0.6,
+     "shot_s_p90": 13.48,
+     "first_cut_at_s": 13.48,
+     "transition_kinds": {
+      "hard": 8,
+      "fast": 3,
+      "slow": 0
+     },
+     "transition_s_median": 0.04,
+     "not_hard_transition_s": [
+      0.16,
+      0.16,
+      0.12
+     ],
+     "through_white": 0,
+     "through_black": 0,
+     "tr_sheet_rows": [
+      "fast at 14.08s",
+      "fast at 14.20s",
+      "hard at 13.48s",
+      "hard at 16.64s"
+     ]
+    },
+    "motion": {
+     "mean_change_per_frame_median": 6.16,
+     "share_of_frames_still": 0.065,
+     "longest_still_s": 1.04
+    },
+    "camera": {
+     "shots_measured": 44,
+     "clean_fit": 10,
+     "static": 2,
+     "zoom_in": 2,
+     "zoom_out": 6,
+     "no_fit_moving_subject": 34,
+     "zoom_pct_per_s_median_of_moving": 7.7,
+     "zoom_pct_per_s_list": [
+      -20.0,
+      0.0,
+      -1.3,
+      11.5,
+      0.0,
+      -12.5,
+      -3.0,
+      1.0,
+      -3.8,
+      -13.0
+     ],
+     "pan_px_per_s_median": 76.4
+    },
+    "palette": [
+     [
+      "#aca69c",
+      0.164
+     ],
+     [
+      "#59352c",
+      0.134
+     ],
+     [
+      "#2f2822",
+      0.13
+     ],
+     [
+      "#966e5a",
+      0.126
+     ],
+     [
+      "#0f0b0c",
+      0.12
+     ],
+     [
+      "#1b1918",
+      0.119
+     ],
+     [
+      "#505e4f",
+      0.106
+     ],
+     [
+      "#e8d7c3",
+      0.099
+     ]
+    ],
+    "voice": {
+     "words": 158,
+     "words_per_s": 3.0,
+     "words_per_s_talking": 3.75,
+     "pause_after_full_stop_s": 0.76,
+     "n_full_stops": 7,
+     "pause_after_comma_s": 0.38,
+     "n_commas": 11,
+     "gap_between_other_words_s": 0.0,
+     "first_word_at_s": 0.0,
+     "last_word_ends_s": 51.42,
+     "longest_pause_s": 1.0,
+     "voice_f0_hz": 154
+    },
+    "first_words": "This is David Cho, a professional graffiti artist who probably made the smartest decision of his life in 2005. You see, when Facebook was in its early years, th",
+    "sound": {
+     "lufs_integrated": -17.2,
+     "lra": 3.0,
+     "true_peak_dbfs": 0.3,
+     "voice_level_db": -24.0,
+     "level_in_pauses_db": -38.5,
+     "pause_frames": 375,
+     "bed_under_voice_db": 14.4,
+     "before_first_word_db": null,
+     "after_last_word_db": -48.2,
+     "low_band_level_db": -27.6,
+     "tempo_bpm_est": null,
+     "tempo_strength": 0.04,
+     "gaps": {}
+    },
+    "sheets": [
+     "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE.jpg",
+     "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE_f0.jpg",
+     "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE_io.jpg",
+     "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE_tr.jpg"
+    ]
+   }
+  ]
+ },
+ "fact_card_measured_roughly": {
+  "key": "z-Oj1nao5xg",
+  "sheets": [
+   "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg.jpg",
+   "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_caps.jpg",
+   "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_f0.jpg",
+   "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_io.jpg",
+   "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_strip.jpg"
+  ],
+  "precise": {
+   "fps": 60.0,
+   "seconds": 7.01,
+   "text_bands": [
+    {
+     "y0": 110,
+     "y1": 373,
+     "present": 0.9,
+     "change": 0.0
+    },
+    {
+     "y0": 396,
+     "y1": 569,
+     "present": 0.76,
+     "change": 0.0
+    },
+    {
+     "y0": 1107,
+     "y1": 1149,
+     "present": 0.48,
+     "change": 0.3
+    }
+   ],
+   "palette": [
+    [
+     "#000000",
+     0.452
+    ],
+    [
+     "#6b5a5a",
+     0.155
+    ],
+    [
+     "#dae5e5",
+     0.142
+    ],
+    [
+     "#99a7b7",
+     0.096
+    ],
+    [
+     "#212c39",
+     0.072
+    ],
+    [
+     "#070404",
+     0.065
+    ],
+    [
+     "#000304",
+     0.011
+    ],
+    [
+     "#000003",
+     0.009
+    ]
+   ],
+   "music": {
+    "lufs_integrated": -7.5,
+    "lra": 5.1,
+    "true_peak_dbfs": 0.4,
+    "voice_level_db": -36.3,
+    "level_in_pauses_db": null,
+    "pause_frames": 0,
+    "bed_under_voice_db": null,
+    "before_first_word_db": -12.5,
+    "after_last_word_db": null,
+    "low_band_level_db": -23.8,
+    "tempo_bpm_est": 167,
+    "tempo_strength": 0.13,
+    "note": "the bed = the full-band level in the gaps of 0.25 s or more between words (music plus any effect there); bed_under_voice = the voice's level minus that. Tempo from the onsets under 150 Hz (50-200 bpm): trust it only when the strength is 0.2 or more. Nobody listened: the genre is a guess from these numbers"
+   }
+  }
+ },
+ "videos": [
+  {
+   "key": "VOI9-Gx2EaY",
+   "url": "https://www.youtube.com/shorts/VOI9-Gx2EaY",
+   "channel": "Zack D. Films",
+   "title": "Cutting A Watermelon With Dental Floss 😮",
+   "views": 17000000,
+   "x_own_median": 3.4,
+   "channel_median": 5050000,
+   "style": "A",
+   "look": "photoreal 3D, one continuous shot, the act itself shown; one white caption line",
+   "seconds": 35.69,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 2.94,
+   "lufs": -10.0,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_caps.jpg",
+    "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/VOI9-Gx2EaY_strip.jpg"
+   ]
+  },
+  {
+   "key": "3501sPb6ZmM",
+   "url": "https://www.youtube.com/shorts/3501sPb6ZmM",
+   "channel": "Zack D. Films",
+   "title": "Woman Hangs Upside Down Seven Floors Up 😨",
+   "views": 14000000,
+   "x_own_median": 2.8,
+   "channel_median": 5050000,
+   "style": "A",
+   "look": "photoreal 3D, one continuous shot through a rescue; one white caption line",
+   "seconds": 47.51,
+   "cuts_per_10s": 0.21,
+   "words_per_s": 2.88,
+   "lufs": -10.3,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_caps.jpg",
+    "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_strip.jpg",
+    "D:/reel-tmp/lib_prod/sheets/3501sPb6ZmM_tr.jpg"
+   ]
+  },
+  {
+   "key": "A1zK48vHp3k",
+   "url": "https://www.youtube.com/shorts/A1zK48vHp3k",
+   "channel": "MagnatesMedia",
+   "title": "Funny Pricing Tactic 💸",
+   "views": 2000000,
+   "x_own_median": 29.4,
+   "channel_median": 68000,
+   "style": "A",
+   "look": "low-poly 3D people without faces in a dim shop, dolly camera; amber capitals in a black box; full-screen green and red price cards",
+   "seconds": 31.56,
+   "cuts_per_10s": 0.95,
+   "words_per_s": 2.88,
+   "lufs": -14.5,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k.jpg",
+    "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_caps.jpg",
+    "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_strip.jpg",
+    "D:/reel-tmp/lib_prod/sheets/A1zK48vHp3k_tr.jpg"
+   ]
+  },
+  {
+   "key": "V15wrmD5VFs",
+   "url": "https://www.youtube.com/shorts/V15wrmD5VFs",
+   "channel": "The Infographics Show",
+   "title": "What Happens When You Are Shot",
+   "views": 3000000,
+   "x_own_median": 10.0,
+   "channel_median": 301500,
+   "style": "A",
+   "look": "3D medical animation on pale blue; yellow title at the top for 2 s, then yellow lower-case captions in the top third",
+   "seconds": 29.0,
+   "cuts_per_10s": 1.0,
+   "words_per_s": null,
+   "lufs": -13.8,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/V15wrmD5VFs.jpg",
+    "D:/reel-tmp/lib_prod/sheets/V15wrmD5VFs_f0.jpg"
+   ]
+  },
+  {
+   "key": "95_6mV-xs9M",
+   "url": "https://www.youtube.com/shorts/95_6mV-xs9M",
+   "channel": "greenscreencut",
+   "title": "What is the gravity on the Moon, the Sun, Mars, and other planets in the solar system? #gravity",
+   "views": 36000000,
+   "x_own_median": 218.2,
+   "channel_median": 165000,
+   "style": "A",
+   "look": "3D comparison card: a title, a planet, its name and number, a ball dropped by a hand; no voice",
+   "seconds": 60.0,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 0.05,
+   "lufs": -22.1,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/95_6mV-xs9M.jpg"
+   ]
+  },
+  {
+   "key": "Evd-G7gmXB8",
+   "url": "https://www.youtube.com/shorts/Evd-G7gmXB8",
+   "channel": "Terra Mystica",
+   "title": "Raising A Paraceratherium 🦏#paraceratherium #animals #3d #science #prehistoric #extinct #shorts",
+   "views": 3900000,
+   "x_own_median": 1.0,
+   "channel_median": 4000000,
+   "style": "A",
+   "look": "photoreal 3D or AI-made scenes of a woman raising a prehistoric animal, 4 cuts; a thin white caption line",
+   "seconds": 31.6,
+   "cuts_per_10s": 1.3,
+   "words_per_s": 3.23,
+   "lufs": -11.6,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/Evd-G7gmXB8.jpg"
+   ]
+  },
+  {
+   "key": "fE6TbXCJ8q4",
+   "url": "https://www.youtube.com/shorts/fE6TbXCJ8q4",
+   "channel": "neo",
+   "title": "What Happens to Plastic in the Ocean?",
+   "views": 28000000,
+   "x_own_median": 7.6,
+   "channel_median": 3700000,
+   "style": "A",
+   "look": "a few seconds of real footage, then a 3D globe with a glowing drift line; small white captions low down",
+   "seconds": 55.0,
+   "cuts_per_10s": 0.5,
+   "words_per_s": 3.35,
+   "lufs": -12.2,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/fE6TbXCJ8q4.jpg",
+    "D:/reel-tmp/lib_prod/sheets/fE6TbXCJ8q4_f0.jpg"
+   ]
+  },
+  {
+   "key": "2cK8l5Yg5w8",
+   "url": "https://www.youtube.com/shorts/2cK8l5Yg5w8",
+   "channel": "Kurzgesagt – In a Nutshell",
+   "title": "The Deadliest Thing in Your Kitchen",
+   "views": 5300000,
+   "x_own_median": 4.1,
+   "channel_median": 1300000,
+   "style": "B",
+   "look": "flat vector characters on saturated gradients, yellow label plates; one small white caption line",
+   "seconds": 67.2,
+   "cuts_per_10s": 1.93,
+   "words_per_s": 2.99,
+   "lufs": -12.8,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8.jpg",
+    "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_caps.jpg",
+    "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_strip.jpg",
+    "D:/reel-tmp/lib_prod/sheets/2cK8l5Yg5w8_tr.jpg"
+   ]
+  },
+  {
+   "key": "VYhUa3WC4nU",
+   "url": "https://www.youtube.com/shorts/VYhUa3WC4nU",
+   "channel": "Kurzgesagt – In a Nutshell",
+   "title": "Why Being Poor Is Expensive",
+   "views": 3800000,
+   "x_own_median": 2.9,
+   "channel_median": 1300000,
+   "style": "B",
+   "look": "flat vector, title on frame 0, icons on plinths; one small white caption line",
+   "seconds": 72.28,
+   "cuts_per_10s": 2.08,
+   "words_per_s": 2.86,
+   "lufs": -12.2,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_caps.jpg",
+    "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_strip.jpg",
+    "D:/reel-tmp/lib_prod/sheets/VYhUa3WC4nU_tr.jpg"
+   ]
+  },
+  {
+   "key": "Yp4Pn8k_U20",
+   "url": "https://www.youtube.com/shorts/Yp4Pn8k_U20",
+   "channel": "Extra History",
+   "title": "Banning Birthright Citizenship?!? | Recently Deleted Amendments",
+   "views": 7100000,
+   "x_own_median": 5.3,
+   "channel_median": 1350000,
+   "style": "B",
+   "look": "2D cartoon heads, gold 3D title on frame 0, a watermark; no captions",
+   "seconds": null,
+   "cuts_per_10s": null,
+   "words_per_s": null,
+   "lufs": null,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/Yp4Pn8k_U20.jpg",
+    "D:/reel-tmp/lib_prod/sheets/Yp4Pn8k_U20_f0.jpg"
+   ]
+  },
+  {
+   "key": "uVq2WFK9rjY",
+   "url": "https://www.youtube.com/shorts/uVq2WFK9rjY",
+   "channel": "The Armchair Historian",
+   "title": "Why did Soldiers Fight in Lines? | Animated Short",
+   "views": 2800000,
+   "x_own_median": 13.0,
+   "channel_median": 215500,
+   "style": "B",
+   "look": "2D cartoon soldiers; condensed capitals in three lines, key words orange",
+   "seconds": 60.0,
+   "cuts_per_10s": 1.3,
+   "words_per_s": 2.72,
+   "lufs": -18.1,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/uVq2WFK9rjY.jpg",
+    "D:/reel-tmp/lib_prod/sheets/uVq2WFK9rjY_f0.jpg"
+   ]
+  },
+  {
+   "key": "olbjFEt4flU",
+   "url": "https://www.youtube.com/shorts/olbjFEt4flU",
+   "channel": "Simple History",
+   "title": "Rifle with a built in bottle opener?",
+   "views": 582000,
+   "x_own_median": 36.4,
+   "channel_median": 16000,
+   "style": "B",
+   "look": "2D cartoon in a letterbox over its own blur, logo strip on top, a white title card; capitals with one word green or yellow",
+   "seconds": 151.0,
+   "cuts_per_10s": 1.4,
+   "words_per_s": null,
+   "lufs": -15.9,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/olbjFEt4flU.jpg",
+    "D:/reel-tmp/lib_prod/sheets/olbjFEt4flU_f0.jpg"
+   ]
+  },
+  {
+   "key": "iFIqZNdKpi4",
+   "url": "https://www.youtube.com/shorts/iFIqZNdKpi4",
+   "channel": "Improvement Pill",
+   "title": "3 Studying Tips You Haven't Heard Of",
+   "views": 3100000,
+   "x_own_median": 47.7,
+   "channel_median": 65000,
+   "style": "B",
+   "look": "hand-drawn doodles on flat colour, a fixed handwritten title; small white subtitles on a grey box",
+   "seconds": 58.0,
+   "cuts_per_10s": 0.7,
+   "words_per_s": 3.83,
+   "lufs": -26.9,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/iFIqZNdKpi4.jpg",
+    "D:/reel-tmp/lib_prod/sheets/iFIqZNdKpi4_f0.jpg"
+   ]
+  },
+  {
+   "key": "0tKT_m7rEWQ",
+   "url": "https://www.youtube.com/shorts/0tKT_m7rEWQ",
+   "channel": "Casually Explained",
+   "title": "I’m sorry, I thought this was Latin America",
+   "views": 5300000,
+   "x_own_median": 23.7,
+   "channel_median": 224000,
+   "style": "B",
+   "look": "stick figures on a white page, a title line; small italic captions",
+   "seconds": 11.6,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 4.23,
+   "lufs": -21.4,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/0tKT_m7rEWQ.jpg"
+   ]
+  },
+  {
+   "key": "O0WT8kqz31g",
+   "url": "https://www.youtube.com/shorts/O0WT8kqz31g",
+   "channel": "Knowledgia",
+   "title": "Why wasn't Portugal Conquered by Spain? #shorts #japan #map",
+   "views": 11000000,
+   "x_own_median": 6.1,
+   "channel_median": 1800000,
+   "style": "B",
+   "look": "painted map, countries tinted and labelled, arrows; camera glides over it; no captions",
+   "seconds": 60.0,
+   "cuts_per_10s": 0.3,
+   "words_per_s": 2.3,
+   "lufs": -18.0,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/O0WT8kqz31g.jpg"
+   ]
+  },
+  {
+   "key": "4nR718ryFnQ",
+   "url": "https://www.youtube.com/shorts/4nR718ryFnQ",
+   "channel": "Newsthink",
+   "title": "How Starship Will Get Us to Mars",
+   "views": 16000000,
+   "x_own_median": 142.9,
+   "channel_median": 112000,
+   "style": "B",
+   "look": "one diagram on black (Earth, Mars, the ship), a label line changing at the top; no captions",
+   "seconds": 30.0,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 2.8,
+   "lufs": -23.6,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/4nR718ryFnQ.jpg",
+    "D:/reel-tmp/lib_prod/sheets/4nR718ryFnQ_f0.jpg"
+   ]
+  },
+  {
+   "key": "qo3vtsJR7hU",
+   "url": "https://www.youtube.com/shorts/qo3vtsJR7hU",
+   "channel": "EVS Tech",
+   "title": "Religion Population 2000-2025 (bar chart race)",
+   "views": 4901026,
+   "x_own_median": null,
+   "channel_median": null,
+   "style": "B",
+   "look": "a bar chart race, four seconds",
+   "seconds": 4.4,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 0.68,
+   "lufs": -10.0,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/qo3vtsJR7hU.jpg"
+   ]
+  },
+  {
+   "key": "psu6CcCLBOo",
+   "url": "https://www.youtube.com/shorts/psu6CcCLBOo",
+   "channel": "Jake Tran",
+   "title": "Starbucks is RUTHLESS. 😳",
+   "views": 1200000,
+   "x_own_median": 24.2,
+   "channel_median": 49500,
+   "style": "C",
+   "look": "stock and news footage in a purple crushed grade, a new shot every 1.6 s; big hook words, then small white captions",
+   "seconds": 54.27,
+   "cuts_per_10s": 4.79,
+   "words_per_s": 3.32,
+   "lufs": -16.3,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo.jpg",
+    "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_caps.jpg",
+    "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_strip.jpg",
+    "D:/reel-tmp/lib_prod/sheets/psu6CcCLBOo_tr.jpg"
+   ]
+  },
+  {
+   "key": "jJ0i4JxY-tE",
+   "url": "https://www.youtube.com/shorts/jJ0i4JxY-tE",
+   "channel": "How Money Works",
+   "title": "How This Vandal Made $200 Million by Spray Painting An Office Building - How Money Works #Shorts",
+   "views": 5400000,
+   "x_own_median": 38.7,
+   "channel_median": 139500,
+   "style": "C",
+   "look": "podcast clip of the man himself, then archive stills and clips; name tags and one figure card, no running captions",
+   "seconds": 52.62,
+   "cuts_per_10s": 2.09,
+   "words_per_s": 3.0,
+   "lufs": -17.2,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE.jpg",
+    "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/jJ0i4JxY-tE_tr.jpg"
+   ]
+  },
+  {
+   "key": "0MUxT4jvjSM",
+   "url": "https://www.youtube.com/shorts/0MUxT4jvjSM",
+   "channel": "Logically Answered",
+   "title": "GoPro Is Going Bankrupt?",
+   "views": 8000000,
+   "x_own_median": 516.1,
+   "channel_median": 15500,
+   "style": "C",
+   "look": "a title card on a photo, action footage, a stock chart, and the presenter on camera",
+   "seconds": 59.0,
+   "cuts_per_10s": 1.7,
+   "words_per_s": 2.88,
+   "lufs": -18.5,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/0MUxT4jvjSM.jpg",
+    "D:/reel-tmp/lib_prod/sheets/0MUxT4jvjSM_f0.jpg"
+   ]
+  },
+  {
+   "key": "_Xtq8WGl1ZY",
+   "url": "https://www.youtube.com/shorts/_Xtq8WGl1ZY",
+   "channel": "BRIGHT SIDE",
+   "title": "We Finally Know How They Built The Pyramids",
+   "views": 307000,
+   "x_own_median": 8.9,
+   "channel_median": 34500,
+   "style": "C",
+   "look": "AI stills and map footage with a slow push; big transparent title words",
+   "seconds": 59.0,
+   "cuts_per_10s": 0.5,
+   "words_per_s": null,
+   "lufs": -17.8,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/_Xtq8WGl1ZY.jpg",
+    "D:/reel-tmp/lib_prod/sheets/_Xtq8WGl1ZY_f0.jpg"
+   ]
+  },
+  {
+   "key": "760Bxd0eQSk",
+   "url": "https://www.youtube.com/shorts/760Bxd0eQSk",
+   "channel": "BlueJay",
+   "title": "Disney World's Best Secret",
+   "views": 1700000,
+   "x_own_median": 9.4,
+   "channel_median": 181000,
+   "style": "C",
+   "look": "the maker's own phone footage with a puppet bird in frame; thin white captions",
+   "seconds": 42.0,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 3.38,
+   "lufs": -18.4,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/760Bxd0eQSk.jpg",
+    "D:/reel-tmp/lib_prod/sheets/760Bxd0eQSk_f0.jpg"
+   ]
+  },
+  {
+   "key": "VLWXtXMDE5Q",
+   "url": "https://www.youtube.com/shorts/VLWXtXMDE5Q",
+   "channel": "Mysterious Media",
+   "title": "He Became a Millionaire Just by Grooming Horses",
+   "views": 21000000,
+   "x_own_median": 260.9,
+   "channel_median": 80500,
+   "style": "C",
+   "look": "someone else's clip re-uploaded whole with a voice over it; no captions",
+   "seconds": 35.8,
+   "cuts_per_10s": 1.4,
+   "words_per_s": 2.82,
+   "lufs": -8.9,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/VLWXtXMDE5Q.jpg"
+   ]
+  },
+  {
+   "key": "Wvgkql9n_fs",
+   "url": "https://www.youtube.com/shorts/Wvgkql9n_fs",
+   "channel": "Archive Central",
+   "title": "Untold Story of Flex Paste Boat 😱 #shortsfeed #shorts #facts #boat #knowledge #wisdomstories",
+   "views": 21000000,
+   "x_own_median": 688.5,
+   "channel_median": 30500,
+   "style": "C",
+   "look": "an advert's footage in a letterbox, red circles and arrows; capitals with one word green, an emoji under them",
+   "seconds": 50.0,
+   "cuts_per_10s": 3.0,
+   "words_per_s": 3.94,
+   "lufs": -11.0,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/Wvgkql9n_fs.jpg",
+    "D:/reel-tmp/lib_prod/sheets/Wvgkql9n_fs_f0.jpg"
+   ]
+  },
+  {
+   "key": "u8CeECBN9is",
+   "url": "https://www.youtube.com/shorts/u8CeECBN9is",
+   "channel": "Shubham Rajput",
+   "title": "“How Raw Pressery Built a 500 Crore Brand… Then Lost It” #shorts",
+   "views": 27000000,
+   "x_own_median": 221.3,
+   "channel_median": 122000,
+   "style": "C",
+   "look": "AI photo-stills of the founder and factory clips, shaking zooms; coloured name tags",
+   "seconds": 55.0,
+   "cuts_per_10s": 4.5,
+   "words_per_s": 3.25,
+   "lufs": -10.3,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/u8CeECBN9is.jpg"
+   ]
+  },
+  {
+   "key": "z-Oj1nao5xg",
+   "url": "https://www.youtube.com/shorts/z-Oj1nao5xg",
+   "channel": "History Peek TV",
+   "title": "How is She SMILING After This?!  🤯🤯🤯 #shorts",
+   "views": 74000000,
+   "x_own_median": 604.1,
+   "channel_median": 122500,
+   "style": "D",
+   "look": "a post card on black: avatar, name and tick, eight lines of text with coloured key words, the clip under it; 7 s, loops",
+   "seconds": 7.01,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 1.0,
+   "lufs": -7.5,
+   "measured_precisely": true,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg.jpg",
+    "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_caps.jpg",
+    "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_f0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_io.jpg",
+    "D:/reel-tmp/lib_prod/sheets/z-Oj1nao5xg_strip.jpg"
+   ]
+  },
+  {
+   "key": "hBD4zXPWc90",
+   "url": "https://www.youtube.com/shorts/hBD4zXPWc90",
+   "channel": "PastInSeconds",
+   "title": "They’re Trained to Stand Perfectly Still Without Even Blinking",
+   "views": 36000000,
+   "x_own_median": 742.3,
+   "channel_median": 48500,
+   "style": "D",
+   "look": "the same post card over a clip; 6 s, loops",
+   "seconds": 6.0,
+   "cuts_per_10s": 0.0,
+   "words_per_s": null,
+   "lufs": -18.2,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/hBD4zXPWc90.jpg",
+    "D:/reel-tmp/lib_prod/sheets/hBD4zXPWc90_f0.jpg"
+   ]
+  },
+  {
+   "key": "R4pg7nmWCZY",
+   "url": "https://www.youtube.com/shorts/R4pg7nmWCZY",
+   "channel": "Daily Dose Of History Facts",
+   "title": "The Snipers Watching Every World Cup Match",
+   "views": 61000000,
+   "x_own_median": 1768.1,
+   "channel_median": 34500,
+   "style": "D",
+   "look": "the same post card over a clip; 9 s, loops",
+   "seconds": 9.0,
+   "cuts_per_10s": 0.0,
+   "words_per_s": null,
+   "lufs": -12.1,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/R4pg7nmWCZY.jpg",
+    "D:/reel-tmp/lib_prod/sheets/R4pg7nmWCZY_f0.jpg"
+   ]
+  },
+  {
+   "key": "JNsbgxS6Wjo",
+   "url": "https://www.youtube.com/shorts/JNsbgxS6Wjo",
+   "channel": "Zyen",
+   "title": "Elon Musk vs Iron Man: Who Is Richer? 🤯💰 #Shorts",
+   "views": 12000000,
+   "x_own_median": 1726.6,
+   "channel_median": 6950,
+   "style": "D",
+   "look": "a post card with two search results over a film clip; 6 s",
+   "seconds": 5.8,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 0.85,
+   "lufs": -11.1,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/JNsbgxS6Wjo.jpg"
+   ]
+  },
+  {
+   "key": "g6ATlDAyfjI",
+   "url": "https://www.youtube.com/shorts/g6ATlDAyfjI",
+   "channel": "Hyper Startup Studio",
+   "title": "One sentence almost killed the deal",
+   "views": 17000000,
+   "x_own_median": 12142.9,
+   "channel_median": 1400,
+   "style": "D",
+   "look": "a TV show's clip inside a card with a two-line header; condensed capitals",
+   "seconds": 48.1,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 2.22,
+   "lufs": -18.5,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/g6ATlDAyfjI.jpg"
+   ]
+  },
+  {
+   "key": "Iymz2DoTuQI",
+   "url": "https://www.youtube.com/shorts/Iymz2DoTuQI",
+   "channel": "History Paradox",
+   "title": "She Hid From Every Adult. Then a Child Walked In. 🐕😭",
+   "views": 262000,
+   "x_own_median": 1.0,
+   "channel_median": 256500,
+   "style": "D",
+   "look": "the post card over a shelter clip, a longer paragraph; 12 s, loops",
+   "seconds": 11.7,
+   "cuts_per_10s": 0.0,
+   "words_per_s": 0.94,
+   "lufs": -13.6,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/Iymz2DoTuQI.jpg"
+   ]
+  },
+  {
+   "key": "tt_mrstory",
+   "url": "https://www.tiktok.com/@mrstorytelling/video/7623076346276728094",
+   "channel": "mrstorytelling (TikTok)",
+   "title": "#story #history #creepy #fortnite",
+   "views": 27800000,
+   "x_own_median": 66.0,
+   "channel_median": 421250,
+   "style": "E",
+   "look": "AI-made 'old camcorder' clips with a date stamp, a made-up history told straight; tiny capitals with one word in a red box",
+   "seconds": 77.9,
+   "cuts_per_10s": 3.1,
+   "words_per_s": 3.24,
+   "lufs": -21.0,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/tt_mrstory.jpg"
+   ]
+  },
+  {
+   "key": "J1nEqbdFT2A",
+   "url": "https://www.youtube.com/shorts/J1nEqbdFT2A",
+   "channel": "Stone Reborn",
+   "title": "They Built Kailasa Temple in 30 Seconds 🏛️",
+   "views": 27000000,
+   "x_own_median": 3829.8,
+   "channel_median": 7050,
+   "style": "E",
+   "look": "an AI-made time-lapse of a temple cut from a hill; one orange title",
+   "seconds": 27.0,
+   "cuts_per_10s": 0.7,
+   "words_per_s": 0.04,
+   "lufs": -22.1,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/J1nEqbdFT2A.jpg"
+   ]
+  },
+  {
+   "key": "hMxcXJ8plW4",
+   "url": "https://www.youtube.com/shorts/hMxcXJ8plW4",
+   "channel": "Factify_iQ",
+   "title": "Can We Straighten The Leaning Tower Of Pisa 🤔",
+   "views": 23000000,
+   "x_own_median": 1150.0,
+   "channel_median": 20000,
+   "style": "E",
+   "look": "AI-made 3D-look clips in a letterbox under a fixed title",
+   "seconds": 35.0,
+   "cuts_per_10s": 1.7,
+   "words_per_s": null,
+   "lufs": -10.2,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/hMxcXJ8plW4.jpg",
+    "D:/reel-tmp/lib_prod/sheets/hMxcXJ8plW4_f0.jpg"
+   ]
+  },
+  {
+   "key": "8KE6tsgj-z0",
+   "url": "https://www.youtube.com/shorts/8KE6tsgj-z0",
+   "channel": "Slidebean",
+   "title": "Why VPNs Stopped Working",
+   "views": 751000,
+   "x_own_median": 31.3,
+   "channel_median": 24000,
+   "style": "X",
+   "look": "a man talking to his phone; not faceless",
+   "seconds": 63.0,
+   "cuts_per_10s": 0.2,
+   "words_per_s": null,
+   "lufs": -23.8,
+   "measured_precisely": false,
+   "sheets": [
+    "D:/reel-tmp/lib_prod/sheets/8KE6tsgj-z0.jpg",
+    "D:/reel-tmp/lib_prod/sheets/8KE6tsgj-z0_f0.jpg"
+   ]
+  }
+ ],
+ "files": {
+  "sheets_folder": "D:/reel-tmp/lib_prod/sheets",
+  "notes_folder": "D:/reel-tmp/lib_prod/notes",
+  "scripts_folder": "D:/reel-tmp/lib_prod_scripts",
+  "listings": [
+   "D:/reel-tmp/lib_prod/lib_prod.json",
+   "D:/reel-tmp/lib_prod/lib_prod2.json",
+   "D:/reel-tmp/lib_prod/lib_prod_tt.json"
+  ],
+  "sheet_kinds": {
+   "<key>.jpg": "18 frames: 0, 0.5, 1, 2, 3, 5, 8, 12 s, the quarter points and the last frame, then six frames 0.25 s apart from 40% in (the first sheets made have 11 or 12 frames)",
+   "<key>_caps.jpg": "the caption band of four frames at full size (1080 px wide)",
+   "<key>_strip.jpg": "the caption band every 0.1 s for 3 s, read down each of three columns",
+   "<key>_io.jpg": "frames at 0, 0.5, 1.5 s and 3, 1.5, 0.3 s before the end",
+   "<key>_f0.jpg": "frame 0 at half size",
+   "<key>_tr.jpg": "eight frames around up to four cuts"
+  }
+ }
+}
