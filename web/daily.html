@@ -245,7 +245,7 @@ const VS=(()=>{try{const m=new RegExp('^([\\p{L}\\p{N}_. -]{0,16})~(-?\\d{1,7})~
 const vsFor=d=>VS&&d&&VS.number===d.number?VS:null;
 const vsName=v=>v.name?esc(v.name):'Your friend';
 
-let D=null,G=null,size=lsGet('ms_daily_size',.5)||.5,poll=null,tick=null,endAt=0,busy=false,drawn='',P=null,lastN=0,shownRet=0,wasRunning=false,installEv=null;
+let D=null,G=null,size=lsGet('ms_daily_size',1)||1,poll=null,tick=null,endAt=0,busy=false,drawn='',P=null,lastN=0,shownRet=0,wasRunning=false,installEv=null;
 
 // ---- the effects: the overlay word, numbers that count, confetti, the hero's living line
 function overlay(words,ms){return new Promise(res=>{const o=$('ov');if(CALM){res();return}o.style.display='grid';let k=0;

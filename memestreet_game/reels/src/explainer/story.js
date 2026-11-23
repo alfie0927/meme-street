@@ -81,7 +81,7 @@ function header(t, label) {      // the mark (third model); the series tag in th
     c.font = `800 34px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText(String(R.where || 'MEME STREET').toUpperCase(), 64, 118);
     c.font = `700 24px Montserrat, ${F}`; c.fillStyle = GOLD; c.fillText(String(R.when || '').toUpperCase(), 64, 152); c.restore();
   }
-  if (t >= 3.4 && t < end.t0) {                              // the price counter, once the opening tag has gone: the stock's real price at this point of the story
+  if (t >= 3.4 && t < end.t0 && R.hud !== false) {                              // the price counter, once the opening tag has gone: the stock's real price at this point of the story
     const P = R.prices || [], k = Math.round(clamp(priceAt(t)) * (P.length - 1)), v = P[k];
     if (v != null) { const lab = t >= (R.reveal || 0) ? String(R.ticker || 'STOCK') : 'MYSTERY STOCK', up = v >= P[0];
       c.save(); c.globalAlpha = clamp((t - 3.4) / .3); const w = 300, x = 540 - w / 2, y = 64; rr(x, y, w, 104, 16); c.fillStyle = 'rgba(12,10,20,.86)'; c.fill(); c.lineWidth = 4; c.strokeStyle = up ? GREEN : RED; c.stroke();
@@ -96,6 +96,18 @@ function priceAt(t) {             // where in the window the story is at time t:
     u = s === R.scenes[0] ? (it.from || 0) : (t >= it.t ? (it.from || 0) + ((it.to || 1) - (it.from || 0)) * ease(lt) : u); } }
   return u;
 }
+function cover() {               // the thumbnail (the owner, 2026-11-23: "each daily chart thumbnail should be similar to the last one so people can find the daily updates"):
+  const C = R.cover || {}, L = C.lines || [R.title], col = C.color || GOLD;   // the same badge, place and type every day; inside Instagram's 3:4 grid crop (y 240 to 1680)
+  c.save(); let g = c.createLinearGradient(0, 240, 0, 700); g.addColorStop(0, 'rgba(6,6,14,.85)'); g.addColorStop(1, 'rgba(6,6,14,0)'); c.fillStyle = g; c.fillRect(0, 0, W, 700);
+  g = c.createLinearGradient(0, 1050, 0, 1700); g.addColorStop(0, 'rgba(6,6,14,0)'); g.addColorStop(.5, 'rgba(6,6,14,.8)'); g.addColorStop(1, 'rgba(6,6,14,.92)'); c.fillStyle = g; c.fillRect(0, 1050, W, 870);
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `800 46px Montserrat, ${F}`; c.letterSpacing = '6px'; const b = String(C.badge || 'MEME STREET').toUpperCase(), bw = c.measureText(b).width + 80;
+  rr(540 - bw / 2, 300, bw, 92, 46); c.fillStyle = col; c.fill(); c.fillStyle = '#111'; c.fillText(b, 540, 349);
+  c.font = `700 28px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText('\u2205 MEME STREET', 540, 440); c.letterSpacing = '0px';
+  let size = 124; c.font = `800 ${size}px Montserrat, ${F}`; while (size > 70 && L.some(l => c.measureText(String(l).toUpperCase()).width > 960)) { size -= 4; c.font = `800 ${size}px Montserrat, ${F}`; }
+  const y0 = 1500 - (L.length - 1) * size * 1.02; c.lineJoin = 'round';
+  L.forEach((l, i) => { const s = String(l).toUpperCase(), y = y0 + i * size * 1.02; c.lineWidth = 18; c.strokeStyle = '#0a0a12'; c.strokeText(s, 540, y); c.fillStyle = i === L.length - 1 ? col : '#fff'; c.fillText(s, 540, y); });
+  c.font = `700 34px Montserrat, ${F}`; c.fillStyle = 'rgba(255,255,255,.9)'; c.fillText(String(C.foot || 'memestreet.net'), 540, 1630); c.restore();
+}
 function endCard(t) {             // the fifth model's ending: a choice for the viewer, to answer in the comments
   const end = (R.scenes || [])[R.scenes.length - 1]; if (!end || t < end.t0 || !R.choice) return false;
   const a = clamp((t - end.t0) / .3); c.save(); c.fillStyle = `rgba(8,8,14,${.94 * a})`; c.fillRect(0, 0, W, 1920); c.globalAlpha = a; c.textAlign = 'center'; c.textBaseline = 'middle';
@@ -104,7 +116,7 @@ function endCard(t) {             // the fifth model's ending: a choice for the 
   [['A', R.choice.a, '#2f7cf6', 900], ['B', R.choice.b, '#d8343f', 1080]].forEach(([k, s, col, y], i) => { const p = clamp((t - end.t0 - .35 - i * .25) / .25); if (!p) return;
     c.save(); c.globalAlpha = a * p; rr(170, y, 740, 120, 18); c.fillStyle = col; c.fill(); rr(200, y + 26, 68, 68, 12); c.fillStyle = '#fff'; c.fill();
     c.fillStyle = col; c.font = `800 44px Montserrat, ${F}`; c.fillText(k, 234, y + 62); c.fillStyle = '#fff'; c.textAlign = 'left'; c.font = `800 40px Montserrat, ${F}`; c.fillText(String(s).toUpperCase(), 300, y + 62, 590); c.restore(); });
-  c.font = `700 34px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText('Comment A or B below', 540, 1270); c.fillStyle = GOLD; c.font = `800 44px Montserrat, ${F}`; c.fillText('\u2193', 540, 1330);
+  c.font = `700 34px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText(String(R.choice.cta || 'Comment A or B below'), 540, 1270); c.fillStyle = GOLD; c.font = `800 44px Montserrat, ${F}`; c.fillText('\u2193', 540, 1330);
   c.restore(); return true;
 }
 function captions(t) {             // as the third and fourth models: Montserrat, heavy, white with a dark edge and shadow, one or two words, mid-low; a word that lands in yellow
@@ -119,6 +131,6 @@ function captions(t) {             // as the third and fourth models: Montserrat
   c.restore();
   reg('caption', 540 - w / 2 - 10, y - size * .7, w + 20, size * 1.4);
 }
-window.S2 = {K, INK, GOLD, RED, GREEN, header, captions, endCard, pill, txt, blob, rr, circ, shade, brandColor, clamp, ease, back, reg,
+window.S2 = {K, INK, GOLD, RED, GREEN, header, captions, endCard, cover, pill, txt, blob, rr, circ, shade, brandColor, clamp, ease, back, reg,
   boxes: () => BOX, reset: () => { BOX = []; }, ctx: x => { const o = c; c = x; return o; }};
 window.ready = Promise.all([document.fonts.load(`700 40px Fredoka`), document.fonts.load(`800 40px Montserrat`), document.fonts.load(`600 26px Montserrat`)]).then(() => document.fonts.ready).then(() => true);

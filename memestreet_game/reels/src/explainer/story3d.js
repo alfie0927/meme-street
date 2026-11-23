@@ -136,6 +136,7 @@ function toon(look, color, seed, pose) {          // -> {root: a group holding a
 function poseToon(p, t) { drawToon(p.tex.userData.x, p, t); p.tex.needsUpdate = true; }
 function proxyOf(p) { return p.root.userData.proxy; }
 const actor = (look, color, seed, pose) => toon(look, color, seed, pose);
+const seedOf = id => [...String(id)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 9973, 7);      // (one cast member looks the same in every shot: hair, glasses, moustache)
 
 // The product, low-poly, about 1 unit wide: what the company makes. Its userData.late = the parts the factory fits last.
 function productMesh(kind, col, text) {
@@ -174,7 +175,7 @@ function productMesh(kind, col, text) {
 
 // ---------------------------------------------------------------- the subjects of a shot: (it) -> {g: a group at real size, its base at y 0, facing +z; tick(t); lift: its base above the floor}
 const PROPS = {
-  person(it) { const c = R.cast[it.who] || {}, p = actor(c.look, c.color, it.seed || 1, it.pose); return {g: p.root, actor: p, tick: t => poseToon(p, t)}; },
+  person(it) { const c = R.cast[it.who] || {}, p = actor(c.look, c.color, seedOf(it.who), it.pose); return {g: p.root, actor: p, tick: t => poseToon(p, t)}; },
   crowd(it) { const g = new T3.Group(), P = [], cols = ['#e8394a', '#2f7cf6', '#9b59d0', '#22b573', '#f28c28'], looks = ['casual', 'woman', 'hoodie', 'woman', 'casual'], pos = [[-.5, 0], [.5, 0], [-1, -.8], [0, -.85], [1, -.8]];
     for (let i = 0; i < 5; i++) { const p = actor(looks[i], cols[i], i + 3 + (it.seed || 0), it.pose); p.root.position.set(pos[i][0], 0, pos[i][1]); p.root.rotation.y = -pos[i][0] * .14; g.add(p.root); P.push(p); }     // two in front, three behind
     return {g, tick: t => P.forEach(p => poseToon(p, t))}; },
@@ -230,7 +231,7 @@ const PROPS = {
   podium(it) { const g = new T3.Group(), P = [];
     for (const [n, x, h, col, who] of [['2', -1.3, .8, '#c9cfdc', it.second], ['1', 0, 1.2, '#ffc83d', it.first], ['3', 1.3, .55, '#c98d4e', it.third]]) {
       g.add(at(box(1.25, h, 1, col), x, h / 2, 0)); g.add(at(label(n, .5, .5, '#15162b', col), x, h * .5, .51));
-      if (who && R.cast[who]) { const c = R.cast[who], p = actor(c.look, c.color, n.charCodeAt(0), n === '1' ? 'cheer' : 'sad'); p.root.position.set(x, h, 0); g.add(p.root); P.push(p); } }
+      if (who && R.cast[who]) { const c = R.cast[who], p = actor(c.look, c.color, seedOf(who), n === '1' ? 'cheer' : 'sad'); p.root.position.set(x, h, 0); g.add(p.root); P.push(p); } }
     return {g, tick: t => P.forEach(p => poseToon(p, t))}; },
   news(it) { const g = new T3.Group(); g.add(at(box(3, 1.95, .22, '#22242b'), 0, 2, 0)); g.add(at(cyl(.07, .07, 1, '#3a3d48', 6), 0, .5, 0)); g.add(at(box(1.2, .08, .6, '#3a3d48'), 0, .04, 0));
     g.add(at(screen(2.8, 1.75, 448, (x, w, h, t) => { x.fillStyle = '#16204a'; x.fillRect(0, 0, w, h); x.fillStyle = '#e8394a'; x.fillRect(0, 0, w, h * .22); const old = S.ctx(x);
@@ -451,6 +452,7 @@ function render(t) {
         ox.save(); ox.globalAlpha = cl((t - p.it.t - .25) / .3); const rr = S.pill(p.tag, cx, r[1] - 48, 40, '#fff', '#14182b', Math.max(60, 2 * half - 50)); ox.lineWidth = 4; ox.strokeStyle = S.GOLD; S.rr(...rr, rr[3] / 2); ox.stroke(); ox.restore(); S.reg('tag:' + p.it.who, ...rr); } });
     for (const p of ITEMS) if (p.flat && p.k === k && t >= p.it.t) flat(p.it, t, sc);
   }
+  if (window.__coverOn) { S.cover(); S.ctx(old); window.__flying = flying; return; }      // (the thumbnail: the series badge and the promise)
   if (S.endCard(t)) { S.ctx(old); window.__flying = flying; return; }      // (the ending: the choice card, no captions over it)
   S.header(t, flying ? Sc[k - 1].label : sc.label); S.captions(t); S.ctx(old);
   window.__flying = flying;

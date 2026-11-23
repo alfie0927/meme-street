@@ -634,7 +634,9 @@ def timeline(spec, story, segs, wt, T):
             "where": f"Meme Street \u00B7 Daily #{story.get('number')}" if story.get("number") else "Meme Street", "when": f"{day} mystery chart", "tag2": f"{day} CHART: {name.upper()}", "reveal": round(said[0] - CAP_LEAD, 3) if said else 0,
             "brands": spec["brands"], "cast": cast, "scenes": direct(spec, segs, wt, T),
             "caps": captions(wt, spec, spans_of(segs)), "segs": segs, "words": wt, "prices": story.get("chart"),
-            "dates": [story.get("stock", {}).get("start"), story.get("stock", {}).get("end")]}
+            "dates": [story.get("stock", {}).get("start"), story.get("stock", {}).get("end")],
+            "hud": spec.get("hud", True), "cover": spec.get("cover") or {"badge": f"Daily #{story.get('number')}" if story.get("number") else "The Daily", "lines": [spec["title"]]},
+            **({"reveal": round(T + 99, 3)} if spec.get("mystery") else {}), **{k: spec[k] for k in ("where", "when") if spec.get(k)}}     # (a promo: the company stays a mystery, its own tag)
 
 
 # ---------------------------------------------------------------- render and sound
@@ -673,7 +675,7 @@ async def frames(R, fdir, cover, part=0, parts=1):
             await pg.screenshot(path=f"{fdir}/f{i:05d}.jpg", type="jpeg", quality=92)
             if i % 300 == 0: say(f"frame {i}/{n}")
         if part == 0:        # the cover: the hook's own frame, settled (the product and the promise)
-            await pg.evaluate("t=>render(t)", min(R["scenes"][0]["t1"] - .2, 2.5)); await pg.screenshot(path=cover, type="jpeg", quality=92)
+            await pg.evaluate("t=>{window.__coverOn=1;render(t);window.__coverOn=0}", (R.get("cover") or {}).get("t") or min(R["scenes"][0]["t1"] - .2, 2.5)); await pg.screenshot(path=cover, type="jpeg", quality=92)
         await b.close()
         if errs: raise SystemExit("render errors: " + "; ".join(errs[:3]))
     return n
@@ -782,6 +784,8 @@ def render(R, wav, work, out):
 
 def caption_text(spec, story):
     script = " ".join(str(s["say"]) for s in spec["sentences"]); st = story.get("stock", {})
+    if spec.get("caption"):         # (a promo writes its own: it never names the day's stock before the answer reel)
+        t = track(spec["title"]); return (f"{spec['caption']}\n\n" + ((t.get("credit") or "") + "\n" if t else "") + f"{DISCLAIMER}\n" + spec.get("tags", "#stocks #trading #stockmarket #daytrading #MemeStreet"))
     src = sorted({o for f in story.get("research", {}).get("facts", []) for o in (f.get("by") or [])})[:5]
     return (f"{spec['title']}\n\n{script}\n\n{story.get('day') or 'Today' + chr(39) + 's'} mystery chart was {st.get('name')} ({st.get('ticker')}), {st.get('start')} to {st.get('end')}. "
             f"A new one goes live every midnight UTC: memestreet.net\n" + ("Sources: " + ", ".join(src) + "\n" if src else "") +

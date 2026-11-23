@@ -93,7 +93,7 @@ const dayNumber=()=>{const n=new Date();return Math.round((Date.UTC(n.getFullYea
 const toMidnight=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate()+1)-n};
 const PHONE=matchMedia('(pointer:coarse)').matches;
 
-let DAY=dayNumber(),C=null,REV=null,G=null,size=store.get('ms-size',.5),tick=null,drawn='';
+let DAY=dayNumber(),C=null,REV=null,G=null,size=store.get('ms-size',1),tick=null,drawn='';
 // G, today's game: {day, t0 (ms), cash, shares, trades: [[candle, kind, price, shares]], done, equity, ret}
 
 const elapsed=()=>G?(Date.now()-G.t0)/1000:0;
