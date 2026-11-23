@@ -200,7 +200,7 @@ class SiteTests(unittest.TestCase):
         with IsolatedServer(settings={"daily_chart": True}, env={"MS_FULL_SITE": ""}) as srv:
             status, text, _ = http(srv, "/")
             self.assertEqual(status, 200)
-            self.assertIn("MemeStreet: The Daily Trading Game", text)
+            self.assertIn("Meme Street: The Daily Trading Game", text)
             self.assertNotIn("<!--", text[:text.index("<title>")].split("-->")[-1])   # (the title is not inside a comment)
             self.assertIn('<link rel="canonical" href="https://memestreet.net/">', text)
             self.assertIn("One real stock.", text)                              # (the opening words, before the script)

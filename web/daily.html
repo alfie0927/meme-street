@@ -128,8 +128,11 @@ h3 .mut{font-weight:400}
 .lvls i{flex:none;width:10px;height:10px;border-radius:50%}.lvls .px{font-family:var(--mono);font-variant-numeric:tabular-nums;margin-left:auto;color:var(--txt)}
 .lvls .key{margin:4px 0 8px;padding-top:12px;border-top:1px solid var(--line);color:var(--mut);font-size:12.5px;display:flex;gap:16px;flex-wrap:wrap}
 .curve svg{display:block;width:100%;height:auto;overflow:visible}
-.beat{font:700 15px/1.4 var(--mono);color:var(--acc);margin:6px 0 0;text-align:left}
-.dsum{color:var(--mut);font:12px var(--mono);margin:14px 0 0;text-align:left}
+.curve .dt{transform-box:fill-box;transform-origin:center;animation:popin .45s var(--ease) both}
+.beat{font:600 16px/1.4 var(--mono);color:var(--txt);margin:0 0 14px;text-align:left}.beat b{color:var(--acc);font-weight:800}
+.dkey{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0 0;color:var(--mut);font-size:12px;text-align:left}.dkey i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:0}
+.dsum{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin:18px 0 0;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;text-align:left}
+.dsum>div{background:#0d141a;padding:11px 12px}.dsum small{display:block;color:var(--mut);font-size:11.5px;margin-bottom:5px}.dsum b{font:700 15px/1 var(--mono)}
 table{width:100%;border-collapse:collapse;font-size:14px}td{padding:11px 6px;border-bottom:1px solid var(--line)}td.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:0}tr.me td{background:#4cc3cc12}.rk{width:34px;color:var(--mut);font-weight:800}.rk.m0{color:#f5c84c}.rk.m1{color:#c9d3dc}.rk.m2{color:#d8955b}
 .pitch{text-align:left;background:linear-gradient(160deg,#4cc3cc14,#f5a5240c);border-color:#4cc3cc50}
@@ -185,7 +188,7 @@ header h1{text-align:left;font-size:15px;letter-spacing:.2em}
 h3{margin:30px 0 0;padding:9px 14px;background:#131c25;border:1px solid var(--line);border-bottom:0;border-radius:3px 3px 0 0;font:600 13px/1.2 var(--mono);color:var(--txt)}
 h3::before,h3::after{display:none}
 h3 .mut{margin-left:auto}
-h3+.card{border-radius:0 0 3px 3px;margin-top:0}
+h3+.card,h3+.chart{border-radius:0 0 3px 3px;margin-top:0}
 #pop h3{background:none;border:0;padding:0;margin:24px 0 10px}
 /* the rails: docked either side of the page on a wide screen */
 .rail{display:none;position:fixed;top:104px;width:236px;background:#0f161dee;border:1px solid var(--line);border-radius:3px;font-size:13px;transition:opacity .4s;z-index:2}
@@ -198,6 +201,22 @@ h3+.card{border-radius:0 0 3px 3px;margin-top:0}
 body.trading .rail{opacity:.4}
 @media(min-width:1290px){.rail{display:block}}
 @media(max-width:420px){.hsub{display:none}.keys button{padding:6px 8px;font-size:12px}header h1{font-size:13px;letter-spacing:.14em}}
+/* the polish pass (the owner, 2026-11-23: "make the whole website look more aesthetic") */
+.card{padding:26px 24px}
+h3+.card{padding:22px 22px 20px}
+.card.st:not(.tmr):not(.pitch):not(.mile) .kick{letter-spacing:.02em}
+.place{color:var(--mut)}.place b{color:var(--txt)}
+.vs{color:#c9d4dd}
+.tmr{gap:18px 24px}.tmr h2{font-size:16px;line-height:1.35}
+.lvls .key{gap:8px 18px}
+@media(max-width:520px){
+ .stat{grid-template-columns:repeat(6,1fr)}.stat>div{grid-column:span 2}.stat>div:nth-child(n+4){grid-column:span 3}
+ .tmr{flex-direction:column;align-items:flex-start}.tmr .clock{font-size:30px}
+ .dsum{grid-template-columns:repeat(2,1fr)}
+ .card{padding:22px 16px}h3+.card{padding:18px 14px}
+ .big{font-size:50px}
+ .hero .go{width:100%}
+}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
 <div class="bgfx" aria-hidden="true"><b></b></div><canvas id="bgc" aria-hidden="true"></canvas>
@@ -324,28 +343,33 @@ function statRow(st){
 // the player beat filled brighter up to them, a hairline axis with round ticks, the player's dot on the axis with YOU
 // under it, and one line under the curve: "Better than X% of today's players"
 function hist(dist,mine,who='players',pct=null){
+ // A dot plot (2026-11-23, the owner: the smoothed curve "looks very janky"): one dot per player (or per k players on a
+ // big day), stacked in columns of equal return width; players you beat are teal, those ahead of you grey, you amber.
  const n=dist.length;if(!n)return '<p class="mut">Nobody has finished yet.</p>';
- const s=[...dist].sort((a,b)=>a-b),mean=s.reduce((a,b)=>a+b,0)/n,sd=Math.sqrt(s.reduce((a,r)=>a+(r-mean)**2,0)/n);
- const bw=Math.max(.03,1.3*1.06*(sd||.03)*Math.pow(n,-.2));
- let lo=Math.min(s[0],mine??s[0])-2.5*bw,hi=Math.max(s[n-1],mine??s[n-1])+2.5*bw;lo=Math.max(lo,-1.02);   // (nobody can lose more than everything)
- const W=PHONE?330:440,H=132,T=10,B=104,X=r=>(r-lo)/(hi-lo)*W,k=r=>s.reduce((a,v)=>a+Math.exp(-(((r-v)/bw)**2)/2),0);
- const xs=Array.from({length:161},(_,i)=>lo+(hi-lo)*i/160),ys=xs.map(k),top=Math.max(...ys),Y=v=>B-v/top*(B-T);
- const d=xs.map((r,i)=>`${i?'L':'M'}${X(r).toFixed(1)} ${Y(ys[i]).toFixed(1)}`).join(''),area=`${d}L${W} ${B}L0 ${B}Z`,id='kc'+Math.random().toString(36).slice(2,7);
- const step=[.01,.02,.05,.1,.2,.25,.5,1].find(v=>(hi-lo)/v<=6)||1,mx=mine===null?null:X(mine);
- let h=`<defs><linearGradient id="${id}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4cc3cc" stop-opacity=".45"/><stop offset="1" stop-color="#4cc3cc" stop-opacity=".02"/></linearGradient>
-  <clipPath id="${id}c"><rect x="0" y="0" width="${mx===null?0:mx.toFixed(1)}" height="${H}"/></clipPath></defs>
-  <path d="${area}" fill="url(#${id}f)" opacity=".3"/><path d="${area}" fill="url(#${id}f)" clip-path="url(#${id}c)"/>
-  <path d="${d}" fill="none" stroke="#4cc3cc" stroke-width="1.6" stroke-opacity=".85" stroke-linejoin="round"/>
-  <line x1="0" x2="${W}" y1="${B}" y2="${B}" stroke="#ffffff1f"/>`;
- for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){const x=X(v);if(x<14||x>W-14||(mx!==null&&Math.abs(x-mx)<34))continue;
-  h+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${B}" y2="${B+4}" stroke="#8a97a3" stroke-opacity=".5"/><text x="${x.toFixed(1)}" y="${B+17}" text-anchor="middle" font-size="10" fill="#8a97a3" opacity=".7">${Math.abs(v)<1e-9?'0%':pc(v).replace('.0%','%')}</text>`}
- if(mx!==null){const lx=Math.max(14,Math.min(W-14,mx));
-  h+=`<line x1="${mx.toFixed(1)}" x2="${mx.toFixed(1)}" y1="${B-9}" y2="${B}" stroke="var(--amb)" stroke-width="1.4"/><circle cx="${mx.toFixed(1)}" cy="${B}" r="3.4" fill="var(--amb)"/>
-   <text x="${lx.toFixed(1)}" y="${B+17}" text-anchor="middle" font-size="10" font-weight="700" letter-spacing=".12em" fill="var(--amb)">YOU</text>`}
- const below=mine===null?0:s.filter(r=>r<mine-1e-9).length,share=Math.round((pct===null?below/Math.max(1,n-1):pct)*100);
- const line=mine===null?'':n>1?(who==='players'?`Better than ${share}% of today's players`:`Today beat ${share}% of your games`):(who==='players'?'The first to finish today':'');
- return `<div class="curve"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Everyone's returns as a curve${line?'; '+line:''}">${h}</svg>${line?`<p class="beat">${line}</p>`:''}</div>
-  <p class="dsum">${n} played. Average ${pc(mean)}, median ${pc(s[Math.floor(n/2)])}, best <span class="${cls(s[n-1])}">${pc(s[n-1])}</span>.</p>`}
+ const s=[...dist].sort((a,b)=>a-b),mean=s.reduce((a,b)=>a+b,0)/n,med=n%2?s[(n-1)/2]:(s[n/2-1]+s[n/2])/2;
+ const narrow=innerWidth<560,W=narrow?340:600,P=14,FS=narrow?12:12.5;
+ let lo=Math.min(s[0],mine??s[0],0),hi=Math.max(s[n-1],mine??s[n-1],0);if(hi-lo<.04){const c=(hi+lo)/2;lo=c-.02;hi=c+.02}
+ const w=[.0025,.005,.01,.02,.025,.05,.1,.2,.25,.5,1].find(v=>(hi-lo)/v<=(narrow?20:24))||1,b0=Math.floor(lo/w+1e-9),nb=Math.floor(hi/w+1e-9)-b0+1;
+ const bin=r=>Math.min(nb-1,Math.max(0,Math.floor(r/w+1e-9)-b0)),cols=Array.from({length:nb},()=>[]);s.forEach(r=>cols[bin(r)].push(r));
+ const mb=mine===null?-1:bin(mine),cw=(W-2*P)/nb,most=Math.max(...cols.map(c=>c.length)),k=Math.ceil(most/(narrow?9:11)),tall=Math.ceil(most/k);
+ const r=Math.max(1.6,Math.min(cw*.36,7,46/tall)),gap=r*2.35,base=tall*gap+44,H=base+30,X=v=>P+(v/w-b0)*cw,cx=i=>P+(i+.5)*cw;
+ let h=`<line x1="${P}" x2="${W-P}" y1="${base}" y2="${base}" stroke="#ffffff1f"/>`;
+ const z=X(0);h+=`<line x1="${z.toFixed(1)}" x2="${z.toFixed(1)}" y1="${base-tall*gap-10}" y2="${base}" stroke="#ffffff30" stroke-dasharray="2 4"/>`;
+ const tick=[.005,.01,.02,.05,.1,.2,.25,.5,1].find(v=>(hi-lo)/v<=(narrow?4:6))||1,used=[];
+ for(let v=Math.ceil(lo/tick)*tick;v<=hi+1e-9;v+=tick){const x=X(v);if(x<P+10||x>W-P-10||used.some(u=>Math.abs(u-x)<44))continue;used.push(x);
+  h+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${base}" y2="${base+4}" stroke="#ffffff30"/><text x="${x.toFixed(1)}" y="${base+19}" text-anchor="middle" font-size="${FS}" fill="var(--mut)">${Math.abs(v)<1e-9?'0%':pc(v).replace('.0%','%')}</text>`}
+ let q=0;cols.forEach((c,i)=>{const m=Math.ceil(c.length/k);for(let j=0;j<m;j++){const me=i===mb&&j===0,y=base-r-2-j*gap,
+   col=mine===null||i<mb?'var(--acc)':i>mb?'#3b4a58':j===0?'':c[Math.min(c.length-1,j*k)]<mine-1e-9?'var(--acc)':'#3b4a58';
+   if(!me)h+=`<circle class="dt" style="animation-delay:${(q++*14)}ms" cx="${cx(i).toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="${col}"/>`}});
+ if(mb>=0){const x=cx(mb),y=base-r-2,t=`YOU ${pc(mine)}`,tw=t.length*FS*.62+16,tx=Math.max(P,Math.min(W-P-tw,x-tw/2)),ty=base-tall*gap-38;
+  h+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${ty+22}" y2="${(y-r-3).toFixed(1)}" stroke="var(--amb)" stroke-opacity=".6"/>
+   <rect x="${tx.toFixed(1)}" y="${ty}" width="${tw.toFixed(1)}" height="22" rx="3" fill="var(--amb)"/><text x="${(tx+tw/2).toFixed(1)}" y="${ty+15.5}" text-anchor="middle" font-size="${FS}" font-weight="700" fill="#1a1204">${esc(t)}</text>
+   <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r+3).toFixed(1)}" fill="none" stroke="var(--amb)" stroke-opacity=".45" stroke-width="1.5"/><circle class="dt" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="var(--amb)"/>`}
+ const below=mine===null?0:s.filter(v=>v<mine-1e-9).length,share=Math.round((pct===null?below/Math.max(1,n-1):pct)*100);
+ const line=mine===null?'':n>1?(who==='players'?`Better than <b>${share}%</b> of today's players`:`Today beat <b>${share}%</b> of your games`):(who==='players'?'The first to finish today':'');
+ const key=mine===null||n<2?'':`<p class="dkey"><span><i style="background:var(--acc)"></i>behind you</span><span><i style="background:#3b4a58"></i>ahead of you</span>${k>1?`<span>each dot = ${k} ${who}</span>`:''}</p>`;
+ return `${line?`<p class="beat">${line}</p>`:''}<div class="curve"><svg viewBox="0 -4 ${W} ${H+4}" role="img" aria-label="Everyone's returns, one dot each${line?'; '+line.replace(/<\/?b>/g,''):''}">${h}</svg>${key}</div>
+  <div class="dsum"><div><small>${who==='players'?'Players':'Games'}</small><b>${n}</b></div><div><small>Average</small><b class="${cls(mean)}">${pc(mean)}</b></div><div><small>Median</small><b class="${cls(med)}">${pc(med)}</b></div><div><small>Best</small><b class="${cls(s[n-1])}">${pc(s[n-1])}</b></div></div>`}
 function yesterday(){const p=D.past&&D.past[0],w=p&&p.top&&p.top[0];if(!w)return '';
  return `<p class="yday">Yesterday <b>${esc(w.name)}</b> won with <b class="${cls(w.ret)}">${pc(w.ret)}</b>, out of ${p.players} players.</p>`}
 const players=()=>(D.people||0)+(D.house||0);   // (house traders count as players: the owner, 2026-11-19)
@@ -406,7 +430,7 @@ function draw(){
    <div class="row"><button class="go" id="share">Share</button><button class="alt" id="pic">Story picture</button>${installBtn()}</div>
    ${D.visitor?'':`<div class="row" style="margin-top:10px"><button class="alt" id="remind">${D.remind?'Daily email is on: turn off':'Email me when the next stock is out'}</button></div>`}</div>
    ${milestone(st)}${tomorrow()}
-   <div class="chart st">${svg(G.candles,G.history+G.live,G.history,G.trades,G.real&&G.real.k,G.levels)}</div>${levelsList(G.levels,G.real&&G.real.k)}
+   <h3 class="st">The chart <span class="mut">your trades marked</span></h3><div class="chart st">${svg(G.candles,G.history+G.live,G.history,G.trades,G.real&&G.real.k,G.levels)}</div>${levelsList(G.levels,G.real&&G.real.k)}
    <h3 class="st">How everyone did</h3><div class="card st">${hist(G.dist||[],G.ret,'players',better)}</div>${board()}${D.visitor?pitch():''}</div>`;
   flipOpen();
   if(fresh){countTo($('bigret'),G.ret,pc,1400);if(beat||(better!==null&&better>=.9))setTimeout(confetti,900);if(D.visitor)event('signup_open')}}

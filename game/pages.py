@@ -20,7 +20,7 @@ from social import clean_chat
 # be. the rest of memestreet is being retired"). The rest of the code stays, unserved: MS_FULL_SITE=1 serves it again
 # (the test suite does, for the retired parts it still checks).
 DAILY_ONLY = os.environ.get("MS_FULL_SITE") != "1"
-GAME_TITLE = "MemeStreet: The Daily Trading Game"   # (the owner's words, 2026-11-19)
+GAME_TITLE = "Meme Street: The Daily Trading Game"   # (the owner's words, 2026-11-19; the space since 2026-11-23)
 GAME_TEXT = ("One real stock chart a day, the same for everyone. Two minutes to buy, sell or short as it prints, then its "
              "name is revealed. No account needed: keep a streak, share your result, beat your friends. Like Wordle, for stocks.")
 # What the page shows before its script runs (a crawler, a slow phone): the same words the game opens with.
@@ -107,8 +107,8 @@ def add_pages(app):
                     "applicationCategory": "GameApplication", "operatingSystem": "Any", "description": GAME_TEXT,
                     "image": site + "/brand/memestreet_logo_peaks.png", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}
             data = {"@context": "https://schema.org", "@graph": [   # (the name and logo Google shows beside results, 2026-11-23)
-                {"@type": "WebSite", "name": "MemeStreet", "url": site + "/"},
-                {"@type": "Organization", "name": "MemeStreet", "url": site + "/", "logo": site + "/brand/icon-512.png"},
+                {"@type": "WebSite", "name": "Meme Street", "url": site + "/"},
+                {"@type": "Organization", "name": "Meme Street", "url": site + "/", "logo": site + "/brand/icon-512.png"},
                 {k: v for k, v in data.items() if k != "@context"}]}
             s = open(f, encoding="utf-8").read()
             t, d = html.escape(GAME_TITLE), html.escape(GAME_TEXT)
