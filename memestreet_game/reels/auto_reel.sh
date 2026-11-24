@@ -22,6 +22,9 @@ exec 8>queue/.auto.lock; flock 8                   # (one reel at a time: the cr
 # that day". Unless REEL_OLD is set (the old formats, kept as code), every run makes that one reel: today's Daily stock, its story,
 # a flat 2D cartoon explainer, a new scene every sentence (src/explainer/make.py; the owner's reference, 2026-11-22), queued for <today>T2330 when 9 of the 13 simulated viewers watch to the end.
 # It does nothing once the day's reel is queued, and stops after three tries.
+# The day's two promo reels about the Daily (the owner, 2026-11-24): the 09:00 teaser of the day's chart and a 16:00 promo of the
+# game, made from templates (src/explainer/promo.py); a slot already queued or past is left alone; its failure never stops the reel.
+[ -z "${REEL_OLD:-}" ] && { python3 src/explainer/promo.py day "$(date -u +%F)" >> logs/promo.log 2>&1 || echo "promo reels not made (logs/promo.log)"; }
 if [ -z "${REEL_OLD:-}" ]; then
   python3 src/explainer/make.py daily "$(date -u +%F)" >> logs/explainer.log 2>&1 && exit 0
   echo "today's reel was not made (logs/explainer.log)"; exit 1

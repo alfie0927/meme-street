@@ -14,7 +14,7 @@ echo "=== deploy starts $(date -u +%FT%T): $(wc -l < "$D/files.txt") files from 
 tar xzf "$D/new.tgz" --unlink-first && chmod +x ./*.sh      # (--unlink-first: a script that is running keeps its old file)
 if python3 src/make_spec.py selftest | tail -1 | grep -qx ok && python3 src/backtest.py demo | grep -qx ok \
    && python3 src/format_scores.py demo | tail -1 | grep -qx ok \
-   && python3 src/learn.py demo | tail -1 | grep -qx ok && python3 src/stock_story.py demo | tail -1 | grep -qx ok && python3 src/town_daily.py demo | tail -1 | grep -qx ok && python3 src/town_story.py demo | tail -1 | grep -qx ok && python3 src/sounds.py demo | tail -1 | grep -qx ok && python3 src/whatif.py demo | tail -1 | grep -qx ok && python3 src/world.py demo | tail -1 | grep -qx ok && python3 src/news_reel.py demo | tail -1 | grep -qx ok && python3 src/explainer/make.py demo | tail -1 | grep -qx ok && python3 -m py_compile src/*.py src/explainer/*.py lab/silent.py && scripts_ok; then
+   && python3 src/learn.py demo | tail -1 | grep -qx ok && python3 src/stock_story.py demo | tail -1 | grep -qx ok && python3 src/town_daily.py demo | tail -1 | grep -qx ok && python3 src/town_story.py demo | tail -1 | grep -qx ok && python3 src/sounds.py demo | tail -1 | grep -qx ok && python3 src/whatif.py demo | tail -1 | grep -qx ok && python3 src/world.py demo | tail -1 | grep -qx ok && python3 src/news_reel.py demo | tail -1 | grep -qx ok && python3 src/explainer/make.py demo | tail -1 | grep -qx ok && python3 src/explainer/promo.py demo | tail -1 | grep -qx ok && python3 -m py_compile src/*.py src/explainer/*.py lab/silent.py && scripts_ok; then
   echo "=== deployed $(date -u +%FT%T)"
 else
   tar xzf "$D/before.tgz" --unlink-first; chmod +x ./*.sh
