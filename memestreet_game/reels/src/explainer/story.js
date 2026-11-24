@@ -43,15 +43,16 @@ const K = {
     blob(36, 24, 168, 70, [18, 18, 0, 0], col, 0); txt(it.title || '', 120, 60, 28, '#fff', 150);
     (it.lines || []).slice(0, 4).forEach((l, i) => { blob(50, 116 + i * 66, 140, 52, 12, i === 0 ? col : '#e4e7ef', 0); txt(l, 120, 143 + i * 66, 22, i === 0 ? '#fff' : INK, 125); });
     if (it.tap) { const p = (t % 1.2) / 1.2; c.globalAlpha = 1 - p; circ(120, 142, 20 + p * 40, 'rgba(255,255,255,.6)', 0); c.globalAlpha = 1; } }],
-  chart: [940, 540, (it, t, a, dur) => { blob(4, 4, 932, 532, 26, '#141830', 0); c.lineWidth = 4; c.strokeStyle = '#3a4a7a'; rr(4, 4, 932, 532, 26); c.stroke();
+  chart: [940, 815, (it, t, a, dur) => { blob(4, 4, 932, 807, 26, '#141830', 0); c.lineWidth = 4; c.strokeStyle = '#3a4a7a'; rr(4, 4, 932, 807, 26); c.stroke();      // (2026-11-24: as tall as the squarer screen)
     const P = R.prices || [1, 2], n = P.length - 1, i0 = Math.round(clamp(it.from || 0) * n), i1 = Math.round(clamp(it.to == null ? 1 : it.to) * n);
-    const lo = Math.min(...P) * .95, hi = Math.max(...P) * 1.04, X = i => 50 + (i / n) * 840, Y = v => 480 - (v - lo) / (hi - lo) * 380;
-    c.strokeStyle = 'rgba(255,255,255,.08)'; c.lineWidth = 2; for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(50, 100 + k * 95); c.lineTo(890, 100 + k * 95); c.stroke(); }
+    const Q = it.fit ? P.slice(0, i1 + 1) : P, m = it.fit ? Math.max(1, i1) : n;      // (fit: the hook's chart zooms to the stretch it shows, so its line fills the screen)
+    const lo = Math.min(...Q) * .95, hi = Math.max(...Q) * 1.04, X = i => 50 + (i / m) * 840, Y = v => 760 - (v - lo) / (hi - lo) * 620;
+    c.strokeStyle = 'rgba(255,255,255,.08)'; c.lineWidth = 2; for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(50, 130 + k * 150); c.lineTo(890, 130 + k * 150); c.stroke(); }
     pill(it.title || ((R.brands || [{}])[0].name + ' STOCK').toUpperCase(), 470, 58, it.title === '???' ? 56 : 38, '#fff', it.title === '???' ? '#3a4a7a' : brandColor(), 600);
     const k1 = Math.round(i0 + (i1 - i0) * ease(t / Math.max(1, (dur || 3) * .8))), up = P[i1] >= P[i0], col = up ? GREEN : RED;
-    c.lineWidth = 9; c.lineJoin = 'round'; c.strokeStyle = 'rgba(255,255,255,.3)'; c.beginPath(); for (let i = 0; i <= i0; i++) i ? c.lineTo(X(i), Y(P[i])) : c.moveTo(X(i), Y(P[i])); c.stroke();
+    c.lineWidth = it.fit ? 14 : 9; c.lineJoin = 'round'; c.strokeStyle = 'rgba(255,255,255,.3)'; c.beginPath(); for (let i = 0; i <= i0; i++) i ? c.lineTo(X(i), Y(P[i])) : c.moveTo(X(i), Y(P[i])); c.stroke();
     c.strokeStyle = col; c.beginPath(); for (let i = i0; i <= k1; i++) i === i0 ? c.moveTo(X(i), Y(P[i])) : c.lineTo(X(i), Y(P[i])); c.stroke();
-    circ(X(k1), Y(P[k1]), 14, '#fff', 0); const lx = Math.min(800, Math.max(140, X(k1))), ly = Y(P[k1]) - 62 < 100 ? Y(P[k1]) + 62 : Y(P[k1]) - 62;
+    circ(X(k1), Y(P[k1]), 14, '#fff', 0); const lx = Math.min(800, Math.max(140, X(k1))), ly = Y(P[k1]) - 62 < 120 ? Y(P[k1]) + 62 : Y(P[k1]) - 62;
     pill('$' + P[k1].toFixed(2), lx, ly, 46, INK, GOLD); }],
   calendar: [240, 260, (it) => { blob(10, 20, 220, 230, 18, '#fff'); blob(10, 20, 220, 70, [18, 18, 0, 0], RED); txt(String(it.month || '').toUpperCase(), 120, 56, 40, '#fff', 190);
     txt(it.day || '', 120, 170, 100, INK, 190); c.fillStyle = INK; c.fillRect(60, 8, 12, 34); c.fillRect(168, 8, 12, 34); }],
@@ -76,15 +77,16 @@ function header(t, label) {      // the mark (third model); the series tag in th
   c.save(); c.globalAlpha = .8; c.font = `600 26px Montserrat, ${F}`; c.letterSpacing = '4px'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = 6;
   c.fillStyle = '#fff'; c.fillText('\u2205 MEME STREET', 64, 226); c.restore();
   const end = (R.scenes || [])[R.scenes.length - 1] || {};
-  if (t < 3.4) {                                              // the opening tag: where and when, and the series badge
+  if (t < 3.4 && R.hud === false && !((R.scenes || [])[0] || {items: []}).items.some(it => it.kind === 'title')) {                           // the opening tag (a promo's; a story reel opens on the counter racing): where and when, and the series badge
     const a = clamp(t / .25) * clamp((3.4 - t) / .3); c.save(); c.globalAlpha = a; c.textAlign = 'left'; c.textBaseline = 'middle'; c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 8;
     c.font = `800 34px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText(String(R.where || 'MEME STREET').toUpperCase(), 64, 118);
     c.font = `700 24px Montserrat, ${F}`; c.fillStyle = GOLD; c.fillText(String(R.when || '').toUpperCase(), 64, 152); c.restore();
   }
-  if (t >= 3.4 && t < end.t0 && R.hud !== false) {                              // the price counter, once the opening tag has gone: the stock's real price at this point of the story
+  const now = (R.scenes || []).find(q => t >= q.t0 && t < q.t1);      // (the counter rides the chart shots only: elsewhere its price would be stale)
+  if (t < end.t0 && R.hud !== false && now && now.items.some(it => it.kind === 'chart')) {                              // the price counter, once the opening tag has gone: the stock's real price at this point of the story
     const P = R.prices || [], k = Math.round(clamp(priceAt(t)) * (P.length - 1)), v = P[k];
     if (v != null) { const lab = t >= (R.reveal || 0) ? String(R.ticker || 'STOCK') : 'MYSTERY STOCK', up = v >= P[0];
-      c.save(); c.globalAlpha = clamp((t - 3.4) / .3); const w = 300, x = 540 - w / 2, y = 64; rr(x, y, w, 104, 16); c.fillStyle = 'rgba(12,10,20,.86)'; c.fill(); c.lineWidth = 4; c.strokeStyle = up ? GREEN : RED; c.stroke();
+      c.save(); c.globalAlpha = clamp((t - now.t0 + .1) / .25); const w = 300, x = 540 - w / 2, y = 64; rr(x, y, w, 104, 16); c.fillStyle = 'rgba(12,10,20,.86)'; c.fill(); c.lineWidth = 4; c.strokeStyle = up ? GREEN : RED; c.stroke();
       c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `800 20px Montserrat, ${F}`; c.letterSpacing = '4px'; c.fillStyle = up ? GREEN : RED; c.fillText(lab, 540, y + 26);
       c.letterSpacing = '0px'; c.font = `800 48px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText('$' + v.toFixed(2), 540, y + 68); c.restore(); }
   }
@@ -93,7 +95,7 @@ function header(t, label) {      // the mark (third model); the series tag in th
 function priceAt(t) {             // where in the window the story is at time t: the end of the last chart shown so far (the mystery chart counts as its start)
   let u = 0;
   for (const s of R.scenes || []) { if (s.t0 > t) break; for (const it of s.items) if (it.kind === 'chart') { const lt = clamp((t - it.t) / Math.max(.6, (s.t1 - it.t) * .8));
-    u = s === R.scenes[0] ? (it.from || 0) : (t >= it.t ? (it.from || 0) + ((it.to || 1) - (it.from || 0)) * ease(lt) : u); } }
+    u = t >= it.t ? (it.from || 0) + ((it.to || 1) - (it.from || 0)) * ease(lt) : u; } }      // (2026-11-24: the hook's counter races with its line)
   return u;
 }
 function cover() {               // the thumbnail (the owner, 2026-11-23: "each daily chart thumbnail should be similar to the last one so people can find the daily updates"):

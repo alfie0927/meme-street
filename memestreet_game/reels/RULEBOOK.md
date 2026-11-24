@@ -78,6 +78,16 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   comedy, mystery pulses and cinematic cues from a paid library; the free match is Steven O'Brien's cues, CC BY, not in Content ID,
   credited as he asks); captions light the landing word in yellow; every cut is a whip pan; the reel opens with the Daily's tag,
   shows the stock's real price in a counter at the top as the story moves, and ends on the A/B card.
+- The owner, 2026-11-24, on the Express reel (128 views): "how did that reel only get 128 views...... i want THOUSANDS", then "make
+  the reel better. i want all next reels to push way past this 120 view barrier ... make better such as changing the animation
+  style, speed, etc, anything you think". So: 30 to 40 seconds; the first sentence is the surprise (never "Today's mystery chart",
+  which now opens the reveal); frame 0 is the chart alone, filling the frame, its line racing, the claim in big words on screen.
+- The owner, 2026-11-24, on the short Etsy cut ("that's really good"): "now i want more real and actual animations. like if a
+  product is mentioned you can animate the product. make creative animations for everythuing said". So every shot ACTS its
+  sentence out: the product assembles, a jump springs up, a blow crashes down and shakes the camera, someone leaving walks off,
+  sales fill a cart.
+- The owner, 2026-11-24, on the acted cut: "some of the animations are a bit over the top... also the shopping card looks kinda
+  ugly. redo, it's getting better. do the same for the 9am and 4pm reels but don't over do the animations". Acts stay small.
 - The owner disliked the old look, stories and music; the voice may stay. Budget $0.
 - Every reel passes the simulated viewers (lab/audience.py) before it is queued: at least 9 of the 13 watch to the end (the owner's
   bar, 2026-11-22: as many as the best of the copied hits kept; "all 13" is a bar none of the hits passes).

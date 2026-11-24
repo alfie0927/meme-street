@@ -47,14 +47,14 @@ BREATH = 300                                  # phonemes the voice speaks in one
 # How long a pause the voice made is kept: its own length x k, never under `least`, never over `most` (seconds). By itself the voice
 # stops for half a second at a full stop and 0.3 to 0.45 s at EVERY comma; a narrator people watch: 0.28 s, rarely over 0.5.
 PAUSES = {"stop": (.7, .28, .42), "comma": (.45, .08, .18), None: (1, 0, .1)}
-BETWEEN = .4                                  # the pause between two breaths
+BETWEEN = .28                                  # the pause between two breaths
 # The voice (the owner, 2026-11-23: "use all the skills you have to make sure the voiceovers are as realistic as possible"):
 # ElevenLabs, the most human voice we have (the Starter plan the account already pays for: about 1,300 characters a reel),
 # a young American narrator like the owner's third model reel; Kokoro reads if ElevenLabs fails or EXPLAINER_TTS=kokoro.
 TTS = os.environ.get("EXPLAINER_TTS", "eleven")
 EL_VOICE = os.environ.get("EXPLAINER_EL_VOICE", "TX3LPaxmHKxFdv7VOQHJ")     # (Liam: "Energetic, Social Media Creator")
 EL_MODEL = os.environ.get("EXPLAINER_EL_MODEL", "eleven_multilingual_v2")
-EL_SET = {"stability": .45, "similarity_boost": .8, "style": .3, "use_speaker_boost": True, "speed": float(os.environ.get("EXPLAINER_EL_SPEED", "1.0"))}
+EL_SET = {"stability": .45, "similarity_boost": .8, "style": .3, "use_speaker_boost": True, "speed": float(os.environ.get("EXPLAINER_EL_SPEED", "1.1"))}
 # The music. The owner, 2026-11-23: "make the music more exciting, and creative (it's too AI generated and boring rn)", then, on
 # Kevin MacLeod's tracks (heard in thousands of videos): "change the music up so it's more unique". So: tracks by independent
 # artists on Jamendo, free to use with a credit (CC BY), found through Openverse (lab/music_search.py) and kept in
@@ -116,7 +116,15 @@ KINDS = {
     "question": ("a box with a question mark (the unknown, the doubt)", "{}"),
     "badge": ("the company's logo tile", '{"brand", "text"}'),
     "gavel": ("a judge's gavel", "{}"),
+    "cart": ("a shopping bag in the brand's colour, the products dropping into it one by one (sales, shoppers, orders)", '{"brand", "product"}'),
 }
+# what a subject DOES while its sentence is said (the owner, 2026-11-24: "make creative animations for everything said")
+ACTS = {"assemble": "its parts glide in and click together (a product made, built, launched, a deal put together)",
+        "drop": "it lands with a thump (a blow, a fall, a loss, bad results, a ruling)",
+        "launch": "it rises and floats (a jump, a rise, a record, a surge)", "shake": "it shakes hard (shock, panic, a crisis, fear)",
+        "spin": "it turns to face us (a new product, a reveal, a turnaround, a change of plan)", "bounce": "it bounces (good news, a win, cheering, hype)",
+        "pulse": "it throbs (pressure, tension, a deadline, waiting)", "exit": "it slides out to the side (someone leaving or fired, a product dropped, a shop closing)",
+        "tilt": "it topples sideways and rights itself (a stumble, a miss, a wobble)"}
 # the words slammed on a shot, in the band above the subjects: at most one a shot
 FLAT = {
     "title": ("the hook's promise in huge letters, two lines, the second in gold (the first shot has one)", '{"text": at most 28 letters}'),
@@ -139,7 +147,8 @@ def story_text(story):
 
 
 def opening(story):
-    """The words every reel begins with: whose chart this is ('Today's mystery chart on Meme Street')."""
+    """The words the reveal (sentence 2) begins with: whose chart this is ('Today's mystery chart on Meme Street'). Since 2026-11-24
+    the reel no longer OPENS with them: the first 3 s are the surprise (the owner: "push way past this 120 view barrier")."""
     return f"{story.get('day') or 'Today' + chr(39) + 's'} mystery chart on Meme Street"
 
 
@@ -153,7 +162,7 @@ def ask(story, recent=(), critique=None):
             '(a second brand only for a real rival or opponent in the story),\n'
             ' "cast": 1 to 4 people of the story, by role, never a private person: [{"id", "tag": their on-screen tag, at most 22 letters '
             '("NICK WOODMAN, CEO", "A GOPRO FAN", "SHORT SELLERS"), "look": one of ' + json.dumps(LOOKS) + ', "color": "#rrggbb"}],\n'
-            ' "sentences": [17 to 24 of {"say": the sentence,\n'
+            ' "sentences": [9 to 13 of {"say": the sentence,\n'
             '   "scene": {"bg": the set, "label": null or the date of this moment, at most 14 letters ("OCT 2020", "BLACK FRIDAY"),\n'
             '             "items": [1 or 2 subjects, the bigger one first, then at most one line of words: {"kind", "on": the word of the '
             'sentence at which it appears, ...its fields}]}}],\n'
@@ -164,26 +173,33 @@ def ask(story, recent=(), critique=None):
             "the shot opens; the second comes in a moment later and the words on their word (\"on\").\n"
             "THE SETS (\"bg\"):\n" + "\n".join(f"  {k}: {v}." for k, v in BGS.items()) + "\n"
             "THE SUBJECTS:\n" + kinds + "\n"
-            "THE WORDS (at most one a shot, only when a figure or a verdict deserves to be read big):\n" + flats + "\n\n"
+            "THE WORDS (at most one a shot, only when a figure or a verdict deserves to be read big):\n" + flats + "\n"
+            "THE ACTS. Nothing on screen just stands there: every subject that is not already moving (a chart racing, people posing, "
+            "a cart filling) acts out the verb of its sentence, with \"act\" (one of these):\n" + "\n".join(f"  {k}: {v}." for k, v in ACTS.items()) +
+            "\n  The product being made assembles; a product launched assembles or spins; a jump launches; a blow drops; someone who "
+            "leaves exits; shoppers buying fill a cart. Pick the act the words call for, never at random. Keep it calm: a subject that "
+            "already moves (a chart, people, a cart) needs no act, and one act a shot is plenty.\n\n"
             "SHOW THE STORY, literally: what the company makes (the product), the product being made (the factory), sold (the "
             "store) and used (action, phone); each event with its own subject, set and date; the people (the founder, buyers, "
             "traders) acting the moment with their pose; the price on the real chart at least twice more as the story moves "
             "(from/to are points of the window, 0 = its first day, 1 = its last; each of these ends later than the one before). "
-            "Use at least 9 different kinds and at least 6 different sets; never the same set three sentences running.\n"
-            "THE OPENING IS FIXED IN FORM, because the reel is the answer to a game: Meme Street shows a mystery chart every day and "
-            "this is the story behind it.\n"
-            f"  Sentence 1 begins \"{opening(story)}\" and never names the company: it says the most surprising true thing the "
-            "chart did, with a figure, in at most 16 words (\"" + opening(story) + " doubled from $4.80 in a pandemic.\"). Its shot is "
-            "the mystery itself: a chart with \"title\": \"???\" from 0 to its most dramatic point, a question box beside it, and a "
-            "title of at most 28 letters in two short lines that holds the surprise (\"DOUBLED IN A PANDEMIC\").\n"
-            "  Sentence 2 is the reveal: it names the company and what it makes (\"It was GoPro, the maker of action cameras.\"). Its "
-            "shot is the product, or someone using it, with the title \"IT WAS <NAME>\".\n"
-            "THE STORY, from sentence 3: 160 to 220 words in all, sentences of 5 to 16 words, most under 11. The trouble, the bet, "
+            "Use at least 6 different kinds and at least 4 different sets; never the same set three sentences running.\n"
+            "THE REEL IS 30 TO 40 SECONDS. On this account the longer a reel, the less of it is watched; reels under 40 s were watched "
+            "twice as far. So: only the beats that carry the story, every sentence a step, nothing to explain the background.\n"
+            "THE FIRST 3 SECONDS DECIDE EVERYTHING: half the viewers leave by then. So the opening is fixed in form:\n"
+            "  Sentence 1 is the surprise itself, its first word the subject, at most 12 words, with a figure, never naming the "
+            "company and never a label (\"This stock doubled from $4.80 in a pandemic.\", \"This stock tripled in four months with no "
+            "news.\"). Its shot has ONE subject so it fills the screen: the chart with \"title\": \"???\" from 0 to its most dramatic "
+            "point, racing there, and a title of at most 28 letters in two short lines that holds the surprise (\"TRIPLED WITH NO NEWS\").\n"
+            f"  Sentence 2 is the reveal and the game: it begins \"{opening(story)}\" and names the company and what it makes "
+            f"(\"{opening(story)} was GoPro, the action camera maker.\"). Its shot is the product, or someone using it, with the title "
+            "\"IT WAS <NAME>\".\n"
+            "THE STORY, from sentence 3: 85 to 125 words in all, sentences of 4 to 14 words, most under 10. The trouble, the bet, "
             "the proof (a figure, the stock), the blow, where it ended against where it began, then a line that is a further true "
             "fact with a sting (a doubt, a catch, what came next); no moral, no question, no call to follow, like or comment. Link "
             "the steps with 'then', 'but', 'so': each sentence makes the next one wanted. Say what happened as a fact; never name a "
             "news outlet (the sources go in the caption). Name the company the way it is said (GoPro), never its ticker. Say prices "
-            "simply ('$4.80', 'near $8'). AT MOST 16 NUMBERS in the whole script (dates count): give a figure only where it is the "
+            "simply ('$4.80', 'near $8'). AT MOST 10 NUMBERS in the whole script (dates count): give a figure only where it is the "
             "point. Name a person only if the research names them as a public figure.\n"
             f"THE LAST SENTENCE is always, word for word: \"{CLOSE}\" Its shot: a phone ({{\"kind\": \"phone\", \"title\": \"MEME STREET\", "
             "\"lines\": [\"NEW CHART\", \"AT MIDNIGHT\"], \"tap\": true}) and a question box."
@@ -223,23 +239,25 @@ def shown(it):
 def errors(spec, story):
     """Everything the format can check in code, in words the writer can act on."""
     E = []; S = spec.get("sentences") or []; C = spec.get("cast") or []; ids = [c.get("id") for c in C]; B = spec.get("brands") or []
-    if not 17 <= len(S) <= 24: E.append(f"{len(S)} sentences: write 17 to 24")
+    if not 9 <= len(S) <= 13: E.append(f"{len(S)} sentences: write 9 to 13 (the reel is 30 to 40 seconds)")
     words = sum(len(str(s.get("say", "")).split()) for s in S)
-    if not 160 <= words <= 220: E.append(f"{words} words: write 160 to 220")
+    if not 85 <= words <= 125: E.append(f"{words} words: write 85 to 125 (30 to 40 seconds)")
     for k, s in enumerate(S):
         n = len(str(s.get("say", "")).split())
-        if not 5 <= n <= 16: E.append(f"sentence {k + 1} is {n} words: 5 to 16 (a shot needs two seconds)")
+        if not 4 <= n <= 14: E.append(f"sentence {k + 1} is {n} words: 4 to 14")
     name = str((B[0] if B else {}).get("name") or story.get("stock", {}).get("name", ""))
     if S:
         h = str(S[0].get("say", "")); first = (S[0].get("scene") or {}).get("items") or []
-        if not h.lower().startswith(opening(story).lower()): E.append(f"the first sentence begins \"{opening(story)}\" (the reel is the story behind the game's chart)")
-        if len(h.split()) > 16: E.append("the first sentence is at most 16 words")
+        if re.match(r"(today|yesterday|this week|on meme street|meme street)", h, re.I) or "mystery chart" in h.lower(): E.append("the first sentence starts on the surprise itself (\"This stock tripled...\"), never a label or \"today's mystery chart\"")
+        if len(h.split()) > 12: E.append("the first sentence is at most 12 words: the surprise lands in the first two seconds")
+        if len([it for it in first if it.get("kind") in KINDS]) != 1: E.append("the first shot has ONE subject, the mystery chart, so it fills the screen")
         if "?" in h or re.search(r"\b(you|your|imagine|did you know)\b", h, re.I): E.append("the first sentence is a statement: no question, no 'you', no 'imagine'")
         if not re.search(r"\d", h): E.append("the first sentence holds a figure (a price, a percentage, a count)")
         if name and re.search(rf"\b{re.escape(name)}\b", h, re.I): E.append("the first sentence never names the company: the chart is a mystery until sentence 2")
         if not any(it.get("kind") == "chart" and str(it.get("title")) == "???" for it in first): E.append("the first shot shows the mystery chart with \"title\": \"???\"")
         if not any(it.get("kind") == "title" for it in first): E.append("the first shot carries a title: the surprise in at most 28 letters")
         if len(S) > 1 and name and not re.search(rf"\b{re.escape(name)}\b", str(S[1].get("say", "")), re.I): E.append("the second sentence is the reveal: it names the company")
+        if len(S) > 1 and not str(S[1].get("say", "")).lower().startswith(opening(story).lower()): E.append(f"the second sentence begins \"{opening(story)}\" (the reveal: it was the game's chart)")
         if str(S[-1].get("say", "")).strip() != CLOSE: E.append(f"the last sentence is, word for word: \"{CLOSE}\"")
         st = str(S[-2].get("say", "")) if len(S) > 1 else ""
         if "?" in st or re.search(r"\b(follow|subscribe to|comment|like and|lesson|moral)\b", st, re.I): E.append("the line before the last is a further fact with a sting: no question, no moral, no call to follow")
@@ -259,7 +277,7 @@ def errors(spec, story):
     names = {r for r in re.findall(r"\b[A-Z][a-z]+(?: [A-Z][a-z]+)+\b", txt) if unknown(r)}
     if names: E.append("these names are not in the research: " + ", ".join(sorted(names)) + " (name only its public figures; otherwise the role)")
     nn = len(NUMW.findall(txt))
-    if nn > 16: E.append(f"{nn} numbers in the script: at most 16")
+    if nn > 10: E.append(f"{nn} numbers in the script: at most 10")
     if not 1 <= len(B) <= 2 or not all(HEX.match(str(b.get("color", ""))) and b.get("name") for b in B): E.append("1 or 2 brands, each with a name and a #rrggbb colour")
     if not 1 <= len(C) <= 4: E.append("1 to 4 cast members")
     if len(set(ids)) != len(ids) or not all(ids): E.append("every cast member has its own id")
@@ -285,8 +303,9 @@ def errors(spec, story):
             kd = it.get("kind"); kinds.add(kd)
             if kd == "person" and it.get("who") not in ids: E.append(f"{where}: a person's 'who' is a cast id")
             if kd in ("person", "crowd") and it.get("pose", "stand") not in POSES: E.append(f"{where}: pose is one of {POSES}")
+            if it.get("act") and it["act"] not in ACTS: E.append(f"{where}: act is one of " + ", ".join(ACTS))
             if kd == "podium" and it.get("first") not in ids: E.append(f"{where}: a podium's 'first' is a cast id")
-            if kd in ("product", "factory", "store") and it.get("product", "box") not in PRODUCTS: E.append(f"{where}: product is one of " + ", ".join(PRODUCTS))
+            if kd in ("product", "factory", "store", "cart") and it.get("product", "box") not in PRODUCTS: E.append(f"{where}: product is one of " + ", ".join(PRODUCTS))
             if kd == "chart":
                 try: a, b = float(it["from"]), float(it["to"]); assert 0 <= a < b <= 1 and (not k or b >= last); last = b if k else last      # (the mystery chart shows the whole run; the story's charts move forward)
                 except Exception: E.append(f"{where}: a chart's from < to, both 0 to 1, each chart ending later than the last")
@@ -296,11 +315,13 @@ def errors(spec, story):
             for f, n in (("text", 28 if kd == "title" else 18 if kd == "counter" else 12), ("sign", 10), ("title", 12)):
                 if it.get(f) and len(str(it[f])) > n: E.append(f"{where}: a {kd}'s {f} is at most {n} letters")
             if kd in ("stamp", "title") and not it.get("text"): E.append(f"{where}: a {kd} has text")
-    if sum(1 for it in items if it.get("kind") == "chart") < 3: E.append("show the real chart at least twice more as the story moves")
-    if len(kinds & set(KINDS)) < 9: E.append(f"{len(kinds & set(KINDS))} different subjects: use at least 9")
-    if len(set(bgs)) < 6: E.append(f"{len(set(bgs))} sets: use at least 6")
+    if sum(1 for it in items if it.get("kind") == "chart") < 2: E.append("show the real chart at least once more as the story moves")
+    if len(kinds & set(KINDS)) < 6: E.append(f"{len(kinds & set(KINDS))} different subjects: use at least 6")
+    if len(set(bgs)) < 4: E.append(f"{len(set(bgs))} sets: use at least 4")
     if any(a == b == c for a, b, c in zip(bgs, bgs[1:], bgs[2:])): E.append("never the same set three sentences running")
     if not 8 <= len(str(spec.get("title", "")).split()) <= 15: E.append("the title is 8 to 14 words")
+    acted = sum(1 for s in S[1:-1] if any(it.get("act") or it.get("kind") in ("chart", "person", "crowd", "cart", "money", "rocket", "action", "factory") for it in ((s.get("scene") or {}).get("items") or [])))
+    if S and acted < len(S) - 2: E.append("every shot from the reveal to the close ACTS its sentence out: give a still subject an \"act\" (" + ", ".join(ACTS) + ")")
     return E
 
 
@@ -622,6 +643,21 @@ def fake_times(spec):
     return segs, wt, t + 1.0
 
 
+def hook_lines(spec):
+    """The thumbnail's promise: the hook's own title in two lines ("40% IN" / "FOUR DAYS"), else the post title's."""
+    first = ((spec.get("sentences") or [{}])[0].get("scene") or {}).get("items") or []
+    w = str(next((it.get("text") for it in first if it.get("kind") == "title" and it.get("text")), spec["title"])).split()
+    k = max(1, min(len(w) - 1, round(len(w) / 2))) if len(w) > 1 else 1
+    return [" ".join(w[:k]), " ".join(w[k:])] if len(w) > 1 else w
+
+
+def hooked(scenes):
+    """Frame 0 is already moving (the virality skill: no fade-in, no empty frame): the hook's chart is in place, its line racing."""
+    for it in (scenes[0]["items"] if scenes else []):
+        if it.get("kind") == "chart": it["t"] = -.35; it["fit"] = 1
+    return scenes
+
+
 def timeline(spec, story, segs, wt, T):
     """What story3d.js draws from. The header reads whose chart this is ("TODAY'S MYSTERY CHART") and, from the moment the
     company is first said, its name."""
@@ -632,10 +668,10 @@ def timeline(spec, story, segs, wt, T):
     choice = spec.get("choice") or {"a": f"Buy it at ${lo:.2f}", "b": "Stay away"}      # (the fifth model's ending: a choice to answer in the comments)
     return {"T": round(T, 3), "title": spec["title"], "tag": f"{day} MYSTERY CHART", "ticker": st.get("ticker"), "choice": choice,
             "where": f"Meme Street \u00B7 Daily #{story.get('number')}" if story.get("number") else "Meme Street", "when": f"{day} mystery chart", "tag2": f"{day} CHART: {name.upper()}", "reveal": round(said[0] - CAP_LEAD, 3) if said else 0,
-            "brands": spec["brands"], "cast": cast, "scenes": direct(spec, segs, wt, T),
-            "caps": captions(wt, spec, spans_of(segs)), "segs": segs, "words": wt, "prices": story.get("chart"),
+            "brands": spec["brands"], "cast": cast, "scenes": hooked(direct(spec, segs, wt, T)),
+            "caps": captions(wt, spec, spans_of(segs)), "segs": segs, "words": wt, "prices": story.get("history") if spec.get("prices") == "history" and story.get("history") else story.get("chart"),      # (a teaser shows only the months BEFORE the game: never what the chart does next)
             "dates": [story.get("stock", {}).get("start"), story.get("stock", {}).get("end")],
-            "hud": spec.get("hud", True), "cover": spec.get("cover") or {"badge": f"Daily #{story.get('number')}" if story.get("number") else "The Daily", "lines": [spec["title"]]},
+            "hud": spec.get("hud", True), "cover": spec.get("cover") or {"badge": f"Daily #{story.get('number')}" if story.get("number") else "The Daily", "lines": hook_lines(spec)},
             **({"reveal": round(T + 99, 3)} if spec.get("mystery") else {}), **{k: spec[k] for k in ("where", "when") if spec.get(k)}}     # (a promo: the company stays a mystery, its own tag)
 
 
@@ -884,7 +920,7 @@ def day_story(date, data):
                        "low": {"price": f"${P[lo]:.2f}", "when": when(lo), "chart_point": round(lo / (len(P) - 1), 2)},
                        "note": "prices are the real daily closes the Daily showed; the chart point says where in the window a moment falls"},
             "prices": month_table(P, rv["start"], rv["end"]), "research": {k: pack.get(k) for k in ("headline", "people", "company", "facts", "numbers", "market", "not_known")},
-            "chart": P, "sources": pack.get("sources", [])}
+            "chart": P, "history": [round(c[3] * rv["k"], 2) for c in g["candles"][:H]], "sources": pack.get("sources", [])}
 
 
 def daily(date, where=None):
@@ -977,7 +1013,7 @@ def demo():
             {"kind": "building", "brand": "GoPro", "text": "GoPro"}, {"kind": "person", "who": "ceo", "pose": "sad"}, {"kind": "chart", "from": 0, "to": .3}]}}]
     spec = {"title": "x", "brands": [{"name": "GoPro", "color": "#1aa3e8"}], "cast": [{"id": "ceo", "tag": "NICK WOODMAN, CEO", "look": "suit", "color": "#1aa3e8"}], "sentences": S}
     E = errors(spec, DEMO_STORY)
-    assert any("3 subjects" in e for e in E) and any("sentences" in e for e in E) and any("first sentence begins" in e for e in E) and any("mystery chart with" in e for e in E) and any("word for word" in e for e in E), E
+    assert any("3 subjects" in e for e in E) and any("sentences" in e for e in E) and any("first shot has ONE subject" in e for e in E) and any("mystery chart with" in e for e in E) and any("word for word" in e for e in E), E
     S[0]["scene"]["items"] = [{"kind": "chart", "from": 0, "to": .9, "title": "???"}, {"kind": "title", "text": "DOUBLED IN A PANDEMIC"}, {"kind": "stamp", "text": "X"}]
     S[0]["say"] = "Today's mystery chart on Meme Street, GPRO, went from $4.80 to $99, The Fool reported."; E = errors(spec, DEMO_STORY)
     assert any("ticker" in e for e in E) and any("99" in e for e in E) and any("one line of words" in e for e in E) and any("no 'X reported'" in e for e in E), E

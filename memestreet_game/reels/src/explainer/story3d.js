@@ -215,8 +215,15 @@ const PROPS = {
       (it.lines || ['C:\\>_']).slice(0, 3).forEach((l, i) => { const s = String(l).slice(0, Math.max(0, Math.floor(left))); left -= String(l).length; S.txt(s, 18, 50 + i * 70, 44, '#57f28a', w - 30, 600, 'left'); }); S.ctx(old); }, it), 0, 1.18, .56)); return {g, lift: .5}; },
   phone(it) { const g = new T3.Group(), p = new T3.Group(); p.add(at(box(1.14, 2.2, .14, '#1b1d24'), 0, 1.1, 0)); p.add(at(screen(1.02, 2.04, 640, (x, w, h, t) => drawK('phone', it, t, x, w, h, '#1b1d24'), it), 0, 1.1, .075)); p.scale.setScalar(1.3); g.add(p);
     return {g, lift: .3, tick: t => { p.rotation.y = .22 * Math.sin(t * .9); }}; },
-  chart(it) { const g = new T3.Group(); g.add(at(box(4.5, 2.7, .18, '#232a4d'), 0, 2.1, 0)); for (const x of [-1.6, 1.6]) g.add(at(box(.14, .8, .14, '#3a4370'), x, .4, 0)); g.add(at(box(4, .1, .7, '#3a4370'), 0, .05, 0));
-    g.add(at(screen(4.34, 2.5, 720, (x, w, h, t) => drawK('chart', it, t, x, w, h, '#141830'), it), 0, 2.1, .1)); return {g}; },
+  cart(it) { const g = new T3.Group(), col = brand(it.brand), N = 4, items = [];      // a shopping bag in the brand's colour, the products dropping into it (sales, shoppers, orders)
+    const W = 1.9, Hb = 2.1, D = 1.05, body = box(W, Hb, D, col); g.add(at(body, 0, Hb / 2, 0));
+    g.add(at(box(W + .04, .16, D + .04, S.shade(col, -.18)), 0, Hb - .08, 0));
+    for (const z of [D / 2 + .01, -D / 2 - .01]) { const h = new T3.Mesh(new T3.TorusGeometry(.42, .05, 8, 24, Math.PI), M('#f4efe6')); h.position.set(0, Hb, z); g.add(h); }
+    const nm = label(String(it.brand || 'SHOP'), 1.5, .5, '#fff', S.shade(col, -.25)); nm.position.set(0, Hb * .52, D / 2 + .012); g.add(nm);
+    for (let k = 0; k < N; k++) { const m = productMesh(it.product || 'box', S.shade(col, .35), ''); m.scale.setScalar(.36); m.userData.rest = new T3.Vector3(-.55 + (k % 2) * 1.1 + (k > 1 ? .3 : 0), Hb - .05 + (k > 1 ? .12 : 0), (k % 2 ? .12 : -.12)); m.visible = false; g.add(m); items.push(m); }
+    return {g, tick: lt => items.forEach((m, k) => { const u = cl((lt - .3 - k * .38) / .35), r = m.userData.rest; m.visible = u > 0; m.position.set(r.x, r.y + (window.__measuring ? 0 : 1.6) * (1 - u) * (1 - u), r.z); m.rotation.y = .4 * k + (1 - u) * 1.2; })}; },
+  chart(it) { const g = new T3.Group(); g.add(at(box(4.2, 3.7, .18, '#232a4d'), 0, 2.55, 0));      // (2026-11-24: squarer, so the hook's chart fills a tall frame) for (const x of [-1.6, 1.6]) g.add(at(box(.14, .8, .14, '#3a4370'), x, .4, 0)); g.add(at(box(4, .1, .7, '#3a4370'), 0, .05, 0));
+    g.add(at(screen(4.04, 3.5, 720, (x, w, h, t) => drawK('chart', it, t, x, w, h, '#141830'), it), 0, 2.55, .1)); return {g}; },
   bars(it) { const B = (it.bars || []).slice(0, 3), mx = Math.max(1e-9, ...B.map(b => +b.value || 0)), g = new T3.Group(), cols = ['#2f7cf6', '#9b59d0', '#22b573'], bs = [], HT = 2.6;
     g.add(at(box(B.length * 1.5 + .3, .12, 1.2, '#20243a'), 0, .06, 0));
     B.forEach((b, i) => { const x = (i - (B.length - 1) / 2) * 1.5, col = (R.brands || []).some(q => q.name.toLowerCase() === String(b.label).toLowerCase()) ? brand(b.label) : cols[i], h = HT * (+b.value || 0) / mx;
@@ -272,7 +279,8 @@ const PROPS = {
   gavel(it) { const g = new T3.Group(); g.add(at(box(1.8, .24, 1, '#7a4b2a'), 0, .12, 0)); const h = new T3.Group(), hd = cyl(.24, .24, .9, '#7a4b2a', 12); hd.rotation.z = Math.PI / 2; h.add(at(hd, 0, 1.25, 0)); h.add(at(cyl(.07, .07, 1.25, '#a0683a', 8), 0, .62, 0));
     h.position.set(.35, .24, 0); g.add(h); g.userData.proxy = [-.95, 0, -.5, 1.7, 1.75, .5]; return {g, lift: .4, tick: t => { h.rotation.z = .6 - Math.max(0, Math.sin(t * 4)) * .6; }}; },
 };
-const FLAT = new Set([]);      // (the third model reel puts no words on the picture: a script's titles, counters and stamps are not drawn)
+const FLAT = new Set(['title']);      // (2026-11-24: the hook's claim is on screen from the first second, readable on mute; still only the first two shots carry one)
+const FLAT_OFF = new Set([]);      // (the third model reel puts no words on the picture: a script's titles, counters and stamps are not drawn)
 
 // ---------------------------------------------------------------- the sets: a place at real scale, built around its stage (x 0, z 0), GAP wide
 function sky(cols) { return canvasTex(8, 512, (x, w, h) => { x.fillStyle = cols[0]; x.fillRect(0, 0, w, h); const g = x.createLinearGradient(0, h * .5, 0, h * .84); cols.forEach((c, i) => g.addColorStop(i / (cols.length - 1), c)); x.fillStyle = g; x.fillRect(0, h * .5, w, h * .5); }); }   // (the camera sees the band just above the horizon)
@@ -366,15 +374,17 @@ function place(v) { cam.position.set(v[0], v[1], v[2]); cam.lookAt(v[3], v[4], v
 function toPx(v) { P.copy(v).project(cam); return [(P.x + 1) / 2 * W, (1 - P.y) / 2 * H]; }
 function camPose(c, u, k) {      // shot k's camera at u (0..1 through its sentence): it starts wide and to one side and pushes in to the fitted frame.
   // Every third shot looks from low down, every third from higher up; the horizon leans a little, more on a blow (the second model's restless camera).
-  const e = 1 - (1 - cl(u)) * (1 - cl(u)), d = c.d * (1.24 - .24 * e), side = (k % 2 ? 1 : -1) * .16 * c.d * (1 - e), m = (R.scenes[k] || {}).mood || 0;
+  const e = 1 - (1 - cl(u)) * (1 - cl(u)), far = k ? .24 : .12, d = c.d * (1 + far - far * e), side = (k % 2 ? 1 : -1) * (k ? .16 : .04) * c.d * (1 - e), m = (R.scenes[k] || {}).mood || 0;
   const rise = k % 3 === 1 ? -.25 + .02 * d : k % 3 === 2 ? .45 + .13 * d : .2 + .09 * d, roll = (k % 2 ? 1 : -1) * (m < 0 ? .055 : .024) * (.4 + .6 * e);
   const T = (R.scenes[k] || {}).t0 + u * 3, hx = .035 * c.d * Math.sin(T * .9 + k), hy = .02 * c.d * Math.sin(T * 1.3 + k * 2);      // (a handheld drift: the third model's camera never rests)
   return [c.ax + side + hx, Math.max(.35, c.ay + rise + hy), d, c.ax + hx * .3, c.ay + hy * .3, 0, roll + .008 * Math.sin(T * .7 + k)];
 }
 function boxOf(obj) {            // an object's box in the world (people: their pose's fixed box, not their skin's rest pose)
-  const b = new T3.Box3(); obj.updateMatrixWorld(true);
+  const b = new T3.Box3(), moved = []; obj.traverse(q => { if (q.userData.rest) { moved.push([q, q.position.clone()]); q.position.copy(q.userData.rest); } });      // (a thing falling in counts where it lands)
+  obj.updateMatrixWorld(true);
   obj.traverse(q => { if (q.userData.proxy && q.visible) { const l = q.userData.proxy; b.union(new T3.Box3(new T3.Vector3(l[0], l[1], l[2]), new T3.Vector3(l[3], l[4], l[5])).applyMatrix4(q.matrixWorld)); } });
   if (!obj.userData.proxy) obj.traverse(m => { if (m.isMesh && !m.isSkinnedMesh && m.visible && m.geometry && !m.material.transparent) { const a = m.geometry.attributes.position; for (let i = 0; i < a.count; i++) b.expandByPoint(P.fromBufferAttribute(a, i).applyMatrix4(m.matrixWorld)); } });   // (its real corners: a turned thing is no wider than it is)
+  moved.forEach(([q, v]) => q.position.copy(v)); if (moved.length) obj.updateMatrixWorld(true);
   return b;
 }
 function rectOf(b) {             // a world box as the camera sees it now (px)
@@ -383,12 +393,13 @@ function rectOf(b) {             // a world box as the camera sees it now (px)
   return [x0, y0, x1 - x0, y1 - y0];
 }
 function envelope(p) {           // the box a subject sweeps through its own motion (so a bob or a swing never leaves the frame)
-  const b = new T3.Box3(); for (let t = 0; t <= 4; t += .2) { if (p.tick) p.tick(t); b.union(boxOf(p.o)); } return b;
+  const b = new T3.Box3(); window.__measuring = 1; for (let t = 0; t <= 4; t += .2) { if (p.tick) p.tick(t); b.union(boxOf(p.o)); } window.__measuring = 0; return b;      // (a thing that falls in from out of the frame is measured where it lands)
 }
 function solve(k, subs, zone) {  // stand the subjects side by side on the stage, then find the camera that fills the zone with them
   let x = 0; const gap = .5;
   subs.forEach((p, i) => { const right = subs.length > 1 && i >= subs.length / 2; p.o.position.set(0, p.lift || 0, 0); p.o.rotation.y = subs.length > 1 && p.actor ? (right ? -.4 : .4) : 0;
-    if (p.actor) p.actor.mir = right; p.env = envelope(p); p.o.position.x = x - p.env.min.x; p.x0 = p.o.position.x; x += p.env.max.x - p.env.min.x + gap; });
+    if (p.actor) p.actor.mir = right; p.env = envelope(p); const room = (p.it.kind === 'cart' && !p.it.act) ? [.1, .3] : {launch: [0, .25], bounce: [0, .15], drop: [.05, .05, .05], shake: [.06, 0], exit: [1.1, 0], tilt: [.4, .1, .05], spin: [.15, 0]}[p.it.act]; if (room) { p.env.min.x -= room[0]; p.env.max.x += room[0]; p.env.max.y += room[1]; p.env.min.y -= room[2] || 0; }      // (room in the frame for the subject's act)
+    p.o.position.x = x - p.env.min.x; p.x0 = p.o.position.x; x += p.env.max.x - p.env.min.x + gap; });
   const sh = k * GAP - (x - gap) / 2; subs.forEach(p => { p.o.position.x += sh; p.env.translate(new T3.Vector3(p.o.position.x, 0, 0)); });
   const c = {ax: k * GAP, ay: 1.1, d: 9}; if (!subs.length) return c;
   const U = new T3.Box3(); subs.forEach(p => U.union(p.env)); const ht = Math.max(.3, U.max.y - U.min.y); c.ax = (U.min.x + U.max.x) / 2; c.ay = (U.min.y + U.max.y) / 2;
@@ -421,6 +432,30 @@ async function build() {
   }
 }
 
+// ---------------------------------------------------------------- the acts: a subject acts out its sentence's verb
+const ACTS = {
+  assemble(p, lt) {          // its parts glide in and click together (made, built, launched)
+    const e = ease(cl(lt / .8));
+    if (!p.parts) { p.parts = []; p.o.traverse(m => { if (m.isMesh && m !== p.o) p.parts.push([m, m.position.clone(), m.rotation.z]); }); }
+    p.parts.forEach(([m, q, rz], i) => { const a = i * 2.39996, r = (1 - e) * (.7 + (i % 3) * .2);
+      m.position.set(q.x + Math.cos(a) * r, q.y + Math.abs(Math.sin(a)) * r * .8, q.z + Math.sin(a * .7) * r * .4); m.rotation.z = rz + (1 - e) * (i % 2 ? .8 : -.8); });
+  },
+  drop(p, lt, b) { const u = cl(lt / .4); p.o.position.y = b.y + 1 * (1 - u) * (1 - u); const hit = lt - .4;      // it lands with a thump and a small jolt
+    if (hit > 0 && hit < .3) { const k = (1 - hit / .3); p.o.scale.y *= 1 - .06 * k * Math.sin(hit * 30); window.__shake = Math.max(window.__shake || 0, .35 * k); } },
+  launch(p, lt, b) { const u = ease(cl((lt - .1) / .5)); p.o.position.y = b.y + .22 * u + .03 * Math.sin(lt * 4) * u; },      // (rises and floats)
+  shake(p, lt, b) { const k = .025 * Math.max(0, 1 - lt / .9); p.o.position.x = b.x + Math.sin(lt * 40) * k; p.o.rotation.z = Math.sin(lt * 31) * k; },
+  spin(p, lt, b) { p.o.rotation.y = b.ry - .9 * (1 - ease(cl(lt / .9))); },      // (turns to face us)
+  bounce(p, lt, b) { p.o.position.y = b.y + .12 * Math.abs(Math.sin(lt * 5)) * Math.max(0, 1 - lt / 1.6); },
+  pulse(p, lt) { p.o.scale.multiplyScalar(1 + .03 * Math.sin(lt * 5)); },
+  exit(p, lt, b) { const out = b.x > p.k * GAP ? 1 : -1, u = cl((lt - .3) / 1.5); p.o.position.x = b.x + out * 1.05 * ease(u); p.o.position.y = b.y + .06 * Math.abs(Math.sin(lt * 9)) * (u > 0 && u < 1 ? 1 : 0); },      // (walks off towards the edge of the shot, away from the other subject; the frame keeps room for the walk)
+  tilt(p, lt, b) { const u = cl(lt / 1.3); p.o.rotation.z = -.16 * Math.sin(Math.PI * u) * (1 - .3 * u); },
+};
+function act(p, lt) {
+  const f = ACTS[p.it.act]; if (!f) return;
+  if (!p.b) p.b = {x: p.o.position.x, y: p.o.position.y, ry: p.o.rotation.y};
+  f(p, Math.max(0, lt), p.b);
+}
+
 // ---------------------------------------------------------------- the frame
 function sceneAt(t) { const Sc = R.scenes; const k = Sc.findIndex(s => t < s.t1); return k < 0 ? Sc.length - 1 : k; }
 function render(t) {
@@ -435,15 +470,18 @@ function render(t) {
   for (const [i, f] of LIVE) if (on(i)) f(t);
   for (const p of ITEMS) {
     if (p.flat) continue; const vis = on(p.k) && t >= p.it.t; p.o.visible = vis; if (!vis) continue;
-    const lt = t - p.it.t, hook = !p.k && p.it.t < 0 && !p.actor; p.o.scale.setScalar(hook ? .72 + .28 * S.ease(t / .5) : S.ease(lt / .35)); if (p.tick) p.tick(lt);
-    if (hook) p.o.rotation.y = -1.05 * (1 - S.ease(t / .7));         // (it turns to face us as it grows: readable on the very first frame)
+    const lt = t - p.it.t, hook = !p.k && p.it.t < 0 && !p.actor; p.o.scale.setScalar(hook ? .9 + .1 * S.ease(t / .5) : S.ease(lt / .35)); const at = t - Math.max(p.it.t, Sc[p.k].t0 + .2); if (p.tick) p.tick(Math.max(0, at));      // (its act and its own motion start when its shot is on screen, never during the shot before)
+    if (hook) p.o.rotation.y = -.3 * (1 - S.ease(t / .6));
+    act(p, at);         // (it turns to face us as it grows: readable on the very first frame)
   }
   for (const [tx, draw, it] of DYN) { if (!draw || (it && (it._k !== k && !(flying && it._k === k - 1) || t < it.t))) continue; const {x, c} = tx.userData; draw(x, c.width, c.height, Math.max(0, it ? t - it.t : t)); tx.needsUpdate = true; }
+  if (window.__shake > .01) { cam.position.y += Math.sin(t * 70) * .025 * window.__shake; cam.updateMatrixWorld(); }      // (a crash shakes the camera)
   bokeh.uniforms.focus.value = Math.hypot(v[0] - v[3], v[1] - v[4], v[2] - v[5]); comp.render();
   window.__whip = flying ? Math.sin(Math.PI * cl((t - b) / FLY)) : 0;      // (the fourth model's whip pan: the cut smears sideways; drawn on the overlay below)
   // the flat layer: the words in their band, name tags, the header with the scene's date, the captions
   S.reset(); ox.clearRect(0, 0, W, H); const old = S.ctx(ox), sc = Sc[k];
   if (window.__whip > .05) { ox.save(); for (let i = 1; i <= 9; i++) { ox.globalAlpha = .16 * window.__whip; ox.drawImage(cv, (i - 5) * 26 * window.__whip, 0, W, H); } ox.restore(); }
+  if (window.__coverOn) { S.cover(); S.ctx(old); window.__flying = flying; return; }      // (the thumbnail: the series badge and the promise, over the picture alone)
   const gr = ox.createLinearGradient(0, 1200, 0, H); gr.addColorStop(0, 'rgba(8,9,20,0)'); gr.addColorStop(.35, 'rgba(8,9,20,.42)'); gr.addColorStop(1, 'rgba(8,9,20,.72)'); ox.fillStyle = gr; ox.fillRect(0, 1200, W, H - 1200);
   if (!flying) {
     const mine = ITEMS.filter(p => p.k === k && !p.flat && t >= p.it.t), rects = mine.map(p => rectOf(boxOf(p.o)));
@@ -452,7 +490,6 @@ function render(t) {
         ox.save(); ox.globalAlpha = cl((t - p.it.t - .25) / .3); const rr = S.pill(p.tag, cx, r[1] - 48, 40, '#fff', '#14182b', Math.max(60, 2 * half - 50)); ox.lineWidth = 4; ox.strokeStyle = S.GOLD; S.rr(...rr, rr[3] / 2); ox.stroke(); ox.restore(); S.reg('tag:' + p.it.who, ...rr); } });
     for (const p of ITEMS) if (p.flat && p.k === k && t >= p.it.t) flat(p.it, t, sc);
   }
-  if (window.__coverOn) { S.cover(); S.ctx(old); window.__flying = flying; return; }      // (the thumbnail: the series badge and the promise)
   if (S.endCard(t)) { S.ctx(old); window.__flying = flying; return; }      // (the ending: the choice card, no captions over it)
   S.header(t, flying ? Sc[k - 1].label : sc.label); S.captions(t); S.ctx(old);
   window.__flying = flying;
