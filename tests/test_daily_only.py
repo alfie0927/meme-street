@@ -193,6 +193,11 @@ class StreakTests(unittest.TestCase):
         self.assertEqual((c["new"], c["members"], c["d1"], c["again"]), (2, 1, 1, 1))
         self.assertIn(("ig_bio", 1), out["refs"])
         self.assertEqual(out["archive"], 1)
+        h = out["habit"]                                                    # (the coming-back numbers, 2026-11-25)
+        self.assertEqual((h["dau"], h["wau"], h["d1"]["of"], h["d1"]["back"]), (1, 2, 2, 1))
+        self.assertEqual((h["curve"][0]["k"], h["curve"][0]["of"], h["curve"][0]["back"]), (1, 2, 1))
+        self.assertEqual(h["series"][-1]["players"], 1)
+        self.assertEqual(sum(h["games"].values()), 2)
 
 
 class SiteTests(unittest.TestCase):

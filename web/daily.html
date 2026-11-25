@@ -278,7 +278,7 @@ function ringSvg(frac,col,size){const r=size/2-5,c=2*Math.PI*r;return `<svg view
 async function load(){
  const d=await api('/api/daily');
  if(!d||d.error||d.slow){if(!D)$('main').innerHTML=`<div class="hero view"><p class="tag">Couldn't load today's stock</p><p>${esc(d&&d.error||'Give it a second and try again.')}</p><button class="go" onclick="location.reload()">Try again</button></div>`;return}
- D=d;G=d.game?Object.assign({},d.game):null;drawn='';sbar();rails();
+ D=d;G=d.game?Object.assign({},d.game):null;drawn='';sbar();rails();if(lsGet('ms_view',null)!==d.day){lsSet('ms_view',d.day);event('view')}
  if(d.status==='running'&&G&&!G.done){wasRunning=true;run()}
  draw();
  }

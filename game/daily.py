@@ -77,7 +77,7 @@ SQUARES = 8                  # the result grid: one square per 15 seconds of the
 EPOCH_DAY = (datetime.date(2026, 10, 24) - datetime.date(1970, 1, 1)).days    # Daily #1
 FREEZES, FREEZE_EVERY = 2, 7  # a member holds at most two streak freezes and earns one every seven games
 HIST_KEEP, ARCH_KEEP = 400, 400   # days of history a player keeps, past charts the archive keeps
-EVENTS = ("share", "picture", "challenge", "signup_open", "archive_play", "help")   # what the page reports (daily_event)
+EVENTS = ("view", "share", "picture", "challenge", "signup_open", "archive_play", "help")   # ("view": the page opened, once a day a browser, 2026-11-25)   # what the page reports (daily_event)
 REAL_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "content", "daily_real.json")
 _bank = {}
 
@@ -495,7 +495,9 @@ class DailyMixin:
                 "avg": sum(rets) / len(rets) if rets else None, "avg_all": sum(every) / len(every) if every else None, "median": rets[len(rets) // 2] if rets else None,
                 "best": rets[-1] if rets else None, "worst": rets[0] if rets else None,
                 "beat": sum(1 for r in rets if r > hold + 1e-9), "sat_out": sum(1 for x in done if not x["trades"]),
-                "trades": sum(len(x["trades"]) for x in done) / len(done) if done else None}
+                "trades": sum(len(x["trades"]) for x in done) / len(done) if done else None,
+                "started": len(people) + len(visits),
+                "hours": [sum(1 for x in people + visits if int(x["t0"] // 3600) % 24 == h) for h in range(24)]}
 
     @staticmethod
     def _daily_robot(key):
@@ -571,7 +573,32 @@ class DailyMixin:
         top = lambda key, n=15: sorted(((name(t), s["streak"] if key == "streak" else s[key], s["max_streak"], s["played"], member(t))
                                         for t, s in stats.items() if (key != "streak" or (alive(t, s) and s["streak"] > 1))),
                                        key=lambda x: (-x[1], -x[3]))[:n]
-        return {"today": self._daily_summary(d), "days": log[:90], "streaks": top("streak"), "most_played": top("played"),
+        # the numbers for coming back (2026-11-25, the owner: "only useful stats"), all from each player's own history
+        today = d["day"]
+        played = lambda t, day: day in hist.get(t, ())
+        series = [{"day": x, "players": sum(1 for t in stats if played(t, x)),
+                   "new": sum(1 for t, s in stats.items() if s.get("first") == x)} for x in range(today - 59, today + 1)]
+        uniq = lambda n: sum(1 for t in stats if any(today - n < x <= today for x in hist.get(t, ())))
+        def keep(k):                                                       # (of players old enough to tell: back on day k after their first)
+            old = [t for t, s in stats.items() if s.get("first") is not None and s["first"] + k <= today]
+            return {"k": k, "of": len(old), "back": sum(1 for t in old if played(t, stats[t]["first"] + k))}
+        def within(k):                                                     # (back on any day within k days of their first)
+            old = [t for t, s in stats.items() if s.get("first") is not None and s["first"] + k <= today]
+            return {"of": len(old), "back": sum(1 for t in old if any(stats[t]["first"] < x <= stats[t]["first"] + k for x in hist.get(t, ())))}
+        buckets = {"1": 0, "2": 0, "3-4": 0, "5-9": 0, "10+": 0}
+        for s in stats.values():
+            n = s["played"]
+            buckets["1" if n <= 1 else "2" if n == 2 else "3-4" if n <= 4 else "5-9" if n <= 9 else "10+"] += 1
+        last = {t: max(hist.get(t) or [s.get("last") or 0]) for t, s in stats.items()}
+        hours = [0] * 24
+        for x in [self._daily_summary(d)] + log[:29]:
+            for h, v in enumerate(x.get("hours") or []):
+                hours[h] += v
+        habit = {"dau": uniq(1), "wau": uniq(7), "mau": uniq(30), "series": series, "curve": [keep(k) for k in range(1, 15)],
+                 "d1": within(1), "d7": within(7), "d30": within(30), "games": buckets, "hours": hours,
+                 "at_risk": sum(1 for t, s in stats.items() if alive(t, s) and s["streak"] > 1 and not played(t, today)),
+                 "lapsing": sum(1 for t in stats if 2 <= today - last[t] <= 7), "gone": sum(1 for t in stats if today - last[t] > 7)}
+        return {"today": self._daily_summary(d), "days": log[:90], "habit": habit, "streaks": top("streak"), "most_played": top("played"),
                 "all_time": group(lambda t: True), "members": group(member), "visitors": group(is_visitor),
                 "streak_lengths": lengths, "cohorts": sorted(cohorts.values(), key=lambda c: -c["day"]), "stocks": stocks,
                 "refs": sorted(refs.items(), key=lambda kv: -kv[1]), "chart": {k: v for k, v in (d["chart"].get("real") or {}).items()},

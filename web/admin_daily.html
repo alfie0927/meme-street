@@ -1,106 +1,170 @@
 <!doctype html>
-<!-- The admin page of memestreet.net since 2026-11-18, when the site became just the Daily (the owner: "the admin dashboard
-     should just be about the daily, with multiple tabs on different statistics about the daily"). Everything comes from
-     GET /api/admin/daily (game/daily.py daily_admin), refreshed every 30 seconds; the admin key stays in this tab only. -->
+<!-- The admin page of memestreet.net (the Daily). Rebuilt 2026-11-25 (the owner: "only shows useful stats ... the graphs
+     should be way nicer"): what tells you whether players come back. Everything comes from GET /api/admin/daily
+     (game/daily.py daily_admin), refreshed every 30 seconds; the admin key stays in this tab only. Charts are drawn here
+     as SVG; their two series colours passed the dataviz validator on the panel colour (teal returning, amber new). -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meme Street Daily: admin</title><meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <style>
-:root{--bg:#08090b;--panel:#0d1013;--panel2:#12161a;--line:#262d33;--line2:#1a1f24;--txt:#dce3e8;--mut:#7d8a93;--up:#3ad07a;--dn:#f25c54;--acc:#4cc3cc;--warn:#e8b84a}
+@font-face{font-family:"JBM";src:url(/brand/jetbrains-mono.woff2) format("woff2");font-weight:100 800;font-display:swap}
+:root{--bg:#0b1117;--panel:#111a22;--head:#131c25;--line:#1e2a35;--line2:#2c3a47;--txt:#e6edf3;--mut:#8c9aa7;--faint:#5d6b78;
+ --ret:#1f9faa;--new:#c97c0a;--acc:#4cc3cc;--amb:#f5a524;--up:#3fcf8e;--dn:#f2555a}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.5 ui-monospace,"Cascadia Mono","SF Mono",Consolas,Menlo,monospace}
-.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}.warn{color:var(--warn)}
-button,input{font:inherit;color:var(--txt);background:#161b20;border:1px solid var(--line);border-radius:4px;padding:6px 11px}
-button{cursor:pointer}button:hover{background:#1f262c}button.primary{background:var(--acc);border-color:var(--acc);color:#021012;font-weight:700}
-button.danger{border-color:#f25c5466;color:var(--dn)}
-#login{max-width:380px;margin:12vh auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:24px}#login input,#login button{width:100%;margin-top:12px}
-.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-.bar1{display:flex;align-items:center;gap:12px;padding:10px 20px;flex-wrap:wrap}.bar1 b{font-size:15px}.sp{flex:1}
-#tabs{display:flex;gap:2px;padding:0 14px;overflow-x:auto}
-#tabs button{background:none;border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--mut);padding:9px 12px;white-space:nowrap}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:13px/1.5 "JBM",ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+::selection{background:#4cc3cc4d}
+.mut{color:var(--mut)}.up{color:var(--up)}.dn{color:var(--dn)}
+button,input{font:inherit;color:var(--txt);background:transparent;border:1px solid var(--line2);border-radius:3px;padding:6px 12px}
+button{cursor:pointer}button:hover{border-color:var(--acc);color:var(--acc)}button:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+button.primary{background:var(--acc);border-color:var(--acc);color:#021012;font-weight:700}
+button.danger{border-color:#f2555a66;color:var(--dn)}
+#login{max-width:360px;margin:14vh auto;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:24px}#login input,#login button{width:100%;margin-top:12px}
+.top{position:sticky;top:0;z-index:5;background:#0b1117f0;border-bottom:1px solid var(--line);backdrop-filter:blur(8px)}
+.bar1{display:flex;align-items:center;gap:14px;padding:10px 22px;flex-wrap:wrap}.bar1 b{letter-spacing:.18em}.bar1 b i{font-style:normal;color:var(--acc)}.sp{flex:1}
+.bar1 a{color:var(--mut)}.bar1 a:hover{color:var(--acc)}
+#tabs{display:flex;gap:2px;padding:0 16px;overflow-x:auto}
+#tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;color:var(--mut);padding:9px 12px;white-space:nowrap}
 #tabs button.on{color:var(--txt);border-bottom-color:var(--acc)}
-main{max-width:1200px;margin:0 auto;padding:18px 20px 40px}.page{display:none}.page.on{display:block}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}.kpi small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
-.kpi strong{display:block;font-size:21px;margin-top:3px;font-variant-numeric:tabular-nums}.kpi em{display:block;font-style:normal;color:var(--mut);font-size:11.5px;margin-top:2px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-bottom:16px;overflow-x:auto}
-.panel h2{font-size:13.5px;margin:0 0 12px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
-table{width:100%;border-collapse:collapse}td,th{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line2);white-space:nowrap}
-td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:11.5px;text-transform:uppercase;cursor:pointer}
-.bars{display:flex;align-items:flex-end;gap:3px;height:140px;margin-top:6px}.bars div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:9.5px;color:var(--mut);min-width:0}
-.bars i{display:block;width:100%;border-radius:2px 2px 0 0;min-height:1px}.bars span{margin-top:3px;white-space:nowrap;overflow:hidden;max-width:100%}
-.note{color:var(--mut);font-size:12px;margin:8px 0 0}
-.chip{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;color:var(--mut);margin:0 4px 4px 0}
+main{max-width:1240px;margin:0 auto;padding:22px 22px 50px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-bottom:22px}
+.kpi{background:var(--panel);padding:14px 16px}.kpi small{display:block;color:var(--mut);font-size:12px}
+.kpi strong{display:block;font-size:24px;font-weight:700;margin:4px 0 2px;letter-spacing:-.02em}.kpi em{display:block;font-style:normal;color:var(--mut);font-size:12px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:3px;margin-bottom:22px;overflow:hidden}
+.panel>h2{margin:0;padding:10px 16px;background:var(--head);border-bottom:1px solid var(--line);font-size:13px;font-weight:600;display:flex;gap:12px;align-items:baseline}
+.panel>h2 span{margin-left:auto;color:var(--mut);font-weight:400;font-size:12px}
+.body{padding:14px 16px}.body.flush{padding:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 22px}
+@media(max-width:960px){.grid2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}td,th{padding:8px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+td:first-child,th:first-child{text-align:left}th{color:var(--mut);font-weight:500;font-size:12px;background:var(--head)}tr:last-child td{border-bottom:0}
+.body:not(.flush) table th{background:transparent}
+.note{color:var(--mut);font-size:12px;margin:10px 0 0}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin:0 0 8px}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend i.ln{height:2px;vertical-align:3px;border-radius:0}
+svg.ch{display:block;width:100%;height:auto;overflow:visible}
+svg.ch text{font:11px "JBM",ui-monospace,monospace;fill:var(--mut)}
+svg.ch .hit{fill:transparent}svg.ch .hit:hover{fill:#ffffff0c}
+.hb{display:grid;grid-template-columns:minmax(90px,max-content) 1fr 70px;gap:8px 12px;align-items:center;font-size:12.5px}
+.hb .tr{height:14px;background:#ffffff06;border-radius:2px;overflow:hidden}.hb .tr i{display:block;height:100%;border-radius:0 2px 2px 0}
+.hb b{text-align:right;font-weight:600}
+.heat td.c span{color:var(--txt)}
+#tip{position:fixed;z-index:20;pointer-events:none;background:#0b1117f5;border:1px solid var(--line2);border-radius:3px;padding:7px 10px;font-size:12px;display:none;max-width:280px;box-shadow:0 6px 20px #0008;color:var(--mut)}
+#tip b{color:var(--txt)}
+.pill{display:inline-block;padding:2px 8px;border:1px solid var(--line2);border-radius:3px;font-size:11px;color:var(--mut)}
 </style></head><body>
-<div id="login"><b style="font-size:16px">Meme Street Daily: admin</b><p class="mut">The admin key opens it.</p><input id="key" type="password" placeholder="Admin key" autocomplete="current-password"><button class="primary" id="go">Open</button><p id="err" class="dn"></p></div>
+<div id="login"><b style="font-size:15px">Meme Street Daily: admin</b><p class="mut">The admin key opens it.</p><input id="key" type="password" placeholder="Admin key" autocomplete="current-password"><button class="primary" id="go">Open</button><p id="err" class="dn"></p></div>
 <div id="app" style="display:none">
-<div class="top"><div class="bar1"><b>Meme Street Daily</b><span class="mut" id="stamp"></span><span class="sp"></span><a href="/" target="_blank" style="color:var(--acc)">Open the game</a><button id="out">Lock</button></div>
+<div class="top"><div class="bar1"><b>MEME <i>STREET</i></b><span class="mut">Daily admin</span><span class="mut" id="stamp"></span><span class="sp"></span><a href="/" target="_blank">Open the game</a><button id="out">Lock</button></div>
 <div id="tabs"></div></div>
 <main id="pages"></main></div>
+<div id="tip" role="status"></div>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const pc=x=>x===null||x===undefined?'–':(x>0?'+':x<0?'−':'')+Math.abs(x*100).toFixed(1)+'%';
-const share=(a,b)=>b?Math.round(a/b*100)+'%':'–';
+const pc=x=>x===null||x===undefined?'–':(x>0.0005?'+':x<-0.0005?'−':'')+Math.abs(x*100).toFixed(1)+'%';
+const pct=(a,b)=>b?Math.round(a/b*100)+'%':'–';
 const cls=x=>x>0.0005?'up':x<-0.0005?'dn':'';
 const date=day=>new Date(day*864e5).toLocaleDateString(undefined,{day:'numeric',month:'short',timeZone:'UTC'});
-const TABS=[['today','Today'],['days','Day by day'],['players','Players'],['streaks','Streaks'],['retention','Coming back'],['stocks','Stocks'],['sources','Sources and sharing'],['signups','Sign-ups']];
-let key=null,timer=null,A=null,tab='today';try{key=sessionStorage.admin_key||null}catch(e){}
+const TABS=[['overview','Overview'],['retention','Coming back'],['growth','Growth'],['players','Players'],['stocks','Stocks']];
+let key=null,timer=null,A=null,tab='overview';try{key=sessionStorage.admin_key||null;tab=sessionStorage.admin_tab||tab}catch(e){}
 async function api(path,body){const r=await fetch(path,{method:body?'POST':'GET',headers:Object.assign({'X-Admin-Key':key},body?{'Content-Type':'application/json'}:{}),body:body?JSON.stringify(body):undefined});
  if(r.status===403)throw new Error('That is not the admin key');if(r.status===429)throw new Error((await r.json()).error);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
-const kpi=(label,val,sub)=>`<div class="kpi"><small>${label}</small><strong>${val}</strong>${sub?`<em>${sub}</em>`:''}</div>`;
-const table=(head,rows)=>`<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td class="mut" colspan="${head.length}">Nothing yet</td></tr>`}</tbody></table>`;
-function bars(items,color){const max=Math.max(1,...items.map(x=>x[1]));return `<div class="bars">${items.map(([l,v])=>`<div title="${esc(l)}: ${v}"><small>${v||''}</small><i style="height:${(v/max*110).toFixed(0)}px;background:${color||'var(--acc)'}"></i><span>${esc(l)}</span></div>`).join('')}</div>`}
-const players=x=>(x.finished||0)+(x.visitors_finished||0);
 
+// ---- pieces
+const kpi=(label,val,sub)=>`<div class="kpi"><small>${label}</small><strong>${val}</strong>${sub?`<em>${sub}</em>`:''}</div>`;
+const panel=(title,body,side,flush)=>`<div class="panel"><h2>${title}${side?`<span>${side}</span>`:''}</h2><div class="body${flush?' flush':''}">${body}</div></div>`;
+const table=(head,rows)=>`<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td class="mut" colspan="${head.length}">Nothing yet</td></tr>`}</tbody></table>`;
+const legend=items=>`<div class="legend">${items.map(([c,l,line])=>`<span><i class="${line?'ln':''}" style="background:${c}"></i>${l}</span>`).join('')}</div>`;
+// a round axis: about four steps from 0 to the top
+function ticks(max){if(max<=0)return[0,1];const raw=max/4,m=Math.pow(10,Math.floor(Math.log10(raw))),step=[1,2,2.5,5,10].map(k=>k*m).find(v=>v>=raw);const out=[];for(let v=0;v<=max+step*.001;v+=step)out.push(+v.toFixed(6));if(out[out.length-1]<max)out.push(+(out[out.length-1]+step).toFixed(6));return out}
+function axes(W,H,L,B,ys,fmt,xl){let h='';ys.t.forEach(v=>{const y=ys.f(v).toFixed(1);h+=`<line x1="${L}" x2="${W}" y1="${y}" y2="${y}" stroke="${v?'#ffffff0d':'#ffffff26'}"/><text x="${L-8}" y="${+y+4}" text-anchor="end">${fmt(v)}</text>`});
+ xl.forEach(([x,l])=>h+=`<text x="${x.toFixed(1)}" y="${H-B+18}" text-anchor="middle">${esc(l)}</text>`);return h}
+// columns, stacked when there are several series; an optional line over them on the same scale
+function columns(rows,series,opt={}){
+ const W=opt.w||900,H=opt.h||240,L=40,B=26,T=12,n=rows.length,bw=(W-L)/n,fmt=opt.fmt||(v=>v);
+ const max=Math.max(1,...rows.map(r=>series.reduce((a,s)=>a+(r[s.k]||0),0)),...(opt.line?rows.map(r=>r[opt.line.k]||0):[0]));
+ const t=ticks(max),top=t[t.length-1],f=v=>T+(H-B-T)*(1-v/top),every=Math.max(1,Math.ceil(n/(W/70)));
+ let h=axes(W,H,L,B,{t,f},fmt,rows.map((r,i)=>i%every===0?[L+bw*i+bw/2,r.label]:null).filter(Boolean));
+ rows.forEach((r,i)=>{let base=0;const x=L+bw*i+Math.max(.5,bw*.12),w=Math.max(1,bw*.76),last=series.map(s=>r[s.k]||0).reduce((a,v,j)=>v?j:a,-1);
+  series.forEach((s,j)=>{const v=r[s.k]||0;if(!v)return;const y0=f(base),y1=f(base+v),gap=base?2:0;base+=v;
+   h+=`<rect x="${x.toFixed(1)}" y="${y1.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(0,y0-y1-gap).toFixed(1)}" rx="${j===last?2:0}" fill="${s.c}"/>`});
+  h+=`<rect class="hit" x="${(L+bw*i).toFixed(1)}" y="${T}" width="${bw.toFixed(1)}" height="${H-B-T}" data-tip="${esc(`<b>${r.tip||r.label}</b><br>`+series.map(s=>`${s.l}: ${fmt(r[s.k]||0)}`).join('<br>')+(opt.line?`<br>${opt.line.l}: ${(+(r[opt.line.k]||0)).toFixed(1)}`:''))}"/>`});
+ if(opt.line){const pts=rows.map((r,i)=>[L+bw*i+bw/2,f(r[opt.line.k]||0)]);
+  if(pts.length>1)h+=`<path d="${pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('')}" fill="none" stroke="${opt.line.c}" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round" pointer-events="none"/>`}
+ return `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label||'chart')}">${h}</svg>`}
+// lines on one scale, dots at each point, a hover band per x
+function lines(xs,series,opt={}){
+ const W=opt.w||900,H=opt.h||220,L=52,B=26,T=14,n=xs.length,fmt=opt.fmt||(v=>v),vals=series.flatMap(s=>s.v.filter(v=>v!=null));
+ let lo=Math.min(0,...vals),hi=Math.max(opt.min||0,...vals);if(hi===lo)hi=lo+1;
+ const raw=(hi-lo)/4,m=Math.pow(10,Math.floor(Math.log10(raw))),step=[1,2,2.5,5,10].map(k=>k*m).find(v=>v>=raw);   // (round steps)
+ lo=lo<0?Math.floor(lo/step-1e-9)*step:0;hi=Math.ceil(hi/step-1e-9)*step;const t=[];for(let v=lo;v<=hi+step/2;v+=step)t.push(+v.toFixed(8));
+ const f=v=>T+(H-B-T)*(1-(v-lo)/(hi-lo)),X=i=>L+8+(n<2?(W-L-16)/2:(W-L-16)*i/(n-1)),every=Math.max(1,Math.ceil(n/(W/80)));
+ let h=axes(W,H,L,B,{t,f},fmt,xs.map((x,i)=>i%every===0?[X(i),x]:null).filter(Boolean));
+ if(lo<0)h+=`<line x1="${L}" x2="${W}" y1="${f(0).toFixed(1)}" y2="${f(0).toFixed(1)}" stroke="#ffffff40"/>`;
+ series.forEach(s=>{const pts=s.v.map((v,i)=>v==null?null:[X(i),f(v)]);let d='',on=false;pts.forEach(p=>{if(!p){on=false;return}d+=(on?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);on=true});
+  const q=pts.filter(Boolean);if(s.area&&q.length>1)h+=`<path d="M${q[0][0].toFixed(1)} ${f(Math.max(lo,0)).toFixed(1)}${q.map(p=>'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('')}L${q[q.length-1][0].toFixed(1)} ${f(Math.max(lo,0)).toFixed(1)}Z" fill="${s.c}" opacity=".14"/>`;
+  h+=`<path d="${d}" fill="none" stroke="${s.c}" stroke-width="2" stroke-linejoin="round"/>`;
+  if(n<=40)q.forEach(p=>h+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="${s.c}" stroke="#111a22" stroke-width="2"/>`)});
+ const bw=n<2?W-L:(W-L-16)/(n-1);
+ xs.forEach((x,i)=>{h+=`<rect class="hit" x="${(X(i)-bw/2).toFixed(1)}" y="${T}" width="${bw.toFixed(1)}" height="${H-B-T}" data-tip="${esc(`<b>${opt.tipx?opt.tipx(i):x}</b><br>`+series.map(s=>`${s.l}: ${s.v[i]==null?'–':fmt(s.v[i])}${s.sub?' '+s.sub(i):''}`).join('<br>'))}"/>`});
+ return `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label||'chart')}">${h}</svg>`}
+// horizontal bars with the value at the end
+const hbars=(items,c,fmt)=>{const max=Math.max(1,...items.map(x=>x[1]));return items.length?`<div class="hb">${items.map(([l,v])=>`<span>${esc(l)}</span><div class="tr" data-tip="${esc(`<b>${l}</b><br>${fmt?fmt(v):v}`)}"><i style="width:${Math.max(v?1.5:0,v/max*100).toFixed(1)}%;background:${c}"></i></div><b>${fmt?fmt(v):v}</b>`).join('')}</div>`:'<p class="mut" style="margin:0">Nothing yet</p>'};
+const avg7=(arr,k)=>arr.map((r,i)=>{const w=arr.slice(Math.max(0,i-6),i+1);return w.reduce((a,x)=>a+(x[k]||0),0)/w.length});
+
+// ---- the pages
 const PAGES={
- today(){const t=A.today,c=A.chart||{};const evs=Object.entries(t.ev||{});const refs=Object.entries(t.refs||{}).sort((a,b)=>b[1]-a[1]);
-  return `<div class="kpis">${kpi('Players today',t.people+t.visitors,`${t.people} members · ${t.visitors} visitors`)}${kpi('Finished',t.finished+t.visitors_finished)}
-   ${kpi('New players',t.new??'–',`${t.returning??'–'} came back`)}${kpi('Signed up from a game',t.signed_up)}${kpi('Shares',(t.ev||{}).share||0,`${(t.ev||{}).picture||0} story pictures`)}
-   ${kpi('House traders',t.bots,'on the board, never counted as players')}</div>
-  <div class="grid2"><div class="panel"><h2>Today's stock: #${t.number}</h2>${c.ticker?`<p><b>${esc(c.name)}</b> (${esc(c.ticker)}) · ${esc(c.start)} to ${esc(c.end)}<br>Real: $${c.first} to $${c.last} · the stock did <b class="${cls(t.hold)}">${pc(t.hold)}</b>${c.events&&c.events.length?'<br><span class="mut">'+esc(c.events.join('; '))+'</span>':''}</p>`:'<p class="mut">A model chart (no bank on this server)</p>'}
-   <button class="danger" id="reset">A new chart for today</button><p class="note">Only when today's chart came out wrong: today's board starts again, finished games keep their place in the stats.</p></div>
-  <div class="panel"><h2>How the games went</h2>${table(['','Members','Everyone'],[['Average',`<span class="${cls(t.avg)}">${pc(t.avg)}</span>`,`<span class="${cls(t.avg_all)}">${pc(t.avg_all)}</span>`],['Median',pc(t.median),''],['Best',pc(t.best),''],['Worst',pc(t.worst),''],['Beat the stock',`${t.beat} of ${t.finished}`,''],['Sat it out',t.sat_out,''],['Trades a game',t.trades===null?'–':t.trades.toFixed(1),'']])}</div></div>
-  <div class="grid2"><div class="panel"><h2>Where today's players came from</h2>${table(['Link (?ref=)','Players'],refs.map(([k,v])=>[esc(k),v]))}</div>
-  <div class="panel"><h2>What they did on the page</h2>${table(['Event','Count'],evs.map(([k,v])=>[esc(k.replace('_',' ')),v]))}</div></div>
-  <p class="note">The bank holds ${A.bank} real charts; ${A.archive} past days are in the archive. Next chart at ${new Date(A.next*1000).toUTCString().slice(17,22)} UTC.</p>`},
- days(){const d=A.days.slice(0,60);
-  return `<div class="panel"><h2>Players a day (members and visitors who finished)</h2>${bars(d.slice().reverse().map(x=>['#'+x.number,players(x)]))}</div>
-  <div class="panel">${table(['#','Date','Stock','Members','Visitors','New','Back','Signed up','Avg (all)','Median','Stock did','Beat','Shares'],
-   d.map(x=>[x.number,date(x.day),esc(x.stock||'model'),x.finished,x.visitors_finished,x.new??'–',x.returning??'–',x.signed_up,`<span class="${cls(x.avg_all)}">${pc(x.avg_all)}</span>`,pc(x.median),`<span class="${cls(x.hold)}">${pc(x.hold)}</span>`,x.finished?share(x.beat,x.finished):'–',(x.ev||{}).share||0]))}</div>`},
- players(){const g=(t,x)=>`<div class="panel"><h2>${t}</h2><div class="kpis">${kpi('Players',x.players)}${kpi('Games',x.games)}${kpi('Played twice or more',x.returning,share(x.returning,x.players))}${kpi('Five or more',x.regulars,share(x.regulars,x.players))}${kpi('On a streak now',x.on_streak)}${kpi('Best streak',x.best_streak)}${kpi('Average return',pc(x.avg_return))}${t==='Members'?kpi('Freezes used',x.freezes_used):''}</div></div>`;
-  return g('Everyone',A.all_time)+`<div class="grid2">${g('Members',A.members)}${g('Visitors (no account)',A.visitors)}</div>
-  <div class="panel"><h2>Played the most</h2>${table(['Player','Games','Best streak'],A.most_played.map(x=>[esc(x[0])+(x[4]?'':' <span class="chip">visitor</span>'),x[1],x[2]]))}</div>`},
- streaks(){const order=['1','2-3','4-7','8-30','31+'],L=A.streak_lengths||{};
-  return `<div class="panel"><h2>Streaks running now, by length (days)</h2>${bars(order.map(k=>[k,L[k]||0]),'#ffb020')}</div>
-  <div class="panel"><h2>The longest streaks running</h2>${table(['Player','Streak','Best streak','Games'],A.streaks.map(x=>[esc(x[0])+(x[4]?'':' <span class="chip">visitor</span>'),x[1],x[2],x[3]]))}
-  <p class="note">A member's streak survives one missed day for each streak freeze they hold (one to start, one more every 7 games, 2 at most).</p></div>`},
- retention(){return `<div class="panel"><h2>By the day a player first played (the last 30 days)</h2>${table(['First day','#','New players','Members now','Next day','Within 7 days','Ever again'],
-  A.cohorts.map(c=>[date(c.day),c.number,c.new,c.members,`${c.d1} (${share(c.d1,c.new)})`,`${c.d7} (${share(c.d7,c.new)})`,`${c.again} (${share(c.again,c.new)})`]))}
-  <p class="note">A player is a member or a visitor's browser. "Next day" and "within 7 days" count from the history each player keeps since 18 November 2026.</p></div>`},
- stocks(){return `<div class="panel"><h2>Every real stock so far</h2>${table(['#','Date','Stock','Stock did','Players','Average','Median','Beat the stock'],
-  A.stocks.map(x=>[x.number,date(x.day),esc(x.stock),`<span class="${cls(x.hold)}">${pc(x.hold)}</span>`,x.finished,`<span class="${cls(x.avg)}">${pc(x.avg)}</span>`,pc(x.median),x.beat??'–']))}
-  <p class="note">"Beat the stock" counts members only; "Average" counts everyone who finished.</p></div>`},
- sources(){const d=A.days.slice(0,30),kinds=['share','picture','challenge','signup_open','archive_play','help'];
-  return `<div class="grid2"><div class="panel"><h2>Where players came from (the last 30 days)</h2>${table(['Link (?ref=)','Players'],A.refs.map(([k,v])=>[esc(k),v]))}<p class="note">reel = /play in a reel caption · yt = YouTube · ig_bio = the Instagram bio · a share link carries the sharer's name in ?vs=, not here.</p></div>
-  <div class="panel"><h2>Shares a day</h2>${bars(d.slice().reverse().map(x=>['#'+x.number,(x.ev||{}).share||0]),'var(--up)')}</div></div>
-  <div class="panel"><h2>What players did on the page, day by day</h2>${table(['#','Date',...kinds.map(k=>k.replace('_',' '))],d.map(x=>[x.number,date(x.day),...kinds.map(k=>(x.ev||{})[k]||0)]))}</div>`},
- signups(){const d=A.days.slice(0,30);
-  return `<div class="panel"><h2>From a visitor's game to an account (the last 30 days)</h2>${table(['#','Date','Visitors','Finished','Saw the account box','Signed up','Of finishers'],
-   d.map(x=>[x.number,date(x.day),x.visitors,x.visitors_finished,(x.ev||{}).signup_open||0,x.signed_up,share(x.signed_up,x.visitors_finished)]))}
-  <p class="note">"Saw the account box" counts every opening of it (after a result, from the header, from the stats), so it can be more than the visitors.</p></div>`},
+ overview(){const t=A.today,H=A.habit,c=A.chart||{},s0=H.series,f0=s0.findIndex(r=>r.players),s=f0<0?s0.slice(-14):s0.slice(Math.min(f0,s0.length-14)),y=s[s.length-2]||{},n=s[s.length-1]||{},a7=avg7(s,'players');
+  const started=t.started??(t.people+t.visitors),fin=t.finished+t.visitors_finished,views=(t.ev||{}).view||0;
+  const rows=s.map((r,i)=>({label:date(r.day),ret:r.players-r.new,new:r.new,avg:a7[i]}));
+  return `<div class="kpis">${kpi('Players today',n.players??0,`${y.players??0} yesterday`)}${kpi('Players this week',H.wau,`${H.mau} this month`)}
+   ${kpi('Stickiness',pct(H.dau,H.mau),'today out of this month')}${kpi('Back the next day',pct(H.d1.back,H.d1.of),`${H.d1.back} of ${H.d1.of} new players`)}
+   ${kpi('Back within a week',pct(H.d7.back,H.d7.of),`${H.d7.back} of ${H.d7.of}`)}${kpi('Streaks at risk',H.at_risk,'running, not played today')}</div>
+  ${panel('Players a day',legend([['var(--ret)','Returning'],['var(--new)','New'],['var(--txt)','7-day average',1]])+columns(rows,[{k:'ret',l:'Returning',c:'var(--ret)'},{k:'new',l:'New',c:'var(--new)'}],{line:{k:'avg',l:'7-day average',c:'#e6edf3aa'},label:'Players a day, returning and new'}),'since the first game (60 days at most), members and visitors, house traders left out')}
+  <div class="grid2">${panel('Today, step by step',hbars([['Opened the page',views],['Started a game',started],['Finished',fin],['Shared',(t.ev||{}).share||0],['Made an account',t.signed_up]],'var(--acc)'),views?`${pct(fin,views)} of visits finish a game`:'page opens counted from 25 Nov')}
+   ${panel(`Today's stock: #${t.number}`,`${c.ticker?`<p style="margin:0 0 4px"><b style="font-size:15px">${esc(c.name)}</b> <span class="pill">${esc(c.ticker)}</span></p><p class="mut" style="margin:0 0 10px">${esc(c.start)} to ${esc(c.end)}, real $${c.first} to $${c.last}${c.tf?`, one candle = ${esc(c.tf)}`:''}</p>`:'<p class="mut">A model chart</p>'}
+    ${table(['','Players','The stock'],[['Return',`<span class="${cls(t.avg_all)}">${pc(t.avg_all)}</span> avg, ${pc(t.median)} median`,`<span class="${cls(t.hold)}">${pc(t.hold)}</span>`],['Beat the stock',`${t.beat} of ${t.finished} members`,''],['Sat it out',t.sat_out,''],['Trades a game',t.trades==null?'–':t.trades.toFixed(1),'']])}
+    <p class="note"><button class="danger" id="reset">A new chart for today</button> only if today's chart came out wrong.</p>`)}</div>
+  <p class="note">${A.bank} real charts in the bank, ${A.archive} past days in the archive. Next chart at 00:00 UTC.</p>`},
+ retention(){const H=A.habit,cv=H.curve.filter(x=>x.of);
+  const cell=(a,c)=>{const r=c.new?a/c.new:0;return `<span style="display:inline-block;min-width:64px;padding:3px 6px;border-radius:2px;background:rgba(31,159,170,${(r*.85+.05).toFixed(2)})">${pct(a,c.new)}</span>`};
+  const heat=A.cohorts.slice(0,21).map(c=>[date(c.day),c.new,c.members,cell(c.d1,c),cell(c.d7,c),cell(c.again,c)]);
+  return `<div class="kpis">${kpi('Back the next day',pct(H.d1.back,H.d1.of),`of ${H.d1.of} new players`)}${kpi('Back within 7 days',pct(H.d7.back,H.d7.of),`of ${H.d7.of}`)}${kpi('Back within 30 days',pct(H.d30.back,H.d30.of),`of ${H.d30.of}`)}
+   ${kpi('Streaks at risk',H.at_risk,'played yesterday, not yet today')}${kpi('Slipping away',H.lapsing,'last game 2 to 7 days ago')}${kpi('Gone',H.gone,'nothing for over a week')}</div>
+  ${panel('Still playing, days after their first game',cv.length?lines(cv.map(x=>'day '+x.k),[{l:'Played that day',c:'var(--ret)',v:cv.map(x=>x.back/x.of),area:1,sub:i=>`(${cv[i].back} of ${cv[i].of})`}],{fmt:v=>Math.round(v*100)+'%',min:.1,label:'Retention curve'}):'<p class="mut" style="margin:0">Needs a day of history.</p>','share of players old enough to have reached that day')}
+  <div class="grid2">${panel('Games per player',hbars(Object.entries(H.games).map(([k,v])=>[k==='1'?'1 game':k+' games',v]),'var(--ret)'),'everyone who has played')}
+   ${panel('Streaks running now',hbars(['1','2-3','4-7','8-30','31+'].map(k=>[k+(k==='1'?' day':' days'),(A.streak_lengths||{})[k]||0]),'var(--amb)'),'by length')}</div>
+  ${panel('By the day they first played',`<table class="heat"><thead><tr>${['First day','New','Members now','Next day','Within 7 days','Ever again'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${heat.map(r=>`<tr>${r.map((c,i)=>`<td class="${i>2?'c':''}">${c}</td>`).join('')}</tr>`).join('')||'<tr><td class="mut" colspan="6">Nothing yet</td></tr>'}</tbody></table>`,'last 21 days, darker means more came back',1)}`},
+ growth(){const d=A.days.slice(0,30).reverse(),refs=A.refs.slice(0,10);
+  const conv=d.map(x=>x.visitors_finished?x.signed_up/x.visitors_finished:null),shr=d.map(x=>{const f=x.finished+x.visitors_finished;return f?((x.ev||{}).share||0)/f:null});
+  const tot=k=>d.reduce((a,x)=>a+((x.ev||{})[k]||0),0),fin=d.reduce((a,x)=>a+x.finished+x.visitors_finished,0),su=d.reduce((a,x)=>a+x.signed_up,0),vf=d.reduce((a,x)=>a+x.visitors_finished,0);
+  return `<div class="kpis">${kpi('Shares',tot('share'),`${pct(tot('share'),fin)} of finished games`)}${kpi('Story pictures',tot('picture'))}${kpi('Challenge links opened',tot('challenge'))}
+   ${kpi('Accounts made',su,`${pct(su,vf)} of visitors who finished`)}${kpi('Members',A.members.players,`${A.visitors.players} visitors`)}</div>
+  <div class="grid2">${panel('Where players come from',hbars(refs.map(([k,v])=>[k,v]),'var(--acc)'),'?ref= links, last 30 days')}
+   ${panel('Sharing and sign-ups',d.length?legend([['var(--ret)','Shares per finished game'],['var(--new)','Visitors who made an account']])+lines(d.map(x=>date(x.day)),[{l:'Shares per game',c:'var(--ret)',v:shr},{l:'Made an account',c:'var(--new)',v:conv}],{fmt:v=>Math.round(v*100)+'%',min:.05,w:460,h:230,label:'Share rate and sign-up rate'}):'<p class="mut" style="margin:0">Nothing yet</p>','a day, last 30 days')}</div>
+  ${panel('When games start',columns(A.habit.hours.map((v,h)=>({label:String(h).padStart(2,'0'),tip:`${String(h).padStart(2,'0')}:00 UTC`,v})),[{k:'v',l:'Games',c:'var(--ret)'}],{h:190,label:'Games by hour'}),'hour of day, UTC, last 30 days, new stock at 00:00')}
+  <p class="note">reel = /play in a reel caption, yt = YouTube, ig_bio = the Instagram bio. A share link carries the sharer's name in ?vs=, so it is not a ref.</p>`},
+ players(){const g=(t,x)=>`<tr><td>${t}</td><td>${x.players}</td><td>${x.games}</td><td>${pct(x.returning,x.players)}</td><td>${pct(x.regulars,x.players)}</td><td>${x.on_streak}</td><td>${x.best_streak}</td><td class="${cls(x.avg_return)}">${pc(x.avg_return)}</td></tr>`;
+  const who=x=>esc(x[0])+(x[4]?'':' <span class="pill">visitor</span>');
+  return panel('Members and visitors',`<table><thead><tr>${['','Players','Games','Played twice+','Five+','On a streak','Best streak','Avg return'].map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${g('Everyone',A.all_time)}${g('Members',A.members)}${g('Visitors',A.visitors)}</tbody></table>`,`${A.members.freezes_used} streak freezes used`,1)
+  +`<div class="grid2">${panel('Longest streaks running',table(['Player','Streak','Best','Games'],A.streaks.map(x=>[who(x),x[1],x[2],x[3]])),'',1)}${panel('Played the most',table(['Player','Games','Best streak'],A.most_played.map(x=>[who(x),x[1],x[2]])),'',1)}</div>`},
+ stocks(){const st=A.stocks.slice(0,30).reverse();
+  return (st.length?panel('Players against the stock',legend([['var(--ret)','Players (average)'],['var(--new)','The stock']])+lines(st.map(x=>'#'+x.number),[{l:'Players',c:'var(--ret)',v:st.map(x=>x.avg)},{l:'The stock',c:'var(--new)',v:st.map(x=>x.hold)}],{fmt:v=>pc(v),tipx:i=>`#${st[i].number} ${esc(st[i].stock)}, ${date(st[i].day)}`,label:'Average player return and the stock'}),'each day\'s return, last 30 stocks'):'')
+  +panel('Every real stock',table(['#','Date','Stock','The stock','Players','Average','Median','Beat it'],A.stocks.map(x=>[x.number,date(x.day),esc(x.stock),`<span class="${cls(x.hold)}">${pc(x.hold)}</span>`,x.finished,`<span class="${cls(x.avg)}">${pc(x.avg)}</span>`,pc(x.median),x.beat??'–'])),'"Beat it" counts members',1)},
 };
 function render(){
  $('tabs').innerHTML=TABS.map(([k,l])=>`<button data-tab="${k}" class="${k===tab?'on':''}">${l}</button>`).join('');
- $('pages').innerHTML=`<div class="page on">${PAGES[tab]()}</div>`;
+ try{$('pages').innerHTML=PAGES[tab]()}catch(e){$('pages').innerHTML=`<p class="dn">This tab could not draw: ${esc(e.message)}</p>`}
  $('stamp').textContent='updated '+new Date().toLocaleTimeString()}
 async function refresh(){try{A=await api('/api/admin/daily');render()}catch(e){lock(e.message)}}
 function open_(){$('login').style.display='none';$('app').style.display='block';refresh();clearInterval(timer);timer=setInterval(refresh,30000)}
 function lock(msg){clearInterval(timer);try{sessionStorage.removeItem('admin_key')}catch(e){}key=null;$('app').style.display='none';$('login').style.display='block';$('err').textContent=msg||''}
+// the tooltip: any mark with data-tip
+document.addEventListener('mousemove',e=>{const t=e.target.closest&&e.target.closest('[data-tip]'),tip=$('tip');if(!t){tip.style.display='none';return}
+ tip.innerHTML=t.dataset.tip;tip.style.display='block';const w=tip.offsetWidth,h=tip.offsetHeight;tip.style.left=Math.min(innerWidth-w-8,e.clientX+14)+'px';tip.style.top=Math.max(8,e.clientY-h-12)+'px'});
 document.addEventListener('click',async e=>{const t=e.target;
- const b=t.closest('[data-tab]');if(b){tab=b.dataset.tab;render();return}
+ const b=t.closest('[data-tab]');if(b){tab=b.dataset.tab;try{sessionStorage.admin_tab=tab}catch(e){}render();return}
  if(t.id==='reset'){if(prompt('Type NEW to put a new chart up for today. Today’s board starts again.')!=='NEW')return;try{const r=await api('/api/admin/daily/reset',{confirm:'NEW'});alert(r.msg||r.error||'Done');refresh()}catch(err){alert(err.message)}}
  if(t.id==='out')lock('')});
 $('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};$('key').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
