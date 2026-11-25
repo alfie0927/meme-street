@@ -134,6 +134,7 @@ function pose(p, kind, t, lt) {      // the parts by the pose and the time
   else if (kind === 'hold') { aL = [-1.2, .2]; aR = [-1.2, -.2]; }
   else if (kind === 'walk') { const w = s(t * 7 + sd); aL = [.5 * w, .06]; aR = [-.5 * w, -.06]; lg = [-.5 * w, .5 * w]; by = .03 * Math.abs(w); }
   else if (kind === 'sit') { lg = [-1.57, -1.57]; by = -.66; aL = [-.9, .3]; aR = [-.9, -.3]; }
+  else if (kind === 'ride') { lg = [-1.45, -1.45]; by = -.66; aL = [-2.6 + .12 * s(t * 3 + sd), .35]; aR = [-2.6 - .12 * s(t * 3 + sd), -.35]; }
   else if (kind === 'run') { const w = s(t * 12 + sd); aL = [.9 * w, .1]; aR = [-.9 * w, -.1]; lg = [-.8 * w, .8 * w]; by = .07 * Math.abs(w); }
   p.armL.rotation.set(aL[0], 0, aL[1]); p.armR.rotation.set(aR[0], 0, aR[1]); p.legL.rotation.x = lg[0]; p.legR.rotation.x = lg[1];
   p.body.position.y = by + br; p.body.rotation.z = tilt * .5; p.head.rotation.x = -hy * .5 + (kind === 'sad' ? .25 : 0); p.head.rotation.z = tilt * .4;
@@ -296,11 +297,14 @@ function bear() {
 
 // ---------------------------------------------------------------- the inventive props (2026-11-25, the owner: "more inventive and creative")
 function rampOf(sh) {        // the real price line as a giant ramp across the plaza: people ride it, slide down it, stand on its peak
-  const r = sh.ramp, P0 = r.prices || R.prices || [1, 2], i0 = Math.floor((r.from || 0) * (P0.length - 1)), i1 = Math.ceil((r.to == null ? 1 : r.to) * (P0.length - 1)), P = P0.slice(i0, i1 + 1);
-  const lo = Math.min(...P), hi = Math.max(...P), w = r.w || 4.6, hgt = r.h || 6, X = i => -w / 2 + i / (P.length - 1) * w, Y = v => .25 + (v - lo) / (hi - lo + 1e-9) * hgt;
-  const pts = P.map((v, i) => new T3.Vector3(X(i), Y(v), 0)), curve = new T3.CatmullRomCurve3(pts, false, 'centripetal', .3);
+  const r = sh.ramp, P0 = r.prices || R.prices || [1, 2], i0 = Math.floor((r.from || 0) * (P0.length - 1)), i1 = Math.ceil((r.to == null ? 1 : r.to) * (P0.length - 1)), RAW = P0.slice(i0, i1 + 1);
+  const n = RAW.length - 1, keep = new Set([0, n, RAW.indexOf(Math.max(...RAW)), RAW.indexOf(Math.min(...RAW))]); for (let k = 1; k < 9; k++) keep.add(Math.round(k / 9 * n));      // (2026-11-25, the owner: "the movement at the start is so janky": a rider on every daily wiggle flips; the slide follows the shape, not the noise)
+  const idx = [...keep].sort((a, b) => a - b), P = idx.map((i, k) => (k === 0 || k === idx.length - 1 || i === RAW.indexOf(Math.max(...RAW)) || i === RAW.indexOf(Math.min(...RAW))) ? RAW[i] : (RAW[Math.max(0, i - 2)] + RAW[i] + RAW[Math.min(n, i + 2)]) / 3), XI = idx.map(i => i / n);
+  const lo = Math.min(...P), hi = Math.max(...P), w = r.w || 4.2, hgt = r.h || 6.5, X = i => -w / 2 + XI[i] * w, Y = v => .35 + (v - lo) / (hi - lo + 1e-9) * hgt;
+  const pts = P.map((v, i) => new T3.Vector3(X(i), Y(v), 0)), curve = new T3.CatmullRomCurve3(pts, false, 'centripetal');
   const up = P[P.length - 1] >= P[0], col = r.color || (up ? '#2bd47d' : '#e8394a');
-  const g = new T3.Group(), track = mesh(new T3.TubeGeometry(curve, Math.max(60, P.length * 3), .28, 10, false), M(col, {roughness: .35, emissive: new T3.Color(col).multiplyScalar(.25)}));
+  const g = new T3.Group(), track = mesh(new T3.TubeGeometry(curve, 160, .5, 18, false), M(col, {roughness: .3, emissive: new T3.Color(col).multiplyScalar(.22)}));
+  for (const z of [-.62, .62]) { const rail = new T3.CatmullRomCurve3(pts.map(q => new T3.Vector3(q.x, q.y + .42, z)), false, 'centripetal'); g.add(mesh(new T3.TubeGeometry(rail, 160, .07, 8, false), M('#f4f2ee', {roughness: .4}))); }
   g.add(track); const N = 14; for (let i = 0; i <= N; i++) { const q = curve.getPointAt(i / N); g.add(at(cyl(.07, .07, q.y, '#3a3a4a', 8), q.x, q.y / 2, 0)); }
   const lt = labelTex([[r.label || '???', 120, '#ffd23f', .5]], {bg: '#1b1d2c', w: 512, h: 200}), sign = plane(1.6, .62, lt, true); const top = curve.getPointAt(0); sign.position.set(top.x, top.y + 1.1, 0); g.add(sign);
   g.userData = {curve, P, lo, hi}; return g;
@@ -347,7 +351,7 @@ function camFor(s, lt, t) {
     low: [[0, .9, 4.6], [0, 1.6, 0], 34], monitor: [[.35, 1.62, -.55], [-.75, 1.58, .55], 34], over: [[.9, 2.2, -1.6], [-.3, 1.4, .6], 38]}[c.shot || 'mid'];
   let p = V3(c.p || preset[0]), l = V3(c.l || preset[1]); const off = c.p ? new T3.Vector3() : (['monitor', 'over'].includes(c.shot) ? new T3.Vector3() : new T3.Vector3(main.x, 0, main.z)); p.add(off); l.add(off);
   const push = c.push == null ? .12 : c.push; p.lerp(l, push * ease(u)); const side = c.side == null ? .08 : c.side; p.x += side * (1 - 2 * u);
-  p.x += .02 * Math.sin(t * .9) + .012 * Math.sin(t * 2.1); p.y += .015 * Math.sin(t * 1.3);
+  p.x += .018 * Math.sin(t * .7); p.y += .01 * Math.sin(t * .9);
   let sk = c.shake || 0; if (s.B) sk = Math.max(sk, .05 * Math.max(0, Math.sin(lt * 3))); if (sk) { p.x += sk * Math.sin(t * 61); p.y += sk * Math.sin(t * 47); }
   return [p, l, c.fov || preset[2]];
 }
@@ -368,9 +372,9 @@ function render(t) {
     const sc = b.grow ? lerp(b.grow[0], b.grow[1], ease(cl(lt / 1.4))) : (b.scale || 1); B.scale.setScalar(sc * (b.emerge ? .3 + .7 * ease(u) : 1));
     B.userData.jaw.rotation.x = (b.roar ? .55 : .12) * Math.max(0, Math.sin(lt * (b.roar ? 3.2 : 1.5))); B.userData.head.rotation.y = .12 * Math.sin(t * .8); B.userData.arms.forEach((a, i) => { a.rotation.x = -.5 - .4 * Math.sin(t * 2 + i * 2); });
     if (b.walk) B.position.x = lerp(b.walk[0], b.walk[1], cl(lt / (sh.t1 - sh.t0))); }
-  if (s.RP) for (const [p, c] of s.cast) if (c.ride) { const u = lerp(c.ride[0], c.ride[1], (c.ride[2] ? ease : (x => x))(cl(lt / Math.max(.6, sh.t1 - sh.t0 - .2)))), cu = s.RP.userData.curve, q = cu.getPointAt(cl(u)), tg = cu.getTangentAt(cl(u));
-      p.root.position.set(q.x + s.RP.position.x, q.y + .2, s.RP.position.z + .05); p.root.rotation.set(0, c.ry || 0, Math.atan2(tg.y, tg.x) * .6); }
-  if (s.CR) { const o = sh.crate.open, d = lt - (o == null ? 99 : o), U = s.CR.userData; s.CR.rotation.z = d < 0 ? .03 * Math.sin(t * 30) * cl(lt / 1) * (sh.crate.rattle ? 1 : 0) : 0;
+  if (s.RP) for (const [p, c] of s.cast) if (c.ride) { const D = Math.max(.6, sh.t1 - sh.t0 - .2), u = lerp(c.ride[0], c.ride[1], ease(cl(lt / D))), cu = s.RP.userData.curve, q = cu.getPointAt(cl(u)), tg = cu.getTangentAt(cl(u)), dir = c.ride[1] >= c.ride[0] ? 1 : -1;
+      const lean = Math.abs(tg.y); p.root.position.set(q.x + s.RP.position.x, q.y + .55 * (1 - lean) - .35 * lean, s.RP.position.z + .62 * lean - .05); p.root.rotation.set(0, dir * .15, cl(Math.atan2(tg.y, tg.x) * .3, -.22, .22)); }      // (the hips on the slide's top; on a steep climb the rider rides the slide's front face, never inside it)
+  if (s.CR) { const o = sh.crate.open, d = lt - (o == null ? 99 : o), U = s.CR.userData; const hop = sh.crate.rattle && d < 0 ? Math.max(0, Math.sin(Math.PI * ((t * .9) % 1) / .35)) * ((t * .9) % 1 < .35 ? 1 : 0) : 0; s.CR.position.y = .18 * hop; s.CR.rotation.z = .04 * hop * (Math.floor(t * .9) % 2 ? 1 : -1);
     if (d > 0) { U.lid.position.set(1.8 * d, U.S + .1 + 4 * d - 6 * d * d, 0); U.lid.rotation.z = -3 * d; U.lid.visible = d < 1.2; U.name.visible = true; U.name.position.y = U.S * .6 + 1.4 * ease(cl(d / .6)); } }
   if (s.CO) { const c = sh.coin; let x = c.x || 0, y = c.y == null ? 1.2 : c.y; if (c.roll) { const u = cl(lt / Math.max(.6, sh.t1 - sh.t0)); x = lerp(c.roll[0], c.roll[1], u); y = 1.1 + (c.drop ? 2.5 * Math.max(0, 1 - lt / .5) ** 2 : 0); s.CO.rotation.z = -(x - c.roll[0]) / 1.1; }
     else { s.CO.rotation.y = t * (c.spin || 1.6); y += .1 * Math.sin(t * 2); } s.CO.position.set(x, y, c.z || 0); s.CO.scale.setScalar(c.scale || 1); }
@@ -410,6 +414,6 @@ function thumb(C) {           // the thumbnail: each reel its own design; only t
   if (C.badge) { ox.save(); ox.font = '800 44px Montserrat, sans-serif'; ox.letterSpacing = '5px'; const bw = ox.measureText(C.badge).width + 70; ox.fillStyle = '#ffc83d'; ox.beginPath(); ox.roundRect(540 - bw / 2, 250, bw, 84, 42); ox.fill();
     ox.fillStyle = '#111'; ox.textAlign = 'center'; ox.textBaseline = 'middle'; ox.fillText(C.badge, 540, 294); ox.restore(); }
 }
-window.render = render;
+window.render = render; window.__dbg = t => { const s = SH[shotAt(t)], o = {}; for (const [p, c] of s.cast) { const v = new T3.Vector3(); p.torso.getWorldPosition(v); o.torso = v.toArray().map(x => +x.toFixed(2)); o.root = p.root.position.toArray().map(x => +x.toFixed(2)); } if (s.RP) { const c = s.RP.userData.curve; o.pt = c.getPointAt(.6).toArray().map(x => +x.toFixed(2)); o.rp = s.RP.position.toArray(); } o.cam = cam.position.toArray().map(x => +x.toFixed(2)); return o; };
 window.overlaps = () => [];
 window.ready = Promise.all([document.fonts.load('700 40px Fredoka'), document.fonts.load('800 40px Montserrat')]).then(() => document.fonts.ready).then(() => { build(); render(0); return true; });
