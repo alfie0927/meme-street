@@ -61,7 +61,7 @@ def quota_day():
 
 
 def per_day(p):
-    return int(E("YT_PER_DAY", "6") if p == "youtube" else E("ELSEWHERE_PER_DAY", "3"))
+    return int(E("YT_PER_DAY", "25") if p == "youtube" else E("ELSEWHERE_PER_DAY", "3"))      # (the owner, 2026-11-25: "ALL reels should be posted on instagram and youtube"; 8 went up that day without a quota error)
 
 
 def save(st):
