@@ -182,6 +182,22 @@ class GameTests(unittest.TestCase):
         self.assertEqual(st["ret"], -1.0)
         self.assertEqual(st["equity"], 0.0)
 
+    def test_a_short_that_wipes_the_account_out_is_closed_and_the_game_ends(self):
+        e, p = self.e, self.p
+        e.daily_start(p)
+        cs = e.daily_game["chart"]["candles"]
+        e.daily_trade(p, "sell", 1.0)                                                # short at the last lead-in close
+        bust = daily.HISTORY + 10
+        cs[bust][3] = cs[daily.HISTORY - 1][3] * 2.5                                 # (the price more than doubles here)
+        e.now += 5
+        self.assertFalse(e.daily_poll(p, 0)["done"])                                 # not seen yet: still playing
+        e.now += 10
+        st = e.daily_poll(p, 0)
+        self.assertTrue(st["done"] and st["bust"])
+        self.assertEqual((st["ret"], st["equity"], st["shares"]), (-1.0, 0.0, 0.0))
+        self.assertEqual(st["trades"][-1][:3], [bust, "cover", cs[bust][3]])         # closed at the candle that wiped it out
+        self.assertIn("error", e.daily_trade(p, "buy", 1.0))                         # and no more trades
+
     def test_the_summary_at_the_end(self):
         e = self.e
         players = [join(e, f"s{i}") for i in range(4)]

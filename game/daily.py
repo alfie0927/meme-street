@@ -349,10 +349,27 @@ class DailyMixin:
 
     def _daily_finish(self, play, final=False):
         """Ends a game whose two minutes are up (or every game, at the end of the day): what is held is valued at the
-        last candle's close."""
-        if play.get("done") or (not final and self.now - play["t0"] < LIVE):
+        last candle's close.
+        A short that wipes the account out (worth 0 or less at a candle's close) is closed there and the game ends:
+        a bust (2026-11-25, the owner: "close their trade and a pop up ... basically says they lose")."""
+        if play.get("done"):
             return
-        last = self.daily_game["chart"]["candles"][-1][3]
+        cs = self.daily_game["chart"]["candles"]
+        if play["shares"] < 0:
+            n = len(cs) if final or self.now - play["t0"] >= LIVE else self._daily_shown(play)
+            since = play["trades"][-1][0] + 1 if play["trades"] else HISTORY
+            for i in range(max(since, HISTORY), n):
+                price = cs[i][3]
+                if play["cash"] + play["shares"] * price <= 0:
+                    play["trades"].append([i, "cover", price, -play["shares"]])
+                    play["cash"] += play["shares"] * price
+                    play["shares"] = 0.0
+                    play.update(equity=0.0, ret=-1.0, done=True, bust=True, end=play["t0"] + (i - HISTORY + 1))
+                    self._daily_record(play)
+                    return
+        if not final and self.now - play["t0"] < LIVE:
+            return
+        last = cs[-1][3]
         play["equity"] = max(0.0, play["cash"] + play["shares"] * last)     # (a short cannot lose more than everything)
         play["ret"] = play["equity"] / play.get("start", OLD_START) - 1
         play["done"] = True
@@ -623,6 +640,7 @@ class DailyMixin:
         if play.get("done"):
             out["ret"] = play["ret"]
             out["equity"] = play["equity"]
+            out["bust"] = bool(play.get("bust"))
             board = self._daily_board(d)
             if play.get("visitor"):                                        # (not on the board: where it would be)
                 out["rank"] = 1 + sum(x["ret"] > play["ret"] for x in board)

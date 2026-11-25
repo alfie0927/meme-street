@@ -217,6 +217,28 @@ h3+.card{padding:22px 22px 20px}
  .big{font-size:50px}
  .hero .go{width:100%}
 }
+/* the desk (the owner, 2026-11-25: "more visually appealing ... a trading vibe"): the run screen as one trading desk */
+.desk{border:1px solid var(--line);border-radius:3px;background:#0d141a;overflow:hidden;transition:border-color .4s}
+.dbar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#131c25;border-bottom:1px solid var(--line);font-size:13px}
+.live{display:inline-flex;align-items:center;gap:7px;color:var(--dn);font-weight:800;letter-spacing:.12em;font-size:11.5px;padding:3px 8px;border:1px solid #f2555a55;border-radius:3px;background:#f2555a12}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--dn);animation:blink 1.2s ease-in-out infinite}
+.sym{font-size:15px;letter-spacing:.08em}.dlab{color:var(--mut)}
+.clk{margin-left:auto;font:800 24px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--txt)}.clk.low{color:var(--dn);animation:beat 1s ease-in-out infinite}
+.tbar{height:3px;background:#ffffff0a}.tbar i{display:block;height:100%;background:var(--acc);transition:width .25s linear,background .3s}.tbar i.low{background:var(--dn)}
+.qrun{display:grid;grid-template-columns:1fr 1fr 1.45fr 1.15fr 1.2fr;gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
+.qrun>div{background:#0f161d;padding:10px 14px 11px;min-width:0}
+.qrun small{display:block;color:var(--mut);font-size:11.5px;margin-bottom:6px;white-space:nowrap}
+.qrun b{display:block;font:700 16px/1.15 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qrun .pl b{font-size:20px;line-height:.95}
+.qrun .pl.fu{animation:flu .5s ease-out}.qrun .pl.fd{animation:fld .5s ease-out}@keyframes flu{from{background:#3fcf8e24}}@keyframes fld{from{background:#f2555a24}}
+.desk .chart{border:0;border-radius:0;background:#0b1117;padding:6px 6px 2px}
+.ticket{padding:12px;border-top:1px solid var(--line);background:#0f161d}
+.ticket .sizes{grid-template-columns:auto repeat(4,1fr);align-items:center;margin:0 0 10px}
+.ticket .sizes span{color:var(--mut);font-size:12px;padding-right:6px}
+.ticket .btns button{padding:17px 0}
+body.lowtime .desk{border-color:#f2555a66}
+.bust{text-align:center}.bust .bx{font-size:54px;line-height:1;margin:4px 0 10px;animation:popin .6s var(--ease) both}.bust h2{color:var(--dn);font-size:26px;margin:0 0 10px}.bust p{margin:0 0 12px}.bust .go{margin-top:8px;width:100%}
+@media(max-width:520px){.qrun{grid-template-columns:repeat(2,1fr)}.qrun .pl{grid-column:span 2;order:-1}.qrun>div{padding:8px 12px 9px}.qrun small{margin-bottom:4px}.qrun b{font-size:15px}.dlab{display:none}.clk{font-size:21px}.ticket{padding:10px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
 <div class="bgfx" aria-hidden="true"><b></b></div><canvas id="bgc" aria-hidden="true"></canvas>
@@ -284,7 +306,7 @@ async function load(){
  }
 async function start(){
  const b=$('play');if(b)b.disabled=true;
- await overlay(['3','2','1'],380);
+ await overlay(['3','2','1'],260);
  const r=await api('/api/daily/start',{ref:myRef()});
  if(r.need_account){if(b)b.disabled=false;toast('Free plays from this network are used up today. Make a free account to keep going.',4500);account('register');return}
  if(r.error||r.slow){if(b)b.disabled=false;toast(r.error||'Busy: try again');load();return}
@@ -296,18 +318,19 @@ async function pull(){
  if(!r||r.error||r.slow)return;merge(r);
  if(r.done){stop();finale()}}
 function merge(r){G=Object.assign(G||{},r,{candles:(G&&G.candles||[]).slice(0,r.from).concat(r.candles)});if(!r.done)endAt=performance.now()+r.left*1000}
-async function finale(){document.body.classList.add('final');await overlay(["Time's up"],750);document.body.classList.remove('final');load()}
+async function finale(){document.body.classList.add('final');const b=G&&G.bust;await overlay([b?'BUST':"Time's up"],b?900:750);document.body.classList.remove('final');
+ if(b){const t=G.trades[G.trades.length-1];bust(t?t[2]:G.price)}load()}
 async function trade(side,btn){
  if(P){ptrade(side,btn);return}
  if(!G||G.done)return;ripple(btn);buzz(18);
  const r=await api('/api/daily/trade',{side,pct:size});
  if(r.candles)merge(r);
- if(r.error)toast(r.error);else{const t=r.trades[r.trades.length-1];toast({buy:'Bought',sell:'Sold',short:'Shorted',cover:'Covered'}[t[1]]+' at '+num(t[2]),1100)}
+ if(r.error&&!r.bust)toast(r.error);else if(!r.error){const t=r.trades[r.trades.length-1];toast({buy:'Bought',sell:'Sold',short:'Shorted',cover:'Covered'}[t[1]]+' at '+num(t[2]),1100)}
  if(r.done){stop();finale()}else draw()}
 function ripple(btn){if(!btn||CALM)return;const s=document.createElement('span');s.className='rip';const w=btn.offsetWidth;s.style.cssText=`width:${w}px;height:${w}px;left:0;top:${(btn.offsetHeight-w)/2}px`;btn.appendChild(s);setTimeout(()=>s.remove(),650)}
 
 // ---- the chart: candles, trades, and once revealed the real prices and the levels it tested
-function svg(cs,total,history,trades,k,levels,animate){
+function svg(cs,total,history,trades,k,levels,animate,entry){
  const W=600,H=PHONE?330:300,R=PHONE?92:60,FS=PHONE?16:11,top=10,volH=H*.13,ph=H-volH-16,rv=!!k;k=k||1;const lv=levels||[];
  const lo=Math.min(...cs.map(c=>c[2]),...lv.map(l=>l.price)),hi=Math.max(...cs.map(c=>c[1]),...lv.map(l=>l.price)),pad=(hi-lo||hi*.01)*.08,a=lo-pad,b=hi+pad;
  const y=v=>top+(b-v)/(b-a)*ph,sw=(W-R)/total,bw=Math.max(1,sw*.7),vx=Math.max(...cs.map(c=>c[4]),1),lastY=y(cs[cs.length-1][3]),sx=(history-.5)*sw;
@@ -323,6 +346,9 @@ function svg(cs,total,history,trades,k,levels,animate){
   h+=`<g${nw}><line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${y(c[1]).toFixed(1)}" y2="${y(c[2]).toFixed(1)}" stroke="${col}"/><rect x="${(x-bw/2).toFixed(1)}" y="${y(Math.max(c[0],c[3])).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,Math.abs(y(c[0])-y(c[3]))).toFixed(1)}" fill="${col}" rx="${bw>3?1:0}"/><rect x="${(x-bw/2).toFixed(1)}" y="${(H-18-c[4]/vx*volH).toFixed(1)}" width="${bw.toFixed(1)}" height="${(c[4]/vx*volH).toFixed(1)}" fill="${col}" opacity=".25"/></g>`});
  (trades||[]).forEach((t,n)=>{if(t[0]>=cs.length)return;const x=t[0]*sw+sw/2,up=t[1]==='buy'||t[1]==='cover',c=cs[t[0]],yy=up?y(c[2])+13:y(c[1])-13,pop=animate&&n===trades.length-1?' class="pop"':'';
   h+=`<path${pop} d="M${x.toFixed(1)} ${(up?yy-7:yy+7).toFixed(1)} l-6 ${up?10:-10} h12 z" fill="${up?'var(--up)':'var(--dn)'}" stroke="#0d1116" stroke-width="1"/>`});
+ if(!rv&&total>history)h+=`<text x="8" y="${top+FS+2}" fill="#ffffff40" font-size="${(FS*.9).toFixed(1)}" font-weight="700" letter-spacing=".12em">LEAD-IN</text><text x="${(sx+8).toFixed(1)}" y="${top+FS+2}" fill="var(--acc)" opacity=".75" font-size="${(FS*.9).toFixed(1)}" font-weight="700" letter-spacing=".12em">LIVE ▸</text>`;
+ if(entry&&entry.p!=null&&entry.p>a&&entry.p<b){const ey=y(entry.p),ec=entry.long?'var(--up)':'var(--dn)',t=(entry.long?'LONG ':'SHORT ')+num(entry.p),tw=t.length*FS*.62+12;
+  h+=`<line x1="0" x2="${W-R}" y1="${ey.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="${ec}" stroke-width="1.2" opacity=".7"/><rect x="${(W-R-tw-6).toFixed(1)}" y="${(ey-FS*.85).toFixed(1)}" width="${tw.toFixed(1)}" height="${(FS*1.7).toFixed(1)}" rx="3" fill="#080b0f" stroke="${ec}"/><text x="${(W-R-6-tw/2).toFixed(1)}" y="${(ey+FS*.35).toFixed(1)}" text-anchor="middle" fill="${ec}" font-size="${FS}" font-weight="700">${t}</text>`}
  h+=`<line x1="0" x2="${W-R}" y1="${lastY.toFixed(1)}" y2="${lastY.toFixed(1)}" stroke="var(--acc)" stroke-dasharray="2 3" opacity=".8"/>`;
  tags.push({y:lastY,at:lastY,last:1,v:cs[cs.length-1][3]});tags.sort((p,q)=>p.y-q.y);
  for(let i=1;i<tags.length;i++)tags[i].y=Math.max(tags[i].y,tags[i-1].y+FS*1.9);
@@ -436,26 +462,40 @@ function draw(){
   if(fresh){countTo($('bigret'),G.ret,pc,1400);if(beat||(better!==null&&better>=.9))setTimeout(confetti,900);if(D.visitor)event('signup_open')}}
 }
 function runShell(label){
- return `<div class="top"><div class="tring" id="tring"><div id="tsvg"></div><div class="t" id="timer"></div></div><div style="flex:1"><div class="label">${esc(label)}</div><div class="pos" id="pos" style="text-align:left;margin:2px 0"></div></div><div class="pnl"><div class="ret" id="ret"></div><div class="eq" id="eq"></div></div></div>
+ return `<div class="desk"><div class="dbar"><span class="live"><i></i>LIVE</span><b class="sym">???</b><span class="dlab">${esc(label)}</span><span class="clk" id="timer"></span></div>
+  <div class="tbar"><i id="tfill"></i></div>
+  <div class="qrun"><div><small>Last</small><b id="qlast"></b></div><div><small>Change</small><b id="qchg"></b></div><div><small>Position</small><b id="pos"></b></div><div class="pl"><small>Your P&amp;L</small><b id="ret"></b></div><div><small>Equity</small><b id="eq"></b></div></div>
   <div class="chart" id="chart"></div>
-  <div class="sizes" role="group" aria-label="Size" style="margin-top:12px">${SIZES.map((p,i)=>`<button data-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
-  <div class="btns"><button class="buy" data-side="buy"><span id="lb">Buy</span><small>B</small></button><button class="sell" data-side="sell"><span id="ls">Sell</span><small>S</small></button></div>`}
+  <div class="ticket"><div class="sizes" role="group" aria-label="Order size"><span>Size</span>${SIZES.map((p,i)=>`<button data-size="${p}" title="Key ${i+1}">${p*100}%</button>`).join('')}</div>
+  <div class="btns"><button class="buy" data-side="buy"><span id="lb">Buy</span><small>B</small></button><button class="sell" data-side="sell"><span id="ls">Sell</span><small>S</small></button></div></div></div>`}
+// the average price of the open position, from the trades ([candle, kind, price, shares])
+function entryOf(trades){let q=0,cost=0;for(const t of trades||[]){const d=(t[1]==='buy'||t[1]==='cover'?1:-1)*Math.abs(t[3]||0);
+  if(q===0||Math.sign(d)===Math.sign(q)){cost+=d*t[2];q+=d}else{const nq=q+d;if(Math.abs(nq)<1e-9){q=0;cost=0}else if(Math.sign(nq)!==Math.sign(q)){q=nq;cost=nq*t[2]}else{cost*=nq/q;q=nq}}}
+ return Math.abs(q)<1e-9?null:cost/q}
 function fillRun(cs,total,history,trades,cash,shares,price,left,start,live){
- const eq=cash+shares*price,ret=eq/start-1;
- $('timer').textContent=clock(left);$('tring').classList.toggle('low',left<=10);$('tsvg').innerHTML=ringSvg(left/live,left<=10?'#f25c54':'#4cc3cc',76);
- shownRet+=(ret-shownRet)*.35;$('ret').innerHTML=`<span class="${cls(shownRet)}">${pc(Math.abs(ret-shownRet)<.0002?ret:shownRet)}</span>`;$('eq').textContent='$'+num(eq);
- const key=cs.length+':'+trades.length;if(key!==$('chart')._k){const grew=cs.length>lastN||trades.length!==$('chart')._t;$('chart').innerHTML=svg(cs,total,history,trades,0,null,grew&&!!$('chart')._k);$('chart')._k=key;$('chart')._t=trades.length;lastN=cs.length}
- $('pos').innerHTML=shares>0?`<b class="up">● Long</b> $${num(shares*price,0)}`:shares<0?`<b class="dn">● Short</b> $${num(-shares*price,0)}`:'Buy if you think it goes up. Short if you think it falls.';
+ const eq=cash+shares*price,ret=eq/start-1,low=left<=10,ref=cs[Math.min(history,cs.length)-1][3],chg=price/ref-1;
+ $('timer').textContent=clock(left);$('timer').classList.toggle('low',low);
+ const tf=$('tfill');tf.style.width=(Math.max(0,Math.min(1,left/live))*100).toFixed(2)+'%';tf.classList.toggle('low',low);
+ $('qlast').textContent=num(price);$('qchg').innerHTML=`<span class="${cls(chg)}">${pc(chg)}</span>`;
+ shownRet+=(ret-shownRet)*.35;const rc=$('ret');rc.innerHTML=`<span class="${cls(shownRet)}">${pc(Math.abs(ret-shownRet)<.0002?ret:shownRet)}</span>`;
+ if(rc._r!==undefined&&Math.abs(ret-rc._r)>.004){const pl=rc.parentNode;pl.classList.remove('fu','fd');void pl.offsetWidth;pl.classList.add(ret>rc._r?'fu':'fd');rc._r=ret}else if(rc._r===undefined)rc._r=ret;
+ $('eq').textContent='$'+num(Math.max(0,eq),0);
+ const en=entryOf(trades);
+ const key=cs.length+':'+trades.length;if(key!==$('chart')._k){const grew=cs.length>lastN||trades.length!==$('chart')._t;$('chart').innerHTML=svg(cs,total,history,trades,0,null,grew&&!!$('chart')._k,shares?{p:en,long:shares>0}:null);$('chart')._k=key;$('chart')._t=trades.length;lastN=cs.length}
+ $('pos').innerHTML=shares>0&&en?`<span class="up">Long</span> <span class="mut">${num(en)}</span>`:shares<0&&en?`<span class="dn">Short</span> <span class="mut">${num(en)}</span>`:'<span class="mut">Flat</span>';
  $('lb').textContent=shares<0?'Cover':'Buy';$('ls').textContent=shares>0?'Sell':'Short';
+ document.body.classList.toggle('lowtime',low);
  document.querySelectorAll('[data-size]').forEach(b=>b.classList.toggle('on',Number(b.dataset.size)===size))}
 
 // ---- an archive replay: a past day's whole chart, played here with the same rules, unranked
 async function replay(n){
  const r=await api('/api/daily/past/'+n);if(r.error){toast(r.error);return}
- closePop();stop();event('archive_play');await overlay(['3','2','1'],380);
+ closePop();stop();event('archive_play');await overlay(['3','2','1'],260);
  P={number:r.number,candles:r.candles,history:r.history,live:r.live,real:r.real,levels:r.levels||[],start:r.cash,cash:r.cash,shares:0,trades:[],t0:Date.now(),done:false};lastN=0;shownRet=0;
  document.body.classList.add('trading');$('main').innerHTML=`<div class="view">${runShell(`Archive #${r.number} · practice`)}</div>`;window.scrollTo(0,0);
- tick=setInterval(()=>{if(!P)return;if(pel()>=P.live)pfinish();else pfill()},200);pfill()}
+ tick=setInterval(()=>{if(!P)return;if(pbust())return;if(pel()>=P.live)pfinish();else pfill()},200);pfill()}
+function pbust(){if(P.done||P.shares>=0)return false;const n=pshown(),from=Math.max(P.history,P.trades.length?P.trades[P.trades.length-1][0]+1:P.history);   // (game/daily.py _daily_finish)
+ for(let i=from;i<n;i++){const px=P.candles[i][3];if(P.cash+P.shares*px<=0){P.trades.push([i,'cover',px,-P.shares]);P.cash+=P.shares*px;P.shares=0;P.bust=px;pfinish();return true}}return false}
 const pel=()=>(Date.now()-P.t0)/1000,pshown=()=>P.done?P.candles.length:P.history+Math.max(0,Math.min(P.live,Math.floor(pel())));
 function pfill(){const n=pshown();fillRun(P.candles.slice(0,n),P.history+P.live,P.history,P.trades,P.cash,P.shares,P.candles[n-1][3],P.live-pel(),P.start,P.live)}
 function ptrade(side,btn){   // (game/daily.py daily_trade, line for line)
@@ -466,12 +506,17 @@ function ptrade(side,btn){   // (game/daily.py daily_trade, line for line)
  else{const room=Math.max(0,P.cash+held*price-(-held)*price);if(room*pct<0.01){toast('You are already short as much as you can be');return}sh=room*pct/price;P.shares-=sh;P.cash+=sh*price;kind='short'}
  if(Math.abs(P.shares)*price<1e-9)P.shares=0;P.trades.push([n-1,kind,price,sh]);toast({buy:'Bought',sell:'Sold',short:'Shorted',cover:'Covered'}[kind]+' at '+num(price),1100);pfill()}
 async function pfinish(){
- clearInterval(tick);tick=null;P.done=true;await overlay(["Time's up"],750);const cs=P.candles,last=cs[cs.length-1][3],eq=Math.max(0,P.cash+P.shares*last),ret=eq/P.start-1,h=last/cs[P.history-1][3]-1;
+ clearInterval(tick);tick=null;P.done=true;await overlay([P.bust?'BUST':"Time's up"],P.bust?900:750);if(P.bust)bust(P.bust);const cs=P.candles,last=cs[cs.length-1][3],eq=P.bust?0:Math.max(0,P.cash+P.shares*last),ret=eq/P.start-1,h=last/cs[P.history-1][3]-1;
  $('main').innerHTML=`<div class="view">${reveal(P.real,h)}<div class="card st"><div class="kick">Archive #${P.number}, for practice</div><div class="big ${cls(ret)}">${pc(ret)}</div>
   <div class="vs">The stock did <b class="${cls(h)}">${pc(h)}</b>: ${!P.trades.length?'you sat it out.':ret>h+1e-9?'you beat it.':'it beat you.'}</div>
   <div class="row"><button class="go" id="back">Back to today</button><button class="alt" data-open="archive">Another day</button></div></div>
   <div class="chart st">${svg(cs,cs.length,P.history,P.trades,P.real&&P.real.k,P.levels)}</div>${levelsList(P.levels,P.real&&P.real.k)}</div>`;flipOpen();if(ret>h+1e-9&&P.trades.length)setTimeout(confetti,800)}
 
+// ---- the bust: a short that wiped the account out was closed and the game is over (2026-11-25, the owner)
+const BUST_LINES=[["Liquidated.","Your broker would like a word. Several words, actually."],["Margin call.","The market didn't just take your lunch. It took the fridge."],["Wiped out.","Shorting is fun until the line goes up. Then it is mostly screaming."],["Account: $0.00","Somewhere a hedge fund is laughing. It's fine. It's paper money."],["You've been margin-called.","Legends say the stock is still going up."]];
+function bust(price,again){const [h,l]=BUST_LINES[Math.floor(Math.random()*BUST_LINES.length)];buzz([60,40,60]);
+ pop(`<div class="bust"><div class="bx">💀</div><h2>${esc(h)}</h2><p>${esc(l)}</p><p class="mut">Your short lost everything, so we closed it at <b style="color:var(--txt)">${num(price)}</b>. Final score: <b class="dn">−100%</b>.</p>
+  <button class="go" data-close id="bustok">${again?'See the damage':'Pain. Show me'}</button></div>`,'Bust')}
 // ---- sharing (the squares never name the stock)
 function shareText(){
  const st=D.stats,me=D.me&&D.me.name||'',link=`https://memestreet.net/?vs=${encodeURIComponent(me.slice(0,16))}~${Math.round(G.ret*10000)}~${D.number}`;
@@ -504,6 +549,7 @@ function help(){event('help');pop(`<h2>How to play</h2><ul>
  <li>Hit <b>Play</b> and <b>120 candles</b> print, one a second. A candle might be a day, two days or a week. You find out after.</li>
  <li>Pick a size, then <b>Buy</b> or <b>Sell</b>. Trade as much as you like, no fees.</li>
  <li><b>Sell with nothing held and you're short:</b> you make money if it falls. Buy to cover.</li>
+ <li><b>Careful with shorts:</b> if the price runs up so far that your short wipes the account out, it's closed there and you're out for the day at −100%.</li>
  <li>Your <b>return</b> is your score. Try to beat the stock.</li>
  <li>At the end you see the stock, its real prices and the levels it tested.</li>
  <li>Play daily to build a <b>streak</b>. No account needed.</li></ul>
