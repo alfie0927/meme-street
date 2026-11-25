@@ -215,6 +215,7 @@ class SiteTests(unittest.TestCase):
             for path in ("/privacy", "/terms", "/robots.txt", "/admin", "/daily"):
                 self.assertEqual(http(srv, path)[0], 200, path)
             self.assertIn("Meme Street Daily", http(srv, "/admin")[1])
+            self.assertEqual(head(srv, "/ig"), (307, "/?ref=ig_bio"))                # (the Instagram bio's invite link)
             self.assertEqual(http(srv, "/api/portfolio")[0], 410)
             self.assertEqual(http(srv, "/api/learn")[0], 410)
             self.assertEqual(http(srv, "/api/shop/checkout", "POST", {})[0], 410)

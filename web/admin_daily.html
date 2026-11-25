@@ -50,6 +50,8 @@ svg.ch .hit{fill:transparent}svg.ch .hit:hover{fill:#ffffff0c}
 .heat td.c span{color:var(--txt)}
 #tip{position:fixed;z-index:20;pointer-events:none;background:#0b1117f5;border:1px solid var(--line2);border-radius:3px;padding:7px 10px;font-size:12px;display:none;max-width:280px;box-shadow:0 6px 20px #0008;color:var(--mut)}
 #tip b{color:var(--txt)}
+.inv{display:grid;grid-template-columns:minmax(150px,max-content) 1fr auto auto;gap:8px 14px;align-items:center}.inv code{color:var(--acc);font:inherit;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.inv b{text-align:right;min-width:70px}
+.mk{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.mk input{flex:1;min-width:160px}
 .pill{display:inline-block;padding:2px 8px;border:1px solid var(--line2);border-radius:3px;font-size:11px;color:var(--mut)}
 </style></head><body>
 <div id="login"><b style="font-size:15px">Meme Street Daily: admin</b><p class="mut">The admin key opens it.</p><input id="key" type="password" placeholder="Admin key" autocomplete="current-password"><button class="primary" id="go">Open</button><p id="err" class="dn"></p></div>
@@ -111,6 +113,12 @@ function lines(xs,series,opt={}){
  return `<svg class="ch" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.label||'chart')}">${h}</svg>`}
 // horizontal bars with the value at the end
 const hbars=(items,c,fmt)=>{const max=Math.max(1,...items.map(x=>x[1]));return items.length?`<div class="hb">${items.map(([l,v])=>`<span>${esc(l)}</span><div class="tr" data-tip="${esc(`<b>${l}</b><br>${fmt?fmt(v):v}`)}"><i style="width:${Math.max(v?1.5:0,v/max*100).toFixed(1)}%;background:${c}"></i></div><b>${fmt?fmt(v):v}</b>`).join('')}</div>`:'<p class="mut" style="margin:0">Nothing yet</p>'};
+// the invite links: a short address or ?ref= on the site, the players each one brought in the last 30 days
+const SITE='https://memestreet.net';
+const INVITES=[['Instagram bio','/ig','ig_bio'],['Instagram story','/?ref=ig_story','ig_story'],['Instagram DMs','/?ref=ig_dm','ig_dm'],['Reel captions','/play','reel'],['YouTube','/yt','yt']];
+function invites(){const got=Object.fromEntries(A.refs);
+ return `<div class="inv">${INVITES.map(([l,path,ref])=>`<span>${l}</span><code>${SITE.replace('https://','')}${path}</code><b>${got[ref]||0} <span class="mut" style="font-weight:400">players</span></b><button data-copy="${SITE}${path}">Copy</button>`).join('')}</div>
+  <div class="mk"><input id="refname" placeholder="Make your own: a name like ig_collab_sam" maxlength="40"><button id="mkref">Make link</button></div><p class="note" id="mkout">A made link counts under its name in "Where players come from".</p>`}
 const avg7=(arr,k)=>arr.map((r,i)=>{const w=arr.slice(Math.max(0,i-6),i+1);return w.reduce((a,x)=>a+(x[k]||0),0)/w.length});
 
 // ---- the pages
@@ -141,6 +149,7 @@ const PAGES={
   const tot=k=>d.reduce((a,x)=>a+((x.ev||{})[k]||0),0),fin=d.reduce((a,x)=>a+x.finished+x.visitors_finished,0),su=d.reduce((a,x)=>a+x.signed_up,0),vf=d.reduce((a,x)=>a+x.visitors_finished,0);
   return `<div class="kpis">${kpi('Shares',tot('share'),`${pct(tot('share'),fin)} of finished games`)}${kpi('Story pictures',tot('picture'))}${kpi('Challenge links opened',tot('challenge'))}
    ${kpi('Accounts made',su,`${pct(su,vf)} of visitors who finished`)}${kpi('Members',A.members.players,`${A.visitors.players} visitors`)}</div>
+  ${panel('Invite links',invites(),'players each brought, last 30 days')}
   <div class="grid2">${panel('Where players come from',hbars(refs.map(([k,v])=>[k,v]),'var(--acc)'),'?ref= links, last 30 days')}
    ${panel('Sharing and sign-ups',d.length?legend([['var(--ret)','Shares per finished game'],['var(--new)','Visitors who made an account']])+lines(d.map(x=>date(x.day)),[{l:'Shares per game',c:'var(--ret)',v:shr},{l:'Made an account',c:'var(--new)',v:conv}],{fmt:v=>Math.round(v*100)+'%',min:.05,w:460,h:230,label:'Share rate and sign-up rate'}):'<p class="mut" style="margin:0">Nothing yet</p>','a day, last 30 days')}</div>
   ${panel('When games start',columns(A.habit.hours.map((v,h)=>({label:String(h).padStart(2,'0'),tip:`${String(h).padStart(2,'0')}:00 UTC`,v})),[{k:'v',l:'Games',c:'var(--ret)'}],{h:190,label:'Games by hour'}),'hour of day, UTC, last 30 days, new stock at 00:00')}
@@ -166,6 +175,9 @@ document.addEventListener('mousemove',e=>{const t=e.target.closest&&e.target.clo
 document.addEventListener('click',async e=>{const t=e.target;
  const b=t.closest('[data-tab]');if(b){tab=b.dataset.tab;try{sessionStorage.admin_tab=tab}catch(e){}render();return}
  if(t.id==='reset'){if(prompt('Type NEW to put a new chart up for today. Today’s board starts again.')!=='NEW')return;try{const r=await api('/api/admin/daily/reset',{confirm:'NEW'});alert(r.msg||r.error||'Done');refresh()}catch(err){alert(err.message)}}
+ const cp=t.closest('[data-copy]');if(cp){try{await navigator.clipboard.writeText(cp.dataset.copy);cp.textContent='Copied'}catch(err){prompt('Copy this link',cp.dataset.copy)}setTimeout(()=>{cp.textContent='Copy'},1500);return}
+ if(t.id==='mkref'){const n=($('refname').value||'').trim().toLowerCase().replace(/[^a-z0-9_-]+/g,'_').slice(0,40);if(!n)return;const url=`${SITE}/?ref=${n}`;
+  $('mkout').innerHTML=`<code style="color:var(--acc)">${esc(url)}</code> <button data-copy="${esc(url)}">Copy</button>`;return}
  if(t.id==='out')lock('')});
 $('go').onclick=()=>{key=$('key').value;try{sessionStorage.admin_key=key}catch(e){}open_()};$('key').onkeydown=e=>{if(e.key==='Enter')$('go').click()};
 if(key)open_();

@@ -28,7 +28,7 @@ GAME_SHOWN = ('<main id="main"><div class="hero"><h1 class="tag">One real stock.
               '<p>A new chart from a real US stock every day, the same for everyone. Candles print one a second for two '
               'minutes. Buy, sell or short, then find out the stock, your rank and how everyone did. No account needed.</p>'
               '<noscript><p>Turn on JavaScript to play.</p></noscript></div></main>')
-KEEP = {"/", "/daily", "/embed/daily", "/play", "/yt", "/admin", "/privacy", "/terms", "/robots.txt", "/sitemap.xml",
+KEEP = {"/", "/daily", "/embed/daily", "/play", "/yt", "/ig", "/admin", "/privacy", "/terms", "/robots.txt", "/sitemap.xml",
         "/manifest.json", "/favicon.ico", "/llms.txt", "/ws", "/gateway/health"}   # (what memestreet.net still serves)
 BRAND_FILES = {"jetbrains-mono.woff2", "memestreet_logo_peaks.png", "memestreet_header_peaks.png", "favicon.ico", "icon-48.png", "icon-192.png",
                "icon-512.png", "apple-touch-icon.png"}   # (the small icons: browser tabs, phones and search results)
@@ -289,6 +289,12 @@ def add_pages(app):
         """The short address the reels say: today's Daily Chart, tagged as coming from a reel (growth plan, 2026-11-10).
         Not in the sitemap: it only forwards."""
         return RedirectResponse("/?ref=reel" if DAILY_ONLY else "/daily?ref=reel", status_code=307)
+
+    @app.get("/ig")
+    async def from_instagram():
+        """The invite link for the Instagram bio (2026-11-25): today's Daily, tagged ig_bio, so the admin page counts
+        the players it brings. Not in the sitemap: it only forwards."""
+        return RedirectResponse("/?ref=ig_bio" if DAILY_ONLY else "/daily?ref=ig_bio", status_code=307)
 
     @app.get("/yt")
     async def from_youtube():
