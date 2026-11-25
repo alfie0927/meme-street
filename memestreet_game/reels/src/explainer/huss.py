@@ -48,7 +48,7 @@ def mux(d, silent):
     sp = json.load(open(os.path.join(d, "work", "spec.json"), encoding="utf-8")); M = setup(sp); work = os.path.join(d, "work")
     R = json.load(open(os.path.join(work, "timeline.json"), encoding="utf-8")); out = os.path.join(d, "out")
     print(M.mux(R, os.path.join(work, "voice.wav"), work, silent, out))
-    tr = M.track(sp["title"]); open(os.path.join(out, "caption.txt"), "w", encoding="utf-8").write(sp["caption"] + "\n\n" + ((tr.get("credit") or "") + "\n" if tr else "") + M.DISCLAIMER + "\n" + sp.get("tags", ""))
+    tr = M.track(sp["title"]); open(os.path.join(out, "caption.txt"), "w", encoding="utf-8").write(sp["caption"] + "\n\n" + (tr["credit"] + "\n" if tr and tr.get("credit") else "") + M.DISCLAIMER + "\n" + sp.get("tags", ""))
 
 
 if __name__ == "__main__":

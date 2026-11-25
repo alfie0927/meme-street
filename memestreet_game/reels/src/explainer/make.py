@@ -60,7 +60,7 @@ EL_SET = {"stability": .45, "similarity_boost": .8, "style": .3, "use_speaker_bo
 # artists on Jamendo, free to use with a credit (CC BY), found through Openverse (lab/music_search.py) and kept in
 # assets/music_cc/jamendo/ on the server with tracks.json (file, title, artist, licence, source); never in the repo. A reel takes
 # its own track (EXPLAINER_TRACK names one) and its caption credits it; synthesised music (sounds.tune) only if none is there.
-MUSIC_DIR = os.path.join(ROOT, "assets", "music_cc", "genre")
+MUSIC_DIR = os.environ.get("EXPLAINER_MUSIC_DIR") or os.path.join(ROOT, "assets", "music_free")      # (2026-11-25, the owner: no credit lines: Mixkit tracks, free for commercial social media with no attribution; the CC BY library in music_cc/genre needs a credit, so it is no longer used)
 # Then, 2026-11-23 night: "i don't like this music... use the music that is typically used in these types of reels". A research
 # agent read the music labels on Segment Zero's and Zack D. Films' Shorts: paid Epidemic Sound tracks, mostly sneaky pizzicato
 # orchestral comedy, mystery pulses and cinematic builds. The free match: Steven O'Brien's cues (CC BY, not registered with
@@ -821,11 +821,11 @@ def render(R, wav, work, out):
 def caption_text(spec, story):
     script = " ".join(str(s["say"]) for s in spec["sentences"]); st = story.get("stock", {})
     if spec.get("caption"):         # (a promo writes its own: it never names the day's stock before the answer reel)
-        t = track(spec["title"]); return (f"{spec['caption']}\n\n" + ((t.get("credit") or "") + "\n" if t else "") + f"{DISCLAIMER}\n" + spec.get("tags", "#stocks #trading #stockmarket #daytrading #MemeStreet"))
+        t = track(spec["title"]); return (f"{spec['caption']}\n\n" + (t["credit"] + "\n" if t and t.get("credit") else "") + f"{DISCLAIMER}\n" + spec.get("tags", "#stocks #trading #stockmarket #daytrading #MemeStreet"))
     src = sorted({o for f in story.get("research", {}).get("facts", []) for o in (f.get("by") or [])})[:5]
     return (f"{spec['title']}\n\n{script}\n\n{story.get('day') or 'Today' + chr(39) + 's'} mystery chart was {st.get('name')} ({st.get('ticker')}), {st.get('start')} to {st.get('end')}. "
             f"A new one goes live every midnight UTC: memestreet.net\n" + ("Sources: " + ", ".join(src) + "\n" if src else "") +
-            ((track(spec["title"]).get("credit") or "Music: \"{title}\" by {artist} ({source}), {license}".format(**track(spec["title"]))) + "\n" if track(spec["title"]) else "") +
+            (track(spec["title"])["credit"] + "\n" if (track(spec["title"]) or {}).get("credit") else "") +      # (a credit only for a track whose licence asks for one)
             f"{DISCLAIMER}\n#stocks #investing #stockmarket #{re.sub(r'[^A-Za-z0-9]', '', str(st.get('ticker', '')))} #MemeStreet")
 
 
