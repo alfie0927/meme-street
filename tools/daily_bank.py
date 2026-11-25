@@ -75,9 +75,9 @@ GAP = {"1 day": 7, "2 days": 9, "1 week": 14}               # (days between two 
 SEED = 43497                                               # the order of the charts and of the days
 
 NAMES = {   # the stocks people have heard of (US listings that traded 2016-2021), ticker: the name shown at the end
-    "AAPL": "Apple", "MSFT": "Microsoft", "AMZN": "Amazon", "GOOGL": "Alphabet (Google)", "FB": "Facebook",
+    "AAPL": "Apple", "MSFT": "Microsoft", "AMZN": "Amazon", "GOOGL": "Alphabet", "FB": "Facebook",
     "NFLX": "Netflix", "NVDA": "Nvidia", "AMD": "AMD", "INTC": "Intel", "TSLA": "Tesla", "ZM": "Zoom",
-    "SHOP": "Shopify", "SQ": "Square", "PYPL": "PayPal", "TWTR": "Twitter", "SNAP": "Snap (Snapchat)", "UBER": "Uber",
+    "SHOP": "Shopify", "SQ": "Square", "PYPL": "PayPal", "TWTR": "Twitter", "SNAP": "Snap", "UBER": "Uber",
     "LYFT": "Lyft", "SPOT": "Spotify", "ROKU": "Roku", "PTON": "Peloton", "ETSY": "Etsy", "DOCU": "DocuSign",
     "CRM": "Salesforce", "ADBE": "Adobe", "ORCL": "Oracle", "IBM": "IBM", "CSCO": "Cisco", "QCOM": "Qualcomm",
     "MU": "Micron", "BABA": "Alibaba", "JD": "JD.com", "NIO": "NIO", "BIDU": "Baidu", "PINS": "Pinterest",
@@ -87,7 +87,7 @@ NAMES = {   # the stocks people have heard of (US listings that traded 2016-2021
     "GME": "GameStop", "AMC": "AMC Entertainment", "BBBY": "Bed Bath & Beyond", "KOSS": "Koss", "EXPR": "Express",
     "NKLA": "Nikola", "KODK": "Kodak", "SPCE": "Virgin Galactic", "BYND": "Beyond Meat", "PLUG": "Plug Power",
     "FCEL": "FuelCell Energy", "TLRY": "Tilray", "CGC": "Canopy Growth", "ACB": "Aurora Cannabis",
-    "MARA": "Marathon (bitcoin miner)", "RIOT": "Riot (bitcoin miner)", "MSTR": "MicroStrategy",
+    "MARA": "Marathon", "RIOT": "Riot", "MSTR": "MicroStrategy",
     "WKHS": "Workhorse", "SNDL": "Sundial Growers", "FUBO": "fuboTV", "MRNA": "Moderna", "NVAX": "Novavax",
     "PFE": "Pfizer", "BNTX": "BioNTech", "JNJ": "Johnson & Johnson", "GILD": "Gilead", "INO": "Inovio",
     "VXRT": "Vaxart", "REGN": "Regeneron", "ABBV": "AbbVie", "LLY": "Eli Lilly", "MRK": "Merck", "CCL": "Carnival",
