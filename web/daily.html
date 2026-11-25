@@ -113,6 +113,16 @@ main{max-width:720px;margin:0 auto;padding:30px 16px 40px}
 .stat{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin:22px 0 0;text-align:center}
 .stat>div{background:#0d151c;padding:15px 4px 13px}
 .stat strong{display:block;font:700 clamp(15px,4.4vw,21px)/1.1 var(--mono);white-space:nowrap;font-variant-numeric:tabular-nums;margin-bottom:7px}.stat small{color:var(--mut);font:500 11px/1.25 var(--mono);display:block}
+.acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:24px 0 0}
+.acts button{display:inline-flex;align-items:center;justify-content:center;gap:9px;height:48px;padding:0 20px;font-size:14px;font-weight:700;border-radius:4px;letter-spacing:0}
+.acts .go{padding:0 26px;font-size:15px}.acts .alt{color:var(--txt);border-color:var(--line2)}.acts .alt svg{color:var(--acc)}
+.acts .alt:hover{border-color:var(--acc);background:#4cc3cc0d}
+@media(max-width:520px){.acts button{flex:1 1 100%}.acts .alt{flex:1 1 40%}}
+.sheet{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 0}
+.sheet a,.sheet button{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border:1px solid var(--line2);border-radius:4px;color:var(--txt);text-decoration:none;font-size:13px;font-weight:600;background:transparent}
+.sheet a:hover,.sheet button:hover{border-color:var(--acc)}.sheet i{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;color:#fff;font-size:15px}
+.shtxt{white-space:pre-wrap;background:#0b1117;border:1px solid var(--line);border-radius:4px;padding:12px;font-size:13px;margin:0 0 16px}
+.steps{margin:0;padding-left:20px}.steps li{margin:0 0 10px}
 .row{display:flex;gap:12px;justify-content:center;margin:22px 0 0;flex-wrap:wrap}
 .next{color:var(--mut);margin:16px 0 0;font-size:14px}.next b{color:var(--txt);font-family:var(--mono);font-variant-numeric:tabular-nums}
 .back{display:flex;justify-content:space-between;gap:10px 18px;flex-wrap:wrap;margin:0 0 20px;padding:14px 18px;border-radius:8px;background:#4cc3cc12;border:1px solid #4cc3cc40;font-size:14px}.back .cd{font-variant-numeric:tabular-nums}
@@ -427,7 +437,8 @@ function milestone(st){const m=MILESTONES.includes(st.streak)&&lsGet('ms_mile',0
 function pitch(){   // (after everything else on the result, not in the middle of it: the result comes first)
  return `<div class="card pitch st"><h2>Keep your streak on any device</h2><p class="mut" style="margin:0 0 18px">It's saved in this browser for now. A free account adds your name to the board, a streak freeze each week, and replays of past days.</p>
   <div class="row" style="justify-content:flex-start;margin:0"><button class="go" data-acct="register" style="font-size:15px;padding:14px 26px">Create a free account</button><button class="alt" data-acct="login">Log in</button></div></div>`}
-const installBtn=()=>installEv?`<button class="alt" id="install">Add to home screen</button>`:'';
+const INSTALLED=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const installBtn=()=>INSTALLED?'':`<button class="alt" id="install"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Add to home screen</button>`;
 
 function draw(){
  const m=$('main');document.body.classList.toggle('trading',!!(P||(D&&D.status==='running'&&G&&!G.done)));if(!D||P)return;
@@ -453,7 +464,7 @@ function draw(){
    <div class="vs">The stock did <b class="${cls(G.hold)}">${pc(G.hold)}</b>: ${said}</div>
    ${v?`<div class="vs">${vsName(v)} got <b class="${cls(v.ret)}">${pc(v.ret)}</b>: ${G.ret>v.ret+1e-9?'you beat them.':G.ret<v.ret-1e-9?'they beat you this time.':'a tie.'}</div>`:''}
    ${squares(G.grid||[],fresh)}${bestLine(G.best,G.history)}${streakChip(st)}${statRow(st)}
-   <div class="row"><button class="go" id="share">Share</button><button class="alt" id="pic">Story picture</button>${installBtn()}</div>
+   <div class="acts"><button class="go" id="share"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Share</button><button class="alt" id="pic"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2.5" width="14" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 15l3-3 2.5 2.5L16 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Story picture</button>${installBtn()}</div>
    ${D.visitor?'':`<div class="row" style="margin-top:10px"><button class="alt" id="remind">${D.remind?'Daily email is on: turn off':'Email me when the next stock is out'}</button></div>`}</div>
    ${milestone(st)}${tomorrow()}
    <h3 class="st">The chart <span class="mut">your trades marked</span></h3><div class="chart st">${svg(G.candles,G.history+G.live,G.history,G.trades,G.real&&G.real.k,G.levels)}</div>${levelsList(G.levels,G.real&&G.real.k)}
@@ -518,16 +529,22 @@ function bust(price,again){const [h,l]=BUST_LINES[Math.floor(Math.random()*BUST_
  pop(`<div class="bust"><div class="bx">💀</div><h2>${esc(h)}</h2><p>${esc(l)}</p><p class="mut">Your short lost everything, so we closed it at <b style="color:var(--txt)">${num(price)}</b>. Final score: <b class="dn">−100%</b>.</p>
   <button class="go" data-close id="bustok">${again?'See the damage':'Pain. Show me'}</button></div>`,'Bust')}
 // ---- sharing (the squares never name the stock)
-function shareText(){
- const st=D.stats,me=D.me&&D.me.name||'',link=`https://memestreet.net/?vs=${encodeURIComponent(me.slice(0,16))}~${Math.round(G.ret*10000)}~${D.number}`;
- return `Meme Street #${D.number} ${G.ret>=0?'📈':'📉'}\n${pc(G.ret)}${G.rank&&!D.visitor?' · '+place(G.rank)+' of '+G.of:''} · the stock ${pc(G.hold)}\n${(G.grid||[]).map(v=>v>0?'🟩':v<0?'🟥':'⬜').join('')}${st.streak>1?'\n🔥 '+st.streak+' days':''}\n${link}`}
+const shareLink=()=>{const me=D.me&&D.me.name||'';return `https://memestreet.net/?vs=${encodeURIComponent(me.slice(0,16))}~${Math.round(G.ret*10000)}~${D.number}`};
+function shareBody(){
+ const st=D.stats;
+ return `Meme Street #${D.number} ${G.ret>=0?'📈':'📉'}\n${pc(G.ret)}${G.rank&&!D.visitor?' · '+place(G.rank)+' of '+G.of:''} · the stock ${pc(G.hold)}\n${(G.grid||[]).map(v=>v>0?'🟩':v<0?'🟥':'⬜').join('')}${st.streak>1?'\n🔥 '+st.streak+' days':''}`}
+const shareText=()=>shareBody()+'\n'+shareLink();
 async function share(){
- const text=shareText();event('share');
- if(PHONE&&navigator.share){try{await navigator.share({text});return}catch(e){if(e.name==='AbortError')return}}
- try{await navigator.clipboard.writeText(text);toast('Copied: paste it anywhere')}catch(e){toast('Could not copy')}}
+ event('share');const text=shareBody(),url=shareLink();
+ if(navigator.share){try{await navigator.share({title:`Meme Street #${D.number}`,text,url});return}catch(e){if(e.name==='AbortError')return}}
+ const t=encodeURIComponent(text+'\n'+url),u=encodeURIComponent(url),tx=encodeURIComponent(text);
+ const to=[['WhatsApp','#25d366','W',`https://wa.me/?text=${t}`],['X','#000','X',`https://twitter.com/intent/tweet?text=${tx}&url=${u}`],['Telegram','#229ed9','T',`https://t.me/share/url?url=${u}&text=${tx}`],
+  ['Facebook','#1877f2','f',`https://www.facebook.com/sharer/sharer.php?u=${u}`],['Reddit','#ff4500','r',`https://www.reddit.com/submit?url=${u}&title=${encodeURIComponent('Meme Street #'+D.number+': '+pc(G.ret))}`],['Email','#5d6b78','@',`mailto:?subject=${encodeURIComponent('Beat my score on Meme Street #'+D.number)}&body=${t}`]];
+ pop(`<h2>Share your result</h2><p class="shtxt">${esc(text+'\n'+url)}</p><div class="sheet">${to.map(([n,c,l,h])=>`<a href="${esc(h)}" target="_blank" rel="noopener"><i style="background:${c}">${l}</i>${n}</a>`).join('')}</div>
+  <div class="acts" style="margin-top:14px"><button class="go" id="copyres" style="flex:1">Copy text and link</button></div>`,'Share')}
 async function picture(){
- event('picture');const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),F='ui-monospace,Consolas,Menlo,monospace',L=96,col=G.ret>=0?'#3ad07a':'#f25c54';
- const g=x.createLinearGradient(0,0,1080,1920);g.addColorStop(0,'#0d1a22');g.addColorStop(1,'#07090c');x.fillStyle=g;x.fillRect(0,0,1080,1920);
+ event('picture');try{await document.fonts.load('800 60px JBM')}catch(e){}const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),F='JBM,ui-monospace,Consolas,Menlo,monospace',L=96,col=G.ret>=0?'#3ad07a':'#f25c54';
+ const g=x.createLinearGradient(0,0,1080,1920);g.addColorStop(0,'#13202a');g.addColorStop(1,'#0b1117');x.fillStyle=g;x.fillRect(0,0,1080,1920);
  x.fillStyle='#4cc3cc';x.font=`900 68px ${F}`;x.fillText('MEME STREET',L,220);
  x.fillStyle='#e9eff5';x.font=`700 54px ${F}`;x.fillText('#'+D.number+' · today\'s stock',L,310);
  x.fillStyle=col;x.font=`900 200px ${F}`;x.fillText(pc(G.ret),L,600);
@@ -538,8 +555,9 @@ async function picture(){
  x.fillStyle='#e9eff5';x.font=`900 64px ${F}`;x.fillText('Guess the stock.',L,1640);x.fillText('Beat my score.',L,1720);
  x.fillStyle='#4cc3cc';x.font=`48px ${F}`;x.fillText('memestreet.net',L,1810);
  const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob)return;const f=new File([blob],`meme-street-${D.number}.png`,{type:'image/png'});
- if(PHONE&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f]});return}catch(e){if(e.name==='AbortError')return}}
- const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast('Picture saved: post it to your story')}
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:`Meme Street #${D.number}`,text:'Guess the stock. Beat my score. '+shareLink()});return}catch(e){if(e.name==='AbortError')return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+ pop(`<h2>Picture saved</h2><p class="mut" style="margin:0 0 14px">It's in your downloads as ${esc(f.name)}, sized for a story (1080 × 1920).</p><ol class="steps"><li>Open Instagram, TikTok or Snapchat and start a story.</li><li>Pick the picture from your downloads or gallery.</li><li>Add a link sticker with <b>memestreet.net</b> so friends can play.</li></ol>`,'Picture saved')}
 
 // ---- the boxes: how to play, stats, the account, history, archive
 function pop(html,label){const p=$('pop');p.innerHTML=`<div aria-label="${label}"><button class="x" data-close aria-label="Close">×</button>${html}</div>`;p.classList.add('on')}
@@ -649,6 +667,12 @@ function rails(){
  L.innerHTML=`<div class="rt">Recent days</div>`+((D.past||[]).length?D.past.map(p=>{const w=p.top&&p.top[0];return `<div class="rr"><span class="mut">${day(p.day)}</span><span class="nm">${w?esc(w.name):'–'}</span><b class="${w?cls(w.ret):''}">${w?pc(w.ret):''}</b></div>`}).join('')+'<p class="rn">Each day\'s winner and their return.</p>':'<p class="rn">Past days show here from tomorrow.</p>');
  R.innerHTML=`<div class="rt">Your desk</div>`+[['Streak',`${st.streak||0} day${st.streak===1?'':'s'}`],['Best streak',st.max_streak||0],['Played',st.played||0],['Average',st.avg==null?'–':`<span class="${cls(st.avg)}">${pc(st.avg)}</span>`],['Best return',st.best==null?'–':`<span class="${cls(st.best)}">${pc(st.best)}</span>`],['Beat the stock',st.played?Math.round(st.beat/st.played*100)+'%':'–']].map(([k,v])=>`<div class="rr"><span class="mut">${k}</span><b>${v}</b></div>`).join('')
   +`<div class="rr nx"><span class="mut">Next stock</span><b class="cd">${hms(D.next-Date.now()/1000)}</b></div>`}
+function installHelp(){
+ const ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),android=/Android/.test(ua);
+ const steps=ios?['Tap the <b>Share</b> button at the bottom of Safari (the square with an arrow).','Scroll down and tap <b>Add to Home Screen</b>.','Tap <b>Add</b>. Meme Street opens like an app from now on.']
+  :android?['Tap the <b>⋮</b> menu at the top right of Chrome.','Tap <b>Add to Home screen</b> (or <b>Install app</b>).','Tap <b>Add</b>.']
+  :['In Chrome or Edge, click the <b>install</b> icon at the right end of the address bar, or open the <b>⋮</b> menu.','Choose <b>Install Meme Street</b> (Edge: <b>Apps → Install this site as an app</b>).','It opens in its own window, and you can pin it to your taskbar.'];
+ pop(`<h2>Add Meme Street to your ${ios||android?'home screen':'computer'}</h2><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join('')}</ol>${ios&&!/Safari/.test(ua)?'<p class="small">On an iPhone this works from Safari, so open memestreet.net there first.</p>':''}`,'Add to home screen')}
 let toastT=null;function toast(t,ms){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),ms||1600)}
 
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e});
@@ -669,7 +693,8 @@ document.addEventListener('click',async e=>{const t=e.target;
  if(t.closest('#play')){start();return}
  if(t.closest('#share')){share();return}
  if(t.closest('#pic')){picture();return}
- if(t.closest('#install')){if(installEv){installEv.prompt();installEv=null;t.closest('#install').remove()}return}
+ if(t.closest('#install')){if(installEv){const ev=installEv;installEv=null;ev.prompt();try{const r=await ev.userChoice;if(r.outcome==='accepted'){toast('Added to your home screen');t.closest('#install').remove()}}catch(e){}return}installHelp();return}
+ if(t.closest('#copyres')){try{await navigator.clipboard.writeText(shareText());toast('Copied: paste it anywhere')}catch(e){toast('Could not copy')}return}
  if(t.closest('#remind')){const r=await api('/api/daily/remind',{on:!D.remind});if(r.ok){D.remind=r.remind;document.querySelectorAll('#remind').forEach(b=>b.textContent=D.remind?'Daily email is on: turn off':'Email me when the next stock is out')}toast(r.msg||r.error||'Error',4000);return}
  const s=t.closest('[data-size]');if(s){size=Number(s.dataset.size);lsSet('ms_daily_size',size);buzz(8);if(P)pfill();else draw();return}
  const b=t.closest('[data-side]');if(b)trade(b.dataset.side,b)});

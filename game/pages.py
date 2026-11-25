@@ -62,8 +62,8 @@ SCRIPTS = {"chart.js", "bots.js", "daily.js", "learn.js"}   # the page's own scr
 VS = re.compile(r"([\w. -]{0,16})~(-?[0-9]{1,7})~([0-9]{1,6})")   # a challenge link's name~return~number, as web/daily.js reads it
 INDEXNOW_KEY = "9174e4823a4a87abdea3109b5df145c4"   # (not a secret: Bing reads it back from /<key>.txt to see that tools/indexnow.py speaks for this site)
 MANIFEST = json.dumps({   # (an installable web app: roadmap U1; ?ref=app shows an installed copy's visits in the visit log)
-    "name": "Meme Street", "short_name": "Meme Street", "description": HOME_TEXT, "start_url": "/?ref=app", "scope": "/",
-    "display": "standalone", "background_color": "#08090b", "theme_color": "#08090b", "categories": ["games", "education", "finance"],
+    "name": "Meme Street Daily", "short_name": "Meme Street", "description": GAME_TEXT if DAILY_ONLY else HOME_TEXT,
+    "start_url": "/?ref=app", "scope": "/", "display": "standalone", "background_color": "#0b1117", "theme_color": "#0b1117", "categories": ["games", "education", "finance"],
     "icons": [{"src": f"/brand/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png"} for n in (192, 512)]})
 
 
