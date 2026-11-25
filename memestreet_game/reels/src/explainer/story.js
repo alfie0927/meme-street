@@ -102,11 +102,11 @@ function cover() {               // the thumbnail (the owner, 2026-11-23: "each 
   const C = R.cover || {}, L = C.lines || [R.title], col = C.color || GOLD;   // the same badge, place and type every day; inside Instagram's 3:4 grid crop (y 240 to 1680)
   c.save(); let g = c.createLinearGradient(0, 240, 0, 700); g.addColorStop(0, 'rgba(6,6,14,.85)'); g.addColorStop(1, 'rgba(6,6,14,0)'); c.fillStyle = g; c.fillRect(0, 0, W, 700);
   g = c.createLinearGradient(0, 1050, 0, 1700); g.addColorStop(0, 'rgba(6,6,14,0)'); g.addColorStop(.5, 'rgba(6,6,14,.8)'); g.addColorStop(1, 'rgba(6,6,14,.92)'); c.fillStyle = g; c.fillRect(0, 1050, W, 870);
-  c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `800 46px Montserrat, ${F}`; c.letterSpacing = '6px'; const b = String(C.badge || 'MEME STREET').toUpperCase(), bw = c.measureText(b).width + 80;
-  rr(540 - bw / 2, 300, bw, 92, 46); c.fillStyle = col; c.fill(); c.fillStyle = '#111'; c.fillText(b, 540, 349);
-  c.font = `700 28px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText('\u2205 MEME STREET', 540, 440); c.letterSpacing = '0px';
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.letterSpacing = '6px';      // (2026-11-25, the owner: "all the thumbnails are the same ... only the daily chart reel should have daily #24": the badge only when given)
+  if (C.badge) { c.font = `800 46px Montserrat, ${F}`; const b = String(C.badge).toUpperCase(), bw = c.measureText(b).width + 80; rr(540 - bw / 2, 300, bw, 92, 46); c.fillStyle = col; c.fill(); c.fillStyle = '#111'; c.fillText(b, 540, 349); }
+  c.letterSpacing = '0px';
   let size = 124; c.font = `800 ${size}px Montserrat, ${F}`; while (size > 70 && L.some(l => c.measureText(String(l).toUpperCase()).width > 960)) { size -= 4; c.font = `800 ${size}px Montserrat, ${F}`; }
-  const y0 = 1500 - (L.length - 1) * size * 1.02; c.lineJoin = 'round';
+  const y0 = (C.style === 'top' ? 330 + (C.badge ? 160 : 0) : 1500 - (L.length - 1) * size * 1.02); c.lineJoin = 'round';      // (top: the words over the picture's top)
   L.forEach((l, i) => { const s = String(l).toUpperCase(), y = y0 + i * size * 1.02; c.lineWidth = 18; c.strokeStyle = '#0a0a12'; c.strokeText(s, 540, y); c.fillStyle = i === L.length - 1 ? col : '#fff'; c.fillText(s, 540, y); });
   c.font = `700 34px Montserrat, ${F}`; c.fillStyle = 'rgba(255,255,255,.9)'; c.fillText(String(C.foot || 'memestreet.net'), 540, 1630); c.restore();
 }
@@ -121,17 +121,23 @@ function endCard(t) {             // the fifth model's ending: a choice for the 
   c.font = `700 34px Montserrat, ${F}`; c.fillStyle = '#fff'; c.fillText(String(R.choice.cta || 'Comment A or B below'), 540, 1270); c.fillStyle = GOLD; c.font = `800 44px Montserrat, ${F}`; c.fillText('\u2193', 540, 1330);
   c.restore(); return true;
 }
-function captions(t) {             // as the third and fourth models: Montserrat, heavy, white with a dark edge and shadow, one or two words, mid-low; a word that lands in yellow
+function captions(t) {             // kinetic captions (2026-11-25, the owner: "make the animations way better like insanely better"): each word
+  // pops in on its own beat with an overshoot; a word that lands is bigger, gold and tipped, and kicks once; the line rides up as it leaves
   const cap = (R.caps || []).find(q => t >= q.t0 && t < q.t1); if (!cap) return;
-  const s = cap.words.map(w => w.text).join(' '); let size = 72; c.font = `800 ${size}px Montserrat, ${F}`;
-  while (c.measureText(s).width > 880 && size > 44) { size -= 2; c.font = `800 ${size}px Montserrat, ${F}`; }
-  const sp = c.measureText(' ').width, ws = cap.words.map(w => c.measureText(w.text).width), w = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1), y = 1330;
-  c.save(); c.textAlign = 'left'; c.textBaseline = 'middle'; c.lineJoin = 'round'; c.globalAlpha = clamp((t - cap.t0) / .04);
-  let x = 540 - w / 2;
-  cap.words.forEach((q, i) => { c.shadowColor = 'rgba(0,0,0,.55)'; c.shadowBlur = 12; c.shadowOffsetY = 3; c.lineWidth = size * .14; c.strokeStyle = '#141018'; c.strokeText(q.text, x, y);
-    c.shadowColor = 'transparent'; c.fillStyle = q.hot ? '#ffd23f' : '#ffffff'; c.fillText(q.text, x, y); x += ws[i] + sp; });
+  const words = cap.words, hot = words.map(w => !!w.hot); let size = 84; const big = k => hot[k] ? 1.22 : 1;
+  const meas = () => words.map((w, k) => { c.font = `900 ${Math.round(size * big(k))}px Montserrat, ${F}`; return c.measureText(w.text).width; });
+  c.font = `900 ${size}px Montserrat, ${F}`; let sp = c.measureText(' ').width, ws = meas(), w = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1);
+  while (w > 900 && size > 46) { size -= 2; c.font = `900 ${size}px Montserrat, ${F}`; sp = c.measureText(' ').width; ws = meas(); w = ws.reduce((a, b) => a + b, 0) + sp * (ws.length - 1); }
+  const out = clamp((cap.t1 - t) / .12), y = 1372 - 18 * (1 - out), top = Math.max(...words.map((_, k) => size * big(k)));
+  c.save(); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineJoin = 'round'; let x = 540 - w / 2;
+  words.forEach((q, k) => { const lt = t - Math.max(cap.t0, q.t0 || cap.t0), sz = Math.round(size * big(k)), cx = x + ws[k] / 2; x += ws[k] + sp;
+    if (lt < -.02) return;
+    const p = clamp(lt / .16), sc = (lt < 0 ? .4 : back(p)) * (hot[k] ? 1 + .1 * Math.max(0, Math.sin(Math.PI * clamp((lt - .16) / .2))) : 1), rot = hot[k] ? (k % 2 ? .05 : -.05) * ease(p) : 0;
+    c.save(); c.globalAlpha = clamp(lt / .06 + .2) * out; c.translate(cx, y); c.rotate(rot); c.scale(sc, sc); c.font = `900 ${sz}px Montserrat, ${F}`;
+    c.shadowColor = 'rgba(0,0,0,.6)'; c.shadowBlur = 16; c.shadowOffsetY = 5; c.lineWidth = sz * .16; c.strokeStyle = '#120e18'; c.strokeText(q.text, 0, 0);
+    c.shadowColor = 'transparent'; c.fillStyle = hot[k] ? '#ffd23f' : '#ffffff'; c.fillText(q.text, 0, 0); c.restore(); });
   c.restore();
-  reg('caption', 540 - w / 2 - 10, y - size * .7, w + 20, size * 1.4);
+  reg('caption', 540 - w / 2 - 14, 1372 - top * .62, w + 28, top * 1.24);
 }
 window.S2 = {K, INK, GOLD, RED, GREEN, header, captions, endCard, cover, pill, txt, blob, rr, circ, shade, brandColor, clamp, ease, back, reg,
   boxes: () => BOX, reset: () => { BOX = []; }, ctx: x => { const o = c; c = x; return o; }};

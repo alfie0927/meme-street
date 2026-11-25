@@ -88,6 +88,9 @@ also checked automatically (make_spec.py, render.py, narrate.py).
   sales fill a cart.
 - The owner, 2026-11-24, on the acted cut: "some of the animations are a bit over the top... also the shopping card looks kinda
   ugly. redo, it's getting better. do the same for the 9am and 4pm reels but don't over do the animations". Acts stay small.
+- The owner, 2026-11-25, on the grid: "all the thumbnails are the same.... they should be different. and only the daily chart reel
+  should have daily #24 on it. also i want stuff to be more inventive and creative". Every reel its own thumbnail design; the DAILY #N
+  badge only on the 23:30 story reel; stories told with characters and physical props (the chart as a ramp, a mystery crate, a coin).
 - The owner disliked the old look, stories and music; the voice may stay. Budget $0.
 - Every reel passes the simulated viewers (lab/audience.py) before it is queued: at least 9 of the 13 watch to the end (the owner's
   bar, 2026-11-22: as many as the best of the copied hits kept; "all 13" is a bar none of the hits passes).

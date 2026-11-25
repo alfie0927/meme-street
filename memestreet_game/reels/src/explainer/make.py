@@ -71,7 +71,7 @@ CAP_MIN = .36                                  # seconds a caption stays at leas
 MUSIC_DB = -18.0                              # the music's level against the voice (the model reel: 20 dB under; the first cuts: 14)
 FX_DB = {"whoosh": -13, "pop": -14, "thud": -12, "boom": -13, "ding": -14, "rise": -18}      # (the fourth model reel: effects you hear on every cut and every action)      # each effect's peak against the voice's
 GOLD = "#ffc83d"
-PAGE = "story3d.html"
+PAGE = os.environ.get("EXPLAINER_PAGE", "story3d.html")      # (huss3d.html: the "In this town" blocky story, 2026-11-25)
 # How the browser draws: the reel server has no graphics card (software GL, 2 cores: two browsers, each half the frames, at 2/3
 # size). A PC with one: EXPLAINER_GL="--use-gl=angle --ignore-gpu-blocklist" EXPLAINER_Q=1 (full size, ~0.25 s a frame).
 GL = ["--allow-file-access-from-files"] + os.environ.get("EXPLAINER_GL", "--use-gl=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist").split()

@@ -51,9 +51,12 @@ def S(say, bg, *items):
 def teaser(st):
     """09:00: the day's chart up to the game, and the question. Three openings in turn by the Daily's number."""
     n, P, sp = st["number"], st["history"], st["span"]; lo, hi = min(P), max(P)
-    first = [S(f"This stock drifted between {money(lo)} and {money(hi)} for {sp}.", "trading", {"kind": "chart", "from": 0, "to": 1, "title": "???"}, {"kind": "title", "text": "WHAT HAPPENS NEXT?"}),
-             S(f"This stock went from {money(P[0])} to {money(P[-1])} in {sp}.", "trading", {"kind": "chart", "from": 0, "to": 1, "title": "???"}, {"kind": "title", "text": "BUY OR SELL?"}),
-             S("You have two minutes to trade this stock.", "trading", {"kind": "chart", "from": 0, "to": 1, "title": "???"}, {"kind": "title", "text": "TWO MINUTES. GO."})][n % 3]
+    ch = P[-1] / P[0] - 1; chart = {"kind": "chart", "from": 0, "to": 1, "title": "???"}      # (the opening says what the chart did, by its shape)
+    if ch <= -.5: first = S(f"This stock crashed {round(-ch * 100)}% in {sp}, from {money(P[0])} to {money(P[-1])}.", "trading", chart, {"kind": "title", "text": "BUY THE CRASH?"})
+    elif ch >= 1: first = S(f"This stock went up {ch + 1:.0f} times in {sp}.", "trading", chart, {"kind": "title", "text": "TOO LATE TO BUY?"})
+    elif ch <= -.2: first = S(f"This stock fell from {money(P[0])} to {money(P[-1])} in {sp}.", "trading", chart, {"kind": "title", "text": "BOTTOM OR TRAP?"})
+    elif ch >= .25: first = S(f"This stock went from {money(P[0])} to {money(P[-1])} in {sp}.", "trading", chart, {"kind": "title", "text": "BUY OR SELL?"})
+    else: first = S(f"This stock drifted between {money(lo)} and {money(hi)} for {sp}.", "trading", chart, {"kind": "title", "text": "WHAT HAPPENS NEXT?"})
     lines = [first,
              S("What it did next is today's mystery chart on Meme Street.", "night", {"kind": "question", "act": "spin"}),
              S("You get two minutes and $100,000 of practice money.", "studio", {"kind": "money", "text": "$100K", "rain": True}),
@@ -62,7 +65,7 @@ def teaser(st):
              S("The real story behind it goes up tonight.", "city", {"kind": "news", "lines": ["TONIGHT", "23:30 UTC"], "act": "launch"}),
              S("Play it free, right now, at Meme Street dot net.", "home", {"kind": "phone", "brand": "Meme Street", "title": "MEME STREET", "lines": ["PLAY NOW"], "tap": True})]
     return {"title": f"Daily #{n}: What Does This Stock Do Next? You Have Two Minutes", "mystery": True, "prices": "history",
-            "cover": {"badge": f"Daily #{n}", "lines": M.hook_lines({"title": "", "sentences": [first]})},
+            "cover": {"style": "top", "color": "#ff5d6c", "lines": M.hook_lines({"title": "", "sentences": [first]})},      # (no DAILY badge: only the 23:30 story reel carries it, the owner 2026-11-25)
             "choice": {"kicker": f"DAILY #{n} · LIVE NOW", "a": "It goes up", "b": "It goes down", "cta": "Play free at memestreet.net"},
             "caption": f"Daily #{n} is live. {first['say']} What it did next is today's mystery chart on Meme Street. {GAME} Comment A or B, then play it free at memestreet.net. The story behind it goes up at 23:30 UTC.",
             "tags": TAGS, "brands": BRAND, "cast": [{"id": "you", "tag": "YOU", "look": "hoodie", "color": "#7fc4ff"}], "sentences": lines}
@@ -123,7 +126,7 @@ def spec(date, slot, theme=None):
     if SLOTS[slot] == "teaser": return teaser(st), st, "teaser"
     theme = theme or THEMES[datetime.date.fromisoformat(date).toordinal() % len(THEMES)]
     p = promo(st, theme)
-    return ({"title": p["title"], "mystery": True, "hud": False, "prices": "history", "cover": {"badge": p["badge"][0], "lines": p["lines"], "color": p["badge"][1]},
+    return ({"title": p["title"], "mystery": True, "hud": False, "prices": "history", "cover": {"style": "top" if theme in ("howto", "real") else "bottom", "lines": p["lines"], "color": p["badge"][1]},
              "choice": {"kicker": "TODAY'S CHART IS LIVE", "a": p["choice"][0], "b": p["choice"][1], "cta": "Play free at memestreet.net"},
              "caption": p["caption"], "tags": TAGS, "brands": BRAND, "cast": p["cast"], "sentences": p["sentences"]}, st, theme)
 
@@ -133,6 +136,8 @@ def make(date, slot):
     import news_reel as N
     q = os.path.join(M.ROOT, "queue", f"{date}T{slot}")
     if any(os.path.exists(os.path.join(q, f)) for f in (".auto", "posted.json")): return None
+    import glob
+    if glob.glob(os.path.join(M.ROOT, "queue-originals", f"{date}T{slot}*")): return None      # (a slot whose reel was taken out by hand stays the owner's: never re-made, 2026-11-25)
     tries = os.path.join(M.ROOT, "state", f"promo-{date}T{slot}.tries"); n = int(open(tries).read()) if os.path.exists(tries) else 0
     if n >= 3: M.say(f"{date}T{slot}: tried three times, not made"); return None
     os.makedirs(os.path.dirname(tries), exist_ok=True); open(tries, "w").write(str(n + 1))
@@ -159,7 +164,8 @@ def day(date):
 
 def demo():
     st = {"number": 22, "day": "Today's", "stock": {}, "chart": [8.5, 9.9, 8.3, 9.4], "history": [8.5, 9.9, 8.3, 9.4], "span": "3 months", "yesterday": "Express"}
-    t = teaser(st); assert t["sentences"][0]["say"].startswith("This stock went from $8.50 to $9.40") and t["cover"]["badge"] == "Daily #22", t["sentences"][0]
+    t = teaser(st); assert t["sentences"][0]["say"].startswith("This stock went from $8.50 to $9.40") is False and "drifted" in t["sentences"][0]["say"] and "badge" not in t["cover"], t["sentences"][0]
+    assert "crashed 90%" in teaser(dict(st, history=[30, 20, 3]))["sentences"][0]["say"] and "up 3 times" in teaser(dict(st, history=[3, 5, 9]))["sentences"][0]["say"]
     for th in THEMES:
         p = promo(st, th); assert 6 <= len(p["sentences"]) <= 10 and p["sentences"][-1]["say"].startswith("Today's chart is live"), th
         ids = {c["id"] for c in p["cast"]}

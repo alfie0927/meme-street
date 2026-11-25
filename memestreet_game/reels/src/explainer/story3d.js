@@ -428,8 +428,33 @@ async function build() {
     }
     for (const it of flats) ITEMS.push({k, it, flat: true});
     const z = ZONE(flats.length > 0); if (subs.some(p => p.tag)) { z[1] += 96; z[3] -= 96; }
+    { const m = .045; z[0] += z[2] * m; z[1] += z[3] * m; z[2] *= 1 - 2 * m; z[3] *= 1 - 2 * m; }      // (room for the punch-in on the words that land)
     CAM[k] = solve(k, subs, z);
   }
+}
+
+// ---------------------------------------------------------------- the motion layer (2026-11-25): particles drawn over the picture, seeded so every
+// frame stands alone (the frame workers draw out of order): a burst is a pure function of the time since its moment
+const hs = k => { const x = Math.sin(k * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+function burst(o, kind, at, x, y, w, h) {       // o: the overlay; kind: confetti | dust | sparks | coins | smoke; at: seconds since it fired
+  if (at < 0 || at > 1.6) return; const N = {confetti: 46, dust: 18, sparks: 26, coins: 14, smoke: 10}[kind] || 20;
+  o.save();
+  for (let i = 0; i < N; i++) { const a = hs(i + 1) * Math.PI * 2, sp = .5 + hs(i + 7), g = 1100;
+    let px, py, life = 1 - at / 1.6, r;
+    if (kind === 'confetti') { const vx = Math.cos(a) * 620 * sp, vy = -Math.abs(Math.sin(a)) * 900 * sp - 200; px = x + vx * at; py = y + vy * at + .5 * g * at * at; r = 9 + hs(i + 3) * 8;
+      o.globalAlpha = Math.min(1, life * 1.6); o.fillStyle = ['#ffd23f', '#2bd47d', '#ff5d8f', '#7fc4ff', '#b98cff', '#ffffff'][i % 6]; o.translate(px, py); o.rotate(at * 9 * (hs(i) - .5)); o.fillRect(-r / 2, -r / 4, r, r / 2); o.setTransform(1, 0, 0, 1, 0, 0); }
+    else if (kind === 'dust' || kind === 'smoke') { const vx = Math.cos(a) * 260 * sp; px = x + vx * at * (kind === 'smoke' ? .5 : 1); py = y - 40 * at * sp - (kind === 'smoke' ? 160 * at : 0); r = (kind === 'smoke' ? 40 : 18) + 70 * at * sp;
+      o.globalAlpha = .45 * life * life; o.fillStyle = kind === 'smoke' ? '#3a3448' : '#e9dcc4'; o.beginPath(); o.arc(px, py, r, 0, 7); o.fill(); }
+    else if (kind === 'sparks') { const d = 380 * sp * Math.sqrt(at), ln = 40 * life; px = x + Math.cos(a) * d; py = y + Math.sin(a) * d * .7;
+      o.globalAlpha = life; o.strokeStyle = i % 2 ? '#ffd23f' : '#ffffff'; o.lineWidth = 5; o.beginPath(); o.moveTo(px, py); o.lineTo(px - Math.cos(a) * ln, py - Math.sin(a) * ln); o.stroke(); }
+    else { const vx = (hs(i) - .5) * 500, vy = -700 * sp; px = x + (hs(i + 2) - .5) * w + vx * at; py = y + vy * at + .5 * g * at * at; r = 16;
+      o.globalAlpha = Math.min(1, life * 2); o.fillStyle = '#ffc83d'; o.strokeStyle = '#a3741a'; o.lineWidth = 4; o.beginPath(); o.ellipse(px, py, r * Math.abs(Math.cos(at * 8 + i)) + 3, r, 0, 0, 7); o.fill(); o.stroke(); } }
+  o.restore();
+}
+const FX = {launch: 'sparks', bounce: 'confetti', drop: 'dust', assemble: 'sparks', exit: 'dust', shake: 'smoke', tilt: 'dust', spin: 'sparks'};
+function punch(t) {                // the camera punches in a little on every word that lands (a quick push, eased back): a beat the eye feels
+  let z = 0; for (const cp of R.caps || []) { if (cp.t0 > t + .05) break; for (const w of cp.words) if (w.hot) { const d = t - w.t0; if (d > -.02 && d < .5) z = Math.max(z, Math.sin(Math.PI * Math.min(1, (d + .02) / .5)) * (d < .12 ? d / .12 : 1)); } }
+  return z;
 }
 
 // ---------------------------------------------------------------- the acts: a subject acts out its sentence's verb
@@ -463,7 +488,8 @@ function render(t) {
   let v;
   if (flying) { const e = ease(cl((t - b) / FLY)), A = camPose(CAM[k - 1], 1, k - 1), B = camPose(CAM[k], FLY / len, k); v = A.map((a, i) => lerp(a, B[i], e)); v[1] += .5 * Math.sin(Math.PI * e); }   // the camera lifts and flies to the next set
   else v = camPose(CAM[k], cl((t - b) / len), k);
-  place(v);
+  { const z = punch(t) * .07; v[0] = v[3] + (v[0] - v[3]) * (1 - z); v[1] = v[4] + (v[1] - v[4]) * (1 - z); v[2] = v[5] + (v[2] - v[5]) * (1 - z); }      // (the punch-in)
+  place(v); window.__shake = 0;
   const on = i => i === k || (flying && i === k - 1);      // (only the sets on camera, and only their lights)
   SETG.forEach((g, i) => { g.visible = on(i); });
   scene.fog = FOG[k] || null; scene.background = FOG[k] ? FOG[k].color : null;      // (never black behind a set)
@@ -480,6 +506,7 @@ function render(t) {
   window.__whip = flying ? Math.sin(Math.PI * cl((t - b) / FLY)) : 0;      // (the fourth model's whip pan: the cut smears sideways; drawn on the overlay below)
   // the flat layer: the words in their band, name tags, the header with the scene's date, the captions
   S.reset(); ox.clearRect(0, 0, W, H); const old = S.ctx(ox), sc = Sc[k];
+  if (flying) { const f = Math.sin(Math.PI * cl((t - b) / FLY)); ox.save(); ox.globalAlpha = .22 * f; ox.fillStyle = '#ffffff'; ox.fillRect(0, 0, W, H); ox.restore(); }      // (a white flash on every cut)
   if (window.__whip > .05) { ox.save(); for (let i = 1; i <= 9; i++) { ox.globalAlpha = .16 * window.__whip; ox.drawImage(cv, (i - 5) * 26 * window.__whip, 0, W, H); } ox.restore(); }
   if (window.__coverOn) { S.cover(); S.ctx(old); window.__flying = flying; return; }      // (the thumbnail: the series badge and the promise, over the picture alone)
   const gr = ox.createLinearGradient(0, 1200, 0, H); gr.addColorStop(0, 'rgba(8,9,20,0)'); gr.addColorStop(.35, 'rgba(8,9,20,.42)'); gr.addColorStop(1, 'rgba(8,9,20,.72)'); ox.fillStyle = gr; ox.fillRect(0, 1200, W, H - 1200);
@@ -489,6 +516,9 @@ function render(t) {
       if (p.tag && t - p.it.t > .25) { const cx = r[0] + r[2] / 2; let half = Math.min(cx - 70, 1010 - cx); rects.forEach((q, j) => { if (j !== i && q) half = Math.min(half, q[0] > cx ? q[0] - 16 - cx : cx - (q[0] + q[2] + 16)); });
         ox.save(); ox.globalAlpha = cl((t - p.it.t - .25) / .3); const rr = S.pill(p.tag, cx, r[1] - 48, 40, '#fff', '#14182b', Math.max(60, 2 * half - 50)); ox.lineWidth = 4; ox.strokeStyle = S.GOLD; S.rr(...rr, rr[3] / 2); ox.stroke(); ox.restore(); S.reg('tag:' + p.it.who, ...rr); } });
     for (const p of ITEMS) if (p.flat && p.k === k && t >= p.it.t) flat(p.it, t, sc);
+    mine.forEach((p, i) => { const r = rects[i], fx = FX[p.it.act] || (p.it.kind === 'person' && p.it.pose === 'cheer' ? 'confetti' : p.it.kind === 'money' ? 'coins' : null); if (!r || !fx) return;
+      const t0 = Math.max(p.it.t, sc.t0 + .2) + ({drop: .4, launch: .25, assemble: .75, exit: .4}[p.it.act] || .15), cx = r[0] + r[2] / 2, cy = fx === 'dust' ? r[1] + r[3] : r[1] + r[3] * .45;
+      burst(ox, fx, t - t0, cx, cy, r[2], r[3]); });
   }
   if (S.endCard(t)) { S.ctx(old); window.__flying = flying; return; }      // (the ending: the choice card, no captions over it)
   S.header(t, flying ? Sc[k - 1].label : sc.label); S.captions(t); S.ctx(old);
