@@ -103,7 +103,7 @@ main{max-width:720px;margin:0 auto;padding:30px 16px 40px}
 .name{font-size:32px;font-weight:900;margin:6px 0 4px;line-height:1.1}.name span{font:800 15px var(--mono);color:var(--amb);margin-left:8px}
 .when{color:var(--mut);font-size:14px}.real{margin-top:10px;font:17px var(--mono);font-variant-numeric:tabular-nums}
 .tf{display:inline-flex;gap:6px;align-items:center;margin-top:12px;padding:6px 12px;border-radius:6px;background:#f5a5241a;border:1px solid #f5a52450;color:#ffd58a;font-size:13px;font-weight:700}
-.ev{margin:12px 0 0;font-size:14px;color:#c9d4dd}
+.ev{margin:12px 0 0;font-size:14px;color:#c9d4dd}.ev.credit{font-size:11.5px;color:var(--mut);line-height:1.5}.ev.credit a{color:inherit}
 .big{font:900 56px/1.05 var(--mono);margin:10px 0 4px}
 .place{font-size:15px;margin:4px 0 0}.vs{margin:10px 0 0}
 .grid{display:flex;justify-content:center;gap:6px;margin:20px 0 6px}
@@ -437,7 +437,7 @@ function reveal(rv,h){
   <div class="when">${esc(fmtDate(rv.start))} to ${esc(fmtDate(rv.end))}</div>
   <div class="real">$${num(rv.first,rv.first<1?4:2)} → $${num(rv.last,rv.last<1?4:2)} <b class="${cls(h)}">${pc(h)}</b></div>
   ${rv.tf?`<div><span class="tf">One candle = ${esc(TFW[rv.tf]||rv.tf)}. You just traded ${esc(span(rv.start,rv.end))} in two minutes.</span></div>`:''}
-  ${rv.events&&rv.events.length?`<p class="ev">Also in that stretch: ${esc(rv.events.join(', and '))}.</p>`:''}</div></div></div>`}
+  ${rv.events&&rv.events.length?`<p class="ev">Also in that stretch: ${esc(rv.events.join(', and '))}.</p>`:''}${rv.src==='hf'?'<p class="ev credit">Data from the HF Data Library (Elkassabgi 2026), available at <a href="https://hfdatalibrary.com" target="_blank" rel="noopener">hfdatalibrary.com</a> under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>. Data provided for free by IEX. By accessing or using IEX Historical Data, you agree to the <a href="https://www.iex.io/legal/hist-data-terms" target="_blank" rel="noopener">IEX Historical Data Terms of Use</a>.</p>':''}</div></div></div>`}
 function flipOpen(){const f=$('flip');if(!f)return;const card=f.querySelector('.b');f.firstElementChild.style.minHeight=card.scrollHeight+'px';setTimeout(()=>f.classList.add('open'),CALM?0:350)}
 function levelsList(lv,k){
  if(!lv||!lv.length)return '';

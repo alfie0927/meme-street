@@ -149,7 +149,7 @@ def rebased(x, i):
     return {"candles": candles,
             "levels": real_levels(candles),
             "real": {"i": i, "ticker": x["t"], "name": x["n"], "tf": x.get("tf", "1 day"), "from": x["d"][0], "start": x["d"][1], "end": x["d"][2], "k": k,
-                     "first": cs[HISTORY - 1][3], "last": cs[-1][3], "events": x.get("e", [])}}
+                     "first": cs[HISTORY - 1][3], "last": cs[-1][3], "events": x.get("e", []), **({"src": x["src"]} if x.get("src") else {})}}
 
 
 TICKER_GAP = 45              # days at least between two charts of one stock (the owner, 2026-11-25: "with a large gap")
@@ -177,8 +177,25 @@ def real_chart(salt, day, resets=0, bank=None):
     order = schedule(salt, bank)
     if not order:
         return None
-    i = order[(day - EPOCH_DAY + (len(order) // 2 + resets if resets else 0)) % len(order)]
-    return rebased(bank[i], i)
+    m = (day - EPOCH_DAY + (len(order) // 2 + resets if resets else 0)) % len(order)
+    out = rebased(bank[order[m]], order[m])
+    out["real"]["events"] = day_events(bank, order)[m]
+    return out
+
+
+def day_events(bank, order):
+    """The one event each day of `order` names at the end (the owner, 2026-11-27: "a different cool fact every day"): of
+    the events inside its chart, the one shown longest ago, so the same one does not come back day after day; ties go to
+    the first listed (the bank lists the stock's own news first); none when the only one was shown in the last week."""
+    last, out = {}, []
+    for n, i in enumerate(order):
+        e = min(bank[i].get("e", []), key=lambda e: last.get(e, -10 ** 9), default=None)
+        if e and n - last.get(e, -10 ** 9) <= 7:                               # (shown this week: better none that day)
+            e = None
+        if e:
+            last[e] = n
+        out.append([e] if e else [])
+    return out
 
 
 def is_visitor(key):
@@ -811,6 +828,7 @@ class DailyMixin:
         if a is None or i is None:
             return {"error": "That day's chart is not in the archive"}
         ch = rebased(bank[i], i)
+        ch["real"]["events"] = r.get("events", [])                              # (the one the day showed)
         return {"number": number, "day": a["day"], "candles": ch["candles"], "history": HISTORY, "live": LIVE, "cash": START_CASH,
                 "real": {k: v for k, v in ch["real"].items() if k != "i"}}
 

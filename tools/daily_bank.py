@@ -3,6 +3,7 @@ memestreet_game/reels/src/daily_reel_charts.json (the reels': other stretches, s
 game will play).
 
     python tools/daily_bank.py <dataset_43497.pq> [--reels]   writes the game's (and with --reels the reels') (needs pyarrow)
+    python tools/daily_bank.py recent <folder> [--fetch]  adds RECENT_N charts from 2022 on (HF Data Library; see recent())
     python tools/daily_bank.py demo                    self-check on made-up rows (no file, no pyarrow)
 
 The source is OpenML dataset 43497, "5-years-historical-stock-quotes" (https://www.openml.org/d/43497), released as
@@ -82,7 +83,8 @@ MOVE = 0.10
 # stocks)"): up to FAMOUS_PER charts each instead of PER_TICKER, and drawn FAMOUS_WEIGHT times as often.
 FAMOUS = {"AAPL", "MSFT", "AMZN", "GOOGL", "FB", "NFLX", "NVDA", "AMD", "INTC", "TSLA", "ZM", "TWTR", "SNAP", "UBER",
           "SPOT", "PTON", "BABA", "GME", "AMC", "BBBY", "NKLA", "KODK", "BYND", "MRNA", "PFE", "BA", "DIS", "NKE", "SBUX",
-          "MCD", "KO", "WMT", "COST", "JPM", "GS", "XOM", "GE", "F", "CCL", "AAL", "MSTR", "BB", "NOK", "PYPL", "SHOP"}
+          "MCD", "KO", "WMT", "COST", "JPM", "GS", "XOM", "GE", "F", "CCL", "AAL", "MSTR", "BB", "NOK", "PYPL", "SHOP",
+          "PLTR", "COIN", "RIVN", "HOOD"}
 FAMOUS_PER, FAMOUS_WEIGHT, FAMOUS_RANGE = 6, 5, 1.15   # (a big company rarely swings 25% in six months: 15% will do)
 # The timeframe of a candle, and the share of the bank in each (the owner, 2026-11-18: "the daily chart can be any time frame
 # of trading"). The source has daily prices only, so the shortest candle is one day (the two minutes then cover about six
@@ -122,6 +124,7 @@ NAMES = {   # the stocks people have heard of (US listings that traded 2016-2021
     "SPWR": "SunPower", "BLNK": "Blink Charging", "NNDM": "Nano Dimension",
     "TSM": "TSMC", "ASML": "ASML", "AVGO": "Broadcom", "TXN": "Texas Instruments", "PG": "Procter & Gamble",
     "MO": "Altria", "UNH": "UnitedHealth", "CVS": "CVS Health", "WBA": "Walgreens", "DKNG": "DraftKings",
+    "PLTR": "Palantir", "COIN": "Coinbase", "RIVN": "Rivian", "HOOD": "Robinhood",   # (listed since 2020: recent charts only)
     "PENN": "Penn National Gaming", "WYNN": "Wynn Resorts", "MGM": "MGM Resorts", "LVS": "Las Vegas Sands",
 }
 EVENTS = [   # (day, what happened[, only these stocks]): named at the end when it falls inside the two minutes
@@ -136,9 +139,47 @@ EVENTS = [   # (day, what happened[, only these stocks]): named at the end when 
     ("2020-05-18", "Moderna's first vaccine trial results (18 May 2020)", ("MRNA",)),
     ("2020-06-08", "Nikola's June 2020 spike", ("NKLA",)),
     ("2020-07-29", "Kodak's government loan news (July 2020)", ("KODK",)),
+    # (2026-11-27, the owner: a different fact every day, so many more; any chart may name these)
+    ("2016-02-11", "oil hitting a 12-year low of about $26 a barrel"), ("2016-06-13", "Microsoft agreeing to buy LinkedIn for $26 billion"),
+    ("2016-07-11", "Pokemon Go nearly doubling Nintendo's shares in a week"), ("2016-09-08", "the Wells Fargo fake-accounts scandal breaking"),
+    ("2016-12-14", "the Fed's first rate rise in a year"), ("2017-01-25", "the Dow closing above 20,000 for the first time"),
+    ("2017-03-01", "the Dow closing above 21,000 for the first time"), ("2017-04-11", "the United Airlines passenger-dragging video"),
+    ("2017-06-16", "Amazon agreeing to buy Whole Foods"), ("2017-09-07", "Equifax revealing a hack of 147 million people's data"),
+    ("2017-12-18", "bitcoin peaking near $20,000"), ("2017-12-22", "the big US corporate tax cut being signed"),
+    ("2018-03-19", "the Cambridge Analytica scandal hitting Facebook"), ("2018-03-22", "the first big US tariffs on Chinese goods"),
+    ("2018-06-04", "Microsoft buying GitHub"), ("2018-06-19", "General Electric being dropped from the Dow after 110 years"),
+    ("2018-08-02", "Apple becoming the first US company worth $1 trillion"), ("2018-08-07", "Elon Musk's \"funding secured\" tweet"),
+    ("2018-10-10", "the Dow's 831-point drop of 10 October 2018"), ("2018-12-26", "the Dow's first 1,000-point gain in a day"),
+    ("2019-01-03", "Apple warning that iPhones were not selling in China"), ("2019-05-10", "Uber's first day on the stock market"),
+    ("2019-07-31", "the Fed's first rate cut since 2008"), ("2019-08-14", "the bond market's recession warning (the yield curve inverting)"),
+    ("2019-09-16", "oil jumping 15% after drone attacks on Saudi oil plants"), ("2019-09-30", "WeWork calling off its stock market debut"),
+    ("2019-11-12", "Disney+ launching"), ("2020-02-19", "the market's record high just before the COVID crash"),
+    ("2020-02-24", "the Dow's 1,000-point fall as the virus spread to Italy"), ("2020-03-03", "the Fed's emergency rate cut"),
+    ("2020-03-09", "the oil price war and the first trading halt of the crash"), ("2020-03-23", "the bottom of the COVID crash"),
+    ("2020-03-27", "the $2 trillion CARES Act being signed"), ("2020-05-22", "Hertz going bankrupt"),
+    ("2020-08-18", "the S&P 500 winning back everything it lost in the COVID crash"), ("2020-08-19", "Apple becoming the first US company worth $2 trillion"),
+    ("2020-08-31", "Apple's and Tesla's stock splits"), ("2020-09-03", "the tech sell-off of 3 September 2020"),
+    ("2020-09-16", "Snowflake's huge first day on the stock market"), ("2020-11-04", "the day after the 2020 US election"),
+    ("2020-11-24", "the Dow closing above 30,000 for the first time"), ("2020-12-10", "Airbnb's price doubling on its first day"),
+    ("2020-12-21", "Tesla joining the S&P 500"), ("2021-01-07", "bitcoin passing $40,000"),
+    ("2021-02-08", "Tesla buying $1.5 billion of bitcoin"),
+    # (the recent charts, 2022 on)
+    ("2022-03-16", "the Fed's first rate rise since 2018"), ("2022-05-11", "the TerraUSD stablecoin collapse"),
+    ("2022-06-13", "the S&P 500 falling into a bear market"), ("2022-06-15", "the Fed's biggest rate rise since 1994"),
+    ("2022-10-27", "Elon Musk completing his purchase of Twitter"), ("2022-11-11", "the FTX crypto exchange going bankrupt"),
+    ("2022-11-30", "ChatGPT's launch"), ("2023-03-10", "the collapse of Silicon Valley Bank"),
+    ("2023-05-25", "Nvidia's AI sales forecast sending its shares up 24% in a day"), ("2023-05-30", "Nvidia passing $1 trillion in value"),
+    ("2023-06-30", "Apple closing above $3 trillion in value for the first time"), ("2023-07-26", "US interest rates reaching a 22-year high"),
+    ("2024-01-11", "the first US bitcoin ETFs starting to trade"), ("2024-06-05", "Nvidia passing $3 trillion in value"),
+    ("2024-06-18", "Nvidia briefly becoming the world's most valuable company"), ("2024-08-05", "the worldwide sell-off of 5 August 2024"),
+    ("2024-09-18", "the Fed's first rate cut since 2020"), ("2024-11-06", "the day after the 2024 US election"),
+    ("2024-12-05", "bitcoin passing $100,000"), ("2025-01-27", "DeepSeek's AI model wiping nearly $600 billion off Nvidia in a day"),
+    ("2025-04-03", "the April 2025 tariff crash"), ("2025-04-09", "the stock market's huge jump when the tariffs were paused"),
+    ("2025-07-09", "Nvidia becoming the first company worth $4 trillion"), ("2025-10-29", "Nvidia becoming the first company worth $5 trillion"),
 ]
 MUST = {"GME": "2021-01-27", "AMC": "2021-01-27", "TSLA": "2020-08-31", "ZM": "2020-03-23", "KODK": "2020-07-29", "NKLA": "2020-06-08",
-        "CCL": "2020-03-16", "MRNA": "2020-05-18", "FB": "2018-07-26", "BA": "2019-03-11"}   # the famous moments, always in
+        "CCL": "2020-03-16", "MRNA": "2020-05-18", "FB": "2018-07-26", "BA": "2019-03-11",
+        "NVDA": "2023-05-25"}   # (the AI run: the recent charts only)   # the famous moments, always in
 COVID = "2020-03-16"
 
 
@@ -262,12 +303,18 @@ def pick(cands, n=N, must=True):
     return got
 
 
+def events(t, a, b):
+    """The events between days `a` and `b` a chart of `t` can name: the stock's own first."""
+    es = [e for e in EVENTS if a <= e[0] <= b and (len(e) < 3 or t in e[2])]
+    return [e[1] for e in sorted(es, key=lambda e: len(e) < 3)]
+
+
 def entry(x):
     """One chart as the bank keeps it: ticker, name, [first day, first day of the two minutes, last day], the events
     inside the two minutes, and the real candles [open, high, low, close, volume]."""
     p = lambda v: round(v, 2 if v >= 10 else 4)
     return {"t": x["t"], "n": NAMES[x["t"]], "tf": x.get("tf", "1 day"), "d": [x["w"][0][0], x["a"], x["b"]], **({"p": 1} if x.get("played") else {}),
-            "e": [e[1] for e in EVENTS if x["a"] <= e[0] <= x["b"] and (len(e) < 3 or x["t"] in e[2])],
+            "e": events(x["t"], x["a"], x["b"]),
             "c": [[p(r[1]), p(r[2]), p(r[3]), p(r[4]), int(r[5])] for r in x["w"]]}
 
 
@@ -345,6 +392,54 @@ def build(path, with_reels=False):
               f"COVID crash, median move {sorted(x['rng'] for x in g)[len(g) // 2]:.2f}x hi/lo, {os.path.getsize(f) // 1024} KB -> {f}")
 
 
+# The recent charts (the owner, 2026-11-26: "i want some current charts in the mix for funsies"): daily bars from the HF Data
+# Library (https://hfdatalibrary.com, CC BY 4.0; IEX trades only, so prices can differ a little from the official ones and
+# volume is a small share), March 2022 on. `recent` adds RECENT_N of them to the game's bank, marked "src": "hf", picked by the
+# same rules (MIX, the famous first); the page credits the library and IEX under such a chart. The key: D:/tools/hf_key.txt.
+RECENT_N = 90
+HF_CREDIT = ("Recent charts: data from the HF Data Library (Elkassabgi 2026), available at https://hfdatalibrary.com under CC BY 4.0. "
+             "Data provided for free by IEX. By accessing or using IEX Historical Data, you agree to the IEX Historical Data Terms of Use.")
+
+
+def fetch_hf(folder, key_file=r"D:/tools/hf_key.txt"):
+    """Downloads the daily bars of every stock in NAMES the library has, one parquet file each, into `folder`."""
+    import time
+    import urllib.request
+    key = open(key_file).read().strip()
+    get = lambda url, **h: urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "daily-bank/1.0", **h}), timeout=120)
+    have = {s["ticker"] for s in json.load(get("https://api.hfdatalibrary.com/v1/symbols"))["symbols"]}
+    os.makedirs(folder, exist_ok=True)
+    for t in sorted(set(NAMES) & have):
+        url = json.load(get(f"https://api.hfdatalibrary.com/v1/download-token/{t}?timeframe=daily&format=parquet&version=clean",
+                            **{"X-API-Key": key}))["url"]
+        with get(url) as r, open(os.path.join(folder, t + ".pq"), "wb") as f:
+            f.write(r.read())
+        time.sleep(0.5)
+    print("fetched", len(set(NAMES) & have), "stocks; not in the library:", sorted(set(NAMES) - have))
+
+
+def recent(folder, n=RECENT_N):
+    """Puts `n` recent charts (from fetch_hf's files) into the game's bank, in place of the recent ones it had."""
+    import pyarrow.parquet as pq
+    cands = []
+    for f in sorted(os.listdir(folder)):
+        t = f[:-3]
+        if not f.endswith(".pq") or t not in NAMES:
+            continue
+        d = pq.read_table(os.path.join(folder, f)).to_pydict()
+        rows = sorted((str(d["datetime"][i])[:10], d["Open"][i], d["High"][i], d["Low"][i], d["Close"][i], d["Volume"][i] or 0)
+                      for i in range(len(d["Close"])))
+        cands += [w for tf in TFS for w in windows(t, rows, tf)]
+    got = pick_game(cands, n)
+    bank = json.load(open(OUT, encoding="utf-8"))
+    bank["charts"] = [c for c in bank["charts"] if c.get("src") != "hf"] + [dict(entry(x), src="hf") for x in got]
+    bank["hf_credit"] = HF_CREDIT
+    with open(OUT, "w", encoding="utf-8") as f:
+        json.dump(bank, f, separators=(",", ":"))
+    print("recent:", len(got), "charts from", len({x["t"] for x in got}), "stocks; mix:", {k: sum(kind(x) == k for x in got) for k in MIX},
+          "famous share: %.0f%%" % (100 * sum(x["t"] in FAMOUS for x in got) / max(len(got), 1)), "; bank now", len(bank["charts"]))
+
+
 def demo():
     import tempfile
     days = [date.fromordinal(date(2016, 3, 1).toordinal() + k) for k in range(900)]
@@ -381,4 +476,11 @@ def demo():
 
 
 if __name__ == "__main__":
-    demo() if sys.argv[1:] == ["demo"] else build(sys.argv[1], "--reels" in sys.argv[2:])
+    if sys.argv[1:2] == ["demo"]:
+        demo()
+    elif sys.argv[1:2] == ["recent"]:       # python tools/daily_bank.py recent <folder> [--fetch]
+        if "--fetch" in sys.argv:
+            fetch_hf(sys.argv[2])
+        recent(sys.argv[2])
+    else:
+        build(sys.argv[1], "--reels" in sys.argv[2:])

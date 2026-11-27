@@ -96,6 +96,26 @@ class RealChartTests(unittest.TestCase):
         self.assertIsNone(daily.real_chart("salt-a", d0, bank=[]))            # no bank: the model's chart instead
         self.assertEqual(daily.real_bank(os.path.join(tempfile.gettempdir(), "no-such-bank.json")), [])
 
+    def test_each_day_names_one_event_and_not_one_from_the_last_week(self):
+        bank = daily.real_bank()
+        order = daily.schedule("events", bank)
+        ev = daily.day_events(bank, order)
+        self.assertTrue(all(len(e) <= 1 for e in ev))
+        self.assertGreater(sum(1 for e in ev if e), 0.95 * len(ev))
+        for n, e in enumerate(ev):
+            if e:
+                self.assertIn(e[0], bank[order[n]]["e"])
+                self.assertNotIn(e, ev[max(0, n - 7):n])
+        self.assertEqual(daily.real_chart("events", daily.EPOCH_DAY + 3, bank=bank)["real"]["events"], ev[3])
+
+    def test_recent_charts_are_in_the_mix_and_say_where_their_data_is_from(self):
+        bank = daily.real_bank()
+        recent = [i for i, x in enumerate(bank) if x.get("src") == "hf"]
+        self.assertGreater(len(recent), 0.15 * len(bank))                       # (about one day in five, 2026-11-27)
+        self.assertTrue(all(bank[i]["d"][1] >= "2022" for i in recent))
+        self.assertEqual(daily.rebased(bank[recent[0]], recent[0])["real"]["src"], "hf")   # (the page credits the library)
+        self.assertNotIn("src", daily.rebased(bank[0], 0)["real"])
+
     def test_the_mix_is_mostly_up_then_flat_then_down(self):
         bank = [x for x in daily.real_bank() if not x.get("p")]
         h = daily.HISTORY
