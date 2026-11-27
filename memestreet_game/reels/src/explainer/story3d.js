@@ -439,7 +439,7 @@ function punch(t) {                // the camera punches in a little on every wo
 const ACTS = {
   assemble(p, lt) {          // its parts glide in and click together (made, built, launched)
     const e = ease(cl(lt / .8));
-    if (!p.parts) { p.parts = []; p.o.traverse(m => { if (m.isMesh && m !== p.o) p.parts.push([m, m.position.clone(), m.rotation.z]); }); }
+    if (!p.parts) { p.parts = []; p.o.traverse(m => { if (m.isMesh && m !== p.o) { p.parts.push([m, m.position.clone(), m.rotation.z]); if (!m.userData.rest) m.userData.rest = m.position.clone(); } }); }      // (rest: a part flying in is measured where it lands, like the bag's items: on 2026-11-27 two of three nightly tries died on "factory leaves its area" in the half second of the fly-in)
     p.parts.forEach(([m, q, rz], i) => { const a = i * 2.39996, r = (1 - e) * (.7 + (i % 3) * .2);
       m.position.set(q.x + Math.cos(a) * r, q.y + Math.abs(Math.sin(a)) * r * .8, q.z + Math.sin(a * .7) * r * .4); m.rotation.z = rz + (1 - e) * (i % 2 ? .8 : -.8); });
   },
