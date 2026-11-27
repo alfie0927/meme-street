@@ -138,40 +138,10 @@ function proxyOf(p) { return p.root.userData.proxy; }
 const actor = (look, color, seed, pose) => toon(look, color, seed, pose);
 const seedOf = id => [...String(id)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 9973, 7);      // (one cast member looks the same in every shot: hair, glasses, moustache)
 
-// The product, low-poly, about 1 unit wide: what the company makes. Its userData.late = the parts the factory fits last.
-function productMesh(kind, col, text) {
-  const g = new T3.Group(), late = [];
-  if (kind === 'camera') {
-    g.add(at(box(1, .72, .5, '#2f3238'), 0, .36, 0)); g.add(at(box(.96, .1, .48, '#454952'), 0, .7, 0)); g.add(at(box(.2, .06, .12, '#e8394a'), .3, .77, 0));
-    const lens = cyl(.27, .27, .16, '#17181c', 24); lens.rotation.x = Math.PI / 2; at(lens, .2, .42, .3); const ring = cyl(.3, .3, .06, '#5a5f6b', 24); ring.rotation.x = Math.PI / 2; at(ring, .2, .42, .27);
-    const glass = cyl(.19, .19, .05, '#3d8fd6', 24, {metalness: .7, roughness: .15}); glass.rotation.x = Math.PI / 2; at(glass, .2, .42, .385);
-    const scr = at(new T3.Mesh(new T3.PlaneGeometry(.3, .24), glowM(col, 1.1)), -.26, .46, .256), lab = text ? at(label(text, .42, .12, '#fff', '#2f3238'), -.24, .17, .256) : null;
-    const shine = at(new T3.Mesh(new T3.CircleGeometry(.045, 12), glowM('#ffffff', 1.4)), .13, .49, .412), iris = cyl(.1, .1, .02, '#12314f', 20); iris.rotation.x = Math.PI / 2; at(iris, .2, .42, .405);
-    g.add(at(box(.06, .34, .3, '#3a3d45'), .5, .36, 0)); g.add(at(box(.5, .05, .52, '#3a3d45'), 0, .03, 0));
-    late.push(lens, ring, glass, iris, shine, scr); if (lab) late.push(lab); late.forEach(m => g.add(m));
-  } else if (kind === 'chip') {
-    const c = grp(at(box(1.1, .16, 1.1, '#2a2d36'), 0, .08, 0)); const top = label(text || '', .8, .8, '#fff', col); top.rotation.x = -Math.PI / 2; c.add(at(top, 0, .17, 0)); late.push(top);
-    for (let i = 0; i < 6; i++) for (const s of [-1, 1]) { c.add(at(box(.06, .05, .2, '#c9cdd6'), -.4 + i * .16, .05, s * .62)); c.add(at(box(.2, .05, .06, '#c9cdd6'), s * .62, .05, -.4 + i * .16)); }
-    c.rotation.x = 1.1; c.position.y = .62; g.add(c);
-  } else if (kind === 'phone') { g.add(at(box(.55, 1.1, .08, '#1b1d24'), 0, .55, 0)); const s = at(label(text || '', .46, .96, '#fff', col), 0, .56, .045); g.add(s); late.push(s); }
-  else if (kind === 'laptop') { g.add(at(box(1.1, .05, .75, '#8c93a3'), 0, .025, 0)); const s = grp(at(box(1.1, .72, .04, '#2a2d36'), 0, .36, 0), at(label(text || '', 1, .62, '#fff', col), 0, .36, .025)); s.position.set(0, .03, -.36); s.rotation.x = -.25; g.add(s); late.push(s); }
-  else if (kind === 'car') { g.add(at(box(1.8, .45, .9, col), 0, .45, 0)); const top = at(box(1, .38, .82, S.shade(col, -.2)), -.1, .85, 0); g.add(top); late.push(top);
-    for (const [x, z] of [[-.6, .45], [.6, .45], [-.6, -.45], [.6, -.45]]) { const w = cyl(.22, .22, .14, '#22242b', 14); w.rotation.x = Math.PI / 2; g.add(at(w, x, .22, z)); late.push(w); } }
-  else if (kind === 'bottle') { g.add(at(cyl(.28, .3, .9, col, 14), 0, .45, 0)); g.add(at(cyl(.1, .26, .3, col, 14), 0, 1.05, 0)); const cap = at(cyl(.11, .11, .12, '#222', 10), 0, 1.25, 0); g.add(cap); late.push(cap); }
-  else if (kind === 'pill') { const a = cyl(.22, .22, .5, '#fff', 14), b = cyl(.22, .22, .5, col, 14), p = grp(at(a, 0, .25, 0), at(b, 0, .75, 0), at(ball(.22, '#fff'), 0, 0, 0), at(ball(.22, col), 0, 1, 0)); p.rotation.z = .9; p.position.set(.4, .3, 0); g.add(p); }
-  else if (kind === 'shirt') {     // a folded-flat T-shirt on a hanger: clothing
-    const sh = new T3.Shape(); sh.moveTo(-.18, 1); sh.lineTo(-.5, .86); sh.lineTo(-.62, .6); sh.lineTo(-.4, .52); sh.lineTo(-.34, .62); sh.lineTo(-.34, 0); sh.lineTo(.34, 0); sh.lineTo(.34, .62); sh.lineTo(.4, .52); sh.lineTo(.62, .6); sh.lineTo(.5, .86); sh.lineTo(.18, 1); sh.quadraticCurveTo(0, .84, -.18, 1);
-    const m = new T3.Mesh(new T3.ExtrudeGeometry(sh, {depth: .1, bevelEnabled: true, bevelSize: .02, bevelThickness: .02, bevelSegments: 2}), M(col)); m.castShadow = true; m.position.z = -.05; g.add(m);
-    const hem = at(box(.66, .05, .13, S.shade(col, -.25)), 0, .03, 0), collar = at(new T3.Mesh(new T3.TorusGeometry(.13, .025, 6, 16, Math.PI), M(S.shade(col, -.3))), 0, .99, .07); collar.rotation.z = Math.PI; g.add(hem, collar);
-    const hook = new T3.Mesh(new T3.TorusGeometry(.07, .012, 6, 14, Math.PI * 1.4), M('#c9cdd6', {metalness: .6})); g.add(at(hook, 0, 1.12, 0));
-    if (text) { const l = at(label(text, .4, .1, '#fff', S.shade(col, -.35)), 0, .5, .08); g.add(l); late.push(l); } late.push(collar); }
-  else if (kind === 'shoe') { g.add(at(box(1.3, .18, .5, '#f2f2f2'), 0, .09, 0)); const up = at(box(.9, .42, .48, col), -.15, .38, 0); g.add(up); late.push(up); }
-  else if (kind === 'game') { g.add(at(box(1.2, .25, .6, '#2a2d36'), 0, .13, 0)); for (const m of [at(cyl(.1, .1, .1, col, 10), -.35, .3, 0), at(cyl(.07, .07, .06, '#ffc83d', 8), .3, .28, .1), at(cyl(.07, .07, .06, '#e8394a', 8), .42, .28, -.06)]) { g.add(m); late.push(m); } }
-  else if (kind === 'food') { g.add(at(cyl(.55, .6, .18, '#e9a347', 14), 0, .09, 0)); g.add(at(cyl(.6, .6, .1, '#7a3d1f', 14), 0, .23, 0)); g.add(at(cyl(.62, .62, .05, '#5b8c32', 14), 0, .3, 0));
-    const bun = at(new T3.Mesh(new T3.SphereGeometry(.56, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), M('#e9a347')), 0, .33, 0); g.add(bun); late.push(bun); }
-  else { g.add(at(box(1, .8, .8, '#c98d4e'), 0, .4, 0)); const tape = at(box(.18, .81, .81, '#e8b276'), 0, .4, 0); g.add(tape); late.push(tape); if (text) g.add(at(label(text, .7, .2, '#15162b', '#c98d4e'), 0, .4, .41)); }
-  g.userData.late = late; return g;
-}
+// The product: what the company makes, modelled from its real parts in models3d.js (2026-11-26, the owner: "more realistic ...
+// have more panels so it can BE a car"). About 1 unit wide (a car or van about 2 long); userData.late = the parts the factory fits last.
+const MOD = window.Models3D({T3, S, rn, canvasTex, label, glowM}), BIG = k => k === 'car' || k === 'van';
+const productMesh = (kind, col, text) => MOD.product(kind, col, text);
 
 // ---------------------------------------------------------------- the subjects of a shot: (it) -> {g: a group at real size, its base at y 0, facing +z; tick(t); lift: its base above the floor}
 const PROPS = {
@@ -179,105 +149,113 @@ const PROPS = {
   crowd(it) { const g = new T3.Group(), P = [], cols = ['#e8394a', '#2f7cf6', '#9b59d0', '#22b573', '#f28c28'], looks = ['casual', 'woman', 'hoodie', 'woman', 'casual'], pos = [[-.5, 0], [.5, 0], [-1, -.8], [0, -.85], [1, -.8]];
     for (let i = 0; i < 5; i++) { const p = actor(looks[i], cols[i], i + 3 + (it.seed || 0), it.pose); p.root.position.set(pos[i][0], 0, pos[i][1]); p.root.rotation.y = -pos[i][0] * .14; g.add(p.root); P.push(p); }     // two in front, three behind
     return {g, tick: t => P.forEach(p => poseToon(p, t))}; },
-  building(it) { const col = brand(it.brand), g = new T3.Group(); g.add(at(box(2.6, 5.6, 2.2, col), 0, 2.8, 0)); g.add(at(box(2.8, .25, 2.4, S.shade(col, -.3)), 0, 5.72, 0));
-    const win = canvasTex(256, 512, (x, w, h) => { x.fillStyle = S.shade(col, -.3); x.fillRect(0, 0, w, h); for (let r = 0; r < 9; r++) for (let k = 0; k < 4; k++) { x.fillStyle = hsh(r * 7 + k) > .3 ? '#ffe9a8' : S.shade(col, -.5); x.fillRect(22 + k * 58, 24 + r * 54, 38, 34); } });
-    g.add(at(new T3.Mesh(new T3.PlaneGeometry(2.3, 4.3), lit(win, 1.1)), 0, 2.35, 1.11)); g.add(at(box(.9, 1.1, .1, '#1c2238'), 0, .55, 1.12));
-    g.add(at(label(it.text || '', 2.3, .62, '#fff', '#14182b'), 0, 5.02, 1.12)); g.add(at(cyl(.04, .04, .9, '#333', 6), 0, 6.3, 0)); g.add(at(ball(.09, '#e8394a', {emissive: '#e8394a', emissiveIntensity: 2}), 0, 6.78, 0)); return {g}; },
-  factory(it) { const col = brand(it.brand), g = new T3.Group(), N = 3, L = 3.6;            // the product being made: a belt, two robot arms fitting its parts, a scanner
-    g.add(at(box(L, .16, .95, '#3d4454'), 0, .92, 0)); g.add(at(box(L, .05, .8, '#1c2029'), 0, 1.02, 0)); for (let k = 0; k < 4; k++) g.add(at(box(.14, .86, .8, '#596175'), -L / 2 + .2 + k * (L - .4) / 3, .43, 0));
-    for (let k = 0; k < 9; k++) g.add(at(box(.06, .02, .8, '#f2c12e'), -L / 2 + .2 + k * (L - .4) / 8, 1.05, 0));
-    g.add(at(box(.22, 2.9, .22, '#f2a33a'), 0, 1.45, -.85)); g.add(at(box(.3, .2, 1.25, '#f2a33a'), 0, 2.8, -.3)); g.add(at(box(.56, .3, .56, '#4a4f5c'), 0, 2.56, 0));
+  building(it) { const g = MOD.tower(brand(it.brand)); g.add(at(MOD.rbox(2.46, .78, .06, .02, MOD.DARK), 0, 5.02, 1.07)); g.add(at(label(it.text || '', 2.3, .62, '#fff', '#14182b'), 0, 5.02, 1.105)); return {g}; },      // (an office tower with a glass wall, doors and a canopy; it was one box with a picture of windows)
+  factory(it) { const col = brand(it.brand), g = new T3.Group(), N = BIG(it.product) ? 2 : 3, L = 3.6, X = MOD, OR = X.PM('#f29a2e', {roughness: .35, envMapIntensity: .7}), DK = X.PM('#2b2f3a', {roughness: .45, envMapIntensity: .5});
+    // the product being made: a conveyor (a rubber belt between steel rails, a roller at each end, legs with feet), two jointed robot arms with grippers fitting its parts, a scanner on a painted gantry
+    g.add(at(X.rbox(L, .1, .82, .03, X.RUBBER), 0, 1, 0)); for (const z of [-.45, .45]) g.add(at(X.rbox(L + .12, .2, .07, .02, X.STEEL), 0, .95, z)); for (const x of [-L / 2, L / 2]) g.add(at(X.cyl(.1, .1, .84, X.STEEL, 20, 'z'), x, .98, 0));
+    for (let k = 0; k < 4; k++) for (const z of [-.4, .4]) { const x = -L / 2 + .25 + k * (L - .5) / 3; g.add(at(X.rbox(.1, .86, .1, .02, X.STEEL), x, .43, z)); g.add(at(X.rbox(.22, .04, .22, .015, DK), x, .02, z)); }
+    for (const z of [-.4, .4]) g.add(at(X.rbox(L - .4, .06, .05, .015, X.STEEL), 0, .3, z)); for (let k = 0; k < 9; k++) g.add(at(box(.06, .012, .8, '#f2c12e'), -L / 2 + .2 + k * (L - .4) / 8, 1.053, 0));
+    g.add(at(X.rbox(.22, 2.9, .22, .05, OR), 0, 1.45, -.85)); g.add(at(X.rbox(.3, .2, 1.25, .05, OR), 0, 2.8, -.3)); g.add(at(X.rbox(.56, .3, .56, .06, DK), 0, 2.56, 0));
     const lamp = at(ball(.1, '#7dffb0', {emissive: '#3dff8a', emissiveIntensity: 3}), 0, 2.38, 0); g.add(lamp);
     const beam = new T3.Mesh(new T3.ConeGeometry(.42, 1.3, 16, 1, true), new T3.MeshBasicMaterial({color: new T3.Color('#7dffb0'), transparent: true, opacity: .22, side: T3.DoubleSide, depthWrite: false})); g.add(at(beam, 0, 1.72, 0));
-    g.add(at(label(it.text || '', 2.6, .54, '#fff', '#14182b'), 0, 3.4, -.3)); g.add(at(box(2.8, .7, .1, '#14182b'), 0, 3.4, -.37)); g.add(at(box(.1, .4, .1, '#8892a6'), 0, 3.0, -.37));
-    const arms = [-1.1, 1.1].map(x => { const a = new T3.Group(), el = new T3.Group(), u = cyl(.07, .07, 1.1, '#f2a33a', 8), f = cyl(.06, .06, .8, '#f2a33a', 8), hd = box(.26, .12, .26, '#4a4f5c');
-      g.add(at(box(.34, 1, .34, '#4a4f5c'), x, .5, -.78)); a.add(at(cyl(.2, .24, .24, '#2f3238', 10), 0, .12, 0)); u.position.y = .75; a.add(u); el.position.y = 1.3; a.add(el); a.add(at(ball(.11, '#2f3238'), 0, 1.3, 0)); f.position.y = -.4; el.add(f); hd.position.y = -.84; el.add(hd);
-      const sp = ball(.08, '#fff3b0', {emissive: '#ffd24a', emissiveIntensity: 5}); sp.position.y = -.95; el.add(sp); at(a, x, 1, -.78); g.add(a); return {a, el, sp, x}; });
-    const items = Array.from({length: N}, () => { const m = productMesh(it.product || 'box', col, ''); m.scale.setScalar(.8); g.add(m); return m; });
+    g.add(at(label(it.text || '', 2.6, .54, '#fff', '#14182b'), 0, 3.4, -.3)); g.add(at(X.rbox(2.8, .7, .1, .03, X.PM('#14182b', {roughness: .3})), 0, 3.4, -.37)); g.add(at(X.rbox(.1, .4, .1, .02, X.STEEL), 0, 3.0, -.37));
+    const arms = [-1.1, 1.1].map(x => { const a = new T3.Group(), el = new T3.Group(); g.add(at(X.rbox(.36, 1, .36, .05, DK), x, .5, -.78));
+      a.add(at(X.cyl(.2, .24, .24, DK, 24), 0, .12, 0)); a.add(at(X.cyl(.075, .085, 1.1, OR, 16), 0, .75, 0)); a.add(at(X.ball(.13, DK), 0, 1.3, 0)); el.position.y = 1.3; a.add(el);
+      el.add(at(X.cyl(.06, .07, .8, OR, 16), 0, -.4, 0)); el.add(at(X.rbox(.26, .12, .26, .04, DK), 0, -.84, 0)); for (const sd of [-1, 1]) el.add(at(X.rbox(.04, .14, .1, .012, X.STEEL), sd * .08, -.95, 0));
+      const sp = ball(.08, '#fff3b0', {emissive: '#ffd24a', emissiveIntensity: 5}); sp.position.y = -1.04; el.add(sp); at(a, x, 1, -.78); g.add(a); return {a, el, sp, x}; });
+    const items = Array.from({length: N}, () => { const m = productMesh(it.product || 'box', col, ''); m.scale.setScalar(Math.min(.8, ((L - .9) / N - .08) / new T3.Box3().setFromObject(m).getSize(new T3.Vector3()).x)); g.add(m); return m; });      // (as big as leaves a gap between two on the belt)
     return {g, tick: t => { items.forEach((m, k) => { const u = (t * .2 + k / N) % 1, x = -L / 2 + .45 + u * (L - .9); m.position.set(x, 1.05, 0); m.userData.late.forEach(q => { q.visible = x > 0; }); });   // (its last parts go on under the scanner)
       arms.forEach(({a, el, sp, x}, i) => { const near = Math.min(...items.map(m => Math.abs(m.position.x - x))), dn = cl(1 - near / .4); el.rotation.x = -(1.3 - .5 * dn); a.rotation.y = .1 * Math.sin(t * 2 + i); sp.visible = dn > .6 && Math.sin(t * 40 + i) > -.2; });
       lamp.material.emissiveIntensity = 2 + 2 * Math.sin(t * 6); }}; },
-  product(it) { const g = productMesh(it.product || 'box', brand(it.brand), it.text), w = new T3.Group(); g.scale.setScalar(2); w.add(g);      // the product itself, big, turning on a lit stand
-    w.add(at(cyl(1.2, 1.3, .16, '#20243a', 28), 0, -.34, 0)); w.add(at(cyl(1.1, 1.1, .04, S.shade(brand(it.brand), -.1), 28, {emissive: brand(it.brand), emissiveIntensity: .5}), 0, -.25, 0));
+  product(it) { const kind = it.product || 'box', g = productMesh(kind, brand(it.brand), it.text), w = new T3.Group(); g.scale.setScalar(2); g.position.y = .18; w.add(g);      // the product itself, big, standing on a lit turntable that turns it (2026-11-26: it used to float over a small disc)
+    w.add(MOD.turntable(BIG(kind) ? 2.3 : 1.25, brand(it.brand)));
     const glow = new T3.PointLight('#fff1cf', .9, 6); glow.position.set(0, 1.6, 2.2); w.add(glow);
-    return {g: w, lift: .42, tick: t => { g.rotation.y = .5 * Math.sin(t * .9); g.position.y = .04 * (1 + Math.sin(t * 2)); }}; },
-  store(it) { const col = brand(it.brand), g = new T3.Group(); g.add(at(box(3.8, 3, 1.6, '#f6ead3'), 0, 1.5, 0)); g.add(at(box(4, .2, 1.8, S.shade(col, -.2)), 0, 3.1, 0));
+    return {g: w, tick: t => { g.rotation.y = .5 * Math.sin(t * .9); }}; },
+  store(it) { const col = brand(it.brand), g = new T3.Group(), X = MOD, WH = X.PM('#fbfaf6', {roughness: .5});      // a shop front (2026-11-26: a plastered wall on a step, a striped awning with a scalloped edge, a framed window, a door with a glass pane)
+    g.add(at(X.rbox(3.8, 3, 1.6, .04, X.PM('#f3e6cd', {roughness: .85, envMapIntensity: .15})), 0, 1.5, 0)); g.add(at(X.rbox(4, .22, 1.8, .06, X.PM(S.shade(col, -.2), {roughness: .5})), 0, 3.1, 0)); g.add(at(X.rbox(4.1, .12, 2.5, .04, X.PM('#b9b3a7', {roughness: .8})), 0, .0, .3));
     const awn = canvasTex(512, 64, (x, w, h) => { for (let k = 0; k < 8; k++) { x.fillStyle = k % 2 ? '#fff' : col; x.fillRect(k * 64, 0, 64, h); } });
     const a = new T3.Mesh(new T3.BoxGeometry(3.9, .08, 1), [M('#ddd'), M('#ddd'), new T3.MeshStandardMaterial({map: awn}), M('#ddd'), M('#ddd'), M('#ddd')]); a.rotation.x = .4; a.castShadow = true; g.add(at(a, 0, 2.5, 1.2));
-    g.add(at(label(it.text || 'STORE', 3, .6, '#fff', '#14182b'), 0, 3.52, .5)); g.add(at(box(3.2, .7, .1, '#14182b'), 0, 3.52, .44));
-    g.add(at(box(2.3, 1.75, .05, '#cfeaff', {roughness: .2, emissive: '#bfe3ff', emissiveIntensity: .25}), -.6, 1.3, .8));
-    for (let r = 0; r < 2; r++) { g.add(at(box(2.2, .06, .34, '#8a6a48'), -.6, .55 + r * .8, .9)); for (let k = 0; k < 3; k++) { const m = productMesh(it.product || 'box', col, ''); m.scale.setScalar(.5); g.add(at(m, -1.3 + k * .7, .58 + r * .8, .9)); } }
-    g.add(at(box(.85, 1.95, .06, '#7a5130'), 1.3, .98, .81)); g.add(at(ball(.05, '#ffc83d', {metalness: .6}), 1.02, 1, .86));
+    for (let k = 0; k < 8; k++) { const sc = new T3.Mesh(new T3.CylinderGeometry(.244, .244, .03, 20, 1, false, -Math.PI / 2, Math.PI), X.PM(k % 2 ? '#ffffff' : col, {roughness: .8, side: T3.DoubleSide})); sc.rotation.x = Math.PI / 2; sc.castShadow = true; g.add(at(sc, -1.706 + k * .4875, 2.3, 1.66)); }
+    g.add(at(label(it.text || 'STORE', 3, .6, '#fff', '#14182b'), 0, 3.52, .5)); g.add(at(X.rbox(3.2, .7, .1, .03, X.PM('#14182b', {roughness: .3})), 0, 3.52, .44));
+    g.add(at(X.rbox(2.44, 1.89, .06, .02, WH), -.6, 1.3, .775)); g.add(at(X.rbox(2.3, 1.75, .05, .01, X.PM('#c4e6fa', {roughness: .06, metalness: .3, envMapIntensity: 1.2, emissive: '#bfe3ff', emissiveIntensity: .15})), -.6, 1.3, .8));
+    for (let r = 0; r < 2; r++) { g.add(at(X.rbox(2.2, .06, .34, .015, X.PM('#8a6a48', {roughness: .6})), -.6, .55 + r * .8, .9)); for (let k = 0; k < 3; k++) { const m = productMesh(it.product || 'box', col, ''); m.scale.setScalar(BIG(it.product) ? .33 : .5); g.add(at(m, -1.3 + k * .7, .58 + r * .8, .9)); } }
+    g.add(at(X.rbox(.97, 2.05, .06, .02, WH), 1.3, 1.03, .79)); g.add(at(X.rbox(.85, 1.95, .06, .02, X.PM('#7a4a2a', {roughness: .4, envMapIntensity: .5})), 1.3, .98, .81)); g.add(at(X.rbox(.55, .8, .066, .01, X.GLASS), 1.3, 1.38, .812)); g.add(at(X.rbox(.03, .3, .04, .012, X.CHROME), 1, 1, .86));
     const sign = it.sign ? at(label(it.sign, 1.9, .52, '#fff', '#e8394a'), -.6, 1.92, 1.74) : null; if (sign) { g.add(sign); for (const x of [-1.4, .2]) g.add(at(box(.03, .3, .03, '#555'), x, 2.2, 1.72)); }   // (a banner hung from the awning)
     return {g}; },
-  monitor(it) { const g = new T3.Group(); g.add(at(box(1.6, 1.25, 1.1, '#e9e6dc'), 0, 1.15, 0)); g.add(at(box(.5, .3, .5, '#cfcabd'), 0, .4, 0)); g.add(at(box(1.8, .12, .7, '#d8d3c6'), 0, .06, .3));
+  monitor(it) { const g = new T3.Group(), X = MOD, BG = X.PM('#e4dfd0', {roughness: .6, envMapIntensity: .3}), BG2 = X.PM('#cdc7b6', {roughness: .6, envMapIntensity: .3});      // an old desktop computer: a rounded case, a recessed screen, a keyboard with keys
+    g.add(at(X.rbox(1.6, 1.25, 1.1, .09, BG), 0, 1.15, 0)); g.add(at(X.rbox(1.42, 1.07, .06, .03, BG2, .1), 0, 1.18, .535)); g.add(at(X.rbox(.5, .3, .5, .06, BG2), 0, .42, 0)); g.add(at(X.rbox(1.8, .14, .78, .04, BG), 0, .07, .3));
+    g.add(at(X.keyboard(1.6, .5, '#d9d4c5', '#f3f0e7'), 0, .142, .36)); g.add(at(X.ball(.02, X.PM('#35ff7a', {emissive: '#35ff7a', emissiveIntensity: 2})), .62, .62, .556)); for (let k = 0; k < 5; k++) g.add(at(X.box(.5, .012, .03, X.DARK), -.3, 1.776, -.3 + k * .09));
     g.add(at(screen(1.3, .95, 256, (x, w, h, t) => { x.fillStyle = '#0f2a1a'; x.fillRect(0, 0, w, h); const old = S.ctx(x); let left = t * 22;
-      (it.lines || ['C:\\>_']).slice(0, 3).forEach((l, i) => { const s = String(l).slice(0, Math.max(0, Math.floor(left))); left -= String(l).length; S.txt(s, 18, 50 + i * 70, 44, '#57f28a', w - 30, 600, 'left'); }); S.ctx(old); }, it), 0, 1.18, .56)); return {g, lift: .5}; },
-  phone(it) { const g = new T3.Group(), p = new T3.Group(); p.add(at(box(1.14, 2.2, .14, '#1b1d24'), 0, 1.1, 0)); p.add(at(screen(1.02, 2.04, 640, (x, w, h, t) => drawK('phone', it, t, x, w, h, '#1b1d24'), it), 0, 1.1, .075)); p.scale.setScalar(1.3); g.add(p);
+      (it.lines || ['C:\\>_']).slice(0, 3).forEach((l, i) => { const s = String(l).slice(0, Math.max(0, Math.floor(left))); left -= String(l).length; S.txt(s, 18, 50 + i * 70, 44, '#57f28a', w - 30, 600, 'left'); }); S.ctx(old); }, it), 0, 1.18, .57)); return {g, lift: .5}; },
+  phone(it) { const g = new T3.Group(), p = new T3.Group(); p.add(at(MOD.phoneShell(1.14, 2.2, .14, 1.02, 2.04), 0, 1.1, 0)); p.add(at(screen(1.02, 2.04, 640, (x, w, h, t) => drawK('phone', it, t, x, w, h, '#1b1d24'), it), 0, 1.1, .075)); p.scale.setScalar(1.3); g.add(p);
     return {g, lift: .3, tick: t => { p.rotation.y = .22 * Math.sin(t * .9); }}; },
   cart(it) { const g = new T3.Group(), col = brand(it.brand), N = 4, items = [];      // a shopping bag in the brand's colour, the products dropping into it (sales, shoppers, orders)
-    const W = 1.9, Hb = 2.1, D = 1.05, body = box(W, Hb, D, col); g.add(at(body, 0, Hb / 2, 0));
-    g.add(at(box(W + .04, .16, D + .04, S.shade(col, -.18)), 0, Hb - .08, 0));
+    const W = 1.9, Hb = 2.1, D = 1.05, body = MOD.rbox(W, Hb, D, .03, MOD.PM(col, {roughness: .75, envMapIntensity: .25})); g.add(at(body, 0, Hb / 2, 0));
+    g.add(at(MOD.rbox(W + .04, .16, D + .04, .03, MOD.PM(S.shade(col, -.18), {roughness: .75, envMapIntensity: .25})), 0, Hb - .08, 0));
     for (const z of [D / 2 + .01, -D / 2 - .01]) { const h = new T3.Mesh(new T3.TorusGeometry(.42, .05, 8, 24, Math.PI), M('#f4efe6')); h.position.set(0, Hb, z); g.add(h); }
     const nm = label(String(it.brand || 'SHOP'), 1.5, .5, '#fff', S.shade(col, -.25)); nm.position.set(0, Hb * .52, D / 2 + .012); g.add(nm);
     for (let k = 0; k < N; k++) { const m = productMesh(it.product || 'box', S.shade(col, .35), ''); m.scale.setScalar(.36); m.userData.rest = new T3.Vector3(-.55 + (k % 2) * 1.1 + (k > 1 ? .3 : 0), Hb - .05 + (k > 1 ? .12 : 0), (k % 2 ? .12 : -.12)); m.visible = false; g.add(m); items.push(m); }
     return {g, tick: lt => items.forEach((m, k) => { const u = cl((lt - .3 - k * .38) / .35), r = m.userData.rest; m.visible = u > 0; m.position.set(r.x, r.y + (window.__measuring ? 0 : 1.6) * (1 - u) * (1 - u), r.z); m.rotation.y = .4 * k + (1 - u) * 1.2; })}; },
-  chart(it) { const g = new T3.Group(); g.add(at(box(4.2, 3.7, .18, '#232a4d'), 0, 2.55, 0));      // (2026-11-24: squarer, so the hook's chart fills a tall frame) for (const x of [-1.6, 1.6]) g.add(at(box(.14, .8, .14, '#3a4370'), x, .4, 0)); g.add(at(box(4, .1, .7, '#3a4370'), 0, .05, 0));
+  chart(it) { const g = new T3.Group(); g.add(at(MOD.rbox(4.2, 3.7, .18, .05, MOD.PM('#232a4d', {roughness: .25, envMapIntensity: .8}), .12), 0, 2.55, 0));      // (2026-11-24: squarer, so the hook's chart fills a tall frame) for (const x of [-1.6, 1.6]) g.add(at(box(.14, .8, .14, '#3a4370'), x, .4, 0)); g.add(at(box(4, .1, .7, '#3a4370'), 0, .05, 0));
     g.add(at(screen(4.04, 3.5, 720, (x, w, h, t) => drawK('chart', it, t, x, w, h, '#141830'), it), 0, 2.55, .1)); return {g}; },
   bars(it) { const B = (it.bars || []).slice(0, 3), mx = Math.max(1e-9, ...B.map(b => +b.value || 0)), g = new T3.Group(), cols = ['#2f7cf6', '#9b59d0', '#22b573'], bs = [], HT = 2.6;
-    g.add(at(box(B.length * 1.5 + .3, .12, 1.2, '#20243a'), 0, .06, 0));
+    g.add(at(MOD.rbox(B.length * 1.5 + .3, .12, 1.2, .03, MOD.PM('#20243a', {roughness: .3})), 0, .06, 0));
     B.forEach((b, i) => { const x = (i - (B.length - 1) / 2) * 1.5, col = (R.brands || []).some(q => q.name.toLowerCase() === String(b.label).toLowerCase()) ? brand(b.label) : cols[i], h = HT * (+b.value || 0) / mx;
-      const m = box(1, 1, 1, col); g.add(m); const top = b.text ? label(b.text, 1.3, .4, '#fff', '#14182b') : null; if (top) g.add(top); g.add(at(label(b.label, 1.3, .36), x, .32, .62)); bs.push([m, h, x, top]); });
+      const m = MOD.rbox(1, 1, 1, .05, MOD.PM(col, {roughness: .3, envMapIntensity: .8})); g.add(m); const top = b.text ? label(b.text, 1.3, .4, '#fff', '#14182b') : null; if (top) g.add(top); g.add(at(label(b.label, 1.3, .36), x, .32, .62)); bs.push([m, h, x, top]); });
     return {g, tick: t => bs.forEach(([m, h, x, l]) => { const hh = Math.max(.02, h * S.ease(t / 1.2)); m.scale.y = hh; m.position.set(x, .55 + hh / 2, 0); if (l) l.position.set(x, .55 + hh + .3, .1); })}; },
-  calendar(it) { const g = new T3.Group(), p = grp(at(box(1.5, 1.62, .12, '#fff'), 0, .81, 0), at(screen(1.44, 1.56, 320, (x, w, h) => drawK('calendar', it, 0, x, w, h, '#fff'), it), 0, .81, .065)); g.add(p);
+  calendar(it) { const g = new T3.Group(), p = grp(at(MOD.rbox(1.5, 1.62, .12, .03, MOD.WHITE), 0, .81, 0), at(screen(1.44, 1.56, 320, (x, w, h) => drawK('calendar', it, 0, x, w, h, '#fff'), it), 0, .81, .065)); g.add(p);
+    for (let k = 0; k < 6; k++) { const r = new T3.Mesh(new T3.TorusGeometry(.075, .014, 8, 16), MOD.CHROME); r.rotation.y = Math.PI / 2; p.add(at(r, -.55 + k * .22, 1.62, 0)); }      // (the rings its pages hang on)
     return {g, lift: .45, tick: t => { p.rotation.z = .05 * Math.sin(t * 1.5); p.rotation.y = .15 * Math.sin(t * .8); }}; },
-  money(it) { const g = new T3.Group(); g.add(at(ball(.7, '#43a55a'), 0, .7, 0)); g.add(at(cyl(.2, .34, .34, '#3c8c4a', 10), 0, 1.45, 0)); g.add(at(cyl(.3, .22, .12, '#ffc83d', 10), 0, 1.3, 0)); g.add(at(label('$', .6, .6, '#fff', '#43a55a'), 0, .72, .69));
-    const coins = []; if (it.rain) for (let k = 0; k < 9; k++) { const c = cyl(.14, .14, .04, '#ffc83d', 14, {metalness: .7, roughness: .3}); g.add(c); coins.push(c); }
-    if (it.text) g.add(at(label(it.text, 1.2, .36, '#15162b', '#ffc83d'), 0, 1.95, 0));
-    return {g, tick: t => coins.forEach((c, k) => { const u = (t * .6 + k / 9) % 1; c.position.set(-.8 + hsh(k) * 1.6, 1.7 - u * 1.6, .5 + hsh(k + 3) * .3); c.rotation.set(t * 4 + k, k, t * 3); })}; },
+  money(it) { const g = MOD.cash();      // (a case of banded notes; it was a green ball with a $ on it)
+    const coins = []; if (it.rain) for (let k = 0; k < 9; k++) { const c = MOD.coin(.13); g.add(c); coins.push(c); }
+    if (it.text) g.add(at(label(it.text, 1.2, .36, '#15162b', '#ffc83d'), 0, 1.78, -.5));
+    return {g, tick: t => coins.forEach((c, k) => { const u = (t * .6 + k / 9) % 1; c.position.set(-.8 + hsh(k) * 1.6, 1.7 - u * 1.3, .55 + hsh(k + 3) * .3); c.rotation.set(t * 4 + k, k, t * 3); })}; },
   podium(it) { const g = new T3.Group(), P = [];
     for (const [n, x, h, col, who] of [['2', -1.3, .8, '#c9cfdc', it.second], ['1', 0, 1.2, '#ffc83d', it.first], ['3', 1.3, .55, '#c98d4e', it.third]]) {
-      g.add(at(box(1.25, h, 1, col), x, h / 2, 0)); g.add(at(label(n, .5, .5, '#15162b', col), x, h * .5, .51));
+      g.add(at(MOD.rbox(1.25, h, 1, .04, MOD.PM(col, {metalness: .7, roughness: .3, envMapIntensity: 1})), x, h / 2, 0)); g.add(at(label(n, .5, .5, '#15162b', col), x, h * .5, .51));
       if (who && R.cast[who]) { const c = R.cast[who], p = actor(c.look, c.color, seedOf(who), n === '1' ? 'cheer' : 'sad'); p.root.position.set(x, h, 0); g.add(p.root); P.push(p); } }
     return {g, tick: t => P.forEach(p => poseToon(p, t))}; },
-  news(it) { const g = new T3.Group(); g.add(at(box(3, 1.95, .22, '#22242b'), 0, 2, 0)); g.add(at(cyl(.07, .07, 1, '#3a3d48', 6), 0, .5, 0)); g.add(at(box(1.2, .08, .6, '#3a3d48'), 0, .04, 0));
+  news(it) { const g = new T3.Group(); g.add(at(MOD.tv(3, 1.95, 1.025), 0, 2, 0));
     g.add(at(screen(2.8, 1.75, 448, (x, w, h, t) => { x.fillStyle = '#16204a'; x.fillRect(0, 0, w, h); x.fillStyle = '#e8394a'; x.fillRect(0, 0, w, h * .22); const old = S.ctx(x);
-      S.txt(Math.sin(t * 6) > -.6 ? 'BREAKING' : '', w / 2, h * .11 + 2, h * .15, '#fff'); (it.lines || []).slice(0, 3).forEach((l, i) => S.txt(String(l).toUpperCase(), w / 2, h * (.38 + i * .2), h * .15, '#fff', w * .9)); S.ctx(old); }, it), 0, 2, .12)); return {g}; },
-  doc(it) { const g = new T3.Group(), p = grp(at(box(1.3, 1.62, .03, '#fdfaf2'), 0, 0, 0), at(screen(1.26, 1.55, 400, (x, w, h) => drawK('doc', it, 0, x, w, h, '#fdfaf2'), it), 0, 0, .02)); p.position.y = .81; g.add(p);
+      S.txt(Math.sin(t * 6) > -.6 ? 'BREAKING' : '', w / 2, h * .11 + 2, h * .15, '#fff'); (it.lines || []).slice(0, 3).forEach((l, i) => S.txt(String(l).toUpperCase(), w / 2, h * (.38 + i * .2), h * .15, '#fff', w * .9)); S.ctx(old); }, it), 0, 2, .076)); return {g}; },
+  doc(it) { const g = new T3.Group(), p = grp(      // (a paper on a clipboard)
+      at(box(1.3, 1.62, .03, '#fdfaf2'), 0, 0, 0), at(screen(1.26, 1.55, 400, (x, w, h) => drawK('doc', it, 0, x, w, h, '#fdfaf2'), it), 0, 0, .02),
+      at(MOD.rbox(1.46, 1.84, .04, .018, MOD.PM('#8a5a33', {roughness: .55}), .05), 0, -.03, -.036), at(MOD.rbox(.5, .16, .05, .022, MOD.CHROME), 0, .83, .03), at(MOD.rbox(.22, .1, .07, .03, MOD.CHROME), 0, .9, .03)); p.position.y = .81; g.add(p);
     return {g, lift: .45, tick: t => { p.rotation.set(.06 * Math.sin(t), .28 * Math.sin(t * .8), .05); }}; },
   arrow(it) { const up = it.dir !== 'down', col = up ? '#2bd47d' : '#e8394a', sh = new T3.Shape();
     sh.moveTo(0, 1.3); sh.lineTo(.8, .4); sh.lineTo(.32, .4); sh.lineTo(.32, -1); sh.lineTo(-.32, -1); sh.lineTo(-.32, .4); sh.lineTo(-.8, .4); sh.closePath();
-    const m = new T3.Mesh(new T3.ExtrudeGeometry(sh, {depth: .34, bevelEnabled: false}), M(col, {emissive: col, emissiveIntensity: .25})); m.castShadow = true; m.position.z = -.17; const a = grp(m); if (!up) a.rotation.z = Math.PI;
+    const m = MOD.ext(sh, .34, MOD.PM(col, {emissive: col, emissiveIntensity: .22, roughness: .22, envMapIntensity: .9}), .05); const a = grp(m); if (!up) a.rotation.z = Math.PI;
     const g = grp(at(a, 0, up ? 1 : 1.3, 0)); if (it.text) g.add(at(label(it.text, 1.6, .5, '#fff', '#14182b'), 0, 2.72, 0));
     return {g, lift: .3, tick: t => { a.rotation.y = .45 * Math.sin(t * 1.4); a.position.y = (up ? 1 : 1.3) + (up ? 1 : -1) * .04 * (1 - Math.cos(t * 3)); }}; },
-  trophy(it) { const g = new T3.Group(), pts = [[0, 0], [.35, 0], [.35, .12], [.1, .2], [.08, .6], [.45, .9], [.5, 1.5], [0, 1.5]].map(([x, y]) => new T3.Vector2(x, y));
-    const cup = new T3.Mesh(new T3.LatheGeometry(pts, 16), M('#ffc83d', {metalness: .6, roughness: .3})); cup.castShadow = true; g.add(at(cup, 0, .2, 0)); g.add(at(box(.9, .2, .6, '#8a5a2b'), 0, .1, 0));
+  trophy(it) { const g = MOD.trophy();
     const conf = []; for (let k = 0; k < 16; k++) { const c = new T3.Mesh(new T3.PlaneGeometry(.09, .15), new T3.MeshBasicMaterial({color: ['#e8394a', '#2f7cf6', '#ffc83d', '#2bd47d'][k % 4], side: T3.DoubleSide})); g.add(c); conf.push(c); }
     return {g, lift: .3, tick: t => conf.forEach((c, k) => { const u = (t * .5 + k / 16) % 1; c.position.set(-.8 + hsh(k) * 1.6, 1.95 - u * 1.9, -.2 + hsh(k + 1) * .5); c.rotation.set(t * 5 + k, t * 3, k); })}; },
-  bulb(it) { const g = new T3.Group(), b = ball(.42, '#ffe46b', {emissive: '#ffcc33', emissiveIntensity: 1.2}); g.add(at(b, 0, .98, 0)); g.add(at(cyl(.17, .17, .3, '#9aa3b2', 10), 0, .48, 0)); g.add(at(cyl(.12, .08, .12, '#6d7483', 10), 0, .28, 0));
-    for (let k = 0; k < 8; k++) { const r = box(.05, .22, .05, '#ffe46b', {emissive: '#ffcc33', emissiveIntensity: 1.5}); r.position.set(Math.cos(k * .785) * .68, .98 + Math.sin(k * .785) * .68, 0); r.rotation.z = k * .785 - Math.PI / 2; g.add(r); }
+  bulb(it) { const made = MOD.bulb(), g = made.g, b = made.glass;
+    for (let k = 0; k < 8; k++) { const r = box(.05, .22, .05, '#ffe46b', {emissive: '#ffcc33', emissiveIntensity: 1.5}); r.position.set(Math.cos(k * .785) * .7, 1.06 + Math.sin(k * .785) * .7, 0); r.rotation.z = k * .785 - Math.PI / 2; if (k !== 6) g.add(r); }
     const l = new T3.PointLight('#ffd27a', 1.2, 5); l.position.set(0, 1, 1); g.add(l); if (it.text) g.add(at(label(it.text, 1.5, .4, '#15162b', '#ffc83d'), 0, -.05, 0));
     return {g, lift: .5, tick: t => { b.material.emissiveIntensity = 1 + .5 * Math.sin(t * 5); }}; },
-  rocket(it) { const g = new T3.Group(), r = new T3.Group(), pts = [[0, 0], [.32, .1], [.4, .9], [.3, 1.5], [0, 1.9]].map(([x, y]) => new T3.Vector2(x, y));
-    const body = new T3.Mesh(new T3.LatheGeometry(pts, 14), M('#eef1f7')); body.castShadow = true; r.add(body); r.add(at(ball(.14, '#5ab0ff', {emissive: '#2f7cf6', emissiveIntensity: .6}), 0, 1.15, .33));
-    for (let k = 0; k < 3; k++) { const f = box(.06, .5, .4, '#e8394a'); f.position.set(Math.cos(k * 2.1) * .38, .25, Math.sin(k * 2.1) * .38); f.rotation.y = -k * 2.1; r.add(f); }
-    const fl = new T3.Mesh(new T3.ConeGeometry(.24, .8, 10), glowM('#ff8a2c', 2)); fl.rotation.x = Math.PI; fl.position.y = -.4; r.add(fl); g.add(r);
-    return {g, lift: .2, tick: t => { r.position.y = .9 + Math.min(.5, t * .16) + .03 * Math.sin(t * 9); fl.scale.y = .8 + .3 * Math.sin(t * 30); r.rotation.y = t * .5; }}; },
+  rocket(it) { const g = new T3.Group(), made = MOD.rocket(), r = made.r, fl = made.flame; g.add(r);
+    return {g, lift: .2, tick: t => { r.position.y = 1.05 + Math.min(.5, t * .16) + .03 * Math.sin(t * 9); fl.scale.y = .8 + .3 * Math.sin(t * 30); r.rotation.y = t * .5; }}; },
   boxes(it) { const g = new T3.Group(); for (const [x, y, z, ry] of [[-.58, 0, 0, .1], [.58, 0, 0, -.12], [0, .8, 0, .06]]) { const b = productMesh('box', '#c98d4e', it.text || ''); g.add(at(b, x, y, z, ry)); } return {g}; },
-  action(it) { const sport = it.sport || 'surf', g = new T3.Group(), p = actor('casual', it.color || '#e8394a', 5, 'surf'), cam1 = productMesh('camera', '#3a3d45', ''); cam1.scale.setScalar(.26);
-    p.head.add(at(cam1, 0, .39, .02)); const body = grp(p.root), rider = grp(body); body.rotation.y = -.5; let y0 = 0;    // the camera rides on their head; they stand side-on
-    if (sport === 'surf') { const w = new T3.Mesh(new T3.SphereGeometry(1.7, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), M('#1f8fd8', {roughness: .3})); w.scale.set(.8, .42, .7); w.castShadow = true; g.add(at(w, 0, 0, -.15));
-      for (let k = 0; k < 7; k++) g.add(at(ball(.18 + hsh(k) * .1, '#ffffff'), -1.08 + k * .36, .5 - Math.abs(k - 3) * .1, -.95)); y0 = .72; rider.add(at(box(2.3, .09, .55, '#ffc83d'), 0, -.05, 0)); rider.add(at(box(.5, .1, .1, '#e8394a'), .9, -.05, 0)); }
-    else if (sport === 'ski') { g.add(at(box(3.4, .3, 2, '#f4f8ff'), 0, .15, 0)); y0 = .34; for (const z of [-.16, .16]) rider.add(at(box(1.9, .04, .12, '#e8394a'), 0, -.02, z)); }
-    else { y0 = .52; for (const x of [-.72, .72]) { const w = new T3.Mesh(new T3.TorusGeometry(.42, .06, 6, 18), M('#22242b')); w.castShadow = true; g.add(at(w, x, .48, 0)); } g.add(at(box(1.44, .07, .07, '#e8394a'), 0, .74, 0)); g.add(at(box(.07, .5, .07, '#e8394a'), .6, .95, 0)); }
+  action(it) { const sport = it.sport || 'surf', g = new T3.Group(), X = MOD, p = actor('casual', it.color || '#e8394a', 5, 'surf'), cam1 = productMesh('camera', '#3a3d45', ''); cam1.scale.setScalar(.26);
+    p.head.add(at(cam1, 0, .32, .02)); const body = grp(p.root), rider = grp(body), RED = X.PM('#e8394a', {roughness: .25, envMapIntensity: .9}); body.rotation.y = -.5; let y0 = 0;    // the camera rides on their head; they stand side-on
+    if (sport === 'surf') { const w = new T3.Mesh(new T3.SphereGeometry(1.7, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2), X.PM('#1f8fd8', {roughness: .12, metalness: .2, envMapIntensity: 1.1})); w.scale.set(.8, .42, .7); w.castShadow = true; g.add(at(w, 0, 0, -.15));
+      for (let k = 0; k < 7; k++) g.add(at(X.ball(.18 + hsh(k) * .1, X.WHITE), -1.08 + k * .36, .5 - Math.abs(k - 3) * .1, -.95)); y0 = .72;
+      const bs = new T3.Shape(); bs.moveTo(-1.1, 0); bs.quadraticCurveTo(-1.1, .25, -.6, .26); bs.lineTo(.5, .24); bs.quadraticCurveTo(1.15, .14, 1.22, 0); bs.quadraticCurveTo(1.15, -.14, .5, -.24); bs.lineTo(-.6, -.26); bs.quadraticCurveTo(-1.1, -.25, -1.1, 0);      // a surfboard: a pointed nose, a round tail, a stripe
+      const board = X.ext(bs, .08, X.PM('#ffc83d', {roughness: .2, envMapIntensity: .9}), .03); board.rotation.x = -Math.PI / 2; rider.add(at(board, 0, -.05, 0)); rider.add(at(X.box(2, .012, .07, RED), .02, -.004, 0)); }
+    else if (sport === 'ski') { g.add(at(X.ball(1, X.PM('#f6faff', {roughness: .6, envMapIntensity: .5}), 1.8, .3, 1.1), 0, .04, 0)); y0 = .36;
+      for (const z of [-.16, .16]) { rider.add(at(X.rbox(1.9, .035, .12, .014, RED), 0, -.02, z)); const tip = X.rbox(.24, .035, .12, .014, RED); tip.rotation.z = .5; rider.add(at(tip, 1.04, .035, z)); } }
+    else { y0 = .52; const tb = (a, b, r = .028, m = RED) => g.add(X.tube(a[0], a[1], 0, b[0], b[1], 0, r, m)), A = [-.72, .48], B = [-.12, .42], St = [-.3, .98], H = [.42, .95], H2 = [.5, .78], F = [.72, .48];      // a bicycle: spoked wheels, a frame of tubes, a saddle, bars, a crank
+      for (const x of [-.72, .72]) { const wl = grp(new T3.Mesh(new T3.TorusGeometry(.42, .045, 10, 40), X.RUBBER), new T3.Mesh(new T3.TorusGeometry(.375, .014, 8, 40), X.STEEL), X.cyl(.04, .04, .1, X.STEEL, 12, 'z')); for (let k = 0; k < 12; k++) wl.add(X.tube(0, 0, 0, Math.cos(k * Math.PI / 6) * .37, Math.sin(k * Math.PI / 6) * .37, 0, .004, X.STEEL)); wl.children.forEach(m => { m.castShadow = true; }); g.add(at(wl, x, .48, 0)); }
+      tb(A, B); tb(B, St); tb(A, St, .018); tb(St, H); tb(B, H2, .032); tb(H, H2, .034); tb(H2, F, .022); tb(St, [-.33, 1.1], .02, X.STEEL); tb(H, [.44, 1.08], .02, X.STEEL);
+      g.add(at(X.rbox(.3, .05, .13, .02, X.DARK), -.35, 1.12, 0)); g.add(X.tube(.44, 1.08, -.26, .44, 1.08, .26, .018, X.DARK)); g.add(at(X.cyl(.1, .1, .012, X.STEEL, 24, 'z'), -.12, .42, .05)); g.add(X.tube(-.12, .42, .06, -.02, .26, .06, .014, X.DARK)); g.add(at(X.rbox(.12, .025, .08, .01, X.DARK), -.02, .26, .1)); }
     rider.position.y = y0; g.add(rider);
     return {g, tick: t => { poseToon(p, t); rider.rotation.z = .09 * Math.sin(t * 2.2); rider.position.y = y0 + .03 * Math.sin(t * 3); }}; },
-  question(it) { const g = new T3.Group(), b = grp(box(1.3, 1.3, 1.3, '#c6cede')); for (const [ry, x, z] of [[0, 0, .66], [Math.PI / 2, .66, 0], [-Math.PI / 2, -.66, 0]]) { const l = label('?', 1, 1, '#15162b', '#c6cede'); l.position.set(x, 0, z); l.rotation.y = ry; b.add(l); }
-    b.position.y = .65; g.add(b); return {g, lift: .5, tick: t => { b.rotation.y = .6 * Math.sin(t); }}; },
-  badge(it) { const col = brand(it.brand || it.text), g = new T3.Group(), b = grp(at(box(1.9, 1.9, .34, S.shade(col, -.25)), 0, 0, 0), at(label(it.text || '', 1.66, 1.66, '#fff', col), 0, 0, .18)); b.position.y = .95; g.add(b);
+  question(it) { const g = new T3.Group(), b = MOD.qmark('#ffc83d'); g.add(b); return {g, lift: .4, tick: t => { b.rotation.y = .6 * Math.sin(t); }}; },      // (a question mark you could pick up; it was a grey cube with a ? on it)
+  badge(it) { const col = brand(it.brand || it.text), g = new T3.Group(), b = grp(at(MOD.rbox(1.9, 1.9, .34, .08, MOD.PM(S.shade(col, -.25), {roughness: .3, envMapIntensity: .8}), .34), 0, 0, 0), at(label(it.text || '', 1.66, 1.66, '#fff', col), 0, 0, .18)); b.position.y = .95; g.add(b);
     return {g, lift: .45, tick: t => { b.rotation.y = .35 * Math.sin(t * 1.2); }}; },
-  gavel(it) { const g = new T3.Group(); g.add(at(box(1.8, .24, 1, '#7a4b2a'), 0, .12, 0)); const h = new T3.Group(), hd = cyl(.24, .24, .9, '#7a4b2a', 12); hd.rotation.z = Math.PI / 2; h.add(at(hd, 0, 1.25, 0)); h.add(at(cyl(.07, .07, 1.25, '#a0683a', 8), 0, .62, 0));
-    h.position.set(.35, .24, 0); g.add(h); g.userData.proxy = [-.95, 0, -.5, 1.7, 1.75, .5]; return {g, lift: .4, tick: t => { h.rotation.z = .6 - Math.max(0, Math.sin(t * 4)) * .6; }}; },
+  gavel(it) { const made = MOD.gavel(), g = made.g, h = made.hammer;
+    h.position.set(.35, .2, 0); g.userData.proxy = [-.95, 0, -.5, 1.7, 1.75, .5]; return {g, lift: .4, tick: t => { h.rotation.z = .6 - Math.max(0, Math.sin(t * 4)) * .6; }}; },
 };
 const FLAT = new Set(['title']);      // (2026-11-24: the hook's claim is on screen from the first second, readable on mute; still only the first two shots carry one)
 const FLAT_OFF = new Set([]);      // (the third model reel puts no words on the picture: a script's titles, counters and stamps are not drawn)

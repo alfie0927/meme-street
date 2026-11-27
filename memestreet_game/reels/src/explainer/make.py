@@ -87,7 +87,7 @@ BGS = {"office": "a bright office: tall windows, shelves, plants", "home": "a li
        "sea": "the open sea: waves, an island, the sun (surfing, ships)", "stage": "a keynote stage: curtains, a big screen, spotlights",
        "trading": "a trading floor: a wall of price screens", "court": "a courthouse: columns, marble",
        "studio": "a clean studio in the company's colour (for the product, the chart, a figure)"}
-PRODUCTS = ["camera", "chip", "phone", "laptop", "car", "bottle", "pill", "shoe", "shirt", "game", "food", "box"]
+PRODUCTS = ["camera", "chip", "phone", "laptop", "car", "van", "bottle", "pill", "shoe", "shirt", "game", "food", "box"]
 LOOKS = ["suit", "casual", "hoodie", "worker", "woman"]
 POSES = ["stand", "cheer", "point", "shock", "sad", "hold", "walk"]
 # a subject of a shot: a 3D thing at real size the camera frames. kind: (what it shows, its fields)
