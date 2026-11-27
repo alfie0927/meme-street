@@ -265,7 +265,8 @@ async def register(j: Register, request: Request):
     problem = password_problem(j.password, j.name)
     if problem:
         return JSONResponse({"error": problem}, status_code=400)
-    problem = engine.birth_date_problem(j.birth_date) if j.birth_date or not j.birth_year else engine.birth_year_problem(j.birth_year)
+    problem = (engine.birth_date_problem(j.birth_date) if j.birth_date else           # not asked since 2026-11-26 (the owner):
+               engine.birth_year_problem(j.birth_year) if j.birth_year else None)     # one that is sent is still checked
     if problem:
         return JSONResponse({"error": problem}, status_code=400)
     mode = engine.email_mode()
@@ -305,7 +306,7 @@ async def register(j: Register, request: Request):
     if j.visitor and engine.settings.get("daily_chart"):
         await run(engine.daily_claim, p, j.visitor)
     p.birth_date = j.birth_date.strip() or None
-    p.birth_year = int(p.birth_date[:4]) if p.birth_date else int(j.birth_year)
+    p.birth_year = int(p.birth_date[:4]) if p.birth_date else int(j.birth_year) or None
     limits.add(("signup", ip), now)
     token = await run(engine.new_session, p, ip)
     out = {"token": token, "name": p.name}

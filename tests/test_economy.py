@@ -458,8 +458,9 @@ class ShopServerTests(unittest.TestCase):
 
     def test_signing_up_with_a_password_needs_an_old_enough_birth_year(self):
         with IsolatedServer(settings={"require_password": True}) as srv:
-            body = {"name": "YoungOne", "password": "a-long-password-1"}
-            self.assertEqual(http(srv, "/api/register", "POST", body)[0], 400)
+            body = {"name": "NoAge", "password": "a-long-password-1"}                # (not asked since 2026-11-26)
+            self.assertEqual(http(srv, "/api/register", "POST", body)[0], 200)
+            body["name"] = "YoungOne"                                           # (one that is sent is still checked)
             body["birth_year"] = THIS_YEAR - 10
             status, text, _ = http(srv, "/api/register", "POST", body)
             self.assertEqual(status, 400)

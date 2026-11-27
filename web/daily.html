@@ -158,7 +158,25 @@ tr:last-child td{border-bottom:0}tr.me td{background:#4cc3cc12}.rk{width:34px;co
 .small{color:var(--mut);font-size:13px;margin:18px 0 0}.hero .small{margin:22px auto 0}#pop .stat{margin-top:4px}
 .lnk{background:none;border:0;padding:0;color:var(--acc);text-decoration:underline;font-size:inherit}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
-.fld{font-size:12px;color:var(--mut);display:block;margin:0 0 5px}
+#pop>div.auth{padding:0;max-width:440px;overflow-x:hidden}.auth .x{z-index:1}
+.ahead{position:relative;padding:22px 26px 18px;background:linear-gradient(180deg,#17232e,#121b24);border-bottom:1px solid var(--line);overflow:hidden}
+.ahead>*{position:relative}.ahead h2{margin:14px 0 8px;font-size:23px;letter-spacing:-.02em}.ahead p{margin:0;font-size:13px}
+.ahead .deco{position:absolute;right:44px;top:0;width:56%;height:100%;opacity:.26;pointer-events:none;-webkit-mask-image:linear-gradient(90deg,transparent 15%,#000 90%);mask-image:linear-gradient(90deg,transparent 15%,#000 90%)}
+.badge{display:inline-flex;align-items:center;gap:7px;color:var(--acc);font:800 11.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:4px 8px;border:1px solid #4cc3cc55;border-radius:3px;background:#0b1117cc}
+.badge i{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:blink 1.6s ease-in-out infinite}
+.perks{display:flex;flex-wrap:wrap;gap:4px 16px;color:var(--mut)}.perks span::before{content:"✓ ";color:var(--up);font-weight:800}
+.abody{padding:20px 26px 24px}.abody .small{text-align:center;font-size:12px;margin:16px 0 0;text-wrap:balance}
+.auth .tabs{gap:0;padding:3px;margin:0 0 16px;background:var(--bg);border:1px solid var(--line)}
+.auth .tabs button{border:0;background:none;color:var(--mut);padding:9px;font-weight:600}.auth .tabs button.on{background:#4cc3cc1a;color:var(--acc);box-shadow:inset 0 -2px 0 var(--acc)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line2);border-radius:3px;overflow:hidden;margin:0 0 12px}
+.fields label{display:block;min-width:0;background:#0f161d;padding:10px 14px 9px;cursor:text;transition:background .2s,box-shadow .2s}.fields label.w{grid-column:1/-1}
+.fields small{display:block;color:var(--mut);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 3px;white-space:nowrap;transition:color .2s}
+.fields input{background:none;border:0;border-radius:0;padding:2px 0;margin:0;font-size:16px;outline:0}.fields input::placeholder{color:#5f6d7a}
+.fields input:-webkit-autofill{-webkit-text-fill-color:var(--txt);box-shadow:0 0 0 99px #0f161d inset}
+.fields label:focus-within{background:#13202a;box-shadow:inset 0 0 0 1px var(--acc)}.fields label:focus-within small{color:var(--acc)}
+.auth .go,.auth #rec-send{width:100%}.auth #rec-send{margin:0 0 12px}
+.auth .err{min-height:0}.auth .err:not(:empty),.auth .okmsg:not(:empty){padding:8px 12px;margin:0 0 12px;border-left:2px solid var(--dn);background:#f2555a12}.auth .okmsg:not(:empty){border-color:var(--up);background:#3fcf8e12}
+@media(max-width:480px){.ahead{padding:20px 18px 16px}.abody{padding:16px 18px 20px}.perks{flex-direction:column}}
 footer{max-width:720px;margin:0 auto;padding:14px 16px 34px;text-align:center;color:var(--mut);font-size:12px;line-height:2}footer a{color:var(--mut);margin:0 7px}
 #toast{position:fixed;left:50%;top:96px;transform:translate(-50%,-20px);background:var(--txt);color:var(--bg);font-weight:800;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s,transform .3s var(--ease);pointer-events:none;z-index:10;max-width:90vw;text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -560,7 +578,7 @@ async function picture(){
  pop(`<h2>Picture saved</h2><p class="mut" style="margin:0 0 14px">It's in your downloads as ${esc(f.name)}, sized for a story (1080 × 1920).</p><ol class="steps"><li>Open Instagram, TikTok or Snapchat and start a story.</li><li>Pick the picture from your downloads or gallery.</li><li>Add a link sticker with <b>memestreet.net</b> so friends can play.</li></ol>`,'Picture saved')}
 
 // ---- the boxes: how to play, stats, the account, history, archive
-function pop(html,label){const p=$('pop');p.innerHTML=`<div aria-label="${label}"><button class="x" data-close aria-label="Close">×</button>${html}</div>`;p.classList.add('on')}
+function pop(html,label,cls=''){const p=$('pop');p.innerHTML=`<div class="${cls}" aria-label="${label}"><button class="x" data-close aria-label="Close">×</button>${html}</div>`;p.classList.add('on')}
 const closePop=()=>{$('pop').classList.remove('on')};
 function help(){event('help');pop(`<h2>How to play</h2><ul>
  <li><b>One real stock a day.</b> Same one for everyone, new at midnight UTC.</li>
@@ -588,24 +606,31 @@ async function account(mode){
  authMode=mode||authMode;pendingCode=false;event('signup_open');
  if(!authInfo)authInfo=await fetch('/api/auth_mode').then(r=>r.json()).catch(()=>({min_age:13,email_signup:true}));
  drawAuth()}
+const DECO=(()=>{let s=7,p=50,o='';const r=()=>(s=s*16807%2147483647)/2147483647;   // (a strip of candles behind the heading: decoration only)
+ for(let i=0;i<24;i++){const c=Math.max(8,Math.min(54,p+(r()-.63)*11)),t=Math.min(p,c),h=Math.max(1.5,Math.abs(c-p)),k=c<p?'#3fcf8e':'#f2555a';
+  o+=`<path d="M${i*10+5} ${(t-r()*6).toFixed(1)}V${(t+h+r()*6).toFixed(1)}" stroke="${k}"/><rect x="${i*10+2}" y="${t.toFixed(1)}" width="6" height="${h.toFixed(1)}" fill="${k}"/>`;p=c}
+ return`<svg class="deco" viewBox="0 0 240 62" preserveAspectRatio="none" aria-hidden="true">${o}</svg>`})();
+const fld=(id,label,attrs,wide)=>`<label${wide?' class="w"':''}><small>${label}</small><input id="${id}" ${attrs}></label>`;
 function drawAuth(){
- const reg=authMode==='register',rec=authMode==='recover',a=authInfo||{};
- pop(`<h2>${reg?'Keep your streak':rec?'Forgot your password':'Welcome back'}</h2>
+ const reg=authMode==='register',rec=authMode==='recover',a=authInfo||{},n=reg&&D&&D.stats&&D.stats.streak;
+ pop(`<div class="ahead">${DECO}<span class="badge"><i></i>${reg?'New account':rec?'Reset password':'Log in'}</span>
+ <h2>${reg?(n>1?`Keep your ${n}-day streak`:'Keep your streak'):rec?'Forgot your password':'Welcome back'}</h2>
+ ${reg?'<p class="perks"><span>Streak saved</span><span>Any device</span><span>Replay past days</span></p>':`<p class="mut">${rec?'Get a code by email, then set a new password.':'Pick up where you left off.'}</p>`}</div>
+ <div class="abody">
  ${rec?'':`<div class="tabs"><button data-mode="register" class="${reg?'on':''}">Create account</button><button data-mode="login" class="${reg?'':'on'}">Log in</button></div>`}
- ${reg?'<p class="mut" style="margin:0 0 14px">Your streak, stats and today\'s game come with you.</p>':''}
  <form id="auth" autocomplete="on" onsubmit="return false">
- <label class="fld" for="nm">Name${reg?' (shown on the leaderboard)':''}</label><input id="nm" autocomplete="username" maxlength="16" required>
- ${rec?`<button class="alt" id="rec-send" type="button" style="margin:0 0 12px">Email me a code</button><label class="fld" for="rc">The code from the email</label><input id="rc" inputmode="numeric" maxlength="6"><label class="fld" for="pw">A new password</label><input id="pw" type="password" autocomplete="new-password">`:
- `<label class="fld" for="pw">Password${reg?' (8 characters or more)':''}</label><input id="pw" type="password" autocomplete="${reg?'new-password':'current-password'}">`}
- ${reg?`<label class="fld" for="pw2">The password again</label><input id="pw2" type="password" autocomplete="new-password">
- ${a.email_signup!==false?`<label class="fld" for="em">Email address</label><input id="em" type="email" autocomplete="email">`:''}
- <label class="fld" for="bd">Date of birth (you need to be ${a.min_age||13} or older)</label><input id="bd" type="date">
- <input class="hp" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true">`:''}
- <div id="code-box" style="display:none"><label class="fld" for="code">The 6-digit code we emailed you</label><input id="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
- <div class="err" id="aerr"></div><div class="okmsg" id="amsg"></div>
- <button class="go" id="auth-go" type="submit" style="width:100%">${reg?'Create account':rec?'Set the new password':'Log in'}</button></form>
- ${reg?'<p class="small">By creating an account you agree to the <a href="/terms" target="_blank">terms</a> and the <a href="/privacy" target="_blank">privacy policy</a>.</p>':''}
- ${authMode==='login'?'<p class="small"><button class="lnk" data-mode="recover">Forgot your password?</button></p>':''}`,'Account')}
+ <div class="fields">${fld('nm','Name',`autocomplete="username" maxlength="16" required placeholder="${reg?'shown on the leaderboard':'your trader name'}"`,1)}
+ ${rec?'':reg?fld('pw','Password','type="password" autocomplete="new-password" placeholder="8+ characters"')+fld('pw2','Again','type="password" autocomplete="new-password" placeholder="repeat it"')
+   +(a.email_signup!==false?fld('em','Email','type="email" autocomplete="email" placeholder="you@example.com"',1):'')
+  :fld('pw','Password','type="password" autocomplete="current-password"',1)}</div>
+ ${rec?`<button class="alt" id="rec-send" type="button">Email me a code</button>
+ <div class="fields">${fld('rc','Code','inputmode="numeric" maxlength="6" placeholder="6 digits"')}${fld('pw','New password','type="password" autocomplete="new-password" placeholder="8+ characters"')}</div>`:''}
+ ${reg?'<input class="hp" id="hp" tabindex="-1" autocomplete="off" aria-hidden="true">':''}
+ <div class="fields" id="code-box" style="display:none">${fld('code','The 6-digit code we emailed you','inputmode="numeric" maxlength="6" autocomplete="one-time-code"',1)}</div>
+ <div class="err" id="aerr" role="alert"></div><div class="okmsg" id="amsg"></div>
+ <button class="go" id="auth-go" type="submit">${reg?'Create account':rec?'Set the new password':'Log in'}</button></form>
+ <p class="small">${reg?`By creating an account you confirm you are ${a.min_age||13} or older and agree to the <a href="/terms" target="_blank">terms</a> and the <a href="/privacy" target="_blank">privacy policy</a>.`
+  :rec?'<button class="lnk" data-mode="login">Back to log in</button>':'<button class="lnk" data-mode="recover">Forgot your password?</button>'}</p></div>`,'Account','auth')}
 async function authGo(){
  const e=$('aerr'),m=$('amsg'),b=$('auth-go');e.textContent='';const v=id=>($(id)||{}).value||'';
  if(authMode==='recover'){const j=await post('/api/account/recover',{name:v('nm'),code:v('rc'),password:v('pw')});if(j.token)return signedIn(j);e.textContent=j.error||'Error';return}
@@ -613,7 +638,6 @@ async function authGo(){
  if(authMode==='register'){
   if(v('pw')!==v('pw2')){e.textContent='The two passwords are not the same';return}
   if($('em')){body.email=v('em');if(!body.email.trim()){e.textContent='Please give your email address';return}}
-  body.birth_date=v('bd');if(!body.birth_date){e.textContent='Please give your date of birth';return}
   body.website=v('hp');if(pendingCode){const c=v('code').replace(/\D/g,'');if(c.length!==6){e.textContent='Type the 6-digit code from the email';return}body.code=c}}
  b.disabled=true;const j=await post(authMode==='register'?'/api/register':'/api/login',body);b.disabled=false;
  if(j.need_code){pendingCode=true;$('code-box').style.display='block';m.textContent=j.email_msg||'';if(j.error)e.textContent=j.error;$('code').focus();b.textContent='Confirm and create';return}
