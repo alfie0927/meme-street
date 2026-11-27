@@ -84,13 +84,41 @@ class RealChartTests(unittest.TestCase):
             self.assertEqual(len(x["c"]), daily.HISTORY + daily.LIVE)
             self.assertTrue(all(0 < lo <= min(o, c) <= max(o, c) <= h for o, h, lo, c, v in x["c"]), x["t"])
         d0 = daily.EPOCH_DAY + 30
-        seen = [daily.real_chart("salt-a", d0 + k)["real"]["i"] for k in range(len(bank))]
-        self.assertEqual(len(set(seen)), len(bank))                          # every chart once before any repeats
+        live = [i for i, x in enumerate(bank) if not x.get("p")]           # (charts played under an older bank: archive only)
+        seen = [daily.real_chart("salt-a", d0 + k)["real"]["i"] for k in range(len(live))]
+        self.assertEqual(sorted(seen), live)                                 # every chart once before any repeats
+        order = daily.schedule("salt-a", bank)
+        close = sum(1 for k, i in enumerate(order) for j in order[max(0, k - daily.TICKER_GAP + 1):k] if bank[j]["t"] == bank[i]["t"])
+        self.assertLessEqual(close, len(order) // 50)                        # one stock comes back only after a long gap
         self.assertEqual(daily.real_chart("salt-a", d0), daily.real_chart("salt-a", d0))
         self.assertNotEqual([daily.real_chart("salt-b", d0 + k)["real"]["i"] for k in range(5)], seen[:5])   # (the salt decides)
         self.assertNotEqual(daily.real_chart("salt-a", d0, resets=1)["real"]["i"], seen[0])
         self.assertIsNone(daily.real_chart("salt-a", d0, bank=[]))            # no bank: the model's chart instead
         self.assertEqual(daily.real_bank(os.path.join(tempfile.gettempdir(), "no-such-bank.json")), [])
+
+    def test_the_mix_is_mostly_up_then_flat_then_down(self):
+        bank = [x for x in daily.real_bank() if not x.get("p")]
+        h = daily.HISTORY
+        ends = [x["c"][-1][3] / x["c"][h - 1][3] - 1 for x in bank]
+        up, down = sum(r >= .1 for r in ends) / len(ends), sum(r <= -.1 for r in ends) / len(ends)
+        self.assertGreater(up, .45)                                          # (7 in 15 up, 4 flat, 3 down, 1 wild: the owner, 2026-11-25)
+        self.assertGreater(up, 1.8 * down)
+        self.assertGreater(1 - up - down, .2)
+
+    def test_a_past_day_replays_by_its_stock_and_dates_not_its_place_in_the_bank(self):
+        e = make_engine(5)
+        quiet(e)
+        bank = daily.real_bank()
+        k = next(i for i, x in enumerate(bank) if x.get("p"))
+        x = bank[k]
+        d = e._dchart()
+        d.setdefault("arch", []).insert(0, {"day": d["day"] - 1, "number": 1, "hold": 0.0,
+                                            "real": {"i": 0, "ticker": x["t"], "start": x["d"][1], "tf": x.get("tf", "1 day")}})
+        p = join(e, "replayer")
+        p.visitor = False
+        r = e.daily_past(p, 1)
+        self.assertNotIn("error", r)
+        self.assertEqual(r["real"]["ticker"], x["t"])
 
     def test_the_market_stands_still_and_the_house_still_plays(self):
         e = make_engine(5, house_bots=True)

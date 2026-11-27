@@ -137,6 +137,8 @@ class GameTests(unittest.TestCase):
         e, p = self.e, self.p
         e.daily_start(p)
         cs = e.daily_game["chart"]["candles"]
+        for c in cs[daily.HISTORY + 3:daily.HISTORY + 12]:                         # (a calm stretch: a wild chart could bust the short)
+            c[3] = min(c[3], cs[daily.HISTORY + 2][3] * 1.5)
         e.now += 3.1
         price = cs[daily.HISTORY + 2][3]
         st = e.daily_trade(p, "sell", 1.0)                                           # no shares: a short

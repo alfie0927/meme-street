@@ -152,14 +152,32 @@ def rebased(x, i):
                      "first": cs[HISTORY - 1][3], "last": cs[-1][3], "events": x.get("e", [])}}
 
 
+TICKER_GAP = 45              # days at least between two charts of one stock (the owner, 2026-11-25: "with a large gap")
+
+
+def schedule(salt, bank):
+    """The order the days take the bank in: shuffled by the salt, then each chart pushed back until its stock has not
+    come up in the last TICKER_GAP days (when no chart left can wait, the first one goes). Charts already played under
+    an older bank ("p") are left out: they are kept only for the archive's replays."""
+    rest = sorted((i for i, x in enumerate(bank) if not x.get("p")),
+                  key=lambda i: hashlib.sha256(f"{salt}:real:{i}".encode()).digest())
+    out, last = [], {}
+    while rest:
+        k = next((k for k, i in enumerate(rest) if len(out) - last.get(bank[i]["t"], -TICKER_GAP) >= TICKER_GAP), 0)
+        i = rest.pop(k)
+        last[bank[i]["t"]] = len(out)
+        out.append(i)
+    return out
+
+
 def real_chart(salt, day, resets=0, bank=None):
-    """The day's real chart, or None without a bank: the bank in an order only the salt knows, one chart a day, so a
-    year goes by before one repeats; an admin reset takes one from the far side of the year."""
+    """The day's real chart, or None without a bank: the bank in an order only the salt knows (`schedule`), one chart a
+    day, so a year goes by before one repeats; an admin reset takes one from the far side of the year."""
     bank = real_bank() if bank is None else bank
-    if not bank:
+    order = schedule(salt, bank)
+    if not order:
         return None
-    order = sorted(range(len(bank)), key=lambda i: hashlib.sha256(f"{salt}:real:{i}".encode()).digest())
-    i = order[(day - EPOCH_DAY + (len(bank) // 2 + resets if resets else 0)) % len(bank)]
+    i = order[(day - EPOCH_DAY + (len(order) // 2 + resets if resets else 0)) % len(order)]
     return rebased(bank[i], i)
 
 
@@ -787,10 +805,12 @@ class DailyMixin:
         except (TypeError, ValueError):
             return {"error": "No such day"}
         a = next((a for a in d.get("arch", []) if a["number"] == number and a["day"] < d["day"]), None)
-        bank = real_bank()
-        if a is None or not 0 <= a["real"].get("i", -1) < len(bank) or bank[a["real"]["i"]]["t"] != a["real"]["ticker"]:
+        bank, r = real_bank(), (a or {}).get("real", {})
+        i = next((i for i, x in enumerate(bank) if x["t"] == r.get("ticker") and x["d"][1] == r.get("start")
+                  and x.get("tf", "1 day") == r.get("tf", "1 day")), None)   # (by stock and dates: a rebuilt bank keeps played charts)
+        if a is None or i is None:
             return {"error": "That day's chart is not in the archive"}
-        ch = rebased(bank[a["real"]["i"]], a["real"]["i"])
+        ch = rebased(bank[i], i)
         return {"number": number, "day": a["day"], "candles": ch["candles"], "history": HISTORY, "live": LIVE, "cash": START_CASH,
                 "real": {k: v for k, v in ch["real"].items() if k != "i"}}
 

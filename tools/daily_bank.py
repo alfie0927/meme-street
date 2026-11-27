@@ -2,7 +2,7 @@
 memestreet_game/reels/src/daily_reel_charts.json (the reels': other stretches, so a reel never shows a chart the
 game will play).
 
-    python tools/daily_bank.py <dataset_43497.pq>     writes both (needs pyarrow)
+    python tools/daily_bank.py <dataset_43497.pq> [--reels]   writes the game's (and with --reels the reels') (needs pyarrow)
     python tools/daily_bank.py demo                    self-check on made-up rows (no file, no pyarrow)
 
 The source is OpenML dataset 43497, "5-years-historical-stock-quotes" (https://www.openml.org/d/43497), released as
@@ -11,10 +11,14 @@ The source is OpenML dataset 43497, "5-years-historical-stock-quotes" (https://w
 https://data.openml.org/datasets/0004/43497/dataset_43497.pq (123 MB).
 
 A chart is HISTORY + LIVE trading days of one well-known stock (NAMES): the lead-in, then the two minutes, one day a
-second. Only windows whose two minutes move a lot are kept (hi/lo of the closes >= 1.25), at most PER_TICKER a stock
-and never two of one stock that overlap, at most COVID_SHARE covering the March 2020 crash, a third from each band of
-BANDS (moderate, big, wild), drawn in a fixed shuffled order so every kind of stock comes up, and the famous moments
-(MUST) always. N charts in all: a year before one repeats.
+second. Only windows whose two minutes move a lot are kept (hi/lo of the closes >= 1.25, or 1.15 for a FAMOUS stock).
+The game's charts (pick_game, since 2026-11-25) follow MIX: 7 in 15 end up 10% or more, 4 flat, 3 down 10% or more and
+1 wild (the price doubles or halves inside); the famous stocks are drawn FAMOUS_WEIGHT times as often, FAMOUS_PER at
+most, any other PER_TICKER; never two of one stock that overlap, at most COVID_SHARE covering the March 2020 crash, the
+famous moments (MUST) always. The charts already played (tools/daily_played.json, [ticker, first day of the two
+minutes, timeframe] from the live save) are carried over marked "p": the game's schedule skips them, the archive still
+replays them. N charts in all: a year before one repeats. By default only the game's file is written and the reels'
+windows are left out of it; `--reels` rebuilds the reels' and the stories' files as well.
 
 A chart holds its real candles, its stock and dates and what happened in those months; the game rebases the prices
 while it plays (daily.rebased). The reels' charts are picked the same way from the windows that overlap none of the
@@ -31,6 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "content", "daily_real.json")
 REEL_OUT = os.path.join(ROOT, "memestreet_game", "reels", "src", "daily_reel_charts.json")   # (the Daily's reel pipeline, 2026-11-18)
 REEL_N = 300
+PLAYED = os.path.join(ROOT, "tools", "daily_played.json")   # (the charts already played: [ticker, first day of the two minutes, timeframe], JSON)
 STORY_OUT = os.path.join(ROOT, "memestreet_game", "reels", "src", "daily_story_charts.json")
 # The crazy stories of real stocks (the owner, 2026-11-19: "you can tell crazy stories of crazy stocks etc, to make people
 # engaged"): each is a stock, the day its story peaks, a one-line seed the researcher starts from (src/stock_story.py) and the
@@ -65,8 +70,20 @@ STORIES = [
 ]
 HISTORY, LIVE = 60, 120
 SPAN = HISTORY + LIVE
-N, PER_TICKER, MIN_RANGE, COVID_SHARE, STEP = 366, 4, 1.25, 0.15, 5
-BANDS = ((1.25, 1.5), (1.5, 2.0), (2.0, float("inf")))   # the two minutes' hi/lo: a third of the charts from each
+N, PER_TICKER, MIN_RANGE, COVID_SHARE, STEP = 366, 3, 1.25, 0.15, 5
+BANDS = ((1.25, 1.5), (1.5, 2.0), (2.0, float("inf")))   # the two minutes' hi/lo (the reels' charts still take a third from each)
+# The game's mix (the owner, 2026-11-25: "4/15 flat, 3/15 down, 7/15 up (up should be more often as more people will stay if
+# they feel like they're winning more)", and "sometimes random stuff happens"): by where the two minutes end against the
+# last lead-in close, up is +10% or more, down -10% or less, flat in between (still a 25%+ swing inside: something
+# happened); the last fifteenth is wild, any direction with the price doubling or halving inside the two minutes.
+MIX = {"up": 7, "flat": 4, "down": 3, "wild": 1}
+MOVE = 0.10
+# The stocks everyone knows (the owner: "WELL known stocks should be included a BIT more (like the larger or infamous
+# stocks)"): up to FAMOUS_PER charts each instead of PER_TICKER, and drawn FAMOUS_WEIGHT times as often.
+FAMOUS = {"AAPL", "MSFT", "AMZN", "GOOGL", "FB", "NFLX", "NVDA", "AMD", "INTC", "TSLA", "ZM", "TWTR", "SNAP", "UBER",
+          "SPOT", "PTON", "BABA", "GME", "AMC", "BBBY", "NKLA", "KODK", "BYND", "MRNA", "PFE", "BA", "DIS", "NKE", "SBUX",
+          "MCD", "KO", "WMT", "COST", "JPM", "GS", "XOM", "GE", "F", "CCL", "AAL", "MSTR", "BB", "NOK", "PYPL", "SHOP"}
+FAMOUS_PER, FAMOUS_WEIGHT, FAMOUS_RANGE = 6, 5, 1.15   # (a big company rarely swings 25% in six months: 15% will do)
 # The timeframe of a candle, and the share of the bank in each (the owner, 2026-11-18: "the daily chart can be any time frame
 # of trading"). The source has daily prices only, so the shortest candle is one day (the two minutes then cover about six
 # months); intraday timeframes (1 day, 1 week, 14 days in two minutes) need a licensed intraday source: ROADMAP RM1.
@@ -153,13 +170,61 @@ def windows(sym, rows, tf="1 day"):
             continue
         game = [r[4] for r in w[HISTORY:]]
         rng = max(game) / min(game)
-        if rng >= 1.25:
+        if rng >= (FAMOUS_RANGE if sym in FAMOUS else MIN_RANGE):
             out.append({"t": sym, "tf": tf, "rng": rng, "a": w[HISTORY][0], "b": w[-1][6], "w": w})
     return out
 
 
+def kind(x):
+    """Up, down, flat or wild: where the two minutes end against the last lead-in close (MIX)."""
+    w = x["w"]
+    r = w[-1][4] / w[HISTORY - 1][4] - 1
+    return "wild" if x["rng"] >= 2.0 else "up" if r >= MOVE else "down" if r <= -MOVE else "flat"
+
+
+def pick_game(cands, n=N, keep=()):
+    """The game's charts: MIX of up, flat, down and wild (the famous moments count towards theirs), the famous stocks
+    drawn FAMOUS_WEIGHT times as often and FAMOUS_PER at most, any other PER_TICKER, never two of one stock
+    overlapping, at most COVID_SHARE over the March 2020 crash, the timeframes in TFS. `keep`: the charts already
+    played, carried over unchanged (the archive replays them) and counted against nothing."""
+    rng = random.Random(SEED)
+    weighted = sorted(cands, key=lambda x: (x["t"], x["tf"], x["a"]))
+    keys = {id(x): rng.random() ** (1 / (FAMOUS_WEIGHT if x["t"] in FAMOUS else 1)) for x in weighted}
+    order = sorted(weighted, key=lambda x: -keys[id(x)])               # (a weighted shuffle: the famous come up sooner)
+    for t, day in MUST.items():                                       # (each famous moment first, as in pick)
+        mine = [x for x in order if x["t"] == t and x["tf"] == "1 day" and x["a"] <= day <= x["b"]]
+        at = lambda x: next(i for i, r in enumerate(x["w"]) if r[0] >= day) - HISTORY
+        if mine:
+            order.insert(0, order.pop(order.index(min(mine, key=lambda x: abs(at(x) - 0.75 * LIVE)))))
+    total = sum(MIX.values())
+    want = {k: round(n * v / total) for k, v in MIX.items()}          # (never more of a kind than this)
+    tfq = {tf: round(n * share) for tf, share in TFS.items()}         # (the timeframes: kept in the first pass only)
+    got, per, covid = [], {}, 0
+    for x in keep:
+        per.setdefault(x["t"], []).append(x)
+    for second, x in [(False, x) for x in order] + [(True, x) for x in order]:
+        if len(got) >= n:
+            break
+        k = kind(x)
+        if want[k] <= 0 or (not second and tfq[x["tf"]] <= 0) or any(x is y for y in got):
+            continue
+        mine = per.setdefault(x["t"], [])
+        if len(mine) >= (FAMOUS_PER if x["t"] in FAMOUS else PER_TICKER) or any(
+                not (x["w"][-1][6] < y["w"][0][0] or y["w"][-1][6] < x["w"][0][0]) for y in mine):
+            continue
+        hit = x["a"] <= COVID <= x["b"]
+        if hit and covid >= COVID_SHARE * n:
+            continue
+        covid += hit
+        want[k] -= 1
+        tfq[x["tf"]] -= 1
+        mine.append(x)
+        got.append(x)
+    return got
+
+
 def pick(cands, n=N, must=True):
-    """The charts: a third from each band of BANDS, each band in a fixed shuffled order, the famous moments first, at
+    """The reels' charts: a third from each band of BANDS, each band in a fixed shuffled order, the famous moments first, at
     most PER_TICKER a stock, never two of one stock overlapping, at most COVID_SHARE covering the March 2020 crash."""
     rng = random.Random(SEED)
     order = []
@@ -201,7 +266,7 @@ def entry(x):
     """One chart as the bank keeps it: ticker, name, [first day, first day of the two minutes, last day], the events
     inside the two minutes, and the real candles [open, high, low, close, volume]."""
     p = lambda v: round(v, 2 if v >= 10 else 4)
-    return {"t": x["t"], "n": NAMES[x["t"]], "tf": x.get("tf", "1 day"), "d": [x["w"][0][0], x["a"], x["b"]],
+    return {"t": x["t"], "n": NAMES[x["t"]], "tf": x.get("tf", "1 day"), "d": [x["w"][0][0], x["a"], x["b"]], **({"p": 1} if x.get("played") else {}),
             "e": [e[1] for e in EVENTS if x["a"] <= e[0] <= x["b"] and (len(e) < 3 or x["t"] in e[2])],
             "c": [[p(r[1]), p(r[2]), p(r[3]), p(r[4]), int(r[5])] for r in x["w"]]}
 
@@ -243,7 +308,7 @@ def stories(by):
     print(f"{len(out)} story charts -> {STORY_OUT}")
 
 
-def build(path):
+def build(path, with_reels=False):
     import pyarrow as pa
     import pyarrow.compute as pc
     import pyarrow.parquet as pq
@@ -255,13 +320,26 @@ def build(path):
         by.setdefault(r["symbol"], []).append((r["datetime"][:10], r["open_price"], r["high_price"], r["low_price"], r["close_price"], r["volume"] or 0))
     print("not in the data:", sorted(set(NAMES) - set(by)))
     cands = [w for s, rows in by.items() for tf in TFS for w in windows(s, sorted(rows), tf)]
-    got = pick(cands)
+    played = [tuple(x) for x in json.load(open(PLAYED))] if os.path.exists(PLAYED) else []
+    keep = [dict(x, played=True) for x in cands if (x["t"], x["a"], x["tf"]) in set(played)]
+    print(f"played charts carried over: {len(keep)} of {len(played)}", "MISSING" if len(keep) < len(played) else "")
+    reels = json.load(open(REEL_OUT, encoding="utf-8"))["charts"] if os.path.exists(REEL_OUT) and not with_reels else []
+    theirs = {}                                                       # (the reels' windows stay theirs: no game chart overlaps one)
+    for c in reels:
+        theirs.setdefault(c["t"], []).append((c["d"][0], c["d"][2]))
+    free = [x for x in cands if (x["t"], x["a"], x["tf"]) not in set(played)
+            and all(x["w"][-1][6] < a or b < x["w"][0][0] for a, b in theirs.get(x["t"], []))]
+    got = pick_game(free, N, keep) + keep
     print("famous moments missing:", sorted(t for t, day in MUST.items() if not any(x["t"] == t and x["a"] <= day <= x["b"] for x in got)))
+    print("mix:", {k: sum(kind(x) == k for x in got if not x.get("played")) for k in MIX}, "famous share: %.0f%%" % (100 * sum(x["t"] in FAMOUS for x in got) / len(got)))
     write(got, OUT, "the game")
-    reel = pick(apart(cands, got), REEL_N, must=False)
-    write(reel, REEL_OUT, "the reels")
-    stories(by)
-    for g, f in ((got, OUT), (reel, REEL_OUT)):
+    outs = [(got, OUT)]
+    if with_reels:
+        reel = pick(apart(cands, got), REEL_N, must=False)
+        write(reel, REEL_OUT, "the reels")
+        stories(by)
+        outs.append((reel, REEL_OUT))
+    for g, f in outs:
         print({tf: sum(x.get("tf") == tf for x in g) for tf in TFS})
         print(f"{len(g)} charts from {len({x['t'] for x in g})} stocks, {sum(x['a'] <= COVID <= x['b'] for x in g)} over the "
               f"COVID crash, median move {sorted(x['rng'] for x in g)[len(g) // 2]:.2f}x hi/lo, {os.path.getsize(f) // 1024} KB -> {f}")
@@ -303,4 +381,4 @@ def demo():
 
 
 if __name__ == "__main__":
-    demo() if sys.argv[1:] == ["demo"] else build(sys.argv[1])
+    demo() if sys.argv[1:] == ["demo"] else build(sys.argv[1], "--reels" in sys.argv[2:])
