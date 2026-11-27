@@ -1,0 +1,20 @@
+{
+ "series": "Meme Street: one real stock chart a day",
+ "slots": {
+  "0400": {"name": "the new chart", "secs": [12, 26], "job": "Today's mystery chart is live: show the months before the game, never what comes next, and ask the vote that tonight's reel answers."},
+  "0900": {"name": "a new way in", "secs": [14, 36], "job": "A way of showing the game nobody has seen: its own art style, never the style of the last seven of these."},
+  "1600": {"name": "a new way in", "secs": [14, 36], "job": "The same as 09:00, in a different style and with a different idea."},
+  "2330": {"name": "the answer", "secs": [26, 46], "job": "The story behind today's mystery chart: always the same form (the chart, the reveal, why it moved, the vote, the midnight line)."}
+ },
+ "words_a_second": 2.6,
+ "context_words": ["stock", "chart", "price", "$", "share", "trade", "trader", "buy", "bought", "sell", "sold", "short", "market", "money", "invest", "crash", "rally", "profit", "loss", "portfolio", "bitcoin", "ipo", "%"],
+ "lean_words": ["nobody", "never", "only", "every", "biggest", "worst", "best", "first", "last", "secret", "hidden", "wrong", "lost", "lose", "won", "broke", "record", "real", "true", "just", "all", "none", "twice", "double", "half", "zero"],
+ "turn_words": ["but", "except", "until", "then", "yet", "still", "wasn't", "weren't", "isn't", "didn't", "never", "instead", "wrong", "actually", "only", "not", "no", "nobody", "turns out", "and then", "anyway"],
+ "link_line": "One real chart a day, two minutes to trade it: memestreet.net",
+ "disclaimer": "Practice money only. Not investment advice.",
+ "tags": "#stocks #trading #stockmarket #daytrading #MemeStreet",
+ "brand": {"ink": "#0b1026", "paper": "#f6f1e7", "up": "#2bd47d", "down": "#e8394a", "gold": "#ffc83d", "blue": "#2f7cf6", "font": "Montserrat"},
+ "safe": {"top": 250, "bottom": 1600, "left": 60, "right": 1020, "captions_y": 1330},
+ "motion": {"enter": "expo.out, 0.3 to 0.6 s", "exit": "power3.in, 40 to 50 percent shorter than the entrance", "move": "power2.inOut", "stagger_words_ms": [60, 120],
+            "caption_words": [1, 3], "shot_secs": [1, 4], "hold_title": "0.5 s plus 0.3 s a word", "count_up_secs": [1.2, 1.6], "sfx": "one frame after its picture, 3 to 6 dB over the music"}
+}

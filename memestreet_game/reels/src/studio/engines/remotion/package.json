@@ -1,0 +1,14 @@
+{
+  "name": "memestreet-studio-remotion",
+  "private": true,
+  "description": "The studio's Remotion engine: React compositions rendered to 1080x1920 video (free licence: an individual or a company of up to three people).",
+  "scripts": {
+    "render": "remotion render src/index.jsx"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.547",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.547"
+  }
+}

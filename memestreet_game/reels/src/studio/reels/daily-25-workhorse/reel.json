@@ -1,0 +1,393 @@
+{
+ "name": "daily-25-workhorse",
+ "slot": "2330",
+ "engine": "page",
+ "entry": "ride/ride.html",
+ "style": "the ride",
+ "title": "How Workhorse Landed UPS and Still Crashed 78% in One Year",
+ "brands": [
+  {
+   "name": "Workhorse",
+   "color": "#00a3e0"
+  }
+ ],
+ "hook": {
+  "context": "This stock had just landed UPS.",
+  "lean": "An order for up to 1,000 electric vans.",
+  "snapback": "It still lost 78% that year.",
+  "text": "LANDED UPS|LOST 78%",
+  "visual": "the chart builds itself as a landscape from the left, a mystery crate at its start, the camera pushing along it"
+ },
+ "say": [
+  "This stock had just landed UPS.",
+  "An order for up to 1,000 electric vans.",
+  "It still lost 78% that year.",
+  "Today's mystery chart on Meme Street was Workhorse.",
+  "Within weeks, the stock hit $3.35.",
+  "But UPS only had to take 50 vans.",
+  "The cash kept running out.",
+  "So it sold millions of cheap new shares.",
+  "Then quarterly sales came in: $11,000.",
+  "It warned it might not survive.",
+  "The $2.51 stock closed at 55 cents.",
+  "Buy it at 55 cents, or stay away?",
+  "A new mystery chart goes live at midnight."
+ ],
+ "choice": {
+  "q": "What would you do?",
+  "a": "Buy it at 55 cents",
+  "b": "Stay away"
+ },
+ "music": "Secret Garden",
+ "tail": 0.6,
+ "caption": "This stock had just landed UPS: an order for up to 1,000 electric vans. It still lost 78% that year.\nToday's mystery chart was Workhorse (WKHS), 2017-12-21 to 2018-12-04.",
+ "tags": "#stocks #investing #stockmarket #WKHS #MemeStreet",
+ "cover": {
+  "t": 2.6
+ },
+ "props": {
+  "prices": [
+   2.51,
+   2.66,
+   2.62,
+   2.56,
+   2.84,
+   2.76,
+   2.84,
+   2.97,
+   2.78,
+   2.68,
+   2.82,
+   3.18,
+   3.35,
+   3.09,
+   3.05,
+   2.91,
+   2.84,
+   2.82,
+   2.89,
+   2.93,
+   2.79,
+   3.16,
+   3.21,
+   3.21,
+   3.15,
+   3.14,
+   2.89,
+   2.84,
+   2.89,
+   2.85,
+   2.76,
+   2.74,
+   2.71,
+   2.56,
+   2.61,
+   2.59,
+   2.61,
+   2.6,
+   2.61,
+   2.74,
+   2.87,
+   2.92,
+   2.69,
+   2.73,
+   2.84,
+   2.94,
+   3.01,
+   2.99,
+   2.75,
+   2.75,
+   2.71,
+   2.74,
+   2.65,
+   2.595,
+   2.65,
+   2.61,
+   2.57,
+   2.47,
+   2.41,
+   2.3,
+   2.08,
+   2.18,
+   2.09,
+   1.98,
+   1.94,
+   1.54,
+   1.81,
+   1.7,
+   1.74,
+   1.5,
+   1.54,
+   1.5,
+   1.49,
+   1.47,
+   1.44,
+   1.43,
+   1.49,
+   1.53,
+   1.51,
+   1.25,
+   1.13,
+   1.19,
+   1.15,
+   1.14,
+   1.04,
+   1.04,
+   0.9718,
+   1.0,
+   1.08,
+   1.2,
+   1.1,
+   1.15,
+   1.13,
+   1.07,
+   1.11,
+   1.12,
+   1.11,
+   1.07,
+   1.15,
+   1.1,
+   1.14,
+   1.03,
+   1.05,
+   1.03,
+   1.0,
+   0.9498,
+   0.8301,
+   0.945,
+   0.7529,
+   0.804,
+   0.868,
+   0.7451,
+   0.89,
+   0.8615,
+   0.845,
+   0.7541,
+   0.7842,
+   0.78,
+   0.72,
+   0.7098,
+   0.55
+  ],
+  "dates": [
+   "2017-12-21",
+   "2018-12-04"
+  ],
+  "name": "Workhorse",
+  "color": "#00a3e0",
+  "number": 25,
+  "product": "van",
+  "label": "WORKHORSE",
+  "tag": "TODAY'S MYSTERY CHART",
+  "reveal": 3,
+  "vote": 11,
+  "shots": [
+   {
+    "cam": "wide",
+    "focus": [
+     0.0,
+     0.2
+    ],
+    "d0": 200,
+    "d1": 150,
+    "open": 0.55
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     0.2,
+     "peak"
+    ],
+    "d0": 150,
+    "d1": 75
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     "peak",
+     0.7
+    ],
+    "d0": 75,
+    "d1": 260
+   },
+   {
+    "cam": "side",
+    "cut": true,
+    "dist": 1.1
+   },
+   {
+    "cam": "side",
+    "to": "peak"
+   },
+   {
+    "cam": "side",
+    "to": 0.3
+   },
+   {
+    "cam": "front",
+    "to": 0.46
+   },
+   {
+    "cam": "chase",
+    "to": 0.64
+   },
+   {
+    "cam": "side",
+    "to": 0.8
+   },
+   {
+    "cam": "low",
+    "to": 0.93
+   },
+   {
+    "cam": "far",
+    "to": "end"
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     0.62,
+     0.5
+    ],
+    "d0": 210,
+    "d1": 330
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     0.5,
+     0.5
+    ],
+    "d0": 330,
+    "d1": 345
+   }
+  ],
+  "places": [
+   {
+    "at": 0.035,
+    "kind": "arch",
+    "text": "UPS DEAL",
+    "color": "#f2a33a"
+   },
+   {
+    "at": "peak",
+    "kind": "crowd",
+    "pose": "cheer"
+   },
+   {
+    "at": 0.25,
+    "kind": "board",
+    "text": "50 VANS",
+    "sub": "all UPS had to take",
+    "color": "#e8394a"
+   },
+   {
+    "at": 0.335,
+    "kind": "parcels",
+    "text": "UPS"
+   },
+   {
+    "at": 0.44,
+    "kind": "cash",
+    "tag": "RUNNING OUT"
+   },
+   {
+    "at": 0.6,
+    "kind": "board",
+    "text": "NEW SHARES",
+    "sub": "millions, sold cheap",
+    "color": "#7a4bd0",
+    "burst": true
+   },
+   {
+    "at": 0.765,
+    "kind": "board",
+    "text": "SALES $11,000",
+    "sub": "down from $3.1 million",
+    "color": "#14182b"
+   },
+   {
+    "at": 0.9,
+    "kind": "person",
+    "look": "suit",
+    "color": "#2b6cb0",
+    "pose": "shock",
+    "text": "MIGHT NOT SURVIVE"
+   },
+   {
+    "at": 0.95,
+    "kind": "tv",
+    "lines": [
+     "NASDAQ",
+     "DELIST WARNING"
+    ]
+   }
+  ],
+  "band": [
+   {
+    "i": 0,
+    "kind": "title",
+    "text": "LANDED UPS|LOST 78%",
+    "t": -1,
+    "until": 0
+   },
+   {
+    "i": 1,
+    "kind": "counter",
+    "on": "1,000",
+    "to": 1000,
+    "text": "electric vans for UPS"
+   },
+   {
+    "i": 2,
+    "kind": "stamp",
+    "on": "78%",
+    "text": "-78%"
+   },
+   {
+    "i": 4,
+    "kind": "counter",
+    "on": "$3.35",
+    "to": 3.35,
+    "dec": 2,
+    "prefix": "$",
+    "text": "within weeks",
+    "color": "#2bd47d"
+   },
+   {
+    "i": 7,
+    "kind": "stamp",
+    "on": "cheap",
+    "text": "DILUTED",
+    "color": "#b98cff"
+   },
+   {
+    "i": 8,
+    "kind": "counter",
+    "on": "$11,000",
+    "to": 11000,
+    "prefix": "$",
+    "text": "sales in a quarter",
+    "color": "#ff4a5c"
+   },
+   {
+    "i": 10,
+    "kind": "stamp",
+    "on": "55",
+    "text": "55 CENTS"
+   }
+  ],
+  "leak": [
+   0.36,
+   0.5
+  ],
+  "smoke": [
+   0.84,
+   0.97
+  ],
+  "storm": [
+   0.8,
+   1.0
+  ]
+ }
+}

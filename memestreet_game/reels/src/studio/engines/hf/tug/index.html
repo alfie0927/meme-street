@@ -1,0 +1,348 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- The studio, 09:00 "a new way in": a real stock chart as a tug of war. Style: a pop-art game show (sunburst, Ben-Day dots,
+     thick black outlines, flat colours). A HyperFrames composition: every word, price and time comes from window.__R
+     (reel.json's props); the people are drawn in code. One paused GSAP timeline moves the words and cards; the rig, the rope
+     and the chart are redrawn from the timeline's time on every update, so a frame is a pure function of its time. -->
+<style>
+@font-face{font-family:"MS";src:url("Montserrat.ttf") format("truetype");font-weight:100 900;font-style:normal}
+html,body{margin:0;background:#141414}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#ffd21e;font-family:"MS",sans-serif;font-weight:900;color:#141414}
+#root *{box-sizing:border-box}
+#cam,#hud{position:absolute;left:0;top:0;width:1080px;height:1920px}
+#cam{transform-origin:540px 1100px}
+svg{position:absolute;left:0;top:0;overflow:visible}
+#flash{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#fff4d6;opacity:0}
+.slot{position:absolute;left:0;width:1080px;display:flex;justify-content:center}
+.strip{white-space:nowrap;line-height:1;text-align:center;transform:rotate(-1.5deg) scaleX(.8)}
+.strip.a{font-size:70px;padding:9px 34px 11px;background:#141414;color:#fff4d6}
+.strip.b{font-size:86px;padding:6px 36px 8px;background:#fff4d6;color:#141414;border:8px solid #141414;box-shadow:12px 12px 0 #141414;transform:rotate(1deg) scaleX(.8)}
+.plate{position:absolute;top:1540px;height:54px;width:300px;display:flex;align-items:center;justify-content:center;gap:14px;font-size:44px;line-height:1;border:6px solid #141414;color:#141414}
+.plate i{display:block;width:0;height:0;border-left:15px solid transparent;border-right:15px solid transparent}
+.plate span{display:block;transform:scaleX(.84)}
+#panel{position:absolute;left:70px;top:484px;width:940px;height:390px;background:#fff4d6;border:8px solid #141414;box-shadow:14px 14px 0 #141414}
+#price{position:absolute;left:30px;top:4px;font-size:124px;line-height:1.06;white-space:nowrap;transform:scaleX(.9);transform-origin:0 50%}
+#price b{display:inline-block;width:.64em;text-align:center;font-weight:900}
+#price b.n{width:.3em}
+#day{position:absolute;right:30px;top:14px;text-align:right;line-height:1;transform:scaleX(.84);transform-origin:100% 50%;white-space:nowrap}
+#day .d1{font-size:66px}
+#day .d2{font-size:44px;margin-top:6px;font-weight:800}
+#plot{left:0;top:132px}
+.date{position:absolute;bottom:6px;font-size:44px;font-weight:800;line-height:1;white-space:nowrap;transform:scaleX(.8)}
+.burst{position:absolute;width:460px;height:200px}
+#card{position:absolute;left:70px;top:256px;width:940px;height:632px;background:#fff4d6;border:8px solid #141414;box-shadow:14px 14px 0 #141414;overflow:hidden}
+#card .in{position:absolute;left:36px;top:16px;width:1075px;transform:scaleX(.8);transform-origin:0 0}
+#card .q{font-size:84px;line-height:1.03;text-wrap:balance}
+#card .row{display:flex;align-items:center;gap:28px;margin-top:12px;font-size:72px;line-height:1;white-space:nowrap}
+#card .row em{flex:none;display:flex;align-items:center;justify-content:center;width:92px;height:92px;border:7px solid #141414;border-radius:50%;font-style:normal;font-size:60px;box-shadow:6px 6px 0 #141414}
+#card .cta{position:absolute;left:0;bottom:0;width:100%;height:84px;background:#141414;color:#fff4d6;display:flex;align-items:center;justify-content:center;font-size:56px;white-space:nowrap}
+#card .cta span{display:block;transform:scaleX(.84)}
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="25" data-width="1080" data-height="1920" data-fps="30">
+  <div id="cam">
+    <svg id="bg" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+    <svg id="stage" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+    <div id="hud"></div>
+  </div>
+  <div id="flash"></div>
+</div>
+<script src="vendor/gsap.min.js"></script>
+<script>
+document.fonts.load('900 40px "MS"');            // (asked for before the player waits for document.fonts.ready)
+window.__build = R => {
+  'use strict';
+  // ------------------------------------------------------------ the data (all of it from the reel)
+  const P = R.prices, N = P.length - 1, p0 = P[0], pEnd = P[N], pMax = Math.max(...P), pMin = Math.min(...P);
+  const T = R.T, MAP = R.map, B = R.beats, WIN = pEnd >= p0 ? 1 : -1;            // +1: the buyers (right) end ahead
+  const C = Object.assign({ink: '#141414', paper: '#fff4d6', yel: '#ffd21e', pale: '#ffe680', buy: '#12c26b', sell: '#ff3a45'}, R.colors || {});
+  const SKIN = [C.paper, '#f2b886', '#b97a4c'];
+  const $ = s => document.querySelector(s), NS = 'http://www.w3.org/2000/svg';
+  const S = (tag, at, par) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); if (par) par.appendChild(e); return e; };
+  const H = (tag, cls, par, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; if (par) par.appendChild(e); return e; };
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), lerp = (a, b, u) => a + (b - a) * u, f1 = x => Math.round(x * 10) / 10;
+  const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };      // (seeded: the same every run)
+  const E = {heave: gsap.parseEase('power2.inOut'), out: gsap.parseEase('power3.out'), expo: gsap.parseEase('expo.out'), bounce: gsap.parseEase('bounce.out'), io: gsap.parseEase('power2.inOut'), back: gsap.parseEase('back.out(2)')};
+  const MON = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const date = s => { const [y, m, d] = String(s).split('-'); return `${+d} ${MON[+m - 1]} ${y}`; };
+  const pct = Math.round((pEnd / p0 - 1) * 100), fill = s => String(s).replace('{WINNER}', WIN > 0 ? 'BUYERS' : 'SELLERS').replace('{NAME}', String(R.name || '').toUpperCase()).replace('{PCT}', (pct >= 0 ? '+' : '') + pct + '%');
+  document.getElementById('root').dataset.duration = T;
+
+  // ------------------------------------------------------------ time -> the price (dull stretches fast, the big swings slow: R.map)
+  const idxAt = t => {
+    if (t <= MAP[0][0]) return MAP[0][1];
+    for (let k = 0; k < MAP.length - 1; k++) if (t < MAP[k + 1][0]) return lerp(MAP[k][1], MAP[k + 1][1], (t - MAP[k][0]) / (MAP[k + 1][0] - MAP[k][0]));
+    return MAP[MAP.length - 1][1];
+  };
+  const at = x => { const i = Math.min(N - 1, Math.max(0, Math.floor(x))); return [i, E.heave(clamp(x - i))]; };      // (each day's move is one heave)
+  const priceAt = t => { const [i, e] = at(idxAt(t)); return lerp(P[i], P[i + 1], e); };
+  const TF = MAP[MAP.length - 1][0], T0 = MAP[0][0];                              // the final bell, the first pull
+  let HOLD = [TF, TF]; for (let k = 0; k < MAP.length - 1; k++) if (MAP[k][1] === MAP[k + 1][1] && MAP[k + 1][0] - MAP[k][0] > .8) HOLD = [MAP[k][0], MAP[k + 1][0]];
+
+  // ------------------------------------------------------------ the stage's geometry
+  const FLOOR = 1440, CS = 1, RH = 150, D0 = 124, SP = 100, WORLD = 380, FOLLOW = .72;
+  const wx = p => WORLD * (p - p0) / (pMax - p0);                                 // a price's place on the floor (the rope's flag stands over it)
+  const fw0 = t => wx(priceAt(t)), rate = t => (idxAt(t + .05) - idxAt(t - .05)) / .1;                 // days a second
+  const fw = t => { const w = clamp(rate(t) / 150, .04, .13); return (fw0(t - w) + fw0(t - w / 2) + fw0(t) + fw0(t + w / 2) + fw0(t + w)) / 5; };      // (the rope is a heavy thing: in the fast stretches it follows the trend, not every tick)
+  const FMID = (wx(pMin) + wx(pMax)) / 2;                                         // the frame is centred on the middle of the price range, so neither team is ever pulled out of it
+  const camAt = t => FOLLOW * (fw(t) + fw(t - .1) + fw(t - .2) + fw(t - .3)) / 4 + (1 - FOLLOW) * FMID - 72 * WIN * E.io(clamp((t - TF - .1) / .6));         // the camera follows, a little late; after the bell it makes room for the heap
+  const _adv = new Map(), adv = t => {                                           // -1..1: who is gaining ground (buyers +)
+    const k = Math.round(t * 240); if (_adv.has(k)) return _adv.get(k);
+    const v = clamp(((fw(t + .13) - fw(t - .13)) / .26) / 120, -1, 1); _adv.set(k, v); return v;
+  };
+  const strain = t => t < T0 ? .75 : t > TF ? 0 : (t > HOLD[0] - .15 && t < HOLD[1]) ? 1 : .4 + .5 * Math.abs(adv(t));
+  const PUNCH = R.punch || [];                                                    // [[from, to, scale]]: the stage punches in on a run and lets go after it
+  const zoomAt = t => 1 + .06 * (E.io(clamp((t - HOLD[0]) / (HOLD[1] - HOLD[0] - .1))) - E.expo(clamp((t - HOLD[1] - .38) / .35))) + PUNCH.reduce((a, [t0, t1, z]) => a + (z - 1) * (E.expo(clamp((t - t0) / .14)) - E.io(clamp((t - t1) / .3))), 0);
+
+  // ------------------------------------------------------------ the backdrop: a sunburst and Ben-Day dots
+  const bg = $('#bg'); S('rect', {width: 1080, height: 1920, fill: C.yel}, bg);
+  const rays = S('g', {}, bg), CX = 540, CY = 1180, RR = 1900, NR = 14;
+  for (let i = 0; i < NR; i++) {
+    const a0 = i * 2 * Math.PI / NR, a1 = a0 + Math.PI / NR;
+    S('path', {d: `M${CX},${CY}L${f1(CX + RR * Math.cos(a0))},${f1(CY + RR * Math.sin(a0))}A${RR},${RR} 0 0 1 ${f1(CX + RR * Math.cos(a1))},${f1(CY + RR * Math.sin(a1))}Z`, fill: C.pale}, rays);
+  }
+  for (let row = 0, y = 4; y < 300; row++, y += 23) for (let x = (row % 2) * 11.5 - 4; x < 1090; x += 23) { const r = 9.2 * Math.pow(1 - y / 300, 1.15); if (r > .9) S('circle', {cx: f1(x), cy: y, r: f1(r), fill: C.ink}, bg); }
+
+  // ------------------------------------------------------------ the stage: floor, price ruler, rope, people
+  const st = $('#stage'), gZ = S('g', {}, st);
+  S('rect', {x: -300, y: FLOOR, width: 1680, height: 94, fill: C.paper}, gZ); S('rect', {x: -300, y: FLOOR + 94, width: 1680, height: 500, fill: C.ink}, gZ);
+  for (let row = 0, y = 1618; y < 1930; row++, y += 24) for (let x = (row % 2) * 12 - 6; x < 1090; x += 24) S('circle', {cx: x, cy: y, r: f1(1.5 + 8.5 * (y - 1618) / 300), fill: C.yel}, gZ);
+  const gW = S('g', {}, gZ), ticks = [];
+  for (let v = 0; v <= Math.ceil(pMax) + 8; v += .5) {
+    const x = f1(wx(v)), whole = v % 1 === 0;
+    S('rect', {x: x - (whole ? 4 : 2.5), y: FLOOR, width: whole ? 8 : 5, height: whole ? 28 : 15, fill: C.ink}, gW);
+    if (whole) { const tx = S('text', {x, y: FLOOR + 76, 'text-anchor': 'middle', 'font-family': 'MS', 'font-weight': 900, 'font-size': 46, fill: C.ink}, gW); tx.textContent = '$' + v; ticks.push({x, tx}); }
+  }
+  S('rect', {x: -300, y: FLOOR - 5, width: 1680, height: 10, fill: C.ink}, gZ);                      // the floor's edge
+  const gDustB = S('g', {}, gW), gBody = S('g', {}, gW);
+  const ropeO = S('path', {fill: 'none', stroke: C.ink, 'stroke-width': 17, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}, gW);
+  const ropeI = S('path', {fill: 'none', stroke: C.paper, 'stroke-width': 8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}, gW);
+  const ropeT = S('path', {fill: 'none', stroke: C.ink, 'stroke-width': 8, 'stroke-dasharray': '3 13'}, gW);
+  const gFlag = S('g', {}, gW); S('path', {d: 'M-33,0L0,0L0,124Z', fill: C.sell}, gFlag); S('path', {d: 'M33,0L0,0L0,124Z', fill: C.buy}, gFlag); S('path', {d: 'M-33,0L33,0L0,124Z', fill: 'none', stroke: C.ink, 'stroke-width': 7, 'stroke-linejoin': 'round'}, gFlag); S('circle', {r: 14, fill: C.ink}, gFlag); S('circle', {r: 5, fill: C.paper}, gFlag);
+  const gArms = S('g', {}, gW), gFx = S('g', {}, gW);
+
+  const FACES = ['strain', 'shock', 'smug', 'joy', 'dizzy'];
+  function makeFace(g) {
+    const F = {}, o = (name) => (F[name] = S('g', {display: 'none'}, g));
+    const ln = (g, d, w = 5.5) => S('path', {d, fill: 'none', stroke: C.ink, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}, g);
+    let f = o('strain');                                                       // eyes screwed shut, teeth gritted
+    ln(f, 'M-1,-15L12,-8L-1,-1'); ln(f, 'M38,-15L26,-8L38,-1'); ln(f, 'M-6,-30L15,-22', 7); ln(f, 'M42,-30L23,-22', 7);
+    S('rect', {x: 2, y: 10, width: 36, height: 18, rx: 6, fill: '#fff', stroke: C.ink, 'stroke-width': 5}, f); ln(f, 'M2,19L38,19M14,10L14,28M26,10L26,28', 3.5);
+    f = o('shock');                                                             // eyes wide, mouth an O
+    S('circle', {cx: 6, cy: -9, r: 12.5, fill: '#fff', stroke: C.ink, 'stroke-width': 5}, f); S('circle', {cx: 31, cy: -10, r: 11, fill: '#fff', stroke: C.ink, 'stroke-width': 5}, f);
+    S('circle', {cx: 9, cy: -8, r: 4.2, fill: C.ink}, f); S('circle', {cx: 33, cy: -9, r: 3.8, fill: C.ink}, f); ln(f, 'M-6,-33Q6,-41 16,-34', 6); ln(f, 'M24,-35Q34,-41 42,-33', 6);
+    S('ellipse', {cx: 21, cy: 21, rx: 10, ry: 13.5, fill: C.ink}, f); S('ellipse', {cx: 21, cy: 27, rx: 5.5, ry: 5, fill: C.sell}, f);
+    f = o('smug');                                                              // eyes open and hard, a toothy grin
+    S('circle', {cx: 6, cy: -8, r: 11, fill: '#fff', stroke: C.ink, 'stroke-width': 5}, f); S('circle', {cx: 31, cy: -9, r: 10, fill: '#fff', stroke: C.ink, 'stroke-width': 5}, f);
+    S('circle', {cx: 10, cy: -6, r: 5, fill: C.ink}, f); S('circle', {cx: 34, cy: -7, r: 4.6, fill: C.ink}, f); ln(f, 'M-8,-27L17,-17', 8); ln(f, 'M44,-27L22,-18', 8);
+    S('path', {d: 'M0,10Q20,16 42,6Q40,32 18,32Q4,30 0,10Z', fill: '#fff', stroke: C.ink, 'stroke-width': 5, 'stroke-linejoin': 'round'}, f); ln(f, 'M3,21Q20,25 40,18M14,13L14,30M27,12L27,31', 3.5);
+    f = o('joy');                                                               // eyes smiling shut, mouth wide open
+    ln(f, 'M-6,-6Q4,-22 15,-6', 6.5); ln(f, 'M23,-7Q32,-22 42,-7', 6.5);
+    S('path', {d: 'M-4,8Q20,14 44,6Q42,40 20,40Q0,38 -4,8Z', fill: C.ink, stroke: C.ink, 'stroke-width': 5, 'stroke-linejoin': 'round'}, f); S('path', {d: 'M2,11Q20,16 40,10L39,17Q20,22 3,18Z', fill: '#fff'}, f); S('ellipse', {cx: 21, cy: 33, rx: 10, ry: 6, fill: C.sell}, f);
+    f = o('dizzy');                                                             // crossed-out eyes, a wobbly mouth
+    ln(f, 'M-3,-17L15,-1M15,-17L-3,-1', 6); ln(f, 'M24,-17L40,-1M40,-17L24,-1', 6); ln(f, 'M0,22Q7,13 14,22T28,22T42,22', 6);
+    S('path', {d: 'M22,24Q22,40 31,40Q39,40 38,24Z', fill: C.sell, stroke: C.ink, 'stroke-width': 4.5, 'stroke-linejoin': 'round'}, f);
+    return F;
+  }
+  function makeHair(g, v, col) {                                                // six heads: a bowler, spikes, a bun, a cap, curls, a flat top
+    const hat = S('g', {}, g), bald = S('g', {display: 'none'}, g);
+    if (v === 0) {
+      S('path', {d: 'M-4,-40Q-12,-52 -6,-62M2,-42Q2,-56 8,-64M9,-40Q18,-48 16,-58', fill: 'none', stroke: C.ink, 'stroke-width': 4.5, 'stroke-linecap': 'round'}, bald);
+      S('path', {d: 'M-31,-32L-27,-90L31,-90L35,-32Z', fill: C.ink, stroke: C.ink, 'stroke-width': 6, 'stroke-linejoin': 'round'}, hat); S('path', {d: 'M-32,-46L36,-46', stroke: C.yel, 'stroke-width': 11}, hat); S('path', {d: 'M-50,-30L54,-30', stroke: C.ink, 'stroke-width': 14, 'stroke-linecap': 'round'}, hat);
+    } else if (v === 1) S('path', {d: 'M-45,-4L-64,-22L-46,-26L-60,-50L-36,-42L-38,-68L-16,-50L-4,-76L8,-50L28,-64L26,-40L42,-36L30,-26L-18,-30Z', fill: C.ink, stroke: C.ink, 'stroke-width': 4, 'stroke-linejoin': 'round'}, hat);
+    else if (v === 2) { S('circle', {cx: -30, cy: -54, r: 19, fill: C.ink}, hat); S('path', {d: 'M-46,6C-56,-40 -22,-54 10,-48C24,-46 34,-38 40,-28C12,-36 -14,-30 -22,-8C-26,2 -34,10 -46,6Z', fill: C.ink}, hat); }
+    else if (v === 3) { S('path', {d: 'M-45,-14C-46,-62 36,-66 43,-20Z', fill: C.yel, stroke: C.ink, 'stroke-width': 6, 'stroke-linejoin': 'round'}, hat); S('path', {d: 'M34,-27L82,-19L82,-9L36,-14Z', fill: C.yel, stroke: C.ink, 'stroke-width': 6, 'stroke-linejoin': 'round'}, hat); }
+    else if (v === 4) [[-42, -4, 15], [-40, -26, 17], [-24, -44, 18], [0, -52, 18], [22, -44, 16], [-50, 14, 12]].forEach(([cx, cy, r]) => S('circle', {cx, cy, r, fill: C.ink}, hat));
+    else { S('path', {d: 'M-44,-16L-40,-66L30,-66L38,-34Z', fill: C.ink, stroke: C.ink, 'stroke-width': 4, 'stroke-linejoin': 'round'}, hat); S('path', {d: 'M-43,-18L41,-30', stroke: col, 'stroke-width': 11}, hat); }
+    return {hat, bald};
+  }
+  const limb = (par, w, col) => { const o = S('path', {fill: 'none', stroke: C.ink, 'stroke-width': w + 11, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}, par); const i = col ? S('path', {fill: 'none', stroke: col, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}, par) : null; return d => { o.setAttribute('d', d); if (i) i.setAttribute('d', d); }; };
+  function makeChar(s, k, i) {
+    const col = s > 0 ? C.buy : C.sell, skin = SKIN[(k + (s > 0 ? 1 : 0)) % 3], c = {s, k, i, f: -s, col};
+    c.sh = S('ellipse', {rx: 62, ry: 9, fill: C.ink, opacity: .22}, gBody);
+    c.g = S('g', {}, gBody); c.gr = S('g', {}, c.g);
+    c.legB = limb(c.gr, 15); c.shoeB = S('ellipse', {rx: 25, ry: 11.5, fill: C.yel, stroke: C.ink, 'stroke-width': 5.5}, c.gr);
+    c.legF = limb(c.gr, 15); c.shoeF = S('ellipse', {rx: 25, ry: 11.5, fill: C.yel, stroke: C.ink, 'stroke-width': 5.5}, c.gr);
+    c.torso = limb(c.gr, 60, col);
+    c.stripe = S('path', {fill: 'none', stroke: C.paper, 'stroke-width': 10}, c.gr);
+    c.head = S('g', {}, c.gr);
+    S('circle', {cx: 44, cy: 6, r: 10, fill: skin, stroke: C.ink, 'stroke-width': 5.5}, c.head);                     // the nose
+    S('circle', {r: 44, fill: skin, stroke: C.ink, 'stroke-width': 6.5}, c.head);
+    S('circle', {cx: -14, cy: 6, r: 8.5, fill: skin, stroke: C.ink, 'stroke-width': 5}, c.head);                     // the ear
+    [[-2, 22], [7, 27], [-4, 33], [5, 38]].forEach(([cx, cy]) => S('circle', {cx: cx - 10, cy: cy - 4, r: 3.1, fill: C.sell}, c.head));        // a Ben-Day cheek
+    c.faces = makeFace(c.head); Object.assign(c, makeHair(c.head, (s > 0 ? 3 : 0) + k, col));
+    c.sweat = [0, 1].map(() => S('path', {d: 'M0,-10C6,-2 7,5 0,8C-7,5 -6,-2 0,-10Z', fill: '#fff', stroke: C.ink, 'stroke-width': 3.5, display: 'none'}, c.gr));
+    c.ga = S('g', {}, gArms); c.gar = S('g', {}, c.ga);
+    c.armB = limb(c.gar, 14, skin); c.armF = limb(c.gar, 14, skin);
+    c.hands = [0, 1].map(() => S('circle', {r: 13.5, fill: skin, stroke: C.ink, 'stroke-width': 5.5}, c.gar));
+    return c;
+  }
+  const chars = []; [-1, 1].forEach(s => [2, 1, 0].forEach(k => chars.push(makeChar(s, k, chars.length))));
+  const dust = Array.from({length: 54}, () => S('circle', {fill: C.paper, stroke: C.ink, 'stroke-width': 5, display: 'none'}, gDustB));
+  const hatOwner = R.hat ? chars.find(c => c.k === 0 && c.s === (adv(R.hat.t + .15) > 0 ? -1 : 1)) : null;
+  const flyHat = S('g', {display: 'none'}, gFx); if (hatOwner) makeHair(flyHat, hatOwner.s > 0 ? 3 : 0, hatOwner.col);
+  const star = 'M0,-24L6,-8L24,-8L10,3L15,21L0,10L-15,21L-10,3L-24,-8L-6,-8Z';
+  const stars = [0, 1, 2].map(() => S('path', {d: star, fill: C.yel, stroke: C.ink, 'stroke-width': 5, 'stroke-linejoin': 'round', display: 'none'}, gFx));
+  const lines = [0, 1, 2, 3].map(() => S('path', {fill: 'none', stroke: C.ink, 'stroke-width': 7, 'stroke-linecap': 'round', display: 'none'}, gFx));
+
+  // two-bone joint: from a to b with bones l1, l2, bent towards (bx, by)
+  const ik = (ax, ay, bx, by, l1, l2, dx, dy) => {
+    let vx = bx - ax, vy = by - ay, d = Math.hypot(vx, vy) || 1e-6; const dd = clamp(d, Math.abs(l1 - l2) + .01, l1 + l2 - .01);
+    const a = (l1 * l1 - l2 * l2 + dd * dd) / (2 * dd), h = Math.sqrt(Math.max(0, l1 * l1 - a * a)); vx /= d; vy /= d;
+    let nx = -vy, ny = vx; if (nx * dx + ny * dy < 0) { nx = -nx; ny = -ny; }
+    return [ax + vx * a + nx * h, ay + vy * a + ny * h];
+  };
+  function rig(c, t) {                                                          // everything about one person at time t, in its own frame (x: towards the other team, y: up is negative)
+    const tq = Math.floor(t * 12 + 1e-6) / 12, a = c.s * adv(tq), lose = clamp(-a * 1.7), win = clamp(a * 1.5), sn = strain(tq), te = t - TF, isW = c.s === WIN;
+    let X = fw(t) + c.s * (D0 + c.k * SP), tr = (Math.sin(tq * 41 + c.i * 2.3) + Math.sin(tq * 67 + c.i * 5.1)) * (.012 + .05 * sn);
+    let L = .5 + .28 * win + .42 * lose + .14 * sn * (1 - lose) + tr + (c.k - 1) * .05, up = 0, hop = 0, fall = 0, rot = 0, yOff = 0, face = lose > .45 ? 'shock' : win > .55 ? 'smug' : 'strain';
+    if (te > 0 && isW) { up = E.out(clamp((te - .12 - .06 * c.k) / .3)); const ph = (te - .5 - .13 * c.k) / .54; hop = ph > 0 ? Math.abs(Math.sin(Math.PI * ph)) : 0; L = lerp(L, .02, up); yOff = -74 * Math.pow(hop, .8); if (up > .3) face = 'joy'; }
+    if (te > 0 && !isW) { const u = clamp((te - .1 - .1 * (2 - c.k)) / .55); fall = E.bounce(u); X += c.f * 30 * Math.sin(Math.PI * clamp(te / .24)) - c.f * [26, 22, 16][c.k] * fall; rot = -[12, 6, 0][c.k] * fall; L = lerp(L, 2.2 + .08 * c.k, fall); face = u > .2 ? 'dizzy' : 'shock'; }      // the rope is ripped out of their hands: over they go, backwards, each onto the legs of the one behind
+    // the feet: planted on the floor and stepping while the team holds or gains, braced together and sliding while it is dragged
+    const foot = (o, ph) => { const q = (X + c.f * o * CS) / 58 + ph, n = Math.floor(q), fr = q - n, e = clamp((fr - .6) / .4), sm = e * e * (3 - 2 * e); return [c.f * (58 * (n + sm - ph + .3) - X) / CS, 15 * Math.sin(Math.PI * e)]; };
+    let [x1, l1] = foot(50, 0), [x2, l2] = foot(-24, .5); const br = Math.max(lose, clamp(fall * 3));
+    x1 = lerp(x1, 60, br); x2 = lerp(x2, 28, br); l1 *= 1 - br; l2 *= 1 - br; if (te > 0 && isW) { x1 = lerp(x1, 26, up); x2 = lerp(x2, -22, up); l1 = l2 = 0; }
+    if (fall > 0) { x1 = lerp(x1, 98, fall); x2 = lerp(x2, 74, fall); l1 = ([118, 66, 10][c.k] + 8 * Math.sin(te * 8 + c.k * 2)) * fall; l2 = [94, 44, 0][c.k] * fall; }
+    const ang = (5 + 27 * L) * Math.PI / 180, Hp = [-6 - 30 * L - 12 * lose, -114 + 14 * Math.max(L, 0) - 5 * Math.abs(Math.sin(Math.PI * ((X / 58) % 1))) * win];
+    if (fall > 0) { Hp[0] = lerp(Hp[0], -30, fall); Hp[1] = lerp(Hp[1], -42 - [100, 50, 0][c.k], fall); }
+    const Sh = [Hp[0] - 92 * Math.sin(ang), Hp[1] - 92 * Math.cos(ang)], ha = ang * (lose > .45 ? .15 : .7) - up * .1, Hd = [Sh[0] - 50 * Math.sin(ha), Sh[1] - 50 * Math.cos(ha)];
+    let h1 = [66, -RH], h2 = [40, -RH];
+    if (te > 0 && isW) h1 = [lerp(66, Sh[0] + 26, up), lerp(-RH, Sh[1] - 112 - 10 * Math.sin(te * 9 + c.k), up)];
+    if (fall > 0) { const u = clamp(fall * 4), wv = 9 * Math.sin(te * 7 + c.k * 2); h1 = [lerp(66, Sh[0] + 16 + wv, u), lerp(-RH, Sh[1] - 128, u)]; h2 = [lerp(40, Sh[0] + 84, u), lerp(-RH, Sh[1] + 6 + wv * .5, u)]; }
+    return {X, L, rot, yOff, face, lose, win, sn, up, hop, fall, tq, feet: [[x1, -l1], [x2, -l2]], toe: 26 * br + 20 * fall, Hp, Sh, Hd, ha, h1, h2};
+  }
+  const P2 = (a) => `${f1(a[0])},${f1(a[1])}`;
+  function drawChar(c, t) {
+    const r = rig(c, t), tf = `translate(${f1(r.X)},${FLOOR}) scale(${c.f * CS},${CS})`, tr = `translate(0,${f1(r.yOff)}) rotate(${f1(r.rot)})`;
+    c.g.setAttribute('transform', tf); c.ga.setAttribute('transform', tf); c.gr.setAttribute('transform', tr); c.gar.setAttribute('transform', tr);
+    c.sh.setAttribute('cx', f1(r.X - c.f * CS * (10 + 40 * r.fall))); c.sh.setAttribute('cy', FLOOR + 3); c.sh.setAttribute('rx', f1((62 + 70 * r.fall) * (1 + r.yOff / 300)));
+    const [F1, F2] = r.feet, k1 = ik(r.Hp[0] + 8, r.Hp[1], F1[0], F1[1] - 12, 62, 62, 1, -.2), k2 = ik(r.Hp[0] - 8, r.Hp[1], F2[0], F2[1] - 12, 62, 62, 1, -.2);
+    c.legB(`M${P2([r.Hp[0] - 8, r.Hp[1]])}L${P2(k2)}L${P2([F2[0], F2[1] - 12])}`); c.legF(`M${P2([r.Hp[0] + 8, r.Hp[1]])}L${P2(k1)}L${P2([F1[0], F1[1] - 12])}`);
+    c.shoeB.setAttribute('transform', `translate(${f1(F2[0] + 9)},${f1(F2[1] - 11)}) rotate(${f1(-r.toe)})`); c.shoeF.setAttribute('transform', `translate(${f1(F1[0] + 9)},${f1(F1[1] - 11)}) rotate(${f1(-r.toe)})`);
+    const T1 = [lerp(r.Hp[0], r.Sh[0], .06), lerp(r.Hp[1], r.Sh[1], .06)], T2 = [lerp(r.Hp[0], r.Sh[0], .92), lerp(r.Hp[1], r.Sh[1], .92)];
+    c.torso(`M${P2(T1)}L${P2(T2)}`);
+    const mx = lerp(r.Hp[0], r.Sh[0], .5), my = lerp(r.Hp[1], r.Sh[1], .5), nx = (r.Sh[1] - r.Hp[1]) / 92, ny = -(r.Sh[0] - r.Hp[0]) / 92;
+    c.stripe.setAttribute('d', `M${f1(mx - nx * 30)},${f1(my - ny * 30)}L${f1(mx + nx * 30)},${f1(my + ny * 30)}`);
+    c.head.setAttribute('transform', `translate(${P2(r.Hd)}) rotate(${f1(-r.ha * 180 / Math.PI * .8 + (r.face === 'shock' ? 8 : 0))})`);
+    for (const n of FACES) c.faces[n].setAttribute('display', n === r.face ? 'inline' : 'none');
+    const hatOff = hatOwner === c && t >= R.hat.t; c.hat.setAttribute('display', hatOff ? 'none' : 'inline'); c.bald.setAttribute('display', hatOff ? 'inline' : 'none');
+    const sa = [r.Sh[0] + 4, r.Sh[1] + 12], e1 = ik(sa[0], sa[1], r.h1[0], r.h1[1], 68, 68, 0, r.up > .5 ? -1 : 1), e2 = ik(sa[0], sa[1], r.h2[0], r.h2[1], 68, 68, 0, 1);
+    c.armB(`M${P2(sa)}L${P2(e2)}L${P2(r.h2)}`); c.armF(`M${P2(sa)}L${P2(e1)}L${P2(r.h1)}`);
+    c.hands[0].setAttribute('cx', f1(r.h2[0])); c.hands[0].setAttribute('cy', f1(r.h2[1])); c.hands[1].setAttribute('cx', f1(r.h1[0])); c.hands[1].setAttribute('cy', f1(r.h1[1]));
+    c.sweat.forEach((el, j) => {                                               // sweat flies off the back of the head while the strain is high
+      const per = .34, n = Math.floor((r.tq + j * .17 + c.i * .11) / per), u = ((r.tq + j * .17 + c.i * .11) / per) - n, on = (r.sn > .7 || r.lose > .5) && !r.fall && r.up < .1;
+      if (!on) return el.setAttribute('display', 'none');
+      const an = (-150 + 50 * hash(n * 7 + c.i * 13 + j)) * Math.PI / 180, d = 50 + 70 * u;
+      el.setAttribute('display', 'inline'); el.setAttribute('transform', `translate(${f1(r.Hd[0] + Math.cos(an) * d)},${f1(r.Hd[1] + Math.sin(an) * d + 60 * u * u)}) rotate(${f1(an * 180 / Math.PI + 90)}) scale(${f1(1.25 - .5 * u)})`);
+    });
+    return r;
+  }
+
+  // ------------------------------------------------------------ the words: marquee, plates, chart panel, impact words, the choice
+  const hud = $('#hud');
+  const plates = [-1, 1].map(s => { const e = H('div', 'plate', hud, s < 0 ? `<i style="border-top:22px solid ${C.ink}"></i><span>${R.labels.sell}</span>` : `<span>${R.labels.buy}</span><i style="border-bottom:22px solid ${C.ink}"></i>`); e.style.background = s < 0 ? C.sell : C.buy; e.style[s < 0 ? 'left' : 'right'] = '104px'; return e; });      // (clear of Instagram's buttons, low on the right)
+  const panel = H('div', '', hud); panel.id = 'panel';
+  const priceEl = H('div', '', panel); priceEl.id = 'price';
+  const dayEl = H('div', '', panel, `<div class="d1"></div><div class="d2">OF ${N}</div>`); dayEl.id = 'day'; const dayNum = dayEl.firstChild;
+  const PW = 924, PH = 190, PX0 = 34, PX1 = PW - 34, PY0 = 14, PY1 = PH - 12, lo = pMin - (pMax - pMin) * .08, hi = pMax + (pMax - pMin) * .06;
+  const plot = S('svg', {id: 'plot', width: PW, height: PH, viewBox: `0 0 ${PW} ${PH}`}, panel), cx = i => PX0 + (PX1 - PX0) * i / N, cy = p => PY1 - (PY1 - PY0) * (p - lo) / (hi - lo);
+  const defs = S('defs', {}, plot), pat = S('pattern', {id: 'bd', width: 14, height: 14, patternUnits: 'userSpaceOnUse'}, defs); S('circle', {cx: 3.5, cy: 3.5, r: 3, fill: C.yel}, pat); S('circle', {cx: 10.5, cy: 10.5, r: 3, fill: C.yel}, pat);
+  S('path', {d: `M${PX0},${f1(cy(p0))}L${PX1},${f1(cy(p0))}`, stroke: C.ink, 'stroke-width': 4, 'stroke-dasharray': '4 12', 'stroke-linecap': 'round'}, plot);
+  const area = S('path', {fill: 'url(#bd)'}, plot), lineO = S('path', {fill: 'none', stroke: C.ink, 'stroke-width': 15, 'stroke-linecap': 'round', 'stroke-linejoin': 'round'}, plot);
+  const segs = P.slice(0, N).map((p, i) => S('path', {d: `M${f1(cx(i))},${f1(cy(p))}L${f1(cx(i + 1))},${f1(cy(P[i + 1]))}`, stroke: P[i + 1] >= p ? C.buy : C.sell, 'stroke-width': 7, 'stroke-linecap': 'round', display: 'none'}, plot));
+  const segH = S('path', {'stroke-width': 7, 'stroke-linecap': 'round'}, plot), ring = S('circle', {fill: 'none', stroke: C.ink, 'stroke-width': 5}, plot), dot = S('circle', {r: 15, fill: C.yel, stroke: C.ink, 'stroke-width': 7}, plot);
+  const dL = H('div', 'date', panel, date(R.start)), dR = H('div', 'date', panel, date(R.end)); dL.style.left = '34px'; dL.style.transformOrigin = '0 50%'; dR.style.right = '34px'; dR.style.transformOrigin = '100% 50%';
+
+  const tl = gsap.timeline({paused: true}), clip = (el, t0, t1) => { el.classList.add('clip'); el.dataset.start = t0; el.dataset.duration = f1((t1 - t0) * 100) / 100; el.dataset.trackIndex = 1; };
+  const ON = {opacity: 1, x: 0, y: 0, scale: 1, rotation: 0};
+  const fit = (el, max) => { const w = el.offsetWidth * .8; if (w > max) el.style.fontSize = Math.floor(parseFloat(getComputedStyle(el).fontSize) * max / w) + 'px'; };
+  const TONE = {buy: C.buy, sell: C.sell, win: WIN > 0 ? C.buy : C.sell, yel: C.yel};
+  let counter = null;
+  R.marquee.forEach((m, i) => {                                                 // two strips at the top: the hook's three lines, the mystery, the result, the name
+    const t0 = m.t, t1 = i + 1 < R.marquee.length ? R.marquee[i + 1].t : B.choice, sa = H('div', 'slot', hud), sb = H('div', 'slot', hud); sa.style.top = '256px'; sb.style.top = '357px';
+    const a = H('div', 'strip a', sa, fill(m.a)), b = H('div', 'strip b', sb, fill(m.b)); if (TONE[m.tone]) b.style.background = TONE[m.tone];
+    fit(a, 860); fit(b, 880); clip(sa, t0, t1); clip(sb, t0, t1);
+    if (m.count) { b.style.minWidth = b.offsetWidth + 'px'; counter = {el: b, t: t0 + .12, d: m.count}; }
+    if (i === 0) { tl.fromTo(sa, {scale: 1.035, x: -34}, {scale: 1, x: 0, duration: .45, ease: 'power3.out'}, 0); tl.fromTo(sb, {scale: 1.045, x: 40}, {scale: 1, x: 0, duration: .55, ease: 'power3.out'}, 0); }
+    else { tl.fromTo(sa, {opacity: 0, x: -170, y: 0, scale: .9, rotation: -3}, {...ON, duration: .4, ease: 'expo.out'}, t0); tl.fromTo(sb, {opacity: 0, x: 190, y: 0, scale: .86, rotation: 3}, {...ON, duration: .46, ease: 'expo.out'}, t0 + .09); }
+    tl.fromTo(sa, {...ON}, {opacity: 0, x: 120, scale: .92, duration: .16, ease: 'power3.in', immediateRender: false}, t1 - .2); tl.fromTo(sb, {...ON}, {opacity: 0, x: -120, scale: .92, duration: .16, ease: 'power3.in', immediateRender: false}, t1 - .17);
+  });
+  (R.pulses || []).forEach(([t, s]) => { const e = plates[s < 0 ? 0 : 1]; tl.fromTo(e, {scale: 1, rotation: 0}, {scale: 1.3, rotation: s * -4, duration: .13, ease: 'power2.out', immediateRender: false}, t).fromTo(e, {scale: 1.3, rotation: s * -4}, {scale: 1, rotation: 0, duration: .4, ease: 'back.out(2.5)', immediateRender: false}, t + .13); });
+
+  const burstPts = (n, w, h, seed) => { let s = ''; for (let i = 0; i < n * 2; i++) { const a = i * Math.PI / n - Math.PI / 2, r = i % 2 ? .66 + .08 * hash(seed + i) : .93 + .07 * hash(seed + i * 3); s += `${f1(w / 2 + Math.cos(a) * w / 2 * r)},${f1(h / 2 + Math.sin(a) * h / 2 * r)} `; } return s; };
+  (R.words || []).forEach((w, i) => {                                           // comic impact words: they land with the move and stand dead still
+    const e = H('div', 'burst', hud), W = 460, Hh = 200, sv = S('svg', {width: W, height: Hh, viewBox: `0 0 ${W} ${Hh}`}, e), pts = burstPts(13, W - 24, Hh - 20, i * 31 + 5), col = w.side > 0 ? C.buy : C.sell;
+    S('polygon', {points: pts, fill: C.ink, transform: 'translate(22,20)'}, sv); S('polygon', {points: pts, fill: i % 2 ? C.yel : C.paper, stroke: C.ink, 'stroke-width': 8, 'stroke-linejoin': 'round', transform: 'translate(10,8)'}, sv);
+    const tx = S('text', {x: W / 2 - 4, y: Hh / 2 + 40, 'text-anchor': 'middle', 'font-family': 'MS', 'font-weight': 900, 'font-size': 112, fill: col, stroke: C.ink, 'stroke-width': 12, 'paint-order': 'stroke', 'stroke-linejoin': 'round', transform: `rotate(-5 ${W / 2} ${Hh / 2})`}, sv); tx.textContent = w.text;
+    const len = tx.getComputedTextLength(); if (len > 268) { tx.setAttribute('textLength', 268); tx.setAttribute('lengthAdjust', 'spacingAndGlyphs'); }
+    e.style.left = (w.side > 0 ? 566 : 54) + 'px'; e.style.top = '888px'; const hold = w.hold || 1; clip(e, w.t, w.t + hold + .16);
+    tl.fromTo(e, {opacity: 0, scale: .2, rotation: w.side * -16, x: 0, y: 0}, {opacity: 1, scale: 1, rotation: 0, duration: .24, ease: 'back.out(2.4)'}, w.t);
+    tl.fromTo(e, {opacity: 1, scale: 1}, {opacity: 0, scale: 1.3, duration: .14, ease: 'power3.in', immediateRender: false}, w.t + hold);
+    if (w.shake) { const A = w.shake, seq = [[0, 0], [1, -.6], [-.8, .5], [.55, -.3], [-.3, .15], [0, 0]]; for (let j = 1; j < seq.length; j++) tl.fromTo('#cam', {x: seq[j - 1][0] * A, y: seq[j - 1][1] * A}, {x: seq[j][0] * A, y: seq[j][1] * A, duration: 1 / 30, ease: 'none', immediateRender: false}, w.t + .03 + (j - 1) / 30); }
+  });
+  const flash = (t, a) => tl.fromTo('#flash', {opacity: 0}, {opacity: a, duration: 1 / 30, ease: 'none', immediateRender: false}, t).fromTo('#flash', {opacity: a}, {opacity: 0, duration: .26, ease: 'power1.out', immediateRender: false}, t + 1 / 30);
+  (R.words || []).forEach(w => w.flash && flash(w.t, w.flash)); (R.flashes || []).forEach(([t, a]) => flash(t, a));      // (a flash always fades over several frames: one odd frame is a fault)
+
+  const card = H('div', '', hud); card.id = 'card'; const ch = R.choice || {}, inn = H('div', 'in', card); H('div', 'q', inn, String(ch.q || '').toUpperCase());
+  const rows = ['a', 'b', 'c'].filter(k => ch[k]).map((k, i) => { const r = H('div', 'row', inn, `<em style="background:${[C.buy, C.sell, C.yel][i]}">${k.toUpperCase()}</em><span>${String(ch[k]).toUpperCase()}</span>`); return r; });
+  H('div', 'cta', card, `<span>${R.cta || ''}</span>`); clip(card, B.choice, T + 1); clip(panel, 0, B.choice + .02);
+  tl.fromTo(panel, {opacity: 1, y: 0, scale: 1}, {opacity: 0, y: -50, scale: .94, duration: .2, ease: 'power3.in', immediateRender: false}, B.choice - .2);
+  tl.fromTo(card, {opacity: 0, y: 150, scale: .9, rotation: 2}, {...ON, duration: .5, ease: 'expo.out'}, B.choice);
+  rows.forEach((r, i) => tl.fromTo(r, {opacity: 0, x: 140}, {opacity: 1, x: 0, duration: .4, ease: 'expo.out'}, B.choice + .22 + i * .1));
+  rows.forEach((r, i) => { const em = r.firstChild, t = B.choice + 1.05 + i * .42; tl.fromTo(em, {scale: 1, rotation: 0}, {scale: 1.28, rotation: -10, duration: .14, ease: 'power2.out', immediateRender: false}, t).fromTo(em, {scale: 1.28, rotation: -10}, {scale: 1, rotation: 0, duration: .34, ease: 'back.out(3)', immediateRender: false}, t + .14); });
+  tl.fromTo('#cam', {scale: 1}, {scale: 1.02, duration: T - B.choice, ease: 'none', immediateRender: false}, B.choice);      // a slow push on the closing card: the last second is never a still
+  tl.to({}, {duration: T}, 0);
+
+  // ------------------------------------------------------------ one frame of the rig, the rope and the chart
+  let last = -1, lastPrice = '', lastDay = '';
+  function draw(t) {
+    if (t === last) return; last = t;
+    rays.setAttribute('transform', `rotate(${f1(t * 5)} ${CX} ${CY})`);
+    const F = fw(t), cam = camAt(t), z = zoomAt(t), te = t - TF, sx = 540 + (F - cam);
+    gZ.setAttribute('transform', `translate(${f1(sx)},${FLOOR + 94}) scale(${f1(z * 1000) / 1000}) translate(${f1(-sx)},${-FLOOR - 94})`); gW.setAttribute('transform', `translate(${f1(540 - cam)},0)`);      // (the stage grows up from the ruler's lower edge: the plates under it stay clear)
+    for (const k of ticks) { const x = sx + (540 - cam + k.x - sx) * z; k.tx.setAttribute('display', x > 96 && x < 984 ? 'inline' : 'none'); }
+    const rs = chars.map(c => drawChar(c, t));
+    // the rope: taut through every hand; after the bell the losers' end lies on the floor and the winners' end jumps with them
+    const yr = FLOOR - RH * CS + Math.sin(t * 43) * 1.2 * strain(t), drop = E.bounce(clamp((te - .22) / .5)), hand = (r, c) => [r.X + c.f * CS * 52, yr + r.yOff * CS];
+    const Wn = chars.map((c, i) => [c, rs[i]]).filter(([c]) => c.s === WIN).sort((a, b) => b[0].k - a[0].k), yF = te > 0 ? yr + Wn[2][1].yOff * CS * .6 : yr;
+    let d = `M${f1(Wn[0][1].X + WIN * 96)},${f1(lerp(yr + 42, FLOOR - 9, .55))}Q${f1(Wn[0][1].X + WIN * 92)},${f1(yr + Wn[0][1].yOff * CS)} ${f1(Wn[0][1].X + WIN * 60)},${f1(yr + Wn[0][1].yOff * CS)}`;
+    for (const [c, r] of Wn) d += `L${P2(hand(r, c))}`;
+    const yl = lerp(yr, FLOOR - 9, drop), xe = F - WIN * lerp(D0 + 2 * SP + 96, D0 - 34, E.out(clamp((te - .02) / .4)));
+    d += `L${f1(F)},${f1(yF)}Q${f1(F - WIN * 36)},${f1(lerp(yF, yl, .5) + 20 * drop)} ${f1(F - WIN * 64)},${f1(yl)}L${f1(xe + WIN * 16)},${f1(yl)}Q${f1(xe)},${f1(yl)} ${f1(xe - WIN * 6)},${f1(lerp(lerp(yl + 42, FLOOR - 9, .55), FLOOR - 9, drop))}`;
+    ropeO.setAttribute('d', d); ropeI.setAttribute('d', d); ropeT.setAttribute('d', d);
+    gFlag.setAttribute('transform', `translate(${f1(F)},${f1(yF)}) rotate(${f1(-13 * adv(t - .1) + 2 * Math.sin(t * 7))})`);
+    // dust where the dragged team's heels slide; speed lines behind the team that is being pulled
+    let n = 0;
+    for (const s of [-1, 1]) for (let j = Math.floor((t - .5) / .08); j <= Math.floor(t / .08); j++) {
+      const tj = j * .08, u = (t - tj) / .5; if (u < 0 || u >= 1 || tj < T0 || tj > TF) continue;
+      const sl = clamp(-s * adv(tj) * 1.7); if (sl < .5) continue;
+      for (let k = 0; k < 3; k++) { if ((j + k) % 2) continue; const e = dust[n++]; if (!e) break; const h = hash(j * 9.1 + k * 3.3 + s);
+        e.setAttribute('display', 'inline'); e.setAttribute('cx', f1(fw(tj) + s * (D0 + k * SP) - s * CS * 66 + s * 26 * u + 10 * h)); e.setAttribute('cy', f1(FLOOR - 10 - (30 + 34 * h) * u)); e.setAttribute('r', f1((7 + 17 * u) * (.7 + .5 * h) * (u > .7 ? 1 - (u - .7) / .3 * .7 : 1))); }
+    }
+    for (; n < dust.length; n++) dust[n].setAttribute('display', 'none');
+    const av = adv(t), ls = av > .55 ? -1 : av < -.55 ? 1 : 0;                    // the side being dragged
+    lines.forEach((e, j) => { if (!ls || te > 0) return e.setAttribute('display', 'none'); const x = F + ls * (D0 + 2 * SP + 150 + 18 * hash(j + Math.floor(t * 12))), y = FLOOR - 60 - j * 46, len = 50 + 60 * hash(j * 5 + Math.floor(t * 12)); e.setAttribute('display', 'inline'); e.setAttribute('d', `M${f1(x)},${y}L${f1(x + ls * len)},${y}`); });
+    // the hat: it stays where the head was when the rope was yanked
+    if (hatOwner && t >= R.hat.t && t < R.hat.t + 1.4) {
+      const r0 = rig(hatOwner, R.hat.t), u = t - R.hat.t, c = hatOwner;
+      flyHat.setAttribute('display', 'inline'); flyHat.setAttribute('transform', `translate(${f1(r0.X + c.f * CS * r0.Hd[0] - c.f * 600 * u)},${f1(FLOOR + CS * r0.Hd[1] - 30 - 700 * u + 1150 * u * u)}) rotate(${f1(-c.f * 520 * u)}) scale(${CS})`);
+    } else flyHat.setAttribute('display', 'none');
+    stars.forEach((e, j) => { if (te < .95) return e.setAttribute('display', 'none'); const a = t * 3.4 + j * 2.094, lc = rs[chars.findIndex(c => c.s !== WIN && c.k === 1)], sc = E.back(clamp((te - .95 - j * .08) / .3)); e.setAttribute('display', 'inline'); e.setAttribute('transform', `translate(${f1(lc.X - WIN * 96 + Math.cos(a) * 130)},${f1(FLOOR - 318 + Math.sin(a) * 24)}) rotate(${f1(t * 140 + j * 40)}) scale(${f1(sc * (.8 + .2 * Math.sin(a)))})`); });
+    // the chart panel: the same price, drawing itself
+    const x = idxAt(t), [i, e] = at(x), px = lerp(cx(i), cx(i + 1), e), py = cy(lerp(P[i], P[i + 1], e)), started = t > T0;
+    let pd = `M${f1(cx(0))},${f1(cy(P[0]))}`; for (let k = 1; k <= i; k++) pd += `L${f1(cx(k))},${f1(cy(P[k]))}`; pd += `L${f1(px)},${f1(py)}`;
+    lineO.setAttribute('d', pd); area.setAttribute('d', pd + `L${f1(px)},${PY1 + 6}L${f1(cx(0))},${PY1 + 6}Z`);
+    for (let k = 0; k < N; k++) segs[k].setAttribute('display', k < i ? 'inline' : 'none');
+    segH.setAttribute('d', `M${f1(cx(i))},${f1(cy(P[i]))}L${f1(px)},${f1(py)}`); segH.setAttribute('stroke', P[i + 1] >= P[i] ? C.buy : C.sell);
+    dot.setAttribute('cx', f1(px)); dot.setAttribute('cy', f1(py)); const pu = (t * 1.6) % 1; ring.setAttribute('cx', f1(px)); ring.setAttribute('cy', f1(py)); ring.setAttribute('r', f1(15 + 26 * pu)); ring.setAttribute('stroke-opacity', f1(1 - pu));
+    const ps = '$' + lerp(P[i], P[i + 1], e).toFixed(2); if (ps !== lastPrice) { lastPrice = ps; priceEl.innerHTML = ps.split('').map(ch => ch === '.' ? '<b class="n">.</b>' : `<b>${ch}</b>`).join(''); }
+    const ds = 'DAY ' + (started ? Math.min(N, Math.floor(x + .001)) : 0); if (ds !== lastDay) { lastDay = ds; dayNum.textContent = ds; }
+    if (counter) { const v = Math.round(pct * E.expo(clamp((t - counter.t) / counter.d))); counter.el.textContent = (v >= 0 ? '+' : '') + v + '%'; }
+  }
+  tl.eventCallback('onUpdate', () => draw(tl.time()));
+  window.addEventListener('hf-seek', e => draw(e.detail.time));
+  window.__timelines = {main: tl}; draw(0);
+};
+</script>
+<script src="vendor/hfplay.js"></script>
+</body></html>

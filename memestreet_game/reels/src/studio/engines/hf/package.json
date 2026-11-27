@@ -1,0 +1,9 @@
+{
+  "name": "memestreet-studio-hyperframes",
+  "private": true,
+  "description": "The studio's HyperFrames engine: HTML compositions with GSAP timelines rendered to 1080x1920 video. Pinned; run only through studio.py, which turns its tracking and update checks off.",
+  "dependencies": {
+    "gsap": "3.15.1",
+    "hyperframes": "0.9.102"
+  }
+}

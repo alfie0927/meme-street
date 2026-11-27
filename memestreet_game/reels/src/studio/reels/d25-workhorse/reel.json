@@ -1,0 +1,325 @@
+{
+ "name": "d25-workhorse",
+ "slot": "2330",
+ "engine": "hf",
+ "entry": "daily/index.html",
+ "style": "your $1,000 (kinetic collage)",
+ "title": "You Put $1,000 Into Workhorse the Day It Landed UPS",
+ "brands": [
+  {
+   "name": "Workhorse",
+   "color": "#00a3e0"
+  }
+ ],
+ "hook": {
+  "context": "You put $1,000 into this stock the day it landed UPS.",
+  "lean": "An order for up to 1,000 electric vans.",
+  "snapback": "But a year later, you had $219.",
+  "text": "IT LANDED UPS|YOU LOST 78%",
+  "visual": "$1,000 in huge type slamming in over the hidden chart drawing itself"
+ },
+ "say": [
+  "You put $1,000 into this stock the day it landed UPS.",
+  "An order for up to 1,000 electric vans.",
+  "But a year later, you had $219.",
+  "Today's mystery chart on Meme Street was Workhorse.",
+  "Within weeks, the stock hit $3.35.",
+  "But UPS only had to take 50 vans.",
+  "And the cash kept running out.",
+  "So it sold millions of cheap new shares.",
+  "Then quarterly sales came in: $11,000.",
+  "It warned it might not survive.",
+  "The $2.51 stock closed at 55 cents.",
+  "Buy it at 55 cents, or stay away?",
+  "A new mystery chart goes live at midnight."
+ ],
+ "choice": {
+  "q": "Would you buy it now?",
+  "a": "Buy it at 55 cents",
+  "b": "Stay away"
+ },
+ "vote_line": 11,
+ "music": "Shock and Awe",
+ "tail": 0.6,
+ "caption": "You put $1,000 into this stock the day it landed UPS: an order for up to 1,000 electric vans. A year later you had $219.\nYesterday's mystery chart was Workhorse (WKHS), 2017-12-21 to 2018-12-04.",
+ "tags": "#stocks #investing #stockmarket #WKHS #MemeStreet",
+ "cover": {
+  "t": 1.2
+ },
+ "props": {
+  "prices": [
+   2.51,
+   2.66,
+   2.62,
+   2.56,
+   2.84,
+   2.76,
+   2.84,
+   2.97,
+   2.78,
+   2.68,
+   2.82,
+   3.18,
+   3.35,
+   3.09,
+   3.05,
+   2.91,
+   2.84,
+   2.82,
+   2.89,
+   2.93,
+   2.79,
+   3.16,
+   3.21,
+   3.21,
+   3.15,
+   3.14,
+   2.89,
+   2.84,
+   2.89,
+   2.85,
+   2.76,
+   2.74,
+   2.71,
+   2.56,
+   2.61,
+   2.59,
+   2.61,
+   2.6,
+   2.61,
+   2.74,
+   2.87,
+   2.92,
+   2.69,
+   2.73,
+   2.84,
+   2.94,
+   3.01,
+   2.99,
+   2.75,
+   2.75,
+   2.71,
+   2.74,
+   2.65,
+   2.595,
+   2.65,
+   2.61,
+   2.57,
+   2.47,
+   2.41,
+   2.3,
+   2.08,
+   2.18,
+   2.09,
+   1.98,
+   1.94,
+   1.54,
+   1.81,
+   1.7,
+   1.74,
+   1.5,
+   1.54,
+   1.5,
+   1.49,
+   1.47,
+   1.44,
+   1.43,
+   1.49,
+   1.53,
+   1.51,
+   1.25,
+   1.13,
+   1.19,
+   1.15,
+   1.14,
+   1.04,
+   1.04,
+   0.9718,
+   1.0,
+   1.08,
+   1.2,
+   1.1,
+   1.15,
+   1.13,
+   1.07,
+   1.11,
+   1.12,
+   1.11,
+   1.07,
+   1.15,
+   1.1,
+   1.14,
+   1.03,
+   1.05,
+   1.03,
+   1.0,
+   0.9498,
+   0.8301,
+   0.945,
+   0.7529,
+   0.804,
+   0.868,
+   0.7451,
+   0.89,
+   0.8615,
+   0.845,
+   0.7541,
+   0.7842,
+   0.78,
+   0.72,
+   0.7098,
+   0.55
+  ],
+  "dates": [
+   "2017-12-21",
+   "2018-12-04"
+  ],
+  "name": "Workhorse",
+  "color": "#00a3e0",
+  "number": 25,
+  "product": "van",
+  "label": "WORKHORSE",
+  "tag": "YESTERDAY'S MYSTERY CHART",
+  "vote": 11,
+  "scenes": [
+   {
+    "kind": "hook",
+    "top": "IT LANDED UPS",
+    "bottom": "YOU LOST 78%",
+    "sub": "A REAL STOCK. NAME HIDDEN.",
+    "f": 0
+   },
+   {
+    "kind": "notify",
+    "f": 0,
+    "items": [
+     {
+      "app": "MARKETS",
+      "icon": "$",
+      "color": "#00a3e0",
+      "title": "UPS orders up to 1,000 electric vans",
+      "body": "The stock jumps on the news",
+      "on": "order"
+     },
+     {
+      "app": "YOUR PORTFOLIO",
+      "icon": "\u2197",
+      "color": "#21d07a",
+      "title": "You bought $1,000 of it",
+      "on": "electric"
+     }
+    ]
+   },
+   {
+    "kind": "big",
+    "to": 219,
+    "prefix": "$",
+    "label": "ONE YEAR LATER",
+    "color": "#ff3d55",
+    "on": "$219",
+    "f": 1,
+    "move": "slam",
+    "from": 1000
+   },
+   {
+    "kind": "name",
+    "text": "WORKHORSE",
+    "kicker": "IT WAS",
+    "sub": "THE ELECTRIC VAN MAKER",
+    "f": 0
+   },
+   {
+    "kind": "chart",
+    "from": 0,
+    "to": "peak",
+    "f": "peak"
+   },
+   {
+    "kind": "clip",
+    "paper": "THE DAILY WIRE",
+    "date": "MAY 2018",
+    "head": "UPS only had to take 50 vans.",
+    "dek": "The rest of the 1,000 could be cancelled.",
+    "f": 0.25,
+    "stamp": {
+     "text": "ONLY 50",
+     "on": "50",
+     "y": 1030
+    }
+   },
+   {
+    "kind": "notify",
+    "f": 0.44,
+    "items": [
+     {
+      "app": "BANK",
+      "icon": "!",
+      "color": "#ff3d55",
+      "title": "Cash running low",
+      "body": "Workhorse is burning through its money",
+      "on": "cash"
+     },
+     {
+      "app": "BANK",
+      "icon": "!",
+      "color": "#ff3d55",
+      "title": "Still running low",
+      "on": "running"
+     }
+    ]
+   },
+   {
+    "kind": "chart",
+    "from": "peak",
+    "to": 0.64,
+    "f": 0.64,
+    "stamp": {
+     "text": "DILUTED",
+     "on": "cheap",
+     "y": 1010,
+     "color": "#b98cff"
+    }
+   },
+   {
+    "kind": "big",
+    "to": 11000,
+    "prefix": "$",
+    "label": "SALES IN ONE QUARTER",
+    "color": "#ff3d55",
+    "on": "$11,000",
+    "vs": 3100000,
+    "vsLabel": "A YEAR BEFORE: $3.1M",
+    "label2": "NOW: $11,000",
+    "f": 0.77
+   },
+   {
+    "kind": "clip",
+    "paper": "COMPANY FILING",
+    "date": "NOV 2018",
+    "head": "We may not be able to keep going.",
+    "dek": "Workhorse warns it might not survive.",
+    "f": 0.9,
+    "y": 560
+   },
+   {
+    "kind": "chart",
+    "from": 0,
+    "to": 1,
+    "f": 1,
+    "stamp": {
+     "text": "-78%",
+     "on": "55",
+     "y": 1010
+    }
+   },
+   {
+    "kind": "blank",
+    "f": 1
+   },
+   {
+    "kind": "blank",
+    "f": 1
+   }
+  ]
+ }
+}

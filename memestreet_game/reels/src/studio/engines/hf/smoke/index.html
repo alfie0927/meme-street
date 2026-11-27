@@ -1,0 +1,17 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- The studio's smallest HyperFrames composition: studio.py demo renders it to prove the engine works. -->
+<script src="../node_modules/gsap/dist/gsap.min.js"></script>
+<style>html,body{margin:0;background:#101426}#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#101426;font-family:Arial,sans-serif}
+#title{position:absolute;left:0;top:820px;width:1080px;text-align:center;color:#fff;font-size:150px;font-weight:900;margin:0}</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="1.5" data-width="1080" data-height="1920" data-fps="30">
+  <h1 id="title" class="clip" data-start="0" data-duration="1.5" data-track-index="0">STUDIO</h1>
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({paused: true});
+  tl.from("#title", {y: 260, opacity: 0, duration: .6, ease: "expo.out"}, 0).to("#title", {scale: 1.12, duration: .5, ease: "power2.inOut"}, .7);
+  window.__timelines["main"] = tl;
+</script>
+</body></html>

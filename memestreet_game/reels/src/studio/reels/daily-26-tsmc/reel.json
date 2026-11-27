@@ -1,0 +1,365 @@
+{
+ "name": "daily-26-tsmc",
+ "slot": "2330",
+ "engine": "page",
+ "entry": "ride/ride.html",
+ "style": "the ride",
+ "title": "How Bitcoin Miners Fed TSMC's Rally Before a Brutal Global Sell-Off",
+ "brands": [
+  {
+   "name": "TSMC",
+   "color": "#ff1f3d"
+  }
+ ],
+ "hook": {
+  "context": "This chip stock builds the iPhone's brain.",
+  "lean": "It climbed from $36 to $46 in five months.",
+  "snapback": "But the new demand wasn't phones: it was Bitcoin miners.",
+  "text": "CHIP STOCK|$36 TO $46",
+  "visual": "the chart builds itself as a landscape from the left, a mystery crate at its start, the camera pulling out along it"
+ },
+ "say": [
+  "This chip stock builds the iPhone's brain.",
+  "It climbed from $36 to $46 in five months.",
+  "But the new demand wasn't phones: it was Bitcoin miners.",
+  "Today's mystery chart on Meme Street was TSMC.",
+  "Bitcoin miners lined up for its chips.",
+  "One quarter's sales hit $9.21 billion.",
+  "Two big banks told investors to buy.",
+  "The stock ran all the way to $46.",
+  "Then the Dow dropped more than 1,170 points overnight.",
+  "TSMC slid back to $42, still up 15%.",
+  "Hold the chip maker, or take the profit?",
+  "A new mystery chart goes live at midnight."
+ ],
+ "choice": {
+  "q": "What would you do?",
+  "a": "Hold the chip maker",
+  "b": "Take the profit"
+ },
+ "music": "The Snail",
+ "tail": 0.6,
+ "caption": "This chip stock builds the iPhone's brain. It climbed from $36 to $46 in five months. But the new demand wasn't phones: it was Bitcoin miners.\nToday's mystery chart was TSMC (TSM), 2017-08-17 to 2018-02-07.\nSources: Business Day (citing Bloomberg and Reuters), Focus Taiwan, Reuters, TSMC, The Motley Fool",
+ "tags": "#stocks #investing #stockmarket #TSM #MemeStreet",
+ "cover": {
+  "t": 2.6
+ },
+ "props": {
+  "prices": [
+   36.34,
+   35.79,
+   35.86,
+   35.98,
+   36.52,
+   36.58,
+   36.83,
+   36.85,
+   36.77,
+   36.88,
+   36.93,
+   36.97,
+   37.22,
+   36.85,
+   37.27,
+   37.54,
+   37.5,
+   37.84,
+   37.86,
+   37.53,
+   37.38,
+   37.65,
+   38.07,
+   38.3,
+   37.82,
+   38.24,
+   37.77,
+   37.07,
+   37.14,
+   37.25,
+   37.05,
+   37.55,
+   38.13,
+   38.44,
+   38.27,
+   38.46,
+   38.46,
+   38.77,
+   38.97,
+   40.35,
+   40.44,
+   40.82,
+   40.89,
+   41.25,
+   41.5,
+   41.07,
+   41.12,
+   41.21,
+   41.32,
+   41.16,
+   41.2,
+   42.15,
+   42.13,
+   42.33,
+   42.1,
+   42.15,
+   42.19,
+   42.43,
+   42.51,
+   42.43,
+   41.64,
+   41.72,
+   42.01,
+   41.86,
+   41.54,
+   42.1,
+   42.07,
+   42.21,
+   42.58,
+   42.41,
+   42.99,
+   41.09,
+   40.93,
+   39.41,
+   39.6,
+   39.7,
+   39.39,
+   39.2,
+   38.68,
+   39.01,
+   39.0,
+   39.37,
+   39.3,
+   39.29,
+   39.4,
+   39.5,
+   39.4,
+   39.34,
+   39.44,
+   39.23,
+   39.63,
+   38.95,
+   39.08,
+   39.74,
+   39.65,
+   41.02,
+   41.71,
+   41.49,
+   42.46,
+   42.44,
+   42.18,
+   41.3,
+   41.03,
+   41.19,
+   42.23,
+   43.13,
+   44.57,
+   44.67,
+   46.38,
+   46.28,
+   45.33,
+   45.1,
+   45.72,
+   45.4,
+   44.88,
+   45.31,
+   45.45,
+   44.51,
+   42.95,
+   43.59,
+   41.88
+  ],
+  "dates": [
+   "2017-08-17",
+   "2018-02-07"
+  ],
+  "name": "TSMC",
+  "color": "#ff1f3d",
+  "number": 26,
+  "product": "chip",
+  "label": "TSMC",
+  "tag": "TODAY'S MYSTERY CHART",
+  "reveal": 3,
+  "vote": 10,
+  "shots": [
+   {
+    "cam": "wide",
+    "focus": [
+     0.0,
+     0.3
+    ],
+    "d0": 160,
+    "d1": 120,
+    "open": 0.55
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     0.3,
+     0.75
+    ],
+    "d0": 120,
+    "d1": 80
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     0.75,
+     "peak"
+    ],
+    "d0": 80,
+    "d1": 200
+   },
+   {
+    "cam": "side",
+    "cut": true,
+    "dist": 1.1
+   },
+   {
+    "cam": "chase",
+    "to": 0.52
+   },
+   {
+    "cam": "front",
+    "to": 0.8
+   },
+   {
+    "cam": "side",
+    "to": 0.87
+   },
+   {
+    "cam": "chase",
+    "to": "peak"
+   },
+   {
+    "cam": "low",
+    "to": 0.965
+   },
+   {
+    "cam": "far",
+    "to": "end"
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     0.7,
+     0.5
+    ],
+    "d0": 210,
+    "d1": 330
+   },
+   {
+    "cam": "wide",
+    "focus": [
+     0.5,
+     0.5
+    ],
+    "d0": 330,
+    "d1": 345
+   }
+  ],
+  "places": [
+   {
+    "at": 0.3,
+    "kind": "arch",
+    "text": "BITCOIN MINERS",
+    "color": "#f7931a"
+   },
+   {
+    "at": 0.36,
+    "kind": "person",
+    "look": "hoodie",
+    "color": "#f7931a",
+    "pose": "cheer",
+    "text": "BITCOIN MINERS",
+    "show": 2
+   },
+   {
+    "at": 0.74,
+    "kind": "cash",
+    "tag": "$9.21 BILLION"
+   },
+   {
+    "at": 0.855,
+    "kind": "board",
+    "text": "BUY",
+    "sub": "two big banks",
+    "color": "#16a05a"
+   },
+   {
+    "at": "peak",
+    "kind": "crowd",
+    "pose": "cheer"
+   },
+   {
+    "at": 0.975,
+    "kind": "tv",
+    "lines": [
+     "DOW -1,170",
+     "RATE FEARS"
+    ]
+   }
+  ],
+  "band": [
+   {
+    "i": 0,
+    "kind": "title",
+    "text": "CHIP STOCK|$36 TO $46",
+    "t": -1,
+    "until": 0
+   },
+   {
+    "i": 1,
+    "kind": "counter",
+    "on": "$46",
+    "to": 46,
+    "prefix": "$",
+    "text": "from $36 in five months",
+    "color": "#2bd47d"
+   },
+   {
+    "i": 2,
+    "kind": "stamp",
+    "on": "Bitcoin",
+    "text": "BITCOIN MINERS",
+    "color": "#ffb02e"
+   },
+   {
+    "i": 5,
+    "kind": "counter",
+    "on": "$9.21",
+    "to": 9.21,
+    "dec": 2,
+    "prefix": "$",
+    "suffix": "B",
+    "text": "one quarter's sales"
+   },
+   {
+    "i": 6,
+    "kind": "stamp",
+    "on": "buy",
+    "text": "BUY",
+    "color": "#2bd47d"
+   },
+   {
+    "i": 8,
+    "kind": "counter",
+    "on": "1,170",
+    "to": 1170,
+    "prefix": "-",
+    "text": "Dow points overnight",
+    "color": "#ff4a5c"
+   },
+   {
+    "i": 9,
+    "kind": "stamp",
+    "on": "15%",
+    "text": "STILL +15%",
+    "color": "#2bd47d"
+   }
+  ],
+  "storm": [
+   0.925,
+   1.0
+  ]
+ }
+}

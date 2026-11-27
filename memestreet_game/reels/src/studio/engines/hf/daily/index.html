@@ -1,0 +1,287 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Meme Street's 23:30 daily reel, "Your $1,000" (2026-11-27, after the owner: "i hate these daily reels ... remake them ...
+     WAY better ... change the whole vibe"). Built from the hooks skill: frame 0 is the viewer's own money, not a chart (a chart
+     with a voice is what a finance viewer has just scrolled past); the live "your $1,000" counter is the stake and the finish
+     line; every sentence is its own fast collage beat (a clipping, a phone notification, a number that slams, the real chart
+     drawing, the product in 3D, a stamp), cut every 1.5 to 3 s. A HyperFrames composition: GSAP moves the beats in, hf-seek
+     draws everything that is a function of time (counters, the chart, captions, grain, the 3D product).
+     Its data is window.__R (studio.py: props + the voice's word times). -->
+<style>
+@font-face{font-family:'Barlow';src:url('fonts/BarlowCondensed-ExtraBold.woff2') format('woff2');font-weight:800}
+@font-face{font-family:'Barlow';src:url('fonts/BarlowCondensed-Bold.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Garamond';src:url('fonts/EBGaramond-700.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Mono';src:url('fonts/JetBrainsMono-700.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Hand';src:url('fonts/Caveat-700-latin.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Inter';src:url('fonts/Inter-700.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Montserrat';src:url('fonts/Montserrat.ttf') format('truetype');font-weight:100 900}
+:root{--ink:#0b0d18;--paper:#f3ecdc;--up:#21d07a;--down:#ff3d55;--gold:#ffc83d;--brand:#2f7cf6}
+html,body{margin:0;background:var(--ink)}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--ink);font-family:Montserrat,sans-serif;color:#fff}
+.abs{position:absolute;left:0;top:0}
+#bg,#gl,#grain{position:absolute;left:0;top:0;width:1080px;height:1920px}
+#cam{position:absolute;left:0;top:0;width:1080px;height:1920px;transform-origin:540px 820px}
+.beat{position:absolute;left:0;top:0;width:1080px;height:1920px}
+/* the money pill: the viewer's $1,000, live */
+#money{position:absolute;left:540px;top:262px;transform:translateX(-50%);display:flex;align-items:center;gap:22px;padding:14px 34px 14px 26px;border-radius:999px;background:rgba(14,17,34,.92);border:4px solid rgba(255,255,255,.16);box-shadow:0 18px 50px rgba(0,0,0,.45);white-space:nowrap}
+#money .lbl{font:800 30px Barlow;letter-spacing:.08em;color:rgba(255,255,255,.72)}
+#money .val{font:700 62px Mono;letter-spacing:-.02em}
+#money .chg{font:800 34px Barlow;padding:4px 14px;border-radius:12px}
+#tag{position:absolute;left:540px;top:196px;transform:translateX(-50%);font:800 30px Barlow;letter-spacing:.18em;color:rgba(255,255,255,.75);white-space:nowrap}
+/* the collage pieces */
+.cut{position:absolute;background:var(--paper);color:#17130d;padding:46px 52px 40px;box-shadow:0 34px 70px rgba(0,0,0,.55);font-family:Garamond,serif}
+.cut .mast{font:800 26px Barlow;letter-spacing:.3em;color:#7a6a52;border-bottom:3px solid #17130d;padding-bottom:12px;margin-bottom:22px;display:flex;justify-content:space-between}
+.cut h1{font:700 86px/0.98 Garamond;margin:0 0 20px;letter-spacing:-.01em}
+.cut p{font:700 34px/1.25 Inter;margin:0;color:#4a4035}
+.tape{position:absolute;width:190px;height:58px;background:rgba(255,236,170,.72);box-shadow:0 4px 10px rgba(0,0,0,.15)}
+.note{position:absolute;left:90px;width:900px;border-radius:44px;background:rgba(235,238,250,.94);color:#151826;padding:30px 38px;box-shadow:0 26px 60px rgba(0,0,0,.45);font-family:Inter}
+.note .app{display:flex;align-items:center;gap:18px;font:700 28px Inter;color:#5a6075;margin-bottom:12px}
+.note .ico{width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font:800 30px Barlow;color:#fff}
+.note .ttl{font:700 40px/1.15 Inter;margin-bottom:6px}
+.note .bdy{font:700 32px/1.25 Inter;color:#454b60}
+.big{position:absolute;left:0;width:1080px;text-align:center}
+.big .num{font:800 240px/0.9 Barlow;letter-spacing:-.02em}
+.big .sub{font:800 56px Barlow;letter-spacing:.06em;margin-top:18px}
+.bars{position:absolute;left:150px;width:780px}
+.bar{position:relative;height:96px;margin-bottom:34px}
+.bar .fill{position:absolute;left:0;top:0;height:96px;border-radius:18px}
+.bar .bl{position:absolute;left:24px;top:0;line-height:96px;font:800 46px Barlow;color:#fff;white-space:nowrap}
+.stamp{position:absolute;left:540px;font:800 150px/1 Barlow;letter-spacing:.02em;padding:18px 52px 8px;border:14px solid;border-radius:26px;white-space:nowrap;mix-blend-mode:normal}
+.head{position:absolute;left:60px;width:960px;text-align:center;font:800 128px/0.92 Barlow;letter-spacing:.01em;text-transform:uppercase}
+.head .l2{color:var(--gold)}
+.name{position:absolute;left:0;width:1080px;text-align:center;font:800 200px/0.9 Barlow;text-transform:uppercase}
+.kicker{position:absolute;left:0;width:1080px;text-align:center;font:800 54px Barlow;letter-spacing:.2em;color:rgba(255,255,255,.75)}
+.chat{position:absolute;left:80px;width:920px}
+.bub{max-width:700px;padding:26px 34px;border-radius:40px;font:700 40px/1.22 Inter;margin-bottom:22px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.bub.me{margin-left:auto;background:#2f7cf6;color:#fff;border-bottom-right-radius:12px}
+.bub.them{background:#e9ebf3;color:#151826;border-bottom-left-radius:12px}
+.bub .who{display:block;font:800 26px Barlow;letter-spacing:.1em;opacity:.6;margin-bottom:6px}
+.rcpt{position:absolute;left:190px;width:700px;background:#fbfaf6;color:#151515;font:700 36px/1.5 Mono;padding:44px 50px 60px;box-shadow:0 30px 60px rgba(0,0,0,.5);clip-path:polygon(0 0,100% 0,100% 100%,95% 98%,90% 100%,85% 98%,80% 100%,75% 98%,70% 100%,65% 98%,60% 100%,55% 98%,50% 100%,45% 98%,40% 100%,35% 98%,30% 100%,25% 98%,20% 100%,15% 98%,10% 100%,5% 98%,0 100%)}
+.rcpt .rh{text-align:center;font:800 44px Barlow;letter-spacing:.2em;border-bottom:4px dashed #999;padding-bottom:18px;margin-bottom:18px}
+.rcpt .rl{display:flex;justify-content:space-between}
+.rcpt .rt{border-top:4px dashed #999;margin-top:18px;padding-top:14px;font-size:46px}
+.vs{position:absolute;left:0;width:1080px;display:flex;justify-content:center;gap:40px}
+.vs .side{width:440px;padding:40px 20px;border-radius:40px;text-align:center}
+.vs .v{font:800 120px/1 Barlow}
+.vs .l{font:800 40px Barlow;letter-spacing:.08em;margin-top:14px;color:rgba(255,255,255,.85)}
+.vs .x{position:absolute;left:490px;top:120px;width:100px;height:100px;border-radius:50%;background:#fff;color:#0b0d18;font:800 52px/100px Barlow;text-align:center}
+.qt{position:absolute;left:90px;width:900px;font:700 74px/1.12 Garamond;color:#fff}
+.qt .mk{font:700 220px/0.6 Garamond;color:var(--brand);display:block;height:110px}
+.qt .by{display:block;font:800 36px Barlow;letter-spacing:.14em;color:rgba(255,255,255,.7);margin-top:30px}
+.tml{position:absolute;left:110px;width:860px}
+.tml .row{display:flex;align-items:center;gap:30px;height:170px}
+.tml .dot{width:44px;height:44px;border-radius:50%;background:#fff;flex:none;box-shadow:0 0 0 10px rgba(255,255,255,.15)}
+.tml .when{font:800 40px Barlow;letter-spacing:.1em;color:var(--gold);width:230px;flex:none}
+.tml .what{font:700 40px/1.2 Inter;color:#fff}
+#chartbox{position:absolute;left:70px;top:430px;width:940px;height:780px}
+#caps{position:absolute;left:60px;top:1290px;width:960px;height:140px;text-align:center}
+.cw{display:inline-block;font:800 92px/1 Barlow;text-transform:uppercase;margin:0 12px;-webkit-text-stroke:0;text-shadow:0 6px 0 rgba(0,0,0,.55),0 0 24px rgba(0,0,0,.5)}
+#flash{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#fff;opacity:0;pointer-events:none}
+.vote{position:absolute;left:0;top:0;width:1080px;height:1920px;background:rgba(8,10,20,.82)}
+.opt{position:absolute;left:110px;width:860px;height:150px;border-radius:36px;display:flex;align-items:center;font:800 64px Barlow;color:#fff;text-transform:uppercase}
+.opt .k{width:104px;height:104px;margin:0 34px 0 24px;border-radius:24px;background:#fff;display:flex;align-items:center;justify-content:center;font:800 72px Barlow}
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="40" data-width="1080" data-height="1920" data-fps="30">
+  <canvas id="bg" width="540" height="960"></canvas>
+  <div id="cam">
+    <canvas id="gl"></canvas>
+    <div id="beats"></div>
+  </div>
+  <div id="tag" class="clip0"></div>
+  <div id="money"><span class="lbl">YOUR MONEY</span><span class="val">$100,000</span><span class="chg">0%</span></div>
+  <div id="caps"></div>
+  <div id="vote"></div>
+  <div id="flash"></div>
+  <canvas id="grain" width="360" height="640" style="opacity:.10;mix-blend-mode:overlay"></canvas>
+</div>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/models3d.js"></script>
+<script>
+(function () {
+'use strict';
+const W = 1080, H = 1920, cl = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x)), lerp = (a, b, k) => a + (b - a) * k;
+const eo = x => 1 - Math.pow(1 - cl(x), 4), ss = x => { x = cl(x); return x * x * (3 - 2 * x); }, back = x => { x = cl(x); const k = 1.9; return 1 + (k + 1) * Math.pow(x - 1, 3) + k * Math.pow(x - 1, 2); };
+const hs = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }, norm = s => String(s).toLowerCase().replace(/[^a-z0-9$%]/g, '');
+const $ = s => document.querySelector(s), el = (tag, cls, html, css) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; if (css) Object.assign(e.style, css); return e; };
+const money = v => '$' + (v >= 9995 ? Math.round(v).toLocaleString('en-US') : v >= 100 ? Math.round(v).toLocaleString('en-US') : v.toFixed(2));
+let R, T, CUT, BEATS = [], EV = [];
+
+window.__build = function (data) {
+  R = data; T = R.T; CUT = R.cuts; const P = R.prices, n = P.length - 1, root = $('#root'); root.dataset.duration = T;
+  document.documentElement.style.setProperty('--brand', R.color || '#2f7cf6');
+  const t0 = i => CUT[Math.min(i, CUT.length - 1)], t1 = i => i + 1 < CUT.length ? CUT[i + 1] : T;
+  const wordT = (i, on) => { const w = (R.words || []).filter(w => w[3] === i && on && norm(w[0]).startsWith(norm(on))); return w.length ? w[0][1] - .05 : t0(i) + .2; };
+  R._t0 = t0; R._t1 = t1; R._wordT = wordT;
+  const tl = gsap.timeline({paused: true}); window.__timelines = {main: tl}; tl.to({}, {duration: T}, 0);
+  const box = $('#beats'), moves = ['slam', 'up', 'whipL', 'flip', 'whipR', 'drop'];
+  (R.scenes || []).forEach((s, i) => {
+    const a = t0(i), b = t1(i), d = el('div', 'beat clip', null); d.dataset.start = a; d.dataset.duration = b - a; d.dataset.trackIndex = 2; box.appendChild(d);
+    const B = {i, s, a, b, d, parts: []}; BEATS.push(B); build(B, tl);
+    const mv = s.move || moves[i % moves.length], inner = d.firstElementChild;
+    if (inner && s.kind !== 'chart' && s.kind !== 'hook') {                // (each beat arrives its own way; exits are cuts)
+      const from = {slam: {scale: 1.18, opacity: 0}, up: {y: 160, opacity: 0}, whipL: {x: -260, opacity: 0}, whipR: {x: 260, opacity: 0}, flip: {rotationX: 40, opacity: 0, transformPerspective: 1600}, drop: {y: -160, opacity: 0}}[mv];
+      tl.from(inner, Object.assign({duration: .7, ease: mv === 'slam' ? 'back.out(1.3)' : 'power3.out'}, from), a);
+      EV.push([a, mv === 'slam' || mv === 'drop' ? 'thud' : 'whoosh']);
+    }
+    if (i > 0 && s.kind !== 'chart') EV.push([a, 'swish']);
+  });
+  // the vote
+  const c = R.choice || {}, v = $('#vote'), vs = (R.vote != null ? t0(R.vote) : T + 9); v.className = 'vote clip'; v.dataset.start = vs; v.dataset.duration = T - vs + 1;
+  v.appendChild(el('div', 'kicker', (c.q || 'What would you do?').toUpperCase(), {top: '520px', fontSize: '76px', color: '#fff', letterSpacing: '.04em'}));
+  ['a', 'b', 'c'].filter(k => c[k]).forEach((k, j) => { const o = el('div', 'opt', `<span class="k" style="color:${['#2f7cf6', '#ff3d55', '#21d07a'][j]}">${k.toUpperCase()}</span>${c[k]}`, {top: 700 + j * 190 + 'px', background: ['#2f7cf6', '#ff3d55', '#21d07a'][j]}); v.appendChild(o); tl.from(o, {x: j % 2 ? 1100 : -1100, duration: .45, ease: 'expo.out'}, vs + .2 + j * .14); EV.push([vs + .3 + j * .14, 'pop']); });
+  v.appendChild(el('div', 'kicker', 'COMMENT A OR B ↓', {top: '1110px', color: 'var(--gold)', fontSize: '62px'})); v.appendChild(el('div', 'kicker', 'memestreet.net', {top: '1200px', fontSize: '46px', letterSpacing: '.08em'}));
+  const mid = el('div', 'kicker', 'NEW MYSTERY CHART AT MIDNIGHT', {top: '400px', color: 'var(--ink)', background: 'var(--gold)', width: '760px', left: '160px', borderRadius: '999px', padding: '14px 0', fontSize: '44px', letterSpacing: '.08em'}); v.appendChild(mid);
+  tl.from(v, {opacity: 0, duration: .35}, vs); tl.from(mid, {scale: 0, duration: .4, ease: 'back.out(2)'}, t0(CUT.length - 1)); EV.push([vs, 'whoosh'], [vs + .9, 'ding'], [t0(CUT.length - 1), 'pop']);
+  $('#tag').textContent = (R.tag || "TODAY'S MYSTERY CHART") + (R.number ? '  ·  DAILY #' + R.number : '');
+  setup3d();
+};
+
+// ---------------------------------------------------------------- the beats
+const P_ = () => R.prices, valAt = f => { const P = P_(), x = cl(f) * (P.length - 1), i = Math.min(P.length - 2, Math.floor(x)); return (R.base || 100000) * lerp(P[i], P[i + 1], x - i) / P[0]; };
+const F = v => { const P = P_(); return v === 'peak' ? P.indexOf(Math.max(...P)) / (P.length - 1) : v === 'low' ? P.lastIndexOf(Math.min(...P)) / (P.length - 1) : v === 'end' ? 1 : v === 'start' ? 0 : +v; };
+function build(B, tl) {
+  const s = B.s, d = B.d, k = s.kind;
+  if (k === 'hook') {          // frame 0: the viewer's $1,000 in big type, the two sides of the contrast written above it, the hidden chart behind
+    const w = el('div', null, null, {position: 'absolute', inset: 0}); d.appendChild(w);
+    const hd = el('div', 'head', `<div>${s.top || ''}</div><div class="l2">${s.bottom || ''}</div>`, {top: '430px'}); w.appendChild(hd);
+    const big = el('div', 'big', `<div class="num">$100,000</div><div class="sub">${s.sub || 'YOUR MONEY. A REAL STOCK. NAME HIDDEN.'}</div>`, {top: '760px'}); w.appendChild(big);
+    B.parts = {hd, big, num: big.querySelector('.num')}; EV.push([0, 'riser'], [.05, 'thud']); if (s.crashOn) EV.push([R._wordT(s.crashI != null ? s.crashI : 2, s.crashOn), 'drop']);
+  } else if (k === 'clip') {
+    const c = el('div', 'cut', `<div class="mast"><span>${s.paper || 'THE DAILY WIRE'}</span><span>${s.date || ''}</span></div><h1>${s.head}</h1>${s.dek ? `<p>${s.dek}</p>` : ''}`, {left: '110px', top: (s.y || 520) + 'px', width: '760px', transform: `rotate(${s.rot != null ? s.rot : (hs(B.i) - .5) * 5}deg)`});
+    for (const [x, y, r] of [[-40, -26, -8], [640, -22, 6]]) c.appendChild(el('div', 'tape', null, {left: x + 'px', top: y + 'px', transform: `rotate(${r}deg)`})); d.appendChild(c);
+    EV.push([B.a + .05, 'snap']);
+  } else if (k === 'notify') {
+    const w = el('div', null, null, {position: 'absolute', inset: 0}); d.appendChild(w);
+    (s.items || []).forEach((it, j) => { const t = j === 0 ? B.a + .12 : it.on ? Math.max(B.a + .6, R._wordT(B.i, it.on)) : B.a + .15 + j * .5, nb = el('div', 'note', `<div class="app"><span class="ico" style="background:${it.color || 'var(--brand)'}">${it.icon || '!'}</span>${it.app || 'NEWS'}<span style="margin-left:auto">now</span></div><div class="ttl">${it.title}</div>${it.body ? `<div class="bdy">${it.body}</div>` : ''}`, {top: 520 + j * 250 + 'px'});
+      w.appendChild(nb); tl.from(nb, {y: -260, opacity: 0, scale: .92, duration: .38, ease: 'back.out(1.6)'}, t); EV.push([t, 'ding']); });
+  } else if (k === 'big') {
+    const c = el('div', 'big', `<div class="num" style="color:${s.color || '#fff'}">0</div><div class="sub">${s.label || ''}</div>`, {top: (s.vs ? 470 : 620) + 'px'}); d.appendChild(c);
+    let bars = null; if (s.vs) { bars = el('div', 'bars', null, {top: '920px'}); d.appendChild(bars);
+      for (const [lab, v, col] of [[s.vsLabel, s.vs, 'rgba(255,255,255,.28)'], [s.label2 || '', s.to, s.color || 'var(--down)']]) { const b = el('div', 'bar', `<div class="fill" style="background:${col};width:0"></div><div class="bl">${lab}</div>`); bars.appendChild(b); } }
+    B.parts = {num: c.querySelector('.num'), bars, t: R._wordT(B.i, s.on)}; EV.push([B.a + .1, 'rise'], [Math.max(B.a + .7, B.parts.t + .15), 'ding']);
+  } else if (k === 'name') {
+    d.appendChild(el('div', 'kicker', s.kicker || 'IT WAS', {top: '400px'})); const nm = el('div', 'name', s.text, {top: '470px', color: 'var(--brand)'}); d.appendChild(nm);
+    d.appendChild(el('div', 'kicker', s.sub || '', {top: '1225px', fontSize: '46px', letterSpacing: '.06em'})); tl.from(nm, {scale: 2.4, opacity: 0, duration: .34, ease: 'back.out(1.8)'}, B.a); EV.push([B.a, 'boom'], [B.a + .1, 'sparkle']);
+  } else if (k === 'chart') {
+    B.parts = {f0: F(s.from != null ? s.from : 0), f1: F(s.to)}; EV.push([B.a, 'whoosh']);
+  } else if (k === 'chat') {         // a text-message thread: each bubble pops on its word
+    const w = el('div', 'chat', null, {top: (s.y || 470) + 'px'}); d.appendChild(w);
+    (s.msgs || []).forEach((m, j) => { const t = j === 0 ? B.a + .15 : m.on ? Math.max(B.a + .5 + j * .3, R._wordT(B.i, m.on)) : B.a + .3 + j * .7, b = el('div', 'bub ' + (m.me ? 'me' : 'them'), (m.who ? `<span class="who">${m.who}</span>` : '') + m.text); w.appendChild(b);
+      tl.from(b, {y: 50, opacity: 0, scale: .9, duration: .45, ease: 'back.out(1.5)', transformOrigin: m.me ? '100% 100%' : '0% 100%'}, t); EV.push([t, 'pop']); });
+  } else if (k === 'receipt') {      // a receipt printing line by line, a total at the bottom
+    const r = el('div', 'rcpt', `<div class="rh">${s.title || 'RECEIPT'}</div>` + (s.lines || []).map(l => `<div class="rl"><span>${l[0]}</span><span>${l[1]}</span></div>`).join('') + (s.total ? `<div class="rl rt"><span>${s.total[0]}</span><span style="color:${s.totalColor || '#d22'}">${s.total[1]}</span></div>` : ''), {top: (s.y || 470) + 'px'}); d.appendChild(r);
+    [...r.children].forEach((c, j) => { const t = B.a + .2 + j * Math.min(.55, (B.b - B.a - .8) / (r.children.length + 1)); tl.from(c, {opacity: 0, y: -14, duration: .25, ease: 'power2.out'}, t); EV.push([t, 'tick']); });
+    tl.from(r, {y: -300, duration: .8, ease: 'power3.out'}, B.a);
+  } else if (k === 'versus') {       // then and now, side by side
+    const v = el('div', 'vs', `<div class="side" style="background:${s.aColor || 'rgba(255,255,255,.12)'}"><div class="v">${s.a[0]}</div><div class="l">${s.a[1]}</div></div><div class="side" style="background:${s.bColor || 'var(--down)'}"><div class="v">${s.b[0]}</div><div class="l">${s.b[1]}</div></div><div class="x">VS</div>`, {top: (s.y || 560) + 'px'}); d.appendChild(v);
+    const tb = s.on ? Math.max(B.a + .6, R._wordT(B.i, s.on)) : B.a + .8; tl.from(v.children[0], {x: -500, opacity: 0, duration: .6, ease: 'power3.out'}, B.a + .1); tl.from(v.children[1], {x: 500, opacity: 0, duration: .6, ease: 'power3.out'}, tb); tl.from(v.children[2], {scale: 0, duration: .4, ease: 'back.out(2)'}, tb + .3); EV.push([B.a + .1, 'whoosh'], [tb, 'whoosh'], [tb + .3, 'thud']);
+  } else if (k === 'quote') {        // the words someone really said (only from the research)
+    const q = el('div', 'qt', null, {top: (s.y || 520) + 'px'}); d.appendChild(q);
+    q.innerHTML = `<span class="mk">\u201C</span>` + s.text.split(' ').map(w => `<span class="qw" style="display:inline-block;margin-right:.25em">${w}</span>`).join('') + `<span class="by">${s.by || ''}</span>`;
+    [...q.querySelectorAll('.qw')].forEach((w, j) => tl.from(w, {opacity: 0, y: 24, duration: .35, ease: 'power2.out'}, B.a + .2 + j * .09)); EV.push([B.a + .1, 'paper']);
+  } else if (k === 'timeline') {     // dated moments down a line, each lit as it is reached
+    const w = el('div', 'tml', (s.items || []).map(it => `<div class="row"><span class="dot"></span><span class="when">${it[0]}</span><span class="what">${it[1]}</span></div>`).join(''), {top: (s.y || 470) + 'px'}); d.appendChild(w);
+    [...w.children].forEach((r, j) => { const t = B.a + .2 + j * Math.min(.8, (B.b - B.a - .6) / Math.max(1, w.children.length)); tl.from(r, {x: 120, opacity: 0, duration: .5, ease: 'power3.out'}, t); EV.push([t, 'tick']); });
+  } else if (k === 'meter') {        // a gauge whose needle swings to a value (a percent, a fear level)
+    B.parts = {meter: true}; d.appendChild(el('div', 'kicker', s.label || '', {top: '1060px', fontSize: '56px', color: '#fff'})); EV.push([B.a + .2, 'rise'], [B.a + 1.4, 'thud']);
+  } else if (k === 'blank') {
+  } else if (k === 'product') {
+    d.appendChild(el('div', 'kicker', s.text || '', {top: '1140px', fontSize: '60px', color: '#fff'}));
+  }
+  if (s.head && k !== 'clip') { const h = el('div', 'head', s.head.split('|').map((x, j) => `<div class="${j ? 'l2' : ''}">${x}</div>`).join(''), {top: (s.headY || 420) + 'px', fontSize: '104px'}); d.appendChild(h); tl.from(h, {y: 60, opacity: 0, duration: .3, ease: 'expo.out'}, B.a + .05); }
+  if (s.stamp) { const t = R._wordT(B.i, s.stamp.on), st = el('div', 'stamp', s.stamp.text, {top: (s.stamp.y || 980) + 'px', color: s.stamp.color || 'var(--down)', borderColor: s.stamp.color || 'var(--down)', transform: 'translateX(-50%) rotate(-9deg)', background: 'rgba(11,13,24,.35)'}); st.classList.add('clip'); st.dataset.start = t; st.dataset.duration = B.b - t; d.appendChild(st);
+    tl.from(st, {scale: 3, opacity: 0, duration: .16, ease: 'power4.in'}, t); EV.push([t + .14, 'thud']); B.stampT = t; }
+}
+
+// ---------------------------------------------------------------- the 3D product (models3d.js), and the chart, drawn on one WebGL + 2D pass
+let rn, scene, cam, prod, cv2, cx2;
+function setup3d() {
+  const T3 = THREE, cv = $('#gl'); cv.width = 1080; cv.height = 1920; cv.style.cssText = 'position:absolute;left:0;top:0;width:1080px;height:1920px';
+  rn = new T3.WebGLRenderer({canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true}); rn.setPixelRatio(1); rn.setSize(1080, 1920, false); T3.ColorManagement.legacyMode = false; rn.outputEncoding = T3.sRGBEncoding; rn.toneMapping = T3.ACESFilmicToneMapping;
+  scene = new T3.Scene(); cam = new T3.PerspectiveCamera(30, 1080 / 1920, .1, 100); cam.position.set(0, 1.2, 9); cam.lookAt(0, .9, 0);
+  scene.add(new T3.HemisphereLight('#e8f0ff', '#3a2f3f', 1.2)); const k = new T3.DirectionalLight('#ffffff', 2.4); k.position.set(4, 6, 6); scene.add(k); const r = new T3.DirectionalLight(R.color || '#2f7cf6', 2.2); r.position.set(-5, 3, -4); scene.add(r);
+  let sctx = null; const S = {ctx(x) { const o = sctx; sctx = x; return o; }, shade(hex, kk) { const c = new T3.Color(hex || '#888'), t = kk < 0 ? 0 : 1, a = Math.abs(kk); return '#' + new T3.Color(lerp(c.r, t, a), lerp(c.g, t, a), lerp(c.b, t, a)).getHexString(); },
+    txt(s, x, y, size, color, max = 9e9, weight = 800) { const c = sctx; c.font = `${weight} ${size}px Montserrat`; const w = c.measureText(s).width; if (w > max) c.font = `${weight} ${size * max / w}px Montserrat`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = color; c.fillText(s, x, y); }};
+  const canvasTex = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d'); if (draw) draw(x, w, h); const t = new T3.CanvasTexture(c); t.encoding = T3.sRGBEncoding; t.userData = {c, x}; return t; };
+  const label = (text, w, h, fg = '#fff', bg = '#14182b') => { const t = canvasTex(Math.round(160 * w / h), 160, (x, cw, ch) => { x.fillStyle = bg; x.fillRect(0, 0, cw, ch); const o = S.ctx(x); S.txt(String(text).toUpperCase(), cw / 2, ch / 2 + 4, ch * .6, fg, cw * .9); S.ctx(o); }); return new T3.Mesh(new T3.PlaneGeometry(w, h), new T3.MeshBasicMaterial({map: t})); };
+  const MOD = window.Models3D({T3, S, rn, canvasTex, label, glowM: (col, kk = 1.5) => new T3.MeshBasicMaterial({color: new T3.Color(col).multiplyScalar(kk)})});
+  const g = MOD.product(R.product || 'box', R.color || '#2f7cf6', R.label || ''), b = new T3.Box3().setFromObject(g), sz = b.getSize(new T3.Vector3()), c = b.getCenter(new T3.Vector3());
+  g.position.sub(c); prod = new T3.Group(); prod.add(g); prod.scale.setScalar(3.4 / Math.max(sz.x, sz.y * 1.3, sz.z)); prod.position.y = .9; scene.add(prod);
+  cv2 = document.createElement('canvas'); cv2.width = 1080; cv2.height = 1920; cv2.style.cssText = 'position:absolute;left:0;top:0;width:1080px;height:1920px'; $('#cam').insertBefore(cv2, $('#beats')); cx2 = cv2.getContext('2d');
+}
+
+function drawChart(x, f0, f1, k, t, whole) {      // the real line from f0 to f1 (drawn up to k of the way), the money it would be, a dot riding the end
+  const P = P_(), n = P.length - 1, lo = Math.min(...P), hi = Math.max(...P), L = 90, Tp = 470, Wd = 900, Ht = 700;
+  const D = whole ? 1 : Math.max(f1, Math.min(1, f0 + .35), .35), X = i => L + i / (n * D) * Wd, Y = p => Tp + Ht - (p - lo) / (hi - lo || 1) * Ht, fe = lerp(f0, f1, k), ie = fe * n;
+  x.save(); x.fillStyle = 'rgba(255,255,255,.05)'; x.strokeStyle = 'rgba(255,255,255,.10)'; x.lineWidth = 2;
+  for (let g = 0; g <= 4; g++) { const y = Tp + g * Ht / 4; x.beginPath(); x.moveTo(L, y); x.lineTo(L + Wd, y); x.stroke(); }
+  const up = valAt(fe) >= (R.base || 100000), col = up ? '#21d07a' : '#ff3d55', path = () => { x.beginPath(); for (let i = 0; i <= Math.floor(ie); i++) i ? x.lineTo(X(i), Y(P[i])) : x.moveTo(X(i), Y(P[i])); const fr = ie - Math.floor(ie), j = Math.floor(ie); if (j < n) x.lineTo(X(j + fr), Y(lerp(P[j], P[j + 1], fr))); };
+  const gr = x.createLinearGradient(0, Tp, 0, Tp + Ht); gr.addColorStop(0, up ? 'rgba(33,208,122,.35)' : 'rgba(255,61,85,.35)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  path(); x.lineTo(X(ie), Tp + Ht); x.lineTo(L, Tp + Ht); x.closePath(); x.fillStyle = gr; x.fill();
+  path(); x.lineJoin = 'round'; x.lineCap = 'round'; x.strokeStyle = col; x.lineWidth = 9; x.shadowColor = col; x.shadowBlur = 24; x.stroke(); x.shadowBlur = 0;
+  const pe = lerp(P[Math.min(n, Math.floor(ie))], P[Math.min(n, Math.floor(ie) + 1)], ie - Math.floor(ie)), ex = X(ie), ey = Y(pe), pulse = 1 + .25 * Math.sin(t * 9);
+  x.fillStyle = col; x.beginPath(); x.arc(ex, ey, 16 * pulse, 0, 7); x.fill(); x.fillStyle = '#fff'; x.beginPath(); x.arc(ex, ey, 7, 0, 7); x.fill();
+  x.font = '700 40px Mono'; const tx = '$' + pe.toFixed(2), tw = x.measureText(tx).width + 36, bx = Math.min(L + Wd - tw, Math.max(L, ex - tw / 2)), by = ey - 92 < Tp - 40 ? ey + 40 : ey - 92;
+  x.fillStyle = 'rgba(14,17,34,.92)'; x.beginPath(); x.roundRect(bx, by, tw, 58, 16); x.fill(); x.strokeStyle = col; x.lineWidth = 4; x.stroke(); x.fillStyle = '#fff'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(tx, bx + tw / 2, by + 31);
+  const D0 = Date.parse(R.dates[0]), D1 = Date.parse(R.dates[1]), dt = new Date(lerp(D0, D1, fe)); x.font = '800 44px Barlow'; x.fillStyle = 'rgba(255,255,255,.7)'; x.textAlign = 'left'; x.fillText(dt.toLocaleString('en-US', {month: 'short', year: 'numeric', timeZone: 'UTC'}).toUpperCase(), L, Tp + Ht + 56);
+  x.restore();
+}
+
+// ---------------------------------------------------------------- one frame
+function seek(t, cover) {
+  const T3 = THREE; let bi = 0; while (bi < BEATS.length - 1 && t >= BEATS[bi + 1].a) bi++; const B = BEATS[bi], s = B.s, lt = t - B.a;
+  // background: the brand colour breathing in two soft blobs over ink
+  const bg = $('#bg').getContext('2d'), TH = R.theme || {}, mot = TH.motif || 'blobs'; bg.fillStyle = TH.ink || '#0b0d18'; bg.fillRect(0, 0, 540, 960);
+  if (mot === 'grid') { bg.strokeStyle = 'rgba(255,255,255,.06)'; bg.lineWidth = 1; const o = (t * 6) % 40; for (let x = -40 + o; x < 560; x += 40) { bg.beginPath(); bg.moveTo(x, 0); bg.lineTo(x, 960); bg.stroke(); } for (let y = -40 + o; y < 980; y += 40) { bg.beginPath(); bg.moveTo(0, y); bg.lineTo(540, y); bg.stroke(); } }
+  else if (mot === 'rays') { bg.save(); bg.translate(270, 420); bg.rotate(t * .05); for (let k = 0; k < 24; k += 2) { bg.fillStyle = 'rgba(255,255,255,.035)'; bg.beginPath(); bg.moveTo(0, 0); bg.arc(0, 0, 900, k * Math.PI / 12, (k + 1) * Math.PI / 12); bg.fill(); } bg.restore(); }
+  else if (mot === 'stripes') { bg.save(); bg.rotate(-.35); for (let k = -20; k < 40; k += 2) { bg.fillStyle = 'rgba(255,255,255,.03)'; bg.fillRect(k * 40 + (t * 10) % 80 - 400, -200, 40, 1600); } bg.restore(); }
+  else if (mot === 'dots') { bg.fillStyle = 'rgba(255,255,255,.07)'; for (let y = 0; y < 960; y += 24) for (let x = (y / 24 % 2) * 12; x < 540; x += 24) { const r = 2 + 1.5 * Math.sin(t * 1.2 + x * .02 + y * .015); bg.beginPath(); bg.arc(x, y, Math.max(.5, r), 0, 7); bg.fill(); } }
+  else if (mot === 'tape') { bg.font = '800 16px Barlow'; for (let k = 0; k < 12; k++) { const y = ((k * 97 + t * 30) % 1100) - 70; bg.fillStyle = k % 3 ? 'rgba(255,255,255,.03)' : 'rgba(255,200,61,.05)'; bg.fillRect(0, y, 540, 26); bg.fillStyle = 'rgba(255,255,255,.08)'; for (let x = (t * 40 * (k % 2 ? 1 : -1)) % 120 - 120; x < 560; x += 120) bg.fillText(k % 2 ? 'BUY' : 'SELL', x, y + 18); } }
+  for (const [k, x0, y0, r] of [[0, 120, 180, 420], [1, 430, 760, 480]]) { const x = x0 + 60 * Math.sin(t * .4 + k * 2), y = y0 + 50 * Math.cos(t * .33 + k), g = bg.createRadialGradient(x, y, 10, x, y, r); g.addColorStop(0, k ? (TH.glow2 || 'rgba(255,200,61,.10)') : (TH.glow || (R.color || '#2f7cf6') + '55')); g.addColorStop(1, 'rgba(11,13,24,0)'); bg.fillStyle = g; bg.fillRect(0, 0, 540, 960); }
+  // camera: a slow push on every beat, a punch on each stamp, a kick on each cut
+  const cut = t - B.a, kick = cut < .18 ? 1 - cut / .18 : 0, st = B.stampT != null && t >= B.stampT ? Math.max(0, 1 - (t - B.stampT) / .25) : 0;
+  $('#cam').style.transform = `scale(${1 + .04 * ss(lt / Math.max(1, B.b - B.a)) + .012 * kick}) translate(${Math.sin(t * 57) * 10 * st}px,${Math.cos(t * 61) * 10 * st}px)`;
+  $('#flash').style.opacity = 0;
+  // the money: the hook shows $1,000 (and drops it to the year's end on the snapback); afterwards it follows the chart sentence by sentence
+  const P = P_(), m = $('#money'); let f = 0;
+  const fs = (R.scenes || []).map(x => x.f), fAt = i => { for (let j = i; j >= 0; j--) if (fs[j] != null) return F(fs[j]); return 0; };
+  if (s.kind === 'hook') f = 0; else { const a = fAt(bi - 1), b = fAt(bi); f = lerp(a, b, ss(lt / Math.min(1.4, B.b - B.a))); }
+  let v = valAt(f); const hook = BEATS[0], crash = hook && hook.s.crashOn != null ? R._wordT(hook.s.crashI != null ? hook.s.crashI : 2, hook.s.crashOn) : null;
+  if (s.kind === 'hook' && crash != null && t > crash) v = lerp(R.base || 100000, valAt(1), eo((t - crash) / 1.6));
+  if (cover) v = R.base || 100000;
+  const chg = v / (R.base || 100000) - 1, col = chg >= 0 ? '#21d07a' : '#ff3d55'; m.querySelector('.val').textContent = money(v); m.querySelector('.val').style.color = Math.abs(chg) < .005 ? '#fff' : col;
+  const ch = m.querySelector('.chg'); ch.textContent = (chg >= 0 ? '+' : '') + Math.round(chg * 100) + '%'; ch.style.background = Math.abs(chg) < .005 ? 'rgba(255,255,255,.14)' : col; ch.style.color = Math.abs(chg) < .005 ? '#fff' : '#0b0d18';
+  m.style.transform = `translateX(-50%) scale(${s.kind === 'hook' && !cover ? 0 : 1})`; m.style.visibility = s.kind === 'hook' && !cover ? 'hidden' : 'visible';
+  // the hook's own big number follows the same money
+  if (s.kind === 'hook' && B.parts.num) { B.parts.num.textContent = money(v); B.parts.num.style.color = v < (R.base || 100000) * .9995 ? '#ff3d55' : v > (R.base || 100000) * 1.0005 ? '#21d07a' : '#fff'; const p = ss(cl(t / .4)); B.parts.big.style.transform = `scale(${cover ? 1 : lerp(.86, 1, p) * (crash != null && t > crash && t < crash + .2 ? 1.08 : 1)})`;
+    B.parts.hd.style.transform = `translateY(${cover ? 0 : (1 - eo(t / .35)) * -40}px)`; B.parts.hd.style.opacity = 1; }
+  // counters
+  if (s.kind === 'big' && B.parts.num) { const ta = B.a + .1, tb = Math.max(ta + .6, B.parts.t + .15), u = ss((t - ta) / (tb - ta)), val = lerp(s.from || 0, s.to, u); B.parts.num.textContent = (s.prefix || '') + (s.dec ? val.toFixed(s.dec) : Math.round(val).toLocaleString('en-US')) + (s.suffix || '');
+    if (B.parts.bars) { const mx = Math.max(s.vs, s.to), [b1, b2] = B.parts.bars.children; b1.firstChild.style.width = 780 * s.vs / mx * eo((t - B.a) / .6) + 'px'; b2.firstChild.style.width = Math.max(8, 780 * s.to / mx * u) + 'px'; } }
+  // 2D: the chart; 3D: the product
+  cx2.clearRect(0, 0, 1080, 1920);
+  if (B.parts && B.parts.meter) { const x = cx2, u = ss(cl((lt - .2) / 1.2)), val = lerp(s.from || 0, s.to, u), a0 = Math.PI * .85, a1 = Math.PI * 2.15, ang = lerp(a0, a1, cl(val / (s.max || 100))), cxm = 540, cym = 820, rr = 330;
+    x.lineCap = 'round'; x.lineWidth = 60; x.strokeStyle = 'rgba(255,255,255,.1)'; x.beginPath(); x.arc(cxm, cym, rr, a0, a1); x.stroke();
+    const gg = x.createLinearGradient(cxm - rr, 0, cxm + rr, 0); gg.addColorStop(0, '#21d07a'); gg.addColorStop(.5, '#ffc83d'); gg.addColorStop(1, '#ff3d55'); x.strokeStyle = gg; x.beginPath(); x.arc(cxm, cym, rr, a0, ang); x.stroke();
+    x.save(); x.translate(cxm, cym); x.rotate(ang); x.fillStyle = '#fff'; x.beginPath(); x.moveTo(0, -14); x.lineTo(rr - 50, 0); x.lineTo(0, 14); x.fill(); x.restore(); x.fillStyle = '#fff'; x.beginPath(); x.arc(cxm, cym, 30, 0, 7); x.fill();
+    x.font = '800 150px Barlow'; x.textAlign = 'center'; x.fillText((s.prefix || '') + Math.round(val) + (s.suffix || ''), cxm, cym + 210); }
+  if (s.kind === 'chart') drawChart(cx2, B.parts.f0, B.parts.f1, ss(lt / Math.max(.8, (B.b - B.a) * .75)), t);
+  if (s.kind === 'hook') { cx2.save(); cx2.globalAlpha = .22; drawChart(cx2, 0, 1, cover ? 1 : eo(t / 1.6), t, true); cx2.restore(); }
+  const show3 = s.kind === 'product' || s.kind === 'name'; prod.visible = show3;
+  if (show3) { const u = back(cl(lt / .5)); prod.rotation.set(.18 + .05 * Math.sin(t), -.6 + lt * .55, 0); prod.position.set(0, s.kind === 'name' ? .95 : .9, 0); prod.scale.setScalar(prod.userData.s0 || (prod.userData.s0 = prod.scale.x)); prod.scale.multiplyScalar(Math.max(.001, u) * (s.kind === 'name' ? (R.product === 'car' || R.product === 'van' ? .5 : .4) : 1)); }
+  rn.render(scene, cam);
+  // captions: one to three words, the one being said lit
+  const cp = $('#caps'), c = cover ? null : (R.caps || []).find(c => t >= c.t0 && t < c.t1);
+  cp.style.top = (t >= (R.vote != null ? R._t0(R.vote) : 1e9) ? 1470 : 1290) + 'px';
+  if (!c) cp.innerHTML = ''; else { cp.innerHTML = c.words.map(w => { const said = t >= w.t0, k = said ? Math.max(0, 1 - (t - w.t0) / .18) : 0; return `<span class="cw" style="opacity:${said ? 1 : .4};color:${said ? (w.color || (w.hot ? '#ffc83d' : '#fff')) : '#fff'};transform:scale(${1 + .18 * k}) translateY(${-10 * k}px)">${w.text}</span>`; }).join(''); }
+  // grain (seeded by the frame: the same frame is always the same grain)
+  const gc = $('#grain').getContext('2d'), id = gc.createImageData(360, 640), sd = Math.floor(t * 30) * 7.3; for (let i = 0; i < id.data.length; i += 4) { const v2 = hs(i * .013 + sd) * 255; id.data[i] = id.data[i + 1] = id.data[i + 2] = v2; id.data[i + 3] = 255; } gc.putImageData(id, 0, 0);
+}
+window.addEventListener('hf-seek', e => seek(e.detail.time, e.detail.cover));
+window.__events = () => EV.filter(e => e[0] >= 0 && e[0] < T).map(e => [+e[0].toFixed(3), e[1]]).sort((a, b) => a[0] - b[0]);
+})();
+</script>
+<script src="vendor/hfplay.js"></script>
+</body></html>

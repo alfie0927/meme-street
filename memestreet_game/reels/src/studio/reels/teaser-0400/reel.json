@@ -1,0 +1,33 @@
+{
+ "name": "teaser-0400",
+ "slot": "0400",
+ "engine": "manim",
+ "style": "blueprint",
+ "entry": "teaser.py::Teaser",
+ "title": "Daily #26: today's mystery chart is live",
+ "hook": {
+  "context": "Today's mystery stock chart is live.",
+  "lean": "60 real days of a real company, name hidden.",
+  "snapback": "But you get 2 minutes to trade the next 120 days.",
+  "text": "Today's mystery stock chart",
+  "visual": "The 60-day price line is already a third drawn on a blueprint grid, a gold pen dot running along its tip."
+ },
+ "say": [],
+ "choice": {"q": "What happens next?", "a": "Up: it ends higher", "b": "Flat: it goes sideways", "c": "Down: it ends lower"},
+ "props": {
+  "T": 19.0,
+  "number": 26,
+  "next": 120,
+  "history": [35.4, 35.52, 35.57, 35.51, 35.78, 35.36, 35.89, 36.18, 36.39, 36.43, 36.46, 36.83, 35.79, 35.24, 35.56, 35.65, 35.44, 35.87, 36.21, 36.13, 36.71, 36.71, 36.73, 36.13, 35.09, 35.35, 34.81, 34.96, 34.88, 34.82, 34.5, 34.63, 35.0, 35.38, 35.69, 36.15, 36.25, 35.91, 35.87, 36.41, 36.1, 35.85, 36.22, 36.1, 36.22, 36.18, 35.86, 35.96, 35.84, 36.07, 35.79, 36.03, 36.79, 36.7, 36.46, 35.34, 36.14, 36.05, 36.42, 36.34],
+  "cards": [
+   [0, 1.9, [["TODAY'S MYSTERY", 52, "ink"], ["STOCK CHART", 52, "ink"]]],
+   [1.9, 4.6, [["60 REAL DAYS", 60, "gold"], ["REAL COMPANY. NAME HIDDEN.", 30, "ink"]]],
+   [4.6, 12.1, [["BUT YOU GET", 30, "ink"], ["2 MINUTES", 60, "gold"], ["TO TRADE THE NEXT 120 DAYS", 30, "ink"]]]
+  ],
+  "foot": [["ANSWER TONIGHT AT 23:30 UTC", "gold"], ["MEMESTREET.NET", "ink"]]
+ },
+ "events": [[0.0, "riser"], [2.8, "tick"], [3.97, "tick"], [4.5, "pop"], [6.0, "swish"], [6.9, "pop"], [8.1, "click"], [8.5, "tick"], [9.7, "swish"], [10.6, "whoosh"], [11.3, "pop"], [12.1, "ding"], [12.8, "swish"], [13.0, "pop"], [13.2, "swish"], [13.4, "pop"], [13.6, "swish"], [13.8, "pop"], [14.3, "tick"], [14.7, "tick"]],
+ "music": "Secret Garden",
+ "caption": "Today's mystery stock chart is live: 60 real days, name hidden. Two minutes to trade the next 120.",
+ "cover": {"t": 18.6}
+}

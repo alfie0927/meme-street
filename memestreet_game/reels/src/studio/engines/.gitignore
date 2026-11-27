@@ -1,0 +1,8 @@
+node_modules/
+out/
+.remotion/
+*.log
+vendor/
+.hyperframes/
+__pycache__/
+media/

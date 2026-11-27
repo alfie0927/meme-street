@@ -26,6 +26,10 @@ exec 8>queue/.auto.lock; flock 8                   # (one reel at a time: the cr
 # game, made from templates (src/explainer/promo.py); a slot already queued or past is left alone; its failure never stops the reel.
 [ -z "${REEL_OLD:-}" ] && { python3 src/explainer/promo.py day "$(date -u +%F)" >> logs/promo.log 2>&1 || echo "promo reels not made (logs/promo.log)"; }
 if [ -z "${REEL_OLD:-}" ]; then
+  # (since 2026-11-27, the owner: "keep this style for each daily reel ... more imaginative every day": the studio's "your money" daily,
+  #  a new idea each day; the old explainer only when the studio has failed three times that day)
+  python3 src/studio/daily.py "$(date -u +%F)" >> logs/studio.log 2>&1 && exit 0
+  [ "$(cat "state/studio-$(date -u +%F).tries" 2>/dev/null || echo 0)" -ge 3 ] || { echo "the studio's daily was not made (logs/studio.log): it tries again next run"; exit 1; }
   python3 src/explainer/make.py daily "$(date -u +%F)" >> logs/explainer.log 2>&1 && exit 0
   echo "today's reel was not made (logs/explainer.log)"; exit 1
 fi

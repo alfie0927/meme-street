@@ -1,0 +1,296 @@
+{
+ "name": "d26-tsmc",
+ "slot": "2330",
+ "engine": "hf",
+ "entry": "daily/index.html",
+ "style": "your $1,000 (kinetic collage)",
+ "title": "You Put $100,000 Into the Company That Builds the iPhone's Brain",
+ "brands": [
+  {
+   "name": "TSMC",
+   "color": "#ff1f3d"
+  }
+ ],
+ "hook": {
+  "context": "You put $100,000 into the stock that builds the iPhone's brain.",
+  "lean": "Five months later it was worth $127,628.",
+  "snapback": "But the buyers weren't Apple fans. They were Bitcoin miners.",
+  "text": "IPHONE'S BRAIN|BITCOIN MONEY",
+  "visual": "$100,000 in huge type counting up over the hidden chart drawing itself"
+ },
+ "say": [
+  "You put $100,000 into the stock that builds the iPhone's brain.",
+  "Five months later it was worth $127,628.",
+  "But the buyers weren't Apple fans. They were Bitcoin miners.",
+  "Today's mystery chart on Meme Street was TSMC.",
+  "Bitcoin miners lined up for its chips.",
+  "One quarter's sales hit $9.21 billion.",
+  "Two big banks told investors to buy.",
+  "Then the Dow dropped more than 1,170 points overnight.",
+  "Your $127,628 slid back to $115,245.",
+  "Hold the chip maker, or take the profit?",
+  "A new mystery chart goes live at midnight."
+ ],
+ "choice": {
+  "q": "What would you do?",
+  "a": "Hold the chip maker",
+  "b": "Take the profit"
+ },
+ "music": "Shock and Awe",
+ "tail": 1.0,
+ "caption": "You put $100,000 into the stock that builds the iPhone's brain. Five months later it was worth $127,628. But the buyers weren't Apple fans. They were Bitcoin miners.\nToday's mystery chart was TSMC (TSM), 2017-08-17 to 2018-02-07.\nSources: Business Day (citing Bloomberg and Reuters), Focus Taiwan, Reuters, TSMC, The Motley Fool",
+ "tags": "#stocks #investing #stockmarket #TSM #MemeStreet",
+ "cover": {
+  "t": 1.2
+ },
+ "props": {
+  "prices": [
+   36.34,
+   35.79,
+   35.86,
+   35.98,
+   36.52,
+   36.58,
+   36.83,
+   36.85,
+   36.77,
+   36.88,
+   36.93,
+   36.97,
+   37.22,
+   36.85,
+   37.27,
+   37.54,
+   37.5,
+   37.84,
+   37.86,
+   37.53,
+   37.38,
+   37.65,
+   38.07,
+   38.3,
+   37.82,
+   38.24,
+   37.77,
+   37.07,
+   37.14,
+   37.25,
+   37.05,
+   37.55,
+   38.13,
+   38.44,
+   38.27,
+   38.46,
+   38.46,
+   38.77,
+   38.97,
+   40.35,
+   40.44,
+   40.82,
+   40.89,
+   41.25,
+   41.5,
+   41.07,
+   41.12,
+   41.21,
+   41.32,
+   41.16,
+   41.2,
+   42.15,
+   42.13,
+   42.33,
+   42.1,
+   42.15,
+   42.19,
+   42.43,
+   42.51,
+   42.43,
+   41.64,
+   41.72,
+   42.01,
+   41.86,
+   41.54,
+   42.1,
+   42.07,
+   42.21,
+   42.58,
+   42.41,
+   42.99,
+   41.09,
+   40.93,
+   39.41,
+   39.6,
+   39.7,
+   39.39,
+   39.2,
+   38.68,
+   39.01,
+   39.0,
+   39.37,
+   39.3,
+   39.29,
+   39.4,
+   39.5,
+   39.4,
+   39.34,
+   39.44,
+   39.23,
+   39.63,
+   38.95,
+   39.08,
+   39.74,
+   39.65,
+   41.02,
+   41.71,
+   41.49,
+   42.46,
+   42.44,
+   42.18,
+   41.3,
+   41.03,
+   41.19,
+   42.23,
+   43.13,
+   44.57,
+   44.67,
+   46.38,
+   46.28,
+   45.33,
+   45.1,
+   45.72,
+   45.4,
+   44.88,
+   45.31,
+   45.45,
+   44.51,
+   42.95,
+   43.59,
+   41.88
+  ],
+  "dates": [
+   "2017-08-17",
+   "2018-02-07"
+  ],
+  "name": "TSMC",
+  "color": "#ff1f3d",
+  "number": 26,
+  "product": "chip",
+  "label": "TSMC",
+  "tag": "TODAY'S MYSTERY CHART",
+  "vote": 9,
+  "scenes": [
+   {
+    "kind": "hook",
+    "top": "THE IPHONE'S BRAIN",
+    "bottom": "BITCOIN MONEY",
+    "sub": "A REAL STOCK. NAME HIDDEN.",
+    "f": 0
+   },
+   {
+    "kind": "big",
+    "to": 127628,
+    "prefix": "$",
+    "label": "FIVE MONTHS LATER",
+    "color": "#21d07a",
+    "on": "$127,628",
+    "f": "peak",
+    "move": "slam",
+    "from": 100000
+   },
+   {
+    "kind": "notify",
+    "f": "peak",
+    "items": [
+     {
+      "app": "MARKETS",
+      "icon": "\u20bf",
+      "color": "#f7931a",
+      "title": "Bitcoin miners snap up chips",
+      "body": "Demand for mining chips keeps growing",
+      "on": "Bitcoin"
+     },
+     {
+      "app": "YOUR PORTFOLIO",
+      "icon": "\u2197",
+      "color": "#21d07a",
+      "title": "Your $100,000 is now $127,628",
+      "on": "miners"
+     }
+    ]
+   },
+   {
+    "kind": "name",
+    "text": "TSMC",
+    "kicker": "IT WAS",
+    "sub": "IT BUILDS OTHER COMPANIES' CHIPS",
+    "f": 0
+   },
+   {
+    "kind": "chart",
+    "from": 0,
+    "to": 0.55,
+    "f": 0.55
+   },
+   {
+    "kind": "big",
+    "to": 9.21,
+    "dec": 2,
+    "prefix": "$",
+    "suffix": "B",
+    "label": "SALES IN ONE QUARTER",
+    "color": "#21d07a",
+    "on": "$9.21",
+    "f": 0.72
+   },
+   {
+    "kind": "clip",
+    "paper": "MARKET NOTES",
+    "date": "JAN 2018",
+    "head": "Two big banks: buy.",
+    "dek": "Analysts upgrade the chip maker.",
+    "f": 0.86,
+    "stamp": {
+     "text": "BUY",
+     "on": "buy",
+     "y": 1030,
+     "color": "#21d07a"
+    }
+   },
+   {
+    "kind": "notify",
+    "f": "peak",
+    "items": [
+     {
+      "app": "MARKETS",
+      "icon": "!",
+      "color": "#ff3d55",
+      "title": "Dow drops more than 1,170 points",
+      "body": "Fears of higher interest rates",
+      "on": "Dow"
+     }
+    ]
+   },
+   {
+    "kind": "chart",
+    "from": 0,
+    "to": 1,
+    "f": 1,
+    "stamp": {
+     "text": "STILL +15%",
+     "on": "$115,245",
+     "y": 1010,
+     "color": "#21d07a"
+    }
+   },
+   {
+    "kind": "blank",
+    "f": 1
+   },
+   {
+    "kind": "blank",
+    "f": 1
+   }
+  ],
+  "base": 100000
+ }
+}
