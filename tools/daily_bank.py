@@ -341,10 +341,12 @@ def stories(by):
         rows = sorted(by.get(t, []))
         k = next((i for i, r in enumerate(rows) if r[0] >= day), None)
         if k is None:
-            print("story without data:", t, day); continue
+            print("story without data:", t, day)
+            continue
         w = rows[max(0, k - 100):k + 40]
         if len(w) < 60:
-            print("story too short:", t, day, len(w)); continue
+            print("story too short:", t, day, len(w))
+            continue
         p = lambda v: round(v, 2 if v >= 10 else 4)
         out.append({"t": t, "n": NAMES[t], "day": day, "seed": seed, "idea": idea, "d": [w[0][0], w[-1][0]],
                     "peak": next(i for i, r in enumerate(w) if r[0] >= day),
